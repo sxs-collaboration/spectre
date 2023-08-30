@@ -255,7 +255,7 @@ struct LorentzFactorTimesSpatialVelocity : db::SimpleTag {
 /// Note that the integral is understood
 /// as a flat-space integral: all metric factors are included in \f$J^i\f$.
 /// In particular, if the integral is done over a Strahlkorper, the
-/// `StrahlkorperGr::euclidean_area_element` of the Strahlkorper should be used,
+/// `gr::surfaces::euclidean_area_element` of the Strahlkorper should be used,
 /// and \f$s_i\f$ is
 /// the normal one-form to the Strahlkorper normalized with the flat metric,
 /// \f$s_is_j\delta^{ij}=1\f$.

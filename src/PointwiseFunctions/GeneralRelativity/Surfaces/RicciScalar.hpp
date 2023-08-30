@@ -13,7 +13,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Intrinsic Ricci scalar of a 2D `Strahlkorper`.
@@ -26,7 +26,7 @@ namespace StrahlkorperGr {
 /// Here \f$\hat{R}\f$ is the intrinsic Ricci scalar curvature of
 /// the Strahlkorper, \f$R\f$ and \f$R_{ij}\f$ are the Ricci scalar and
 /// Ricci tensor of the 3D space that contains the Strahlkorper,
-/// \f$ K_{ij} \f$ the output of StrahlkorperGr::extrinsic_curvature,
+/// \f$ K_{ij} \f$ the output of gr::surfaces::extrinsic_curvature,
 /// \f$ K \f$ is the trace of \f$K_{ij}\f$,
 /// and `unit_normal_vector` is
 /// \f$S^i = g^{ij} S_j\f$ where \f$S_j\f$ is the unit normal one form.
@@ -44,4 +44,4 @@ Scalar<DataVector> ricci_scalar(
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

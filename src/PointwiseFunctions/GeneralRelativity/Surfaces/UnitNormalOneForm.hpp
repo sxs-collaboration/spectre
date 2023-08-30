@@ -13,7 +13,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes normalized unit normal one-form to a Strahlkorper.
@@ -33,4 +33,4 @@ tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& one_over_one_form_magnitude);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

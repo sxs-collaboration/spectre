@@ -35,10 +35,10 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 template <typename Frame>
 struct Strahlkorper;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -90,12 +90,12 @@ namespace callbacks {
 ///   - `::gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame>`
 ///   - `::gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, Frame>`
 ///   - `::ah::Tags::FastFlow`
-///   - `StrahlkorperTags::Strahlkorper<Frame>`
+///   - `ylm::Tags::Strahlkorper<Frame>`
 ///
 /// Modifies:
 /// - DataBox:
 ///   - `::ah::Tags::FastFlow`
-///   - `StrahlkorperTags::Strahlkorper<Frame>`
+///   - `ylm::Tags::Strahlkorper<Frame>`
 ///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
 /// see intrp::protocols::InterpolationTargetTag for details on
@@ -160,12 +160,12 @@ struct FindApparentHorizon
       // If we get here, we are in a new apparent horizon search, as
       // opposed to a subsequent iteration of the same horizon search.
       //
-      // So put new initial guess into StrahlkorperTags::Strahlkorper<Frame>.
+      // So put new initial guess into ylm::Tags::Strahlkorper<Frame>.
       // We need to do this now, and not at the end of the previous horizon
       // search, because only now do we know the temporal_id of this horizon
       // search.
-      db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-                 StrahlkorperTags::PreviousStrahlkorpers<Frame>>(
+      db::mutate<ylm::Tags::Strahlkorper<Frame>,
+                 ylm::Tags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
               const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<
@@ -235,7 +235,7 @@ struct FindApparentHorizon
       std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
       // Do a FastFlow iteration.
-      db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>>(
+      db::mutate<::ah::Tags::FastFlow, ylm::Tags::Strahlkorper<Frame>>(
           [&inv_g, &ex_curv, &christoffel, &status_and_info](
               const gsl::not_null<::FastFlow*> fast_flow,
               const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) {
@@ -286,7 +286,7 @@ struct FindApparentHorizon
     // If it failed, don't update any variables, just reset the Strahlkorper to
     // it's previous value
     if (horizon_finder_failed) {
-      db::mutate<StrahlkorperTags::Strahlkorper<Frame>>(
+      db::mutate<ylm::Tags::Strahlkorper<Frame>>(
           [](const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
              const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
                  previous_strahlkorpers) {
@@ -296,7 +296,7 @@ struct FindApparentHorizon
             // to be in previous_strahlkorpers).
             *strahlkorper = previous_strahlkorpers.front().second;
           },
-          box, db::get<StrahlkorperTags::PreviousStrahlkorpers<Frame>>(*box));
+          box, db::get<ylm::Tags::PreviousStrahlkorpers<Frame>>(*box));
     } else {
       // The interpolated variables
       // Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
@@ -308,9 +308,9 @@ struct FindApparentHorizon
       // Type alias to make code more understandable.
       using vars_tags =
           typename InterpolationTargetTag::vars_to_interpolate_to_target;
-      db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
-                       tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
-                                  ::ah::Tags::FastFlow>>(
+      db::mutate_apply<
+          tmpl::list<::Tags::Variables<vars_tags>>,
+          tmpl::list<ylm::Tags::Strahlkorper<Frame>, ::ah::Tags::FastFlow>>(
           [](const gsl::not_null<Variables<vars_tags>*> vars,
              const Strahlkorper<Frame>& strahlkorper,
              const FastFlow& fast_flow) {
@@ -344,8 +344,8 @@ struct FindApparentHorizon
       // if the current frame is not inertial.
       if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
         db::mutate_apply<
-            tmpl::list<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>,
-            tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
+            tmpl::list<ylm::Tags::CartesianCoords<::Frame::Inertial>>,
+            tmpl::list<ylm::Tags::Strahlkorper<Frame>,
                        domain::Tags::Domain<Metavariables::volume_dim>>>(
             [&cache, &temporal_id](
                 const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
@@ -369,8 +369,8 @@ struct FindApparentHorizon
       // Update the previous strahlkorpers. We do this before the callbacks
       // in case any of the callbacks need the previous strahlkorpers with the
       // current strahlkorper already in it.
-      db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-                 StrahlkorperTags::PreviousStrahlkorpers<Frame>>(
+      db::mutate<ylm::Tags::Strahlkorper<Frame>,
+                 ylm::Tags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
               const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<

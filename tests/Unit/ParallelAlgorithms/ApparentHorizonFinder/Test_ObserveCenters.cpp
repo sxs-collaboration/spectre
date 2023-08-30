@@ -63,9 +63,9 @@ void test() {
   std::vector<std::array<double, 3>> grid_centers{};
   std::vector<std::array<double, 3>> inertial_centers{};
 
-  db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
-                         StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
-                         StrahlkorperTags::EuclideanAreaElement<Frame>>>
+  db::DataBox<tmpl::list<ylm::Tags::Strahlkorper<Frame>,
+                         ylm::Tags::CartesianCoords<::Frame::Inertial>,
+                         ylm::Tags::EuclideanAreaElement<Frame>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
@@ -76,33 +76,31 @@ void test() {
     grid_centers.push_back(grid_center);
     inertial_centers.push_back(inertial_center);
 
-    db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
-               StrahlkorperTags::CartesianCoords<::Frame::Inertial>,
-               StrahlkorperTags::EuclideanAreaElement<Frame>>(
+    db::mutate<ylm::Tags::Strahlkorper<Frame>,
+               ylm::Tags::CartesianCoords<::Frame::Inertial>,
+               ylm::Tags::EuclideanAreaElement<Frame>>(
         [&grid_center, &inertial_center](
             gsl::not_null<Strahlkorper<Frame>*> box_grid_horizon,
             gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
                 box_inertial_coords,
             gsl::not_null<Scalar<DataVector>*> box_area_element) {
           *box_grid_horizon = Strahlkorper<Frame>{10, 1.0, grid_center};
-          const auto theta_phi =
-              StrahlkorperFunctions::theta_phi(*box_grid_horizon);
-          const auto radius = StrahlkorperFunctions::radius(*box_grid_horizon);
-          const auto rhat = StrahlkorperFunctions::rhat(theta_phi);
+          const auto theta_phi = ylm::theta_phi(*box_grid_horizon);
+          const auto radius = ylm::radius(*box_grid_horizon);
+          const auto rhat = ylm::rhat(theta_phi);
 
           // Set area element to the Euclidean area element for the test.
-          *box_area_element = StrahlkorperGr::euclidean_area_element(
-              StrahlkorperFunctions::jacobian(theta_phi),
-              StrahlkorperFunctions::normal_one_form(
-                  StrahlkorperFunctions::cartesian_derivs_of_scalar(
-                      radius, *box_grid_horizon, radius,
-                      StrahlkorperFunctions::inv_jacobian(theta_phi)),
-                  rhat),
+          *box_area_element = gr::surfaces::euclidean_area_element(
+              ylm::jacobian(theta_phi),
+              ylm::normal_one_form(ylm::cartesian_derivs_of_scalar(
+                                       radius, *box_grid_horizon, radius,
+                                       ylm::inv_jacobian(theta_phi)),
+                                   rhat),
               radius, rhat);
 
           // Simply offset the inertial coords from the grid coords.
-          const auto grid_coords = StrahlkorperFunctions::cartesian_coords(
-              *box_grid_horizon, radius, rhat);
+          const auto grid_coords =
+              ylm::cartesian_coords(*box_grid_horizon, radius, rhat);
           for (size_t i = 0; i < 3; ++i) {
             box_inertial_coords->get(i) = grid_coords.get(i) +
                                           gsl::at(inertial_center, i) -

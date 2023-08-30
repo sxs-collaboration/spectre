@@ -58,21 +58,19 @@ void test_radius_and_derivs() {
 
   // Create DataBox
   auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
-          tmpl::push_back<
-              StrahlkorperTags::compute_items_tags<Frame::Inertial>>,
-          StrahlkorperTags::PhysicalCenterCompute<Frame::Inertial>>>(
-      strahlkorper);
+          tmpl::push_back<ylm::Tags::compute_items_tags<Frame::Inertial>>,
+          ylm::Tags::PhysicalCenterCompute<Frame::Inertial>>>(strahlkorper);
 
   // Test radius
   const auto& strahlkorper_radius =
-      get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
+      get(db::get<ylm::Tags::Radius<Frame::Inertial>>(box));
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
   // Test physical center tag
   const auto& strahlkorper_physical_center =
-      db::get<StrahlkorperTags::PhysicalCenter<Frame::Inertial>>(box);
+      db::get<ylm::Tags::PhysicalCenter<Frame::Inertial>>(box);
   CHECK(strahlkorper_physical_center == strahlkorper.physical_center());
 
   // Test derivative of radius
@@ -98,7 +96,7 @@ void test_radius_and_derivs() {
     }
   }
   const auto& strahlkorper_dx_radius =
-      db::get<StrahlkorperTags::DxRadius<Frame::Inertial>>(box);
+      db::get<ylm::Tags::DxRadius<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(strahlkorper_dx_radius, expected_dx_radius);
 
   // Test second derivatives.
@@ -140,7 +138,7 @@ void test_radius_and_derivs() {
     }
   }
   const auto& strahlkorper_d2x_radius =
-      db::get<StrahlkorperTags::D2xRadius<Frame::Inertial>>(box);
+      db::get<ylm::Tags::D2xRadius<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(expected_d2x_radius, strahlkorper_d2x_radius);
 
   // Test nabla squared
@@ -151,7 +149,7 @@ void test_radius_and_derivs() {
     expected_laplacian[s] *= y11_amplitude;
   }
   const auto& strahlkorper_laplacian =
-      db::get<StrahlkorperTags::LaplacianRadius<Frame::Inertial>>(box);
+      db::get<ylm::Tags::LaplacianRadius<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(get(strahlkorper_laplacian), expected_laplacian);
 }
 
@@ -167,8 +165,8 @@ void test_normals() {
 
   // Test surface_tangents
 
-  StrahlkorperTags::aliases ::Jacobian<Frame::Inertial>
-      expected_surface_tangents(n_pts);
+  ylm::Tags::aliases ::Jacobian<Frame::Inertial> expected_surface_tangents(
+      n_pts);
   const double amp = -sqrt(3.0 / 8.0 / M_PI) * y11_amplitude;
 
   const auto& theta = theta_phi[0];
@@ -193,12 +191,12 @@ void test_normals() {
 
   // Create DataBox
   auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+      db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
+      strahlkorper);
 
   const auto& surface_tangents =
-      db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
+      db::get<ylm::Tags::Tangents<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(surface_tangents, expected_surface_tangents);
 
   // Test surface_cartesian_coordinates
@@ -211,14 +209,13 @@ void test_normals() {
     expected_cart_coords.get(2) = cos_theta * temp + center[2];
   }
   const auto& cart_coords =
-      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+      db::get<ylm::Tags::CartesianCoords<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(expected_cart_coords, cart_coords);
 
   // Test surface_normal_one_form
   tnsr::i<DataVector, 3> expected_normal_one_form(n_pts);
   {
-    const auto& r =
-        get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
+    const auto& r = get(db::get<ylm::Tags::Radius<Frame::Inertial>>(box));
     const DataVector one_over_r = 1.0 / r;
     const DataVector temp = 1.0 + one_over_r * amp * sin_phi * sin_theta;
     expected_normal_one_form.get(0) = cos_phi * sin_theta * temp;
@@ -227,7 +224,7 @@ void test_normals() {
     expected_normal_one_form.get(2) = cos_theta * temp;
   }
   const auto& normal_one_form =
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+      db::get<ylm::Tags::NormalOneForm<Frame::Inertial>>(box);
   CHECK_ITERABLE_APPROX(expected_normal_one_form, normal_one_form);
 }
 
@@ -273,65 +270,61 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags", "[ApparentHorizons][Unit]") {
   test_radius_and_derivs();
   test_normals();
   test_stf_tensor_tag();
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::ThetaPhi<Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<ylm::Tags::Strahlkorper<Frame::Inertial>>(
+      "Strahlkorper");
+  TestHelpers::db::test_simple_tag<ylm::Tags::ThetaPhi<Frame::Inertial>>(
       "ThetaPhi");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::Rhat<Frame::Inertial>>(
-      "Rhat");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::Jacobian<Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<ylm::Tags::Rhat<Frame::Inertial>>("Rhat");
+  TestHelpers::db::test_simple_tag<ylm::Tags::Jacobian<Frame::Inertial>>(
       "Jacobian");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::InvJacobian<Frame::Inertial>>("InvJacobian");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::InvHessian<Frame::Inertial>>("InvHessian");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::Radius<Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<ylm::Tags::InvJacobian<Frame::Inertial>>(
+      "InvJacobian");
+  TestHelpers::db::test_simple_tag<ylm::Tags::InvHessian<Frame::Inertial>>(
+      "InvHessian");
+  TestHelpers::db::test_simple_tag<ylm::Tags::Radius<Frame::Inertial>>(
       "Radius");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::CartesianCoords<Frame::Inertial>>("CartesianCoords");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::DxRadius<Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<ylm::Tags::CartesianCoords<Frame::Inertial>>(
+      "CartesianCoords");
+  TestHelpers::db::test_simple_tag<ylm::Tags::DxRadius<Frame::Inertial>>(
       "DxRadius");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::D2xRadius<Frame::Inertial>>("D2xRadius");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::LaplacianRadius<Frame::Inertial>>("LaplacianRadius");
-  TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::NormalOneForm<Frame::Inertial>>("NormalOneForm");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::Tangents<Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<ylm::Tags::D2xRadius<Frame::Inertial>>(
+      "D2xRadius");
+  TestHelpers::db::test_simple_tag<ylm::Tags::LaplacianRadius<Frame::Inertial>>(
+      "LaplacianRadius");
+  TestHelpers::db::test_simple_tag<ylm::Tags::NormalOneForm<Frame::Inertial>>(
+      "NormalOneForm");
+  TestHelpers::db::test_simple_tag<ylm::Tags::Tangents<Frame::Inertial>>(
       "Tangents");
   TestHelpers::db::test_simple_tag<
-      StrahlkorperTags::TimeDerivStrahlkorper<Frame::Inertial>>(
+      ylm::Tags::TimeDerivStrahlkorper<Frame::Inertial>>(
       "TimeDerivStrahlkorper");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::ThetaPhiCompute<Frame::Inertial>>("ThetaPhi");
+      ylm::Tags::ThetaPhiCompute<Frame::Inertial>>("ThetaPhi");
+  TestHelpers::db::test_compute_tag<ylm::Tags::RhatCompute<Frame::Inertial>>(
+      "Rhat");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::RhatCompute<Frame::Inertial>>("Rhat");
+      ylm::Tags::JacobianCompute<Frame::Inertial>>("Jacobian");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::JacobianCompute<Frame::Inertial>>("Jacobian");
+      ylm::Tags::InvJacobianCompute<Frame::Inertial>>("InvJacobian");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::InvJacobianCompute<Frame::Inertial>>("InvJacobian");
+      ylm::Tags::InvHessianCompute<Frame::Inertial>>("InvHessian");
+  TestHelpers::db::test_compute_tag<ylm::Tags::RadiusCompute<Frame::Inertial>>(
+      "Radius");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::InvHessianCompute<Frame::Inertial>>("InvHessian");
+      ylm::Tags::PhysicalCenterCompute<Frame::Inertial>>("PhysicalCenter");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::RadiusCompute<Frame::Inertial>>("Radius");
+      ylm::Tags::CartesianCoordsCompute<Frame::Inertial>>("CartesianCoords");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::PhysicalCenterCompute<Frame::Inertial>>(
-      "PhysicalCenter");
+      ylm::Tags::DxRadiusCompute<Frame::Inertial>>("DxRadius");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::CartesianCoordsCompute<Frame::Inertial>>(
-      "CartesianCoords");
+      ylm::Tags::D2xRadiusCompute<Frame::Inertial>>("D2xRadius");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::DxRadiusCompute<Frame::Inertial>>("DxRadius");
+      ylm::Tags::LaplacianRadiusCompute<Frame::Inertial>>("LaplacianRadius");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::D2xRadiusCompute<Frame::Inertial>>("D2xRadius");
+      ylm::Tags::NormalOneFormCompute<Frame::Inertial>>("NormalOneForm");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::LaplacianRadiusCompute<Frame::Inertial>>(
-      "LaplacianRadius");
+      ylm::Tags::TangentsCompute<Frame::Inertial>>("Tangents");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::NormalOneFormCompute<Frame::Inertial>>("NormalOneForm");
-  TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::TangentsCompute<Frame::Inertial>>("Tangents");
-  TestHelpers::db::test_compute_tag<
-      StrahlkorperTags::TimeDerivStrahlkorperCompute<Frame::Inertial>>(
+      ylm::Tags::TimeDerivStrahlkorperCompute<Frame::Inertial>>(
       "TimeDerivStrahlkorper");
 }

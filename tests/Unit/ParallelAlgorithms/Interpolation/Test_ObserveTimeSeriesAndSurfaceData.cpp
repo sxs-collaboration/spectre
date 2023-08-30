@@ -77,12 +77,12 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace StrahlkorperGr::Tags {
+namespace gr::surfaces::Tags {
 template <typename Frame>
 struct AreaElement;
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral;
-}  // namespace StrahlkorperGr::Tags
+}  // namespace gr::surfaces::Tags
 
 namespace {
 void check_surface_volume_data(const std::string& surfaces_file_prefix) {
@@ -229,15 +229,15 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute,
-                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                   gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
-                Tags::Square, ::Frame::Inertial>>,
+            tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
+                                                           ::Frame::Inertial>>,
             SurfaceA>;
   };
   struct SurfaceB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -246,19 +246,19 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
-                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
-                       Tags::Square, Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
-                       Tags::Negate, Frame::Inertial>>;
+                   gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<Tags::Square,
+                                                              Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<Tags::Negate,
+                                                              Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square,
-                                                             ::Frame::Inertial>,
-                       StrahlkorperGr::Tags::SurfaceIntegral<
-                           Tags::Negate, ::Frame::Inertial>>,
+            tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
+                                                           ::Frame::Inertial>,
+                       gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
+                                                           ::Frame::Inertial>>,
             SurfaceB>;
   };
   struct SurfaceC : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -267,15 +267,15 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
-                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                   gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
-                Tags::Negate, ::Frame::Inertial>>,
+            tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
+                                                           ::Frame::Inertial>>,
             SurfaceC>;
   };
 
@@ -285,8 +285,8 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<DataVector, 3>>;
     using compute_items_on_target =
         tmpl::list<Tags::SquareCompute,
-                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                   gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;

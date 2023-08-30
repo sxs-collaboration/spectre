@@ -138,7 +138,7 @@ namespace ControlErrors {
  *   (averaging scheme detailed above.)
  * - RawDtHorizonCoef00: The raw 00 component of the horizon passed in to the
  *   control error.
- * - MinDeltaR: The minimum of the `StrahlkorperGr::radial_distance` between the
+ * - MinDeltaR: The minimum of the `gr::surfaces::radial_distance` between the
  *   horizon and the excision surfaces.
  * - MinRelativeDeltaR: MinDeltaR divided by the `Strahlkorper::average_radius`
  *   of the horizon
@@ -248,9 +248,9 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
    * to the minimum of the `TimescaleTuner::current_timescale()` that is passed
    * in. Also expects these queue tags to be in the `measurements` argument:
    *
-   * - `StrahlkorperTags::Strahlkorper<Frame::Distorted>`
+   * - `ylm::Tags::Strahlkorper<Frame::Distorted>`
    * - `QueueTags::ExcisionSurface<Frame::Distorted>`
-   * - `::Tags::dt<StrahlkorperTags::Strahlkorper<Frame::Distorted>>`
+   * - `::Tags::dt<ylm::Tags::Strahlkorper<Frame::Distorted>>`
    * - `QueueTags::LapseOnExcisionSurface`
    * - `QueueTags::ShiftyQuantity<Frame::Distorted>`
    * - `QueueTags::SpatialMetricOnExcisionSurface<Frame::Distorted>`
@@ -279,14 +279,13 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
 
     const double grid_frame_excision_sphere_radius = excision_sphere.radius();
     const Strahlkorper<Frame::Distorted>& apparent_horizon =
-        tuples::get<StrahlkorperTags::Strahlkorper<Frame::Distorted>>(
+        tuples::get<ylm::Tags::Strahlkorper<Frame::Distorted>>(
             horizon_quantities);
     const Strahlkorper<Frame::Distorted>& excision_surface =
         tuples::get<QueueTags::ExcisionSurface<Frame::Distorted>>(
             excision_quantities);
     const Strahlkorper<Frame::Distorted>& time_deriv_apparent_horizon =
-        tuples::get<
-            ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame::Distorted>>>(
+        tuples::get<::Tags::dt<ylm::Tags::Strahlkorper<Frame::Distorted>>>(
             horizon_quantities);
     const Scalar<DataVector>& lapse =
         tuples::get<QueueTags::LapseOnExcisionSurface>(excision_quantities);

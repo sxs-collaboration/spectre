@@ -54,9 +54,9 @@ ErrorDiagnostics control_error(
   using excision_rhat_tag = ::Tags::Tempi<1, 3, Frame, DataVector>;
   using excision_normal_one_form_tag = ::Tags::Tempi<2, 3, Frame, DataVector>;
   using excision_jacobian_tag =
-      ::Tags::TempTensor<0, StrahlkorperTags::aliases::Jacobian<Frame>>;
+      ::Tags::TempTensor<0, ylm::Tags::aliases::Jacobian<Frame>>;
   using excision_inv_jacobian_tag =
-      ::Tags::TempTensor<1, StrahlkorperTags::aliases::InvJacobian<Frame>>;
+      ::Tags::TempTensor<1, ylm::Tags::aliases::InvJacobian<Frame>>;
   using excision_dx_radius_tag = Tags::Tempi<3, 3, Frame, DataVector>;
   using area_element_tag = ::Tags::TempScalar<1, DataVector>;
   using distorted_normal_dot_unit_coord_vector_tag =
@@ -93,30 +93,24 @@ ErrorDiagnostics control_error(
   auto& characteristic_speed_on_excision_boundary = get<char_speed_tag>(buffer);
 
   // Compute the quantities on the excision boundary.
-  StrahlkorperFunctions::theta_phi(make_not_null(&excision_theta_phi),
-                                   excision_boundary);
-  StrahlkorperFunctions::radius(make_not_null(&excision_radius),
-                                excision_boundary);
+  ylm::theta_phi(make_not_null(&excision_theta_phi), excision_boundary);
+  ylm::radius(make_not_null(&excision_radius), excision_boundary);
   // rhat is x^i/r
-  StrahlkorperFunctions::rhat(make_not_null(&excision_rhat),
-                              excision_theta_phi);
-  StrahlkorperFunctions::jacobian(make_not_null(&excision_jacobian),
-                                  excision_theta_phi);
-  StrahlkorperFunctions::inv_jacobian(make_not_null(&excision_inv_jacobian),
-                                      excision_theta_phi);
-  StrahlkorperFunctions::cartesian_derivs_of_scalar(
-      make_not_null(&excision_dx_radius), excision_radius, excision_boundary,
-      excision_radius, excision_inv_jacobian);
-  StrahlkorperFunctions::normal_one_form(
-      make_not_null(&excision_normal_one_form), excision_dx_radius,
-      excision_rhat);
+  ylm::rhat(make_not_null(&excision_rhat), excision_theta_phi);
+  ylm::jacobian(make_not_null(&excision_jacobian), excision_theta_phi);
+  ylm::inv_jacobian(make_not_null(&excision_inv_jacobian), excision_theta_phi);
+  ylm::cartesian_derivs_of_scalar(make_not_null(&excision_dx_radius),
+                                  excision_radius, excision_boundary,
+                                  excision_radius, excision_inv_jacobian);
+  ylm::normal_one_form(make_not_null(&excision_normal_one_form),
+                       excision_dx_radius, excision_rhat);
   magnitude(make_not_null(&excision_normal_one_form_norm),
             excision_normal_one_form,
             inverse_spatial_metric_on_excision_boundary);
-  StrahlkorperGr::area_element(make_not_null(&area_element),
-                               spatial_metric_on_excision_boundary,
-                               excision_jacobian, excision_normal_one_form,
-                               excision_radius, excision_rhat);
+  gr::surfaces::area_element(make_not_null(&area_element),
+                             spatial_metric_on_excision_boundary,
+                             excision_jacobian, excision_normal_one_form,
+                             excision_radius, excision_rhat);
 
   // distorted_normal_dot_unit_coord_vector is nhat_i x^i/r where
   // nhat_i is the distorted-frame unit normal to the excision
@@ -142,11 +136,11 @@ ErrorDiagnostics control_error(
   // boundary.  Compute the average by integrating.
   get(unity) = 1.0;
   const double avg_distorted_normal_dot_unit_coord_vector =
-      StrahlkorperGr::surface_integral_of_scalar(
+      gr::surfaces::surface_integral_of_scalar(
           area_element, distorted_normal_dot_unit_coord_vector,
           excision_boundary) /
-      StrahlkorperGr::surface_integral_of_scalar(area_element, unity,
-                                                 excision_boundary);
+      gr::surfaces::surface_integral_of_scalar(area_element, unity,
+                                               excision_boundary);
 
   // Compute char speed on excision boundary, Eq. 87 in ArXiv:1211.6079
   get(characteristic_speed_on_excision_boundary) =
@@ -173,8 +167,8 @@ ErrorDiagnostics control_error(
   const double min_comoving_char_speed = min(get(comoving_char_speed));
 
   // Difference between horizon and excision boundary.
-  StrahlkorperGr::radial_distance(make_not_null(&radial_distance),
-                                  apparent_horizon, excision_boundary);
+  gr::surfaces::radial_distance(make_not_null(&radial_distance),
+                                apparent_horizon, excision_boundary);
 
   // Update zero-crossing predictors.
   predictor_char_speed->add(time,

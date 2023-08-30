@@ -655,7 +655,7 @@ struct CenterOfStar : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
 struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using temporal_id = ::Tags::Time;
   using tags_to_observe =
-      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
+      tmpl::list<ylm::Tags::EuclideanSurfaceIntegralVectorCompute<
           hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
   using vars_to_interpolate_to_target =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -665,7 +665,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
                  gr::Tags::SqrtDetSpatialMetric<DataVector>>;
   using compute_items_on_target = tmpl::push_front<
       tags_to_observe,
-      StrahlkorperTags::EuclideanAreaElementCompute<::Frame::Inertial>,
+      ylm::Tags::EuclideanAreaElementCompute<::Frame::Inertial>,
       hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
   using compute_target_points =
       intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;

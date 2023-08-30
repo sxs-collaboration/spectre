@@ -11,7 +11,7 @@ template <typename Frame>
 class Strahlkorper;
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /*!
  * \ingroup SurfacesGroup
  * \brief Euclidean surface integral of a vector on a 2D `Strahlkorper`
@@ -24,7 +24,7 @@ namespace StrahlkorperGr {
  * is not assumed to be normalized; the denominator of the integrand
  * effectively normalizes it using the Euclidean metric.
  * The area element can be computed via
- * `StrahlkorperGr::euclidean_area_element()`.
+ * `gr::surfaces::euclidean_area_element()`.
  */
 template <typename Frame>
 double euclidean_surface_integral_of_vector(
@@ -32,4 +32,4 @@ double euclidean_surface_integral_of_vector(
     const tnsr::I<DataVector, 3, Frame>& vector,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Strahlkorper<Frame>& strahlkorper);
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

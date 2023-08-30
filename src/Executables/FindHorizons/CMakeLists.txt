@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
   DomainCreators
   EllipticDg
   GeneralRelativity
+  GrSurfaces
   Informer
   Importers
   LinearOperators
@@ -14,7 +15,6 @@ set(LIBS_TO_LINK
   Options
   Parallel
   ParallelInterpolation
-  StrahlkorperGr
   Utilities
   )
 

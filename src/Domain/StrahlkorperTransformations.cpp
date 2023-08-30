@@ -118,15 +118,14 @@ void strahlkorper_in_different_frame(
   auto& f_bracket_r_min = get<::Tags::TempScalar<7>>(temp_buffer);
   auto& f_bracket_r_max = get<::Tags::TempScalar<8>>(temp_buffer);
 
-  StrahlkorperFunctions::theta_phi(make_not_null(&src_theta_phi),
-                                   src_strahlkorper);
+  ylm::theta_phi(make_not_null(&src_theta_phi), src_strahlkorper);
   // r_hat doesn't depend on the actual surface (that is, it is
   // identical for the src and dest surfaces), so we use
   // src_strahlkorper to compute it because it has a sensible max Ylm l.
-  StrahlkorperFunctions::rhat(make_not_null(&r_hat), src_theta_phi);
-  StrahlkorperFunctions::radius(make_not_null(&src_radius), src_strahlkorper);
-  StrahlkorperFunctions::cartesian_coords(make_not_null(&src_cartesian_coords),
-                                          src_strahlkorper, src_radius, r_hat);
+  ylm::rhat(make_not_null(&r_hat), src_theta_phi);
+  ylm::radius(make_not_null(&src_radius), src_strahlkorper);
+  ylm::cartesian_coords(make_not_null(&src_cartesian_coords), src_strahlkorper,
+                        src_radius, r_hat);
 
   coords_to_different_frame(make_not_null(&dest_cartesian_coords),
                             src_cartesian_coords, domain, functions_of_time,
@@ -282,15 +281,14 @@ void strahlkorper_in_different_frame_aligned(
   auto& dest_cartesian_coords = get<Tags::TempI<3, 3, DestFrame>>(temp_buffer);
   auto& radius = get<::Tags::TempScalar<4>>(temp_buffer);
 
-  StrahlkorperFunctions::theta_phi(make_not_null(&src_theta_phi),
-                                   src_strahlkorper);
+  ylm::theta_phi(make_not_null(&src_theta_phi), src_strahlkorper);
   // r_hat doesn't depend on the actual surface (that is, it is
   // identical for the src and dest surfaces), so we use
   // src_strahlkorper to compute it because it has a sensible max Ylm l.
-  StrahlkorperFunctions::rhat(make_not_null(&r_hat), src_theta_phi);
-  StrahlkorperFunctions::radius(make_not_null(&radius), src_strahlkorper);
-  StrahlkorperFunctions::cartesian_coords(make_not_null(&src_cartesian_coords),
-                                          src_strahlkorper, radius, r_hat);
+  ylm::rhat(make_not_null(&r_hat), src_theta_phi);
+  ylm::radius(make_not_null(&radius), src_strahlkorper);
+  ylm::cartesian_coords(make_not_null(&src_cartesian_coords), src_strahlkorper,
+                        radius, r_hat);
 
   coords_to_different_frame(make_not_null(&dest_cartesian_coords),
                             src_cartesian_coords, domain, functions_of_time,
@@ -335,13 +333,13 @@ void strahlkorper_coords_in_different_frame(
   auto& src_cartesian_coords = get<Tags::TempI<2, 3, SrcFrame>>(temp_buffer);
   auto& src_radius = get<::Tags::TempScalar<3>>(temp_buffer);
 
-  StrahlkorperTags::ThetaPhiCompute<SrcFrame>::function(
-      make_not_null(&src_theta_phi), src_strahlkorper);
-  StrahlkorperTags::RhatCompute<SrcFrame>::function(make_not_null(&r_hat),
-                                                    src_theta_phi);
-  StrahlkorperTags::RadiusCompute<SrcFrame>::function(
-      make_not_null(&src_radius), src_strahlkorper);
-  StrahlkorperTags::CartesianCoordsCompute<SrcFrame>::function(
+  ylm::Tags::ThetaPhiCompute<SrcFrame>::function(make_not_null(&src_theta_phi),
+                                                 src_strahlkorper);
+  ylm::Tags::RhatCompute<SrcFrame>::function(make_not_null(&r_hat),
+                                             src_theta_phi);
+  ylm::Tags::RadiusCompute<SrcFrame>::function(make_not_null(&src_radius),
+                                               src_strahlkorper);
+  ylm::Tags::CartesianCoordsCompute<SrcFrame>::function(
       make_not_null(&src_cartesian_coords), src_strahlkorper, src_radius,
       r_hat);
 

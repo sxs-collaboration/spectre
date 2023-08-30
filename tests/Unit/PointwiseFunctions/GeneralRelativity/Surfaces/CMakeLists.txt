@@ -1,11 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_StrahlkorperGr")
+set(LIBRARY "Test_GrSurfaces")
 
 set(LIBRARY_SOURCES
   Test_ComputeItems.cpp
-  Test_StrahlkorperGr.cpp
+  Test_GrSurfaces.cpp
   Test_Tags.cpp
   )
 
@@ -18,8 +18,8 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralRelativitySolutions
-  StrahlkorperGr
-  StrahlkorperGrHelpers
+  GrSurfaces
+  GrSurfacesHelpers
   SphericalHarmonics
   SphericalHarmonicsHelpers
   Utilities

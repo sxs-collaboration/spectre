@@ -173,10 +173,9 @@ void test_strahlkorper_coords_in_different_frame() {
 
   // Now compare with expected result, which is the src-frame coords of
   // the Strahlkorper translated by (0.005,0.01,0.015).
-  const auto src_coords = StrahlkorperFunctions::cartesian_coords(
-      strahlkorper_src, StrahlkorperFunctions::radius(strahlkorper_src),
-      StrahlkorperFunctions::rhat(
-          StrahlkorperFunctions::theta_phi(strahlkorper_src)));
+  const auto src_coords =
+      ylm::cartesian_coords(strahlkorper_src, ylm::radius(strahlkorper_src),
+                            ylm::rhat(ylm::theta_phi(strahlkorper_src)));
   if constexpr (IsTimeDependent) {
     CHECK_ITERABLE_APPROX(get<0>(src_coords) + 0.005, get<0>(inertial_coords));
     CHECK_ITERABLE_APPROX(get<1>(src_coords) + 0.01, get<1>(inertial_coords));

@@ -10,7 +10,7 @@
 
 class DataVector;
 
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 /// Defines type aliases used in Strahlkorper-related Tags.
 namespace aliases {
 template <typename Frame>
@@ -30,4 +30,4 @@ using InvHessian =
                       SpatialIndex<3, UpLo::Lo, Frame>,
                       SpatialIndex<3, UpLo::Lo, Frame>>>;
 }  // namespace aliases
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags

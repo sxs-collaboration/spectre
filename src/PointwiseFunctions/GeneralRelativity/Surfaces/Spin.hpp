@@ -18,7 +18,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /*!
  * \ingroup SurfacesGroup
@@ -47,15 +47,15 @@ namespace StrahlkorperGr {
  * This function uses the tangent vectors of the `Strahlkorper` to
  * compute \f$K_{B\mu}s^\mu\f$ and then numerically computes the
  * components of its gradient. The argument `area_element`
- * can be computed via `StrahlkorperGr::area_element`.
+ * can be computed via `gr::surfaces::area_element`.
  * The argument `unit_normal_vector` can be found by raising the
- * index of the one-form returned by `StrahlkorperGr::unit_normal_oneform`.
+ * index of the one-form returned by `gr::surfaces::unit_normal_oneform`.
  * The argument `tangents` is a Tangents that can be obtained from the
- * StrahlkorperDataBox using the `StrahlkorperTags::Tangents` tag.
+ * StrahlkorperDataBox using the `ylm::Tags::Tangents` tag.
  */
 template <typename Frame>
 void spin_function(gsl::not_null<Scalar<DataVector>*> result,
-                   const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+                   const ylm::Tags::aliases::Jacobian<Frame>& tangents,
                    const Strahlkorper<Frame>& strahlkorper,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
@@ -63,7 +63,7 @@ void spin_function(gsl::not_null<Scalar<DataVector>*> result,
 
 template <typename Frame>
 Scalar<DataVector> spin_function(
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -80,12 +80,12 @@ Scalar<DataVector> spin_function(
  * and dividing by \f$8\pi\f$ to yield the spin magnitude. The
  * spin magnitude is a Euclidean norm of surface integrals over the horizon
  * \f$S = \frac{1}{8\pi}\oint z \Omega dA\f$,
- * where \f$\Omega\f$ is obtained via `StrahlkorperGr::spin_function()`,
+ * where \f$\Omega\f$ is obtained via `gr::surfaces::spin_function()`,
  * \f$dA\f$ is the area element, and \f$z\f$ (the "spin potential") is a
  * solution of a generalized eigenproblem given by Eq. (9) of
  * \cite Owen2009sb. Specifically,
  * \f$\nabla^4 z + \nabla \cdot (R\nabla z) = \lambda \nabla^2 z\f$, where
- * \f$R\f$ is obtained via `StrahlkorperGr::ricci_scalar()`. The spin
+ * \f$R\f$ is obtained via `gr::surfaces::ricci_scalar()`. The spin
  * magnitude is the Euclidean norm of the three values of \f$S\f$ obtained from
  * the eigenvectors \f$z\f$ with the 3 smallest-magnitude
  * eigenvalues \f$\lambda\f$. Note that this formulation of the eigenproblem
@@ -96,21 +96,21 @@ Scalar<DataVector> spin_function(
  * The argument `spatial_metric` is the metric of the 3D spatial slice
  * evaluated on the `Strahlkorper`.
  * The argument `tangents` can be obtained from the StrahlkorperDataBox
- * using the `StrahlkorperTags::Tangents` tag, and the argument
+ * using the `ylm::Tags::Tangents` tag, and the argument
  * `unit_normal_vector` can
  * be found by raising the index of the one-form returned by
- * `StrahlkorperGr::unit_normal_one_form`.
+ * `gr::surfaces::unit_normal_one_form`.
  * The argument `strahlkorper` is the surface on which the spin magnitude is
  * computed.
  * The argument `area_element`
- * can be computed via `StrahlkorperGr::area_element`.
+ * can be computed via `gr::surfaces::area_element`.
  */
 template <typename Frame>
 void dimensionful_spin_magnitude(
     gsl::not_null<double*> result, const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 
@@ -119,7 +119,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
     const Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 /// @}
@@ -162,15 +162,15 @@ double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
  * \f$S^i = \frac{S}{N} \oint_\mathcal{H} dA \Omega (x^i - x^i_0 - x^i_R) \f$,
  * where \f$S\f$ is the spin magnitude,
  * \f$N\f$ is a normalization factor enforcing \f$\delta_{ij}S^iS^j = S\f$,
- * \f$dA\f$ is the area element (via `StrahlkorperGr::area_element`),
- * \f$\Omega\f$ is the "spin function" (via `StrahlkorperGr::spin_function`),
+ * \f$dA\f$ is the area element (via `gr::surfaces::area_element`),
+ * \f$\Omega\f$ is the "spin function" (via `gr::surfaces::spin_function`),
  * \f$x^i\f$ are the `MeasurementFrame` coordinates of points on
  * the `Strahlkorper`,
  * \f$x^i_0\f$ are the `MeasurementFrame` coordinates of the center
  * of the Strahlkorper,
  * \f$x^i_R = \frac{1}{8\pi}\oint_\mathcal{H} dA (x^i - x^i_0) R \f$,
  * and \f$R\f$ is the intrinsic Ricci scalar of the `Strahlkorper`
- * (via `StrahlkorperGr::ricci_scalar`).
+ * (via `gr::surfaces::ricci_scalar`).
  * Note that measuring positions on the horizon relative to
  * \f$x^i_0 + x^i_R\f$ instead of \f$x^i_0\f$ ensures that the mass dipole
  * moment vanishes.
@@ -213,4 +213,4 @@ std::array<double, 3> spin_vector(
     const Scalar<DataVector>& spin_function,
     const Strahlkorper<MetricDataFrame>& strahlkorper,
     const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords);
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

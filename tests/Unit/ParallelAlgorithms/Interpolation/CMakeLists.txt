@@ -44,6 +44,7 @@ target_link_libraries(
   DomainStructure
   Events
   GeneralRelativitySolutions
+  GrSurfaces
   H5
   Interpolation
   IoTestHelpers
@@ -54,6 +55,5 @@ target_link_libraries(
   RelativisticEulerSolutions
   Spectral
   SphericalHarmonics
-  StrahlkorperGr
   Utilities
   )

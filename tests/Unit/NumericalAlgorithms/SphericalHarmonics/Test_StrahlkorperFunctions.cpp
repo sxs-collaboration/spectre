@@ -42,8 +42,7 @@ void test_radius_and_derivs() {
     expected_radius[s] += radius;
   }
 
-  const DataVector strahlkorper_radius{
-      get(StrahlkorperFunctions::radius(strahlkorper))};
+  const DataVector strahlkorper_radius{get(ylm::radius(strahlkorper))};
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
   // Test derivative of radius
@@ -71,11 +70,9 @@ void test_radius_and_derivs() {
   }
   CHECK_ITERABLE_APPROX(
       expected_dx_radius,
-      StrahlkorperFunctions::cartesian_derivs_of_scalar(
-          StrahlkorperFunctions::radius(strahlkorper), strahlkorper,
-          StrahlkorperFunctions::radius(strahlkorper),
-          StrahlkorperFunctions::inv_jacobian(
-              StrahlkorperFunctions::theta_phi(strahlkorper))));
+      ylm::cartesian_derivs_of_scalar(
+          ylm::radius(strahlkorper), strahlkorper, ylm::radius(strahlkorper),
+          ylm::inv_jacobian(ylm::theta_phi(strahlkorper))));
 
   // Test second derivatives of radius
   tnsr::ii<DataVector, 3> expected_d2x_radius(n_pts);
@@ -117,13 +114,10 @@ void test_radius_and_derivs() {
   }
   CHECK_ITERABLE_APPROX(
       expected_d2x_radius,
-      StrahlkorperFunctions::cartesian_second_derivs_of_scalar(
-          StrahlkorperFunctions::radius(strahlkorper), strahlkorper,
-          StrahlkorperFunctions::radius(strahlkorper),
-          StrahlkorperFunctions::inv_jacobian(
-              StrahlkorperFunctions::theta_phi(strahlkorper)),
-          StrahlkorperFunctions::inv_hessian(
-              StrahlkorperFunctions::theta_phi(strahlkorper))));
+      ylm::cartesian_second_derivs_of_scalar(
+          ylm::radius(strahlkorper), strahlkorper, ylm::radius(strahlkorper),
+          ylm::inv_jacobian(ylm::theta_phi(strahlkorper)),
+          ylm::inv_hessian(ylm::theta_phi(strahlkorper))));
 
   // Test laplacian
   DataVector expected_laplacian(n_pts);
@@ -134,9 +128,8 @@ void test_radius_and_derivs() {
   }
   CHECK_ITERABLE_APPROX(
       expected_laplacian,
-      get(StrahlkorperFunctions::laplacian_of_scalar(
-          StrahlkorperFunctions::radius(strahlkorper), strahlkorper,
-          StrahlkorperFunctions::theta_phi(strahlkorper))));
+      get(ylm::laplacian_of_scalar(ylm::radius(strahlkorper), strahlkorper,
+                                   ylm::theta_phi(strahlkorper))));
 }
 
 void test_theta_phi() {
@@ -148,7 +141,7 @@ void test_theta_phi() {
 
   const auto expected_theta_phi =
       strahlkorper.ylm_spherepack().theta_phi_points();
-  const auto theta_phi = StrahlkorperFunctions::theta_phi(strahlkorper);
+  const auto theta_phi = ylm::theta_phi(strahlkorper);
   CHECK_ITERABLE_APPROX(get<0>(theta_phi), expected_theta_phi[0]);
   CHECK_ITERABLE_APPROX(get<1>(theta_phi), expected_theta_phi[1]);
 }
@@ -172,12 +165,9 @@ void test_rhat_jacobian_hessian() {
   get<0>(expected_rhat) = sin_theta * cos_phi;
   get<1>(expected_rhat) = sin_theta * sin_phi;
   get<2>(expected_rhat) = cos_theta;
-  CHECK_ITERABLE_APPROX(expected_rhat,
-                        StrahlkorperFunctions::rhat(
-                            StrahlkorperFunctions::theta_phi(strahlkorper)));
+  CHECK_ITERABLE_APPROX(expected_rhat, ylm::rhat(ylm::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::Jacobian<Frame::Inertial> expected_jac(
-      theta.size());
+  ylm::Tags::aliases::Jacobian<Frame::Inertial> expected_jac(theta.size());
   get<0, 0>(expected_jac) = cos_theta * cos_phi;  // 1/R dx/dth
   get<1, 0>(expected_jac) = cos_theta * sin_phi;  // 1/R dy/dth
   get<2, 0>(expected_jac) = -sin(theta);          // 1/R dz/dth
@@ -185,10 +175,9 @@ void test_rhat_jacobian_hessian() {
   get<1, 1>(expected_jac) = cos_phi;              // 1/(R sin(th)) dy/dph
   get<2, 1>(expected_jac) = 0.0;                  // 1/(R sin(th)) dz/dph
   CHECK_ITERABLE_APPROX(expected_jac,
-                        StrahlkorperFunctions::jacobian(
-                            StrahlkorperFunctions::theta_phi(strahlkorper)));
+                        ylm::jacobian(ylm::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::InvJacobian<Frame::Inertial> expected_inv_jac(
+  ylm::Tags::aliases::InvJacobian<Frame::Inertial> expected_inv_jac(
       theta.size());
   get<0, 0>(expected_inv_jac) = cos_theta * cos_phi;  // R dth/dx
   get<0, 1>(expected_inv_jac) = cos_theta * sin_phi;  // R dth/dy
@@ -197,10 +186,9 @@ void test_rhat_jacobian_hessian() {
   get<1, 1>(expected_inv_jac) = cos_phi;              // R sin(th) dph/dy
   get<1, 2>(expected_inv_jac) = 0.0;                  // R sin(th) dph/dz
   CHECK_ITERABLE_APPROX(expected_inv_jac,
-                        StrahlkorperFunctions::inv_jacobian(
-                            StrahlkorperFunctions::theta_phi(strahlkorper)));
+                        ylm::inv_jacobian(ylm::theta_phi(strahlkorper)));
 
-  StrahlkorperTags::aliases::InvHessian<Frame::Inertial> expected_inv_hess(
+  ylm::Tags::aliases::InvHessian<Frame::Inertial> expected_inv_hess(
       theta.size());
   // Note that here expected_inv_hess is computed in a much more
   // straightforward way than in StrahlkorperFunctions.cpp, where it
@@ -254,8 +242,7 @@ void test_rhat_jacobian_hessian() {
   // R^2 d/dz (sin(th) dph/dz)
   get<1, 2, 2>(expected_inv_hess) = 0.0;
   CHECK_ITERABLE_APPROX(expected_inv_hess,
-                        StrahlkorperFunctions::inv_hessian(
-                            StrahlkorperFunctions::theta_phi(strahlkorper)));
+                        ylm::inv_hessian(ylm::theta_phi(strahlkorper)));
 }
 
 void test_cartesian_coords() {
@@ -281,12 +268,10 @@ void test_cartesian_coords() {
   expected_cartesian_coords.get(1) = sin_phi * sin_theta * temp + center[1];
   expected_cartesian_coords.get(2) = cos_theta * temp + center[2];
 
-  CHECK_ITERABLE_APPROX(
-      expected_cartesian_coords,
-      StrahlkorperFunctions::cartesian_coords<Frame::Inertial>(
-          strahlkorper, StrahlkorperFunctions::radius(strahlkorper),
-          StrahlkorperFunctions::rhat(
-              StrahlkorperFunctions::theta_phi(strahlkorper))));
+  CHECK_ITERABLE_APPROX(expected_cartesian_coords,
+                        ylm::cartesian_coords<Frame::Inertial>(
+                            strahlkorper, ylm::radius(strahlkorper),
+                            ylm::rhat(ylm::theta_phi(strahlkorper))));
 }
 
 void test_normals() {
@@ -300,8 +285,8 @@ void test_normals() {
   const auto n_pts = theta_phi[0].size();
 
   // Test surface_tangents
-  StrahlkorperTags::aliases ::Jacobian<Frame::Inertial>
-      expected_surface_tangents(n_pts);
+  ylm::Tags::aliases ::Jacobian<Frame::Inertial> expected_surface_tangents(
+      n_pts);
   const double amp = -sqrt(3.0 / 8.0 / M_PI) * y11_amplitude;
 
   const auto& theta = theta_phi[0];
@@ -325,17 +310,14 @@ void test_normals() {
   expected_surface_tangents.get(2, 1) = amp * cos_phi * cos_theta;
   CHECK_ITERABLE_APPROX(
       expected_surface_tangents,
-      StrahlkorperFunctions::tangents(
-          strahlkorper, StrahlkorperFunctions::radius(strahlkorper),
-          StrahlkorperFunctions::rhat(
-              StrahlkorperFunctions::theta_phi(strahlkorper)),
-          StrahlkorperFunctions::jacobian(
-              StrahlkorperFunctions::theta_phi(strahlkorper))));
+      ylm::tangents(strahlkorper, ylm::radius(strahlkorper),
+                    ylm::rhat(ylm::theta_phi(strahlkorper)),
+                    ylm::jacobian(ylm::theta_phi(strahlkorper))));
 
   // Test normal_one_form
   tnsr::i<DataVector, 3> expected_normal_one_form(n_pts);
   {
-    const auto r = get(StrahlkorperFunctions::radius(strahlkorper));
+    const auto r = get(ylm::radius(strahlkorper));
     const DataVector one_over_r = 1.0 / r;
     const DataVector temp = 1.0 + one_over_r * amp * sin_phi * sin_theta;
     expected_normal_one_form.get(0) = cos_phi * sin_theta * temp;
@@ -345,14 +327,11 @@ void test_normals() {
   }
   CHECK_ITERABLE_APPROX(
       expected_normal_one_form,
-      StrahlkorperFunctions::normal_one_form(
-          StrahlkorperFunctions::cartesian_derivs_of_scalar(
-              StrahlkorperFunctions::radius(strahlkorper), strahlkorper,
-              StrahlkorperFunctions::radius(strahlkorper),
-              StrahlkorperFunctions::inv_jacobian(
-                  StrahlkorperFunctions::theta_phi(strahlkorper))),
-          StrahlkorperFunctions::rhat(
-              StrahlkorperFunctions::theta_phi(strahlkorper))));
+      ylm::normal_one_form(ylm::cartesian_derivs_of_scalar(
+                               ylm::radius(strahlkorper), strahlkorper,
+                               ylm::radius(strahlkorper),
+                               ylm::inv_jacobian(ylm::theta_phi(strahlkorper))),
+                           ylm::rhat(ylm::theta_phi(strahlkorper))));
 }
 
 void test_fit_ylm_coeffs_same() {
@@ -385,8 +364,7 @@ void test_fit_ylm_coeffs_same() {
       strahlkorper0, strahlkorper1, strahlkorper2, strahlkorper3,
       strahlkorper4};
   std::vector<std::array<double, 4>> result =
-      StrahlkorperFunctions::fit_ylm_coeffs<Frame::Inertial>(times,
-                                                             strahlkorpers);
+      ylm::fit_ylm_coeffs<Frame::Inertial>(times, strahlkorpers);
   const std::vector<std::array<double, 4>> expected_result = {
       {y00, 0.0, 0.0, 0.0},
       {0.0, 0.0, 0.0, 0.0},
@@ -442,8 +420,7 @@ void test_fit_ylm_coeffs_diff() {
       strahlkorper0, strahlkorper1, strahlkorper2, strahlkorper3,
       strahlkorper4};
   std::vector<std::array<double, 4>> result =
-      StrahlkorperFunctions::fit_ylm_coeffs<Frame::Inertial>(times,
-                                                             strahlkorpers);
+      ylm::fit_ylm_coeffs<Frame::Inertial>(times, strahlkorpers);
   const std::vector<std::array<double, 4>> expected_result = {
       {y00, 0.0, 0.0, 0.0},
       {0.0, 0.0, 0.0, 0.0},
@@ -500,8 +477,8 @@ void test_time_deriv_strahlkorper() {
 
     auto time_deriv = strahlkorper;
 
-    StrahlkorperFunctions::time_deriv_of_strahlkorper(
-        make_not_null(&time_deriv), previous_strahlkorpers);
+    ylm::time_deriv_of_strahlkorper(make_not_null(&time_deriv),
+                                    previous_strahlkorpers);
 
     const DataVector& time_deriv_strahlkorper_coefs = time_deriv.coefficients();
 
@@ -519,8 +496,8 @@ void test_time_deriv_strahlkorper() {
           2.0;
       previous_strahlkorpers.back().second.coefficients()[iter()] = 2.5;
 
-      StrahlkorperFunctions::time_deriv_of_strahlkorper(
-          make_not_null(&time_deriv), previous_strahlkorpers);
+      ylm::time_deriv_of_strahlkorper(make_not_null(&time_deriv),
+                                      previous_strahlkorpers);
 
       const DataVector& coefs = time_deriv.coefficients();
 

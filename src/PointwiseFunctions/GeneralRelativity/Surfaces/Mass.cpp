@@ -8,7 +8,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 double irreducible_mass(const double area) {
   ASSERT(area > 0.0,
          "The area of the horizon must be greater than zero but is " << area);
@@ -20,4 +20,4 @@ double christodoulou_mass(const double dimensionful_spin_magnitude,
   return sqrt(square(irreducible_mass) + (square(dimensionful_spin_magnitude) /
                                           (4.0 * square(irreducible_mass))));
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

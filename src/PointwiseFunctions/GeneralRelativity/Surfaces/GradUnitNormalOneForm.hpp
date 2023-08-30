@@ -13,7 +13,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 /// @{
 /// \ingroup SurfacesGroup
 /// \brief Computes 3-covariant gradient \f$D_i S_j\f$ of a
@@ -26,9 +26,9 @@ namespace StrahlkorperGr {
 /// definition.  The input arguments `r_hat`, `radius`, and
 /// `d2x_radius` depend on the Strahlkorper but not on the metric, and
 /// can be computed from a Strahlkorper using ComputeItems in
-/// `StrahlkorperTags`.  The input argument
+/// `ylm::Tags`.  The input argument
 /// `one_over_one_form_magnitude` is \f$1/\sqrt{g^{ij}n_i n_j}\f$,
-/// where \f$n_i\f$ is `StrahlkorperTags::NormalOneForm` (i.e.  the
+/// where \f$n_i\f$ is `ylm::Tags::NormalOneForm` (i.e.  the
 /// unnormalized one-form to the Strahlkorper); it can be computed
 /// using (one over) the `magnitude` function.  The input argument
 /// `unit_normal_one_form` is \f$S_j\f$,the normalized one-form.
@@ -51,4 +51,4 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
     const DataVector& one_over_one_form_magnitude,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind);
 /// @}
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces

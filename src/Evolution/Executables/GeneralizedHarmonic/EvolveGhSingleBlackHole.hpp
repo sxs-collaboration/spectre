@@ -123,9 +123,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
     using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::append<tmpl::list<
         gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3, Frame::Grid>,
-        StrahlkorperTags::OneOverOneFormMagnitudeCompute<DataVector, 3,
-                                                         Frame::Grid>,
-        StrahlkorperTags::UnitNormalOneFormCompute<Frame::Grid>,
+        ylm::Tags::OneOverOneFormMagnitudeCompute<DataVector, 3, Frame::Grid>,
+        ylm::Tags::UnitNormalOneFormCompute<Frame::Grid>,
         gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundary, ::Frame::Grid>;

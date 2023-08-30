@@ -27,7 +27,7 @@ class DataVector;
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace StrahlkorperGr::Tags {
+namespace gr::surfaces::Tags {
 /// @{
 /// These ComputeItems are different from those used in
 /// GeneralizedHarmonic evolution because these live only on the
@@ -94,4 +94,4 @@ struct SpatialChristoffelSecondKindCompute
   using base = ::gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim, Frame>;
 };
 /// @}
-}  // namespace StrahlkorperGr::Tags
+}  // namespace gr::surfaces::Tags

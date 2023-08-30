@@ -118,7 +118,7 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
       tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, Dim, Frame>,
-                 ::StrahlkorperTags::UnitNormalOneForm<Frame>>;
+                 ::ylm::Tags::UnitNormalOneForm<Frame>>;
 
   using return_type = typename base::type;
 

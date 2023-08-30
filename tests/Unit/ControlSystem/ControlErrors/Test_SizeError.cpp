@@ -126,13 +126,13 @@ void test_size_error_one_step(
       get<Tags::TempI<2, 3, Frame::Distorted>>(temp_buffer);
   auto& shifty_quantity = get<Tags::TempI<3, 3, Frame::Distorted>>(temp_buffer);
   auto& radius = get<::Tags::TempScalar<4>>(temp_buffer);
-  StrahlkorperTags::ThetaPhiCompute<Frame::Distorted>::function(
+  ylm::Tags::ThetaPhiCompute<Frame::Distorted>::function(
       make_not_null(&theta_phi), excision_boundary);
-  StrahlkorperTags::RhatCompute<Frame::Distorted>::function(
-      make_not_null(&r_hat), theta_phi);
-  StrahlkorperTags::RadiusCompute<Frame::Distorted>::function(
-      make_not_null(&radius), excision_boundary);
-  StrahlkorperTags::CartesianCoordsCompute<Frame::Distorted>::function(
+  ylm::Tags::RhatCompute<Frame::Distorted>::function(make_not_null(&r_hat),
+                                                     theta_phi);
+  ylm::Tags::RadiusCompute<Frame::Distorted>::function(make_not_null(&radius),
+                                                       excision_boundary);
+  ylm::Tags::CartesianCoordsCompute<Frame::Distorted>::function(
       make_not_null(&cartesian_coords), excision_boundary, radius, r_hat);
 
   // Get analytic Schwarzschild solution

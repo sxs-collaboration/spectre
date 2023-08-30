@@ -9,7 +9,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
                      const Strahlkorper<Frame>& strahlkorper_a,
@@ -26,27 +26,27 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
       .destructive_resize(strahlkorper_a.ylm_spherepack().physical_size());
   if (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
       strahlkorper_a.m_max() == strahlkorper_b.m_max()) {
-    get(*radial_distance) = get(StrahlkorperFunctions::radius(strahlkorper_a)) -
-                            get(StrahlkorperFunctions::radius(strahlkorper_b));
+    get(*radial_distance) =
+        get(ylm::radius(strahlkorper_a)) - get(ylm::radius(strahlkorper_b));
   } else if (strahlkorper_a.l_max() > strahlkorper_b.l_max() or
              (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
               strahlkorper_a.m_max() > strahlkorper_b.m_max())) {
     get(*radial_distance) =
-        get(StrahlkorperFunctions::radius(strahlkorper_a)) -
-        get(StrahlkorperFunctions::radius(Strahlkorper<Frame>(
+        get(ylm::radius(strahlkorper_a)) -
+        get(ylm::radius(Strahlkorper<Frame>(
             strahlkorper_a.l_max(), strahlkorper_a.m_max(), strahlkorper_b)));
   } else {
     get(*radial_distance) =
-        -get(StrahlkorperFunctions::radius(strahlkorper_b)) +
-        get(StrahlkorperFunctions::radius(Strahlkorper<Frame>(
+        -get(ylm::radius(strahlkorper_b)) +
+        get(ylm::radius(Strahlkorper<Frame>(
             strahlkorper_b.l_max(), strahlkorper_b.m_max(), strahlkorper_a)));
   };
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                    \
-  template void StrahlkorperGr::radial_distance<FRAME(data)>(   \
+  template void gr::surfaces::radial_distance<FRAME(data)>(     \
       const gsl::not_null<Scalar<DataVector>*> radial_distance, \
       const Strahlkorper<FRAME(data)>& strahlkorper_a,          \
       const Strahlkorper<FRAME(data)>& strahlkorper_b);

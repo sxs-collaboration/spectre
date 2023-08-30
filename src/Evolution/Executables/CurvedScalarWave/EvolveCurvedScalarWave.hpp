@@ -174,14 +174,14 @@ struct EvolutionMetavars {
                    CurvedScalarWave::Tags::Psi>;
     using compute_items_on_target =
         tmpl::list<CurvedScalarWave::Tags::PsiSquaredCompute,
-                   StrahlkorperGr::Tags::AreaElementCompute<::Frame::Inertial>,
-                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                   gr::surfaces::Tags::AreaElementCompute<::Frame::Inertial>,
+                   gr::surfaces::Tags::SurfaceIntegralCompute<
                        CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<SphericalSurface, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegralCompute<
+            tmpl::list<gr::surfaces::Tags::SurfaceIntegralCompute<
                 CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>,
             SphericalSurface>;
     template <typename metavariables>

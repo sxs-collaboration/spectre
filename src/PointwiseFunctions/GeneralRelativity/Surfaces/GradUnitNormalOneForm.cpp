@@ -10,7 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace StrahlkorperGr {
+namespace gr::surfaces {
 template <typename Frame>
 void grad_unit_normal_one_form(
     const gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
@@ -49,11 +49,11 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
                             one_over_one_form_magnitude, christoffel_2nd_kind);
   return result;
 }
-}  // namespace StrahlkorperGr
+}  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                              \
-  template void StrahlkorperGr::grad_unit_normal_one_form<FRAME(data)>(   \
+  template void gr::surfaces::grad_unit_normal_one_form<FRAME(data)>(     \
       gsl::not_null<tnsr::ii<DataVector, 3, FRAME(data)>*> result,        \
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat,                   \
       const Scalar<DataVector>& radius,                                   \
@@ -62,7 +62,7 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
       const DataVector& one_over_one_form_magnitude,                      \
       const tnsr::Ijj<DataVector, 3, FRAME(data)>& christoffel_2nd_kind); \
   template tnsr::ii<DataVector, 3, FRAME(data)>                           \
-  StrahlkorperGr::grad_unit_normal_one_form<FRAME(data)>(                 \
+  gr::surfaces::grad_unit_normal_one_form<FRAME(data)>(                   \
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat,                   \
       const Scalar<DataVector>& radius,                                   \
       const tnsr::i<DataVector, 3, FRAME(data)>& unit_normal_one_form,    \

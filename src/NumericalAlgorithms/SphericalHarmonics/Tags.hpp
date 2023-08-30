@@ -22,7 +22,7 @@
 
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper`.
-namespace StrahlkorperTags {
+namespace ylm::Tags {
 
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
@@ -44,8 +44,7 @@ struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
   using return_type = tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>*>,
-      const ::Strahlkorper<Frame>&)>(
-      &::StrahlkorperFunctions::theta_phi<Frame>);
+      const ::Strahlkorper<Frame>&)>(&::ylm::theta_phi<Frame>);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -65,7 +64,7 @@ struct RhatCompute : Rhat<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
-      &::StrahlkorperFunctions::rhat<Frame>);
+      &::ylm::rhat<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -86,9 +85,9 @@ struct JacobianCompute : Jacobian<Frame>, db::ComputeTag {
   using base = Jacobian<Frame>;
   using return_type = aliases::Jacobian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::Jacobian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::Jacobian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
-      &::StrahlkorperFunctions::jacobian<Frame>);
+      &::ylm::jacobian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -108,9 +107,9 @@ struct InvJacobianCompute : InvJacobian<Frame>, db::ComputeTag {
   using base = InvJacobian<Frame>;
   using return_type = aliases::InvJacobian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::InvJacobian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::InvJacobian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
-      &::StrahlkorperFunctions::inv_jacobian<Frame>);
+      &::ylm::inv_jacobian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -130,9 +129,9 @@ struct InvHessianCompute : InvHessian<Frame>, db::ComputeTag {
   using base = InvHessian<Frame>;
   using return_type = aliases::InvHessian<Frame>;
   static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<StrahlkorperTags::aliases::InvHessian<Frame>*>,
+      const gsl::not_null<ylm::Tags::aliases::InvHessian<Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
-      &::StrahlkorperFunctions::inv_hessian<Frame>);
+      &::ylm::inv_hessian<Frame>);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -151,7 +150,7 @@ struct RadiusCompute : Radius<Frame>, db::ComputeTag {
   using return_type = Scalar<DataVector>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<Scalar<DataVector>*>, const ::Strahlkorper<Frame>&)>(
-      &(::StrahlkorperFunctions::radius<Frame>));
+      &(::ylm::radius<Frame>));
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -191,8 +190,7 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
       const gsl::not_null<tnsr::I<DataVector, 3, Frame>*> coords,
       const ::Strahlkorper<Frame>& strahlkorper,
       const Scalar<DataVector>& radius,
-      const tnsr::i<DataVector, 3, Frame>& r_hat)>(
-      &StrahlkorperFunctions::cartesian_coords);
+      const tnsr::i<DataVector, 3, Frame>& r_hat)>(&ylm::cartesian_coords);
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
 };
@@ -220,7 +218,7 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
       const ::Strahlkorper<Frame>& strahlkorper,
       const Scalar<DataVector>& radius_of_strahlkorper,
       const aliases::InvJacobian<Frame>& inv_jac)>(
-      &StrahlkorperFunctions::cartesian_derivs_of_scalar);
+      &ylm::cartesian_derivs_of_scalar);
   using argument_tags = tmpl::list<Radius<Frame>, Strahlkorper<Frame>,
                                    Radius<Frame>, InvJacobian<Frame>>;
 };
@@ -250,7 +248,7 @@ struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
       const Scalar<DataVector>& radius_of_strahlkorper,
       const aliases::InvJacobian<Frame>& inv_jac,
       const aliases::InvHessian<Frame>& inv_hess)>(
-      &StrahlkorperFunctions::cartesian_second_derivs_of_scalar);
+      &ylm::cartesian_second_derivs_of_scalar);
   using argument_tags =
       tmpl::list<Radius<Frame>, Strahlkorper<Frame>, Radius<Frame>,
                  InvJacobian<Frame>, InvHessian<Frame>>;
@@ -275,7 +273,7 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
       const Scalar<DataVector>& radius,
       const ::Strahlkorper<Frame>& strahlkorper,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>& theta_phi)>(
-      &StrahlkorperFunctions::laplacian_of_scalar);
+      &ylm::laplacian_of_scalar);
   using argument_tags =
       tmpl::list<Radius<Frame>, Strahlkorper<Frame>, ThetaPhi<Frame>>;
 };
@@ -303,8 +301,7 @@ struct NormalOneFormCompute : NormalOneForm<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::i<DataVector, 3, Frame>*> one_form,
       const tnsr::i<DataVector, 3, Frame>& dx_radius,
-      const tnsr::i<DataVector, 3, Frame>& r_hat)>(
-      &StrahlkorperFunctions::normal_one_form);
+      const tnsr::i<DataVector, 3, Frame>& r_hat)>(&ylm::normal_one_form);
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
 };
 /// @}
@@ -340,7 +337,7 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
                            const Scalar<DataVector>& radius,
                            const tnsr::i<DataVector, 3, Frame>& r_hat,
                            const aliases::Jacobian<Frame>& jac)>(
-          &StrahlkorperFunctions::tangents);
+          &ylm::tangents);
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
                                    Rhat<Frame>, Jacobian<Frame>>;
 };
@@ -370,7 +367,7 @@ struct TimeDerivStrahlkorperCompute : db::ComputeTag,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<::Strahlkorper<Frame>*>,
       const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&)>(
-      &StrahlkorperFunctions::time_deriv_of_strahlkorper<Frame>);
+      &ylm::time_deriv_of_strahlkorper<Frame>);
 
   using argument_tags = tmpl::list<PreviousStrahlkorpers<Frame>>;
 };
@@ -387,7 +384,7 @@ using compute_items_tags =
                CartesianCoordsCompute<Frame>, DxRadiusCompute<Frame>,
                D2xRadiusCompute<Frame>, LaplacianRadiusCompute<Frame>,
                NormalOneFormCompute<Frame>, TangentsCompute<Frame>>;
-}  // namespace StrahlkorperTags
+}  // namespace ylm::Tags
 
 /// Tags related to symmetric trace-free tensors
 namespace Stf::Tags {

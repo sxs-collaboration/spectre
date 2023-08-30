@@ -115,13 +115,12 @@ struct SizeExcisionQuantities {
  *
  * \details Holds the following queue tags in a TaggedTuple in order:
  *
- * - `StrahlkorperTags::Strahlkorper`
- * - `::Tags::dt<StrahlkorperTags::Strahlkorper>`
+ * - `ylm::Tags::Strahlkorper`
+ * - `::Tags::dt<ylm::Tags::Strahlkorper>`
  */
 template <typename Frame>
 struct SizeHorizonQuantities {
-  using type =
-      tuples::TaggedTuple<StrahlkorperTags::Strahlkorper<Frame>,
-                          ::Tags::dt<StrahlkorperTags::Strahlkorper<Frame>>>;
+  using type = tuples::TaggedTuple<ylm::Tags::Strahlkorper<Frame>,
+                                   ::Tags::dt<ylm::Tags::Strahlkorper<Frame>>>;
 };
 }  // namespace control_system::QueueTags
