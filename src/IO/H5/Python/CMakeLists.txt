@@ -16,6 +16,7 @@ spectre_python_add_module(
   PYTHON_FILES
   __init__.py
   CombineH5.py
+  CombineH5Dat.py
   DeleteSubfiles.py
   ExtendConnectivityData.py
   ExtractDatFromH5.py
