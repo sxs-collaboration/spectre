@@ -42,5 +42,5 @@ class AlgorithmSingleton
 };
 
 #define CK_TEMPLATES_ONLY
-#include "Algorithms/AlgorithmSingleton.def.h"
+#include "Parallel/Algorithms/AlgorithmSingleton.def.h"
 #undef CK_TEMPLATES_ONLY

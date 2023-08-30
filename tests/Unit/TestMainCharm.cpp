@@ -42,4 +42,4 @@ TestMainCharm::TestMainCharm(CkArgMsg* msg) {
   sys::abort("A catch test has failed.");
 }
 
-#include "tests/Unit/TestMainCharm.def.h"
+#include "TestMainCharm.def.h"

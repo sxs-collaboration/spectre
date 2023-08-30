@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "tests/Unit/TestMainCharm.decl.h"
+#include "TestMainCharm.decl.h"
 
 /// \cond
 class CkArgMsg;

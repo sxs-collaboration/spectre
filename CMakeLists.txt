@@ -182,14 +182,11 @@ endif()
 
 include(SpectreSetupPythonPackage)
 
-include_directories(${CMAKE_SOURCE_DIR}/external)
+# Set global include directory for all targets
 include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
-
 # Charm++ generated headers are created in the build directory
-spectre_include_directories(${CMAKE_BINARY_DIR})
-spectre_include_directories(${CMAKE_BINARY_DIR}/src)
-spectre_include_directories(${CMAKE_BINARY_DIR}/src/Parallel)
+# (by `add_charm_module`)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src)
 
 add_subdirectory(external)
 add_subdirectory(src)
