@@ -29,8 +29,10 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  DataStructures
   Domain
   Options
+  Parallel
   Utilities
   )
 
