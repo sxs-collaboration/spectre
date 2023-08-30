@@ -167,8 +167,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
                                                   interpolator_source_vars>,
                        control_system::control_system_events<control_systems>,
                        intrp::Events::InterpolateWithoutInterpComponent<
-                           3, ExcisionBoundary, EvolutionMetavars,
-                           interpolator_source_vars>>>>,
+                           3, ExcisionBoundary, interpolator_source_vars>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>>;
   };

@@ -295,11 +295,11 @@ struct EvolutionMetavars {
           ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
                                                      Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          DataVector, volume_dim,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          DataVector, volume_dim,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       hydro::Tags::InversePlasmaBetaCompute<DataVector>>;
   using non_tensor_compute_tags = tmpl::list<
       tmpl::conditional_t<
@@ -325,15 +325,15 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       Events::time_events<system>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, InterpolationTargetTags, EvolutionMetavars,
-                           interpolator_source_vars>...>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                Events::time_events<system>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, InterpolationTargetTags, interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::

@@ -201,18 +201,18 @@ struct EvolutionMetavars {
                 volume_dim>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, non_tensor_compute_tags>,
-                       tmpl::conditional_t<
-                           interpolate,
-                           intrp::Events::InterpolateWithoutInterpComponent<
-                               volume_dim, SphericalSurface, EvolutionMetavars,
-                               interpolator_source_vars>,
-                           tmpl::list<>>,
-                       Events::time_events<system>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               non_tensor_compute_tags>,
+                tmpl::conditional_t<
+                    interpolate,
+                    intrp::Events::InterpolateWithoutInterpComponent<
+                        volume_dim, SphericalSurface, interpolator_source_vars>,
+                    tmpl::list<>>,
+                Events::time_events<system>>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,

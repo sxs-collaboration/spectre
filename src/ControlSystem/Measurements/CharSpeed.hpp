@@ -124,8 +124,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         const ElementId<3>& array_index,
         const ParallelComponent* const component, ControlSystems /*meta*/) {
       using Event = typename intrp::Events::InterpolateWithoutInterpComponent<
-          3, InterpolationTarget<ControlSystems>, Metavariables,
-          ::ah::source_vars<3>>;
+          3, InterpolationTarget<ControlSystems>, ::ah::source_vars<3>>;
 
       Event event{};
 

@@ -151,7 +151,7 @@ struct MockMetavariables {
                  mock_element<MockMetavariables>>;
 
   using event = intrp::Events::InterpolateWithoutInterpComponent<
-      volume_dim, InterpolationTargetA, MockMetavariables,
+      volume_dim, InterpolationTargetA,
       tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>;
 
   struct factory_creation
