@@ -68,8 +68,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       double expiration_time);
 
   ~QuaternionFunctionOfTime() override = default;
-  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&) = default;
-  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&) = default;
+  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);
+  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&);
   QuaternionFunctionOfTime(const QuaternionFunctionOfTime&);
   QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&);
 

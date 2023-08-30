@@ -145,6 +145,10 @@ void check_func_and_derivs(
   CHECK(f_of_t.func(t) == q.func_and_derivs<0>(t));
   CHECK(f_of_t.func_and_deriv(t) == q.func_and_derivs<1>(t));
   CHECK(f_of_t.func_and_2_derivs(t) == q.func_and_derivs<2>(t));
+
+  test_copy_semantics(f_of_t);
+  auto f_of_t_copy = f_of_t;
+  test_move_semantics(std::move(f_of_t_copy), f_of_t);
 }
 
 void test_func_and_derivs() {

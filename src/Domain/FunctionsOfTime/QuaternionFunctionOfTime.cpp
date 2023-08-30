@@ -36,6 +36,27 @@ QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
 
 template <size_t MaxDeriv>
 QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
+    QuaternionFunctionOfTime<MaxDeriv>&& rhs) {
+  *this = std::move(rhs);
+}
+
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>&
+QuaternionFunctionOfTime<MaxDeriv>::operator=(
+    QuaternionFunctionOfTime<MaxDeriv>&& rhs) {
+  if (this == &rhs) {
+    return *this;
+  }
+  stored_quaternions_and_times_ = std::move(rhs.stored_quaternions_and_times_);
+  angle_f_of_t_ = std::move(rhs.angle_f_of_t_);
+  stored_quaternion_size_.store(
+      rhs.stored_quaternion_size_.exchange(0, std::memory_order_acq_rel),
+      std::memory_order_release);
+  return *this;
+}
+
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
     const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   *this = rhs;
 }

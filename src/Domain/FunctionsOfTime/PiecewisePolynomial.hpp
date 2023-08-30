@@ -35,8 +35,8 @@ class PiecewisePolynomial : public FunctionOfTime {
       double expiration_time);
 
   ~PiecewisePolynomial() override = default;
-  PiecewisePolynomial(PiecewisePolynomial&&) = default;
-  PiecewisePolynomial& operator=(PiecewisePolynomial&&) = default;
+  PiecewisePolynomial(PiecewisePolynomial&&);
+  PiecewisePolynomial& operator=(PiecewisePolynomial&&);
   PiecewisePolynomial(const PiecewisePolynomial&);
   PiecewisePolynomial& operator=(const PiecewisePolynomial&);
 

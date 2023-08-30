@@ -35,6 +35,26 @@ PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
 
 template <size_t MaxDeriv>
 PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
+    PiecewisePolynomial<MaxDeriv>&& rhs) {
+  *this = std::move(rhs);
+}
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>& PiecewisePolynomial<MaxDeriv>::operator=(
+    PiecewisePolynomial<MaxDeriv>&& rhs) {
+  if (this == &rhs) {
+    return *this;
+  }
+  deriv_info_at_update_times_ = std::move(rhs.deriv_info_at_update_times_);
+  expiration_time_ = std::move(rhs.expiration_time_);
+  deriv_info_size_.store(
+      rhs.deriv_info_size_.exchange(0, std::memory_order_acq_rel),
+      std::memory_order_release);
+  return *this;
+}
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const PiecewisePolynomial<MaxDeriv>& rhs) {
   *this = rhs;
 }

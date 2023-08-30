@@ -65,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
   }
 
   {
-    INFO("QuaternionFunctionOfTime: pup, cloning, extra functions");
+    INFO("QuaternionFunctionOfTime: pup, cloning, extra functions, copy/move");
     DataVector init_omega{0.0, 0.0, 1.0};
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
@@ -104,6 +104,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                           qfot.func(2.0));
     CHECK_ITERABLE_APPROX(qfot_serialized_deserialized.func_and_deriv(2.0),
                           qfot.func_and_deriv(2.0));
+
+    test_copy_semantics(qfot);
+    test_move_semantics(std::move(qfot_serialized_deserialized), qfot);
   }
 
   {
