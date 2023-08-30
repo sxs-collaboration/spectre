@@ -465,7 +465,8 @@ grid_frame_horizon_centers_for_basic_control_systems(
 
 template <typename ElementComponent, typename Metavars, typename F,
           typename CoordMap>
-std::pair<Strahlkorper<Frame::Distorted>, Strahlkorper<Frame::Distorted>>
+std::pair<ylm::Strahlkorper<Frame::Distorted>,
+          ylm::Strahlkorper<Frame::Distorted>>
 build_horizons_for_basic_control_systems(
     const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
     const F position_function, const CoordMap& coord_map) {
@@ -475,12 +476,12 @@ build_horizons_for_basic_control_systems(
 
   // Construct strahlkorpers to pass to control systems. Only the centers
   // matter.
-  Strahlkorper<Frame::Distorted> horizon_a{2, 2, 1.0, positions.first};
-  Strahlkorper<Frame::Distorted> horizon_b{2, 2, 1.0, positions.second};
+  ylm::Strahlkorper<Frame::Distorted> horizon_a{2, 2, 1.0, positions.first};
+  ylm::Strahlkorper<Frame::Distorted> horizon_b{2, 2, 1.0, positions.second};
 
-  return std::make_pair<Strahlkorper<Frame::Distorted>,
-                        Strahlkorper<Frame::Distorted>>(std::move(horizon_a),
-                                                        std::move(horizon_b));
+  return std::make_pair<ylm::Strahlkorper<Frame::Distorted>,
+                        ylm::Strahlkorper<Frame::Distorted>>(
+      std::move(horizon_a), std::move(horizon_b));
 }
 
 /*!
@@ -647,13 +648,13 @@ struct SystemHelper {
    * \brief Actually run the control system test
    *
    * The `horizon_function` should return a
-   * `std::pair<Strahlkorper<Frame::Distorted>, Strahlkorper<Frame::Distorted>>`
-   * representing the two horizons in the grid frame. This means the user is
-   * responsible for doing any coordinate transformations inside
-   * `horizon_function` as this function won't do any. The `number_of_horizons`
-   * is used to determine if we actually use both horizon "measurements" as some
-   * control systems may only need one. If only one horizon is used, the default
-   * is to use AhA.
+   * `std::pair<ylm::Strahlkorper<Frame::Distorted>,
+   * ylm::Strahlkorper<Frame::Distorted>>` representing the two horizons in the
+   * grid frame. This means the user is responsible for doing any coordinate
+   * transformations inside `horizon_function` as this function won't do any.
+   * The `number_of_horizons` is used to determine if we actually use both
+   * horizon "measurements" as some control systems may only need one. If only
+   * one horizon is used, the default is to use AhA.
    *
    * For the basic control systems, a common function is defined for you:
    * `control_system::TestHelpers::build_horizons_for_basic_control_systems()`.
@@ -839,8 +840,8 @@ struct SystemHelper {
 
   // Members that won't be moved out of this struct
   AllTags all_init_tags_{};
-  Strahlkorper<Frame::Distorted> horizon_a_{};
-  Strahlkorper<Frame::Distorted> horizon_b_{};
+  ylm::Strahlkorper<Frame::Distorted> horizon_a_{};
+  ylm::Strahlkorper<Frame::Distorted> horizon_b_{};
   int measurements_per_update_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
 

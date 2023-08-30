@@ -11,10 +11,13 @@
 #include "Options/String.hpp"
 #include "Utilities/ForceInline.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
+namespace ylm {
 /// \ingroup SurfacesGroup
 /// \brief A star-shaped surface expanded in spherical harmonics.
 template <typename Frame>
@@ -170,7 +173,7 @@ namespace OptionTags {
 /// The input file tag for a Strahlkorper.
 template <typename Frame>
 struct Strahlkorper {
-  using type = ::Strahlkorper<Frame>;
+  using type = ylm::Strahlkorper<Frame>;
   static constexpr Options::String help{"A star-shaped surface"};
 };
 } // namespace OptionTags
@@ -188,3 +191,4 @@ bool operator!=(const Strahlkorper<Frame>& lhs,
                 const Strahlkorper<Frame>& rhs) {
   return not(lhs == rhs);
 }
+}  // namespace ylm

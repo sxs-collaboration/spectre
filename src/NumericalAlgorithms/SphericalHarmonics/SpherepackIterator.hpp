@@ -15,6 +15,7 @@
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 
+namespace ylm {
 /*!
  * \ingroup SpectralGroup
  * \brief
@@ -159,3 +160,4 @@ inline std::ostream& operator<<(
                     ? 'a'
                     : 'b');
 }
+}  // namespace ylm

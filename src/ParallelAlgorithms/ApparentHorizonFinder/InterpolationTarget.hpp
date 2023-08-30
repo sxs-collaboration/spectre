@@ -58,7 +58,7 @@ struct ApparentHorizon {
   /// See Strahlkorper for suboptions.
   struct InitialGuess {
     static constexpr Options::String help = {"Initial guess"};
-    using type = Strahlkorper<Frame>;
+    using type = ylm::Strahlkorper<Frame>;
   };
   /// See ::FastFlow for suboptions.
   struct FastFlow {
@@ -75,8 +75,8 @@ struct ApparentHorizon {
       "(Strahlkorper) and apparent-horizon-finding-algorithm (FastFlow)\n"
       "options."};
 
-  ApparentHorizon(Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
-                  ::Verbosity verbosity_in);
+  ApparentHorizon(ylm::Strahlkorper<Frame> initial_guess_in,
+                  ::FastFlow fast_flow_in, ::Verbosity verbosity_in);
 
   ApparentHorizon() = default;
   ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
@@ -88,7 +88,7 @@ struct ApparentHorizon {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  Strahlkorper<Frame> initial_guess{};
+  ylm::Strahlkorper<Frame> initial_guess{};
   ::FastFlow fast_flow{};
   ::Verbosity verbosity{::Verbosity::Quiet};
 };
@@ -185,7 +185,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     // here for ylm::Tags::Strahlkorper<::Frame::Inertial>.
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
-        std::deque<std::pair<double, ::Strahlkorper<Frame>>>{std::make_pair(
+        std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>{std::make_pair(
             std::numeric_limits<double>::quiet_NaN(), options.initial_guess)});
   }
 
@@ -199,7 +199,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 
     const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
     const auto prolonged_strahlkorper =
-        Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
+        ylm::Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
 
     Variables<tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>,
                          ::Tags::Tempi<1, 3, Frame>, ::Tags::TempScalar<2>>>

@@ -10,8 +10,10 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 template <size_t Dim>
 class Domain;
 namespace domain::FunctionsOfTime {
@@ -44,8 +46,9 @@ class not_null;
 /// efficient.
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_in_different_frame(
-    gsl::not_null<Strahlkorper<DestFrame>*> dest_strahlkorper,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    gsl::not_null<ylm::Strahlkorper<DestFrame>*> dest_strahlkorper,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
@@ -76,8 +79,9 @@ void strahlkorper_in_different_frame(
 /// constexpr`s to call the appropriate member functions of Block.
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_in_different_frame_aligned(
-    gsl::not_null<Strahlkorper<DestFrame>*> dest_strahlkorper,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    gsl::not_null<ylm::Strahlkorper<DestFrame>*> dest_strahlkorper,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
@@ -102,7 +106,8 @@ void strahlkorper_in_different_frame_aligned(
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_coords_in_different_frame(
     gsl::not_null<tnsr::I<DataVector, 3, DestFrame>*> dest_cartesian_coords,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,

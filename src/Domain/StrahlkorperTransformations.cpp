@@ -93,8 +93,9 @@ void coords_to_different_frame(
 
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_in_different_frame(
-    const gsl::not_null<Strahlkorper<DestFrame>*> dest_strahlkorper,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    const gsl::not_null<ylm::Strahlkorper<DestFrame>*> dest_strahlkorper,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
@@ -136,8 +137,8 @@ void strahlkorper_in_different_frame(
   // destination frame.  An average should be good enough, since this
   // is only the expansion center (not the physical center), so its
   // only requirement is that it is centered enough so that the
-  // surface is star-shaped.  If we want to re-center the strahlkorper
-  // later, we can call `change_expansion_center_of_strahlkorper_to_physical`.
+  // surface is star-shaped.  If we want to re-center the strahlkorper later, we
+  // can call `ylm::change_expansion_center_of_strahlkorper_to_physical`.
   const auto center_dest = [&dest_cartesian_coords]() {
     std::array<double, 3> center{};
     for (size_t d = 0; d < 3; ++d) {
@@ -255,15 +256,16 @@ void strahlkorper_in_different_frame(
 
   // Reset the radius and center of the destination strahlkorper.
   // Keep the same l_max() and m_max() as the source strahlkorper.
-  *dest_strahlkorper = Strahlkorper<DestFrame>(
+  *dest_strahlkorper = ylm::Strahlkorper<DestFrame>(
       src_strahlkorper.l_max(), src_strahlkorper.m_max(), radius_at_each_angle,
       center_dest);
 }
 
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_in_different_frame_aligned(
-    const gsl::not_null<Strahlkorper<DestFrame>*> dest_strahlkorper,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    const gsl::not_null<ylm::Strahlkorper<DestFrame>*> dest_strahlkorper,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
@@ -304,7 +306,7 @@ void strahlkorper_in_different_frame_aligned(
   }
   // Because center and angles are preserved by the map, we can easily
   // construct the destination Strahlkorper.
-  *dest_strahlkorper = Strahlkorper<DestFrame>(
+  *dest_strahlkorper = ylm::Strahlkorper<DestFrame>(
       src_strahlkorper.l_max(), src_strahlkorper.m_max(), get(radius), center);
 }
 
@@ -312,7 +314,8 @@ template <typename SrcFrame, typename DestFrame>
 void strahlkorper_coords_in_different_frame(
     const gsl::not_null<tnsr::I<DataVector, 3, DestFrame>*>
         dest_cartesian_coords,
-    const Strahlkorper<SrcFrame>& src_strahlkorper, const Domain<3>& domain,
+    const ylm::Strahlkorper<SrcFrame>& src_strahlkorper,
+    const Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
@@ -388,29 +391,31 @@ void strahlkorper_coords_in_different_frame(
 #define SRCFRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DESTFRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATEGENERAL(_, data)                                          \
-  template void strahlkorper_in_different_frame(                             \
-      const gsl::not_null<Strahlkorper<DESTFRAME(data)>*> dest_strahlkorper, \
-      const Strahlkorper<SRCFRAME(data)>& src_strahlkorper,                  \
-      const Domain<3>& domain,                                               \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time,                                                 \
+#define INSTANTIATEGENERAL(_, data)                                  \
+  template void strahlkorper_in_different_frame(                     \
+      const gsl::not_null<ylm::Strahlkorper<DESTFRAME(data)>*>       \
+          dest_strahlkorper,                                         \
+      const ylm::Strahlkorper<SRCFRAME(data)>& src_strahlkorper,     \
+      const Domain<3>& domain,                                       \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
+          functions_of_time,                                         \
       const double time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATEGENERAL, (::Frame::Grid),
                         (::Frame::Inertial))
 
-#define INSTANTIATEALIGNED(_, data)                                          \
-  template void strahlkorper_in_different_frame_aligned(                     \
-      const gsl::not_null<Strahlkorper<DESTFRAME(data)>*> dest_strahlkorper, \
-      const Strahlkorper<SRCFRAME(data)>& src_strahlkorper,                  \
-      const Domain<3>& domain,                                               \
-      const std::unordered_map<                                              \
-          std::string,                                                       \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time,                                                 \
+#define INSTANTIATEALIGNED(_, data)                                  \
+  template void strahlkorper_in_different_frame_aligned(             \
+      const gsl::not_null<ylm::Strahlkorper<DESTFRAME(data)>*>       \
+          dest_strahlkorper,                                         \
+      const ylm::Strahlkorper<SRCFRAME(data)>& src_strahlkorper,     \
+      const Domain<3>& domain,                                       \
+      const std::unordered_map<                                      \
+          std::string,                                               \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& \
+          functions_of_time,                                         \
       const double time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATEALIGNED, (::Frame::Grid),
@@ -420,7 +425,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATEALIGNED, (::Frame::Grid),
   template void strahlkorper_coords_in_different_frame(              \
       const gsl::not_null<tnsr::I<DataVector, 3, DESTFRAME(data)>*>  \
           dest_cartesian_coords,                                     \
-      const Strahlkorper<SRCFRAME(data)>& src_strahlkorper,          \
+      const ylm::Strahlkorper<SRCFRAME(data)>& src_strahlkorper,     \
       const Domain<3>& domain,                                       \
       const std::unordered_map<                                      \
           std::string,                                               \

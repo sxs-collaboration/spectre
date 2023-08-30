@@ -53,7 +53,7 @@ namespace control_system {
 namespace {
 using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-using Strahlkorper = Strahlkorper<Frame::Distorted>;
+using Strahlkorper = ylm::Strahlkorper<Frame::Distorted>;
 
 void test_shape_control_error() {
   constexpr size_t deriv_order = 2;
@@ -78,7 +78,7 @@ void test_shape_control_error() {
   // numbers it doesn't matter for initial data
   auto initial_shape_func = make_array<deriv_order + 1, DataVector>(
       DataVector{fake_ah_coefs.size(), 0.0});
-  SpherepackIterator iter{fake_ah.l_max(), fake_ah.m_max()};
+  ylm::SpherepackIterator iter{fake_ah.l_max(), fake_ah.m_max()};
   std::uniform_real_distribution<double> coef_dist{-1.0, 1.0};
   for (size_t i = 0; i < initial_shape_func.size(); i++) {
     for (iter.reset(); iter; ++iter) {

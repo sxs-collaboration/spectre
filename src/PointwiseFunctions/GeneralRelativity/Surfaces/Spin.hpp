@@ -10,8 +10,10 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 namespace gsl {
 template <typename>
 struct not_null;
@@ -56,7 +58,7 @@ namespace gr::surfaces {
 template <typename Frame>
 void spin_function(gsl::not_null<Scalar<DataVector>*> result,
                    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-                   const Strahlkorper<Frame>& strahlkorper,
+                   const ylm::Strahlkorper<Frame>& strahlkorper,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
                    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature);
@@ -64,7 +66,7 @@ void spin_function(gsl::not_null<Scalar<DataVector>*> result,
 template <typename Frame>
 Scalar<DataVector> spin_function(
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature);
@@ -111,7 +113,7 @@ void dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 
 template <typename Frame>
@@ -120,7 +122,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element);
 /// @}
 
@@ -203,7 +205,7 @@ void spin_vector(
     const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
-    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const ylm::Strahlkorper<MetricDataFrame>& strahlkorper,
     const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords);
 
 template <typename MetricDataFrame, typename MeasurementFrame>
@@ -211,6 +213,6 @@ std::array<double, 3> spin_vector(
     double spin_magnitude, const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
-    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const ylm::Strahlkorper<MetricDataFrame>& strahlkorper,
     const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords);
 }  // namespace gr::surfaces

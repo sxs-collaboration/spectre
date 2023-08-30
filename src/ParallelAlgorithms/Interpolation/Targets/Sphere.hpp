@@ -164,13 +164,13 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 
     size_t index = 0;
     for (const double radius : radii) {
-      ::Strahlkorper<Frame> strahlkorper(
+      ylm::Strahlkorper<Frame> strahlkorper(
           l_max, l_max, DataVector{(l_max + 1) * (2 * l_max + 1), radius},
           sphere.center);
 
       db::mutate<ylm::Tags::Strahlkorper<Frame>>(
-          [&strahlkorper](
-              const gsl::not_null<::Strahlkorper<Frame>*> local_strahlkorper) {
+          [&strahlkorper](const gsl::not_null<ylm::Strahlkorper<Frame>*>
+                              local_strahlkorper) {
             *local_strahlkorper = std::move(strahlkorper);
           },
           box);

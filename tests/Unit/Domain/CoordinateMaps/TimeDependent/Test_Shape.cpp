@@ -184,7 +184,7 @@ double generate_random_00_coef(const gsl::not_null<std::mt19937*> generator) {
 DataVector convert_coefs_to_spherepack(
     const std::vector<std::vector<std::complex<double>>>& coefs, size_t l_max,
     size_t m_max) {
-  SpherepackIterator iter(l_max, m_max);
+  ylm::SpherepackIterator iter(l_max, m_max);
   auto spherepack_coefs =
       make_with_value<DataVector>(iter.spherepack_array_size(), 0.);
 

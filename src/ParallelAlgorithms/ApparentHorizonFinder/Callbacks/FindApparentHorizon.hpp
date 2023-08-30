@@ -51,8 +51,6 @@ template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-template <typename Frame>
-class Strahlkorper;
 /// \endcond
 
 namespace intrp {
@@ -167,9 +165,9 @@ struct FindApparentHorizon
       db::mutate<ylm::Tags::Strahlkorper<Frame>,
                  ylm::Tags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
-              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<
-                  std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                  std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>*>
                   previous_strahlkorpers) {
             // If we have zero previous_strahlkorpers, then the
             // initial guess is already in strahlkorper, so do
@@ -238,7 +236,7 @@ struct FindApparentHorizon
       db::mutate<::ah::Tags::FastFlow, ylm::Tags::Strahlkorper<Frame>>(
           [&inv_g, &ex_curv, &christoffel, &status_and_info](
               const gsl::not_null<::FastFlow*> fast_flow,
-              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) {
+              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper) {
             status_and_info = fast_flow->template iterate_horizon_finder<Frame>(
                 strahlkorper, inv_g, ex_curv, christoffel);
           },
@@ -287,8 +285,8 @@ struct FindApparentHorizon
     // it's previous value
     if (horizon_finder_failed) {
       db::mutate<ylm::Tags::Strahlkorper<Frame>>(
-          [](const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-             const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
+          [](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+             const std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>&
                  previous_strahlkorpers) {
             // Don't keep a partially-converged strahlkorper in the
             // DataBox.  Reset to either the original initial guess or
@@ -312,11 +310,11 @@ struct FindApparentHorizon
           tmpl::list<::Tags::Variables<vars_tags>>,
           tmpl::list<ylm::Tags::Strahlkorper<Frame>, ::ah::Tags::FastFlow>>(
           [](const gsl::not_null<Variables<vars_tags>*> vars,
-             const Strahlkorper<Frame>& strahlkorper,
+             const ylm::Strahlkorper<Frame>& strahlkorper,
              const FastFlow& fast_flow) {
             const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
             const auto prolonged_strahlkorper =
-                Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
+                ylm::Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
             auto new_vars = ::Variables<vars_tags>(
                 strahlkorper.ylm_spherepack().physical_size());
 
@@ -350,7 +348,7 @@ struct FindApparentHorizon
             [&cache, &temporal_id](
                 const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
                     inertial_strahlkorper_coords,
-                const Strahlkorper<Frame>& strahlkorper,
+                const ylm::Strahlkorper<Frame>& strahlkorper,
                 const Domain<Metavariables::volume_dim>& domain) {
               // Note that functions_of_time must already be up to
               // date at temporal_id because they were used in the AH
@@ -372,9 +370,9 @@ struct FindApparentHorizon
       db::mutate<ylm::Tags::Strahlkorper<Frame>,
                  ylm::Tags::PreviousStrahlkorpers<Frame>>(
           [&temporal_id](
-              const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<
-                  std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                  std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>*>
                   previous_strahlkorpers) {
             // This is the number of previous strahlkorpers that we
             // keep around.

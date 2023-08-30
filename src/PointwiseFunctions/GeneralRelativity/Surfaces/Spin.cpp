@@ -155,7 +155,7 @@ void get_left_and_right_eigenproblem_matrices(
   // loop over all terms with 0<l<l_max-1: each makes a column of
   // the matrices for the eigenvalue problem
   size_t column = 0;  // number which column of the matrix we are filling
-  for (auto iter_i = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
+  for (auto iter_i = ylm::SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
        ++iter_i) {
     if (iter_i.l() > 0 and iter_i.l() < ylm.l_max() - 1 and
         iter_i.m() <= iter_i.l()) {
@@ -240,8 +240,8 @@ void get_left_and_right_eigenproblem_matrices(
       // Set the current column of the left and right matrices
       // for the eigenproblem.
       size_t row = 0;
-      for (auto iter_j = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_j;
-           ++iter_j) {
+      for (auto iter_j = ylm::SpherepackIterator(ylm.l_max(), ylm.m_max());
+           iter_j; ++iter_j) {
         if (iter_j.l() > 0 and iter_j.l() < ylm.l_max() - 1) {
           (*left_matrix)(row, column) = left_matrix_yi_spectral[iter_j()];
           (*right_matrix)(row, column) = right_matrix_yi_spectral[iter_j()];
@@ -287,7 +287,7 @@ std::array<DataVector, 3> get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
 
   size_t row = 0;
 
-  for (auto iter_i = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
+  for (auto iter_i = ylm::SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
        ++iter_i) {
     if (iter_i.l() > 0 and iter_i.l() < ylm.l_max() - 1) {
       smallest_eigenvector[iter_i()] = eigenvectors(row, index_smallest);
@@ -358,7 +358,7 @@ namespace gr::surfaces {
 template <typename Frame>
 void spin_function(const gsl::not_null<Scalar<DataVector>*> result,
                    const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-                   const Strahlkorper<Frame>& strahlkorper,
+                   const ylm::Strahlkorper<Frame>& strahlkorper,
                    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
                    const Scalar<DataVector>& area_element,
                    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) {
@@ -414,7 +414,7 @@ void spin_function(const gsl::not_null<Scalar<DataVector>*> result,
 template <typename Frame>
 Scalar<DataVector> spin_function(
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) {
@@ -430,7 +430,7 @@ void dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element) {
   const Scalar<DataVector> sin_theta{
       sin(strahlkorper.ylm_spherepack().theta_phi_points()[0])};
@@ -477,7 +477,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const ylm::Tags::aliases::Jacobian<Frame>& tangents,
-    const Strahlkorper<Frame>& strahlkorper,
+    const ylm::Strahlkorper<Frame>& strahlkorper,
     const Scalar<DataVector>& area_element) {
   double result{};
   dimensionful_spin_magnitude(make_not_null(&result), ricci_scalar,
@@ -506,7 +506,7 @@ void spin_vector(
     const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
-    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const ylm::Strahlkorper<MetricDataFrame>& strahlkorper,
     const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords) {
   const auto& ylm = strahlkorper.ylm_spherepack();
 
@@ -567,7 +567,7 @@ std::array<double, 3> spin_vector(
     double spin_magnitude, const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
-    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const ylm::Strahlkorper<MetricDataFrame>& strahlkorper,
     const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords) {
   std::array<double, 3> result{};
   spin_vector(make_not_null(&result), spin_magnitude, area_element,
@@ -582,13 +582,13 @@ std::array<double, 3> spin_vector(
   template void gr::surfaces::spin_function<FRAME(data)>(                 \
       const gsl::not_null<Scalar<DataVector>*> result,                    \
       const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
-      const Strahlkorper<FRAME(data)>& strahlkorper,                      \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper,                 \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,      \
       const Scalar<DataVector>& area_element,                             \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature);   \
   template Scalar<DataVector> gr::surfaces::spin_function<FRAME(data)>(   \
       const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
-      const Strahlkorper<FRAME(data)>& strahlkorper,                      \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper,                 \
       const tnsr::I<DataVector, 3, FRAME(data)>& unit_normal_vector,      \
       const Scalar<DataVector>& area_element,                             \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature);   \
@@ -598,14 +598,14 @@ std::array<double, 3> spin_vector(
       const Scalar<DataVector>& spin_function,                            \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,         \
       const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
-      const Strahlkorper<FRAME(data)>& strahlkorper,                      \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper,                 \
       const Scalar<DataVector>& area_element);                            \
   template double gr::surfaces::dimensionful_spin_magnitude<FRAME(data)>( \
       const Scalar<DataVector>& ricci_scalar,                             \
       const Scalar<DataVector>& spin_function,                            \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,         \
       const ylm::Tags::aliases::Jacobian<FRAME(data)>& tangents,          \
-      const Strahlkorper<FRAME(data)>& strahlkorper,                      \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper,                 \
       const Scalar<DataVector>& area_element);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
@@ -621,7 +621,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
       const double spin_magnitude, const Scalar<DataVector>& area_element, \
       const Scalar<DataVector>& ricci_scalar,                              \
       const Scalar<DataVector>& spin_function,                             \
-      const Strahlkorper<METRICFRAME(data)>& strahlkorper,                 \
+      const ylm::Strahlkorper<METRICFRAME(data)>& strahlkorper,            \
       const tnsr::I<DataVector, 3, MEASUREMENTFRAME(data)>&                \
           measurement_frame_coords);                                       \
   template std::array<double, 3>                                           \
@@ -629,7 +629,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
       const double spin_magnitude, const Scalar<DataVector>& area_element, \
       const Scalar<DataVector>& ricci_scalar,                              \
       const Scalar<DataVector>& spin_function,                             \
-      const Strahlkorper<METRICFRAME(data)>& strahlkorper,                 \
+      const ylm::Strahlkorper<METRICFRAME(data)>& strahlkorper,            \
       const tnsr::I<DataVector, 3, MEASUREMENTFRAME(data)>&                \
           measurement_frame_coords);
 

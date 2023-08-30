@@ -140,8 +140,8 @@ namespace ControlErrors {
  *   control error.
  * - MinDeltaR: The minimum of the `gr::surfaces::radial_distance` between the
  *   horizon and the excision surfaces.
- * - MinRelativeDeltaR: MinDeltaR divided by the `Strahlkorper::average_radius`
- *   of the horizon
+ * - MinRelativeDeltaR: MinDeltaR divided by the
+ *   `ylm::Strahlkorper::average_radius` of the horizon
  * - AvgDeltaR: Same as MinDeltaR except it's the average radii.
  * - AvgRelativeDeltaR: AvgDeltaR divided by the average radius of the horizon
  * - ControlErrorDeltaR: \f$ \dot{S}_{00} (\lambda_{00} -
@@ -278,13 +278,13 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
             measurements);
 
     const double grid_frame_excision_sphere_radius = excision_sphere.radius();
-    const Strahlkorper<Frame::Distorted>& apparent_horizon =
+    const ylm::Strahlkorper<Frame::Distorted>& apparent_horizon =
         tuples::get<ylm::Tags::Strahlkorper<Frame::Distorted>>(
             horizon_quantities);
-    const Strahlkorper<Frame::Distorted>& excision_surface =
+    const ylm::Strahlkorper<Frame::Distorted>& excision_surface =
         tuples::get<QueueTags::ExcisionSurface<Frame::Distorted>>(
             excision_quantities);
-    const Strahlkorper<Frame::Distorted>& time_deriv_apparent_horizon =
+    const ylm::Strahlkorper<Frame::Distorted>& time_deriv_apparent_horizon =
         tuples::get<::Tags::dt<ylm::Tags::Strahlkorper<Frame::Distorted>>>(
             horizon_quantities);
     const Scalar<DataVector>& lapse =

@@ -91,8 +91,8 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   constexpr size_t m_max = 10;
   constexpr double sphere_radius = 2.8;
   constexpr std::array<double, 3> center{{0.01, 0.02, 0.03}};
-  const Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max, sphere_radius,
-                                                   center};
+  const ylm::Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max,
+                                                        sphere_radius, center};
   const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
   const std::vector<size_t> extents{
       {ylm.physical_extents()[0], ylm.physical_extents()[1]}};

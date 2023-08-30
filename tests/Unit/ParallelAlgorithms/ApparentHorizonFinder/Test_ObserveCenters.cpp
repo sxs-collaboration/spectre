@@ -80,11 +80,11 @@ void test() {
                ylm::Tags::CartesianCoords<::Frame::Inertial>,
                ylm::Tags::EuclideanAreaElement<Frame>>(
         [&grid_center, &inertial_center](
-            gsl::not_null<Strahlkorper<Frame>*> box_grid_horizon,
+            gsl::not_null<ylm::Strahlkorper<Frame>*> box_grid_horizon,
             gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
                 box_inertial_coords,
             gsl::not_null<Scalar<DataVector>*> box_area_element) {
-          *box_grid_horizon = Strahlkorper<Frame>{10, 1.0, grid_center};
+          *box_grid_horizon = ylm::Strahlkorper<Frame>{10, 1.0, grid_center};
           const auto theta_phi = ylm::theta_phi(*box_grid_horizon);
           const auto radius = ylm::radius(*box_grid_horizon);
           const auto rhat = ylm::rhat(theta_phi);

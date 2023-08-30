@@ -195,7 +195,7 @@ struct SendToWorldtube {
       // project onto spherical harmonics
       for (size_t l = 0; l <= order; ++l) {
         for (int m = -l; m <= static_cast<int>(l); ++m, ++index) {
-          spherical_harmonic = real_spherical_harmonic(theta, phi, l, m);
+          spherical_harmonic = ylm::real_spherical_harmonic(theta, phi, l, m);
           get(get<CurvedScalarWave::Tags::Psi>(Ylm_coefs)).at(index) =
               definite_integral(psi_regular_times_det * spherical_harmonic,
                                 face_mesh);

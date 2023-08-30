@@ -170,7 +170,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
         Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 
     // Make a Strahlkorper with the correct shape.
-    ::Strahlkorper<Frame> strahlkorper(
+    ylm::Strahlkorper<Frame> strahlkorper(
         kerr_horizon.l_max, kerr_horizon.l_max,
         get(gr::Solutions::kerr_horizon_radius(
             ::ylm::Spherepack(kerr_horizon.l_max, kerr_horizon.l_max)

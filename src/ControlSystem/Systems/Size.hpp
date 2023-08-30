@@ -104,7 +104,7 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
     template <typename Metavariables>
     static void apply(
         typename measurements::CharSpeed<Horizon>::Excision /*meta*/,
-        const Strahlkorper<Frame::Grid>& grid_excision_surface,
+        const ylm::Strahlkorper<Frame::Grid>& grid_excision_surface,
         const Scalar<DataVector>& lapse,
         const tnsr::I<DataVector, 3, Frame::Distorted>& shifty_quantity,
         const tnsr::ii<DataVector, 3, Frame::Distorted>&
@@ -121,7 +121,7 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
                          name(), measurement_id);
       }
 
-      Strahlkorper<Frame::Distorted> distorted_excision_surface{};
+      ylm::Strahlkorper<Frame::Distorted> distorted_excision_surface{};
       strahlkorper_in_different_frame_aligned(
           make_not_null(&distorted_excision_surface), grid_excision_surface,
           Parallel::get<domain::Tags::Domain<3>>(cache),
@@ -141,8 +141,8 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
     template <typename Metavariables>
     static void apply(
         typename measurements::CharSpeed<Horizon>::Horizon /*meta*/,
-        const Strahlkorper<Frame::Distorted>& horizon,
-        const Strahlkorper<Frame::Distorted>& time_deriv_horizon,
+        const ylm::Strahlkorper<Frame::Distorted>& horizon,
+        const ylm::Strahlkorper<Frame::Distorted>& time_deriv_horizon,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<

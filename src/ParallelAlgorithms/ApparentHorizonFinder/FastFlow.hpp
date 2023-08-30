@@ -23,8 +23,10 @@ namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
+namespace ylm {
 template <typename>
 class Strahlkorper;
+}  // namespace ylm
 /// \endcond
 
 /// \ingroup SurfacesGroup
@@ -164,7 +166,7 @@ class FastFlow {
   /// nor `current_iteration()` is changed.
   template <typename Frame>
   std::pair<Status, IterInfo> iterate_horizon_finder(
-      gsl::not_null<Strahlkorper<Frame>*> current_strahlkorper,
+      gsl::not_null<ylm::Strahlkorper<Frame>*> current_strahlkorper,
       const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
       const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind);
@@ -175,7 +177,7 @@ class FastFlow {
   /// l_surface, returns a larger value of l, l_mesh, that is used for
   /// evaluating convergence.
   template <typename Frame>
-  size_t current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const;
+  size_t current_l_mesh(const ylm::Strahlkorper<Frame>& strahlkorper) const;
 
   /// Resets the finder.
   SPECTRE_ALWAYS_INLINE void reset_for_next_find() {

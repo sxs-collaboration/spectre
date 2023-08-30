@@ -10,9 +10,9 @@
 
 namespace gr::surfaces {
 template <typename Frame>
-double surface_integral_of_scalar(const Scalar<DataVector>& area_element,
-                                  const Scalar<DataVector>& scalar,
-                                  const Strahlkorper<Frame>& strahlkorper) {
+double surface_integral_of_scalar(
+    const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const ylm::Strahlkorper<Frame>& strahlkorper) {
   const DataVector integrand = get(area_element) * get(scalar);
   return strahlkorper.ylm_spherepack().definite_integral(integrand.data());
 }
@@ -23,7 +23,7 @@ double surface_integral_of_scalar(const Scalar<DataVector>& area_element,
   template double gr::surfaces::surface_integral_of_scalar( \
       const Scalar<DataVector>& area_element,               \
       const Scalar<DataVector>& scalar,                     \
-      const Strahlkorper<FRAME(data)>& strahlkorper);
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 #undef INSTANTIATE

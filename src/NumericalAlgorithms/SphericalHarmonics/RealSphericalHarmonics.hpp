@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace ylm {
 /// @{
 /*!
  * \ingroup SpectralGroup
@@ -39,3 +40,4 @@ void real_spherical_harmonic(gsl::not_null<DataVector*> spherical_harmonic,
 DataVector real_spherical_harmonic(const DataVector& theta,
                                    const DataVector& phi, size_t l, int m);
 /// @}
+}  // namespace ylm

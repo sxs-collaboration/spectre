@@ -21,13 +21,13 @@
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup SurfacesGroup
-/// Holds tags and ComputeItems associated with a `::Strahlkorper`.
+/// Holds tags and ComputeItems associated with a `ylm::Strahlkorper`.
 namespace ylm::Tags {
 
-/// Tag referring to a `::Strahlkorper`
+/// Tag referring to a `ylm::Strahlkorper`
 template <typename Frame>
 struct Strahlkorper : db::SimpleTag {
-  using type = ::Strahlkorper<Frame>;
+  using type = ylm::Strahlkorper<Frame>;
 };
 
 /// @{
@@ -44,7 +44,7 @@ struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
   using return_type = tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>*>,
-      const ::Strahlkorper<Frame>&)>(&::ylm::theta_phi<Frame>);
+      const ylm::Strahlkorper<Frame>&)>(&::ylm::theta_phi<Frame>);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -148,16 +148,17 @@ template <typename Frame>
 struct RadiusCompute : Radius<Frame>, db::ComputeTag {
   using base = Radius<Frame>;
   using return_type = Scalar<DataVector>;
-  static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<Scalar<DataVector>*>, const ::Strahlkorper<Frame>&)>(
-      &(::ylm::radius<Frame>));
+  static constexpr auto function =
+      static_cast<void (*)(const gsl::not_null<Scalar<DataVector>*>,
+                           const ylm::Strahlkorper<Frame>&)>(
+          &(::ylm::radius<Frame>));
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
 
 /// @{
 /// The geometrical center of the surface.  Uses
-/// `Strahlkorper::physical_center`.
+/// `ylm::Strahlkorper::physical_center`.
 template <typename Frame>
 struct PhysicalCenter : db::SimpleTag {
   using type = std::array<double, 3>;
@@ -168,7 +169,7 @@ struct PhysicalCenterCompute : PhysicalCenter<Frame>, db::ComputeTag {
   using base = PhysicalCenter<Frame>;
   using return_type = std::array<double, 3>;
   static void function(gsl::not_null<std::array<double, 3>*> physical_center,
-                       const ::Strahlkorper<Frame>& strahlkorper);
+                       const ylm::Strahlkorper<Frame>& strahlkorper);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -188,7 +189,7 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
   using return_type = tnsr::I<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::I<DataVector, 3, Frame>*> coords,
-      const ::Strahlkorper<Frame>& strahlkorper,
+      const ylm::Strahlkorper<Frame>& strahlkorper,
       const Scalar<DataVector>& radius,
       const tnsr::i<DataVector, 3, Frame>& r_hat)>(&ylm::cartesian_coords);
   using argument_tags =
@@ -215,7 +216,7 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*> dx_radius,
       const Scalar<DataVector>& scalar,
-      const ::Strahlkorper<Frame>& strahlkorper,
+      const ylm::Strahlkorper<Frame>& strahlkorper,
       const Scalar<DataVector>& radius_of_strahlkorper,
       const aliases::InvJacobian<Frame>& inv_jac)>(
       &ylm::cartesian_derivs_of_scalar);
@@ -244,7 +245,7 @@ struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> d2x_radius,
       const Scalar<DataVector>& scalar,
-      const ::Strahlkorper<Frame>& strahlkorper,
+      const ylm::Strahlkorper<Frame>& strahlkorper,
       const Scalar<DataVector>& radius_of_strahlkorper,
       const aliases::InvJacobian<Frame>& inv_jac,
       const aliases::InvHessian<Frame>& inv_hess)>(
@@ -271,7 +272,7 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*> lap_radius,
       const Scalar<DataVector>& radius,
-      const ::Strahlkorper<Frame>& strahlkorper,
+      const ylm::Strahlkorper<Frame>& strahlkorper,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>& theta_phi)>(
       &ylm::laplacian_of_scalar);
   using argument_tags =
@@ -333,7 +334,7 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
   using return_type = aliases::Jacobian<Frame>;
   static constexpr auto function =
       static_cast<void (*)(gsl::not_null<aliases::Jacobian<Frame>*> tangents,
-                           const ::Strahlkorper<Frame>& strahlkorper,
+                           const ylm::Strahlkorper<Frame>& strahlkorper,
                            const Scalar<DataVector>& radius,
                            const tnsr::i<DataVector, 3, Frame>& r_hat,
                            const aliases::Jacobian<Frame>& jac)>(
@@ -348,7 +349,7 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
 /// and for computing the time deriv of a Strahlkorper.
 template <typename Frame>
 struct PreviousStrahlkorpers : db::SimpleTag {
-  using type = std::deque<std::pair<double, ::Strahlkorper<Frame>>>;
+  using type = std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>;
 };
 
 /// @{
@@ -356,7 +357,7 @@ struct PreviousStrahlkorpers : db::SimpleTag {
 /// from a number of previous Strahlkorpers.
 template <typename Frame>
 struct TimeDerivStrahlkorper : db::SimpleTag {
-  using type = ::Strahlkorper<Frame>;
+  using type = ylm::Strahlkorper<Frame>;
 };
 
 template <typename Frame>
@@ -365,8 +366,8 @@ struct TimeDerivStrahlkorperCompute : db::ComputeTag,
   using base = TimeDerivStrahlkorper<Frame>;
   using return_type = typename base::type;
   static constexpr auto function = static_cast<void (*)(
-      gsl::not_null<::Strahlkorper<Frame>*>,
-      const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&)>(
+      gsl::not_null<ylm::Strahlkorper<Frame>*>,
+      const std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>&)>(
       &ylm::time_deriv_of_strahlkorper<Frame>);
 
   using argument_tags = tmpl::list<PreviousStrahlkorpers<Frame>>;

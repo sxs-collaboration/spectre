@@ -7,8 +7,10 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 /// \endcond
 
 namespace gr::surfaces {
@@ -23,5 +25,5 @@ namespace gr::surfaces {
 template <typename Frame>
 double surface_integral_of_scalar(const Scalar<DataVector>& area_element,
                                   const Scalar<DataVector>& scalar,
-                                  const Strahlkorper<Frame>& strahlkorper);
+                                  const ylm::Strahlkorper<Frame>& strahlkorper);
 }  // namespace gr::surfaces

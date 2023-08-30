@@ -11,6 +11,7 @@
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace ylm {
 Scalar<double> ylm_to_stf_0(const ModalVector& l0_coefs) {
   ASSERT(l0_coefs.size() == 1,
          "Expected 1 spherical harmonic coefficient for l=0");
@@ -57,3 +58,4 @@ template tnsr::ii<double, 3, Frame::Grid> ylm_to_stf_2<Frame::Grid>(
     const ModalVector& l2_coefs);
 template tnsr::ii<double, 3, Frame::Inertial> ylm_to_stf_2<Frame::Inertial>(
     const ModalVector& l2_coefs);
+}  // namespace ylm

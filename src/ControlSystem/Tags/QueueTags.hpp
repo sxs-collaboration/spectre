@@ -10,8 +10,10 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 namespace domain {
 enum class ObjectLabel;
 }  // namespace domain
@@ -36,14 +38,14 @@ struct Center {
 /// Holds a full strahlkorper from measurements that represents a horizon
 template <typename Frame>
 struct Horizon {
-  using type = ::Strahlkorper<Frame>;
+  using type = ylm::Strahlkorper<Frame>;
 };
 
 /// \ingroup ControlSystemGroup
 /// Holds a full strahlkorper from measurements for the excision surface
 template <typename Frame>
 struct ExcisionSurface {
-  using type = ::Strahlkorper<Frame>;
+  using type = ylm::Strahlkorper<Frame>;
 };
 
 /// \ingroup ControlSystemGroup

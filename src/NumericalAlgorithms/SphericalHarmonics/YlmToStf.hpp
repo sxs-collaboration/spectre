@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace ylm {
 /// @{
 /*!
  * \brief Converts real spherical harmonic coefficients of degree l into a
@@ -31,3 +32,4 @@ tnsr::i<double, 3, Frame> ylm_to_stf_1(const ModalVector& l1_coefs);
 template <typename Frame>
 tnsr::ii<double, 3, Frame> ylm_to_stf_2(const ModalVector& l2_coefs);
 /// @}
+}  // namespace ylm

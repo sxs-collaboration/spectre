@@ -13,8 +13,10 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
+namespace ylm::TestHelpers {
 // Create a strahlkorper with a Im(Y11) dependence, with
 // a given average radius and a given center.
 Strahlkorper<Frame::Inertial> create_strahlkorper_y11(
     const double y11_amplitude, const double radius,
     const std::array<double, 3>& center);
+}  // namespace ylm::TestHelpers

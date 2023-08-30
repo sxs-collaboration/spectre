@@ -35,7 +35,7 @@ void radius(const gsl::not_null<Scalar<DataVector>*> result,
 
 template <typename Fr>
 tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>> theta_phi(
-    const ::Strahlkorper<Fr>& strahlkorper) {
+    const Strahlkorper<Fr>& strahlkorper) {
   tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>> result{
       DataVector{strahlkorper.ylm_spherepack().physical_size()}};
   theta_phi(make_not_null(&result), strahlkorper);
@@ -46,7 +46,7 @@ template <typename Fr>
 void theta_phi(
     const gsl::not_null<tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>*>
         theta_phi,
-    const ::Strahlkorper<Fr>& strahlkorper) {
+    const Strahlkorper<Fr>& strahlkorper) {
   // If ylm_spherepack ever gets a not-null version of theta_phi_points,
   // then that can be used here to avoid an allocation.
   auto temp = strahlkorper.ylm_spherepack().theta_phi_points();
@@ -368,7 +368,7 @@ void laplacian_of_scalar(
 
 template <typename Fr>
 ylm::Tags::aliases::Jacobian<Fr> tangents(
-    const ::Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
+    const Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Fr>& r_hat,
     const ylm::Tags::aliases::Jacobian<Fr>& jac) {
   ylm::Tags::aliases::Jacobian<Fr> result{DataVector{get(radius).size()}};
@@ -378,7 +378,7 @@ ylm::Tags::aliases::Jacobian<Fr> tangents(
 
 template <typename Fr>
 void tangents(const gsl::not_null<ylm::Tags::aliases::Jacobian<Fr>*> result,
-              const ::Strahlkorper<Fr>& strahlkorper,
+              const Strahlkorper<Fr>& strahlkorper,
               const Scalar<DataVector>& radius,
               const tnsr::i<DataVector, 3, Fr>& r_hat,
               const ylm::Tags::aliases::Jacobian<Fr>& jac) {
@@ -453,7 +453,7 @@ static DataVector compute_coefs(
 template <typename Frame>
 void time_deriv_of_strahlkorper(
     gsl::not_null<Strahlkorper<Frame>*> time_deriv,
-    const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
+    const std::deque<std::pair<double, Strahlkorper<Frame>>>&
         previous_strahlkorpers) {
   std::deque<double> times{};
   std::deque<const DataVector*> coefficients{};
@@ -491,7 +491,6 @@ void time_deriv_of_strahlkorper(
 
   time_deriv->coefficients() = std::move(new_coefficients);
 }
-}  // namespace ylm
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -501,12 +500,12 @@ void time_deriv_of_strahlkorper(
   template void ylm::radius(const gsl::not_null<Scalar<DataVector>*> result,  \
                             const Strahlkorper<FRAME(data)>& strahlkorper);   \
   template tnsr::i<DataVector, 2, ::Frame::Spherical<FRAME(data)>>            \
-  ylm::theta_phi(const ::Strahlkorper<FRAME(data)>& strahlkorper);            \
+  ylm::theta_phi(const Strahlkorper<FRAME(data)>& strahlkorper);              \
   template void ylm::theta_phi(                                               \
       const gsl::not_null<                                                    \
           tnsr::i<DataVector, 2, ::Frame::Spherical<FRAME(data)>>*>           \
           theta_phi,                                                          \
-      const ::Strahlkorper<FRAME(data)>& strahlkorper);                       \
+      const Strahlkorper<FRAME(data)>& strahlkorper);                         \
   template tnsr::i<DataVector, 3, FRAME(data)> ylm::rhat(                     \
       const tnsr::i<DataVector, 2, ::Frame::Spherical<FRAME(data)>>&          \
           theta_phi);                                                         \
@@ -606,10 +605,11 @@ void time_deriv_of_strahlkorper(
       const std::vector<Strahlkorper<FRAME(data)>>& strahlkorpers);           \
   template void ylm::time_deriv_of_strahlkorper(                              \
       const gsl::not_null<Strahlkorper<FRAME(data)>*>,                        \
-      const std::deque<std::pair<double, ::Strahlkorper<FRAME(data)>>>&);
+      const std::deque<std::pair<double, Strahlkorper<FRAME(data)>>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Distorted, Frame::Grid, Frame::Inertial))
 
 #undef INSTANTIATE
 #undef FRAME
+}  // namespace ylm

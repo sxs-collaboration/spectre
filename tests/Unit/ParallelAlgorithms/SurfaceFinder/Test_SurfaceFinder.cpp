@@ -110,7 +110,7 @@ void test_strahlkorper_input(
   const double target = 4.3;
   const auto data = magnitude(inertial_coords);
 
-  const Strahlkorper<Frame::Inertial> strahlkorper{
+  const ylm::Strahlkorper<Frame::Inertial> strahlkorper{
       5, 5, 4.5, std::array<double, 3>{0., 0., 0.}};
   const auto& ylm = strahlkorper.ylm_spherepack();
   const auto& [theta, phi] = ylm.theta_phi_points();

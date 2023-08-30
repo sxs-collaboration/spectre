@@ -100,7 +100,7 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(
         measurements::BothHorizons::FindHorizon<Horizon> submeasurement,
-        const Strahlkorper<Frame::Distorted>& strahlkorper,
+        const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy =

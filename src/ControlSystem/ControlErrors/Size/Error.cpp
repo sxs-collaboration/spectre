@@ -37,8 +37,8 @@ ErrorDiagnostics control_error(
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
     const double time, const double control_error_delta_r,
-    const double dt_lambda_00, const Strahlkorper<Frame>& apparent_horizon,
-    const Strahlkorper<Frame>& excision_boundary,
+    const double dt_lambda_00, const ylm::Strahlkorper<Frame>& apparent_horizon,
+    const ylm::Strahlkorper<Frame>& excision_boundary,
     const Scalar<DataVector>& lapse_on_excision_boundary,
     const tnsr::I<DataVector, 3, Frame>& frame_components_of_grid_shift,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric_on_excision_boundary,
@@ -230,8 +230,8 @@ ErrorDiagnostics control_error(
       const gsl::not_null<intrp::ZeroCrossingPredictor*>                       \
           predictor_delta_radius,                                              \
       double time, double control_error_delta_r, double dt_lambda_00,          \
-      const Strahlkorper<FRAME(data)>& apparent_horizon,                       \
-      const Strahlkorper<FRAME(data)>& excision_boundary,                      \
+      const ylm::Strahlkorper<FRAME(data)>& apparent_horizon,                  \
+      const ylm::Strahlkorper<FRAME(data)>& excision_boundary,                 \
       const Scalar<DataVector>& lapse_on_excision_boundary,                    \
       const tnsr::I<DataVector, 3, FRAME(data)>&                               \
           frame_components_of_grid_shift,                                      \

@@ -17,6 +17,7 @@ struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
+namespace ylm {
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
                                   const double radius,
@@ -144,3 +145,4 @@ bool Strahlkorper<Frame>::point_is_contained(
 template class Strahlkorper<Frame::Inertial>;
 template class Strahlkorper<Frame::Grid>;
 template class Strahlkorper<Frame::Distorted>;
+}  // namespace ylm

@@ -22,13 +22,14 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 
+namespace ylm {
 namespace {
 void test_radius_and_derivs() {
   const double y11_amplitude = 1.0;
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   // Now construct a Y00 + Im(Y11) surface by hand.
   const auto& theta_points = strahlkorper.ylm_spherepack().theta_points();
@@ -137,7 +138,7 @@ void test_theta_phi() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto expected_theta_phi =
       strahlkorper.ylm_spherepack().theta_phi_points();
@@ -151,7 +152,7 @@ void test_rhat_jacobian_hessian() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto& theta = theta_phi[0];
@@ -250,7 +251,7 @@ void test_cartesian_coords() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto& theta = theta_phi[0];
@@ -279,7 +280,7 @@ void test_normals() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto n_pts = theta_phi[0].size();
@@ -521,3 +522,4 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
   test_fit_ylm_coeffs_diff();
   test_time_deriv_strahlkorper();
 }
+}  // namespace ylm

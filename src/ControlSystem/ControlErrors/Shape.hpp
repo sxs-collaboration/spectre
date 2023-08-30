@@ -140,7 +140,7 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
         excision_spheres.at(detail::excision_sphere_name<Horizon>()).radius();
 
     const double Y00 = sqrt(0.25 / M_PI);
-    SpherepackIterator iter{ah.l_max(), ah.m_max()};
+    ylm::SpherepackIterator iter{ah.l_max(), ah.m_max()};
     // See above docs for why we have the sqrt(pi/2) in the denominator
     const double relative_size_factor =
         (radius_excision_sphere_grid_frame / Y00 - lambda_00_coef) /

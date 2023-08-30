@@ -133,8 +133,9 @@ void test_size_process_measurement() {
   const tnsr::I<DataVector, 3, Frame::Distorted> zero_tnsr_I{};
   const tnsr::ii<DataVector, 3, Frame::Distorted> zero_tnsr_ii{};
   const tnsr::II<DataVector, 3, Frame::Distorted> zero_tnsr_II{};
-  const Strahlkorper<Frame::Distorted> horizon{};
-  const Strahlkorper<Frame::Grid> excision{2, 2.0, std::array{0.0, 0.0, 0.0}};
+  const ylm::Strahlkorper<Frame::Distorted> horizon{};
+  const ylm::Strahlkorper<Frame::Grid> excision{2, 2.0,
+                                                std::array{0.0, 0.0, 0.0}};
 
   size::process_measurement::apply<Metavars>(
       char_speed::Excision{}, excision, zero_scalar, zero_tnsr_I, zero_tnsr_ii,

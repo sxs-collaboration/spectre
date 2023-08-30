@@ -15,6 +15,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace ylm {
 namespace {
 
 // Get the r_hat vector of the Strahlkorper, which defines the
@@ -152,3 +153,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial))
 
 #undef INSTANTIATE
 #undef FRAME
+}  // namespace ylm

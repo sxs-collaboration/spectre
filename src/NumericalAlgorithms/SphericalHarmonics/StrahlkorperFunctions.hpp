@@ -12,13 +12,12 @@
 
 /// \cond
 class DataVector;
-
+namespace ylm {
 template <typename Fr>
 class Strahlkorper;
-
+}  // namespace ylm
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-
 namespace gsl {
 template <typename>
 struct not_null;
@@ -39,13 +38,13 @@ namespace ylm {
  */
 template <typename Fr>
 tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>> theta_phi(
-    const ::Strahlkorper<Fr>& strahlkorper);
+    const Strahlkorper<Fr>& strahlkorper);
 
 template <typename Fr>
 void theta_phi(
     const gsl::not_null<tnsr::i<DataVector, 2, ::Frame::Spherical<Fr>>*>
         theta_phi,
-    const ::Strahlkorper<Fr>& strahlkorper);
+    const Strahlkorper<Fr>& strahlkorper);
 /// @}
 
 /// @{
@@ -294,7 +293,7 @@ void laplacian_of_scalar(
  */
 template <typename Fr>
 ylm::Tags::aliases::Jacobian<Fr> tangents(
-    const ::Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
+    const Strahlkorper<Fr>& strahlkorper, const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Fr>& r_hat,
     const ylm::Tags::aliases::Jacobian<Fr>& jac);
 
@@ -309,7 +308,7 @@ ylm::Tags::aliases::Jacobian<Fr> tangents(
  */
 template <typename Fr>
 void tangents(const gsl::not_null<ylm::Tags::aliases::Jacobian<Fr>*> result,
-              const ::Strahlkorper<Fr>& strahlkorper,
+              const Strahlkorper<Fr>& strahlkorper,
               const Scalar<DataVector>& radius,
               const tnsr::i<DataVector, 3, Fr>& r_hat,
               const ylm::Tags::aliases::Jacobian<Fr>& jac);
@@ -386,6 +385,6 @@ std::vector<std::array<double, 4>> fit_ylm_coeffs(
 template <typename Frame>
 void time_deriv_of_strahlkorper(
     gsl::not_null<Strahlkorper<Frame>*> time_deriv,
-    const std::deque<std::pair<double, ::Strahlkorper<Frame>>>&
+    const std::deque<std::pair<double, Strahlkorper<Frame>>>&
         previous_strahlkorpers);
 }  // namespace ylm

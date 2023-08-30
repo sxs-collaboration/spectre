@@ -12,8 +12,8 @@
 namespace gr::surfaces {
 template <typename Frame>
 void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
-                     const Strahlkorper<Frame>& strahlkorper_a,
-                     const Strahlkorper<Frame>& strahlkorper_b) {
+                     const ylm::Strahlkorper<Frame>& strahlkorper_a,
+                     const ylm::Strahlkorper<Frame>& strahlkorper_b) {
   if (strahlkorper_a.expansion_center() != strahlkorper_b.expansion_center()) {
     ERROR(
         "Currently computing the radial distance between two Strahlkorpers "
@@ -33,12 +33,12 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
               strahlkorper_a.m_max() > strahlkorper_b.m_max())) {
     get(*radial_distance) =
         get(ylm::radius(strahlkorper_a)) -
-        get(ylm::radius(Strahlkorper<Frame>(
+        get(ylm::radius(ylm::Strahlkorper<Frame>(
             strahlkorper_a.l_max(), strahlkorper_a.m_max(), strahlkorper_b)));
   } else {
     get(*radial_distance) =
         -get(ylm::radius(strahlkorper_b)) +
-        get(ylm::radius(Strahlkorper<Frame>(
+        get(ylm::radius(ylm::Strahlkorper<Frame>(
             strahlkorper_b.l_max(), strahlkorper_b.m_max(), strahlkorper_a)));
   };
 }
@@ -48,8 +48,8 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
 #define INSTANTIATE(_, data)                                    \
   template void gr::surfaces::radial_distance<FRAME(data)>(     \
       const gsl::not_null<Scalar<DataVector>*> radial_distance, \
-      const Strahlkorper<FRAME(data)>& strahlkorper_a,          \
-      const Strahlkorper<FRAME(data)>& strahlkorper_b);
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper_a,     \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper_b);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 #undef INSTANTIATE

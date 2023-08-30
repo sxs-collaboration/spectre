@@ -74,7 +74,7 @@ SPECTRE_TEST_CASE(
 
   // Options for ApparentHorizon
   intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
-      Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
+      ylm::Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
       Verbosity::Verbose);
 
   // Test creation of options

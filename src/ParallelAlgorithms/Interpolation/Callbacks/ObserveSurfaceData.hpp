@@ -59,8 +59,7 @@ struct ObserveSurfaceData
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
-    const Strahlkorper<HorizonFrame>& strahlkorper =
-        get<ylm::Tags::Strahlkorper<HorizonFrame>>(box);
+    const auto& strahlkorper = get<ylm::Tags::Strahlkorper<HorizonFrame>>(box);
     const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
 
     // Output the inertial-frame coordinates of the Stralhlkorper.

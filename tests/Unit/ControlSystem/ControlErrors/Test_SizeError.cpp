@@ -103,11 +103,11 @@ void test_size_error_one_step(
   const double distorted_horizon_radius = 2.00;
 
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
-  Strahlkorper<Frame::Distorted> horizon(l_max, distorted_horizon_radius,
-                                         center);
-  Strahlkorper<Frame::Distorted> excision_boundary(
+  ylm::Strahlkorper<Frame::Distorted> horizon(l_max, distorted_horizon_radius,
+                                              center);
+  ylm::Strahlkorper<Frame::Distorted> excision_boundary(
       l_max, distorted_excision_boundary_radius_initial, center);
-  Strahlkorper<Frame::Distorted> time_deriv_horizon(
+  ylm::Strahlkorper<Frame::Distorted> time_deriv_horizon(
       l_max, distorted_horizon_velocity, center);
 
   // Get Cartesian coordinates on excision boundary

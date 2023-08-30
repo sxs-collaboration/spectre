@@ -13,6 +13,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Literals.hpp"
 
+namespace ylm {
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
                   "[NumericalAlgorithms][Unit]") {
   const std::vector<size_t> test_l = {0, 1, 1, 2, 2, 2, 3, 3, 3, 4,
@@ -108,3 +109,4 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
   CHECK(iter_copy == iter);
   test_move_semantics(std::move(iter), iter_copy, 3_st, 2_st, 3_st);
 }
+}  // namespace ylm
