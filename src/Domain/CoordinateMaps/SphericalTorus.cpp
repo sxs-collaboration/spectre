@@ -31,7 +31,7 @@ SphericalTorus::SphericalTorus(const double r_min, const double r_max,
   if (pi_over_2_minus_theta_min_ <= 0.0) {
     PARSE_ERROR(context, "Minimum polar angle should be less than pi/2.");
   }
-  if (pi_over_2_minus_theta_min_ >= 0.5 * M_PI) {
+  if (pi_over_2_minus_theta_min_ >= M_PI_2) {
     PARSE_ERROR(context, "Minimum polar angle should be positive.");
   }
   if (fraction_of_torus_ <= 0.0) {
@@ -50,33 +50,31 @@ SphericalTorus::SphericalTorus(const std::array<double, 2>& radial_range,
                      fraction_of_torus, context) {}
 
 //
-// **** WARNING : below we are using the following convention for naming
-//                spherical coordinate variables internally
-//  * r     : radius
-//  * theta : azimuthal angle
-//  * phi   : elevation angle measured from equator, which is equal to (\pi/2 -
-//            polar angle) where the polar angle is measured from +z axis.
+//  * r       : radius
+//  * theta   : polar angle is measured from +z axis.
+//  * phi     : azimuthal angle
 //
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> SphericalTorus::operator()(
     const std::array<T, 3>& source_coords) const {
   const auto r = radius(source_coords[0]);
-  const auto theta = M_PI * fraction_of_torus_ * source_coords[2];
-  const auto phi = pi_over_2_minus_theta_min_ * source_coords[1];
+  const auto theta = M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
+  const auto phi = M_PI * fraction_of_torus_ * source_coords[2];
 
-  return {{r * cos(theta) * cos(phi), r * sin(theta) * cos(phi), r * sin(phi)}};
+  return {
+      {r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)}};
 }
 
 std::optional<std::array<double, 3>> SphericalTorus::inverse(
     const std::array<double, 3>& target_coords) const {
   const double r =
       std::hypot(target_coords[0], target_coords[1], target_coords[2]);
-  const double theta = std::atan2(target_coords[1], target_coords[0]);
-  const double phi = std::atan2(target_coords[2],
-                                std::hypot(target_coords[0], target_coords[1]));
+  const double theta = std::atan2(
+      std::hypot(target_coords[0], target_coords[1]), target_coords[2]);
+  const double phi = std::atan2(target_coords[1], target_coords[0]);
 
-  return {{radius_inverse(r), phi / pi_over_2_minus_theta_min_,
-           theta / (M_PI * fraction_of_torus_)}};
+  return {{radius_inverse(r), (M_PI_2 - theta) / pi_over_2_minus_theta_min_,
+           phi / (M_PI * fraction_of_torus_)}};
 }
 
 template <typename T>
@@ -89,31 +87,32 @@ SphericalTorus::jacobian(const std::array<T, 3>& source_coords) const {
   // In order to reduce number of memory allocations we use some slots of
   // jacobian for storing temp variables as below.
 
-  auto& sin_theta = get<1, 1>(jacobian);
-  auto& cos_theta = get<1, 2>(jacobian);
-  get<2, 2>(jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
-  cos_theta = cos(get<2, 2>(jacobian));
+  auto& sin_theta = get<2, 1>(jacobian);
+  auto& cos_theta = get<2, 0>(jacobian);
+  get<2, 2>(jacobian) =
+      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
   sin_theta = sin(get<2, 2>(jacobian));
+  cos_theta = cos(get<2, 2>(jacobian));
 
-  auto& sin_phi = get<2, 0>(jacobian);
-  auto& cos_phi = get<2, 1>(jacobian);
-  get<2, 2>(jacobian) = pi_over_2_minus_theta_min_ * source_coords[1];
-  cos_phi = cos(get<2, 2>(jacobian));
+  auto& sin_phi = get<1, 1>(jacobian);
+  auto& cos_phi = get<1, 2>(jacobian);
+  get<2, 2>(jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
   sin_phi = sin(get<2, 2>(jacobian));
+  cos_phi = cos(get<2, 2>(jacobian));
 
   auto& r = get<2, 2>(jacobian);
   radius(make_not_null(&r), source_coords[0]);
 
   // Note : execution order matters here since we are overwriting each temp
   // variables with jacobian values corresponding to the slot.
-  get<0, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * cos_theta * cos_phi;
-  get<0, 1>(jacobian) = -pi_over_2_minus_theta_min_ * r * cos_theta * sin_phi;
-  get<0, 2>(jacobian) = -M_PI * fraction_of_torus_ * r * sin_theta * cos_phi;
-  get<1, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * sin_theta * cos_phi;
-  get<1, 1>(jacobian) = -pi_over_2_minus_theta_min_ * r * sin_theta * sin_phi;
-  get<1, 2>(jacobian) = M_PI * fraction_of_torus_ * r * cos_theta * cos_phi;
-  get<2, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * sin_phi;
-  get<2, 1>(jacobian) = pi_over_2_minus_theta_min_ * r * cos_phi;
+  get<0, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * sin_theta * cos_phi;
+  get<0, 1>(jacobian) = -pi_over_2_minus_theta_min_ * r * cos_theta * cos_phi;
+  get<0, 2>(jacobian) = -M_PI * fraction_of_torus_ * r * sin_theta * sin_phi;
+  get<1, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * sin_theta * sin_phi;
+  get<1, 1>(jacobian) = -pi_over_2_minus_theta_min_ * r * cos_theta * sin_phi;
+  get<1, 2>(jacobian) = M_PI * fraction_of_torus_ * r * sin_theta * cos_phi;
+  get<2, 0>(jacobian) = 0.5 * (r_max_ - r_min_) * cos_theta;
+  get<2, 1>(jacobian) = pi_over_2_minus_theta_min_ * r * sin_theta;
   get<2, 2>(jacobian) = 0.0;
 
   return jacobian;
@@ -129,15 +128,16 @@ SphericalTorus::inv_jacobian(const std::array<T, 3>& source_coords) const {
   // In order to reduce number of memory allocations we use some slots of
   // jacobian for storing temp variables as below.
 
-  auto& sin_theta = get<1, 1>(inv_jacobian);
-  auto& cos_theta = get<2, 1>(inv_jacobian);
-  get<2, 2>(inv_jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
+  auto& sin_theta = get<1, 2>(inv_jacobian);
+  auto& cos_theta = get<0, 2>(inv_jacobian);
+  get<2, 2>(inv_jacobian) =
+      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
   cos_theta = cos(get<2, 2>(inv_jacobian));
   sin_theta = sin(get<2, 2>(inv_jacobian));
 
-  auto& sin_phi = get<0, 2>(inv_jacobian);
-  auto& cos_phi = get<1, 2>(inv_jacobian);
-  get<2, 2>(inv_jacobian) = pi_over_2_minus_theta_min_ * source_coords[1];
+  auto& sin_phi = get<1, 1>(inv_jacobian);
+  auto& cos_phi = get<2, 1>(inv_jacobian);
+  get<2, 2>(inv_jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
   cos_phi = cos(get<2, 2>(inv_jacobian));
   sin_phi = sin(get<2, 2>(inv_jacobian));
 
@@ -146,18 +146,18 @@ SphericalTorus::inv_jacobian(const std::array<T, 3>& source_coords) const {
 
   // Note : execution order matters here since we are overwriting each temp
   // variables with jacobian values corresponding to the slot.
-  get<0, 0>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * cos_theta * cos_phi;
-  get<0, 1>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * sin_theta * cos_phi;
+  get<0, 0>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * sin_theta * cos_phi;
+  get<0, 1>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * sin_theta * sin_phi;
   get<1, 0>(inv_jacobian) =
-      -(1.0 / pi_over_2_minus_theta_min_) * cos_theta * sin_phi / r;
+      -(1.0 / pi_over_2_minus_theta_min_) * cos_theta * cos_phi / r;
   get<2, 0>(inv_jacobian) =
-      -(1.0 / (M_PI * fraction_of_torus_)) * sin_theta / (r * cos_phi);
+      -(1.0 / (M_PI * fraction_of_torus_)) * sin_phi / (r * sin_theta);
   get<1, 1>(inv_jacobian) =
-      -(1.0 / pi_over_2_minus_theta_min_) * sin_theta * sin_phi / r;
+      -(1.0 / pi_over_2_minus_theta_min_) * cos_theta * sin_phi / r;
   get<2, 1>(inv_jacobian) =
-      (1.0 / (M_PI * fraction_of_torus_)) * cos_theta / (r * cos_phi);
-  get<0, 2>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * sin_phi;
-  get<1, 2>(inv_jacobian) = (1.0 / pi_over_2_minus_theta_min_) * cos_phi / r;
+      (1.0 / (M_PI * fraction_of_torus_)) * cos_phi / (r * sin_theta);
+  get<0, 2>(inv_jacobian) = 2.0 / (r_max_ - r_min_) * cos_theta;
+  get<1, 2>(inv_jacobian) = (1.0 / pi_over_2_minus_theta_min_) * sin_theta / r;
   get<2, 2>(inv_jacobian) = 0.0;
 
   return inv_jacobian;
@@ -176,20 +176,20 @@ SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
   // these two slots are zeros (not used)
   auto& theta_factor = get<2, 0, 0>(hessian);
   auto& phi_factor = get<2, 0, 2>(hessian);
-  theta_factor = M_PI * fraction_of_torus_;
-  phi_factor = pi_over_2_minus_theta_min_;
+  phi_factor = M_PI * fraction_of_torus_;
+  theta_factor = pi_over_2_minus_theta_min_;
 
   // these two slots are zeros (not used)
   auto& cos_theta = get<2, 1, 2>(hessian);
   auto& sin_theta = get<2, 2, 2>(hessian);
-  get<0, 0, 0>(hessian) = theta_factor * source_coords[2];
+  get<0, 0, 0>(hessian) = M_PI_2 - (theta_factor * source_coords[1]);
   cos_theta = cos(get<0, 0, 0>(hessian));
   sin_theta = sin(get<0, 0, 0>(hessian));
 
   // these two slots are NOT zeros, but will be overwritten with hessian later
   auto& cos_phi = get<2, 0, 1>(hessian);
   auto& sin_phi = get<2, 1, 1>(hessian);
-  get<0, 0, 0>(hessian) = phi_factor * source_coords[1];
+  get<0, 0, 0>(hessian) = phi_factor * source_coords[2];
   cos_phi = cos(get<0, 0, 0>(hessian));
   sin_phi = sin(get<0, 0, 0>(hessian));
 
@@ -200,18 +200,18 @@ SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
   radius(make_not_null(&r), source_coords[0]);
 
   // Note : execution order matters here
-  get<0, 0, 1>(hessian) = -r_factor * phi_factor * cos_theta * sin_phi;
-  get<0, 0, 2>(hessian) = -r_factor * theta_factor * sin_theta * cos_phi;
-  get<0, 1, 1>(hessian) = -square(phi_factor) * r * cos_theta * cos_phi;
-  get<0, 1, 2>(hessian) = phi_factor * theta_factor * r * sin_theta * sin_phi;
-  get<0, 2, 2>(hessian) = -square(theta_factor) * r * cos_theta * cos_phi;
-  get<1, 0, 1>(hessian) = -r_factor * phi_factor * sin_theta * sin_phi;
-  get<1, 0, 2>(hessian) = r_factor * theta_factor * cos_theta * cos_phi;
-  get<1, 1, 1>(hessian) = -square(phi_factor) * r * sin_theta * cos_phi;
-  get<1, 1, 2>(hessian) = -phi_factor * theta_factor * r * cos_theta * sin_phi;
-  get<1, 2, 2>(hessian) = -square(theta_factor) * r * sin_theta * cos_phi;
-  get<2, 0, 1>(hessian) = r_factor * phi_factor * cos_phi;
-  get<2, 1, 1>(hessian) = -square(phi_factor) * r * sin_phi;
+  get<0, 0, 1>(hessian) = -r_factor * theta_factor * cos_theta * cos_phi;
+  get<0, 0, 2>(hessian) = -r_factor * phi_factor * sin_theta * sin_phi;
+  get<0, 1, 1>(hessian) = -square(theta_factor) * r * sin_theta * cos_phi;
+  get<0, 1, 2>(hessian) = phi_factor * theta_factor * r * cos_theta * sin_phi;
+  get<0, 2, 2>(hessian) = -square(phi_factor) * r * sin_theta * cos_phi;
+  get<1, 0, 1>(hessian) = -r_factor * theta_factor * cos_theta * sin_phi;
+  get<1, 0, 2>(hessian) = r_factor * phi_factor * sin_theta * cos_phi;
+  get<1, 1, 1>(hessian) = -square(theta_factor) * r * sin_theta * sin_phi;
+  get<1, 1, 2>(hessian) = -phi_factor * theta_factor * r * cos_theta * cos_phi;
+  get<1, 2, 2>(hessian) = -square(phi_factor) * r * sin_theta * sin_phi;
+  get<2, 0, 1>(hessian) = r_factor * theta_factor * sin_theta;
+  get<2, 1, 1>(hessian) = -square(theta_factor) * r * cos_theta;
 
   // remove temp vars and restore to zero
   get<0, 0, 0>(hessian) = 0.0;
@@ -235,54 +235,55 @@ SphericalTorus::derivative_of_inv_jacobian(
   // In order to reduce number of memory allocations we use some slots of
   // `result` for storing temp variables as below.
 
-  auto& cos_theta = get<1, 2, 2>(result);
-  auto& sin_theta = get<2, 2, 0>(result);
+  auto& cos_phi = get<1, 2, 2>(result);
+  auto& sin_phi = get<2, 2, 0>(result);
   get<0, 0, 0>(result) = M_PI * fraction_of_torus_ * source_coords[2];
-  cos_theta = cos(get<0, 0, 0>(result));
-  sin_theta = sin(get<0, 0, 0>(result));
-
-  auto& cos_phi = get<2, 2, 1>(result);
-  auto& sin_phi = get<2, 2, 2>(result);
-  get<0, 0, 0>(result) = pi_over_2_minus_theta_min_ * source_coords[1];
   cos_phi = cos(get<0, 0, 0>(result));
   sin_phi = sin(get<0, 0, 0>(result));
 
+  auto& cos_theta = get<2, 2, 1>(result);
+  auto& sin_theta = get<2, 2, 2>(result);
+  get<0, 0, 0>(result) =
+      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
+  cos_theta = cos(get<0, 0, 0>(result));
+  sin_theta = sin(get<0, 0, 0>(result));
+
   auto& theta_factor = get<0, 2, 0>(result);
   auto& phi_factor = get<0, 2, 2>(result);
-  theta_factor = M_PI * fraction_of_torus_;
-  phi_factor = pi_over_2_minus_theta_min_;
+  phi_factor = M_PI * fraction_of_torus_;
+  theta_factor = pi_over_2_minus_theta_min_;
 
   auto& r = get<0, 0, 0>(result);
   auto& r_factor = get<0, 1, 0>(result);
   radius(make_not_null(&r), source_coords[0]);
   r_factor = 0.5 * (r_max_ - r_min_);
 
-  get<0, 0, 1>(result) = -phi_factor / r_factor * cos_theta * sin_phi;
-  get<0, 0, 2>(result) = -theta_factor / r_factor * sin_theta * cos_phi;
-  get<0, 1, 1>(result) = -phi_factor / r_factor * sin_theta * sin_phi;
-  get<0, 1, 2>(result) = theta_factor / r_factor * cos_theta * cos_phi;
-  get<0, 2, 1>(result) = phi_factor / r_factor * cos_phi;
+  get<0, 0, 1>(result) = -theta_factor / r_factor * cos_theta * cos_phi;
+  get<0, 0, 2>(result) = -phi_factor / r_factor * sin_theta * sin_phi;
+  get<0, 1, 1>(result) = -theta_factor / r_factor * cos_theta * sin_phi;
+  get<0, 1, 2>(result) = phi_factor / r_factor * sin_theta * cos_phi;
+  get<0, 2, 1>(result) = theta_factor / r_factor * sin_theta;
   get<1, 0, 0>(result) =
-      r_factor / phi_factor * cos_theta * sin_phi / square(r);
-  get<1, 0, 1>(result) = -cos_theta * cos_phi / r;
-  get<1, 0, 2>(result) = theta_factor / phi_factor * sin_theta * sin_phi / r;
+      r_factor / theta_factor * cos_theta * cos_phi / square(r);
+  get<1, 0, 1>(result) = -sin_theta * cos_phi / r;
+  get<1, 0, 2>(result) = phi_factor / theta_factor * cos_theta * sin_phi / r;
   get<1, 1, 0>(result) =
-      r_factor / phi_factor * sin_theta * sin_phi / square(r);
-  get<1, 1, 1>(result) = -sin_theta * cos_phi / r;
-  get<1, 1, 2>(result) = -theta_factor / phi_factor * cos_theta * sin_phi / r;
-  get<1, 2, 0>(result) = -r_factor / phi_factor * cos_phi / square(r);
-  get<1, 2, 1>(result) = -sin_phi / r;
+      r_factor / theta_factor * cos_theta * sin_phi / square(r);
+  get<1, 1, 1>(result) = -sin_theta * sin_phi / r;
+  get<1, 1, 2>(result) = -phi_factor / theta_factor * cos_theta * cos_phi / r;
+  get<1, 2, 0>(result) = -r_factor / theta_factor * sin_theta / square(r);
+  get<1, 2, 1>(result) = -cos_theta / r;
   get<2, 0, 0>(result) =
-      r_factor / theta_factor * sin_theta / (square(r) * cos_phi);
-  get<2, 0, 1>(result) =
-      -phi_factor / theta_factor * sin_theta * sin_phi / (r * square(cos_phi));
-  get<2, 0, 2>(result) = -cos_theta / (r * cos_phi);
+      r_factor / phi_factor * sin_phi / (square(r) * sin_theta);
+  get<2, 0, 1>(result) = -theta_factor / phi_factor * cos_theta * sin_phi /
+                         (r * square(sin_theta));
+  get<2, 0, 2>(result) = -cos_phi / (r * sin_theta);
 
   get<2, 1, 0>(result) =
-      -r_factor / theta_factor * cos_theta / (square(r) * cos_phi);
+      -r_factor / phi_factor * cos_phi / (square(r) * sin_theta);
   get<2, 1, 1>(result) =
-      phi_factor / theta_factor * cos_theta * sin_phi / (r * square(cos_phi));
-  get<2, 1, 2>(result) = -sin_theta / (r * cos_phi);
+      theta_factor / phi_factor * cos_theta * cos_phi / (r * square(sin_theta));
+  get<2, 1, 2>(result) = -sin_phi / (r * sin_theta);
 
   // remove temp vars and restore to zero
   get<0, 0, 0>(result) = 0.0;

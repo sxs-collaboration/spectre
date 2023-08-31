@@ -53,12 +53,6 @@ namespace domain::CoordinateMaps {
  *    the removed polar cones.
  *  - $f_\mathrm{torus}\in(0, 1)$ is azimuthal fraction that the torus covers.
  *
- * \warning Internal namings of code variables in `SphericalTorus.cpp` uses
- * a different convention of angular variables for spherical coordinates.
- * Therein `theta` denotes the azimuthal angle, and `phi` denotes the elevation
- * angle measured from equator, which is equal to (\f$\pi/2\f$ - polar angle)
- * with the polar angle being measured from +z axis.
- *
  */
 class SphericalTorus {
  public:
