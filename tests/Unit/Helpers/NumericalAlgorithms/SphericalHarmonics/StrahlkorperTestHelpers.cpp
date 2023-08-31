@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 
+namespace ylm::TestHelpers {
 Strahlkorper<Frame::Inertial> create_strahlkorper_y11(
     const double y11_amplitude, const double radius,
     const std::array<double, 3>& center) {
@@ -26,3 +27,4 @@ Strahlkorper<Frame::Inertial> create_strahlkorper_y11(
   coefs[it.set(1, -1)()] = y11_amplitude * sqrt(0.5 / M_PI);
   return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_sphere);
 }
+}  // namespace ylm::TestHelpers

@@ -55,7 +55,7 @@ namespace control_system {
 namespace {
 using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-using Strahlkorper = Strahlkorper<Frame::Distorted>;
+using Strahlkorper = ylm::Strahlkorper<Frame::Distorted>;
 template <typename Metavars>
 using SystemHelper = control_system::TestHelpers::SystemHelper<Metavars>;
 
@@ -104,7 +104,7 @@ void test_shape_control(
       control_system::ControlErrors::detail::excision_sphere_name<
           ::domain::ObjectLabel::A>());
 
-  SpherepackIterator iter{l_max, l_max};
+  ylm::SpherepackIterator iter{l_max, l_max};
   const double ah_radius =
       ah_coefs_function_of_time.func(initial_time)[0][iter.set(0, 0)()];
   const tnsr::I<double, 3, Frame::Grid>& grid_center = excision_sphere.center();
@@ -181,7 +181,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
 
   // Responsible for running all control system checks
   SystemHelper<metavars> system_helper{};
-  SpherepackIterator iter{l_max, l_max};
+  ylm::SpherepackIterator iter{l_max, l_max};
   const size_t num_ah_coeffs = iter.spherepack_array_size();
   std::uniform_real_distribution<double> coef_dist{-0.1, 0.1};
   // Hard code the radius to something other than 1 because shape doesn't depend
@@ -464,7 +464,7 @@ void test_names() {
   CHECK(pretty_type::name<shape>() == "ShapeA");
 
   const size_t l_max = 3;
-  SpherepackIterator iter(l_max, l_max);
+  ylm::SpherepackIterator iter(l_max, l_max);
   const size_t size = iter.spherepack_array_size();
 
   // Check known valid indices

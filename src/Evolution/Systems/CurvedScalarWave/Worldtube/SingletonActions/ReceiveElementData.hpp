@@ -123,21 +123,21 @@ struct ReceiveElementData {
       ModalVector dt_psi_ylm_l1(&dt_psi_ylm_coefs[1], 3);
       psi_ylm_l1 /= wt_radius;
       dt_psi_ylm_l1 /= wt_radius;
-      psi_stf_l1 = ylm_to_stf_1<Frame::Grid>(psi_ylm_l1);
-      dt_psi_stf_l1 = ylm_to_stf_1<Frame::Grid>(dt_psi_ylm_l1);
+      psi_stf_l1 = ylm::ylm_to_stf_1<Frame::Grid>(psi_ylm_l1);
+      dt_psi_stf_l1 = ylm::ylm_to_stf_1<Frame::Grid>(dt_psi_ylm_l1);
       if (order > 1) {
         ModalVector psi_ylm_l2(&psi_ylm_coefs[4], 5);
         ModalVector dt_psi_ylm_l2(&dt_psi_ylm_coefs[4], 5);
         psi_ylm_l2 /= wt_radius * wt_radius;
         dt_psi_ylm_l2 /= wt_radius * wt_radius;
-        psi_stf_l2 = ylm_to_stf_2<Frame::Grid>(psi_ylm_l2);
-        dt_psi_stf_l2 = ylm_to_stf_2<Frame::Grid>(dt_psi_ylm_l2);
+        psi_stf_l2 = ylm::ylm_to_stf_2<Frame::Grid>(psi_ylm_l2);
+        dt_psi_stf_l2 = ylm::ylm_to_stf_2<Frame::Grid>(dt_psi_ylm_l2);
       }
     }
 
     ::Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), ylm_to_stf_0(psi_ylm_l0),
-        ylm_to_stf_0(dt_psi_ylm_l0), std::move(psi_stf_l1),
+        make_not_null(&box), ylm::ylm_to_stf_0(psi_ylm_l0),
+        ylm::ylm_to_stf_0(dt_psi_ylm_l0), std::move(psi_stf_l1),
         std::move(dt_psi_stf_l1), std::move(psi_stf_l2),
         std::move(dt_psi_stf_l2));
     inbox.erase(time_step_id);

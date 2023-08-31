@@ -18,7 +18,6 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -36,8 +35,8 @@ void test_strahlkorper_in_different_frame() {
   // nonzero center.
   const std::array<double, 3> strahlkorper_grid_center = {0.03, 0.02, 0.01};
   const size_t l_max = 8;
-  const Strahlkorper<Frame::Grid> strahlkorper_grid(l_max, 2.0,
-                                                    strahlkorper_grid_center);
+  const ylm::Strahlkorper<Frame::Grid> strahlkorper_grid(
+      l_max, 2.0, strahlkorper_grid_center);
 
   // Create a Domain.
   // We choose a spherical shell domain extending from radius 1.9M to
@@ -72,7 +71,7 @@ void test_strahlkorper_in_different_frame() {
 
   // Compute strahlkorper in the destination frame.
   const double time = 0.5;
-  Strahlkorper<DestFrame> strahlkorper_dest{};
+  ylm::Strahlkorper<DestFrame> strahlkorper_dest{};
   if constexpr (Aligned) {
     strahlkorper_in_different_frame_aligned(make_not_null(&strahlkorper_dest),
                                             strahlkorper_grid, domain,
@@ -85,21 +84,21 @@ void test_strahlkorper_in_different_frame() {
   }
 
   // Now compare.
-  std::unique_ptr<Strahlkorper<DestFrame>> strahlkorper_expected;
+  std::unique_ptr<ylm::Strahlkorper<DestFrame>> strahlkorper_expected;
   if constexpr (Aligned) {
     const ylm::Spherepack ylm{l_max, l_max};
     const DataVector new_radius =
         get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
             2.0, ylm.theta_phi_points(), 1.0,
             std::array<double, 3>{{0.1, 0.2, 0.3}}));
-    strahlkorper_expected.reset(new Strahlkorper<DestFrame>(
+    strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
         l_max, l_max, new_radius, strahlkorper_grid_center));
   } else {
-    strahlkorper_expected.reset(
-        new Strahlkorper<DestFrame>(l_max, 2.0,
-                                    {{strahlkorper_grid_center[0] + 0.005,
-                                      strahlkorper_grid_center[1] + 0.01,
-                                      strahlkorper_grid_center[2] + 0.015}}));
+    strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
+        l_max, 2.0,
+        {{strahlkorper_grid_center[0] + 0.005,
+          strahlkorper_grid_center[1] + 0.01,
+          strahlkorper_grid_center[2] + 0.015}}));
   }
   CHECK_ITERABLE_APPROX(strahlkorper_expected->physical_center(),
                         strahlkorper_dest.physical_center());
@@ -117,8 +116,8 @@ void test_strahlkorper_coords_in_different_frame() {
   // nonzero center.
   const std::array<double, 3> strahlkorper_src_center = {0.03, 0.02, 0.01};
   const size_t l_max = 8;
-  const Strahlkorper<SrcFrame> strahlkorper_src(l_max, 2.0,
-                                                strahlkorper_src_center);
+  const ylm::Strahlkorper<SrcFrame> strahlkorper_src(l_max, 2.0,
+                                                     strahlkorper_src_center);
 
   // Create a Domain.
   // We choose a spherical shell domain extending from radius 1.9M to

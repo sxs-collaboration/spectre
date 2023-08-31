@@ -7,8 +7,10 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 namespace gsl {
 template <typename>
 struct not_null;
@@ -28,6 +30,6 @@ namespace gr::surfaces {
  */
 template <typename Frame>
 void radial_distance(gsl::not_null<Scalar<DataVector>*> radial_distance,
-                     const Strahlkorper<Frame>& strahlkorper_a,
-                     const Strahlkorper<Frame>& strahlkorper_b);
+                     const ylm::Strahlkorper<Frame>& strahlkorper_a,
+                     const ylm::Strahlkorper<Frame>& strahlkorper_b);
 }  // namespace gr::surfaces

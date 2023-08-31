@@ -7,8 +7,10 @@
 
 /// \cond
 class DataVector;
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 /// \endcond
 
 namespace gr::surfaces {
@@ -31,5 +33,5 @@ double euclidean_surface_integral_of_vector(
     const Scalar<DataVector>& area_element,
     const tnsr::I<DataVector, 3, Frame>& vector,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const Strahlkorper<Frame>& strahlkorper);
+    const ylm::Strahlkorper<Frame>& strahlkorper);
 }  // namespace gr::surfaces

@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/YlmToStf.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace ylm {
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmToStf",
                   "[NumericalAlgorithms][Unit]") {
   MAKE_GENERATOR(generator);
@@ -92,3 +93,4 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmToStf",
     CHECK_ITERABLE_APPROX(stf_l2_at_points, ylm_l2_at_points);
   }
 }
+}  // namespace ylm

@@ -20,7 +20,7 @@ namespace ylm::Tags {
 template <typename Frame>
 void PhysicalCenterCompute<Frame>::function(
     const gsl::not_null<std::array<double, 3>*> physical_center,
-    const ::Strahlkorper<Frame>& strahlkorper) {
+    const ylm::Strahlkorper<Frame>& strahlkorper) {
   *physical_center = strahlkorper.physical_center();
 }
 

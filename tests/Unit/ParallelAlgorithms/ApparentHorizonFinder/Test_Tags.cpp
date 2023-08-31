@@ -21,7 +21,6 @@
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
@@ -36,7 +35,7 @@ void test_normals() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      ylm::TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto n_pts = theta_phi[0].size();
@@ -125,8 +124,8 @@ void test_dimensionful_spin_vector_compute_tag() {
   const double y11_amplitude = 1.0;
   const double y11_radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
-  const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, y11_radius, center);
+  const auto strahlkorper = ylm::TestHelpers::create_strahlkorper_y11(
+      y11_amplitude, y11_radius, center);
   const size_t ylm_physical_size =
       strahlkorper.ylm_spherepack().physical_size();
   const DataVector used_for_size(ylm_physical_size,

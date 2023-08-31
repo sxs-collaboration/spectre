@@ -69,14 +69,14 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     // shape map. This is why we can divide by 2 and take the sqrt without
     // worrying about odd numbers or non-perfect squares
     const size_t l_max = -1 + sqrt(num_components / 2);
-    SpherepackIterator iter(l_max, l_max);
+    ylm::SpherepackIterator iter(l_max, l_max);
     const auto compact_index = iter.compact_index(i);
     if (compact_index.has_value()) {
       iter.set(compact_index.value());
-      const int m =
-          iter.coefficient_array() == SpherepackIterator::CoefficientArray::a
-              ? static_cast<int>(iter.m())
-              : -static_cast<int>(iter.m());
+      const int m = iter.coefficient_array() ==
+                            ylm::SpherepackIterator::CoefficientArray::a
+                        ? static_cast<int>(iter.m())
+                        : -static_cast<int>(iter.m());
       return {"l"s + get_output(iter.l()) + "m"s + get_output(m)};
     } else {
       return std::nullopt;
@@ -112,7 +112,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     template <typename Metavariables>
     static void apply(typename measurements::SingleHorizon<
                           Horizon>::Submeasurement submeasurement,
-                      const Strahlkorper<Frame::Distorted>& strahlkorper,
+                      const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
@@ -133,7 +133,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
     template <::domain::ObjectLabel MeasureHorizon, typename Metavariables>
     static void apply(
         measurements::BothHorizons::FindHorizon<MeasureHorizon> submeasurement,
-        const Strahlkorper<Frame::Distorted>& strahlkorper,
+        const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       // The measurement event will call this for both horizons, but we only

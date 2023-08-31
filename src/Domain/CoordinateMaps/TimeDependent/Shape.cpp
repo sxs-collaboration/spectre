@@ -173,8 +173,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   // Copy over the coefficients. The additional coefficients of order `l_max_
   // +1` are zero and will only have an effect in the interpolation of the
   // cartesian gradient.
-  SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
-  SpherepackIterator iter(l_max_, m_max_);
+  ylm::SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
+  ylm::SpherepackIterator iter(l_max_, m_max_);
   for (size_t l = 0; l <= l_max_; ++l) {
     const int m_max = std::min(l, m_max_);
     for (int m = -m_max; m <= m_max; ++m) {

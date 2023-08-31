@@ -31,7 +31,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup SurfacesGroup
-/// Holds tags and ComputeItems associated with a `::Strahlkorper`.
+/// Holds tags and ComputeItems associated with a `ylm::Strahlkorper`.
 namespace ylm::Tags {
 /// The OneOverOneFormMagnitude is the reciprocal of the magnitude of the
 /// one-form perpendicular to the horizon
@@ -248,7 +248,7 @@ struct EuclideanSurfaceIntegralCompute
   static void function(const gsl::not_null<double*> surface_integral,
                        const Scalar<DataVector>& euclidean_area_element,
                        const Scalar<DataVector>& integrand,
-                       const ::Strahlkorper<Frame>& strahlkorper) {
+                       const ylm::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral = ::gr::surfaces::surface_integral_of_scalar<Frame>(
         euclidean_area_element, integrand, strahlkorper);
   }
@@ -283,7 +283,7 @@ struct EuclideanSurfaceIntegralVectorCompute
                        const Scalar<DataVector>& euclidean_area_element,
                        const tnsr::I<DataVector, 3, Frame>& integrand,
                        const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-                       const ::Strahlkorper<Frame>& strahlkorper) {
+                       const ylm::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral =
         ::gr::surfaces::euclidean_surface_integral_of_vector<Frame>(
             euclidean_area_element, integrand, normal_one_form, strahlkorper);
@@ -297,7 +297,7 @@ struct EuclideanSurfaceIntegralVectorCompute
 
 namespace gr::surfaces {
 /// \ingroup SurfacesGroup
-/// Holds tags and ComputeItems associated with a `::Strahlkorper` that
+/// Holds tags and ComputeItems associated with a `ylm::Strahlkorper` that
 /// also need a metric.
 namespace Tags {
 
@@ -342,7 +342,7 @@ struct SurfaceIntegralCompute : SurfaceIntegral<IntegrandTag, Frame>,
   static void function(const gsl::not_null<double*> surface_integral,
                        const Scalar<DataVector>& area_element,
                        const Scalar<DataVector>& integrand,
-                       const ::Strahlkorper<Frame>& strahlkorper) {
+                       const ylm::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral = ::gr::surfaces::surface_integral_of_scalar<Frame>(
         area_element, integrand, strahlkorper);
   }
@@ -363,7 +363,7 @@ struct AreaCompute : Area, db::ComputeTag {
   using base = Area;
   using return_type = double;
   static void function(const gsl::not_null<double*> result,
-                       const Strahlkorper<Frame>& strahlkorper,
+                       const ylm::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& area_element) {
     *result = strahlkorper.ylm_spherepack().definite_integral(
         get(area_element).data());
@@ -403,9 +403,9 @@ struct SpinFunctionCompute : SpinFunction, db::ComputeTag {
   using base = SpinFunction;
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>,
-      const ylm::Tags::aliases::Jacobian<Frame>&, const Strahlkorper<Frame>&,
-      const tnsr::I<DataVector, 3, Frame>&, const Scalar<DataVector>&,
-      const tnsr::ii<DataVector, 3, Frame>&)>(
+      const ylm::Tags::aliases::Jacobian<Frame>&,
+      const ylm::Strahlkorper<Frame>&, const tnsr::I<DataVector, 3, Frame>&,
+      const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&)>(
       &gr::surfaces::spin_function<Frame>);
   using argument_tags =
       tmpl::list<ylm::Tags::Tangents<Frame>, ylm::Tags::Strahlkorper<Frame>,
@@ -430,8 +430,8 @@ struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<double*>, const Scalar<DataVector>&,
       const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&,
-      const ylm::Tags::aliases::Jacobian<Frame>&, const Strahlkorper<Frame>&,
-      const Scalar<DataVector>&)>(
+      const ylm::Tags::aliases::Jacobian<Frame>&,
+      const ylm::Strahlkorper<Frame>&, const Scalar<DataVector>&)>(
       &gr::surfaces::dimensionful_spin_magnitude<Frame>);
   using argument_tags =
       tmpl::list<ylm::Tags::RicciScalar, SpinFunction,
@@ -455,7 +455,7 @@ struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<MeasurementFrame>,
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<std::array<double, 3>*>, double,
       const Scalar<DataVector>&, const Scalar<DataVector>&,
-      const Scalar<DataVector>&, const Strahlkorper<MetricDataFrame>&,
+      const Scalar<DataVector>&, const ylm::Strahlkorper<MetricDataFrame>&,
       const tnsr::I<DataVector, 3, MeasurementFrame>&)>(
       &gr::surfaces::spin_vector<MetricDataFrame, MeasurementFrame>);
   using argument_tags =

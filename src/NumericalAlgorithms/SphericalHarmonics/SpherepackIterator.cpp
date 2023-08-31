@@ -73,6 +73,7 @@
 
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 
+namespace ylm {
 SpherepackIterator::SpherepackIterator(const size_t l_max_input,
                                        const size_t m_max_input,
                                        const size_t stride /*=1*/)
@@ -192,3 +193,4 @@ SpherepackIterator& SpherepackIterator::set(const size_t compact_index) {
   current_compact_index_ = compact_index;
   return *this;
 }
+}  // namespace ylm

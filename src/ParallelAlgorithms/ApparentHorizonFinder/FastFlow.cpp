@@ -53,7 +53,8 @@ FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
       iter_at_min_residual_mesh_norm_(0) {}
 
 template <typename Frame>
-size_t FastFlow::current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const {
+size_t FastFlow::current_l_mesh(
+    const ylm::Strahlkorper<Frame>& strahlkorper) const {
   const size_t l_max = strahlkorper.ylm_spherepack().l_max();
   // This is the formula used in SpEC (if l_max>=4). We may want to make this
   // formula an option in the future, if we want to experiment with it.
@@ -90,7 +91,7 @@ DataVector fast_flow_weight(
 template <typename Frame>
 std::pair<FastFlow::Status, FastFlow::IterInfo>
 FastFlow::iterate_horizon_finder(
-    const gsl::not_null<Strahlkorper<Frame>*> current_strahlkorper,
+    const gsl::not_null<ylm::Strahlkorper<Frame>*> current_strahlkorper,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) {
@@ -98,7 +99,8 @@ FastFlow::iterate_horizon_finder(
   const size_t l_mesh = current_l_mesh(*current_strahlkorper);
 
   // Evaluate the Strahlkorper on a higher resolution mesh
-  const Strahlkorper<Frame> strahlkorper(l_mesh, l_mesh, *current_strahlkorper);
+  const ylm::Strahlkorper<Frame> strahlkorper(l_mesh, l_mesh,
+                                              *current_strahlkorper);
 
   // Make a DataBox with this strahlkorper.
   // Do we want to define ComputeItems for expansion, normalized
@@ -254,15 +256,16 @@ FastFlow::iterate_horizon_finder(
   const double flow_A = alpha_ / (l_surface * (l_surface + 1)) + beta_;
   const double flow_B = beta_ / alpha_;
   auto coefs = current_strahlkorper->coefficients();
-  for (auto cit = SpherepackIterator(current_strahlkorper->l_max(),
-                                     current_strahlkorper->l_max());
+  for (auto cit = ylm::SpherepackIterator(current_strahlkorper->l_max(),
+                                          current_strahlkorper->l_max());
        cit; ++cit) {
     coefs[cit()] -= flow_A /
                     (1.0 + flow_B * static_cast<double>(cit.l()) *
                                (static_cast<double>(cit.l()) + 1)) *
                     residual_on_surface[cit()];
   }
-  *current_strahlkorper = Strahlkorper<Frame>(coefs, *current_strahlkorper);
+  *current_strahlkorper =
+      ylm::Strahlkorper<Frame>(coefs, *current_strahlkorper);
 
   // Set up for next iter
   previous_residual_mesh_norm_ = residual_mesh_norm;
@@ -358,14 +361,15 @@ FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
 }
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                                \
-  template size_t FastFlow::current_l_mesh(                                 \
-      const Strahlkorper<FRAME(data)>& strahlkorper) const;                 \
-  template std::pair<FastFlow::Status, FastFlow::IterInfo>                  \
-  FastFlow::iterate_horizon_finder<FRAME(data)>(                            \
-      const gsl::not_null<Strahlkorper<FRAME(data)>*> current_strahlkorper, \
-      const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric,     \
-      const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,      \
+#define INSTANTIATE(_, data)                                            \
+  template size_t FastFlow::current_l_mesh(                             \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper) const;        \
+  template std::pair<FastFlow::Status, FastFlow::IterInfo>              \
+  FastFlow::iterate_horizon_finder<FRAME(data)>(                        \
+      const gsl::not_null<ylm::Strahlkorper<FRAME(data)>*>              \
+          current_strahlkorper,                                         \
+      const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric, \
+      const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,  \
       const tnsr::Ijj<DataVector, 3, FRAME(data)>& christoffel_2nd_kind);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))

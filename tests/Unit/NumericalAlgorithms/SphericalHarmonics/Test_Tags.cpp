@@ -20,7 +20,6 @@
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -32,7 +31,7 @@ void test_average_radius() {
   // Create spherical Strahlkorper
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const double r = 3.0;
-  Strahlkorper<Frame::Inertial> s(4, 4, r, center);
+  ylm::Strahlkorper<Frame::Inertial> s(4, 4, r, center);
   CHECK(s.average_radius() == approx(r));
 }
 
@@ -41,7 +40,7 @@ void test_radius_and_derivs() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      ylm::TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   // Now construct a Y00 + Im(Y11) surface by hand.
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
@@ -158,7 +157,7 @@ void test_normals() {
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
+      ylm::TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
 
   const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto n_pts = theta_phi[0].size();

@@ -17,6 +17,7 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 
+namespace ylm {
 namespace {
 
 Strahlkorper<Frame::Inertial> make_strahlkorper() {
@@ -103,3 +104,4 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.ChangeCenter",
   test_change_center_of_strahlkorper_to_physical();
 }
 }  // namespace
+}  // namespace ylm

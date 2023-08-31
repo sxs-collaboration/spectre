@@ -15,7 +15,7 @@ double euclidean_surface_integral_of_vector(
     const Scalar<DataVector>& area_element,
     const tnsr::I<DataVector, 3, Frame>& vector,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const Strahlkorper<Frame>& strahlkorper) {
+    const ylm::Strahlkorper<Frame>& strahlkorper) {
   const DataVector integrand =
       get(area_element) * get(dot_product(vector, normal_one_form)) /
       sqrt(get(dot_product(normal_one_form, normal_one_form)));
@@ -29,7 +29,7 @@ double euclidean_surface_integral_of_vector(
       const Scalar<DataVector>& area_element,                         \
       const tnsr::I<DataVector, 3, FRAME(data)>& vector,              \
       const tnsr::i<DataVector, 3, FRAME(data)>& normal_one_form,     \
-      const Strahlkorper<FRAME(data)>& strahlkorper);
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper);
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))
 #undef INSTANTIATE

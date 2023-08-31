@@ -22,10 +22,12 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
 
+namespace ylm {
 namespace {
 void test_invert_spec_phys_transform() {
   const double avg_radius = 1.0;
@@ -199,3 +201,4 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.Serialization",
   Strahlkorper<Frame::Inertial> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
   test_serialization(s);
 }
+}  // namespace ylm

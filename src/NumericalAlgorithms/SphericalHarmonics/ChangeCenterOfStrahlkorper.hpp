@@ -6,14 +6,17 @@
 #include <array>
 
 /// \cond
+namespace ylm {
 template <typename Frame>
 class Strahlkorper;
+}  // namespace ylm
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
 /// \endcond
 
+namespace ylm {
 /// Changes the expansion center of a Strahlkorper, where the
 /// expansion center is defined as the point about which the spectral
 /// basis of the Strahlkorper is expanded, which is the quantity
@@ -33,3 +36,4 @@ void change_expansion_center_of_strahlkorper(
 template <typename Frame>
 void change_expansion_center_of_strahlkorper_to_physical(
     gsl::not_null<Strahlkorper<Frame>*> strahlkorper);
+}  // namespace ylm

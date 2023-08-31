@@ -10,6 +10,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace ylm {
 void real_spherical_harmonic(gsl::not_null<DataVector*> spherical_harmonic,
                              const DataVector& theta, const DataVector& phi,
                              size_t l, int m) {
@@ -40,3 +41,4 @@ DataVector real_spherical_harmonic(const DataVector& theta,
   real_spherical_harmonic(make_not_null(&result), theta, phi, l, m);
   return result;
 }
+}  // namespace ylm

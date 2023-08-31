@@ -59,7 +59,7 @@
 namespace {
 template <typename Solution, typename Fr, typename ExpectedLambda>
 void test_expansion(const Solution& solution,
-                    const Strahlkorper<Fr>& strahlkorper,
+                    const ylm::Strahlkorper<Fr>& strahlkorper,
                     const ExpectedLambda& expected) {
   // Make databox from surface
   const auto box = db::create<
@@ -125,7 +125,7 @@ void test_minkowski() {
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
-      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
+      ylm::Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -183,7 +183,7 @@ void test_ricci_scalar(const Solution& solution,
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
-      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
+      ylm::Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -235,7 +235,8 @@ void test_area_element(const Solution& solution, const double surface_radius,
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
-      Strahlkorper<Frame::Inertial>(8, 8, surface_radius, {{0.0, 0.0, 0.0}}));
+      ylm::Strahlkorper<Frame::Inertial>(8, 8, surface_radius,
+                                         {{0.0, 0.0, 0.0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -260,7 +261,7 @@ void test_area_element(const Solution& solution, const double surface_radius,
 }
 
 void test_euclidean_surface_integral_of_vector(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) {
+    const ylm::Strahlkorper<Frame::Inertial>& strahlkorper) {
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
@@ -297,7 +298,7 @@ void test_euclidean_surface_integral_of_vector(
 
 template <typename Solution, typename Frame>
 void test_euclidean_surface_integral_of_vector_2(
-    const Solution& solution, const Strahlkorper<Frame>& strahlkorper,
+    const Solution& solution, const ylm::Strahlkorper<Frame>& strahlkorper,
     double expected_area) {
   // Another test:  Integrate (assuming Euclidean metric) the vector
   // V^i = s_j \delta^{ij} (s_k s_l \delta^{kl})^{-1/2} A A_euclid^{-1}
@@ -350,7 +351,7 @@ void test_euclidean_surface_integral_of_vector_2(
 }
 
 void test_euclidean_area_element(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) {
+    const ylm::Strahlkorper<Frame::Inertial>& strahlkorper) {
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
@@ -383,8 +384,9 @@ void test_euclidean_area_element(
 }
 
 template <typename Solution, typename Fr>
-void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
-               const double expected, const double expected_irreducible_mass,
+void test_area(const Solution& solution,
+               const ylm::Strahlkorper<Fr>& strahlkorper, const double expected,
+               const double expected_irreducible_mass,
                const double dimensionful_spin_magnitude,
                const double expected_christodoulou_mass) {
   const auto box = db::create<
@@ -439,8 +441,8 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
 //
 // This tests that I_1==I_2 for an arbitrary 3-vector J^i.
 template <typename Solution, typename Frame>
-void test_integral_correspondence(const Solution& solution,
-                                  const Strahlkorper<Frame>& strahlkorper) {
+void test_integral_correspondence(
+    const Solution& solution, const ylm::Strahlkorper<Frame>& strahlkorper) {
   const auto box =
       db::create<db::AddSimpleTags<ylm::Tags::items_tags<Frame>>,
                  db::AddComputeTags<ylm::Tags::compute_items_tags<Frame>>>(
@@ -504,7 +506,7 @@ void test_integral_correspondence(const Solution& solution,
 
 template <typename Solution, typename Fr>
 void test_surface_integral_of_scalar(const Solution& solution,
-                                     const Strahlkorper<Fr>& strahlkorper,
+                                     const ylm::Strahlkorper<Fr>& strahlkorper,
                                      const double expected) {
   const auto box =
       db::create<db::AddSimpleTags<ylm::Tags::items_tags<Fr>>,
@@ -539,7 +541,7 @@ void test_surface_integral_of_scalar(const Solution& solution,
 
 template <typename Solution, typename Fr>
 void test_spin_function(const Solution& solution,
-                        const Strahlkorper<Fr>& strahlkorper,
+                        const ylm::Strahlkorper<Fr>& strahlkorper,
                         const double expected) {
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
@@ -607,7 +609,7 @@ void test_spin_function(const Solution& solution,
 
 template <typename Solution, typename Fr>
 void test_dimensionful_spin_magnitude(
-    const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
+    const Solution& solution, const ylm::Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
     const ylm::Spherepack& ylm_with_spin_on_z_axis, const double expected,
@@ -699,7 +701,7 @@ void test_dimensionful_spin_magnitude(
 
 template <typename Solution, typename Fr>
 void test_spin_vector(
-    const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
+    const Solution& solution, const ylm::Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
     const ylm::Spherepack& ylm_with_spin_on_z_axis) {
@@ -769,10 +771,9 @@ void test_spin_vector(
 }
 
 template <typename Solution, typename Fr>
-void test_dimensionless_spin_magnitude(const Solution& solution,
-                                       const Strahlkorper<Fr>& strahlkorper,
-                                       const double dimensionful_spin_magnitude,
-                                       const double expected) {
+void test_dimensionless_spin_magnitude(
+    const Solution& solution, const ylm::Strahlkorper<Fr>& strahlkorper,
+    const double dimensionful_spin_magnitude, const double expected) {
   const auto box = db::create<
       db::AddSimpleTags<ylm::Tags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<ylm::Tags::compute_items_tags<Frame::Inertial>>>(
@@ -819,7 +820,7 @@ void test_dimensionless_spin_magnitude(const Solution& solution,
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion", "[ApparentHorizons][Unit]") {
   const auto sphere =
-      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}});
+      ylm::Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}});
 
   test_expansion(
       gr::Solutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
@@ -833,13 +834,13 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion", "[ApparentHorizons][Unit]") {
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, spin);
 
-  const auto kerr_horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+  const auto kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius), center);
 
   test_expansion(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
                  [](const size_t size) { return DataVector(size, 0.0); });
@@ -897,13 +898,13 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.AreaElement", "[ApparentHorizons][Unit]") {
       sqrt(0.5 * mass * kerr_horizon_radius);
 
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, spin);
 
-  const auto kerr_horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+  const auto kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius), center);
 
   test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
             expected_area, expected_irreducible_mass,
@@ -918,9 +919,9 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.AreaElement", "[ApparentHorizons][Unit]") {
   // Check that the two methods of computing the surface integral are
   // still equal for a surface inside and outside the horizon
   // (that is, for spacelike and timelike Strahlkorpers).
-  const auto inside_kerr_horizon = Strahlkorper<Frame::Inertial>(
+  const auto inside_kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
       l_max, l_max, 0.9 * get(horizon_radius), center);
-  const auto outside_kerr_horizon = Strahlkorper<Frame::Inertial>(
+  const auto outside_kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
       l_max, l_max, 2.0 * get(horizon_radius), center);
   test_integral_correspondence(gr::Solutions::KerrSchild{mass, spin, center},
                                inside_kerr_horizon);
@@ -949,7 +950,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SurfaceIntegralOfScalar",
   const double expected_integral = 4.0 * M_PI * square(square(radius)) / 3.0;
 
   const auto horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, radius, center);
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, radius, center);
 
   test_surface_integral_of_scalar(gr::Solutions::KerrSchild{mass, spin, center},
                                   horizon, expected_integral);
@@ -963,19 +964,19 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinFunction", "[ApparentHorizons][Unit]") {
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, spin);
 
-  const auto kerr_horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+  const auto kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius), center);
 
   // Check value of SpinFunction^2 integrated over the surface for
   // Schwarzschild. Expected result is zero.
-  test_spin_function(gr::Solutions::KerrSchild{mass, {{0.0, 0.0, 0.0}}, center},
-                     Strahlkorper<Frame::Inertial>(l_max, l_max, 8.888, center),
-                     0.0);
+  test_spin_function(
+      gr::Solutions::KerrSchild{mass, {{0.0, 0.0, 0.0}}, center},
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 8.888, center), 0.0);
 
   // Check value of SpinFunction^2 integrated over the surface for
   // Kerr. Derive this by integrating the square of the imaginary
@@ -1006,11 +1007,12 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionfulSpinMagnitude",
   const std::array<double, 3> aligned_dimensionless_spin = {
       {0.0, 0.0, expected_dimensionless_spin_magnitude}};
   const auto aligned_horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(aligned_l_max, aligned_l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(aligned_l_max, aligned_l_max, 2.0,
+                                         center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, aligned_dimensionless_spin);
-  const auto aligned_kerr_horizon = Strahlkorper<Frame::Inertial>(
+  const auto aligned_kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
       aligned_l_max, aligned_l_max, get(aligned_horizon_radius), center);
   test_dimensionful_spin_magnitude(
       gr::Solutions::KerrSchild{mass, aligned_dimensionless_spin, center},
@@ -1025,21 +1027,23 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionfulSpinMagnitude",
   const double expected_generic_spin_magnitude =
       expected_generic_dimensionless_spin_magnitude * square(mass);
   const auto generic_horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0,
+                                         center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, generic_dimensionless_spin);
-  const auto generic_kerr_horizon = Strahlkorper<Frame::Inertial>(
+  const auto generic_kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
       generic_l_max, generic_l_max, get(generic_horizon_radius), center);
 
   // Create rotated horizon radius, Strahlkorper, with same spin magnitude
   // but with spin on the z axis
   const auto rotated_horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0,
+                                         center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, aligned_dimensionless_spin);
-  const auto rotated_kerr_horizon = Strahlkorper<Frame::Inertial>(
+  const auto rotated_kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
       generic_l_max, generic_l_max, get(rotated_horizon_radius), center);
   test_dimensionful_spin_magnitude(
       gr::Solutions::KerrSchild{mass, generic_dimensionless_spin, center},
@@ -1057,21 +1061,22 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinVector", "[ApparentHorizons][Unit]") {
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, spin);
-  const auto kerr_horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+  const auto kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius), center);
 
   const auto horizon_radius_with_spin_on_z_axis =
       gr::Solutions::kerr_horizon_radius(
-          Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+          ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
               .ylm_spherepack()
               .theta_phi_points(),
           mass, {{0.0, 0.0, spin_magnitude}});
-  const auto kerr_horizon_with_spin_on_z_axis = Strahlkorper<Frame::Inertial>(
-      l_max, l_max, get(horizon_radius_with_spin_on_z_axis), center);
+  const auto kerr_horizon_with_spin_on_z_axis =
+      ylm::Strahlkorper<Frame::Inertial>(
+          l_max, l_max, get(horizon_radius_with_spin_on_z_axis), center);
 
   // Check that the gr::surfaces::spin_vector() correctly recovers the
   // chosen dimensionless spin
@@ -1090,13 +1095,13 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionlessSpinMagnitude",
   // Set up Kerr horizon
   const double l_max = 20;
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+      ylm::Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
       mass, spin);
 
-  const auto kerr_horizon =
-      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+  const auto kerr_horizon = ylm::Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius), center);
 
   // Set up dimensionful spin magnitude
   const double spin_magnitude = magnitude(spin);
@@ -1124,9 +1129,9 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const auto strahlkorper_a =
-      create_strahlkorper_y11(y11_amplitude, radius, center);
-  const auto strahlkorper_b =
-      create_strahlkorper_y11(4.0 * y11_amplitude, radius, center);
+      ylm::TestHelpers::create_strahlkorper_y11(y11_amplitude, radius, center);
+  const auto strahlkorper_b = ylm::TestHelpers::create_strahlkorper_y11(
+      4.0 * y11_amplitude, radius, center);
   const Scalar<DataVector> expected_radial_dist_a_minus_b{
       get(ylm::radius(strahlkorper_a)) - get(ylm::radius(strahlkorper_b))};
   const Scalar<DataVector> expected_radial_dist_b_minus_a{
@@ -1142,32 +1147,33 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
   // Check cases where one has more resolution than the other
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist), strahlkorper_a,
-      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
-                   strahlkorper_b));
+      ylm::Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
+                        strahlkorper_b));
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist),
-      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
-                   strahlkorper_b),
+      ylm::Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
+                        strahlkorper_b),
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist), strahlkorper_a,
-      Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
-                   strahlkorper_b));
+      ylm::Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
+                        strahlkorper_b));
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist),
-      Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
-                   strahlkorper_b),
+      ylm::Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
+                        strahlkorper_b),
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
 
   CHECK_THROWS_WITH(
       ([&strahlkorper_a, &y11_amplitude, &radius, &radial_dist]() {
         const std::array<double, 3> different_center{{0.1, 0.4, 0.3}};
-        const auto strahlkorper_off_center = create_strahlkorper_y11(
-            4.0 * y11_amplitude, radius, different_center);
+        const auto strahlkorper_off_center =
+            ylm::TestHelpers::create_strahlkorper_y11(4.0 * y11_amplitude,
+                                                      radius, different_center);
         gr::surfaces::radial_distance(make_not_null(&radial_dist),
                                       strahlkorper_a, strahlkorper_off_center);
       }()),

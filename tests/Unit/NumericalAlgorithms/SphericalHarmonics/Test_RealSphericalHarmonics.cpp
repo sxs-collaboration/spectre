@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/RealSphericalHarmonics.hpp"
 
+namespace ylm {
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.RealSphericalHarmonics",
                   "[NumericalAlgorithms][Unit]") {
   const size_t l_max = 10;
@@ -59,3 +60,4 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.RealSphericalHarmonics",
     }
   }
 }
+}  // namespace ylm
