@@ -5,6 +5,8 @@
 
 #include <cstddef>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -14,7 +16,10 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -27,6 +32,9 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t Dim>
 class Mesh;
+namespace control_system::Tags {
+struct WriteDataToDisk;
+}  // namespace control_system::Tags
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
@@ -165,6 +173,18 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
  * moment) in the x>=0 (A label) and x<0 (B label) regions. This action
  * calculates the center of mass in each region, and sends the result to the
  * control system.
+ *
+ * If the `control_system::Tags::WriteDataToDisk` tag is true, then this will
+ * also write the centers of mass to the `/ControlSystems/BnsCenters` subfile of
+ * the reductions h5 file. The columns of the file are
+ *
+ * - %Time
+ * - Center_A_x
+ * - Center_A_y
+ * - Center_A_z
+ * - Center_B_x
+ * - Center_B_y
+ * - Center_B_z
  */
 template <typename ControlSystems>
 struct PostReductionSendBNSStarCentersToControlSystem {
@@ -188,7 +208,28 @@ struct PostReductionSendBNSStarCentersToControlSystem {
     // Send results to the control system(s)
     RunCallbacks<BothNSCenters::FindTwoCenters, ControlSystems>::apply(
         center_databox, cache, measurement_id);
+
+    if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
+      std::vector<double> data_to_write{
+          measurement_id.id, center_a[0], center_a[1], center_a[2],
+          center_b[0],       center_b[1], center_b[2]};
+
+      auto& writer_proxy = Parallel::get_parallel_component<
+          observers::ObserverWriter<Metavariables>>(cache);
+
+      Parallel::threaded_action<
+          observers::ThreadedActions::WriteReductionDataRow>(
+          // Node 0 is always the writer
+          writer_proxy[0], subfile_path_, legend_,
+          std::make_tuple(std::move(data_to_write)));
+    }
   }
+
+ private:
+  const static inline std::vector<std::string> legend_{
+      "Time",       "Center_A_x", "Center_A_y", "Center_A_z",
+      "Center_B_x", "Center_B_y", "Center_B_z"};
+  const static inline std::string subfile_path_{"/ControlSystems/BnsCenters"};
 };
 
 }  // namespace control_system::measurements

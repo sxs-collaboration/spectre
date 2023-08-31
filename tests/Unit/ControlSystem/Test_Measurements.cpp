@@ -13,6 +13,8 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -78,6 +80,18 @@ static_assert(
 
 namespace {
 
+// Check that the center of mass is at the expected location for this test.
+void check_centers(const double center_a_x, const double center_a_y,
+                   const double center_a_z, const double center_b_x,
+                   const double center_b_y, const double center_b_z) {
+  CHECK(center_a_x == 1.0);
+  CHECK(center_a_y == 4.5 / 8.0);
+  CHECK(center_a_z == 3.0 / 8.0);
+  CHECK(center_b_x == -1.0);
+  CHECK(center_b_y == 1.0);
+  CHECK(center_b_z == 0.0);
+}
+
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "MockControlSystem"; }
@@ -109,14 +123,8 @@ struct MockControlSystem
                       const std::array<double, 3> center_b,
                       Parallel::GlobalCache<Metavariables>& /*cache*/,
                       const LinkedMessageId<double>& /*measurement_id*/) {
-      // Check that the center of mass is at the expected location for this
-      // test.
-      CHECK(center_a[0] == 1.0);
-      CHECK(center_a[1] == 4.5 / 8.0);
-      CHECK(center_a[2] == 3.0 / 8.0);
-      CHECK(center_b[0] == -1.0);
-      CHECK(center_b[1] == 1.0);
-      CHECK(center_b[2] == 0.0);
+      check_centers(center_a[0], center_a[1], center_a[2], center_b[0],
+                    center_b[1], center_b[2]);
       // Avoid unused variable warning for deriv_order, which is required
       // as part of the control_system protocol.
       CHECK(2 == deriv_order);
@@ -137,8 +145,51 @@ struct MockControlSystemComponent {
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
+struct MockWriteReductionDataRow {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& subfile_name,
+                    const std::vector<std::string>& file_legend,
+                    const std::tuple<std::vector<double>>& data_row) {
+    CHECK(subfile_name == "/ControlSystems/BnsCenters.dat");
+    CHECK(file_legend == std::vector<std::string>{
+                             "Time", "Center_A_x", "Center_A_y", "Center_A_z",
+                             "Center_B_x", "Center_B_y", "Center_B_z"});
+
+    const std::vector<double>& data = get<0>(data_row);
+
+    CHECK(data[0] == 1.0);
+    CHECK(data.size() == file_legend.size());
+    check_centers(data[1], data[2], data[3], data[4], data[5], data[6]);
+  }
+};
+
+template <typename Metavariables>
+struct MockObserverWriter {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using const_global_cache_tags =
+      tmpl::list<control_system::Tags::WriteDataToDisk>;
+  using array_index = int;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<>>>>>;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+
+  using replace_these_threaded_actions =
+      tmpl::list<observers::ThreadedActions::WriteReductionDataRow>;
+  using with_these_threaded_actions = tmpl::list<MockWriteReductionDataRow>;
+};
+
 struct Metavariables {
-  using component_list = tmpl::list<MockControlSystemComponent<Metavariables>>;
+  using observed_reduction_data_tags = tmpl::list<>;
+  void pup(PUP::er& /*p*/) {}
+  using component_list = tmpl::list<MockObserverWriter<Metavariables>,
+                                    MockControlSystemComponent<Metavariables>>;
 };
 
 }  // namespace
@@ -178,11 +229,14 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using control_system_component = MockControlSystemComponent<Metavariables>;
+  using obs_writer = MockObserverWriter<Metavariables>;
 
-  MockRuntimeSystem runner{{::Verbosity::Silent}};
+  MockRuntimeSystem runner{{true, ::Verbosity::Silent}};
   ActionTesting::emplace_singleton_component<control_system_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0});
+  ActionTesting::emplace_nodegroup_component_and_initialize<obs_writer>(
+      make_not_null(&runner), {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   auto& cache = ActionTesting::cache<control_system_component>(runner, 0);
 
