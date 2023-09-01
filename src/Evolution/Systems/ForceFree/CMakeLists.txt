@@ -12,6 +12,7 @@ spectre_target_sources(
   ElectricCurrentDensity.cpp
   ElectromagneticVariables.cpp
   Fluxes.cpp
+  ForceFreeConstraints.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp
@@ -25,6 +26,7 @@ spectre_target_headers(
   ElectricCurrentDensity.hpp
   ElectromagneticVariables.hpp
   Fluxes.hpp
+  ForceFreeConstraints.hpp
   Sources.hpp
   System.hpp
   Tags.hpp
