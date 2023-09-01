@@ -54,10 +54,18 @@ combine_h5_command.add_command(combine_h5_dat_command, name="dat")
     ),
 )
 def combine_h5_vol_command(h5files, subfile_name, output, check_src):
-    """Combines multiple HDF5 volume files
+    """Combines volume data spread over multiple H5 files into a single file
 
-    This executable is used for combining a series of HDF5 volume files into one
-    continuous dataset to be stored in a single HDF5 volume file."""
+    The typical use case is to combine volume data from multiple nodes into a
+    single file, if this is necessary for further processing (e.g. for the
+    'extend-connectivity' command). Note that for most use cases it is not
+    necessary to combine the volume data into a single file, as most commands
+    can operate on multiple input H5 files (e.g. 'generate-xdmf').
+
+    Note that this command does not currently combine volume data from different
+    time steps (e.g. from multiple segments of a simulation). All input H5 files
+    must contain the same set of observation IDs.
+    """
     # CLI scripts should be noops when input is empty
     if not h5files:
         return
