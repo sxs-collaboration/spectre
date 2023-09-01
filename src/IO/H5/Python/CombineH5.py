@@ -8,9 +8,19 @@ import click
 import rich
 
 import spectre.IO.H5 as spectre_h5
+from spectre.IO.H5.CombineH5Dat import combine_h5_dat_command
 
 
-@click.command(name="combine-h5")
+@click.group(name="combine-h5")
+def combine_h5_command():
+    """Combines multiple HDF5 files"""
+    pass
+
+
+combine_h5_command.add_command(combine_h5_dat_command, name="dat")
+
+
+@combine_h5_command.command(name="vol")
 @click.argument(
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
@@ -43,7 +53,7 @@ import spectre.IO.H5 as spectre_h5
         " checked, False implies no src files to check."
     ),
 )
-def combine_h5_command(h5files, subfile_name, output, check_src):
+def combine_h5_vol_command(h5files, subfile_name, output, check_src):
     """Combines multiple HDF5 volume files
 
     This executable is used for combining a series of HDF5 volume files into one

@@ -241,6 +241,7 @@ class TestCombineH5(unittest.TestCase):
         result = runner.invoke(
             combine_h5_command,
             [
+                "vol",
                 *self.file_names,
                 "-d",
                 self.subfile_name,
