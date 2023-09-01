@@ -79,6 +79,11 @@ void test_all_tags() {
       control_system::Tags::CurrentNumberOfMeasurements;
   TestHelpers::db::test_simple_tag<current_measurement_tag>(
       "CurrentNumberOfMeasurements");
+  using system_to_combined_tag = control_system::Tags::SystemToCombinedNames;
+  TestHelpers::db::test_simple_tag<system_to_combined_tag>(
+      "SystemToCombinedNames");
+  using aggregators_tag = control_system::Tags::UpdateAggregators;
+  TestHelpers::db::test_simple_tag<aggregators_tag>("UpdateAggregators");
 }
 
 void test_control_sys_inputs() {
@@ -233,10 +238,33 @@ void test_individual_tags() {
                                                             {"LabelB", true},
                                                             {"LabelA", false}});
 }
+
+struct NamesMetavars {
+  using component_list =
+      tmpl::list<ControlComponent<NamesMetavars, system>,
+                 ControlComponent<NamesMetavars, system2>,
+                 ControlComponent<NamesMetavars, quat_system>>;
+};
+
+void test_system_to_combined_names_tag() {
+  using system_to_combined_tag = control_system::Tags::SystemToCombinedNames;
+
+  const std::unordered_map<std::string, std::string> system_to_combined_names =
+      system_to_combined_tag::create_from_options<NamesMetavars>();
+
+  CHECK(system_to_combined_names.count("LabelA") == 1);
+  CHECK(system_to_combined_names.count("LabelB") == 1);
+  CHECK(system_to_combined_names.count("Rotation") == 1);
+
+  CHECK(system_to_combined_names.at("LabelA") == "LabelALabelB");
+  CHECK(system_to_combined_names.at("LabelB") == "LabelALabelB");
+  CHECK(system_to_combined_names.at("Rotation") == "Rotation");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
   test_all_tags();
   test_control_sys_inputs();
   test_individual_tags();
+  test_system_to_combined_names_tag();
 }
