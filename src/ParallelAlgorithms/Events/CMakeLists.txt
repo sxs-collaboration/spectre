@@ -22,7 +22,6 @@ spectre_target_headers(
   ObserveFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp
-  ObserveVolumeIntegrals.hpp
   Tags.hpp
   )
 

@@ -9,7 +9,6 @@ set(LIBRARY_SOURCES
   Test_ObserveFields.cpp
   Test_ObserveNorms.cpp
   Test_ObserveTimeStep.cpp
-  Test_ObserveVolumeIntegrals.cpp
   Test_Tags.cpp
   )
 

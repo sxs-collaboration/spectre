@@ -75,6 +75,8 @@ namespace Events {
  * where $V=\int_\Omega$ is the volume of the entire domain in inertial
  * coordinates.
  *
+ * VolumeIntegral only computes the volume integral without any normalization.
+ *
  * Here is an example of an input file:
  *
  * \snippet Test_ObserveNorms.cpp input_file_examples
@@ -112,8 +114,8 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
     struct NormType {
       using type = std::string;
       static constexpr Options::String help = {
-          "The type of norm to use. Must be one of Max, Min, L2Norm, or "
-          "L2IntegralNorm."};
+          "The type of norm to use. Must be one of Max, Min, L2Norm, "
+          "L2IntegralNorm, or VolumeIntegral."};
     };
     struct Components {
       using type = std::string;
@@ -156,7 +158,10 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
       Parallel::ReductionDatum<
           std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
           funcl::ElementWise<funcl::Sqrt<funcl::Divides<>>>,
-          std::index_sequence<2>>>;
+          std::index_sequence<2>>,
+      // VolumeIntegral
+      Parallel::ReductionDatum<std::vector<double>,
+                             funcl::ElementWise<funcl::Plus<>>>>;
 
  public:
   /// The name of the subfile inside the HDF5 file
@@ -195,7 +200,8 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
       " * Max values\n"
       " * Min values\n"
       " * L2-norm values\n"
-      " * L2 integral norm values\n";
+      " * L2 integral norm values\n"
+      " * Volume integral values\n";
 
   ObserveNorms() = default;
 
@@ -302,11 +308,11 @@ ObserveNorms<tmpl::list<ObservableTensorTags...>,
                      << ((db::tag_name<ObservableTensorTags>() + ",") + ...));
   }
   if (norm_type != "Max" and norm_type != "Min" and norm_type != "L2Norm" and
-      norm_type != "L2IntegralNorm") {
+      norm_type != "L2IntegralNorm" and norm_type != "VolumeIntegral") {
     PARSE_ERROR(
         context,
-        "NormType must be one of Max, Min, L2Norm, or L2IntegralNorm, not "
-            << norm_type);
+        "NormType must be one of Max, Min, L2Norm, L2IntegralNorm, or "
+            "VolumeIntegral not " << norm_type);
   }
   if (components != "Individual" and components != "Sum") {
     PARSE_ERROR(context,
@@ -389,6 +395,9 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
             } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
               values.push_back(definite_integral(
                   square(components[storage_index]) * det_jacobian, mesh));
+            } else if (tensor_norm_types_[i] == "VolumeIntegral") {
+              values.push_back(definite_integral(
+                         components[storage_index] * det_jacobian, mesh));
             }
             names.push_back(
                 tensor_norm_types_[i] + "(" +
@@ -415,6 +424,9 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
             } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
               value += definite_integral(
                   square(components[storage_index]) * det_jacobian, mesh);
+            } else if (tensor_norm_types_[i] == "VolumeIntegral") {
+              value += definite_integral(
+                  components[storage_index] * det_jacobian, mesh);
             }
           }
 
@@ -437,6 +449,9 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
   legend.insert(legend.end(),
                 norm_values_and_names["L2IntegralNorm"].second.begin(),
                 norm_values_and_names["L2IntegralNorm"].second.end());
+  legend.insert(legend.end(),
+                norm_values_and_names["VolumeIntegral"].second.begin(),
+                norm_values_and_names["VolumeIntegral"].second.end());
 
   // Send data to reduction observer
   auto& local_observer = *Parallel::local_branch(
@@ -456,7 +471,8 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
                     std::move(norm_values_and_names["Max"].first),
                     std::move(norm_values_and_names["Min"].first),
                     std::move(norm_values_and_names["L2Norm"].first),
-                    std::move(norm_values_and_names["L2IntegralNorm"].first)});
+                    std::move(norm_values_and_names["L2IntegralNorm"].first),
+                    std::move(norm_values_and_names["VolumeIntegral"].first)});
 }
 
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
