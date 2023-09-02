@@ -47,7 +47,6 @@ message(STATUS "USE_PCH: ${USE_PCH}")
 message(STATUS "ASAN: ${ASAN}")
 message(STATUS "UBSAN_UNDEFINED: ${UBSAN_UNDEFINED}")
 message(STATUS "UBSAN_INTEGER: ${UBSAN_INTEGER}")
-message(STATUS "USE_SYSTEM_INCLUDE: ${USE_SYSTEM_INCLUDE}")
 
 if (Python_FOUND)
   message(STATUS "Python: " ${Python_EXECUTABLE})

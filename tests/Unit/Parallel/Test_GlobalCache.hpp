@@ -9,7 +9,7 @@
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 
-#include "tests/Unit/Parallel/Test_GlobalCache.decl.h"
+#include "Parallel/Test_GlobalCache.decl.h"
 
 template <typename Metavariables>
 class Test_GlobalCache : public CBase_Test_GlobalCache<Metavariables> {
@@ -73,5 +73,5 @@ class TestArrayChare : public CBase_TestArrayChare<Metavariables> {
 };
 
 #define CK_TEMPLATES_ONLY
-#include "tests/Unit/Parallel/Test_GlobalCache.def.h"
+#include "Parallel/Test_GlobalCache.def.h"
 #undef CK_TEMPLATES_ONLY

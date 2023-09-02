@@ -54,5 +54,5 @@ class AlgorithmNodegroup
 };
 
 #define CK_TEMPLATES_ONLY
-#include "Algorithms/AlgorithmNodegroup.def.h"
+#include "Parallel/Algorithms/AlgorithmNodegroup.def.h"
 #undef CK_TEMPLATES_ONLY

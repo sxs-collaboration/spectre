@@ -54,5 +54,5 @@ class AlgorithmGroup
 };
 
 #define CK_TEMPLATES_ONLY
-#include "Algorithms/AlgorithmGroup.def.h"
+#include "Parallel/Algorithms/AlgorithmGroup.def.h"
 #undef CK_TEMPLATES_ONLY

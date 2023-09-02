@@ -6,6 +6,12 @@
 # `add_test_library`.
 add_charm_module(TestMainCharm)
 
+# Set include directory for all targets in this directory
+include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
+# Charm++ generated headers are created in the build directory
+# (by `add_charm_module`)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/tests/Unit)
+
 add_subdirectory(ControlSystem)
 add_subdirectory(DataStructures)
 add_subdirectory(Domain)

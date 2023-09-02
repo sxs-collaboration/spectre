@@ -54,5 +54,5 @@ class AlgorithmArray
 };
 
 #define CK_TEMPLATES_ONLY
-#include "Algorithms/AlgorithmArray.def.h"
+#include "Parallel/Algorithms/AlgorithmArray.def.h"
 #undef CK_TEMPLATES_ONLY
