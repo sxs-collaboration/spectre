@@ -662,7 +662,8 @@ void test_partial_derivatives_tensor_compute_item(
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
       map_tag, domain::Tags::LogicalCoordinates<Dim>>;
-  using deriv_tensor_tag = Tags::DerivTensorCompute<tensor_tag, inv_jac_tag>;
+  using deriv_tensor_tag = Tags::DerivTensorCompute<tensor_tag, inv_jac_tag,
+                                                    domain::Tags::Mesh<Dim>>;
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
