@@ -64,12 +64,6 @@ class FunctionOfTime : public PUP::able {
     ERROR("Cannot update this FunctionOfTime.");
   }
 
-  /// Resets the expiration time to a new value. By default, the expiration time
-  /// of a FunctionOfTime cannot be reset.
-  virtual void reset_expiration_time(double /*next_expiration_time*/) {
-    ERROR("Cannot reset expiration time of this FunctionOfTime.");
-  }
-
   /// The DataVector can be of any size
   virtual std::array<DataVector, 1> func(double t) const = 0;
   /// The DataVector can be of any size

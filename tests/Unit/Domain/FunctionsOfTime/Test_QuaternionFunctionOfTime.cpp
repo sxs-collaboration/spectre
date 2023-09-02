@@ -15,15 +15,13 @@
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                   "[Unit][Domain]") {
   {
-    INFO("QuaternionFunctionOfTime: Expiration time and time bounds");
+    INFO("QuaternionFunctionOfTime: Time bounds");
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{4, 0.0}},
         std::array<DataVector, 3>{DataVector{3, 0.0}, DataVector{3, 0.0},
                                   DataVector{3, 0.0}},
         0.5};
     CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.5}));
-    qfot.reset_expiration_time(0.6);
-    CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.6}));
   }
 
   {
@@ -67,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
   }
 
   {
-    INFO("QuaternionFunctionOfTime: pup, cloning, extra functions");
+    INFO("QuaternionFunctionOfTime: pup, cloning, extra functions, copy/move");
     DataVector init_omega{0.0, 0.0, 1.0};
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
@@ -106,6 +104,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                           qfot.func(2.0));
     CHECK_ITERABLE_APPROX(qfot_serialized_deserialized.func_and_deriv(2.0),
                           qfot.func_and_deriv(2.0));
+
+    test_copy_semantics(qfot);
+    test_move_semantics(std::move(qfot_serialized_deserialized), qfot);
   }
 
   {

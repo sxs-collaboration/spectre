@@ -145,6 +145,10 @@ void check_func_and_derivs(
   CHECK(f_of_t.func(t) == q.func_and_derivs<0>(t));
   CHECK(f_of_t.func_and_deriv(t) == q.func_and_derivs<1>(t));
   CHECK(f_of_t.func_and_2_derivs(t) == q.func_and_derivs<2>(t));
+
+  test_copy_semantics(f_of_t);
+  auto f_of_t_copy = f_of_t;
+  test_move_semantics(std::move(f_of_t_copy), f_of_t);
 }
 
 void test_func_and_derivs() {
@@ -376,22 +380,6 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
           "a value 2.2") and
           Catch::Matchers::ContainsSubstring(
               " that is earlier than the current time 2.5"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        // two component system (x**3 and x**2)
-        constexpr size_t deriv_order = 3;
-        const std::array<DataVector, deriv_order + 1> init_func{
-            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 2.0);
-        f_of_t.reset_expiration_time(1.5);
-        f_of_t.update(2.5, {6.0, 0.0}, 2.2);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempted to change expiration time to 1.5") and
-          Catch::Matchers::ContainsSubstring(
-              ", which precedes the previous expiration time of 2"));
 
   CHECK_THROWS_WITH(
       ([]() {

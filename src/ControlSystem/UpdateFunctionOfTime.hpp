@@ -65,18 +65,6 @@ struct UpdateMultipleFunctionsOfTime {
           update_args);
 };
 
-/// \ingroup ControlSystemGroup
-/// Resets the expiration time of a FunctionOfTime in the global cache. Intended
-/// to be used in Parallel::mutate.
-struct ResetFunctionOfTimeExpirationTime {
-  static void apply(
-      gsl::not_null<std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
-          f_of_t_list,
-      const std::string& f_of_t_name, double new_expiration_time);
-};
-
 /*!
  * \brief A class for collecting and storing information related to updating
  * functions of time and measurement timescales.

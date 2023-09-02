@@ -137,12 +137,4 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
           1.0}
            .update(1.0, DataVector{}, 2.0)),
       Catch::Matchers::ContainsSubstring("Cannot update this FunctionOfTime."));
-  CHECK_THROWS_WITH(
-      (domain::FunctionsOfTime::SettleToConstant{
-          {{DataVector{1, 0.0}, DataVector{1, 0.0}, DataVector{1, 0.0}}},
-          10.0,
-          1.0}
-           .reset_expiration_time(2.0)),
-      Catch::Matchers::ContainsSubstring(
-          "Cannot reset expiration time of this FunctionOfTime."));
 }

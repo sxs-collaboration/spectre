@@ -9,6 +9,7 @@
 #include <cmath>
 #include <limits>
 #include <list>
+#include <mutex>
 #include <pup.h>
 #include <string>
 
@@ -68,8 +69,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       double expiration_time);
 
   ~QuaternionFunctionOfTime() override = default;
-  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&) = default;
-  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&) = default;
+  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);
+  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&);
   QuaternionFunctionOfTime(const QuaternionFunctionOfTime&);
   QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&);
 
@@ -83,13 +84,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
-  void reset_expiration_time(const double next_expiration_time) override {
-    angle_f_of_t_.reset_expiration_time(next_expiration_time);
-  }
-
   /// Returns domain of validity for the function of time
   std::array<double, 2> time_bounds() const override {
-    return angle_f_of_t_.time_bounds();
+    return std::array{stored_quaternions_and_times_.front().time,
+                      expiration_time_.load(std::memory_order_acquire)};
   }
 
   /// Updates the `MaxDeriv`th derivative of the angle piecewisepolynomial at
@@ -164,7 +162,12 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       stored_quaternions_and_times_;
   alignas(64) std::atomic_uint64_t stored_quaternion_size_{};
   // Pad memory to avoid false-sharing when accessing stored_quaternion_size_
-  char unused_padding_[64 - (sizeof(std::atomic_uint64_t) % 64)] = {};
+  char unused_padding_quat_size_[64 - (sizeof(std::atomic_uint64_t) % 64)] = {};
+  alignas(64) std::atomic<double> expiration_time_{};
+  // Pad memory to avoid false-sharing when accessing expiration_time_
+  char unused_padding_expr_time_[64 - (sizeof(std::atomic<double>) % 64)] = {};
+  // No need to pup this since a default constructed mutex is always unlocked
+  std::mutex update_mutex_{};
 
   domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_;
 
@@ -178,7 +181,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// Updates the `std::list<StoredInfo>` to have the same number of stored
   /// quaternions as the `angle_f_of_t_ptr` has stored angles. This is necessary
   /// to ensure we can solve the ODE at any time `t`
-  void update_stored_info();
+  void update_stored_info(double next_expiration_time);
 
   /// Does common operations to all the `func` functions such as updating stored
   /// info, solving the ODE, and returning the normalized quaternion as a boost
