@@ -3,12 +3,16 @@
 
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
 #include <utility>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -39,12 +43,26 @@ Strahlkorper<Frame>::Strahlkorper(
     : l_max_(l_max),
       m_max_(m_max),
       ylm_(l_max, m_max),
-      // clang-tidy: do not std::move trivially constructable types
-      center_(std::move(center)),  // NOLINT
+      center_(center),
       strahlkorper_coefs_(ylm_.phys_to_spec(radius_at_collocation_points)) {
   ASSERT(radius_at_collocation_points.size() == ylm_.physical_size(),
          "Bad size " << radius_at_collocation_points.size() << ", expected "
                      << ylm_.physical_size());
+}
+
+template <typename Frame>
+Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
+                                  const ModalVector& spectral_coefficients,
+                                  std::array<double, 3> center)
+    : l_max_(l_max), m_max_(m_max), ylm_(l_max, m_max), center_(center) {
+  ASSERT(spectral_coefficients.size() == ylm_.spectral_size(),
+         "Bad size " << spectral_coefficients.size() << ", expected "
+                     << ylm_.spectral_size());
+
+  strahlkorper_coefs_.destructive_resize(ylm_.spectral_size());
+  // We can remove this copy once strahlkorper_coefs_ are stored as ModalVector
+  std::copy(spectral_coefficients.begin(), spectral_coefficients.end(),
+            strahlkorper_coefs_.begin());
 }
 
 template <typename Frame>

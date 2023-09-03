@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -73,9 +74,18 @@ class Strahlkorper {
   /// spectral coefficients, it is not possible to choose spectral
   /// coefficients to exactly match all points in
   /// `radius_at_collocation_points`.
-  Strahlkorper(size_t l_max, size_t m_max,
-               const DataVector& radius_at_collocation_points,
-               std::array<double, 3> center);
+  explicit Strahlkorper(size_t l_max, size_t m_max,
+                        const DataVector& radius_at_collocation_points,
+                        std::array<double, 3> center);
+
+  /// \brief Construct a Strahlkorper from a `ModalVector` containing the
+  /// spectral coefficients
+  ///
+  /// \details The spectral coefficients should be in the form defined by
+  /// `ylm::Strahlkorper::coefficients() const`.
+  explicit Strahlkorper(size_t l_max, size_t m_max,
+                        const ModalVector& spectral_coefficients,
+                        std::array<double, 3> center);
 
   /// Prolong or restrict another surface to the given `l_max` and `m_max`.
   Strahlkorper(size_t l_max, size_t m_max,
