@@ -37,6 +37,7 @@ target_link_libraries(
   GeneralRelativitySolutions
   Interpolation
   Logging
+  Observer
   Options
   Parallel
   Serialization
@@ -45,7 +46,6 @@ target_link_libraries(
   Utilities
   INTERFACE
   EventsAndTriggers
-  Observer
   )
 
 add_subdirectory(Actions)
