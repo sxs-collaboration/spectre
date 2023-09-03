@@ -26,3 +26,5 @@ target_link_libraries(
   SphericalHarmonicsHelpers
   Utilities
   )
+
+  add_subdirectory(IO)
