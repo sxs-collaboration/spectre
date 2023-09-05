@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+/// \cond
 template <size_t Dim>
 class Block;
 
@@ -20,6 +21,7 @@ class ElementId;
 namespace Spectral {
 enum class Quadrature;
 }  // namespace Spectral
+/// \endcond
 
 namespace domain {
 /// The weighting scheme for assigning computational costs to `Element`s for

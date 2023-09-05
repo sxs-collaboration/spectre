@@ -5,23 +5,26 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <hdf5.h>
 #include <optional>
-#include <ostream>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
-#include "IO/H5/TensorData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 class DataVector;
+struct ElementVolumeData;
+template <size_t>
+class Mesh;
+namespace Spectral {
+enum class Basis;
+enum class Quadrature;
+}  // namespace Spectral
+struct TensorComponent;
 /// \endcond
 
 namespace h5 {

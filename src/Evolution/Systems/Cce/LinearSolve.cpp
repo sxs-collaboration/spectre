@@ -12,6 +12,8 @@
 #include "DataStructures/Transpose.hpp"
 #include "NumericalAlgorithms/LinearOperators/IndefiniteIntegral.hpp"
 #include "NumericalAlgorithms/LinearSolver/Lapack.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "Utilities/ConstantExpressions.hpp"

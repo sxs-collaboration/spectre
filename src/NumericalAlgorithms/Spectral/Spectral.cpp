@@ -11,7 +11,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/Blas.hpp"
@@ -25,66 +27,6 @@
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
-
-std::ostream& operator<<(std::ostream& os, const Basis& basis) {
-  switch (basis) {
-    case Basis::Legendre:
-      return os << "Legendre";
-    case Basis::Chebyshev:
-      return os << "Chebyshev";
-    case Basis::FiniteDifference:
-      return os << "FiniteDifference";
-    case Basis::SphericalHarmonic:
-      return os << "SphericalHarmonic";
-    default:
-      ERROR("Invalid basis");
-  }
-}
-
-std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature) {
-  switch (quadrature) {
-    case Quadrature::Gauss:
-      return os << "Gauss";
-    case Quadrature::GaussLobatto:
-      return os << "GaussLobatto";
-    case Quadrature::CellCentered:
-      return os << "CellCentered";
-    case Quadrature::FaceCentered:
-      return os << "FaceCentered";
-    case Quadrature::Equiangular:
-      return os << "Equiangular";
-    default:
-      ERROR("Invalid quadrature");
-  }
-}
-
-Basis to_basis(const std::string& basis) {
-  if ("Chebyshev" == basis) {
-    return Spectral::Basis::Chebyshev;
-  } else if ("Legendre" == basis) {
-    return Spectral::Basis::Legendre;
-  } else if ("FiniteDifference" == basis) {
-    return Spectral::Basis::FiniteDifference;
-  } else if ("SphericalHarmonic" == basis) {
-    return Spectral::Basis::SphericalHarmonic;
-  }
-  ERROR("Unknown basis " << basis);
-}
-
-Quadrature to_quadrature(const std::string& quadrature) {
-  if ("Gauss" == quadrature) {
-    return Spectral::Quadrature::Gauss;
-  } else if ("GaussLobatto" == quadrature) {
-    return Spectral::Quadrature::GaussLobatto;
-  } else if ("CellCentered" == quadrature) {
-    return Spectral::Quadrature::CellCentered;
-  } else if ("FaceCentered" == quadrature) {
-    return Spectral::Quadrature::FaceCentered;
-  } else if ("Equiangular" == quadrature) {
-    return Spectral::Quadrature::Equiangular;
-  }
-  ERROR("Unknown quadrature " << quadrature);
-}
 
 template <Basis BasisType>
 Matrix spectral_indefinite_integral_matrix(size_t num_points);
@@ -986,35 +928,3 @@ template const DataVector&
 template const Matrix& Spectral::differentiation_matrix<
     Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
     size_t);
-
-template <>
-Spectral::Quadrature
-Options::create_from_yaml<Spectral::Quadrature>::create<void>(
-    const Options::Option& options) {
-  const auto type_read = options.parse_as<std::string>();
-  try {
-    return Spectral::to_quadrature(type_read);
-  } catch (const std::exception& /*e*/) {
-    PARSE_ERROR(
-        options.context(),
-        "Failed to convert \""
-            << type_read
-            << "\" to Spectral::Quadrature. Must be one "
-               "of Gauss, GaussLobatto, CellCentered, or FaceCentered.");
-  }
-}
-
-template <>
-Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
-    const Options::Option& options) {
-  const auto type_read = options.parse_as<std::string>();
-  try {
-    return Spectral::to_basis(type_read);
-  } catch (const std::exception& /*e*/) {
-    PARSE_ERROR(options.context(),
-                "Failed to convert \""
-                    << type_read
-                    << "\" to Spectral::Basis. Must be one "
-                       "of Chebyshev, Legendre, or FiniteDifference.");
-  }
-}

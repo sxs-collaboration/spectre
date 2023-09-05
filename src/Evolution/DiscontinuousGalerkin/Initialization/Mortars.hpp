@@ -37,6 +37,11 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace Spectral {
+enum class ChildSize;
+using MortarSize = ChildSize;
+enum class Quadrature;
+}  // namespace Spectral
 namespace Tags {
 struct TimeStepId;
 }  // namespace Tags

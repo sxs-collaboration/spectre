@@ -25,8 +25,9 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -332,7 +333,7 @@ void VolumeData::write_volume_data(
   h5::write_data(observation_group.id(), grid_names_as_chars,
                  {grid_names_as_chars.size()}, "grid_names");
   // Write the coded quadrature, along with the dictionary
-  const auto io_quadratures = h5_detail::allowed_quadratures();
+  const auto io_quadratures = Spectral::all_quadratures();
   std::vector<std::string> quadrature_dict(io_quadratures.size());
   alg::transform(io_quadratures, quadrature_dict.begin(),
                  get_output<Spectral::Quadrature>);
@@ -341,7 +342,7 @@ void VolumeData::write_volume_data(
   h5::write_data(observation_group.id(), quadratures, {quadratures.size()},
                  "quadratures");
   // Write the coded basis, along with the dictionary
-  const auto io_bases = h5_detail::allowed_bases();
+  const auto io_bases = Spectral::all_bases();
   std::vector<std::string> basis_dict(io_bases.size());
   alg::transform(io_bases, basis_dict.begin(), get_output<Spectral::Basis>);
   h5_detail::write_dictionary("Basis dictionary", basis_dict,

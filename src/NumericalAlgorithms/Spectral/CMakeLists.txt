@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Basis.cpp
   Chebyshev.cpp
   ComplexDataView.cpp
   Filtering.cpp
@@ -16,6 +17,7 @@ spectre_target_sources(
   LogicalCoordinates.cpp
   Mesh.cpp
   Projection.cpp
+  Quadrature.cpp
   Spectral.cpp
   SwshCoefficients.cpp
   SwshCollocation.cpp
@@ -30,12 +32,14 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Basis.hpp
   Clenshaw.hpp
   ComplexDataView.hpp
   Filtering.hpp
   LogicalCoordinates.hpp
   Mesh.hpp
   Projection.hpp
+  Quadrature.hpp
   Spectral.hpp
   SwshCoefficients.hpp
   SwshCollocation.hpp

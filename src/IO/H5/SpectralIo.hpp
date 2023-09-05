@@ -7,23 +7,11 @@
 #include <string>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 namespace h5::detail {
 class OpenGroup;
 }  // namespace h5::detail
 
 namespace h5_detail {
-/// We maintain a list of bases and quadratures which are compatible
-/// with IO, this allows for efficient storage of Spectral::Basis in
-/// volume data files
-std::array<Spectral::Basis, 4> allowed_bases();
-
-/// We maintain a list of quadratures which are compatible
-/// with IO, this allows for efficient storage of Spectral::Quadrature in
-/// volume data files
-std::array<Spectral::Quadrature, 5> allowed_quadratures();
-
 /// Write a dictionary as an attribute to the volume file, can be used
 /// to decode integer sequence as values[i] represents the string
 /// value encoded with integer i in the h5 file

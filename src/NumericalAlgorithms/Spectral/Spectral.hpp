@@ -14,6 +14,9 @@
 #include <limits>
 #include <utility>
 
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+
 /// \cond
 class Matrix;
 class DataVector;
@@ -46,70 +49,6 @@ struct create_from_yaml;
  * Most algorithms in this namespace are adapted from \cite Kopriva.
  */
 namespace Spectral {
-
-/*!
- * \ingroup SpectralGroup
- * \brief The choice of basis functions for computing collocation points and
- * weights.
- *
- * \details Choose `Legendre` for a general-purpose DG mesh, unless you have a
- * particular reason for choosing another basis.
- *
- * \warning The `FiniteDifference` "basis" is used to denote that only the
- * collocation points are defined, but that differentiation, integration, and
- * interpolation schemes are to be chosen locally wherever a `FiniteDifference`
- * mesh is being used. The reason is that there isn't a requirement that the
- * basis and collocation point locations are at all related to the
- * differentiation, integration, or interpolation methods - it is merely a
- * convenient choice in a lot of cases. For `FiniteDifference` we need to choose
- * the order of the scheme (and hence the weights, differentiation matrix,
- * integration weights, and interpolant) locally in space and time to handle
- * discontinuous solutions. Our current implementation of the weights is such
- * that integration of a function uses the midpoint method, but the weights are
- * ONLY useful to perform integration and no longer have any other meaning.
- */
-enum class Basis { Chebyshev, Legendre, FiniteDifference, SphericalHarmonic };
-
-/// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os, const Basis& basis);
-/// \endcond
-
-/*!
- * \brief Convert a string to a Basis enum.
- */
-Basis to_basis(const std::string& basis);
-
-/*!
- * \ingroup SpectralGroup
- * \brief The choice of quadrature method to compute integration weights.
- *
- * \details Integrals using \f$N\f$ collocation points with Gauss quadrature are
- * exact to polynomial order \f$p=2N-1\f$. Gauss-Lobatto quadrature is exact
- * only to polynomial order \f$p=2N-3\f$, but includes collocation points at the
- * domain boundary.
- *
- * \warning `CellCentered` and `FaceCentered` are intended to be used with the
- * `FiniteDifference` basis (though in principle they could be used with any
- * basis), and thus do not implement differentiation matrices and
- * interpolation matrices.
- */
-enum class Quadrature {
-  Gauss,
-  GaussLobatto,
-  CellCentered,
-  FaceCentered,
-  Equiangular
-};
-
-/// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
-/// \endcond
-
-/*!
- * \brief Convert a string to a Basis enum.
- */
-Quadrature to_quadrature(const std::string& quadrature);
-
 namespace detail {
 constexpr size_t minimum_number_of_points(const Basis /*basis*/,
                                           const Quadrature quadrature) {
@@ -610,30 +549,3 @@ const Matrix& linear_filter_matrix(size_t num_points);
 const Matrix& linear_filter_matrix(const Mesh<1>& mesh);
 
 }  // namespace Spectral
-
-/// \cond
-template <>
-struct Options::create_from_yaml<Spectral::Quadrature> {
-  template <typename Metavariables>
-  static Spectral::Quadrature create(const Options::Option& options) {
-    return create<void>(options);
-  }
-};
-
-template <>
-Spectral::Quadrature
-Options::create_from_yaml<Spectral::Quadrature>::create<void>(
-    const Options::Option& options);
-
-template <>
-struct Options::create_from_yaml<Spectral::Basis> {
-  template <typename Metavariables>
-  static Spectral::Basis create(const Options::Option& options) {
-    return create<void>(options);
-  }
-};
-
-template <>
-Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
-    const Options::Option& options);
-/// \endcond

@@ -8,7 +8,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace py = pybind11;
@@ -19,12 +21,14 @@ void bind_spectral(py::module& m) {
   py::enum_<Spectral::Basis>(m, "Basis")
       .value("Legendre", Spectral::Basis::Legendre)
       .value("Chebyshev", Spectral::Basis::Chebyshev)
-      .value("FiniteDifference", Spectral::Basis::FiniteDifference);
+      .value("FiniteDifference", Spectral::Basis::FiniteDifference)
+      .value("SphericalHarmonic", Spectral::Basis::SphericalHarmonic);
   py::enum_<Spectral::Quadrature>(m, "Quadrature")
       .value("Gauss", Spectral::Quadrature::Gauss)
       .value("GaussLobatto", Spectral::Quadrature::GaussLobatto)
       .value("CellCentered", Spectral::Quadrature::CellCentered)
-      .value("FaceCentered", Spectral::Quadrature::FaceCentered);
+      .value("FaceCentered", Spectral::Quadrature::FaceCentered)
+      .value("Equiangular", Spectral::Quadrature::Equiangular);
   m.def("collocation_points",
         static_cast<const DataVector& (*)(const Mesh<1>&)>(
             &Spectral::collocation_points),

@@ -9,7 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+/// \cond
+namespace Spectral {
+enum class Basis;
+enum class Quadrature;
+}  // namespace Spectral
+/// \endcond
 
 /// Functions for testing volume data output.
 namespace TestHelpers::io::VolumeData {
