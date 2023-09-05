@@ -342,7 +342,8 @@ struct GhValenciaDivCleanDefaults {
                   VariableFixing::FixToAtmosphere<volume_dim>>,
               VariableFixing::Actions::FixVariables<
                   VariableFixing::LimitLorentzFactor>,
-              Actions::UpdateConservatives>,
+              Actions::UpdateConservatives,
+              Actions::MutateApply<grmhd::GhValenciaDivClean::SetPiFromGauge>>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 
