@@ -12,6 +12,12 @@ if (NOT PY_DEV_MODE)
 endif()
 
 spectre_add_python_bindings_test(
+  "Unit.IO.H5.Python.CombineH5Dat"
+  Test_CombineH5Dat.py
+  "unit;IO;H5;python"
+  PyH5)
+
+spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.ExtendConnectivity"
   Test_ExtendConnectivity.py
   "unit;IO;H5;python"
