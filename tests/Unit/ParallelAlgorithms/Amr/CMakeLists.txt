@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Actions/Test_InitializeParent.cpp
   Actions/Test_SendDataToChildren.cpp
   Actions/Test_UpdateAmrDecision.cpp
+  Criteria/Test_Constraints.cpp
   Criteria/Test_Criterion.cpp
   Criteria/Test_DriveToTarget.cpp
   Criteria/Test_Loehner.cpp
