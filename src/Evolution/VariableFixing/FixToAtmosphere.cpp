@@ -20,14 +20,17 @@
 namespace VariableFixing {
 
 template <size_t Dim>
-FixToAtmosphere<Dim>::FixToAtmosphere(
-    const double density_of_atmosphere, const double density_cutoff,
-    const double transition_density_cutoff, const double max_velocity_magnitude,
-    const Options::Context& context)
+FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
+                                      const double density_cutoff,
+                                      const double transition_density_cutoff,
+                                      const double max_velocity_magnitude,
+                                      const double max_thermal_specific_energy,
+                                      const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
       density_cutoff_(density_cutoff),
       transition_density_cutoff_(transition_density_cutoff),
-      max_velocity_magnitude_(max_velocity_magnitude) {
+      max_velocity_magnitude_(max_velocity_magnitude),
+      max_thermal_specific_energy_(max_thermal_specific_energy) {
   if (density_of_atmosphere_ > density_cutoff_) {
     PARSE_ERROR(context, "The cutoff density ("
                              << density_cutoff_
@@ -57,6 +60,7 @@ void FixToAtmosphere<Dim>::pup(PUP::er& p) {
   p | density_cutoff_;
   p | transition_density_cutoff_;
   p | max_velocity_magnitude_;
+  p | max_thermal_specific_energy_;
 }
 
 template <size_t Dim>

@@ -105,9 +105,21 @@ class FixToAtmosphere {
         "below TransitionDensityCutoff."};
   };
 
+  /// \brief The maximum value of the thermal specific energy
+  /// Used for 2D equations of state
+  ///
+  /// Reasonable values still under study. Current recommended default:
+  /// BNS: 1.0e4
+  struct MaxThermalSpecificEnergy {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "The maximum allowed value of the thermal specific energy."};
+  };
+
   using options =
       tmpl::list<DensityOfAtmosphere, DensityCutoff, TransitionDensityCutoff,
-                 MaxVelocityMagnitude>;
+                 MaxVelocityMagnitude, MaxThermalSpecificEnergy>;
   static constexpr Options::String help = {
       "If the rest mass density is below DensityCutoff, it is set\n"
       "to DensityOfAtmosphere, and the pressure, specific internal energy\n"
@@ -115,11 +127,13 @@ class FixToAtmosphere {
       "adjusted to satisfy the equation of state. For a two-dimensional\n"
       "equation of state, the specific internal energy is set to zero.\n"
       "In addition, the spatial velocity is set to zero, and the Lorentz\n"
-      "factor is set to one.\n"};
+      "factor is set to one. We also apply an upper bound on the thermal\n"
+      "specific energy for 2D equations of state.\n"};
 
   FixToAtmosphere(double density_of_atmosphere, double density_cutoff,
                   double transition_density_cutoff,
                   double max_velocity_magnitude,
+                  double max_thermal_specific_energy,
                   const Options::Context& context = {});
 
   FixToAtmosphere() = default;
@@ -191,6 +205,8 @@ class FixToAtmosphere {
   double transition_density_cutoff_{
       std::numeric_limits<double>::signaling_NaN()};
   double max_velocity_magnitude_{std::numeric_limits<double>::signaling_NaN()};
+  double max_thermal_specific_energy_{
+      std::numeric_limits<double>::signaling_NaN()};
 };
 
 template <size_t Dim>

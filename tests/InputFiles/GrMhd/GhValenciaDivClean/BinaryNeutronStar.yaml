@@ -78,6 +78,7 @@ VariableFixing:
     DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
     TransitionDensityCutoff: 9.0e-15
     MaxVelocityMagnitude: 1.0e-4
+    MaxThermalSpecificEnergy: 1.0e4
   LimitLorentzFactor:
     MaxDensityCutoff: 1.0e-08
     LorentzFactorCap: 10.0
