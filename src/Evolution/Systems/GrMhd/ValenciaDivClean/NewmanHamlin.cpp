@@ -137,6 +137,9 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
           get(equation_of_state.pressure_from_density_and_enthalpy(
               Scalar<double>(current_rest_mass_density),
               Scalar<double>(current_specific_enthalpy)));
+      if (UNLIKELY(current_pressure <= 0.0)) {
+        return std::nullopt;
+      }
     } else if constexpr (ThermodynamicDim == 3) {
       ERROR("3d EOS not implemented");
     }
