@@ -12,7 +12,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <fstream>
 #include <limits>
 #include <type_traits>
 
@@ -76,49 +75,6 @@ void take_step_and_check_error(
   CHECK(time_id.substep() == 0);
   CHECK(time_id.step_time() - *time == step_size);
   *time = time_id.step_time();
-}
-
-template <typename F>
-double convergence_rate(const int32_t large_steps, const int32_t small_steps,
-                        F&& error, const bool output = false) {
-  // We do a least squares fit on a log-log error-vs-steps plot.  The
-  // unequal points caused by the log scale will introduce some bias,
-  // but the typical range this is used for is only a factor of a few,
-  // so it shouldn't be too bad.
-
-  // Make sure testing code is not left enabled.
-  CHECK(not output);
-
-  std::ofstream output_stream{};
-  if (output) {
-    output_stream.open("convergence.dat");
-    output_stream.precision(18);
-  }
-
-  const auto num_tests = static_cast<size_t>(small_steps - large_steps) + 1;
-  std::vector<double> log_steps;
-  std::vector<double> log_errors;
-  log_steps.reserve(num_tests);
-  log_errors.reserve(num_tests);
-  for (auto steps = large_steps; steps <= small_steps; ++steps) {
-    const double this_error = abs(error(steps));
-    if (output) {
-      output_stream << steps << "\t" << this_error << std::endl;
-    }
-    log_steps.push_back(log(steps));
-    log_errors.push_back(log(this_error));
-  }
-  const double average_log_steps = alg::accumulate(log_steps, 0.0) / num_tests;
-  const double average_log_errors =
-      alg::accumulate(log_errors, 0.0) / num_tests;
-  double numerator = 0.0;
-  double denominator = 0.0;
-  for (size_t i = 0; i < num_tests; ++i) {
-    numerator += (log_steps[i] - average_log_steps) *
-        (log_errors[i] - average_log_errors);
-    denominator += square(log_steps[i] - average_log_steps);
-  }
-  return -numerator / denominator;
 }
 }  // namespace
 
