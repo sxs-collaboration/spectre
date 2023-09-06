@@ -415,8 +415,8 @@ void check_convergence_order(const TimeStepper& stepper,
     const double result = abs(y - exp(1.));
     return result;
   };
-  CHECK(convergence_rate(step_range.first, step_range.second, do_integral,
-                         output) == approx(stepper.order()).margin(0.4));
+  CHECK(convergence_rate(step_range, 1, do_integral, output) ==
+        approx(stepper.order()).margin(0.4));
 }
 
 void check_dense_output(const TimeStepper& stepper,
@@ -507,7 +507,7 @@ void check_dense_output(const TimeStepper& stepper,
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
     };
-    CHECK(convergence_rate(large_steps, small_steps, error) ==
+    CHECK(convergence_rate({large_steps, small_steps}, 1, error) ==
           approx(history_integration_order).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
@@ -515,7 +515,7 @@ void check_dense_output(const TimeStepper& stepper,
       return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
                  exp(-0.25 * M_PI));
     };
-    CHECK(convergence_rate(large_steps, small_steps, error_backwards) ==
+    CHECK(convergence_rate({large_steps, small_steps}, 1, error_backwards) ==
           approx(history_integration_order).margin(0.4));
   }
 }
@@ -745,7 +745,7 @@ void check_imex_convergence_order(const ImexTimeStepper& stepper,
     }
     return result;
   };
-  CHECK(convergence_rate(step_range.first, step_range.second, do_integral) ==
+  CHECK(convergence_rate(step_range, 1, do_integral) ==
         approx(stepper.imex_order()).margin(0.4));
 }
 }  // namespace TimeStepperTestUtils

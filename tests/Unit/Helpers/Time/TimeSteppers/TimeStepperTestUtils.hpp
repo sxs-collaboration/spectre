@@ -110,8 +110,9 @@ void check_imex_convergence_order(const ImexTimeStepper& stepper,
                                   bool output = false);
 
 template <typename F>
-double convergence_rate(const int32_t large_steps, const int32_t small_steps,
-                        F&& error, const bool output = false) {
+double convergence_rate(
+    const std::pair<int32_t, int32_t>& number_of_steps_range,
+    const int32_t stride, F&& error, const bool output = false) {
   // We do a least squares fit on a log-log error-vs-steps plot.  The
   // unequal points caused by the log scale will introduce some bias,
   // but the typical range this is used for is only a factor of a few,
@@ -126,18 +127,19 @@ double convergence_rate(const int32_t large_steps, const int32_t small_steps,
     output_stream.precision(18);
   }
 
-  const auto num_tests = static_cast<uint32_t>(small_steps - large_steps) + 1;
+  uint32_t num_tests = 0;
   std::vector<double> log_steps;
   std::vector<double> log_errors;
-  log_steps.reserve(num_tests);
-  log_errors.reserve(num_tests);
-  for (auto steps = large_steps; steps <= small_steps; ++steps) {
+  for (auto steps = number_of_steps_range.first;
+       steps <= number_of_steps_range.second;
+       steps += stride) {
     const double this_error = abs(error(steps));
     if (output) {
       output_stream << steps << "\t" << this_error << std::endl;
     }
     log_steps.push_back(log(steps));
     log_errors.push_back(log(this_error));
+    ++num_tests;
   }
   const double average_log_steps = alg::accumulate(log_steps, 0.0) / num_tests;
   const double average_log_errors =
