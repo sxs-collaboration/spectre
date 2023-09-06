@@ -269,6 +269,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      env:
+        CCACHE_DIR: /work/ccache
+        CCACHE_READONLY: 1
+        CCACHE_COMPILERCHECK: content
+        CCACHE_BASEDIR: $GITHUB_WORKSPACE
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -293,45 +298,65 @@ jobs:
           echo "" >> docs/Changelog.md
           cat /work/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
             >> docs/Changelog.md
+      - name: Restore ccache
+        uses: actions/cache/restore@v3
+        id: restore-ccache
+        env:
+          CACHE_KEY_PREFIX: ccache-gcc-11-Debug-pch-ON
+        with:
+          path: /work/ccache
+          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
+          restore-keys: |
+            ${{ env.CACHE_KEY_PREFIX }}-
+      # Make sure to use the same build configuration as the unit tests from
+      # which we restore the ccache.
       - name: Configure with cmake
-        working-directory: /work
         run: >
           mkdir build && cd build
 
           cmake
-          -D CMAKE_C_COMPILER=clang
-          -D CMAKE_CXX_COMPILER=clang++
-          -D CMAKE_Fortran_COMPILER=gfortran-9
+          -D CMAKE_C_COMPILER=gcc-11
+          -D CMAKE_CXX_COMPILER=g++-11
+          -D CMAKE_Fortran_COMPILER=gfortran-11
+          -D CMAKE_CXX_FLAGS="-Werror"
+          -D OVERRIDE_ARCH=x86-64
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=Debug
           -D DEBUG_SYMBOLS=OFF
+          -D USE_PCH=ON
+          -D USE_XSIMD=ON
+          -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=ON
+          -D Python_EXECUTABLE=/usr/bin/python3
+          -D BUILD_SHARED_LIBS=ON
+          -D MEMORY_ALLOCATOR=SYSTEM
+          -D BUILD_DOCS=ON
           $GITHUB_WORKSPACE
       - name: Check documentation
-        working-directory: /work/build
+        working-directory: build
         run: |
           make doc-check
       # Re-build with coverage information on pushes to develop for deployment
       # to gh-pages.
       - name: Build documentation with coverage
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        working-directory: /work/build
+        working-directory: build
         run: |
           make doc-coverage
       - name: Build Python docs
-        working-directory: /work/build
+        working-directory: build
         run: |
           make py-docs
       # Upload as an artifact to make available to deployment and to PRs
       - name: Prepare for upload
-        working-directory: /work/build
+        working-directory: build
         run: |
           tar -cf docs-html.tar --directory docs/html .
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
           name: docs-html
-          path: /work/build/docs-html.tar
+          path: build/docs-html.tar
 
   # Deploy to gh-pages on pushes to develop
   # See docs: https://github.com/actions/deploy-pages
