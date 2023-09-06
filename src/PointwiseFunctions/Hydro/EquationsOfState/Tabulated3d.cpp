@@ -212,8 +212,12 @@ void Tabulated3D<IsRelativistic>::initialize(
   table_log_density_ = std::move(log_density);
   table_log_temperature_ = std::move(log_temperature);
   table_data_ = std::move(table_data);
-  // Need to table
 
+  initialize_interpolator();
+}
+
+template <bool IsRelativistic>
+void Tabulated3D<IsRelativistic>::initialize_interpolator() {
   Index<3> num_x_points;
 
   // The order is T, rho, Ye
@@ -367,6 +371,10 @@ void Tabulated3D<IsRelativistic>::pup(PUP::er& p) {
   p | table_log_density_;
   p | table_log_temperature_;
   p | table_data_;
+
+  if (p.isUnpacking()) {
+    initialize_interpolator();
+  }
 }
 
 template <bool IsRelativistic>
