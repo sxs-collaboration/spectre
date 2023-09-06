@@ -123,7 +123,7 @@ void test_errors() {
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Triggers.SeparationLessThan",
-                  "[Unit][Time]") {
+                  "[Unit][Evolution]") {
   register_factory_classes_with_charm<Metavariables>();
   domain::FunctionsOfTime::register_derived_with_charm();
   PUPable_reg(SINGLE_ARG(
