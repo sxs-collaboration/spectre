@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
@@ -153,24 +154,37 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             get(*electron_fraction)[s]};
       }
     } else {
-      tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(
-          [&pressure, &primitive_data, &total_energy_density,
-           &momentum_density_squared, &momentum_density_dot_magnetic_field,
-           &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
-           &equation_of_state, &s, &electron_fraction](auto scheme) {
-            using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
-            if (not primitive_data.has_value()) {
-              primitive_data =
-                  primitive_recovery_scheme::template apply<ThermodynamicDim>(
-                      get(*pressure)[s], total_energy_density[s],
-                      get(momentum_density_squared)[s],
-                      get(momentum_density_dot_magnetic_field)[s],
-                      get(magnetic_field_squared)[s],
-                      rest_mass_density_times_lorentz_factor[s],
-                      get(*electron_fraction)[s], equation_of_state);
-            }
-          });
+
+    auto apply_scheme =
+        [&pressure, &primitive_data, &total_energy_density,
+         &momentum_density_squared, &momentum_density_dot_magnetic_field,
+         &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
+         &equation_of_state, &s, &electron_fraction](auto scheme) {
+          using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
+          if (not primitive_data.has_value()) {
+            primitive_data =
+                primitive_recovery_scheme::template apply<ThermodynamicDim>(
+                    get(*pressure)[s], total_energy_density[s],
+                    get(momentum_density_squared)[s],
+                    get(momentum_density_dot_magnetic_field)[s],
+                    get(magnetic_field_squared)[s],
+                    rest_mass_density_times_lorentz_factor[s],
+                    get(*electron_fraction)[s], equation_of_state);
+          }
+        };
+
+    // Check consistency
+    if (use_hydro_optimization and
+        equal_within_roundoff(
+            total_energy_density[s],
+            get(magnetic_field_squared)[s] * 0.5 + total_energy_density[s])) {
+      tmpl::for_each<tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>>(
+          apply_scheme);
+    } else {
+      tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(apply_scheme);
     }
+   }
 
     if (primitive_data.has_value()) {
       get(*rest_mass_density)[s] = primitive_data.value().rest_mass_density;
@@ -302,6 +316,8 @@ GENERATE_INSTANTIATIONS(
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+     tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<

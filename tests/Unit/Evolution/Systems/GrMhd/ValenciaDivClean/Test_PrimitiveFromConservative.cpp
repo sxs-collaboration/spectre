@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
@@ -42,7 +43,7 @@ class PalenzuelaEtAl;
 namespace {
 
 template <typename OrderedListOfPrimitiveRecoverySchemes,
-          size_t ThermodynamicDim>
+          size_t ThermodynamicDim, bool UseMagneticField = true>
 void test_primitive_from_conservative_random(
     const gsl::not_null<std::mt19937*> generator,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -87,9 +88,14 @@ void test_primitive_from_conservative_random(
   const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
       expected_rest_mass_density, expected_specific_internal_energy,
       expected_pressure);
-  const auto expected_magnetic_field =
-      TestHelpers::hydro::random_magnetic_field(generator, expected_pressure,
-                                                spatial_metric);
+  auto expected_magnetic_field = TestHelpers::hydro::random_magnetic_field(
+      generator, expected_pressure, spatial_metric);
+  if constexpr (!UseMagneticField) {
+    get<0>(expected_magnetic_field) = 0.;
+    get<1>(expected_magnetic_field) = 0.;
+    get<2>(expected_magnetic_field) = 0.;
+  }
+
   const auto expected_divergence_cleaning_field =
       TestHelpers::hydro::random_divergence_cleaning_field(generator,
                                                            used_for_size);
@@ -171,7 +177,8 @@ void test_primitive_from_conservative_random(
                                divergence_cleaning_field, larger_approx);
 }
 
-template <typename OrderedListOfPrimitiveRecoverySchemes>
+template <typename OrderedListOfPrimitiveRecoverySchemes,
+          bool UseMagneticField = true>
 void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   const auto expected_rest_mass_density =
       make_with_value<Scalar<DataVector>>(used_for_size, 2.0);
@@ -202,6 +209,12 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   get<0>(expected_magnetic_field) = 36.0 / 13.0;
   get<1>(expected_magnetic_field) = 9.0 / 26.0;
   get<2>(expected_magnetic_field) = 3.0 / 13.0;
+
+  if constexpr (!UseMagneticField) {
+    get<0>(expected_magnetic_field) = 0.;
+    get<1>(expected_magnetic_field) = 0.;
+    get<2>(expected_magnetic_field) = 0.;
+  }
   const auto expected_divergence_cleaning_field =
       make_with_value<Scalar<DataVector>>(used_for_size, 0.5);
 
@@ -286,6 +299,10 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(dv);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
+  test_primitive_from_conservative_known<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      false>(dv);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
   test_primitive_from_conservative_random<
@@ -312,4 +329,13 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
       2>(&generator, ideal_fluid, dv);
+
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      1, false>(&generator, polytropic_fluid, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      2, false>(&generator, ideal_fluid, dv);
 }
