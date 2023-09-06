@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
   Test_DampedWaveHelpers.cpp
   Test_HalfPiPhiTwoNormals.cpp
   Test_Harmonic.cpp
-  Test_SetPiFromGauge.cpp
+  Test_SetPiAndPhiFromConstraints.cpp
   Test_Tags.cpp
   )
 

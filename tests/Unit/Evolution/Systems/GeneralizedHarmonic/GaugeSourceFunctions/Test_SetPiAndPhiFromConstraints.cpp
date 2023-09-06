@@ -29,7 +29,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -106,7 +106,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
       std::unique_ptr<gh::gauges::GaugeCondition>(
           std::make_unique<gh::gauges::DampedHarmonic>(
               100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})));
-  db::mutate_apply<gh::gauges::SetPiFromGauge<Dim>>(make_not_null(&box));
+  db::mutate_apply<gh::gauges::SetPiAndPhiFromConstraints<Dim>>(
+      make_not_null(&box));
 
   // Verify that the gauge constraint is satisfied
   const auto& spacetime_metric =
@@ -177,7 +178,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                                local_approx);
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.SetPiFromGauge",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.SetPiAndPhiFromConstraints",
                   "[Unit][Evolution][Actions]") {
   MAKE_GENERATOR(generator);
   test<1>(make_not_null(&generator));

@@ -24,7 +24,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -42,9 +42,10 @@ namespace grmhd::GhValenciaDivClean {
  * This is necessary to ensure the initial data is in the desired evolution
  * gauge.
  */
-struct SetPiFromGauge {
+struct SetPiAndPhiFromConstraints {
  public:
-  using return_tags = tmpl::list<gh::Tags::Pi<DataVector, 3>>;
+  using return_tags =
+      tmpl::list<gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
   using argument_tags = tmpl::list<
       ::Tags::Time, domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
@@ -54,7 +55,7 @@ struct SetPiFromGauge {
       domain::Tags::FunctionsOfTime,
       domain::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
-      gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
       gh::gauges::Tags::GaugeCondition,
       evolution::dg::subcell::Tags::ActiveGrid>;
 
@@ -62,6 +63,7 @@ struct SetPiFromGauge {
 
   static void apply(
       const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
+      const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
       const double initial_time, const Mesh<3>& dg_mesh,
       const Mesh<3>& subcell_mesh,
       const ElementMap<3, Frame::Grid>& logical_to_grid_map,
@@ -76,19 +78,18 @@ struct SetPiFromGauge {
       const tnsr::I<DataVector, 3, Frame::ElementLogical>&
           subcell_logical_coordinates,
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-      const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
       const gh::gauges::GaugeCondition& gauge_condition,
       const evolution::dg::subcell::ActiveGrid active_grid) {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      gh::gauges::SetPiFromGauge<3>::apply(
-          pi, initial_time, dg_mesh, logical_to_grid_map, grid_to_inertial_map,
-          functions_of_time, dg_logical_coordinates, spacetime_metric, phi,
-          gauge_condition);
+      gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
+          pi, phi, initial_time, dg_mesh, logical_to_grid_map,
+          grid_to_inertial_map, functions_of_time, dg_logical_coordinates,
+          spacetime_metric, gauge_condition);
     } else {
-      gh::gauges::SetPiFromGauge<3>::apply(
-          pi, initial_time, subcell_mesh, logical_to_grid_map,
+      gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
+          pi, phi, initial_time, subcell_mesh, logical_to_grid_map,
           grid_to_inertial_map, functions_of_time, subcell_logical_coordinates,
-          spacetime_metric, phi, gauge_condition);
+          spacetime_metric, gauge_condition);
     }
   }
 };

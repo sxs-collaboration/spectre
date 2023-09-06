@@ -13,7 +13,7 @@ spectre_target_sources(
   HalfPiPhiTwoNormals.cpp
   Harmonic.cpp
   RegisterDerived.cpp
-  SetPiFromGauge.cpp
+  SetPiAndPhiFromConstraints.cpp
   )
 
 spectre_target_headers(
@@ -30,7 +30,7 @@ spectre_target_headers(
   HalfPiPhiTwoNormals.hpp
   Harmonic.hpp
   RegisterDerived.hpp
-  SetPiFromGauge.hpp
+  SetPiAndPhiFromConstraints.hpp
   )
 
 add_subdirectory(Tags)

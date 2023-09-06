@@ -38,7 +38,7 @@ void initial_gh_variables_from_adm(
   partial_derivative(phi, *spacetime_metric, mesh, inv_jacobian);
 
   // Compute Pi by choosing dt_lapse = 0 and dt_shift = 0 (for now).
-  // The mutator `SetPiFromGauge` should be combined with this.
+  // The mutator `SetPiAndPhiFromConstraints` should be combined with this.
   const auto deriv_spatial_metric =
       tenex::evaluate<ti::i, ti::j, ti::k>((*phi)(ti::i, ti::j, ti::k));
   const auto deriv_shift = partial_derivative(shift, mesh, inv_jacobian);

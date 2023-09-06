@@ -74,7 +74,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -83,7 +83,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/PrimitiveGhostData.hpp"
@@ -310,15 +310,14 @@ struct GhValenciaDivCleanDefaults {
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Actions::MutateApply<tmpl::conditional_t<
-          UseDgSubcell, grmhd::GhValenciaDivClean::SetPiFromGauge,
-          gh::gauges::SetPiFromGauge<3>>>,
+          UseDgSubcell, grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
+          gh::gauges::SetPiAndPhiFromConstraints<3>>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
               DataVector, volume_dim, domain_frame>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::LimitLorentzFactor>,
+      VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
       tmpl::conditional_t<
           UseDgSubcell,
@@ -343,7 +342,8 @@ struct GhValenciaDivCleanDefaults {
               VariableFixing::Actions::FixVariables<
                   VariableFixing::LimitLorentzFactor>,
               Actions::UpdateConservatives,
-              Actions::MutateApply<grmhd::GhValenciaDivClean::SetPiFromGauge>>,
+              Actions::MutateApply<
+                  grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 

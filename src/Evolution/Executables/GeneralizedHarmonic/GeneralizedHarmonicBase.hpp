@@ -34,7 +34,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -303,9 +303,9 @@ struct GeneralizedHarmonicTemplateBase {
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
 
-  using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<Actions::MutateApply<gh::gauges::SetPiFromGauge<volume_dim>>,
-                 Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
+      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<volume_dim>>,
+      Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
