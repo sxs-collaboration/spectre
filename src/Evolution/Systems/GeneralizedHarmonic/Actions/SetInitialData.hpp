@@ -49,8 +49,9 @@ namespace gh {
  * - Phi is set to the numerical derivative of the spacetime metric. This
  *   ensures that the 3-index constraint is initially satisfied.
  * - Pi is computed by choosing the time derivatives of lapse and shift to be
- *   zero. The `gh::gauges::SetPiFromGauge` mutator exists to override Pi later
- *   in the algorithm (it should be combined with this function).
+ *   zero. The `gh::gauges::SetPiAndPhiFromConstraints` mutator exists to
+ *   override Pi later in the algorithm (it should be combined with this
+ *   function).
  */
 template <size_t Dim>
 void initial_gh_variables_from_adm(

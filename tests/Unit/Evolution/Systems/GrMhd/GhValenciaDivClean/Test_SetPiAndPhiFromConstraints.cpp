@@ -32,10 +32,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -48,8 +48,8 @@
 #include "Utilities/TMPL.hpp"
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.SetPiFromGauge",
-    "[Unit][Evolution][Actions]") {
+ "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.SetPiAndPhiFromConstraints",
+ "[Unit][Evolution][Actions]") {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> metric_dist(0.1, 1.);
   std::uniform_real_distribution<> deriv_dist(-1.e-5, 1.e-5);
@@ -117,26 +117,29 @@ SPECTRE_TEST_CASE(
   const auto initial_subcell_vars =
       make_vars(db::get<evolution::dg::subcell::Tags::Mesh<3>>(box));
 
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiFromGauge>(
+  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
       make_not_null(&box));
 
   const auto check = [&box](const Mesh<3>& mesh, const auto& initial_vars) {
     CAPTURE(mesh);
     tnsr::aa<DataVector, 3, Frame::Inertial> expected_pi =
         get<gh::Tags::Pi<DataVector, 3>>(initial_vars);
-    gh::gauges::SetPiFromGauge<3>::apply(
-        make_not_null(&expected_pi), 0., mesh,
+    tnsr::iaa<DataVector, 3, Frame::Inertial> expected_phi =
+        get<gh::Tags::Phi<DataVector, 3>>(initial_vars);
+    gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
+        make_not_null(&expected_pi), make_not_null(&expected_phi), 0., mesh,
         db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
         db::get<domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                             Frame::Inertial>>(
             box),
         db::get<domain::Tags::FunctionsOfTime>(box), logical_coordinates(mesh),
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
-        get<gh::Tags::Phi<DataVector, 3>>(initial_vars),
         db::get<gh::gauges::Tags::GaugeCondition>(box));
 
     const auto& pi = db::get<gh::Tags::Pi<DataVector, 3>>(box);
     CHECK(pi == expected_pi);
+    const auto& phi = db::get<gh::Tags::Phi<DataVector, 3>>(box);
+    CHECK(phi == expected_phi);
   };
 
   // Check that initial grid is fine.
@@ -151,7 +154,7 @@ SPECTRE_TEST_CASE(
         *variables_ptr = initial_subcell_vars;
       },
       make_not_null(&box));
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiFromGauge>(
+  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
       make_not_null(&box));
   check(db::get<evolution::dg::subcell::Tags::Mesh<3>>(box),
         initial_subcell_vars);
@@ -164,7 +167,7 @@ SPECTRE_TEST_CASE(
         *variables_ptr = initial_dg_vars;
       },
       make_not_null(&box));
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiFromGauge>(
+  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
       make_not_null(&box));
   check(db::get<domain::Tags::Mesh<3>>(box), initial_dg_vars);
 }

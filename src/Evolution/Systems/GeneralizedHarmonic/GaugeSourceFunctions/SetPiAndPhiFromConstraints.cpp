@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 
 #include <cstddef>
 
@@ -12,6 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
@@ -33,8 +34,9 @@
 
 namespace gh::gauges {
 template <size_t Dim>
-void SetPiFromGauge<Dim>::apply(
+void SetPiAndPhiFromConstraints<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
+    const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*> phi,
     const double time, const Mesh<Dim>& mesh,
     const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
@@ -44,7 +46,6 @@ void SetPiFromGauge<Dim>::apply(
         functions_of_time,
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coordinates,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
-    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
     const gauges::GaugeCondition& gauge_condition) {
   const auto grid_coords = logical_to_grid_map(logical_coordinates);
   const auto inv_jac_logical_to_grid =
@@ -69,6 +70,8 @@ void SetPiFromGauge<Dim>::apply(
       }
     }
   }
+
+  partial_derivative(phi, spacetime_metric, mesh, inverse_jacobian);
 
   Variables<
       tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
@@ -113,14 +116,14 @@ void SetPiFromGauge<Dim>::apply(
                               lapse, shift);
 
   spatial_deriv_of_lapse(make_not_null(&d_lapse), lapse,
-                         spacetime_unit_normal_vector, phi);
+                         spacetime_unit_normal_vector, *phi);
   spatial_deriv_of_shift(make_not_null(&d_shift), lapse,
                          inverse_spacetime_metric, spacetime_unit_normal_vector,
-                         phi);
-  deriv_spatial_metric(make_not_null(&d_spatial_metric), phi);
+                         *phi);
+  deriv_spatial_metric(make_not_null(&d_spatial_metric), *phi);
 
   extrinsic_curvature(make_not_null(&ex_curvature),
-                      spacetime_unit_normal_vector, *pi, phi);
+                      spacetime_unit_normal_vector, *pi, *phi);
   trace(make_not_null(&trace_ex_curvature), ex_curvature,
         inverse_spatial_metric);
   gr::christoffel_first_kind(make_not_null(&spatial_christoffel_first),
@@ -132,7 +135,7 @@ void SetPiFromGauge<Dim>::apply(
   // g_{bc}\f$ instead, and use only the derivatives of \f$ g_{bi}\f$.
   tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};
   gh::spacetime_derivative_of_spacetime_metric(
-      make_not_null(&d4_spacetime_metric), lapse, shift, *pi, phi);
+      make_not_null(&d4_spacetime_metric), lapse, shift, *pi, *phi);
 
   Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
   tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
@@ -144,7 +147,7 @@ void SetPiFromGauge<Dim>::apply(
     for (size_t i = 0; i < Dim; ++i) {
       half_phi_two_normals.get(i) += 0.5 * spacetime_unit_normal_vector.get(a) *
                                      spacetime_unit_normal_vector.get(a) *
-                                     phi.get(i, a, a);
+                                     phi->get(i, a, a);
     }
     for (size_t b = a + 1; b < Dim + 1; ++b) {
       get(half_pi_two_normals) += 2.0 * spacetime_unit_normal_vector.get(a) *
@@ -153,7 +156,7 @@ void SetPiFromGauge<Dim>::apply(
       for (size_t i = 0; i < Dim; ++i) {
         half_phi_two_normals.get(i) += spacetime_unit_normal_vector.get(a) *
                                        spacetime_unit_normal_vector.get(b) *
-                                       phi.get(i, a, b);
+                                       phi->get(i, a, b);
       }
     }
   }
@@ -163,7 +166,7 @@ void SetPiFromGauge<Dim>::apply(
   // actually reset pi from gauge_h below.
   dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
            sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-           half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi,
+           half_pi_two_normals, half_phi_two_normals, spacetime_metric, *phi,
            mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
 
   // Compute lapse and shift time derivatives
@@ -189,14 +192,15 @@ void SetPiFromGauge<Dim>::apply(
   }
 
   time_deriv_of_spatial_metric(make_not_null(&dt_spatial_metric), lapse, shift,
-                               phi, *pi);
+                               *phi, *pi);
   gh::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
-         dt_spatial_metric, phi);
+         dt_spatial_metric, *phi);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data) template class SetPiFromGauge<DIM(data)>;
+#define INSTANTIATE(_, data) \
+  template class SetPiAndPhiFromConstraints<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
