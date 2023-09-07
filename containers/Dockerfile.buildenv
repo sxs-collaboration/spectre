@@ -117,10 +117,12 @@ RUN apt-get update -y \
 # Install software that we can't install through apt. We have to distinguish
 # between different architectures for many of those.
 FROM base AS base-amd64
+ENV CMAKE_ARCH=x86_64
 ENV CHARM_ARCH=x86_64
 ENV TEX_ARCH=x86_64
 
 FROM base AS base-arm64
+ENV CMAKE_ARCH=aarch64
 ENV CHARM_ARCH=arm8
 ENV TEX_ARCH=aarch64
 
@@ -130,19 +132,14 @@ ARG TARGETARCH
 ARG PARALLEL_MAKE_ARG=-j2
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Install minimum required CMake version so that we test compatibility with it
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
-    && tar -xzf cmake-3.18.2.tar.gz \
-    && cd cmake-3.18.2 \
-    && ./bootstrap --prefix=/usr/local \
-    && make $PARALLEL_MAKE_ARG\
-    && make install \
-    && cd .. && rm -rf cmake*
-
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
 # that we don't need. Thus, not building the deps with Spack reduces total
 # build time of the Docker image.
+# - CMake (first, so we can use it to build the rest)
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.4/cmake-3.27.4-linux-${CMAKE_ARCH}.sh -O cmake-install.sh \
+    && sh cmake-install.sh --prefix=/usr/local --skip-license \
+    && rm cmake-install.sh
 # - Blaze
 RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz \
     && tar -xzf blaze.tar.gz \
@@ -341,6 +338,15 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
     && apt-get update -y && apt-get install -y clang-13
+
+# Install minimum required CMake version so that we test compatibility with it.
+# For this version of CMake no ARM binary is available.
+RUN if [ "$TARGETARCH" != "arm64" ] ; then \
+        wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-linux-${CMAKE_ARCH}.sh -O cmake-install.sh \
+        && mkdir -p /opt/local/cmake/3.18.2 \
+        && sh cmake-install.sh --prefix=/opt/local/cmake/3.18.2 --skip-license \
+        && rm cmake-install.sh; \
+    fi
 
 # Install OpenMPI 4.0.3
 RUN apt-get install -y openmpi-bin
