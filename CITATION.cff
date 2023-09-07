@@ -126,6 +126,11 @@ authors:
   family-names: Chaudhary
   given-names: Himanshu
   orcid: https://orcid.org/0000-0002-4101-0534
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  family-names: Corso
+  given-names: Nicholas
+  orcid: https://orcid.org/0000-0002-0088-2563
 - affiliation: Department of Physics & Astronomy, University of New Hampshire, 9 Library
     Way, Durham NH 03824, USA
   family-names: Foucart
@@ -271,9 +276,14 @@ authors:
   family-names: Wu
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  family-names: Yoo
+  given-names: Jooheon
+  orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2023-08-18
-doi: 10.5281/zenodo.8263474
+date-released: 2023-09-07
+doi: 10.5281/zenodo.8325309
 keywords:
 - Software
 - Astrophysics
@@ -991,4 +1001,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.08.18
+version: 2023.09.07
