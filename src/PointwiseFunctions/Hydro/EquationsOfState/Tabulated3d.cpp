@@ -92,7 +92,7 @@ template <bool IsRelativistic>
 void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
   // STEP 0: Allocate intermediate data structures for initialization
 
-  auto setup_index_variable = [&spectre_eos](std::string name) {
+  auto setup_index_variable = [&spectre_eos](const std::string& name) {
     auto& available_names = spectre_eos.independent_variable_names();
     size_t i = 0;
     for (i = 0; i < available_names.size(); ++i) {
@@ -161,8 +161,8 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
       hydro::units::nuclear::neutron_mass  /
       hydro::units::nuclear::pressure_unit;
 
-  for (size_t s = 0; s < log_density.size(); ++s) {
-    log_density[s] += std::log(nb_fm3_to_geom);
+  for (double& log_density_i : log_density) {
+    log_density_i += std::log(nb_fm3_to_geom);
   }
 
   // Convert table
@@ -212,8 +212,12 @@ void Tabulated3D<IsRelativistic>::initialize(
   table_log_density_ = std::move(log_density);
   table_log_temperature_ = std::move(log_temperature);
   table_data_ = std::move(table_data);
-  // Need to table
 
+  initialize_interpolator();
+}
+
+template <bool IsRelativistic>
+void Tabulated3D<IsRelativistic>::initialize_interpolator() {
   Index<3> num_x_points;
 
   // The order is T, rho, Ye
@@ -367,6 +371,10 @@ void Tabulated3D<IsRelativistic>::pup(PUP::er& p) {
   p | table_log_density_;
   p | table_log_temperature_;
   p | table_data_;
+
+  if (p.isUnpacking()) {
+    initialize_interpolator();
+  }
 }
 
 template <bool IsRelativistic>

@@ -121,6 +121,7 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
                   std::vector<double> table_data, double energy_shift,
                   double enthalpy_minimum);
 
+
   void initialize(const h5::EosTable& spectre_eos);
 
   bool is_equal(const EquationOfState<IsRelativistic, 3>& rhs) const override;
@@ -217,6 +218,8 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
 
  private:
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(3)
+
+  void initialize_interpolator();
 
   /// Energy shift used to account for negative specific internal energies,
   /// which are only stored logarithmically

@@ -12,6 +12,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -215,6 +216,22 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                      vector_state[1], eps_interp_vector, vector_state[2]))[0]) <
         1.e-12);
 
+  auto test_against_reference_values = [&](auto& this_eos) {
+    get(state[1]) = 1.e-4;
+
+    CHECK_ITERABLE_APPROX(
+        get(this_eos.specific_internal_energy_from_density_and_temperature(
+            state[1], state[0], state[2])),
+        0.30204636358732767);
+    CHECK_ITERABLE_APPROX(get(this_eos.pressure_from_density_and_temperature(
+                              state[1], state[0], state[2])),
+                          0.00001103280164124);
+    CHECK_ITERABLE_APPROX(
+        get(this_eos.sound_speed_squared_from_density_and_temperature(
+            state[1], state[0], state[2])),
+        0.41669901507784435);
+  };
+
   // Test against reference values
 
   std::string h5_file_name{
@@ -226,17 +243,24 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
 
   eos.initialize(compose_eos);
 
-  get(state[1]) = 1.e-4;
+  test_against_reference_values(eos);
 
-  CHECK_ITERABLE_APPROX(
-      get(eos.specific_internal_energy_from_density_and_temperature(
-          state[1], state[0], state[2])),
-      0.30204636358732767);
-  CHECK_ITERABLE_APPROX(get(eos.pressure_from_density_and_temperature(
-                            state[1], state[0], state[2])),
-                        0.00001103280164124);
-  CHECK_ITERABLE_APPROX(
-      get(eos.sound_speed_squared_from_density_and_temperature(
-          state[1], state[0], state[2])),
-      0.41669901507784435);
+  // Test serialization
+
+  register_derived_classes_with_charm<EoS::EquationOfState<true, 3>>();
+  const auto eos_pointer =
+      serialize_and_deserialize(TestHelpers::test_creation<
+                                std::unique_ptr<EoS::EquationOfState<true, 3>>>(
+          {"Tabulated3D:\n"
+           "  TableFilename: " +
+           unit_test_src_path() +
+           "PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5\n"
+           "  TableSubFilename: 'dd2'"}));
+  const EoS::Tabulated3D<true>& deserialized_eos =
+      dynamic_cast<const EoS::Tabulated3D<true>&>(*eos_pointer);
+  TestHelpers::EquationsOfState::test_get_clone(deserialized_eos);
+
+  CHECK(deserialized_eos == eos);
+
+  test_against_reference_values(deserialized_eos);
 }
