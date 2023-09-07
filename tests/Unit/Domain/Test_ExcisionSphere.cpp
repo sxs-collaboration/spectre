@@ -23,8 +23,9 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep

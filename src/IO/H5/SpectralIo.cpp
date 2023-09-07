@@ -9,23 +9,8 @@
 
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace h5_detail {
-
-std::array<Spectral::Basis, 4> allowed_bases() {
-  return {Spectral::Basis::Chebyshev, Spectral::Basis::Legendre,
-          Spectral::Basis::FiniteDifference,
-          Spectral::Basis::SphericalHarmonic};
-}
-
-std::array<Spectral::Quadrature, 5> allowed_quadratures() {
-  return {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::CellCentered,
-          Spectral::Quadrature::FaceCentered,
-          Spectral::Quadrature::Equiangular};
-}
-
 void write_dictionary(const std::string& dict_name,
                       const std::vector<std::string>& values,
                       const h5::detail::OpenGroup& observation_group) {

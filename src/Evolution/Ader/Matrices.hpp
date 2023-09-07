@@ -5,10 +5,12 @@
 
 #include <cstddef>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 /// \cond
 class Matrix;
+namespace Spectral {
+enum class Basis;
+enum class Quadrature;
+}  // namespace Spectral
 /// \endcond
 
 namespace ader::dg {

@@ -26,7 +26,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 

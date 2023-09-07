@@ -11,8 +11,9 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 
 namespace {
 // test cases to be covered

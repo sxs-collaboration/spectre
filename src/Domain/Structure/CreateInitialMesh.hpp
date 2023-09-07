@@ -7,13 +7,16 @@
 #include <cstddef>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-
 /// \cond
 template <size_t Dim>
 struct ElementId;
 template <size_t Dim>
+class Mesh;
+template <size_t Dim>
 struct OrientationMap;
+namespace Spectral {
+enum class Quadrature;
+}  // namespace Spectral
 /// \endcond
 
 namespace domain::Initialization {

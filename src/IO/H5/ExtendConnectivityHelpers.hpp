@@ -4,14 +4,15 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
-#include <hdf5.h>
 #include <string>
 #include <vector>
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 /// \cond
+namespace Spectral {
+enum class Basis;
+enum class Quadrature;
+}  // namespace Spectral
+
 namespace h5::detail {
 template <size_t SpatialDim>
 std::vector<int> extend_connectivity(

@@ -15,6 +15,7 @@
 #include "IO/H5/CheckH5PropertiesMatch.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/SourceArchive.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/FileSystem.hpp"

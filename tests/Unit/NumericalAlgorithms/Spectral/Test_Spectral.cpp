@@ -14,53 +14,15 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/TestCreation.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Math.hpp"
 
 namespace {
-void test_streaming() {
-  CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
-  CHECK(get_output(Spectral::Basis::Chebyshev) == "Chebyshev");
-  CHECK(get_output(Spectral::Basis::FiniteDifference) == "FiniteDifference");
-  for (const auto& basis :
-       {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
-        Spectral::Basis::FiniteDifference}) {
-    CHECK(Spectral::to_basis(get_output(basis)) == basis);
-  }
-
-  CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
-  CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
-  CHECK(get_output(Spectral::Quadrature::CellCentered) == "CellCentered");
-  CHECK(get_output(Spectral::Quadrature::FaceCentered) == "FaceCentered");
-  for (const auto& quadrature :
-       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
-        Spectral::Quadrature::CellCentered,
-        Spectral::Quadrature::FaceCentered}) {
-    CHECK(Spectral::to_quadrature(get_output(quadrature)) == quadrature);
-  }
-}
-
-void test_creation() {
-  CHECK(Spectral::Basis::Legendre ==
-        TestHelpers::test_creation<Spectral::Basis>("Legendre"));
-  CHECK(Spectral::Basis::Chebyshev ==
-        TestHelpers::test_creation<Spectral::Basis>("Chebyshev"));
-  CHECK(Spectral::Basis::FiniteDifference ==
-        TestHelpers::test_creation<Spectral::Basis>("FiniteDifference"));
-
-  CHECK(Spectral::Quadrature::Gauss ==
-        TestHelpers::test_creation<Spectral::Quadrature>("Gauss"));
-  CHECK(Spectral::Quadrature::GaussLobatto ==
-        TestHelpers::test_creation<Spectral::Quadrature>("GaussLobatto"));
-  CHECK(Spectral::Quadrature::CellCentered ==
-        TestHelpers::test_creation<Spectral::Quadrature>("CellCentered"));
-  CHECK(Spectral::Quadrature::FaceCentered ==
-        TestHelpers::test_creation<Spectral::Quadrature>("FaceCentered"));
-}
-
 DataVector unit_polynomial(const size_t deg, const DataVector& x) {
   // Choose all polynomial coefficients to be one
   const std::vector<double> coeffs(deg + 1, 1.);
@@ -573,8 +535,6 @@ void test_double_instantiation() {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
                   "[NumericalAlgorithms][Spectral][Unit]") {
-  test_streaming();
-  test_creation();
   test_exact_differentiation_matrices();
   test_linear_filter();
   test_exact_extrapolation();

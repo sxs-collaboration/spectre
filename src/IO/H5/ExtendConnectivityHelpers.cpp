@@ -7,27 +7,20 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <hdf5.h>
-#include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/H5/VolumeData.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/Algorithm.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Numeric.hpp"
 
 namespace {
 

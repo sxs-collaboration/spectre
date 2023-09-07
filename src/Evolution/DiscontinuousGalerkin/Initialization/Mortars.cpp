@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

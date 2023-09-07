@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/OptionsGroup.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 

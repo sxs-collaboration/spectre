@@ -12,7 +12,9 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"

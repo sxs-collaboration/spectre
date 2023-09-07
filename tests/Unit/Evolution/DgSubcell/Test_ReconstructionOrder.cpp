@@ -11,8 +11,9 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/DgSubcell/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 
 namespace {
 template <size_t Dim>
