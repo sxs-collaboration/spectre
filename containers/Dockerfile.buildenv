@@ -50,20 +50,6 @@ FROM ubuntu:20.04 AS base
 # for how TARGETARCH is defined.
 ARG TARGETARCH
 
-FROM base AS base-amd64
-ENV CHARM_ARCH=x86_64
-ENV TEX_ARCH=x86_64
-
-FROM base AS base-arm64
-ENV CHARM_ARCH=arm8
-ENV TEX_ARCH=aarch64
-
-FROM base-${TARGETARCH} AS dev
-ARG TARGETARCH
-
-ARG PARALLEL_MAKE_ARG=-j2
-ARG DEBIAN_FRONTEND=noninteractive
-
 # Install add-apt-repository
 RUN apt-get update -y \
     && apt-get install -y software-properties-common \
@@ -127,6 +113,22 @@ RUN apt-get update -y \
     && apt-get install -y bash-completion \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
+
+# Install software that we can't install through apt. We have to distinguish
+# between different architectures for many of those.
+FROM base AS base-amd64
+ENV CHARM_ARCH=x86_64
+ENV TEX_ARCH=x86_64
+
+FROM base AS base-arm64
+ENV CHARM_ARCH=arm8
+ENV TEX_ARCH=aarch64
+
+FROM base-${TARGETARCH} AS dev
+ARG TARGETARCH
+
+ARG PARALLEL_MAKE_ARG=-j2
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install minimum required CMake version so that we test compatibility with it
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
