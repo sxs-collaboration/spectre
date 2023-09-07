@@ -457,6 +457,8 @@ jobs:
         CXXFLAGS: "-Werror"
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
+        # Use a separate temp directory to conserve cache space on GitHub
+        CCACHE_TEMPDIR: /work/ccache-tmp
         # Control the max cache size. We evict unused entries in a step below to
         # make sure that each build only uses what it need of this max size.
         CCACHE_MAXSIZE: "2G"
@@ -771,6 +773,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         blaze boost brigand charmpp gsl hdf5 libsharp libxsmm openblas
         py-pybind11 yaml-cpp
       CCACHE_DIR: $HOME/ccache
+      CCACHE_TEMPDIR: $HOME/ccache-tmp
       CCACHE_MAXSIZE: "2G"
       CCACHE_COMPRESS: 1
       CCACHE_COMPRESSLEVEL: 5
