@@ -60,8 +60,20 @@ class PullRequest:
     upgrade_instructions: Optional[str] = None
 
 
-# These should correspond to labels on GitHub
-PULL_REQUEST_GROUPS = ["new feature", None, "bugfix"]
+# The groups into which pull-requests are sorted.
+# - The keys in this mapping should correspond to labels on GitHub. The values
+#   are the group headers.
+# - The order of the groups is the order in which they will appear in the
+#   release notes (dicts are ordered in Python 3.7+).
+PULL_REQUEST_GROUPS = {
+    "new feature": "New features",
+    "cli/pybindings": "CLI & Python bindings",
+    None: "General changes",
+    "documentation": "Documentation",
+    "bugfix": "Bugfixes",
+    "build system": "Build system",
+    "ci/cd": "Continuous integration & deployment",
+}
 
 
 def get_merged_pull_requests(
@@ -138,11 +150,12 @@ def compile_release_notes(merged_prs: List[PullRequest]) -> str:
     """
     # Sort PRs into their groups, ordered first by group then by the order they
     # were merged
+    ordered_groups = list(PULL_REQUEST_GROUPS.keys())
     grouped_prs = itertools.groupby(
         sorted(
             merged_prs,
             key=lambda pr: (
-                PULL_REQUEST_GROUPS.index(pr.group),
+                ordered_groups.index(pr.group),
                 merged_prs.index(pr),
             ),
         ),
@@ -180,11 +193,7 @@ def compile_release_notes(merged_prs: List[PullRequest]) -> str:
     ]
     if len(merged_prs) > 0:
         for group, prs_iterator in grouped_prs:
-            group_header = {
-                "new feature": "New features",
-                "bugfix": "Bugfixes",
-                None: "General changes",
-            }[group]
+            group_header = PULL_REQUEST_GROUPS[group]
             prs = list(prs_iterator)
             release_notes_content += (
                 [f"**{group_header} ({len(prs)}):**", ""]
@@ -329,9 +338,11 @@ if __name__ == "__main__":
             pr.author = pr_gh.user.login
             # Add missing metadata to PR
             pr.url = pr_gh.html_url
-            # Add group information to PR
+            # Add group information to PR. Iterate over groups in reverse order
+            # so that PRs with both, say, "bugfix" and "cli/pybindings" labels
+            # are listed under "bugfix" rather than "cli/pybindings".
             labels = [label.name for label in pr_gh.labels]
-            for group in PULL_REQUEST_GROUPS:
+            for group in reversed(PULL_REQUEST_GROUPS.keys()):
                 if group is None:
                     continue
                 if group in labels:
