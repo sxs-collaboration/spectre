@@ -9,16 +9,20 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/CovariantDerivOfExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfDetSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfNormOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLowerShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivativeOfSpacetimeMetric.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -52,6 +56,12 @@ void bind_impl(py::module& m) {  // NOLINT
         static_cast<tnsr::ijj<DataVector, Dim> (*)(
             const tnsr::iaa<DataVector, Dim>&)>(&::gh::deriv_spatial_metric),
         py::arg("phi"));
+
+  m.def("extrinsic_curvature",
+        static_cast<tnsr::ii<DataVector, Dim> (*)(
+            const tnsr::A<DataVector, Dim>&, const tnsr::aa<DataVector, Dim>&,
+            const tnsr::iaa<DataVector, Dim>&)>(&::gh::extrinsic_curvature),
+        py::arg("spacetime_normal_vector"), py::arg("pi"), py::arg("phi"));
 
   m.def("gauge_source",
         static_cast<tnsr::a<DataVector, Dim> (*)(
@@ -87,6 +97,15 @@ void bind_impl(py::module& m) {  // NOLINT
         py::arg("dt_spatial_metric"), py::arg("phi"));
 
   m.def(
+      "spacetime_deriv_of_det_spatial_metric",
+      static_cast<tnsr::a<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::II<DataVector, Dim>&,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&)>(
+          &::gh::spacetime_deriv_of_det_spatial_metric),
+      py::arg("sqrt_det_spatial_metric"), py::arg("inverse_spatial_metric"),
+      py::arg("dt_spatial_metric"), py::arg("phi"));
+
+  m.def(
       "spacetime_deriv_of_norm_of_shift",
       static_cast<tnsr::a<DataVector, Dim> (*)(
           const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
@@ -103,6 +122,16 @@ void bind_impl(py::module& m) {  // NOLINT
             const Scalar<DataVector>&, const tnsr::A<DataVector, Dim>&,
             const tnsr::iaa<DataVector, Dim>&)>(&::gh::spatial_deriv_of_lapse),
         py::arg("lapse"), py::arg("spacetime_unit_normal"), py::arg("phi"));
+
+  m.def(
+      "time_deriv_of_lower_shift",
+      static_cast<tnsr::i<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::A<DataVector, Dim>&,
+          const tnsr::iaa<DataVector, Dim>&, const tnsr::aa<DataVector, Dim>&)>(
+          &::gh::time_deriv_of_lower_shift),
+      py::arg("lapse"), py::arg("shift"), py::arg("spatial_metric"),
+      py::arg("spacetime_unit_normal"), py::arg("phi"), py::arg("pi"));
 
   m.def(
       "spatial_deriv_of_shift",
@@ -145,6 +174,14 @@ void bind_impl(py::module& m) {  // NOLINT
           const tnsr::iaa<DataVector, Dim>&, const tnsr::aa<DataVector, Dim>&)>(
           &::gh::time_deriv_of_spatial_metric),
       py::arg("lapse"), py::arg("shift"), py::arg("phi"), py::arg("pi"));
+
+  m.def(
+      "time_derivative_of_spacetime_metric",
+      static_cast<tnsr::aa<DataVector, Dim> (*)(
+          const Scalar<DataVector>&, const tnsr::I<DataVector, Dim>&,
+          const tnsr::aa<DataVector, Dim>&, const tnsr::iaa<DataVector, Dim>&)>(
+          &::gh::time_derivative_of_spacetime_metric),
+      py::arg("lapse"), py::arg("shift"), py::arg("pi"), py::arg("phi"));
 
   m.def(
       "trace_christoffel",
