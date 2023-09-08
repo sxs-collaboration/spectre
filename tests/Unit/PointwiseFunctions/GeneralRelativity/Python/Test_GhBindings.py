@@ -50,6 +50,12 @@ class TestBindings(unittest.TestCase):
             phi,
         )
 
+    def test_extrinsic_curvature(self):
+        spacetime_normal_vector = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.extrinsic_curvature(spacetime_normal_vector, pi, phi)
+
     def test_spatial_deriv_of_shift(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         inverse_spacetime_metric = tnsr.AA[DataVector, 3](
@@ -132,6 +138,18 @@ class TestBindings(unittest.TestCase):
             phi,
         )
 
+    def test_spacetime_deriv_of_det_spatial_metric(self):
+        sqrt_det_spatial_metric = Scalar[DataVector](num_points=1, fill=1.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=1.0)
+        dt_spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.spacetime_deriv_of_det_spatial_metric(
+            sqrt_det_spatial_metric,
+            inverse_spatial_metric,
+            dt_spatial_metric,
+            phi,
+        )
+
     def test_spacetime_deriv_of_norm_of_shift(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
@@ -178,6 +196,17 @@ class TestBindings(unittest.TestCase):
             pi,
         )
 
+    def test_time_deriv_of_lower_shift(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        spacetime_unit_normal = tnsr.A[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        gh.time_deriv_of_lower_shift(
+            lapse, shift, spatial_metric, spacetime_unit_normal, phi, pi
+        )
+
     def test_time_deriv_of_shift(self):
         lapse = Scalar[DataVector](num_points=1, fill=1.0)
         shift = tnsr.I[DataVector, 3](num_points=1, fill=0.0)
@@ -205,6 +234,13 @@ class TestBindings(unittest.TestCase):
             phi,
             pi,
         )
+
+    def test_time_derivative_of_spacetime_metric(self):
+        lapse = Scalar[DataVector](num_points=1, fill=1.0)
+        shift = tnsr.I[DataVector, 3](num_points=1, fill=1.0)
+        pi = tnsr.aa[DataVector, 3](num_points=1, fill=1.0)
+        phi = tnsr.iaa[DataVector, 3](num_points=1, fill=1.0)
+        gh.time_derivative_of_spacetime_metric(lapse, shift, pi, phi)
 
     def test_trace_christoffel(self):
         spacetime_normal_one_form = tnsr.a[DataVector, 3](
