@@ -27,7 +27,7 @@ struct Primitives {
   const double specific_internal_energy;
 };
 
-template <size_t ThermodynamicDim>
+template <size_t ThermodynamicDim, bool EnforcePhysicality>
 class FunctionOfZ {
  public:
   FunctionOfZ(const double total_energy_density,
@@ -41,11 +41,27 @@ class FunctionOfZ {
       : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
+        r_(std::sqrt(r_squared_)),
         rest_mass_density_times_lorentz_factor_(
             rest_mass_density_times_lorentz_factor),
         electron_fraction_(electron_fraction),
         equation_of_state_(equation_of_state) {
-    r_ = std::sqrt(r_squared_);
+
+    // Internal consistency check
+    //
+    const double rho_min =
+        rest_mass_density_times_lorentz_factor_ / lorentz_max_;
+    const double eps_min =
+        equation_of_state_.specific_internal_energy_lower_bound(rho_min);
+
+    if constexpr (EnforcePhysicality) {
+      q_ = std::max(q_, eps_min);
+      r_ = std::min(r_, kmax_ * (q_ + 1.));
+    } else {
+      if ((q_ < eps_min) or (r_ > kmax_ * (q_ + 1.))) {
+        state_is_unphysical = true;
+      }
+    }
   }
 
   std::pair<double, double> root_bracket();
@@ -54,20 +70,25 @@ class FunctionOfZ {
 
   double operator()(double z) const;
 
+  bool has_no_root() { return state_is_unphysical; };
+
  private:
-  const double q_;
+  double q_;
   double r_squared_;
   double r_;
+  bool state_is_unphysical = false;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
       equation_of_state_;
-  const double v_0_squared_ =
-      1.0 - 4.0 * std::numeric_limits<double>::epsilon();
+  const double lorentz_max_ = 1000.;
+  const double v_0_squared_ = 1. - 1. / (lorentz_max_ * lorentz_max_);
+  const double kmax_ = 2. * std::sqrt(v_0_squared_) / (1. + v_0_squared_);
 };
 
-template <size_t ThermodynamicDim>
-std::pair<double, double> FunctionOfZ<ThermodynamicDim>::root_bracket() {
+template <size_t ThermodynamicDim, bool EnforcePhysicality>
+std::pair<double, double>
+FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::root_bracket() {
   auto k = r_ / (q_ + 1.);
 
   const double rho_min = equation_of_state_.rest_mass_density_lower_bound();
@@ -80,17 +101,17 @@ std::pair<double, double> FunctionOfZ<ThermodynamicDim>::root_bracket() {
   }
 
   // Compute bounds (C23)
-
-  double lower_bound = 0.5 * k / std::sqrt(1. - 0.25 * k * k);
+  double lower_bound = 0.5 * k / std::sqrt(std::abs(1. - 0.25 * k * k));
   // Ensure that upper_bound does not become degenerate when k ~ 0
   // Empirically, an offset of 1.e-8 has worked well.
-  double upper_bound = 1.e-8 + k / std::sqrt(1. - k * k);
+  double upper_bound = 1.e-8 + k / std::sqrt(std::abs(1. - k * k));
 
   return {lower_bound, upper_bound};
 }
 
-template <size_t ThermodynamicDim>
-Primitives FunctionOfZ<ThermodynamicDim>::primitives(double z) const {
+template <size_t ThermodynamicDim, bool EnforcePhysicality>
+Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
+    double z) const {
   // Compute Lorentz factor, note that z = lorentz * v
   const double w_hat = std::sqrt(1. + z * z);
 
@@ -119,8 +140,9 @@ Primitives FunctionOfZ<ThermodynamicDim>::primitives(double z) const {
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat};
 }
 
-template <size_t ThermodynamicDim>
-double FunctionOfZ<ThermodynamicDim>::operator()(double z) const {
+template <size_t ThermodynamicDim, bool EnforcePhysicality>
+double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
+    double z) const {
   const auto[rho_hat, w_hat, p_hat, epsilon_hat] = primitives(z);
   // Equation (C5)
   const double a_hat = p_hat / (rho_hat * (1.0 + epsilon_hat));
@@ -131,8 +153,10 @@ double FunctionOfZ<ThermodynamicDim>::operator()(double z) const {
 }
 }  // namespace
 
+template <bool EnforcePhysicality>
 template <size_t ThermodynamicDim>
-std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
+std::optional<PrimitiveRecoveryData>
+KastaunEtAlHydro<EnforcePhysicality>::apply(
     const double /*initial_guess_pressure*/, const double total_energy_density,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
@@ -142,14 +166,18 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
   // Master function see Equation (44)
-  auto f_of_z =
-      FunctionOfZ<ThermodynamicDim>{total_energy_density,
-                                    momentum_density_squared,
-                                    momentum_density_dot_magnetic_field,
-                                    magnetic_field_squared,
-                                    rest_mass_density_times_lorentz_factor,
-                                    electron_fraction,
-                                    equation_of_state};
+  auto f_of_z = FunctionOfZ<ThermodynamicDim, EnforcePhysicality>{
+      total_energy_density,
+      momentum_density_squared,
+      momentum_density_dot_magnetic_field,
+      magnetic_field_squared,
+      rest_mass_density_times_lorentz_factor,
+      electron_fraction,
+      equation_of_state};
+
+  if (f_of_z.has_no_root()) {
+    return std::nullopt;
+  };
 
   // z is W * v  (Lorentz factor * velocity)
   double z = std::numeric_limits<double>::signaling_NaN();
@@ -179,21 +207,24 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(_, data)                                                \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
-                             PrimitiveRecoveryData>                           \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro::apply< \
-      THERMODIM(data)>(                                                       \
-      const double initial_guess_pressure, const double total_energy_density, \
-      const double momentum_density_squared,                                  \
-      const double momentum_density_dot_magnetic_field,                       \
-      const double magnetic_field_squared,                                    \
-      const double rest_mass_density_times_lorentz_factor,                    \
-      const double electron_fraction,                                         \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
-          equation_of_state);
+#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define INSTANTIATION(_, data)                                               \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
+                             PrimitiveRecoveryData>                          \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::                        \
+      KastaunEtAlHydro<PHYSICALITY(data)>::apply<THERMODIM(data)>(           \
+          const double initial_guess_pressure,                               \
+          const double total_energy_density,                                 \
+          const double momentum_density_squared,                             \
+          const double momentum_density_dot_magnetic_field,                  \
+          const double magnetic_field_squared,                               \
+          const double rest_mass_density_times_lorentz_factor,               \
+          const double electron_fraction,                                    \
+          const EquationsOfState::EquationOfState<true, THERMODIM(data)>&    \
+              equation_of_state);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM
+#undef PHYSICALITY

@@ -44,6 +44,10 @@ namespace ValenciaDivClean {
  *
  * If `ErrorOnFailure` is `false` then the returned `bool` will be `false` if
  * recovery failed and `true` if it succeeded.
+ *
+ * If `EnforcePhysicality` is `false` then the hydrodynamic inversion will
+ * return with an error if the input conservatives are unphysical, i.e., if no
+ * solution exits. The exact behavior is governed by `ErrorOnFailure`.
  */
 template <typename OrderedListOfPrimitiveRecoverySchemes,
           bool ErrorOnFailure = true>
@@ -73,7 +77,7 @@ struct PrimitiveFromConservative {
       hydro::Tags::EquationOfStateBase,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <size_t ThermodynamicDim>
+  template <bool EnforcePhysicality = true, size_t ThermodynamicDim>
   static bool apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,

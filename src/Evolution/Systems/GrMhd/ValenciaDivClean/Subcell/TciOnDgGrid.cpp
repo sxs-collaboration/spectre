@@ -117,30 +117,35 @@ TciOnDgGrid<RecoveryScheme>::apply(
 
   // Calculate con2prim up front for primitive variable use later.
   // Determine if con2prim is successful
-  const bool successful_con2prim_transformation = grmhd::ValenciaDivClean::
-      PrimitiveFromConservative<tmpl::list<RecoveryScheme>, false>::apply(
-          make_not_null(
-              &get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::ElectronFraction<DataVector>>(pre_tci_prims)),
-          make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
-              pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::SpatialVelocity<DataVector, 3>>(pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::MagneticField<DataVector, 3>>(pre_tci_prims)),
-          make_not_null(&get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-              pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::LorentzFactor<DataVector>>(pre_tci_prims)),
-          make_not_null(&get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::SpecificEnthalpy<DataVector>>(pre_tci_prims)),
-          make_not_null(
-              &get<hydro::Tags::Temperature<DataVector>>(pre_tci_prims)),
-          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
-          primitive_from_conservative_options);
+  const bool successful_con2prim_transformation =
+      grmhd::ValenciaDivClean::PrimitiveFromConservative<
+          tmpl::list<RecoveryScheme>, false>::
+          template apply<false>(
+              make_not_null(&get<hydro::Tags::RestMassDensity<DataVector>>(
+                  pre_tci_prims)),
+              make_not_null(&get<hydro::Tags::ElectronFraction<DataVector>>(
+                  pre_tci_prims)),
+              make_not_null(
+                  &get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
+                      pre_tci_prims)),
+              make_not_null(&get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
+                  pre_tci_prims)),
+              make_not_null(&get<hydro::Tags::MagneticField<DataVector, 3>>(
+                  pre_tci_prims)),
+              make_not_null(
+                  &get<hydro::Tags::DivergenceCleaningField<DataVector>>(
+                      pre_tci_prims)),
+              make_not_null(
+                  &get<hydro::Tags::LorentzFactor<DataVector>>(pre_tci_prims)),
+              make_not_null(
+                  &get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims)),
+              make_not_null(&get<hydro::Tags::SpecificEnthalpy<DataVector>>(
+                  pre_tci_prims)),
+              make_not_null(
+                  &get<hydro::Tags::Temperature<DataVector>>(pre_tci_prims)),
+              tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
+              primitive_from_conservative_options);
 
   // This lambda is called before every TCI failure
   // in order to allow primitives to be updated, rather
