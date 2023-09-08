@@ -42,6 +42,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -140,7 +141,8 @@ struct SendDataForReconstruction {
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const size_t ghost_zone_size =
-        Metavariables::SubcellOptions::ghost_zone_size(box);
+        db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
+            .ghost_zone_size();
 
     // Optimization note: could save a copy+allocation if we moved
     // all_sliced_data when possible before sending.
@@ -338,7 +340,9 @@ struct ReceiveDataForReconstruction {
                evolution::dg::Tags::NeighborMesh<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         [&current_time_step_id, &element,
-         ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
+         ghost_zone_size =
+             db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
+                 .ghost_zone_size(),
          &received_data, &subcell_mesh](
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),

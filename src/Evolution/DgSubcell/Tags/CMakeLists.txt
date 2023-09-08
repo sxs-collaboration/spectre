@@ -24,6 +24,7 @@ spectre_target_headers(
   OnSubcellFaces.hpp
   OnSubcells.hpp
   ReconstructionOrder.hpp
+  Reconstructor.hpp
   SubcellOptions.hpp
   SubcellSolver.hpp
   Tags.hpp
