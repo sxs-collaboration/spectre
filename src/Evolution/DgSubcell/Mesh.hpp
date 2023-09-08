@@ -5,6 +5,9 @@
 
 #include <cstddef>
 
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+
 /// \cond
 template <size_t Dim>
 class Mesh;
@@ -18,4 +21,11 @@ namespace evolution::dg::subcell::fd {
  */
 template <size_t Dim>
 Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh);
+
+/*!
+ * \brief Computes the DG mesh from the cell-centered finite-difference mesh.
+ */
+template <size_t Dim>
+Mesh<Dim> dg_mesh(const Mesh<Dim>& subcell_mesh, Spectral::Basis basis,
+                  Spectral::Quadrature quadrature);
 }  // namespace evolution::dg::subcell::fd
