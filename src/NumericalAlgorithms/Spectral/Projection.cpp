@@ -392,6 +392,29 @@ projection_matrix_parent_to_child(
   return projection_matrix;
 }
 
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
+    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh) {
+  static const Matrix identity{};
+  auto projection_matrices = make_array<Dim>(std::cref(identity));
+  const auto source_mesh_slices = source_mesh.slices();
+  const auto target_mesh_slices = target_mesh.slices();
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto source_mesh_slice = gsl::at(source_mesh_slices, d);
+    const auto target_mesh_slice = gsl::at(target_mesh_slices, d);
+    if (source_mesh_slice == target_mesh_slice) {
+      // No projection necessary, keep matrix the identity in this dimension
+    } else if (source_mesh_slice.extents(0) <= target_mesh_slice.extents(0)) {
+      gsl::at(projection_matrices, d) = projection_matrix_parent_to_child(
+          source_mesh_slice, target_mesh_slice, ChildSize::Full);
+    } else {
+      gsl::at(projection_matrices, d) = projection_matrix_child_to_parent(
+          source_mesh_slice, target_mesh_slice, ChildSize::Full);
+    }
+  }
+  return projection_matrices;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                 \
   template bool needs_projection(                                            \
@@ -405,7 +428,10 @@ projection_matrix_parent_to_child(
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_parent_to_child(                                         \
       const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh, \
-      const std::array<ChildSize, DIM(data)>& child_sizes);
+      const std::array<ChildSize, DIM(data)>& child_sizes);                  \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
+  p_projection_matrices(const Mesh<DIM(data)>& source_mesh,                  \
+                        const Mesh<DIM(data)>& target_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 

@@ -492,6 +492,45 @@ void test_higher_dimensions() {
   }
 }
 
+template <size_t Dim>
+void test_p_projection_matrices() {
+  INFO("p-projection operators");
+  CAPTURE(Dim);
+  // Higher-dimensional operators are just Cartesian products of the 1D
+  // matrices, we only test here if they are constructed correctly.
+  // The particular basis and quadrature don't matter for this test.
+  const auto basis = Spectral::Basis::Legendre;
+  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  {
+    INFO("Identity");
+    const auto identity = Spectral::p_projection_matrices(
+        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature});
+    for (size_t d = 0; d < Dim; ++d) {
+      CHECK(gsl::at(identity, d).get() == Matrix{});
+    }
+  }
+  {
+    const size_t source_extents = 4;
+    std::array<size_t, Dim> target_extents{};
+    std::iota(target_extents.begin(), target_extents.end(), size_t{3});
+    const auto projection_matrix = Spectral::p_projection_matrices(
+        Mesh<Dim>{source_extents, basis, quadrature},
+        Mesh<Dim>{target_extents, basis, quadrature});
+    CHECK(&projection_matrix[0].get() ==
+          &Spectral::projection_matrix_child_to_parent(
+              {4, basis, quadrature}, {3, basis, quadrature},
+              Spectral::ChildSize::Full));
+    if constexpr (Dim > 1) {
+      CHECK(projection_matrix[1].get() == Matrix{});
+    }
+    if constexpr (Dim > 2) {
+      CHECK(&projection_matrix[2].get() ==
+            &Spectral::projection_matrix_parent_to_child(
+                {4, basis, quadrature}, {5, basis, quadrature},
+                Spectral::ChildSize::Full));
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
@@ -514,6 +553,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_higher_dimensions<1>();
   test_higher_dimensions<2>();
   test_higher_dimensions<3>();
+  test_p_projection_matrices<1>();
+  test_p_projection_matrices<2>();
+  test_p_projection_matrices<3>();
 }
 
 }  // namespace Spectral
