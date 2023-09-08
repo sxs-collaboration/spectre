@@ -198,11 +198,13 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
@@ -453,123 +455,162 @@ struct GhValenciaDivCleanTemplateBase<
       volume_dim, analytic_solution_fields, use_dg_subcell>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
-  using observe_fields = tmpl::push_back<
-      tmpl::append<
-          typename system::variables_tag::tags_list,
-          typename system::primitive_variables_tag::tags_list,
-          tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
-                              error_tags>,
-          tmpl::conditional_t<
-              use_control_systems,
-              tmpl::list<
-                  hydro::Tags::TildeDInHalfPlaneCompute<
-                      DataVector, volume_dim,
-                      ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
-                      Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
-                  hydro::Tags::TildeDInHalfPlaneCompute<
-                      DataVector, volume_dim,
-                      ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
-                      Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
-                  hydro::Tags::MassWeightedCoordsCompute<
-                      DataVector, volume_dim,
-                      ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
-                      Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                      Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                      Frame::Inertial>,
-                  hydro::Tags::MassWeightedCoordsCompute<
-                      DataVector, volume_dim,
-                      ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
-                      Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                      Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                      Frame::Inertial>>,
-              tmpl::list<>>,
-          tmpl::list<
-              hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
-              hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
-              hydro::Tags::TildeDUnboundUtCriterionCompute<
-                  DataVector, volume_dim, domain_frame>,
-              hydro::Tags::LowerSpatialFourVelocityCompute,
-              hydro::Tags::MassWeightedCoordsCompute<
-                  DataVector, volume_dim,
-                  ::hydro::HalfPlaneIntegralMask::None,
-                  Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                  Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                  Frame::Inertial>,
-              gr::Tags::SpacetimeNormalOneFormCompute<DataVector, volume_dim,
-                                                      domain_frame>,
-              gr::Tags::SpacetimeNormalVectorCompute<DataVector, volume_dim,
-                                                     domain_frame>,
-              gr::Tags::InverseSpacetimeMetricCompute<DataVector, volume_dim,
-                                                      domain_frame>,
-              gr::Tags::Lapse<DataVector>,
-              gr::Tags::Shift<DataVector, volume_dim, domain_frame>,
-              gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
-              gh::Tags::ExtrinsicCurvatureCompute<volume_dim, domain_frame>,
-              gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
-              ::Tags::PointwiseL2NormCompute<gh::Tags::GaugeConstraint<
-                  DataVector, volume_dim, domain_frame>>>,
-          tmpl::conditional_t<use_dg_subcell,
-                              tmpl::list<evolution::dg::subcell::Tags::
-                                             TciStatusCompute<volume_dim>>,
-                              tmpl::list<>>>,
+  using observe_fields = tmpl::append<
+      typename system::variables_tag::tags_list,
+      typename system::primitive_variables_tag::tags_list,
+      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>, error_tags>,
+      tmpl::list<
+          hydro::Tags::TildeDInHalfPlaneCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
+          hydro::Tags::TildeDInHalfPlaneCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>,
+
+          hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
+          hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
+          hydro::Tags::TildeDUnboundUtCriterionCompute<DataVector, volume_dim,
+                                                       domain_frame>,
+          hydro::Tags::LowerSpatialFourVelocityCompute,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim, ::hydro::HalfPlaneIntegralMask::None,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>,
+          gr::Tags::SpacetimeNormalOneFormCompute<DataVector, volume_dim,
+                                                  domain_frame>,
+          gr::Tags::SpacetimeNormalVectorCompute<DataVector, volume_dim,
+                                                 domain_frame>,
+          gr::Tags::InverseSpacetimeMetricCompute<DataVector, volume_dim,
+                                                  domain_frame>,
+          gr::Tags::Lapse<DataVector>,
+          gr::Tags::Shift<DataVector, volume_dim, domain_frame>,
+          gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
+          gr::Tags::DetSpatialMetric<DataVector>,
+          gr::Tags::InverseSpatialMetric<DataVector, volume_dim>,
+          gh::Tags::ExtrinsicCurvatureCompute<volume_dim, domain_frame>,
+          gh::Tags::DerivSpatialMetricCompute<volume_dim, ::Frame::Inertial>,
+          gr::Tags::SpatialChristoffelFirstKindCompute<DataVector, volume_dim,
+                                                       ::Frame::Inertial>,
+          gr::Tags::SpatialChristoffelSecondKindCompute<DataVector, volume_dim,
+                                                        ::Frame::Inertial>,
+          ::Tags::DerivTensorCompute<
+              gr::Tags::SpatialChristoffelSecondKind<DataVector, volume_dim>,
+              ::Events::Tags::ObserverInverseJacobian<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              ::Events::Tags::ObserverMesh<volume_dim>>,
+          gr::Tags::SpatialRicciCompute<DataVector, volume_dim,
+                                        ::Frame::Inertial>,
+          gr::Tags::SpatialRicciScalarCompute<DataVector, volume_dim,
+                                              ::Frame::Inertial>,
+
+          // Constraints
+          gh::Tags::GaugeConstraintCompute<volume_dim, domain_frame>,
+          gh::Tags::TwoIndexConstraintCompute<volume_dim, ::Frame::Inertial>,
+          gh::Tags::ThreeIndexConstraintCompute<volume_dim, ::Frame::Inertial>,
+          gh::Tags::FourIndexConstraintCompute<3, ::Frame::Inertial>,
+          gh::Tags::FConstraintCompute<3, ::Frame::Inertial>,
+
+          // L2 norms of constraints
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::GaugeConstraint<DataVector, volume_dim, domain_frame>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::TwoIndexConstraint<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::ThreeIndexConstraint<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::FourIndexConstraint<DataVector, 3>>,
+          gh::Tags::ConstraintEnergyCompute<3, ::Frame::Inertial>,
+          ::Tags::PointwiseL2NormCompute<gh::Tags::FConstraint<DataVector, 3>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::GaugeH<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<gh::Tags::Phi<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
+                            tmpl::size_t<volume_dim>, Frame::Inertial>>,
+
+          // GW Tags
+          grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
+              DataVector, volume_dim,
+              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
+              DataVector, volume_dim,
+              ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          ::Tags::DerivTensorCompute<
+              gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+              ::Events::Tags::ObserverInverseJacobian<
+                  volume_dim, Frame::ElementLogical, Frame::Inertial>,
+              ::Events::Tags::ObserverMesh<volume_dim>>,
+          gr::Tags::WeylElectricCompute<DataVector, 3, Frame::Inertial>,
+          gr::Tags::Psi4RealCompute<Frame::Inertial>
+
+          >,
       tmpl::conditional_t<
           use_dg_subcell,
-          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
-              volume_dim, Frame::ElementLogical>,
-          ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
-                                                     Frame::ElementLogical>>,
-      tmpl::conditional_t<
-          use_dg_subcell,
-          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,
-                                                                   Frame::Grid>,
-          ::Events::Tags::ObserverCoordinatesCompute<volume_dim, Frame::Grid>>,
-      tmpl::conditional_t<
-          use_dg_subcell,
-          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
-              volume_dim, Frame::Inertial>,
-          ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
-                                                     Frame::Inertial>>,
-      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
-      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
-             DataVector, volume_dim,
-             ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>>;
+          tmpl::list<evolution::dg::subcell::Tags::TciStatusCompute<volume_dim>,
+                     evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::ElementLogical>,
+                     evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::Grid>,
+                     evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::Inertial>>,
+          tmpl::list<::Events::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::ElementLogical>,
+                     ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
+                                                                Frame::Grid>,
+                     ::Events::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::Inertial>>>
+
+      >;
   using integrand_fields = tmpl::append<
       typename system::variables_tag::tags_list,
-      tmpl::conditional_t<
-          use_control_systems,
-          tmpl::list<hydro::Tags::TildeDInHalfPlaneCompute<
-                         DataVector, volume_dim,
-                         ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
-                         Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
-                     hydro::Tags::TildeDInHalfPlaneCompute<
-                         DataVector, volume_dim,
-                         ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
-                         Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
-                     hydro::Tags::MassWeightedCoordsCompute<
-                         DataVector, volume_dim,
-                         ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
-                         Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                         Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                         Frame::Inertial>,
-                     hydro::Tags::MassWeightedCoordsCompute<
-                         DataVector, volume_dim,
-                         ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
-                         Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                         Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                         Frame::Inertial>>,
-          tmpl::list<>>,
-      tmpl::list<hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
-                 hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
-                 hydro::Tags::TildeDUnboundUtCriterionCompute<
-                     DataVector, volume_dim, domain_frame>,
-                 hydro::Tags::MassWeightedCoordsCompute<
-                     DataVector, volume_dim,
-                     ::hydro::HalfPlaneIntegralMask::None,
-                     Events::Tags::ObserverCoordinates<3, Frame::Grid>,
-                     Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
-                     Frame::Inertial>>>;
+      tmpl::list<
+          // Control system tags
+          hydro::Tags::TildeDInHalfPlaneCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
+          hydro::Tags::TildeDInHalfPlaneCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>>,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::PositiveXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim,
+              ::hydro::HalfPlaneIntegralMask::NegativeXOnly,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>,
+
+          // General tags
+          hydro::Tags::MassWeightedInternalEnergyCompute<DataVector>,
+          hydro::Tags::MassWeightedKineticEnergyCompute<DataVector>,
+          hydro::Tags::TildeDUnboundUtCriterionCompute<DataVector, volume_dim,
+                                                       domain_frame>,
+          hydro::Tags::MassWeightedCoordsCompute<
+              DataVector, volume_dim, ::hydro::HalfPlaneIntegralMask::None,
+              Events::Tags::ObserverCoordinates<3, Frame::Grid>,
+              Events::Tags::ObserverCoordinates<3, Frame::Inertial>,
+              Frame::Inertial>>>;
 
   using non_tensor_compute_tags = tmpl::append<
       tmpl::conditional_t<
@@ -592,7 +633,13 @@ struct GhValenciaDivCleanTemplateBase<
                          Frame::ElementLogical, Frame::Inertial>>>,
       tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                           tmpl::list<analytic_compute, error_compute>>,
-      tmpl::list<gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>>;
+      tmpl::list<::Tags::DerivCompute<
+                     typename system::variables_tag,
+                     ::Events::Tags::ObserverMesh<volume_dim>,
+                     ::Events::Tags::ObserverInverseJacobian<
+                         volume_dim, Frame::ElementLogical, Frame::Inertial>,
+                     typename system::gradient_variables>,
+                 gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

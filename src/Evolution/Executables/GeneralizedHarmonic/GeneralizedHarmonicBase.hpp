@@ -195,7 +195,8 @@ struct ObserverTags {
           ::Tags::DerivTensorCompute<
               gr::Tags::SpatialChristoffelSecondKind<DataVector, volume_dim>,
               ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
-                                              Frame::Inertial>>,
+                                              Frame::Inertial>,
+              ::domain::Tags::Mesh<volume_dim>>,
           gr::Tags::SpatialRicciCompute<DataVector, volume_dim,
                                         ::Frame::Inertial>,
           gr::Tags::SpatialRicciScalarCompute<DataVector, volume_dim,
@@ -225,7 +226,8 @@ struct ObserverTags {
               ::Tags::DerivTensorCompute<
                   gr::Tags::ExtrinsicCurvature<DataVector, 3>,
                   ::domain::Tags::InverseJacobian<
-                      volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>,
+                  ::domain::Tags::Mesh<volume_dim>>,
               gr::Tags::WeylElectricCompute<DataVector, 3, Frame::Inertial>,
               gr::Tags::Psi4RealCompute<Frame::Inertial>>,
           tmpl::list<>>>;

@@ -297,7 +297,7 @@ struct DerivCompute
  * 'TensorTag' in the frame mapped to by 'InverseJacobianTag'. It takes a
  * single Tensor designated by 'TensorTag', the inverse Jacobian, and a mesh.
  */
-template <typename TensorTag, typename InverseJacobianTag>
+template <typename TensorTag, typename InverseJacobianTag, typename MeshTag>
 struct DerivTensorCompute
     : ::Tags::deriv<TensorTag,
                     tmpl::size_t<tmpl::back<
