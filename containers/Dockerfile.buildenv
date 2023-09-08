@@ -304,9 +304,8 @@ RUN apt-get update -y \
 # Install bibtex for Doxygen bibliography management
 # We first install the TeXLive infrastructure according to the configuration in
 # support/TeXLive/texlive.profile and then use it to install the bibtex package.
-RUN mkdir /work/texlive
-WORKDIR /work/texlive
-RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
+RUN mkdir /work/texlive && cd /work/texlive \
+    && wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
@@ -317,6 +316,8 @@ ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
+
+WORKDIR /work
 
 
 # Everything we need to run tests on CI on GitHub.
@@ -353,17 +354,15 @@ RUN apt-get install -y openmpi-bin
 
 # We build an mpi version of charm (with clang) because many of our production
 # environments have charm built with mpi and we should test that.
-WORKDIR /work/charm_7_0_0
 # This env variable was found to be necessary when building charm with OpenMPI
 # 4.0.3 which ships with Ubuntu 20.04. For more details see this issue:
 # https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
 ENV LDFLAGS="-lopen-pal"
-RUN ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
-    && rm -rf /work/charm_7_0_0/doc /work/charm_7_0_0/examples
+RUN cd /work/charm_7_0_0 \
+    && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
+        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared
 
 # Download and extract the intel Software Development Emulator binaries
-WORKDIR /work
 RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz -O sde-external.tar.xz \
     && tar -xJf sde-external.tar.xz \
     && mv sde-external-* sde \
@@ -402,7 +401,6 @@ RUN apt-get update -y \
 # install paraview when building for Apple Silicon. Apple Silicon users
 # should install a binary of ParaView for Mac and move data to be
 # visualized outside of the container.
-WORKDIR /work
 RUN if [ "$TARGETARCH" != "arm64" ] ; then \
     wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
     && tar -xzf paraview.tar.gz \
@@ -411,8 +409,6 @@ RUN if [ "$TARGETARCH" != "arm64" ] ; then \
   fi
 
 ENV PATH "/opt/paraview/bin:$PATH"
-
-WORKDIR /work
 
 # We copy the entire SpECTRE repo from the current context so that people can
 # edit and rebuild the pre-built executables if they want to experiment with
