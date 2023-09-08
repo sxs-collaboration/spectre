@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <ostream>
 
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
