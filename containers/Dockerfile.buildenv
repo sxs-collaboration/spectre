@@ -103,11 +103,6 @@ RUN add-apt-repository universe \
     && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
 
-# Add ruby gems and install coveralls using gem
-RUN apt-get update -y \
-    && apt-get install -y rubygems \
-    && gem install coveralls-lcov
-
 # Enable bash-completion by installing it and then adding it to the .bashrc file
 RUN apt-get update -y \
     && apt-get install -y bash-completion \
