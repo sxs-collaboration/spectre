@@ -114,6 +114,51 @@ RUN apt-get update -y \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
+
+# Cross-compile dependencies on the host system that take a long time to build
+# when emulating the target architecture. The `xbuild` stage is an image with
+# the same architecture as the host. It compiles the packages for the target
+# architecture. Then we can copy the compiled packages into the `base` image.
+FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
+FROM --platform=$BUILDPLATFORM ubuntu:20.04 AS xbuild
+WORKDIR /root
+COPY --from=xx / /
+ARG TARGETPLATFORM
+ARG PARALLEL_MAKE_ARG=-j2
+# Install build dependencies for the host system
+RUN apt-get update -y \
+    && apt-get install -y cmake clang lld wget
+# Install build dependencies for the target architecture
+RUN xx-apt-get update -y \
+    && xx-apt-get install -y libc6-dev libstdc++-10-dev bison flex
+# - Ccache
+RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
+    && tar -xzf ccache.tar.gz \
+    && mv ccache-* ccache \
+    && cd ccache \
+    && mkdir build && cd build \
+    && cmake $(xx-clang --print-cmake-defines) \
+        -D HAVE_ASM_SSE2=OFF -D HAVE_ASM_SSE41=OFF \
+        -D HAVE_ASM_AVX2=OFF -D HAVE_ASM_AVX512=OFF \
+        -D CMAKE_BUILD_TYPE=Release .. \
+    && make $PARALLEL_MAKE_ARG
+# - Doxygen
+RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
+    && tar -xzf doxygen.tar.gz \
+    && mv doxygen-* doxygen \
+    && cd doxygen \
+    && mkdir build && cd build \
+    && cmake $(xx-clang --print-cmake-defines) \
+        -D CMAKE_BUILD_TYPE=Release .. \
+    && make $PARALLEL_MAKE_ARG
+
+FROM base AS xbuild-test
+COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
+RUN ccache --version
+COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+RUN doxygen --version
+
+
 # Install software that we can't install through apt. We have to distinguish
 # between different architectures for many of those.
 FROM base AS base-amd64
@@ -161,25 +206,9 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O c
     && make $PARALLEL_MAKE_ARG install \
     && cd ../.. && rm -rf Catch2
 # - Ccache
-RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
-    && tar -xzf ccache.tar.gz \
-    && cd ccache-* \
-    && mkdir build && cd build \
-    && cmake -D CMAKE_BUILD_TYPE=Release .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd .. && rm -rf ccache*
+COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 # - Doxygen
-RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
-    && tar -xzf doxygen.tar.gz \
-    && mv doxygen-* doxygen \
-    && cd doxygen \
-    && mkdir build \
-    && cd build \
-    && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd ../.. && rm -rf doxygen*
+COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
 # - HDF5
 RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.9/src/hdf5-1.10.9.tar.gz -O hdf5.tar.gz \
     && tar -xzf hdf5.tar.gz \
