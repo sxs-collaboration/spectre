@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveValenciaDivCleanFishboneMoncriefDisk
+Executable: EvolveValenciaDivClean
 Testing:
   Check: parse;execute
   Timeout: 20

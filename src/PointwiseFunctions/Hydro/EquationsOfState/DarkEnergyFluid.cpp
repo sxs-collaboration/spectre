@@ -3,8 +3,11 @@
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 
+#include <memory>
+
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
@@ -30,6 +33,13 @@ std::unique_ptr<EquationOfState<IsRelativistic, 2>>
 DarkEnergyFluid<IsRelativistic>::get_clone() const {
   auto clone = std::make_unique<DarkEnergyFluid<IsRelativistic>>(*this);
   return std::unique_ptr<EquationOfState<IsRelativistic, 2>>(std::move(clone));
+}
+
+template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 3>>
+DarkEnergyFluid<IsRelativistic>::promote_to_3d_eos() const {
+  return std::make_unique<Equilibrium3D<DarkEnergyFluid<IsRelativistic>>>(
+      *this);
 }
 
 template <bool IsRelativistic>

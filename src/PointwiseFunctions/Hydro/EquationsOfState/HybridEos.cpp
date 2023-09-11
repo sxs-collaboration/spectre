@@ -3,12 +3,14 @@
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
 
+#include <memory>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions//Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions//Hydro/EquationsOfState/Spectral.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
@@ -31,6 +33,14 @@ std::unique_ptr<
 HybridEos<ColdEquationOfState>::get_clone() const {
   auto clone = std::make_unique<HybridEos<ColdEquationOfState>>(*this);
   return std::unique_ptr<EquationOfState<is_relativistic, 2>>(std::move(clone));
+}
+
+template <typename ColdEquationOfState>
+std::unique_ptr<
+    EquationOfState<HybridEos<ColdEquationOfState>::is_relativistic, 3>>
+HybridEos<ColdEquationOfState>::promote_to_3d_eos() const {
+  return std::make_unique<Equilibrium3D<HybridEos<ColdEquationOfState>>>(
+      Equilibrium3D(*this));
 }
 
 template <typename ColdEquationOfState>

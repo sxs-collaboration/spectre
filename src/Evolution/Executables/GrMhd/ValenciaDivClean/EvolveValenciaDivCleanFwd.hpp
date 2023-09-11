@@ -36,6 +36,7 @@ class SlabJet;
 
 struct CenterOfStar;
 struct KerrHorizon;
-template <typename InitialData, typename...InterpolationTargetTags>
+template <bool UseParametrizedDeleptonization,
+          typename... InterpolationTargetTags>
 struct EvolutionMetavars;
 /// \endcond

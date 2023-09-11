@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -81,12 +82,20 @@ struct DerivedClasses<true, 3> {
                  Barotropic3D<Spectral>, Barotropic3D<Enthalpy<Spectral>>,
                  Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
                  Equilibrium3D<HybridEos<Spectral>>,
-                 Equilibrium3D<HybridEos<Enthalpy<Spectral>>>>;
+                 Equilibrium3D<HybridEos<Enthalpy<Spectral>>>,
+                 Equilibrium3D<DarkEnergyFluid<true>>,
+                 Equilibrium3D<IdealFluid<true>>,
+                 Barotropic3D<PiecewisePolytropicFluid<true>>,
+                 Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
+                 Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>>;
 };
 
 template <>
 struct DerivedClasses<false, 3> {
-  using type = tmpl::list<Tabulated3D<false>>;
+  using type = tmpl::list<Tabulated3D<false>, Equilibrium3D<IdealFluid<false>>,
+                          Barotropic3D<PiecewisePolytropicFluid<false>>,
+                          Equilibrium3D<HybridEos<PolytropicFluid<false>>>,
+                          Barotropic3D<PolytropicFluid<false>>>;
 };
 
 }  // namespace detail
@@ -151,7 +160,8 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 1>& rhs) const = 0;
-
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
+  promote_to_3d_eos() const = 0;
   /// @{
   /*!
    * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
@@ -323,6 +333,9 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 2>& rhs) const = 0;
+
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
+  promote_to_3d_eos() const = 0;
 
   /// @{
   /*!
@@ -515,6 +528,12 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 3>& rhs) const = 0;
+
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
+  promote_to_3d_eos() {
+    return this->get_clone();
+  }
+
   /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$, the

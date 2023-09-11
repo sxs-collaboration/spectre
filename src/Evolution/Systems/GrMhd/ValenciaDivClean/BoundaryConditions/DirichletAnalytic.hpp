@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -64,7 +65,12 @@ class DirichletAnalytic final : public BoundaryCondition {
   using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
 
  public:
-  using options = tmpl::list<>;
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+  using options = tmpl::list<AnalyticPrescription>;
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions using either analytic solution or "
       "analytic data."};
@@ -72,11 +78,15 @@ class DirichletAnalytic final : public BoundaryCondition {
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
   DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
-  DirichletAnalytic(const DirichletAnalytic&) = default;
-  DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
+  DirichletAnalytic(const DirichletAnalytic&);
+  DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
+
+  explicit DirichletAnalytic(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
@@ -93,10 +103,8 @@ class DirichletAnalytic final : public BoundaryCondition {
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
-  template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> tilde_d,
       const gsl::not_null<Scalar<DataVector>*> tilde_ye,
@@ -127,50 +135,68 @@ class DirichletAnalytic final : public BoundaryCondition {
           tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-        return analytic_solution_or_data.variables(
-            coords, time,
-            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                       hydro::Tags::ElectronFraction<DataVector>,
-                       hydro::Tags::SpecificInternalEnergy<DataVector>,
-                       hydro::Tags::Pressure<DataVector>,
-                       hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       hydro::Tags::LorentzFactor<DataVector>,
-                       hydro::Tags::MagneticField<DataVector, 3>,
-                       hydro::Tags::DivergenceCleaningField<DataVector>,
-                       gr::Tags::SpatialMetric<DataVector, 3>,
-                       gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                       gr::Tags::Lapse<DataVector>,
-                       gr::Tags::Shift<DataVector, 3>>{});
+      const tnsr::I<DataVector, 3, Frame::Inertial>& coords,
+      [[maybe_unused]] const double time) const {
+    auto boundary_values = call_with_dynamic_type<
+        tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataVector>,
+                            hydro::Tags::ElectronFraction<DataVector>,
+                            hydro::Tags::SpecificInternalEnergy<DataVector>,
+                            hydro::Tags::Pressure<DataVector>,
+                            hydro::Tags::SpatialVelocity<DataVector, 3>,
+                            hydro::Tags::LorentzFactor<DataVector>,
+                            hydro::Tags::MagneticField<DataVector, 3>,
+                            hydro::Tags::DivergenceCleaningField<DataVector>,
+                            gr::Tags::SpatialMetric<DataVector, 3>,
+                            gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                            gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                            gr::Tags::Lapse<DataVector>,
+                            gr::Tags::Shift<DataVector, 3>>,
+        grmhd::ValenciaDivClean::InitialData::initial_data_list>(
+        analytic_prescription_.get(),
+        [&coords, &time](const auto* const initial_data) {
+          if constexpr (is_analytic_solution_v<
+                            std::decay_t<decltype(*initial_data)>>) {
+            return initial_data->variables(
+                coords, time,
+                tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                           hydro::Tags::ElectronFraction<DataVector>,
+                           hydro::Tags::SpecificInternalEnergy<DataVector>,
+                           hydro::Tags::Pressure<DataVector>,
+                           hydro::Tags::SpatialVelocity<DataVector, 3>,
+                           hydro::Tags::LorentzFactor<DataVector>,
+                           hydro::Tags::MagneticField<DataVector, 3>,
+                           hydro::Tags::DivergenceCleaningField<DataVector>,
+                           gr::Tags::SpatialMetric<DataVector, 3>,
+                           gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                           gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                           gr::Tags::Lapse<DataVector>,
+                           gr::Tags::Shift<DataVector, 3>>{});
 
-      } else {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            coords, tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                               hydro::Tags::ElectronFraction<DataVector>,
-                               hydro::Tags::SpecificInternalEnergy<DataVector>,
-                               hydro::Tags::Pressure<DataVector>,
-                               hydro::Tags::SpatialVelocity<DataVector, 3>,
-                               hydro::Tags::LorentzFactor<DataVector>,
-                               hydro::Tags::MagneticField<DataVector, 3>,
-                               hydro::Tags::DivergenceCleaningField<DataVector>,
-                               gr::Tags::SpatialMetric<DataVector, 3>,
-                               gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                               gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                               gr::Tags::Lapse<DataVector>,
-                               gr::Tags::Shift<DataVector, 3>>{});
-      }
-    }();
-
+          } else {
+            (void)time;
+            return initial_data->variables(
+                coords,
+                tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                           hydro::Tags::ElectronFraction<DataVector>,
+                           hydro::Tags::SpecificInternalEnergy<DataVector>,
+                           hydro::Tags::Pressure<DataVector>,
+                           hydro::Tags::SpatialVelocity<DataVector, 3>,
+                           hydro::Tags::LorentzFactor<DataVector>,
+                           hydro::Tags::MagneticField<DataVector, 3>,
+                           hydro::Tags::DivergenceCleaningField<DataVector>,
+                           gr::Tags::SpatialMetric<DataVector, 3>,
+                           gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                           gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                           gr::Tags::Lapse<DataVector>,
+                           gr::Tags::Shift<DataVector, 3>>{});
+          }
+        });
+    // Recover values from analytic solution/ analytic data calls
     *lapse = get<gr::Tags::Lapse<DataVector>>(boundary_values);
     *shift = get<gr::Tags::Shift<DataVector, 3>>(boundary_values);
     *inv_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_values);
-
+    // Recover the conservative variables from the primitives
     ConservativeFromPrimitive::apply(
         tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values),
@@ -208,9 +234,7 @@ class DirichletAnalytic final : public BoundaryCondition {
                  domain::Tags::ElementMap<3, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                              Frame::Inertial>,
-                 fd::Tags::Reconstructor, ::Tags::AnalyticSolutionOrData>;
-
-  template <typename AnalyticSolutionOrData>
+                 fd::Tags::Reconstructor>;
   void fd_ghost(
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -231,7 +255,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const Mesh<3> subcell_mesh,
 
       // fd_gridless_tags
-      const double time,
+      [[maybe_unused]] const double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
@@ -239,8 +263,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const ElementMap<3, Frame::Grid>& logical_to_grid_map,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
           grid_to_inertial_map,
-      const fd::Reconstructor& reconstructor,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+      const fd::Reconstructor& reconstructor) const {
     const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
 
     const auto ghost_logical_coords =
@@ -251,28 +274,38 @@ class DirichletAnalytic final : public BoundaryCondition {
         logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
 
     // Compute FD ghost data with the analytic data or solution
-    auto boundary_values = [&analytic_solution_or_data, &ghost_inertial_coords,
-                            &time]() {
-      using hydro_tags =
-          tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                     hydro::Tags::ElectronFraction<DataVector>,
-                     hydro::Tags::Pressure<DataVector>,
-                     hydro::Tags::SpatialVelocity<DataVector, 3>,
-                     hydro::Tags::LorentzFactor<DataVector>,
-                     hydro::Tags::MagneticField<DataVector, 3>,
-                     hydro::Tags::DivergenceCleaningField<DataVector>,
-                     hydro::Tags::SpecificInternalEnergy<DataVector>,
-                     hydro::Tags::SpecificEnthalpy<DataVector>>;
-      if constexpr (std::is_base_of_v<MarkAsAnalyticData,
-                                      AnalyticSolutionOrData>) {
-        (void)time;
-        return analytic_solution_or_data.variables(ghost_inertial_coords,
-                                                   hydro_tags{});
-      } else {
-        return analytic_solution_or_data.variables(ghost_inertial_coords, time,
-                                                   hydro_tags{});
-      }
-    }();
+    auto boundary_values = call_with_dynamic_type<
+        tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataVector>,
+                            hydro::Tags::ElectronFraction<DataVector>,
+                            hydro::Tags::Pressure<DataVector>,
+                            hydro::Tags::SpatialVelocity<DataVector, 3>,
+                            hydro::Tags::LorentzFactor<DataVector>,
+                            hydro::Tags::MagneticField<DataVector, 3>,
+                            hydro::Tags::DivergenceCleaningField<DataVector>,
+                            hydro::Tags::SpecificInternalEnergy<DataVector>,
+                            hydro::Tags::SpecificEnthalpy<DataVector>>,
+        grmhd::ValenciaDivClean::InitialData::initial_data_list>(
+        analytic_prescription_.get(),
+        [&ghost_inertial_coords, &time](const auto* const initial_data) {
+          using hydro_tags =
+              tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                         hydro::Tags::ElectronFraction<DataVector>,
+                         hydro::Tags::Pressure<DataVector>,
+                         hydro::Tags::SpatialVelocity<DataVector, 3>,
+                         hydro::Tags::LorentzFactor<DataVector>,
+                         hydro::Tags::MagneticField<DataVector, 3>,
+                         hydro::Tags::DivergenceCleaningField<DataVector>,
+                         hydro::Tags::SpecificInternalEnergy<DataVector>,
+                         hydro::Tags::SpecificEnthalpy<DataVector>>;
+          if constexpr (is_analytic_solution_v<
+                            std::decay_t<decltype(*initial_data)>>) {
+            return initial_data->variables(ghost_inertial_coords, time,
+                                           hydro_tags{});
+          } else {
+            (void)time;
+            return initial_data->variables(ghost_inertial_coords, hydro_tags{});
+          }
+        });
 
     *rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
@@ -295,21 +328,25 @@ class DirichletAnalytic final : public BoundaryCondition {
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(boundary_values);
 
     if (cell_centered_ghost_fluxes->has_value()) {
-      auto metric_boundary_values = [&analytic_solution_or_data,
-                                     &ghost_inertial_coords, &time]() {
-        using gr_tags = tmpl::list<gr::Tags::Lapse<DataVector>,
-                                   gr::Tags::Shift<DataVector, 3>,
-                                   gr::Tags::SpatialMetric<DataVector, 3>>;
-        if constexpr (std::is_base_of_v<MarkAsAnalyticData,
-                                        AnalyticSolutionOrData>) {
-          (void)time;
-          return analytic_solution_or_data.variables(ghost_inertial_coords,
-                                                     gr_tags{});
-        } else {
-          return analytic_solution_or_data.variables(ghost_inertial_coords,
-                                                     time, gr_tags{});
-        }
-      }();
+      auto metric_boundary_values = call_with_dynamic_type<
+          tuples::TaggedTuple<gr::Tags::Lapse<DataVector>,
+                              gr::Tags::Shift<DataVector, 3>,
+                              gr::Tags::SpatialMetric<DataVector, 3>>,
+          grmhd::ValenciaDivClean::InitialData::initial_data_list>(
+          analytic_prescription_.get(),
+          [&ghost_inertial_coords, &time](const auto* const initial_data) {
+            using gr_tags = tmpl::list<gr::Tags::Lapse<DataVector>,
+                                       gr::Tags::Shift<DataVector, 3>,
+                                       gr::Tags::SpatialMetric<DataVector, 3>>;
+            if constexpr (is_analytic_solution_v<
+                              std::decay_t<decltype(*initial_data)>>) {
+              return initial_data->variables(ghost_inertial_coords, time,
+                                             gr_tags{});
+            } else {
+              (void)time;
+              return initial_data->variables(ghost_inertial_coords, gr_tags{});
+            }
+          });
       auto [sqrt_det_spatial_metric, inverse_spatial_metric] =
           determinant_and_inverse(get<gr::Tags::SpatialMetric<DataVector, 3>>(
               metric_boundary_values));
@@ -368,5 +405,8 @@ class DirichletAnalytic final : public BoundaryCondition {
           get<hydro::Tags::MagneticField<DataVector, 3>>(boundary_values));
     }
   }
+
+ private:
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

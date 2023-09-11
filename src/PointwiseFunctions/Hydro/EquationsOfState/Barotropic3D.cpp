@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -112,7 +113,13 @@ Scalar<DataType> Barotropic3D<ColdEquilEos>::
       enthalpy_density};
 }
 template class Barotropic3D<EquationsOfState::PolytropicFluid<true>>;
+template class Barotropic3D<EquationsOfState::PolytropicFluid<false>>;
+template class Barotropic3D<PiecewisePolytropicFluid<true>>;
+template class Barotropic3D<PiecewisePolytropicFluid<false>>;
 template class Barotropic3D<Spectral>;
+template class Barotropic3D<Enthalpy<PolytropicFluid<true>>>;
 template class Barotropic3D<Enthalpy<Spectral>>;
+template class Barotropic3D<Enthalpy<Enthalpy<Spectral>>>;
+template class Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>;
 
 }  // namespace EquationsOfState
