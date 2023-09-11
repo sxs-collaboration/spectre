@@ -405,21 +405,6 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
-          # Add a test without PCH to the build matrix, which only builds core
-          # libraries. Building all the tests without the PCH takes very long
-          # and the most we would catch is a missing include of something that's
-          # in the PCH.
-          # Use this test also to build and test all input files with "normal"
-          # or higher priority. The other configurations only test input files
-          # with "high" priority to reduce the total build time.
-          - compiler: clang-10
-            build_type: Debug
-            use_pch: OFF
-            unit_tests: OFF
-            input_file_tests_min_priority: "normal"
-          # Full clang-10 build to catch any incompatibilities.
-          - compiler: clang-10
-            build_type: Release
           # Test with ASAN
           - compiler: clang-11
             build_type: Debug
@@ -439,12 +424,22 @@ jobs:
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-          # Test with MPI version of charm
+          # Add a test without PCH to the build matrix, which only builds core
+          # libraries. Building all the tests without the PCH takes very long
+          # and the most we would catch is a missing include of something that's
+          # in the PCH.
+          # Use this test also to build and test all input files with "normal"
+          # or higher priority. The other configurations only test input files
+          # with "high" priority to reduce the total build time.
           - compiler: clang-13
             build_type: Debug
+            use_pch: OFF
+            unit_tests: OFF
+            input_file_tests_min_priority: "normal"
+          # Test with MPI version of charm
+          - compiler: clang-13
+            build_type: Release
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
-            # MPI running tests is a bit slower than multicore
-            TEST_TIMEOUT_FACTOR: 3
 
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
@@ -1079,7 +1074,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         compiler:
           - gcc-9
           - gcc-10
-          - clang-10
+          - clang-11
           - clang-13
         include:
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
@@ -1090,7 +1085,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             compiler: gcc-10
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
-            compiler: clang-10
+            compiler: clang-11
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
             compiler: clang-13

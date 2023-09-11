@@ -153,7 +153,7 @@ the command `CMake: Select a Kit`. You should see a `Default` kit available.
 Then, open the command palette again, run `CMake: Select Variant`, and select
 either `Release` or `Debug`. For this tutorial we recommend using `Release`. If
 you want to actually develop SpECTRE, the `Debug` option would be better. This
-specific kit uses `clang-10` to build SpECTRE along with the Python bindings.
+specific kit uses `clang` to build SpECTRE along with the Python bindings.
 Finally, open the command palette once more and run `CMake: Configure` which
 will now actually run CMake.
 
