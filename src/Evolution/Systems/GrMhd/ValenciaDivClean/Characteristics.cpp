@@ -86,7 +86,7 @@ template <size_t ThermodynamicDim>
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
-    const Scalar<DataVector>& /* electron_fraction */,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -174,7 +174,12 @@ void characteristic_speeds(
                 .kappa_times_p_over_rho_squared_from_density_and_energy(
                     rest_mass_density, specific_internal_energy));
   } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("3d EOS not implemented");
+    const auto temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction);
+    get(sound_speed_squared) =
+        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction));
   }
   get(sound_speed_squared) /= get(specific_enthalpy);
 
@@ -237,7 +242,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION

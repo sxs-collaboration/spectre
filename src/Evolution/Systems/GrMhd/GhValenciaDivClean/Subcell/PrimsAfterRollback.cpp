@@ -134,7 +134,7 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    (1, 2))
+    (1, 2, 3))
 #undef INSTANTIATION
 #undef THERMO_DIM
 #undef RECOVERY

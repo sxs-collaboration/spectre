@@ -19,15 +19,16 @@
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GhValenciaDivClean.Subcell.FixConsAndComputePrims",
-    "[Unit][Evolution]") {
+namespace {
+template <typename EquationOfStateType>
+void test(const EquationOfStateType& eos) {
   using System = grmhd::GhValenciaDivClean::System;
 
   // Only use 1 grid point to see that we correctly flagged the point as being
@@ -57,8 +58,6 @@ SPECTRE_TEST_CASE(
   get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(cons_vars))[0] = 1.e-7;
   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(cons_vars) = spacetime_metric;
 
-  const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
-
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
   const double kastaun_max_lorentz = 1.0e4;
@@ -72,14 +71,15 @@ SPECTRE_TEST_CASE(
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag, typename System::primitive_variables_tag,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      hydro::Tags::EquationOfState<std::unique_ptr<
+          typename EquationsOfState::get_eos_base<EquationOfStateType>>>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       subcell_coords, false, cons_vars,
       typename System::primitive_variables_tag::type{num_pts, 1.0e-4},
       variable_fixer,
-      std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
-          std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
+      std::unique_ptr<
+          typename EquationsOfState::get_eos_base<EquationOfStateType>>{
+          std::make_unique<EquationOfStateType>(eos)},
       primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
@@ -127,4 +127,12 @@ SPECTRE_TEST_CASE(
           primitive_from_conservative_options);
   CHECK_VARIABLES_APPROX(db::get<typename System::primitive_variables_tag>(box),
                          expected_prims);
+}
+}  // namespace
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.GhValenciaDivClean.Subcell.FixConsAndComputePrims",
+    "[Unit][Evolution]") {
+  test(EquationsOfState::PolytropicFluid<true>(100.0, 2.0));
+  test(EquationsOfState::Barotropic3D(
+      EquationsOfState::PolytropicFluid<true>(100.0, 2.0)));
 }

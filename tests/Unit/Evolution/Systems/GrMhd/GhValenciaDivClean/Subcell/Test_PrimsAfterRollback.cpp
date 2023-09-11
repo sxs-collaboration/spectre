@@ -35,6 +35,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
@@ -42,9 +43,10 @@
 
 namespace grmhd::ValenciaDivClean {
 namespace {
+template <typename EquationOfStateType>
 void test(const gsl::not_null<std::mt19937*> gen,
           const gsl::not_null<std::uniform_real_distribution<>*> dist,
-          const bool did_rollback) {
+          const bool did_rollback, const EquationOfStateType& eos_input) {
   const Mesh<3> dg_mesh{4, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -72,8 +74,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
   const Scalar<DataVector> sqrt_det_spatial_metric{
       sqrt(get(determinant(spatial_metric)))};
 
-  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
-      std::make_unique<EquationsOfState::PolytropicFluid<true>>(1.4, 5.0 / 3.0);
+  std::unique_ptr<EquationsOfState::get_eos_base<EquationOfStateType>> eos =
+      std::make_unique<EquationOfStateType>(eos_input);
 
   // Compute the conservatives on the FD grid by first computing the primitives
   // on the FD grid, then compute the conservatives from the primitives.
@@ -83,12 +85,27 @@ void test(const gsl::not_null<std::mt19937*> gen,
   ConsVars subcell_cons{};
   if (did_rollback) {
     subcell_cons.initialize(subcell_mesh.number_of_grid_points());
-    get<hydro::Tags::Pressure<DataVector>>(subcell_prims) =
-        eos->pressure_from_density(
-            get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims));
-    get<hydro::Tags::SpecificInternalEnergy<DataVector>>(subcell_prims) =
-        eos->specific_internal_energy_from_density(
-            get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims));
+    if constexpr (EquationOfStateType::thermodynamic_dim == 1) {
+      get<hydro::Tags::Pressure<DataVector>>(subcell_prims) =
+          eos->pressure_from_density(
+              get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims));
+      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(subcell_prims) =
+          eos->specific_internal_energy_from_density(
+              get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims));
+    } else if constexpr (EquationOfStateType::thermodynamic_dim == 2) {
+      ERROR("2D EoS not implemented");
+    } else {
+      get<hydro::Tags::Pressure<DataVector>>(subcell_prims) =
+          eos->pressure_from_density_and_temperature(
+              get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims),
+              get<hydro::Tags::Temperature<DataVector>>(subcell_prims),
+              get<hydro::Tags::ElectronFraction<DataVector>>(subcell_prims));
+      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(subcell_prims) =
+          eos->specific_internal_energy_from_density_and_temperature(
+              get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims),
+              get<hydro::Tags::Temperature<DataVector>>(subcell_prims),
+              get<hydro::Tags::ElectronFraction<DataVector>>(subcell_prims));
+    }
     get<hydro::Tags::SpecificEnthalpy<DataVector>>(subcell_prims) =
         hydro::relativistic_specific_enthalpy(
             get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims),
@@ -139,7 +156,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
       gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+          std::unique_ptr<EquationsOfState::get_eos_base<EquationOfStateType>>>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       did_rollback, subcell_cons, dg_prims, spacetime_metric, dg_mesh,
       subcell_mesh, std::move(eos), primitive_from_conservative_options);
@@ -205,9 +222,15 @@ SPECTRE_TEST_CASE(
   // Use a small range of random values since we need recovery to succeed and we
   // also reconstruct to the DG grid from the FD grid and need to maintain a
   // somewhat reasonable state on both grids.
+  const EquationsOfState::PolytropicFluid<true> polytropic_eos(1.4, 5.0 / 3.0);
+  const EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
+      wrapped_3d_polytropic_eos(polytropic_eos);
   std::uniform_real_distribution<> dist(0.5, 0.50005);
   for (const bool did_rollback : {true, false}) {
-    test(make_not_null(&gen), make_not_null(&dist), did_rollback);
+    test(make_not_null(&gen), make_not_null(&dist), did_rollback,
+         polytropic_eos);
+    test(make_not_null(&gen), make_not_null(&dist), did_rollback,
+         wrapped_3d_polytropic_eos);
   }
 }
 }  // namespace

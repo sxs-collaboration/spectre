@@ -273,7 +273,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&        \
           equation_of_state) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2, 3))
 
 #undef DIM
 #undef THERMO_DIM

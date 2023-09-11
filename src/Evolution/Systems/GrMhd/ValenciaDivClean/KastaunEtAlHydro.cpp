@@ -51,10 +51,17 @@ class FunctionOfZ {
     //
     const double rho_min =
         rest_mass_density_times_lorentz_factor_ / lorentz_max;
-    const double eps_min =
-        equation_of_state_.specific_internal_energy_lower_bound(rho_min);
     const double v_0_squared = 1. - 1. / (lorentz_max * lorentz_max);
     const double kmax = 2. * std::sqrt(v_0_squared) / (1. + v_0_squared);
+
+    double eps_min{};
+    if constexpr (ThermodynamicDim == 3) {
+      eps_min = equation_of_state_.specific_internal_energy_lower_bound(
+          rho_min, electron_fraction);
+    } else {
+      eps_min =
+          equation_of_state_.specific_internal_energy_lower_bound(rho_min);
+    }
 
     if constexpr (EnforcePhysicality) {
       q_ = std::max(q_, eps_min);
@@ -121,10 +128,21 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
                  equation_of_state_.rest_mass_density_upper_bound());
 
   // Equation (C14) and (C16)
-  const double epsilon_hat = std::clamp(
-      w_hat * q_ - z * (r_ - z / (1. + w_hat)),
-      equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
-      equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  double epsilon_hat = w_hat * q_ - z * (r_ - z / (1. + w_hat));
+  if constexpr (ThermodynamicDim == 3) {
+    epsilon_hat =
+        std::clamp(epsilon_hat,
+                   equation_of_state_.specific_internal_energy_lower_bound(
+                       rho_hat, electron_fraction_),
+                   equation_of_state_.specific_internal_energy_upper_bound(
+                       rho_hat, electron_fraction_));
+  } else {
+    epsilon_hat = std::clamp(
+        epsilon_hat,
+        equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
+        equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  }
+
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();
   if constexpr (ThermodynamicDim == 1) {
@@ -139,7 +157,9 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    p_hat = get(equation_of_state_.pressure_from_density_and_energy(
+        Scalar<double>(rho_hat), Scalar<double>(epsilon_hat),
+        Scalar<double>(electron_fraction_)));
   }
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat};
 }
@@ -147,7 +167,7 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
 template <size_t ThermodynamicDim, bool EnforcePhysicality>
 double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
     double z) const {
-  const auto[rho_hat, w_hat, p_hat, epsilon_hat] = primitives(z);
+  const auto [rho_hat, w_hat, p_hat, epsilon_hat] = primitives(z);
   // Equation (C5)
   const double a_hat = p_hat / (rho_hat * (1.0 + epsilon_hat));
   const double h_hat = (1.0 + epsilon_hat) * (1.0 + a_hat);
@@ -188,7 +208,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
   double z = std::numeric_limits<double>::signaling_NaN();
   try {
     // Bracket for master function
-    const auto[lower_bound, upper_bound] = f_of_z.root_bracket();
+    const auto [lower_bound, upper_bound] = f_of_z.root_bracket();
 
     // Try to recover primitves
     z =
@@ -200,8 +220,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     return std::nullopt;
   }
 
-  const auto[rest_mass_density, lorentz_factor, pressure,
-             specific_internal_energy] = f_of_z.primitives(z);
+  const auto [rest_mass_density, lorentz_factor, pressure,
+              specific_internal_energy] = f_of_z.primitives(z);
 
   return PrimitiveRecoveryData{
       rest_mass_density,
@@ -232,7 +252,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&        \
           primitive_from_conservative_options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM
