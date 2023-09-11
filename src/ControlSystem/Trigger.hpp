@@ -12,13 +12,17 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
 
+#include "ControlSystem/CombinedName.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -130,14 +134,9 @@ class Trigger : public DenseTrigger {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
     // At least one control system is active
-    const bool is_ready = tmpl::as_pack<ControlSystems>(
-        [&array_index, &cache, &component, &time](auto... control_systems) {
-          return domain::functions_of_time_are_ready<
-              control_system::Tags::MeasurementTimescales>(
-              cache, array_index, component, time,
-              std::array{
-                  tmpl::type_from<decltype(control_systems)>::name()...});
-        });
+    const bool is_ready = domain::functions_of_time_are_ready<
+        control_system::Tags::MeasurementTimescales>(
+        cache, array_index, component, time, std::array{measurement_name_});
     if (not is_ready) {
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
         Parallel::printf(
@@ -172,15 +171,20 @@ class Trigger : public DenseTrigger {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
-    const double min_measure_time = tmpl::as_pack<ControlSystems>(
-        [&measurement_timescales, &time](auto... control_systems) {
-          // LCOV_EXCL_START
-          return std::min(
-              {min(measurement_timescales
-                       .at(tmpl::type_from<decltype(control_systems)>::name())
-                       ->func(time)[0])...});
-          // LCOV_EXCL_STOP
-        });
+    ASSERT(
+        measurement_timescales.count(measurement_name_) == 1,
+        "Control system trigger expects a measurement timescale with the name '"
+            << measurement_name_
+            << "' but could not find one. Available names are: "
+            << keys_of(measurement_timescales));
+    const DataVector timescale =
+        measurement_timescales.at(measurement_name_)->func(time)[0];
+    ASSERT(timescale.size() == 1,
+           "Control system trigger assumes measurement timescale size is 1, "
+           "but it is "
+               << timescale.size() << " instead.");
+
+    const double min_measure_time = timescale[0];
 
     if (min_measure_time == std::numeric_limits<double>::infinity()) {
       return min_measure_time;
@@ -190,6 +194,9 @@ class Trigger : public DenseTrigger {
   }
 
   std::optional<double> next_trigger_{};
+  // No need to pup this because it can be created from the template parameter
+  std::string measurement_name_{
+      control_system::combined_name<ControlSystems>()};
 };
 
 /// \cond

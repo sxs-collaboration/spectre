@@ -228,12 +228,20 @@ void test_functions_of_time_tag() {
       creator, measurements_per_update, initial_time, option_holder1,
       option_holder2, option_holder3);
 
+  const double expiration_controlled_2 =
+      initial_time + update_fraction * timescale;
+  const double expiration_controlled_3 =
+      initial_time + update_fraction * timescale2;
+  const double min_expiration_time =
+      std::min(expiration_controlled_2, expiration_controlled_3);
+
+  // 1 isn't active
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
         std::numeric_limits<double>::infinity());
   CHECK(functions_of_time.at("Controlled2")->time_bounds()[1] ==
-        initial_time + update_fraction * timescale);
+        min_expiration_time);
   CHECK(functions_of_time.at("Controlled3")->time_bounds()[1] ==
-        initial_time + update_fraction * timescale2);
+        min_expiration_time);
   CHECK(functions_of_time.at("Uncontrolled")->time_bounds()[1] ==
         std::numeric_limits<double>::infinity());
 
@@ -249,10 +257,10 @@ void test_functions_of_time_tag() {
 
   {
     // Next test construction without control systems
-    static_assert(std::is_same_v<
-                  fot_tag::option_tags<MetavariablesNoControlSystems>,
-                  tmpl::list<domain::OptionTags::DomainCreator<
-                                 MetavariablesNoControlSystems::volume_dim>>>);
+    static_assert(
+        std::is_same_v<fot_tag::option_tags<MetavariablesNoControlSystems>,
+                       tmpl::list<domain::OptionTags::DomainCreator<
+                           MetavariablesNoControlSystems::volume_dim>>>);
     const Creator not_controlled_creator = std::make_unique<TestCreator>(false);
     auto no_control_sys_fot =
         fot_tag::create_from_options<MetavariablesNoControlSystems>(

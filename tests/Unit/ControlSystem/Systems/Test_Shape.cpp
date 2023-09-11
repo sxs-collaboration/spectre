@@ -81,14 +81,16 @@ void test_shape_control(
   auto grid_center_B = domain.excision_spheres().at("ExcisionSphereB").center();
 
   const auto& init_shape_tuple = system_helper->template init_tuple<system>();
+  auto system_to_combined_names = system_helper->system_to_combined_names();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   // Excision centers aren't used so their values can be anything
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4, false,
-                            ::Verbosity::Silent, std::move(is_active_map),
-                            std::move(grid_center_A), std::move(grid_center_B)},
-                           {std::move(initial_functions_of_time),
-                            std::move(initial_measurement_timescales)}};
+  MockRuntimeSystem runner{
+      {"DummyFileName", std::move(domain), 4, false, ::Verbosity::Silent,
+       std::move(is_active_map), std::move(grid_center_A),
+       std::move(grid_center_B), std::move(system_to_combined_names)},
+      {std::move(initial_functions_of_time),
+       std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<shape_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, init_shape_tuple);
@@ -393,9 +395,9 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       if (iter.l() == 0 or iter.l() == 1) {
         continue;
       }
-      const double offset =
+      const auto offset =
           make_with_random_values<double>(generator, coef_dist, 1);
-      const double freq =
+      const auto freq =
           make_with_random_values<double>(generator, freq_dist, 1);
       freqs[iter()] = freq;
       offsets[iter()] = offset;
@@ -403,7 +405,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       initial_ah_coefs[1][iter()] = freq * cos(freq * initial_time + offset);
       initial_ah_coefs[2][iter()] =
           -square(freq) * sin(freq * initial_time + offset);
-      if (DerivOrder > 2) {
+      if constexpr (DerivOrder > 2) {
         initial_ah_coefs[3][iter()] =
             -cube(freq) * cos(freq * initial_time + offset);
       }
@@ -413,7 +415,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
     initial_ah_coefs[0][iter.set(0, 0)()] = ah_radius;
     initial_ah_coefs[1][iter.set(0, 0)()] = 0.0;
     initial_ah_coefs[2][iter.set(0, 0)()] = 0.0;
-    if (DerivOrder > 2) {
+    if constexpr (DerivOrder > 2) {
       initial_ah_coefs[3][iter.set(0, 0)()] = 0.0;
     }
 
