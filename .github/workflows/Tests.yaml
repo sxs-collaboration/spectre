@@ -437,9 +437,11 @@ jobs:
             unit_tests: OFF
             input_file_tests_min_priority: "normal"
           # Test with MPI version of charm
-          - compiler: clang-13
+          - compiler: clang-14
             build_type: Release
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
+            # MPI running tests is a bit slower than multicore
+            TEST_TIMEOUT_FACTOR: 3
 
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
