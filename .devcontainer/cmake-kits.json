@@ -2,15 +2,13 @@
     {
         "name": "Default",
         "compilers": {
-            "C": "/usr/bin/clang-10",
-            "CXX": "/usr/bin/clang++-10",
-            "Fortran": "/usr/bin/gfortran-9"
+            "C": "clang",
+            "CXX": "clang++",
+            "Fortran": "gfortran"
         },
         "cmakeSettings": {
             "BUILD_SHARED_LIBS": "ON",
-            "BUILD_PYTHON_BINDINGS": "ON",
-            "MEMORY_ALLOCATOR": "SYSTEM",
-            "Python_EXECUTABLE": "/usr/bin/python3"
+            "MEMORY_ALLOCATOR": "SYSTEM"
         },
         "preferredGenerator": {
             "name": "Unix Makefiles"
