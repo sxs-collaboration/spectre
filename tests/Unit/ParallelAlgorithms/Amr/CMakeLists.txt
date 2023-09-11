@@ -23,6 +23,8 @@ set(LIBRARY_SOURCES
   Criteria/Test_TruncationError.cpp
   Projectors/Test_DefaultInitialize.cpp
   Projectors/Test_Mesh.cpp
+  Projectors/Test_Tensors.cpp
+  Projectors/Test_Variables.cpp
   Test_Protocols.cpp
   )
 
