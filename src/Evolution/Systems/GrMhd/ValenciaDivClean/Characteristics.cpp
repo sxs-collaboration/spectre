@@ -237,7 +237,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef GET_DIM
 #undef INSTANTIATION

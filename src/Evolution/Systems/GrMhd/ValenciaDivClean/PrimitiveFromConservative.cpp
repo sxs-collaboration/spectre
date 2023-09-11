@@ -124,6 +124,21 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     // Quick exit from inversion in low-density regions where we will
     // apply atmosphere corrections anyways.
     if (rest_mass_density_times_lorentz_factor[s] < cutoffD) {
+      if constexpr (ThermodynamicDim == 3) {
+       const double specific_energy_at_point =
+            equation_of_state
+                .specific_internal_energy_lower_bound(
+                    floorD, get(*electron_fraction)[s]);
+        const double pressure_at_point =
+            get(equation_of_state.pressure_from_density_and_energy(
+                Scalar<double>{floorD},
+                Scalar<double>{specific_energy_at_point}, Scalar<double>{get(*electron_fraction)[s]}));
+        const double specific_enthalpy_at_point =
+            1.0 + specific_energy_at_point + pressure_at_point / floorD;
+        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
+            floorD, 1.0, pressure_at_point, floorD * specific_enthalpy_at_point,
+            get(*electron_fraction)[s]};
+      }
       if constexpr (ThermodynamicDim == 2) {
         const double specific_energy_at_point =
             get(equation_of_state
@@ -323,7 +338,7 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanHamlinThenPalenzuelaEtAl, KastaunThenNewmanThenPalenzuela),
-    (true, false), (1, 2))
+    (true, false), (1, 2, 3))
 
 #undef INSTANTIATION
 #undef THERMODIM

@@ -132,8 +132,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     if constexpr (ThermodynamicDim == 1) {
       current_pressure = get(equation_of_state.pressure_from_density(
           Scalar<double>(current_rest_mass_density)));
-    } else if constexpr (ThermodynamicDim == 2) {
-      current_pressure =
+    } else if constexpr (ThermodynamicDim == 2) {      current_pressure =
           get(equation_of_state.pressure_from_density_and_enthalpy(
               Scalar<double>(current_rest_mass_density),
               Scalar<double>(current_specific_enthalpy)));
@@ -141,7 +140,11 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         return std::nullopt;
       }
     } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("3d EOS not implemented");
+      Scalar<double> local_internal_energy(current_specific_enthalpy - current_pressure /
+                                           current_rest_mass_density - 1.0);
+      current_pressure = get(equation_of_state.pressure_from_density_and_energy(
+          Scalar<double>(current_rest_mass_density), local_internal_energy,
+          Scalar<double>(electron_fraction)));
     }
 
     gsl::at(aitken_pressure, valid_entries_in_aitken_pressure++) =
@@ -187,7 +190,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
           equation_of_state);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef THERMODIM

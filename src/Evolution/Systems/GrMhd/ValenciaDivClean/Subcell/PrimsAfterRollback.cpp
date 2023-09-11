@@ -112,7 +112,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION,
                          tmpl::list<PrimitiveRecoverySchemes::PalenzuelaEtAl>,
                          NewmanThenPalenzuela,
                          KastaunThenNewmanThenPalenzuela),
-                        (1, 2))
+                        (1, 2, 3))
 #undef INSTANTIATION
 #undef THERMO_DIM
 #undef RECOVERY

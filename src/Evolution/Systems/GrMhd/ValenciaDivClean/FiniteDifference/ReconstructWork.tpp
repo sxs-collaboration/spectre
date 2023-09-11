@@ -73,20 +73,27 @@ void compute_conservatives_for_reconstruction(
       get<hydro::Tags::RestMassDensity<DataVector>>(*vars_on_face);
   const auto& electron_fraction =
       get<hydro::Tags::ElectronFraction<DataVector>>(*vars_on_face);
-  const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(*vars_on_face);
+  auto& pressure = get<hydro::Tags::Pressure<DataVector>>(*vars_on_face);
   auto& specific_internal_energy =
       get<hydro::Tags::SpecificInternalEnergy<DataVector>>(*vars_on_face);
-  auto& temperature = get<hydro::Tags::Temperature<DataVector>>(*vars_on_face);
-  if constexpr (ThermodynamicDim == 2) {
-    specific_internal_energy =
-        eos.specific_internal_energy_from_density_and_pressure(
-            rest_mass_density, pressure);
-    temperature = eos.temperature_from_density_and_energy(
+  const auto& temperature = get<hydro::Tags::Temperature<DataVector>>(*vars_on_face);
+  if constexpr (ThermodynamicDim == 3) {
+    specific_internal_energy=
+        eos.specific_internal_energy_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction);
+    pressure = eos.pressure_from_density_and_energy(
+        rest_mass_density, specific_internal_energy, electron_fraction);
+  }
+  else if constexpr (ThermodynamicDim == 2) {
+      specific_internal_energy =
+        eos.specific_internal_energy_from_density_and_temperature(
+            rest_mass_density, temperature);
+    pressure = eos.temperature_from_density_and_energy(
         rest_mass_density, specific_internal_energy);
   } else {
     specific_internal_energy =
         eos.specific_internal_energy_from_density(rest_mass_density);
-    temperature = eos.temperature_from_density(rest_mass_density);
+   pressure  = eos.pressure_from_density(rest_mass_density);
   }
   auto& specific_enthalpy =
       get<hydro::Tags::SpecificEnthalpy<DataVector>>(*vars_on_face);

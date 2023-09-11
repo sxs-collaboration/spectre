@@ -250,11 +250,19 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
       q_ - 0.5 * b_squared_ -
       0.5 * square(mu * x) * (r_squared_ * b_squared_ - r_dot_b_squared_);
   // Equation (42) with bounds from Equation (6)
-  const double epsilon_hat = std::clamp(
-      w_hat * (q_bar - mu * r_bar_squared) +
-          v_hat_squared * square(w_hat) / (1.0 + w_hat),
-      equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
-      equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  double epsilon_hat{};
+  if constexpr(ThermodynamicDim == 3){
+    epsilon_hat = std::clamp(
+        w_hat * (q_bar - mu * r_bar_squared) +
+        v_hat_squared * square(w_hat) / (1.0 + w_hat),
+        equation_of_state_.specific_internal_energy_lower_bound(rho_hat, electron_fraction_),
+        equation_of_state_.specific_internal_energy_upper_bound(rho_hat, electron_fraction_));}
+  else{
+    epsilon_hat = std::clamp(
+        w_hat * (q_bar - mu * r_bar_squared) +
+        v_hat_squared * square(w_hat) / (1.0 + w_hat),
+        equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
+        equation_of_state_.specific_internal_energy_upper_bound(rho_hat));}
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();
   if constexpr (ThermodynamicDim == 1) {
@@ -264,7 +272,8 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    p_hat = get(equation_of_state_.pressure_from_density_and_energy(
+        Scalar<double>(rho_hat), Scalar<double>(epsilon_hat), Scalar<double>(electron_fraction_)));
   }
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared};
 }
@@ -354,7 +363,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
           equation_of_state);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef THERMODIM
