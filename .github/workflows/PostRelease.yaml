@@ -36,7 +36,7 @@ jobs:
         #    version('2022.01.03', sha256='872a0d1...')
         #    ...
         #
-        # The `spack.stage.get_checksums_for_versions` function returns a string
+        # The `spack.util.format.get_version_lines` function returns a string
         # with lines like this for the new version(s), including the correct
         # indentation. Therefore, we insert the new lines into the file right
         # below the 'develop' version.
@@ -45,6 +45,7 @@ jobs:
           import spack.spec
           import spack.stage
           import spack.repo
+          import spack.util.format
           import os
 
           # The tag name includes the 'v' prefix
@@ -55,18 +56,22 @@ jobs:
           # 'https://api.github.com/...' URL, which has a different checksum
           # than the tarball listed on the GitHub release page and used by
           # Spack.
-          pkg_cls = spack.repo.path.get_pkg_class('spectre')
+          pkg_cls = spack.repo.PATH.get_pkg_class('spectre')
           pkg = pkg_cls(spack.spec.Spec('spectre'))
           release_url = pkg.url_for_version(release_name)
 
-          version_lines = spack.stage.get_checksums_for_versions(
-            url_dict={
+          url_dict = {
               release_name: release_url,
-            },
-            name=pkg.name,
-            batch=True,
-            fetch_options=pkg.fetch_options,
-          ).split('\n')
+          }
+          version_hashes = spack.stage.get_checksums_for_versions(
+              url_dict=url_dict,
+              name=pkg.name,
+              batch=True,
+              fetch_options=pkg.fetch_options,
+          )
+          version_lines = spack.util.format.get_version_lines(
+            version_hashes, url_dict
+          )
 
           package_file = os.path.join(pkg.package_dir, 'package.py')
           with open(package_file, 'r') as open_package_file:
@@ -75,8 +80,7 @@ jobs:
             for line in package_file_lines:
               open_package_file.write(line)
               if line.strip().startswith('version("develop"'):
-                for version_line in version_lines:
-                  open_package_file.write(version_line + "\n")
+                open_package_file.write(version_lines + "\n")
       - name: Fix code formatting
         run: |
           spack style --fix `git diff --name-only`
