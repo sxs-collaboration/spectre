@@ -197,44 +197,40 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename InitialData, typename InterpolationTargetTags>
+template <typename InterpolationTargetTags, bool UseParametrizedDeleptonization>
 struct EvolutionMetavars;
 
-template <typename InitialData, typename... InterpolationTargetTags>
-struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
+template <typename... InterpolationTargetTags,
+          bool UseParametrizedDeleptonization>
+struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
+                         UseParametrizedDeleptonization> {
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
+  static constexpr bool use_parametrized_deleptonization =
+      UseParametrizedDeleptonization;
   static constexpr bool use_dg_subcell = true;
   static constexpr size_t volume_dim = 3;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
-  using initial_data = InitialData;
-  static_assert(
-      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
-      "initial_data must be either an analytic_data or an analytic_solution");
+  using initial_data_list =
+      grmhd::ValenciaDivClean::InitialData::initial_data_list;
+
   // Boolean verifying if parameterized deleptonization will be active.  This
   // will only be active for CCSN evolution.
-  using parameterized_deleptonization = tmpl::conditional_t<
-      std::is_same_v<initial_data, grmhd::AnalyticData::CcsnCollapse>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::ParameterizedDeleptonization>,
-      tmpl::list<>>;
-  using eos_base = typename EquationsOfState::get_eos_base<
-      typename initial_data::equation_of_state_type>;
+  using parameterized_deleptonization =
+      tmpl::conditional_t<UseParametrizedDeleptonization,
+                          VariableFixing::Actions::FixVariables<
+                              VariableFixing::ParameterizedDeleptonization>,
+                          tmpl::list<>>;
+  using eos_base = EquationsOfState::EquationOfState<true, 3>;
   using equation_of_state_type = typename std::unique_ptr<eos_base>;
+  using initial_data_tag = evolution::initial_data::Tags::InitialData;
   using system = grmhd::ValenciaDivClean::System;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
-  using equation_of_state_tag =
-      hydro::Tags::EquationOfState<equation_of_state_type>;
-  using initial_data_list =
-      grmhd::ValenciaDivClean::InitialData::initial_data_list;
+  using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
   // Do not limit the divergence-cleaning field Phi
   using limiter = Tags::Limiter<
       Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
@@ -255,7 +251,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
-      volume_dim, analytic_variables_tags, use_dg_subcell>;
+      volume_dim, analytic_variables_tags, use_dg_subcell, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<
@@ -405,7 +401,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       tmpl::conditional_t<
@@ -439,7 +435,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
@@ -462,7 +458,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
-          system, EvolutionMetavars, false, false>>,
+          system, EvolutionMetavars, true, false>>,
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, false>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -472,7 +468,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
-          system, EvolutionMetavars, false, true>>,
+          system, EvolutionMetavars, true, true>>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::SwapGrTags>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::PrimsAfterRollback<
           ordered_list_of_primitive_recovery_schemes>>,
@@ -514,7 +510,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
           evolution::dg::Initialization::Domain<3>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       Initialization::Actions::ConservativeSystem<system>,
 
       tmpl::conditional_t<
@@ -526,7 +522,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
                   evolution::dg::subcell::SetInterpolators<volume_dim>>,
               Initialization::Actions::AddSimpleTags<
                   evolution::dg::subcell::BackgroundGrVars<
-                      system, EvolutionMetavars, false, false>,
+                      system, EvolutionMetavars, true, false>,
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SwapGrTags>,
@@ -615,7 +611,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
               grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
-      initial_data_tag, equation_of_state_tag,
+      equation_of_state_tag, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
   static constexpr Options::String help{

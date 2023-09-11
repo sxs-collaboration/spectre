@@ -17,6 +17,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Actions/NumericInitialData.hpp"
@@ -57,7 +58,8 @@ namespace grmhd::GhValenciaDivClean {
  * mostly combines the `gh::NumericInitialData` and
  * `grmhd::ValenciaDivClean::NumericInitialData` classes.
  */
-class NumericInitialData : public evolution::initial_data::InitialData {
+class NumericInitialData : public evolution::initial_data::InitialData,
+                           public evolution::NumericInitialData {
  private:
   using GhNumericId = gh::NumericInitialData;
   using HydroNumericId = grmhd::ValenciaDivClean::NumericInitialData;
