@@ -95,16 +95,16 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
     static constexpr Options::String help = {
         "The alpha parameter in the Persson convergence measurement. 4 is the "
         "right value, but anything in the range of 3-5 is 'reasonable'. "
-        "Smaller values allow for more oscillations. If not specified then "
-        "7th-order reconstruction is not used."};
+        "Smaller values allow for more oscillations. If specified to None, "
+        "then 7th-order reconstruction is not used."};
   };
   struct Alpha9 {
     using type = Options::Auto<double, Options::AutoLabel::None>;
     static constexpr Options::String help = {
         "The alpha parameter in the Persson convergence measurement. 4 is the "
         "right value, but anything in the range of 3-5 is 'reasonable'. "
-        "Smaller values allow for more oscillations. If not specified then "
-        "9th-order reconstruction is not used."};
+        "Smaller values allow for more oscillations. If specified to None, "
+        "then 9th-order reconstruction is not used."};
   };
   struct LowOrderReconstructor {
     using type = FallbackReconstructorType;
