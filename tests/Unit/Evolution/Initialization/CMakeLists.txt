@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_NonconservativeSystem.cpp
   Test_SetVariables.cpp
   Test_Tags.cpp
+  Test_TimeStepperHistory.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

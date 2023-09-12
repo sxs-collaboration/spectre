@@ -21,6 +21,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupBoost.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/StlBoilerplate.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -191,6 +192,8 @@ struct StepRecord {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
+
+  std::ostream& print(std::ostream& os) const;
 };
 
 template <typename Vars>
@@ -198,6 +201,15 @@ void StepRecord<Vars>::pup(PUP::er& p) {
   p | time_step_id;
   p | value;
   p | derivative;
+}
+
+template <typename Vars>
+std::ostream& StepRecord<Vars>::print(std::ostream& os) const {
+  using ::operator<<;
+  os << "TimeStepId: " << time_step_id << "\n";
+  os << "Value: " << value << "\n";
+  os << "Derivative: " << derivative << "\n";
+  return os;
 }
 
 template <typename Vars>
@@ -658,6 +670,8 @@ class History
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
+  std::ostream& print(std::ostream& os) const;
+
  private:
   void discard_value(gsl::not_null<std::optional<Vars>*> value);
   void cache_allocations(gsl::not_null<StepRecord<Vars>*> record);
@@ -972,5 +986,26 @@ bool operator==(const History<Vars>& a, const History<Vars>& b) {
 template <typename Vars>
 bool operator!=(const History<Vars>& a, const History<Vars>& b) {
   return not(a == b);
+}
+
+template <typename Vars>
+std::ostream& History<Vars>::print(std::ostream& os) const {
+  using ::operator<<;
+  os << "Integration order: " << integration_order_ << "\n";
+  os << "Step values:\n";
+  for (auto& record : *this) {
+    record.print(os);
+  }
+  os << "Substep values:\n";
+  for (auto& record : substep_values_) {
+    record.print(os);
+  }
+  os << "Latest value if discarded: " << latest_value_if_discarded_ << "\n";
+  return os;
+}
+
+template <typename Vars>
+std::ostream& operator<<(std::ostream& os, const History<Vars>& history) {
+  return history.print(os);
 }
 }  // namespace TimeSteppers

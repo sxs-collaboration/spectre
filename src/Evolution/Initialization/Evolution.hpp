@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
@@ -38,6 +40,7 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -300,6 +303,58 @@ struct TimeStepperHistory {
     const size_t starting_order =
         time_stepper.order() - time_stepper.number_of_past_steps();
     history->integration_order(starting_order);
+  }
+};
+
+/// \brief Initialize/update items related to time stepper history after an AMR
+/// change
+template <typename Metavariables>
+struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
+  static constexpr size_t dim = Metavariables::volume_dim;
+  using variables_tag = typename Metavariables::system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
+
+  using return_tags = tmpl::list<dt_variables_tag, history_tag>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<dim>, Parallel::Tags::ArrayIndex>;
+
+  static void apply(
+      const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
+      const gsl::not_null<typename history_tag::type*> history,
+      const Mesh<dim>& new_mesh, const ElementId<dim>& /*element_id*/,
+      const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
+    const auto& old_mesh = old_mesh_and_element.first;
+    if (old_mesh == new_mesh) {
+      return;  // mesh was not refined, so no projection needed
+    }
+    const auto projection_matrices =
+        Spectral::p_projection_matrices(old_mesh, new_mesh);
+    const auto& old_extents = old_mesh.extents();
+    history->map_entries(
+        [&projection_matrices, &old_extents](const auto entry) {
+          *entry = apply_matrices(projection_matrices, *entry, old_extents);
+        });
+    dt_vars->initialize(new_mesh.number_of_grid_points());
+  }
+
+  template <typename... Tags>
+  static void apply(
+      const gsl::not_null<typename dt_variables_tag::type*> /*dt_vars*/,
+      const gsl::not_null<typename history_tag::type*> /*history*/,
+      const Mesh<dim>& /*new_mesh*/, const ElementId<dim>& /*element_id*/,
+      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
+    ERROR("h-refinement not implemented yet");
+  }
+
+  template <typename... Tags>
+  static void apply(
+      const gsl::not_null<typename dt_variables_tag::type*> /*dt_vars*/,
+      const gsl::not_null<typename history_tag::type*> /*history*/,
+      const Mesh<dim>& /*new_mesh*/, const ElementId<dim>& /*element_id*/,
+      const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
+      /*children_items*/) {
+    ERROR("h-refinement not implemented yet");
   }
 };
 }  // namespace Initialization

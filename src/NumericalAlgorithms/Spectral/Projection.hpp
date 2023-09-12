@@ -101,4 +101,9 @@ projection_matrix_parent_to_child(
     const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
     const std::array<ChildSize, Dim>& child_sizes);
 
+/// The projection matrices from a source mesh to a target mesh where the
+/// meshes cover the same physical volume
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
+    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh);
 }  // namespace Spectral

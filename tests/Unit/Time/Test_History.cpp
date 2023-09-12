@@ -14,6 +14,7 @@
 #include "Time/Slab.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace {
 constexpr size_t num_points = 3;
@@ -795,6 +796,29 @@ void test_history_assertions() {
 
 #endif  // SPECTRE_DEBUG
 }
+
+void test_history_output() {
+  TimeSteppers::History<double> history(2);
+  const Slab slab(0.0, 1.0);
+  history.insert(TimeStepId(true, 0, slab.start()), 0.0, 1.0);
+  const auto step_time = history.back().time_step_id.step_time();
+  const auto step_size = slab.duration() / 4;
+  history.insert(TimeStepId(true, 0, step_time, 1, step_size,
+                            (step_time + slab.duration() / 4).value()),
+                 4.0, 40.0);
+  const std::string expected_output =
+      "Integration order: 2\n"
+      "Step values:\n"
+      "TimeStepId: 0:Slab[0,1]:0/1:0:0\n"
+      "Value: 0\n"
+      "Derivative: 1\n"
+      "Substep values:\n"
+      "TimeStepId: 0:Slab[0,1]:0/1:1:0.25\n"
+      "Value: 4\n"
+      "Derivative: 40\n"
+      "Latest value if discarded: --\n";
+  CHECK(get_output(history) == expected_output);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
@@ -809,4 +833,6 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
                Variables<tmpl::list<Tags::dt<VarTag>>>>();
 
   test_history_assertions();
+
+  test_history_output();
 }
