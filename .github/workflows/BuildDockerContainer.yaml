@@ -13,6 +13,11 @@ on:
           Image name to push to DockerHub
         required: true
         default: 'sxscollaboration/spectre'
+      build_arm:
+        type: boolean
+        description: >
+          Build ARM container in addition to x86_64
+        default: true
 
 jobs:
   build_container:
@@ -25,11 +30,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      # Needed once we do multi-platform builds
-      # - name: Set up emulation support
-      #   uses: docker/setup-qemu-action@v2
-      #   with:
-      #     platforms: arm64
+      - name: Set up emulation support
+        if: inputs.build_arm
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
@@ -52,7 +57,9 @@ jobs:
           file: "./containers/Dockerfile.buildenv"
           target: dev
           tags: ${{ inputs.image_name }}:dev
-          platforms: linux/amd64 #,linux/arm64
+          platforms: >
+            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
+            || 'linux/amd64' }}
       - name: Build CI container
         uses: docker/build-push-action@v4
         with:
@@ -61,7 +68,8 @@ jobs:
           file: "./containers/Dockerfile.buildenv"
           target: ci
           tags: ${{ inputs.image_name }}:ci
-          platforms: linux/amd64 #,linux/arm64
+          # No ARM container for CI because GitHub doesn't host ARM runners yet
+          platforms: linux/amd64
 
   run_tests:
     name: Test
