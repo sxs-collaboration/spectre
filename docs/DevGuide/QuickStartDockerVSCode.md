@@ -48,24 +48,6 @@ be able to push any changes you make to your fork. You'll still be able to make
 local changes on your computer, but you won't be able to share your changes with
 anybody.
 
-## Enable the development environment in the repository
-
-The development environment is included in the repository, but not enabled by
-default. To enable it, copy or symlink the directory
-`support/DevEnvironments/.devcontainer` to the repository root. This is easiest
-done with the command line. Navigate into the repository that you just cloned to
-your computer:
-
-```
-cd spectre
-```
-
-Now symlink the development environment:
-
-```
-ln -s support/DevEnvironments/.devcontainer .devcontainer
-```
-
 ## Install Docker
 
 On your computer you will need Docker to run the containerized development
