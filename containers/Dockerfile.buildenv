@@ -227,16 +227,15 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && rm -rf libxsmm libxsmm.tar.gz; \
     fi
 # - xsimd https://github.com/xtensor-stack/xsimd
-RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
-    && tar -xzf 8.1.0.tar.gz \
-    && cd ./xsimd-8.1.0  \
+RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/11.1.0.tar.gz -O xsimd.tar.gz \
+    && tar -xzf xsimd.tar.gz && rm xsimd.tar.gz \
+    && cd ./xsimd-*  \
     && mkdir build \
     && cd ./build \
-    && cmake -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF \
-             -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
+    && cmake -D CMAKE_BUILD_TYPE=Release \
+        -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
     && make install \
-    && cd ../.. \
-    && rm -rf /work/8.1.0.tar.gz /work/xsimd-8.1.0
+    && cd ../.. && rm -rf xsimd-*
 
 # Update ld cache to find shared libs in /usr/local/lib/
 RUN ldconfig
