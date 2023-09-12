@@ -27,6 +27,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   GeneralRelativity
+  Hydro
   LinearOperators
   Options
   Parallel
