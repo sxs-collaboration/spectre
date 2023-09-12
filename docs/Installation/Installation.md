@@ -118,7 +118,6 @@ all of these dependencies.
 * [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) — to format C++
   code in a clear and consistent fashion
 * [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
-* [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 * [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
   graph partition based load balancer in charm++.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with

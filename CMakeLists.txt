@@ -155,13 +155,12 @@ endif()
 # versions of CMake (at least 3.13.2) segfault.
 include(UpdateAddExecutables)
 
-# The ClangFormat, clang-tidy, CppCheck, Doxygen, and CodeCov are intentionally
+# The ClangFormat, clang-tidy, Doxygen, and CodeCov are intentionally
 # after the PCH setup because that way they are able to change their
 # dependencies on the PCH if necessary.
 include(SetupClangFormat)
 include(SetupClangTidy)
 include(SetupIwyu)
-include(SetupCppCheck)
 if(BUILD_DOCS)
   include(SetupDoxygen)
   include(SetupSphinx)

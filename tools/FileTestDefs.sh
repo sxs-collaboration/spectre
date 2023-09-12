@@ -430,8 +430,6 @@ license() {
               'cmake/FindLIBCXX.cmake$' \
               'cmake/FindPAPI.cmake$' \
               'cmake/FindPythonModule.cmake$' \
-              'cmake/Findcppcheck.cmake$' \
-              'cmake/Findcppcheck.cpp$' \
               'docs/config/doxygen-awesome-sidebar-only.css' \
               'docs/config/doxygen-awesome.css' \
               'docs/config/doxygen-awesome-fragment-copy-button.js' \
