@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -17,6 +18,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
+#include "ControlSystem/Tags/FutureMeasurements.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -184,8 +186,10 @@ struct Metavariables {
   };
 };
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
-                  "[ControlSystem][Unit]") {
+void test_initialize_measurements(const bool ab_active, const bool c_active) {
+  CAPTURE(ab_active);
+  CAPTURE(c_active);
+
   register_factory_classes_with_charm<Metavariables>();
   register_classes_with_charm<
       domain::FunctionsOfTime::PiecewisePolynomial<0>>();
@@ -195,14 +199,22 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   const component* const component_p = nullptr;
 
   // Details shouldn't matter
+  const double initial_time = 2.0;
+  const size_t measurements_per_update = 6;
   const auto timescale =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           0.0, std::array{DataVector{1.0}}, 2.0);
+  const auto inactive_timescale =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+          0.0, std::array{DataVector{std::numeric_limits<double>::infinity()}},
+          std::numeric_limits<double>::infinity());
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       timescales;
-  timescales.emplace("AB", timescale->get_clone());
-  timescales.emplace("C", timescale->get_clone());
+  timescales.emplace("AB",
+                     (ab_active ? timescale : inactive_timescale)->get_clone());
+  timescales.emplace("C",
+                     (c_active ? timescale : inactive_timescale)->get_clone());
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions;
@@ -210,12 +222,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   functions.emplace("B", timescale->get_clone());
   functions.emplace("C", timescale->get_clone());
 
-  MockRuntimeSystem runner{{::Verbosity::Silent},
+  MockRuntimeSystem runner{{::Verbosity::Silent, measurements_per_update},
                            {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0,
-      {Tags::TimeStepId::type{true, 0, {}}, Tags::Time::type{0.0}},
+      {Tags::TimeStepId::type{true, 0, {}}, initial_time},
       evolution::Tags::EventsAndDenseTriggers::type{});
 
   // InitializeRunEventsAndDenseTriggers
@@ -226,6 +238,28 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   auto& cache = ActionTesting::cache<component>(runner, 0);
   auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
 
+  CHECK(db::get<control_system::Tags::FutureMeasurements<
+            tmpl::list<SystemA, SystemB>>>(box)
+            .next_measurement() ==
+        std::optional(ab_active ? initial_time
+                                : std::numeric_limits<double>::infinity()));
+  CHECK(db::get<control_system::Tags::FutureMeasurements<tmpl::list<SystemC>>>(
+            box)
+            .next_measurement() ==
+        std::optional(c_active ? initial_time
+                               : std::numeric_limits<double>::infinity()));
+
+  CHECK(db::get<control_system::Tags::FutureMeasurements<
+            tmpl::list<SystemA, SystemB>>>(box)
+            .next_update() ==
+        (ab_active ? std::nullopt
+                   : std::optional(std::numeric_limits<double>::infinity())));
+  CHECK(db::get<control_system::Tags::FutureMeasurements<tmpl::list<SystemC>>>(
+            box)
+            .next_update() ==
+        (c_active ? std::nullopt
+                  : std::optional(std::numeric_limits<double>::infinity())));
+
   auto& events_and_dense_triggers =
       db::get_mutable_reference<evolution::Tags::EventsAndDenseTriggers>(
           make_not_null(&box));
@@ -234,11 +268,25 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   CAPTURE(db::get<Tags::Time>(box));
   CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache, 0,
                                            component_p) ==
-        evolution::EventsAndDenseTriggers::TriggeringState::
-            NeedsEvolvedVariables);
+        (ab_active or c_active
+             ? evolution::EventsAndDenseTriggers::TriggeringState::
+                   NeedsEvolvedVariables
+             : evolution::EventsAndDenseTriggers::TriggeringState::Ready));
+
+  Submeasurement<tmpl::list<SystemA, SystemB>>::call_count = 0;
+  Submeasurement<tmpl::list<SystemC>>::call_count = 0;
   events_and_dense_triggers.run_events(box, cache, 0, component_p);
 
-  CHECK(Submeasurement<tmpl::list<SystemA, SystemB>>::call_count == 1);
-  CHECK(Submeasurement<tmpl::list<SystemC>>::call_count == 1);
+  CHECK(Submeasurement<tmpl::list<SystemA, SystemB>>::call_count ==
+        (ab_active ? 1 : 0));
+  CHECK(Submeasurement<tmpl::list<SystemC>>::call_count == (c_active ? 1 : 0));
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
+                  "[ControlSystem][Unit]") {
+  test_initialize_measurements(true, true);
+  test_initialize_measurements(true, false);
+  test_initialize_measurements(false, true);
+  test_initialize_measurements(false, false);
 }
 }  // namespace
