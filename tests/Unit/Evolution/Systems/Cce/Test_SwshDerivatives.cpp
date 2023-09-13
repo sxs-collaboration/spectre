@@ -186,6 +186,7 @@ struct GenerateStartingData {
 };
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   const size_t l_max = 10;
