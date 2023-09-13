@@ -111,38 +111,39 @@ void test_trigger_no_replace() {
 
   // At the initial time, the trigger should be triggered and we should know
   // the next check time
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{true});
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{0.5});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{0.5});
 
   set_time(0.25);
 
   // Set the time to sometime before the next check time. Shouldn't be
   // triggered, but should still have the same check time as before
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{false});
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{0.5});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{false});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{0.5});
 
   set_time(0.5);
 
   // Now at the previous next check time, we should trigger. We also know the
   // new check time
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{true});
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{1.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{1.0});
 
   set_time(0.75);
 
   // Another intermediate time where we shouldn't trigger. At this point, the
   // measurement timescale has expired and has not been updated yet, so we
   // cannot calculate the next check time. It should be nullopt
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{false});
-  CHECK(not trigger.next_check_time(make_not_null(&box), cache, 0, component_p)
-                .has_value());
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{false});
+  REQUIRE(
+      not trigger.next_check_time(make_not_null(&box), cache, 0, component_p)
+              .has_value());
 
   // Update the measurement timescales
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
@@ -151,26 +152,26 @@ void test_trigger_no_replace() {
 
   // Now we should be able to calculate the next check time once again and it
   // should be the same as it was before, since the current time hasn't changed.
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{1.0});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{1.0});
 
   set_time(1.0);
 
   // Now the time is at the next trigger time and all measurement timescales
   // are valid so we should be able to determine the next check time
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{true});
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{2.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{2.0});
 
   set_time(2.0);
 
   // At the next trigger time and timescales are valid so we can calculate
   // the next check time.
-  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{true});
-  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-        std::optional{3.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
+          std::optional{3.0});
 }
 
 void test_trigger_with_replace() {
