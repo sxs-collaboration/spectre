@@ -10,7 +10,6 @@
 .vscode
 compile_commands.json
 .idea
-/.devcontainer
 
 # Spack
 /support/spack/
