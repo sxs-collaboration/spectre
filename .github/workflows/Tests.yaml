@@ -450,6 +450,9 @@ jobs:
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
+            # Test `install` target with clang in Release mode because it uses
+            # little disk space
+            install: ON
 
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
@@ -665,16 +668,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # it is a random timeout or systematic
           ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
       - name: Install
-        # Coverage and ASAN builds are larger, so skip install to avoid running
-        # out of disk space
-        if: matrix.COVERAGE != 'ON' && matrix.ASAN != 'ON'
+        if: matrix.install == 'ON'
         working-directory: build
         # Make sure the `install` target runs without error. We could add some
         # basic smoke tests here to make sure the installation worked.
         run: |
           make install
       - name: Print size of install directory
-        if: matrix.COVERAGE != 'ON' && matrix.ASAN != 'ON'
+        if: matrix.install == 'ON'
         working-directory: /work/spectre_install
         # Remove files post-install to reduce disk space for later on.
         run: |
