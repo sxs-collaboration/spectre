@@ -405,17 +405,6 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
-          # Test with ASAN
-          - compiler: clang-11
-            build_type: Debug
-            # When building with ASAN we also need python bindings to be
-            # disabled because otherwise we get link errors. See issue:
-            # https://github.com/sxs-collaboration/spectre/issues/1890
-            # So we are also using this build to test building without Python
-            # bindings enabled.
-            ASAN: ON
-            BUILD_PYTHON_BINDINGS: OFF
-            MEMORY_ALLOCATOR: JEMALLOC
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -436,6 +425,17 @@ jobs:
             use_pch: OFF
             unit_tests: OFF
             input_file_tests_min_priority: "normal"
+          # Test with ASAN
+          - compiler: clang-14
+            build_type: Debug
+            # When building with ASAN we also need python bindings to be
+            # disabled because otherwise we get link errors. See issue:
+            # https://github.com/sxs-collaboration/spectre/issues/1890
+            # So we are also using this build to test building without Python
+            # bindings enabled.
+            ASAN: ON
+            BUILD_PYTHON_BINDINGS: OFF
+            MEMORY_ALLOCATOR: JEMALLOC
           # Test with MPI version of charm
           - compiler: clang-14
             build_type: Release
