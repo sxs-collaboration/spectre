@@ -569,6 +569,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CHARM_ROOT=${MATRIX_CHARM_ROOT:-$CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
+          -D BACKTRACE_LIB=/usr/local/lib/libbacktrace.a
+          -D BACKTRACE_HEADER_DIR=/usr/local/include
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
           -D SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY=${INPUT_FILE_MIN_PRIO:-'high'}
           -D STRIP_SYMBOLS=ON

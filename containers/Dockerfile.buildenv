@@ -193,6 +193,12 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O c
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 # - Doxygen
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+# - Libbacktrace
+RUN git clone https://github.com/ianlancetaylor/libbacktrace \
+    && cd libbacktrace \
+    && ./configure --prefix=/usr/local \
+    && make $PARALLEL_MAKE_ARG install \
+    && cd .. && rm -rf libbacktrace
 # - Libsharp
 RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
     && tar -xzf libsharp.tar.gz \
