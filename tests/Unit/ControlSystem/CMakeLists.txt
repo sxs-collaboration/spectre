@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_DataVectorHelpers.cpp
   Test_EventTriggerMetafunctions.cpp
   Test_ExpirationTimes.cpp
+  Test_FutureMeasurements.cpp
   Test_IsSize.cpp
   Test_Measurements.cpp
   Test_Metafunctions.cpp
