@@ -17,6 +17,8 @@ spectre_target_headers(
   HEADERS
   DefaultInitialize.hpp
   Mesh.hpp
+  Tensors.hpp
+  Variables.hpp
   )
 
 target_link_libraries(
