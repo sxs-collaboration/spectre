@@ -405,6 +405,12 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
+          # Test with Python 3.8 so that we retain backwards compatibility. We
+          # keep track of Python versions on supercomputers in this issue:
+          # https://github.com/sxs-collaboration/spectre/issues/442
+          - compiler: gcc-11
+            build_type: Debug
+            PYTHON_EXECUTABLE: /usr/bin/python3.8
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -436,9 +442,11 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
-          # Test with MPI version of charm
           - compiler: clang-14
             build_type: Release
+            # Test compatibility with oldest supported CMake version
+            CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
+            # Use an MPI version of Charm
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
