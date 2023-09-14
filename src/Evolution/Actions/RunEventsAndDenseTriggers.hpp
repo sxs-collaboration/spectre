@@ -13,6 +13,7 @@
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -27,6 +28,12 @@
 
 /// \cond
 class DataVector;
+template <size_t Dim>
+class Element;
+template <size_t Dim>
+class ElementId;
+template <size_t Dim>
+class Mesh;
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
@@ -305,6 +312,50 @@ struct InitializeRunEventsAndDenseTriggers {
     ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::nullopt);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+/// \brief Initialize/update items related to events and dense triggers after an
+/// AMR change
+///
+/// Mutates:
+///   - evolution::Tags::EventsAndDenseTriggers
+///   - Tags::PreviousTriggerTime
+///
+/// For p-refinement:
+///   - Leaves both items unchanged
+struct ProjectRunEventsAndDenseTriggers
+    : tt::ConformsTo<amr::protocols::Projector> {
+  using return_tags = tmpl::list<evolution::Tags::EventsAndDenseTriggers,
+                                 Tags::PreviousTriggerTime>;
+  using argument_tags = tmpl::list<>;
+
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<
+          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+      const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
+      const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {
+    // do not need to update anything
+  }
+
+  template <typename... Tags>
+  static void apply(
+      const gsl::not_null<
+          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+      const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
+      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
+    ERROR("h-refinement not implemented yet");
+  }
+
+  template <size_t Dim, typename... Tags>
+  static void apply(
+      const gsl::not_null<
+          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+      const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
+      const std::unordered_map<ElementId<Dim>, tuples::TaggedTuple<Tags...>>&
+      /*children_items*/) {
+    ERROR("h-refinement not implemented yet");
   }
 };
 }  // namespace evolution::Actions
