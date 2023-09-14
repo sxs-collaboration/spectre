@@ -43,33 +43,26 @@
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
 #
-FROM ubuntu:20.04 AS base
+FROM ubuntu:22.04 AS base
 
 # See
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 # for how TARGETARCH is defined.
 ARG TARGETARCH
 
-FROM base AS base-amd64
-ENV CHARM_ARCH=x86_64
-ENV TEX_ARCH=x86_64
-
-FROM base AS base-arm64
-ENV CHARM_ARCH=arm8
-ENV TEX_ARCH=aarch64
-
-FROM base-${TARGETARCH} AS dev
-ARG TARGETARCH
-
-ARG PARALLEL_MAKE_ARG=-j2
-ARG DEBIAN_FRONTEND=noninteractive
-
 # Install add-apt-repository
 RUN apt-get update -y \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    && apt-get install -y software-properties-common
 
-# Install required packages for SpECTRE
+# Install compilers and build tools
+RUN apt-get update -y \
+    && apt-get install -y \
+        gcc g++ gfortran \
+        clang clang-format clang-tidy lld \
+        bison flex libncurses-dev \
+        gdb git wget cmake autoconf automake ninja-build lcov
+
+# Install SpECTRE dependencies that are available through apt
 #
 # We intentionally don't install libboost-all-dev because that installs
 # Boost.MPI, which installs OpenMPI into the container. When MPI is
@@ -78,28 +71,15 @@ RUN apt-get update -y \
 # The system MPI libraries are usually configured to take advantage of
 # InfiniBand or various other networking layers.
 RUN apt-get update -y \
-    && apt-get install -y gcc-9 g++-9 gfortran-9 \
-                          gdb git ninja-build autoconf automake \
-                          bison flex \
-                          libopenblas-dev liblapack-dev \
-                          libgsl0-dev \
-                          clang-10 clang-format-10 clang-tidy-10 \
-                          lld \
-                          wget libncurses-dev \
-                          lcov cppcheck \
-                          libboost-dev libboost-program-options-dev \
-                          libboost-thread-dev libboost-tools-dev libssl-dev \
-                          libarpack2-dev
-
-# Install libc++ and jemalloc
-# The second `apt-get update` is to ensure that anything that depends on
-# libc++-dev is properly found. This was an issue on older versions of Ubuntu
-# but might be fixed in the package manager now. To minimize changes, we are
-# leaving the update call in for now.
-RUN apt-get update -y \
-    && apt-get install -y libc++-dev libc++1 libc++abi-dev \
-    && apt-get update -y \
-    && apt-get install -y libjemalloc2 libjemalloc-dev
+    && apt-get install -y \
+        libopenblas-dev liblapack-dev \
+        libgsl-dev \
+        libjemalloc2 libjemalloc-dev \
+        libboost-dev libboost-program-options-dev \
+        libboost-thread-dev libboost-tools-dev libssl-dev \
+        libhdf5-dev hdf5-tools \
+        libarpack2-dev \
+        libyaml-cpp-dev
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -110,17 +90,11 @@ RUN apt-get update -y \
 #   scripts use `/usr/bin/env python` to find python so restore it.
 COPY support/Python/requirements.txt requirements.txt
 COPY support/Python/dev_requirements.txt dev_requirements.txt
-RUN add-apt-repository universe \
-    && apt-get update -y \
+RUN apt-get update -y \
     && apt-get install -y python3-pip python-is-python3 \
     && pip3 --no-cache-dir install pybind11~=2.6.1 \
     && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
-
-# Add ruby gems and install coveralls using gem
-RUN apt-get update -y \
-    && apt-get install -y rubygems \
-    && gem install coveralls-lcov
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
 RUN apt-get update -y \
@@ -128,14 +102,68 @@ RUN apt-get update -y \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
-# Install minimum required CMake version so that we test compatibility with it
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
-    && tar -xzf cmake-3.18.2.tar.gz \
-    && cd cmake-3.18.2 \
-    && ./bootstrap --prefix=/usr/local \
-    && make $PARALLEL_MAKE_ARG\
-    && make install \
-    && cd .. && rm -rf cmake*
+
+# Cross-compile dependencies on the host system that take a long time to build
+# when emulating the target architecture. The `xbuild` stage is an image with
+# the same architecture as the host. It compiles the packages for the target
+# architecture. Then we can copy the compiled packages into the `base` image.
+FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
+FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
+WORKDIR /root
+COPY --from=xx / /
+ARG TARGETPLATFORM
+ARG PARALLEL_MAKE_ARG=-j2
+# Install build dependencies for the host system
+RUN apt-get update -y \
+    && apt-get install -y cmake clang lld wget
+# Install build dependencies for the target architecture
+RUN xx-apt-get update -y \
+    && xx-apt-get install -y libc6-dev libstdc++-10-dev bison flex
+# - Ccache
+RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
+    && tar -xzf ccache.tar.gz \
+    && mv ccache-* ccache \
+    && cd ccache \
+    && mkdir build && cd build \
+    && cmake $(xx-clang --print-cmake-defines) \
+        -D HAVE_ASM_SSE2=OFF -D HAVE_ASM_SSE41=OFF \
+        -D HAVE_ASM_AVX2=OFF -D HAVE_ASM_AVX512=OFF \
+        -D CMAKE_BUILD_TYPE=Release .. \
+    && make $PARALLEL_MAKE_ARG
+# - Doxygen
+RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
+    && tar -xzf doxygen.tar.gz \
+    && mv doxygen-* doxygen \
+    && cd doxygen \
+    && mkdir build && cd build \
+    && cmake $(xx-clang --print-cmake-defines) \
+        -D CMAKE_BUILD_TYPE=Release .. \
+    && make $PARALLEL_MAKE_ARG
+
+FROM base AS xbuild-test
+COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
+RUN ccache --version
+COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+RUN doxygen --version
+
+
+# Install software that we can't install through apt. We have to distinguish
+# between different architectures for many of those.
+FROM base AS base-amd64
+ENV CMAKE_ARCH=x86_64
+ENV CHARM_ARCH=x86_64
+ENV TEX_ARCH=x86_64
+
+FROM base AS base-arm64
+ENV CMAKE_ARCH=aarch64
+ENV CHARM_ARCH=arm8
+ENV TEX_ARCH=aarch64
+
+FROM base-${TARGETARCH} AS dev
+ARG TARGETARCH
+
+ARG PARALLEL_MAKE_ARG=-j2
+ARG DEBIAN_FRONTEND=noninteractive
 
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
@@ -162,34 +190,15 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O c
     && make $PARALLEL_MAKE_ARG install \
     && cd ../.. && rm -rf Catch2
 # - Ccache
-RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
-    && tar -xzf ccache.tar.gz \
-    && cd ccache-* \
-    && mkdir build && cd build \
-    && cmake -D CMAKE_BUILD_TYPE=Release .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd .. && rm -rf ccache*
+COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 # - Doxygen
-RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
-    && tar -xzf doxygen.tar.gz \
-    && mv doxygen-* doxygen \
-    && cd doxygen \
-    && mkdir build \
-    && cd build \
-    && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd ../.. && rm -rf doxygen*
-# - HDF5
-RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.9/src/hdf5-1.10.9.tar.gz -O hdf5.tar.gz \
-    && tar -xzf hdf5.tar.gz \
-    && mv hdf5-* hdf5 \
-    && cd hdf5 \
+COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+# - Libbacktrace
+RUN git clone https://github.com/ianlancetaylor/libbacktrace \
+    && cd libbacktrace \
     && ./configure --prefix=/usr/local \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd .. && rm -rf hdf5*
+    && make $PARALLEL_MAKE_ARG install \
+    && cd .. && rm -rf libbacktrace
 # - Libsharp
 RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
     && tar -xzf libsharp.tar.gz \
@@ -210,8 +219,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         git clone --single-branch --branch main --depth 1 \
             https://github.com/libxsmm/libxsmm.git libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
-            FC=gfortran-9 PLATFORM=1 install \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ PLATFORM=1 install \
         && cd .. \
         && rm -rf libxsmm; \
     else \
@@ -220,49 +228,25 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && tar -xzf libxsmm.tar.gz \
         && mv libxsmm-* libxsmm \
         && cd libxsmm \
-        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
-            FC=gfortran-9 install \
+        && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
         && cd .. \
         && rm -rf libxsmm libxsmm.tar.gz; \
     fi
-# - Yaml-cpp
-RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yaml-cpp.tar.gz \
-    && tar -xzf yaml-cpp.tar.gz \
-    && mv yaml-cpp-* yaml-cpp-build \
-    && cd yaml-cpp-build \
-    && mkdir build \
-    && cd build \
-    && cmake -D CMAKE_BUILD_TYPE=Release -D YAML_CPP_BUILD_TESTS=OFF \
-             -D CMAKE_C_COMPILER=gcc-9 -D CMAKE_CXX_COMPILER=g++-9 \
-             -D YAML_CPP_BUILD_CONTRIB=OFF \
-             -D YAML_CPP_BUILD_TOOLS=ON \
-             -D CMAKE_INSTALL_PREFIX=/usr/local/ \
-             -D YAML_BUILD_SHARED_LIBS=ON .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd ../.. \
-    && rm -rf yaml-cpp*
 # - xsimd https://github.com/xtensor-stack/xsimd
-RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
-    && tar -xzf 8.1.0.tar.gz \
-    && cd ./xsimd-8.1.0  \
+RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/11.1.0.tar.gz -O xsimd.tar.gz \
+    && tar -xzf xsimd.tar.gz && rm xsimd.tar.gz \
+    && cd ./xsimd-*  \
     && mkdir build \
     && cd ./build \
-    && cmake -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF \
-             -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
+    && cmake -D CMAKE_BUILD_TYPE=Release \
+        -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
     && make install \
-    && cd ../.. \
-    && rm -rf /work/8.1.0.tar.gz /work/xsimd-8.1.0
+    && cd ../.. && rm -rf xsimd-*
 
 # Update ld cache to find shared libs in /usr/local/lib/
 RUN ldconfig
 
 WORKDIR /work
-# Charm doesn't support compiling with clang without symbolic links
-RUN ln -s $(which clang++-10) /usr/local/bin/clang++ \
-    && ln -s $(which clang-10) /usr/local/bin/clang \
-    && ln -s $(which clang-format-10) /usr/local/bin/clang-format \
-    && ln -s $(which clang-tidy-10) /usr/local/bin/clang-tidy
 # Download and build the Charm++ version used by SpECTRE
 # We check out only a specific branch in order to reduce the repo size.
 #
@@ -282,18 +266,15 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
     && git checkout v7.0.0 \
     && git apply /work/v7.0.0.patch \
     && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
+        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
-
-# - Set the environment variable SPECTRE_CONTAINER so we can check if we are
-#   inside a container (0 is true in bash)
-# - Set CHARM_ROOT so it's easy to find the Charm++ directory. Just use the
-#   multicore build.
-# - Symlink gfortran-9 to gfortran so it we can just specify gfortran in CMake
-# - The singularity containers work better if the locale is set properly
-ENV SPECTRE_CONTAINER 0
 ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
-RUN ln -s $(which gfortran-9) /usr/local/bin/gfortran
+
+# Set the environment variable SPECTRE_CONTAINER so we can check if we are
+# inside a container (0 is true in bash)
+ENV SPECTRE_CONTAINER 0
+
+# The singularity containers work better if the locale is set properly
 RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
     && export LANGUAGE=en_US.UTF-8 \
@@ -305,9 +286,8 @@ RUN apt-get update -y \
 # Install bibtex for Doxygen bibliography management
 # We first install the TeXLive infrastructure according to the configuration in
 # support/TeXLive/texlive.profile and then use it to install the bibtex package.
-RUN mkdir /work/texlive
-WORKDIR /work/texlive
-RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
+RUN mkdir /work/texlive && cd /work/texlive \
+    && wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
@@ -319,9 +299,12 @@ ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
 
+WORKDIR /work
+
 
 # Everything we need to run tests on CI on GitHub.
 FROM dev as ci
+ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
@@ -329,33 +312,41 @@ ARG PARALLEL_MAKE_ARG=-j2
 
 # Install all the compilers we are going to test on CI
 RUN apt-get update -y \
-    && apt-get install -y gcc-10 g++-10 gfortran-10 \
-                          gcc-11 g++-11 gfortran-11
+    && apt-get install -y \
+        gcc-9 g++-9 gfortran-9 \
+        gcc-10 g++-10 gfortran-10 \
+        clang-11 clang-13
 
-# Install clang-11 and clang-13
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
-    && apt-get update -y && apt-get install -y clang-11 \
-    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
-    && apt-get update -y && apt-get install -y clang-13
+# Install minimum required CMake version so that we test compatibility with it.
+# For this version of CMake no ARM binary is available.
+RUN if [ "$TARGETARCH" != "arm64" ] ; then \
+        wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-linux-${CMAKE_ARCH}.sh -O cmake-install.sh \
+        && mkdir -p /opt/local/cmake/3.18.2 \
+        && sh cmake-install.sh --prefix=/opt/local/cmake/3.18.2 --skip-license \
+        && rm cmake-install.sh; \
+    fi
 
-# Install OpenMPI 4.0.3
-RUN apt-get install -y openmpi-bin
+# Install minmum required Python version so that we test compatibility with it.
+COPY support/Python/requirements.txt requirements.txt
+COPY support/Python/dev_requirements.txt dev_requirements.txt
+RUN add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update -y \
+    && apt-get install -y python3.8 python3.8-dev python3.8-distutils \
+    && python3.8 -m pip --no-cache-dir install pybind11~=2.6.1 \
+    && python3.8 -m pip --no-cache-dir install \
+        -r requirements.txt -r dev_requirements.txt \
+    && rm requirements.txt dev_requirements.txt
+
+# Install OpenMPI
+RUN apt-get install -y libopenmpi-dev
 
 # We build an mpi version of charm (with clang) because many of our production
 # environments have charm built with mpi and we should test that.
-WORKDIR /work/charm_7_0_0
-# This env variable was found to be necessary when building charm with OpenMPI
-# 4.0.3 which ships with Ubuntu 20.04. For more details see this issue:
-# https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
-ENV LDFLAGS="-lopen-pal"
-RUN ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
-    && rm -rf /work/charm_7_0_0/doc /work/charm_7_0_0/examples
+RUN cd /work/charm_7_0_0 \
+    && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
+        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared
 
 # Download and extract the intel Software Development Emulator binaries
-WORKDIR /work
 RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz -O sde-external.tar.xz \
     && tar -xJf sde-external.tar.xz \
     && mv sde-external-* sde \
@@ -394,17 +385,14 @@ RUN apt-get update -y \
 # install paraview when building for Apple Silicon. Apple Silicon users
 # should install a binary of ParaView for Mac and move data to be
 # visualized outside of the container.
-WORKDIR /work
 RUN if [ "$TARGETARCH" != "arm64" ] ; then \
-    wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
-    && tar -xzf paraview.tar.gz \
-    && rm paraview.tar.gz \
-    && mv ParaView-* /opt/paraview; \
-  fi
+        wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+        && tar -xzf paraview.tar.gz \
+        && rm paraview.tar.gz \
+        && mv ParaView-* /opt/paraview; \
+    fi
 
 ENV PATH "/opt/paraview/bin:$PATH"
-
-WORKDIR /work
 
 # We copy the entire SpECTRE repo from the current context so that people can
 # edit and rebuild the pre-built executables if they want to experiment with
@@ -415,20 +403,18 @@ WORKDIR /work
 COPY . spectre/
 
 RUN mkdir spectre/build && cd spectre/build \
-  && cmake \
-    -D CMAKE_C_COMPILER=clang-10 \
-    -D CMAKE_CXX_COMPILER=clang++-10 \
-    -D CMAKE_Fortran_COMPILER=gfortran-9 \
-    -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc \
-    -D CMAKE_BUILD_TYPE=Release \
-    -D DEBUG_SYMBOLS=OFF \
-    -D BUILD_PYTHON_BINDINGS=ON \
-    -D Python_EXECUTABLE=/usr/bin/python3 \
-    -D MEMORY_ALLOCATOR=SYSTEM \
-    .. \
-  && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
-  && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
-  && make ${PARALLEL_MAKE_ARG} all-pybindings
+    && cmake \
+        -D CMAKE_C_COMPILER=clang \
+        -D CMAKE_CXX_COMPILER=clang++ \
+        -D CMAKE_Fortran_COMPILER=gfortran \
+        -D CMAKE_BUILD_TYPE=Release \
+        -D DEBUG_SYMBOLS=OFF \
+        -D BUILD_PYTHON_BINDINGS=ON \
+        -D MEMORY_ALLOCATOR=SYSTEM \
+        .. \
+    && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
+    && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
+    && make ${PARALLEL_MAKE_ARG} all-pybindings
 
 RUN pip3 --no-cache-dir install jupyterlab
 

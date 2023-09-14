@@ -4,7 +4,7 @@
 option(USE_XSIMD "Use xsimd if it is available" OFF)
 
 if(USE_XSIMD)
-  find_package(xsimd 8.1 REQUIRED)
+  find_package(xsimd REQUIRED)
 
   message(STATUS "xsimd incld: ${xsimd_INCLUDE_DIRS}")
   message(STATUS "xsimd vers: ${xsimd_VERSION}")
