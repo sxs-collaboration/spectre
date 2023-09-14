@@ -264,7 +264,8 @@ void test_stf_tensor_tag() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.Tags",
+                  "[ApparentHorizonFinder][Unit]") {
   test_average_radius();
   test_radius_and_derivs();
   test_normals();

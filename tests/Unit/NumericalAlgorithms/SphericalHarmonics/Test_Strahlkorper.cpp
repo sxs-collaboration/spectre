@@ -168,8 +168,8 @@ void test_construct_from_options() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper",
+                  "[ApparentHorizonFinder][Unit]") {
   test_invert_spec_phys_transform();
   test_copy_and_move();
   test_average_radius();
@@ -196,8 +196,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper",
   test_construct_from_options();
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.Serialization",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper.Serialization",
+                  "[ApparentHorizonFinder][Unit]") {
   Strahlkorper<Frame::Inertial> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
   test_serialization(s);
 }

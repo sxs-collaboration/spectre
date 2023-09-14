@@ -37,5 +37,5 @@ add_spectre_parallel_executable(
   EvolveScalarTensorSingleBlackHole
   Evolution/Executables/ScalarTensor
   "EvolutionMetavars"
-  "${LIBS_TO_LINK};ApparentHorizons;ControlSystem"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ControlSystem"
   )

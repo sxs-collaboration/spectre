@@ -511,8 +511,8 @@ void test_time_deriv_strahlkorper() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.StrahlkorperFunctions",
+                  "[ApparentHorizonFinder][Unit]") {
   test_theta_phi();
   test_rhat_jacobian_hessian();
   test_cartesian_coords();

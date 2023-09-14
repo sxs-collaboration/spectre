@@ -197,8 +197,8 @@ void test_dimensionless_spin_magnitude_compute_tag() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.StrahlkorperDataBox",
+                  "[ApparentHorizonFinder][Unit]") {
   test_normals();
   test_max_ricci_scalar();
   test_min_ricci_scalar();

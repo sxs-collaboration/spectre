@@ -163,8 +163,8 @@ void test() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
-                  "[Unit][ApparentHorizons]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.ObserveCenters",
+                  "[Unit][ApparentHorizonFinder]") {
   test<::Frame::Grid>();
   test<::Frame::Distorted>();
 }

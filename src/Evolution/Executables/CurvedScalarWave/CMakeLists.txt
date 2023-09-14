@@ -26,7 +26,7 @@ set(LIBS_TO_LINK
 )
 
 set(INTERPOLATION_LIBS_TO_LINK
-  ApparentHorizons
+  ApparentHorizonFinder
   ParallelInterpolation
 )
 
