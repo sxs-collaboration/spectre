@@ -1,17 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-if (BUILD_PYTHON_BINDINGS)
-  # The SPECTRE_VERSION is inserted in __init__.py by cmake, so this test
-  # doesn't work in PY_DEV_MODE
-  if (NOT PY_DEV_MODE)
-    add_test(NAME "support.Python.Cli"
-      COMMAND ${CMAKE_BINARY_DIR}/bin/spectre --version)
-    set_tests_properties(
-      "support.Python.Cli" PROPERTIES
-      PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
-      LABELS "python")
-  endif()
+# The SPECTRE_VERSION is inserted in __init__.py by cmake, so these tests don't
+# work in PY_DEV_MODE
+if (BUILD_PYTHON_BINDINGS AND NOT PY_DEV_MODE)
+  add_test(NAME "support.Python.Cli"
+    COMMAND ${CMAKE_BINARY_DIR}/bin/spectre --version)
+  set_tests_properties(
+    "support.Python.Cli" PROPERTIES
+    PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
+    LABELS "python")
 
   add_test(NAME "support.Python.python-spectre"
     COMMAND ${CMAKE_BINARY_DIR}/bin/python-spectre -c
