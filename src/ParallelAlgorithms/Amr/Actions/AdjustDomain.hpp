@@ -27,10 +27,13 @@
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace amr {
 /// \cond
@@ -74,6 +77,12 @@ struct AdjustDomain {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ElementId<Metavariables::volume_dim>& element_id) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
+    using amr_projectors = typename Metavariables::amr::projectors;
+    static_assert(
+        tmpl::all<
+            amr_projectors,
+            tt::assert_conforms_to<tmpl::_1, amr::protocols::Projector>>::value,
+        "All AMR projectors must conform to 'amr::protocols::Projector'.");
 
     // To prevent bugs when new mutable items are added to a DataBox, we require
     // that all mutable_item_creation_tags of box are either:
@@ -88,8 +97,7 @@ struct AdjustDomain {
         amr::Tags::Flags<volume_dim>, amr::Tags::NeighborFlags<volume_dim>>;
     using mutated_tags =
         tmpl::append<distributed_object_tags, tags_mutated_by_this_action,
-                     typename detail::GetMutatedTags<
-                         typename Metavariables::amr::projectors>::type>;
+                     typename detail::GetMutatedTags<amr_projectors>::type>;
     using mutable_tags =
         typename db::DataBox<DbTagList>::mutable_item_creation_tags;
     using mutable_tags_not_mutated =
@@ -173,7 +181,7 @@ struct AdjustDomain {
       // Run the projectors on all elements, even if they did no h-refinement.
       // This allows projectors to update mutable items that depend upon the
       // neighbors of the element.
-      tmpl::for_each<typename Metavariables::amr::projectors>(
+      tmpl::for_each<amr_projectors>(
           [&box, &old_mesh_and_element](auto projector_v) {
             using projector = typename decltype(projector_v)::type;
             db::mutate_apply<projector>(make_not_null(&box),

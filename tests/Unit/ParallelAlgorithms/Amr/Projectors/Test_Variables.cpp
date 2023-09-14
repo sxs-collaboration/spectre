@@ -18,7 +18,9 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -88,6 +90,10 @@ void test_p_refine() {
 
 SPECTRE_TEST_CASE("Unit.Amr.Projectors.Variables",
                   "[ParallelAlgorithms][Unit]") {
+  static_assert(tt::assert_conforms_to_v<
+                amr::projectors::ProjectVariables<
+                    1, tmpl::list<VariablesTag<0>, VariablesTag<1>>>,
+                amr::protocols::Projector>);
   test_p_refine<1>();
   test_p_refine<2>();
   test_p_refine<3>();

@@ -18,9 +18,11 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/History.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -217,6 +219,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.TimeStepperHistory",
   test_initialization<1>();
   test_initialization<2>();
   test_initialization<3>();
+  static_assert(tt::assert_conforms_to_v<
+                Initialization::ProjectTimeStepperHistory<TestMetavariables<1>>,
+                amr::protocols::Projector>);
   test_p_refine<1>();
   test_p_refine<2>();
   test_p_refine<3>();
