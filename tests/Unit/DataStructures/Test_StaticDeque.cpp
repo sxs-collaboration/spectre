@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <deque>
 #include <initializer_list>
+#include <limits>
 #include <ostream>
 #include <pup.h>
 #include <stdexcept>
@@ -13,11 +14,20 @@
 #include <unordered_set>
 #include <utility>
 
+#include "DataStructures/CircularDeque.hpp"
 #include "DataStructures/StaticDeque.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
+// This gives a uniform interface with CircularDeque to make sharing
+// test code easier.
+template <size_t Size>
+struct curry_static_deque {
+  template <typename T>
+  using f = StaticDeque<T, Size>;
+};
+
 struct AllocationChecker {
   int value{12345};
 
@@ -67,11 +77,132 @@ std::ostream& operator<<(std::ostream& s, const AllocationChecker& a) {
   return s << a.value;
 }
 
-template <typename F>
+template <int>
+struct ForwardingTesterArg {
+  ForwardingTesterArg() = delete;
+  ForwardingTesterArg(const ForwardingTesterArg&) = delete;
+  ForwardingTesterArg(ForwardingTesterArg&&) { CHECK(false); }
+  ForwardingTesterArg& operator=(const ForwardingTesterArg&) = delete;
+  ForwardingTesterArg& operator=(ForwardingTesterArg&&) {
+    CHECK(false);
+    return *this;
+  }
+
+  explicit ForwardingTesterArg(int) {}
+};
+
+struct ForwardingTester {
+  ForwardingTester() = delete;
+  ForwardingTester(const ForwardingTester&) = delete;
+  ForwardingTester(ForwardingTester&&) = default;
+  ForwardingTester& operator=(const ForwardingTester&) = delete;
+  ForwardingTester& operator=(ForwardingTester&&) {
+    CHECK(false);
+    return *this;
+  }
+
+  ForwardingTester(ForwardingTesterArg<0>&&, ForwardingTesterArg<1>&&) {}
+};
+
+template <template <typename> typename Deque>
+void test_construction_and_assignment() {
+  { CHECK(Deque<int>{}.size() == 0); }
+  {
+    const Deque<int> deque(3, 6);
+    CHECK(deque.size() == 3);
+    CHECK(deque[0] == 6);
+    CHECK(deque[1] == 6);
+    CHECK(deque[2] == 6);
+  }
+  {
+    const Deque<int> deque(3);
+    CHECK(deque.size() == 3);
+    CHECK(deque[0] == 0);
+    CHECK(deque[1] == 0);
+    CHECK(deque[2] == 0);
+  }
+  {
+    const Deque<int> deque{3, 4, 5};
+    CHECK(deque.size() == 3);
+    CHECK(deque[0] == 3);
+    CHECK(deque[1] == 4);
+    CHECK(deque[2] == 5);
+  }
+  {
+    std::initializer_list<int> init{3, 4, 5};
+    const Deque<int> deque(init.begin(), init.end());
+    CHECK(deque.size() == 3);
+    CHECK(deque[0] == 3);
+    CHECK(deque[1] == 4);
+    CHECK(deque[2] == 5);
+  }
+  {
+    const Deque<int> deque1{3, 4, 5};
+    const Deque<int> deque2 = deque1;
+    CHECK(deque1.size() == 3);
+    CHECK(deque1[0] == 3);
+    CHECK(deque1[1] == 4);
+    CHECK(deque1[2] == 5);
+    CHECK(deque2.size() == 3);
+    CHECK(deque2[0] == 3);
+    CHECK(deque2[1] == 4);
+    CHECK(deque2[2] == 5);
+  }
+  {
+    Deque<int> deque1{3, 4, 5};
+    const Deque<int> deque2 = std::move(deque1);
+    CHECK(deque2.size() == 3);
+    CHECK(deque2[0] == 3);
+    CHECK(deque2[1] == 4);
+    CHECK(deque2[2] == 5);
+  }
+  {
+    Deque<NonCopyable> deque1{};
+    const Deque<NonCopyable> deque2 = std::move(deque1);
+  }
+
+  {
+    const Deque<int> deque1{3, 4, 5};
+    Deque<int> deque2{6, 7, 8, 9};
+    deque2 = deque1;
+    CHECK(deque1.size() == 3);
+    CHECK(deque1[0] == 3);
+    CHECK(deque1[1] == 4);
+    CHECK(deque1[2] == 5);
+    CHECK(deque2.size() == 3);
+    CHECK(deque2[0] == 3);
+    CHECK(deque2[1] == 4);
+    CHECK(deque2[2] == 5);
+  }
+  {
+    Deque<int> deque1{3, 4, 5};
+    Deque<int> deque2{6, 7, 8, 9};
+    deque2 = std::move(deque1);
+    CHECK(deque2.size() == 3);
+    CHECK(deque2[0] == 3);
+    CHECK(deque2[1] == 4);
+    CHECK(deque2[2] == 5);
+  }
+  {
+    Deque<NonCopyable> deque1{};
+    Deque<NonCopyable> deque2{};
+    deque2 = std::move(deque1);
+  }
+  {
+    Deque<int> deque{6, 7, 8, 9};
+    deque = {3, 4, 5};
+    CHECK(deque.size() == 3);
+    CHECK(deque[0] == 3);
+    CHECK(deque[1] == 4);
+    CHECK(deque[2] == 5);
+  }
+}
+
+template <typename Deque, typename F>
 void compare_with_stl_impl(const F operation) {
   {
     std::deque<AllocationChecker> stl_deque{1, 2, 3, 4, 5};
-    StaticDeque<AllocationChecker, 9> static_deque{1, 2, 3, 4, 5};
+    Deque static_deque{1, 2, 3, 4, 5};
     // Get the internals into a more interesting state.
     stl_deque.push_front(0);
     static_deque.push_front(0);
@@ -107,133 +238,17 @@ void compare_with_stl_impl(const F operation) {
 #define STRINGIFY_LINE(line) STRINGIFY_LINE2(line)
 #define STRINGIFY_LINE2(line) #line
 
-#define COMPARE_WITH_STL(operation)         \
-  do {                                      \
-    INFO("Line " STRINGIFY_LINE(__LINE__)); \
-    INFO(#operation);                       \
-    compare_with_stl_impl(operation);       \
+#define COMPARE_WITH_STL(operation)            \
+  do {                                         \
+    INFO("Line " STRINGIFY_LINE(__LINE__));    \
+    INFO(#operation);                          \
+    /* `Deque` is from the calling function */ \
+    compare_with_stl_impl<Deque>(operation);   \
   } while (false)
 
-template <int>
-struct ForwardingTesterArg {
-  ForwardingTesterArg() = delete;
-  ForwardingTesterArg(const ForwardingTesterArg&) = delete;
-  ForwardingTesterArg(ForwardingTesterArg&&) { CHECK(false); }
-  ForwardingTesterArg& operator=(const ForwardingTesterArg&) = delete;
-  ForwardingTesterArg& operator=(ForwardingTesterArg&&) {
-    CHECK(false);
-    return *this;
-  }
-
-  explicit ForwardingTesterArg(int) {}
-};
-
-struct ForwardingTester {
-  ForwardingTester() = delete;
-  ForwardingTester(const ForwardingTester&) = delete;
-  ForwardingTester(ForwardingTester&&) = default;
-  ForwardingTester& operator=(const ForwardingTester&) = delete;
-  ForwardingTester& operator=(ForwardingTester&&) {
-    CHECK(false);
-    return *this;
-  }
-
-  ForwardingTester(ForwardingTesterArg<0>&&, ForwardingTesterArg<1>&&) {}
-};
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
-  { CHECK(StaticDeque<int, 3>{}.size() == 0); }
-  {
-    const StaticDeque<int, 4> deque(3, 6);
-    CHECK(deque.size() == 3);
-    CHECK(deque[0] == 6);
-    CHECK(deque[1] == 6);
-    CHECK(deque[2] == 6);
-  }
-  {
-    const StaticDeque<int, 4> deque(3);
-    CHECK(deque.size() == 3);
-    CHECK(deque[0] == 0);
-    CHECK(deque[1] == 0);
-    CHECK(deque[2] == 0);
-  }
-  {
-    const StaticDeque<int, 4> deque{3, 4, 5};
-    CHECK(deque.size() == 3);
-    CHECK(deque[0] == 3);
-    CHECK(deque[1] == 4);
-    CHECK(deque[2] == 5);
-  }
-  {
-    std::initializer_list<int> init{3, 4, 5};
-    const StaticDeque<int, 4> deque(init.begin(), init.end());
-    CHECK(deque.size() == 3);
-    CHECK(deque[0] == 3);
-    CHECK(deque[1] == 4);
-    CHECK(deque[2] == 5);
-  }
-  {
-    const StaticDeque<int, 4> deque1{3, 4, 5};
-    const StaticDeque<int, 4> deque2 = deque1;
-    CHECK(deque1.size() == 3);
-    CHECK(deque1[0] == 3);
-    CHECK(deque1[1] == 4);
-    CHECK(deque1[2] == 5);
-    CHECK(deque2.size() == 3);
-    CHECK(deque2[0] == 3);
-    CHECK(deque2[1] == 4);
-    CHECK(deque2[2] == 5);
-  }
-  {
-    StaticDeque<int, 4> deque1{3, 4, 5};
-    const StaticDeque<int, 4> deque2 = std::move(deque1);
-    CHECK(deque2.size() == 3);
-    CHECK(deque2[0] == 3);
-    CHECK(deque2[1] == 4);
-    CHECK(deque2[2] == 5);
-  }
-  {
-    StaticDeque<NonCopyable, 4> deque1{};
-    const StaticDeque<NonCopyable, 4> deque2 = std::move(deque1);
-  }
-
-  {
-    const StaticDeque<int, 4> deque1{3, 4, 5};
-    StaticDeque<int, 4> deque2{6, 7, 8, 9};
-    deque2 = deque1;
-    CHECK(deque1.size() == 3);
-    CHECK(deque1[0] == 3);
-    CHECK(deque1[1] == 4);
-    CHECK(deque1[2] == 5);
-    CHECK(deque2.size() == 3);
-    CHECK(deque2[0] == 3);
-    CHECK(deque2[1] == 4);
-    CHECK(deque2[2] == 5);
-  }
-  {
-    StaticDeque<int, 4> deque1{3, 4, 5};
-    StaticDeque<int, 4> deque2{6, 7, 8, 9};
-    deque2 = std::move(deque1);
-    CHECK(deque2.size() == 3);
-    CHECK(deque2[0] == 3);
-    CHECK(deque2[1] == 4);
-    CHECK(deque2[2] == 5);
-  }
-  {
-    StaticDeque<NonCopyable, 4> deque1{};
-    StaticDeque<NonCopyable, 4> deque2{};
-    deque2 = std::move(deque1);
-  }
-  {
-    StaticDeque<int, 4> deque{6, 7, 8, 9};
-    deque = {3, 4, 5};
-    CHECK(deque.size() == 3);
-    CHECK(deque[0] == 3);
-    CHECK(deque[1] == 4);
-    CHECK(deque[2] == 5);
-  }
-
+template <template <typename> typename DequeTemplate>
+void test_against_stl() {
+  using Deque = DequeTemplate<AllocationChecker>;
   COMPARE_WITH_STL(([](const auto deque) {
     // Some of the checks below pick numbers above and below this.
     REQUIRE(deque->size() == 6);
@@ -252,11 +267,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
 
   COMPARE_WITH_STL(([](const auto deque) { return deque->at(0); }));
   COMPARE_WITH_STL(([](const auto deque) { return deque->at(5); }));
-  CHECK_THROWS_AS(([]() {
-                    StaticDeque<int, 4> deque{1, 2};
-                    deque.at(2);
-                  })(),
-                  std::out_of_range);
   COMPARE_WITH_STL(
       ([](const auto deque) { return std::as_const(*deque).at(0); }));
   COMPARE_WITH_STL(
@@ -285,19 +295,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
   // Reverse iterators won't work with the macro.  This is all
   // inherited code tested elsewhere, anyway.
 
-  {
-    const StaticDeque<int, 3> deque{1};
-    CHECK(not deque.empty());
-  }
-  {
-    const StaticDeque<int, 3> deque{};
-    CHECK(deque.empty());
-  }
   COMPARE_WITH_STL(([](const auto deque) { return deque->size(); }));
-  {
-    const StaticDeque<int, 3> deque{};
-    CHECK(deque.max_size() == 3);
-  }
   COMPARE_WITH_STL(([](const auto deque) { return deque->shrink_to_fit(); }));
 
   COMPARE_WITH_STL(([](const auto deque) { return deque->clear(); }));
@@ -450,10 +448,28 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
   COMPARE_WITH_STL(([](const auto deque) { return deque->resize(6); }));
   COMPARE_WITH_STL(([](const auto deque) { return deque->resize(4, 9); }));
   COMPARE_WITH_STL(([](const auto deque) { return deque->resize(6, 9); }));
+}
+
+template <template <typename> typename Deque>
+void test_misc_operations() {
+  {
+    const Deque<int> deque{1};
+    CHECK(not deque.empty());
+  }
+  {
+    const Deque<int> deque{};
+    CHECK(deque.empty());
+  }
+
+  CHECK_THROWS_AS(([]() {
+                    Deque<int> deque{1, 2};
+                    deque.at(2);
+                  })(),
+                  std::out_of_range);
 
   {
-    StaticDeque<int, 9> deque1{1, 2};
-    StaticDeque<int, 9> deque2{2};
+    Deque<int> deque1{1, 2};
+    Deque<int> deque2{2};
     // Different internal state
     deque2.push_front(1);
     CHECK(deque1 == deque2);
@@ -464,8 +480,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
     CHECK(deque1 >= deque2);
   }
   {
-    StaticDeque<int, 9> deque1{1, 2, 3};
-    StaticDeque<int, 9> deque2{3};
+    Deque<int> deque1{1, 2, 3};
+    Deque<int> deque2{3};
     // Different internal state
     deque2.push_front(1);
     CHECK_FALSE(deque1 == deque2);
@@ -476,8 +492,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
     CHECK_FALSE(deque1 >= deque2);
   }
   {
-    StaticDeque<int, 9> deque1{1, 2, 3};
-    StaticDeque<int, 9> deque2{2};
+    Deque<int> deque1{1, 2, 3};
+    Deque<int> deque2{2};
     // Different internal state
     deque2.push_front(1);
     CHECK_FALSE(deque1 == deque2);
@@ -489,27 +505,27 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
   }
 
   {
-    StaticDeque<AllocationChecker, 9> deque1{1, 2, 3, 4, 5};
-    StaticDeque<AllocationChecker, 9> deque2{7, 8};
+    Deque<AllocationChecker> deque1{1, 2, 3, 4, 5};
+    Deque<AllocationChecker> deque2{7, 8};
     deque1.swap(deque2);
-    CHECK(deque1 == StaticDeque<AllocationChecker, 9>{7, 8});
-    CHECK(deque2 == StaticDeque<AllocationChecker, 9>{1, 2, 3, 4, 5});
+    CHECK(deque1 == Deque<AllocationChecker>{7, 8});
+    CHECK(deque2 == Deque<AllocationChecker>{1, 2, 3, 4, 5});
   }
   CHECK(AllocationChecker::was_clean());
 
   {
-    StaticDeque<AllocationChecker, 9> deque1{1, 2, 3, 4, 5};
-    StaticDeque<AllocationChecker, 9> deque2{7, 8};
+    Deque<AllocationChecker> deque1{1, 2, 3, 4, 5};
+    Deque<AllocationChecker> deque2{7, 8};
     using std::swap;
     swap(deque1, deque2);
-    CHECK(deque1 == StaticDeque<AllocationChecker, 9>{7, 8});
-    CHECK(deque2 == StaticDeque<AllocationChecker, 9>{1, 2, 3, 4, 5});
+    CHECK(deque1 == Deque<AllocationChecker>{7, 8});
+    CHECK(deque2 == Deque<AllocationChecker>{1, 2, 3, 4, 5});
   }
   CHECK(AllocationChecker::was_clean());
 
   // Check argument forwarding
   {
-    StaticDeque<ForwardingTester, 10> deque{};
+    Deque<ForwardingTester> deque{};
     deque.insert(deque.begin(), ForwardingTester(ForwardingTesterArg<0>(1),
                                                  ForwardingTesterArg<1>(1)));
     deque.emplace(deque.begin(), ForwardingTesterArg<0>(1),
@@ -525,8 +541,79 @@ SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
   }
 
   {
-    StaticDeque<AllocationChecker, 7> deque{3, 4, 5};
+    Deque<AllocationChecker> deque{3, 4, 5};
     test_serialization(deque);
   }
   CHECK(AllocationChecker::was_clean());
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.StaticDeque", "[Unit][DataStructures]") {
+  test_construction_and_assignment<curry_static_deque<4>::f>();
+  test_construction_and_assignment<CircularDeque>();
+
+  // Some tests require a maximum size of at least 9.
+  test_against_stl<curry_static_deque<9>::f>();
+  test_against_stl<CircularDeque>();
+
+  test_misc_operations<curry_static_deque<9>::f>();
+  test_misc_operations<CircularDeque>();
+
+  {
+    const StaticDeque<int, 3> deque{};
+    CHECK(deque.max_size() == 3);
+    CHECK(deque.capacity() == 3);
+  }
+  {
+    CircularDeque<int> deque{};
+    CHECK(deque.max_size() == std::numeric_limits<size_t>::max());
+    CHECK(deque.capacity() == 0);
+    deque.push_back(1);
+    CHECK(deque.capacity() == 1);
+    deque.push_front(1);
+    CHECK(deque.capacity() == 2);
+    deque.pop_back();
+    CHECK(deque.capacity() == 2);
+    deque.push_back(1);
+    CHECK(deque.capacity() == 2);
+    deque.pop_back();
+    deque.shrink_to_fit();
+    CHECK(deque.capacity() == 1);
+  }
+  {
+    CircularDeque<int> deque1{1, 2};
+    CircularDeque<int> deque2{3, 4, 5};
+    const int* const data1 = &deque1.front();
+    const int* const data2 = &deque2.front();
+    using std::swap;
+    swap(deque1, deque2);
+    CHECK(deque1.capacity() == 3);
+    CHECK(deque2.capacity() == 2);
+    CHECK(&deque1.front() == data2);
+    CHECK(&deque2.front() == data1);
+    deque1.swap(deque2);
+    CHECK(deque1.capacity() == 2);
+    CHECK(deque2.capacity() == 3);
+    CHECK(&deque1.front() == data1);
+    CHECK(&deque2.front() == data2);
+  }
+
+  {
+    StaticDeque<int, 9> deque{1, 2};
+    CHECK(deque.capacity() == 9);
+    deque.reserve(8);
+    CHECK(deque.capacity() == 9);
+#ifdef SPECTRE_DEBUG
+    CHECK_THROWS_WITH(deque.reserve(10), Catch::Matchers::ContainsSubstring(
+                                             "Cannot enlarge a StaticDeque"));
+#endif
+  }
+  {
+    CircularDeque<int> deque{1, 2};
+    CHECK(deque.capacity() == 2);
+    deque.reserve(9);
+    CHECK(deque.capacity() == 9);
+    deque.reserve(8);
+    CHECK(deque.capacity() == 9);
+  }
 }
