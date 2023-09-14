@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
@@ -65,21 +66,33 @@ class DirichletFreeOutflow final : public BoundaryCondition {
  private:
   template <typename T>
   using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 
  public:
-  using options = tmpl::list<>;
+ public:
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+  using options = tmpl::list<AnalyticPrescription>;
   static constexpr Options::String help{
-      "DirichletAnalytic boundary conditions using either analytic solution or "
-      "analytic data for GH variables and hydro free outflow for GRMHD."};
+      "DirichletFreeOutflow boundary conditions using either analytic solution "
+      "or "
+      "analytic data."};
 
   DirichletFreeOutflow() = default;
   DirichletFreeOutflow(DirichletFreeOutflow&&) = default;
   DirichletFreeOutflow& operator=(DirichletFreeOutflow&&) = default;
-  DirichletFreeOutflow(const DirichletFreeOutflow&) = default;
-  DirichletFreeOutflow& operator=(const DirichletFreeOutflow&) = default;
+  DirichletFreeOutflow(const DirichletFreeOutflow&);
+  DirichletFreeOutflow& operator=(const DirichletFreeOutflow&);
   ~DirichletFreeOutflow() override = default;
 
   explicit DirichletFreeOutflow(CkMigrateMessage* msg);
+
+  explicit DirichletFreeOutflow(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletFreeOutflow);
@@ -105,10 +118,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
-
-  template <typename AnalyticSolutionOrData>
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
   std::optional<std::string> dg_ghost(
       const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
           spacetime_metric,
@@ -156,37 +166,42 @@ class DirichletFreeOutflow final : public BoundaryCondition {
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& coords,
       const Scalar<DataVector>& interior_gamma1,
-      const Scalar<DataVector>& interior_gamma2, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+      const Scalar<DataVector>& interior_gamma2, const double time) const {
     *gamma1 = interior_gamma1;
     *gamma2 = interior_gamma2;
 
-    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-        return analytic_solution_or_data.variables(
-            coords, time,
-            tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
-                       gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                       gr::Tags::Lapse<DataVector>,
-                       gr::Tags::Shift<DataVector, 3>,
-                       gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<DataVector, 3>,
-                       ::gh::Tags::Phi<DataVector, 3>>{});
-
-      } else {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            coords, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
-                               gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                               gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                               gr::Tags::Lapse<DataVector>,
-                               gr::Tags::Shift<DataVector, 3>,
-                               gr::Tags::SpacetimeMetric<DataVector, 3>,
-                               ::gh::Tags::Pi<DataVector, 3>,
-                               ::gh::Tags::Phi<DataVector, 3>>{});
-      }
-    }();
+    auto boundary_values = call_with_dynamic_type<
+        tuples::TaggedTuple<
+            gr::Tags::SpatialMetric<DataVector, 3>,
+            gr::Tags::InverseSpatialMetric<DataVector, 3>,
+            gr::Tags::SqrtDetSpatialMetric<DataVector>,
+            gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+            gr::Tags::SpacetimeMetric<DataVector, 3>,
+            ::gh::Tags::Pi<DataVector, 3>, ::gh::Tags::Phi<DataVector, 3>>,
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list>(
+        analytic_prescription_.get(),
+        [&coords, &time](const auto* const initial_data) {
+          using spacetime_tags = tmpl::list<
+              gr::Tags::SpatialMetric<DataVector, 3>,
+              gr::Tags::InverseSpatialMetric<DataVector, 3>,
+              gr::Tags::SqrtDetSpatialMetric<DataVector>,
+              gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+              gr::Tags::SpacetimeMetric<DataVector, 3>,
+              ::gh::Tags::Pi<DataVector, 3>, ::gh::Tags::Phi<DataVector, 3>>;
+          if constexpr (is_analytic_solution_v<
+                            std::decay_t<decltype(*initial_data)>>) {
+            return initial_data->variables(coords, time, spacetime_tags{});
+          } else if constexpr (evolution::is_numeric_initial_data_v<
+                                   std::decay_t<decltype(*initial_data)>>) {
+            ERROR(
+                "Cannot currently use numeric initial data as an analytic "
+                "prescription.");
+          } else {
+            (void)time;
+            return initial_data->variables(coords, spacetime_tags{});
+          }
+        });
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);
@@ -231,9 +246,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
                  domain::Tags::ElementMap<3, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                              Frame::Inertial>,
-                 fd::Tags::Reconstructor, ::Tags::AnalyticSolutionOrData>;
-
-  template <typename AnalyticSolutionOrData>
+                 fd::Tags::Reconstructor>;
   void fd_ghost(
       const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
           spacetime_metric,
@@ -270,8 +283,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       const ElementMap<3, Frame::Grid>& logical_to_grid_map,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
           grid_to_inertial_map,
-      const fd::Reconstructor& reconstructor,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+      const fd::Reconstructor& reconstructor) const {
     const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
 
     const auto ghost_logical_coords =
@@ -282,24 +294,33 @@ class DirichletFreeOutflow final : public BoundaryCondition {
         logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
 
     // Compute FD ghost data with the analytic data or solution
-    auto boundary_values = [&analytic_solution_or_data, &ghost_inertial_coords,
-                            &time]() {
-      if constexpr (std::is_base_of_v<MarkAsAnalyticData,
-                                      AnalyticSolutionOrData>) {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            ghost_inertial_coords,
-            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<DataVector, 3>,
-                       ::gh::Tags::Phi<DataVector, 3>>{});
-      } else {
-        return analytic_solution_or_data.variables(
-            ghost_inertial_coords, time,
-            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                       ::gh::Tags::Pi<DataVector, 3>,
-                       ::gh::Tags::Phi<DataVector, 3>>{});
-      }
-    }();
+    auto boundary_values = call_with_dynamic_type<
+        tuples::TaggedTuple<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                            ::gh::Tags::Pi<DataVector, 3>,
+                            ::gh::Tags::Phi<DataVector, 3>>,
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list>(
+        analytic_prescription_.get(),
+        [&ghost_inertial_coords, &time](const auto* const initial_data) {
+          using spacetime_tags =
+              tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                         ::gh::Tags::Pi<DataVector, 3>,
+                         ::gh::Tags::Phi<DataVector, 3>>;
+          if constexpr (is_analytic_solution_v<
+                            std::decay_t<decltype(*initial_data)>>) {
+            return initial_data->variables(ghost_inertial_coords, time,
+                                           spacetime_tags{});
+          } else if constexpr (evolution::is_numeric_initial_data_v<
+                                   std::decay_t<decltype(*initial_data)>>) {
+            ERROR(
+                "Cannot currently use numeric initial data as an analytic "
+                "prescription.");
+          } else {
+            (void)time;
+            return initial_data->variables(ghost_inertial_coords,
+                                           spacetime_tags{});
+          }
+        });
 
     *spacetime_metric =
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(boundary_values);

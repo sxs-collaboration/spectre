@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveGhValenciaDivCleanTovStar
+Executable: EvolveGhValenciaDivClean
 Testing:
   Check: parse;execute
   Timeout: 8

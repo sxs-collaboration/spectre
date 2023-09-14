@@ -50,12 +50,11 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename InitialData, bool UseControlSystems,
-          typename... InterpolationTargetTags>
-struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
-                               EvolutionMetavars<InitialData, UseControlSystems,
-                                                 InterpolationTargetTags...>,
-                               false, false> {
+template <bool UseControlSystems, typename... InterpolationTargetTags>
+struct EvolutionMetavars
+    : public GhValenciaDivCleanTemplateBase<
+          EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>,
+          false, false> {
   static_assert(not UseControlSystems,
                 "GhValenciaWithHorizon doesn't support control systems yet.");
   static constexpr bool use_dg_subcell = false;

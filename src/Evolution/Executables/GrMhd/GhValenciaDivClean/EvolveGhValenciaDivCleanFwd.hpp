@@ -45,7 +45,6 @@ class OrszagTangVortex;
 
 struct KerrHorizon;
 struct BondiSachs;
-template <typename InitialData, bool UseControlSystems,
-          typename... InterpolationTargetTags>
+template <bool UseControlSystems, typename... InterpolationTargetTags>
 struct EvolutionMetavars;
 /// \endcond
