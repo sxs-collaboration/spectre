@@ -59,8 +59,6 @@ struct InitializeMeasurements {
   using simple_tags =
       tmpl::transform<control_system_groups,
                       tmpl::bind<Tags::FutureMeasurements, tmpl::_1>>;
-  using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
-      ::control_system::Tags::MeasurementTimescales>>;
   using const_global_cache_tags = tmpl::list<Tags::MeasurementsPerUpdate>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
