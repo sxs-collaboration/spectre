@@ -147,6 +147,68 @@ void test_jacobian(
     }
   }
 }
+
+template <typename Map>
+void test_jacobian(const Map& map,
+                   const std::array<DataVector, Map::dim>& test_point) {
+  INFO("Test Jacobian");
+  CAPTURE(test_point);
+  // Our default approx value is too stringent for this test
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  const double dx = 1e-4;
+  const auto jacobian = map.jacobian(test_point);
+  for (size_t i = 0; i < Map::dim; ++i) {
+    for (size_t k = 0; k < gsl::at(test_point, 0).size(); k++) {
+      const auto numerical_deriv_i =
+          numerical_derivative(map, gsl::at(test_point, k), i, dx);
+      for (size_t j = 0; j < Map::dim; ++j) {
+        INFO("i: " << i << " j: " << j);
+        CHECK(jacobian.get(j, i)[k] ==
+              local_approx(gsl::at(numerical_deriv_i, j)));
+      }
+    }
+  }
+}
+
+template <typename Map>
+void test_jacobian(
+    const Map& map, const std::array<DataVector, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  INFO("Test time-dependent Jacobian");
+  CAPTURE(test_point);
+  CAPTURE(time);
+  const auto compute_map_point =
+      [&map, time,
+       &functions_of_time](const std::array<double, Map::dim>& point) {
+        return map(point, time, functions_of_time);
+      };
+  // Our default approx value is too stringent for this test
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  const double dx = 1e-4;
+  const auto jacobian = map.jacobian(test_point, time, functions_of_time);
+  std::array<std::array<double, Map::dim>, 5> dv_to_double_array{};
+  std::array<double, Map::dim> dv_to_double{};
+  for (size_t i = 0; i < gsl::at(test_point, 0).size(); ++i) {
+    for (size_t k = 0; k < Map::dim; k++) {
+      gsl::at(dv_to_double, k) = gsl::at(gsl::at(test_point, k), i);
+    }
+    gsl::at(dv_to_double_array, i) = dv_to_double;
+  }
+  for (size_t i = 0; i < Map::dim; ++i) {
+    for (size_t k = 0; k < gsl::at(test_point, 0).size(); k++) {
+      const auto numerical_deriv_i =
+          numerical_derivative(compute_map_point, dv_to_double_array[k], i, dx);
+      for (size_t j = 0; j < Map::dim; ++j) {
+        INFO("i: " << i << " j: " << j);
+        CHECK(jacobian.get(j, i)[k] ==
+              local_approx(gsl::at(numerical_deriv_i, j)));
+      }
+    }
+  }
+}
 /// @}
 
 /// @{
@@ -217,6 +279,81 @@ void test_inv_jacobian(
     for (size_t j = 0; j < Map::dim; ++j) {
       CHECK(gsl::at(gsl::at(expected_identity, i), j) ==
             approx(i == j ? 1. : 0.));
+    }
+  }
+}
+
+template <typename Map>
+void test_inv_jacobian(const Map& map,
+                       const std::array<DataVector, Map::dim>& test_point) {
+  INFO("Test inverse Jacobian");
+  CAPTURE(test_point);
+  const auto jacobian = map.jacobian(test_point);
+  const auto inv_jacobian = map.inv_jacobian(test_point);
+
+  const auto expected_identity = [&jacobian, &inv_jacobian]() {
+    auto identity =
+        make_with_value<tnsr::Ij<DataVector, Map::dim, Frame::NoFrame>>(
+            jacobian.get(0, 0).size(), 0.0);
+    for (size_t i = 0; i < Map::dim; ++i) {
+      for (size_t j = 0; j < Map::dim; ++j) {
+        for (size_t l = 0; l < jacobian.get(0, 0).size(); l++) {
+          for (size_t k = 0; k < Map::dim; ++k) {
+            identity.get(i, j)[k] += gsl::at(jacobian.get(i, k), l) *
+                                     gsl::at(inv_jacobian.get(k, j), l);
+          }
+        }
+      }
+    }
+    return identity;
+  }();
+
+  for (size_t i = 0; i < Map::dim; ++i) {
+    for (size_t j = 0; j < Map::dim; ++j) {
+      for (size_t k = 0; k < gsl::at(test_point, 0).size(); k++) {
+        CHECK(gsl::at(expected_identity.get(i, j), k) ==
+              approx(i == j ? 1. : 0.));
+      }
+    }
+  }
+}
+
+template <typename Map>
+void test_inv_jacobian(
+    const Map& map, const std::array<DataVector, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  INFO("Test inverse Jacobian");
+  CAPTURE(test_point);
+  CAPTURE(time);
+  const auto jacobian = map.jacobian(test_point, time, functions_of_time);
+  const auto inv_jacobian =
+      map.inv_jacobian(test_point, time, functions_of_time);
+
+  const auto expected_identity = [&jacobian, &inv_jacobian]() {
+    auto identity =
+        make_with_value<tnsr::Ij<DataVector, Map::dim, Frame::NoFrame>>(
+            jacobian.get(0, 0).size(), 0.0);
+    for (size_t i = 0; i < Map::dim; ++i) {
+      for (size_t j = 0; j < Map::dim; ++j) {
+        for (size_t l = 0; l < jacobian.get(0, 0).size(); l++) {
+          for (size_t k = 0; k < Map::dim; ++k) {
+            identity.get(i, j)[l] += gsl::at(jacobian.get(i, k), l) *
+                                     gsl::at(inv_jacobian.get(k, j), l);
+          }
+        }
+      }
+    }
+    return identity;
+  }();
+  for (size_t i = 0; i < Map::dim; ++i) {
+    for (size_t j = 0; j < Map::dim; ++j) {
+      for (size_t k = 0; k < gsl::at(test_point, 0).size(); k++) {
+        CHECK(gsl::at(expected_identity.get(i, j), k) ==
+              approx(i == j ? 1. : 0.));
+      }
     }
   }
 }
@@ -360,16 +497,17 @@ void test_coordinate_map_argument_types(
     }
     {
       INFO("Test inverse Jacobian");
+      Approx custom_approx = Approx::custom().epsilon(1.e-11);
       const auto expected = the_map.inv_jacobian(point, time_args...);
       CHECK_ITERABLE_APPROX(
           the_map.inv_jacobian(add_ref_wrap(point), time_args...), expected);
-      CHECK_ITERABLE_APPROX(
+      CHECK_ITERABLE_CUSTOM_APPROX(
           the_map.inv_jacobian(make_arr_data_vec(point), time_args...),
-          make_tensor_data_vector(expected));
-      CHECK_ITERABLE_APPROX(
+          make_tensor_data_vector(expected), custom_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(
           the_map.inv_jacobian(add_ref_wrap(make_arr_data_vec(point)),
                                time_args...),
-          make_tensor_data_vector(expected));
+          make_tensor_data_vector(expected), custom_approx);
     }
 
     return nullptr;
