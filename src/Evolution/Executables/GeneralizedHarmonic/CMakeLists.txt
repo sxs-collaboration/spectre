@@ -44,7 +44,7 @@ add_spectre_parallel_executable(
   EvolveGhSingleBlackHole
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars<3>"
-  "${LIBS_TO_LINK};ApparentHorizons;ControlSystem"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ControlSystem"
   )
 
 add_generalized_harmonic_executable_without_horizon(
@@ -67,7 +67,7 @@ add_spectre_parallel_executable(
   EvolveGhBinaryBlackHole
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars"
-  "${LIBS_TO_LINK};ApparentHorizons;Cce;ControlSystem;Deadlock;EvolutionTriggers"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;Cce;ControlSystem;Deadlock;EvolutionTriggers"
 )
 
 if (TARGET SpEC::Exporter)

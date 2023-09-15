@@ -818,7 +818,8 @@ void test_dimensionless_spin_magnitude(
   CHECK_ITERABLE_APPROX(dimensionless_spin_void, expected);
 }
 
-SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion",
+                  "[ApparentHorizonFinder][Unit]") {
   const auto sphere =
       ylm::Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}});
 
@@ -847,7 +848,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion", "[ApparentHorizons][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.ExtrinsicCurvature",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   // N.B.: test_minkowski() fully tests the extrinsic curvature function.
   // All components of extrinsic curvature of a sphere in flat space
   // are nontrivial; cf. extrinsic_curvature_sphere()
@@ -855,7 +856,8 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.ExtrinsicCurvature",
   TestExtrinsicCurvature::test_minkowski();
 }
 
-SPECTRE_TEST_CASE("Unit.GrSurfaces.RicciScalar", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.GrSurfaces.RicciScalar",
+                  "[ApparentHorizonFinder][Unit]") {
   const double mass = 1.0;
   test_ricci_scalar(
       gr::Solutions::KerrSchild(mass, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}),
@@ -876,7 +878,8 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RicciScalar", "[ApparentHorizons][Unit]") {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.GrSurfaces.AreaElement", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.GrSurfaces.AreaElement",
+                  "[ApparentHorizonFinder][Unit]") {
   // Check value of dA for a Schwarzschild horizon and a sphere in flat space
   test_area_element(
       gr::Solutions::KerrSchild{4.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}}, 8.0,
@@ -935,7 +938,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.AreaElement", "[ApparentHorizons][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.SurfaceIntegralOfScalar",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   // Check the surface integral of a Schwarzschild horizon, using the radius
   // as the scalar
   constexpr int l_max = 20;
@@ -956,7 +959,8 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SurfaceIntegralOfScalar",
                                   horizon, expected_integral);
 }
 
-SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinFunction", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinFunction",
+                  "[ApparentHorizonFinder][Unit]") {
   // Set up Kerr horizon
   constexpr int l_max = 24;
   const double mass = 4.444;
@@ -993,7 +997,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinFunction", "[ApparentHorizons][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionfulSpinMagnitude",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   const double mass = 2.0;
   const std::array<double, 3> generic_dimensionless_spin = {{0.12, 0.08, 0.04}};
   const double expected_dimensionless_spin_magnitude =
@@ -1052,7 +1056,8 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionfulSpinMagnitude",
       expected_generic_spin_magnitude, generic_tolerance);
 }
 
-SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinVector", "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinVector",
+                  "[ApparentHorizonFinder][Unit]") {
   // Set up Kerr horizon
   constexpr int l_max = 20;
   const double mass = 2.0;
@@ -1086,7 +1091,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.SpinVector", "[ApparentHorizons][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionlessSpinMagnitude",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   // Set up Kerr solution
   const double mass = 4.444;
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
@@ -1124,7 +1129,7 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.DimensionlessSpinMagnitude",
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   const double y11_amplitude = 1.0;
   const double radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};

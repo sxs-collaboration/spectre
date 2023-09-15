@@ -767,8 +767,8 @@ void test_ylm_errors() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.Spherepack",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Spherepack",
+                  "[ApparentHorizonFinder][Unit]") {
   test_memory_pool();
   test_ylm_errors();
 

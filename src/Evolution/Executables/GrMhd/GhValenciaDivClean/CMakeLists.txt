@@ -81,25 +81,25 @@ endif()
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
   "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
   "gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   BondiMichel
   "gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
   )
 
 add_ghmhd_with_horizon_executable(
   FishboneMoncriefDisk
   "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizons;ParallelInterpolation"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
   )
 
 add_ghmhd_executable(

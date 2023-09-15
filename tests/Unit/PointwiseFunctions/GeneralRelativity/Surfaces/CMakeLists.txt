@@ -14,7 +14,7 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
-  ApparentHorizons
+  ApparentHorizonFinder
   DataStructures
   GeneralRelativity
   GeneralRelativitySolutions

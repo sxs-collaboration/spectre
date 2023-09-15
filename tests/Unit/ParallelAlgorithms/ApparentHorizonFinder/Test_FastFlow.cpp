@@ -267,36 +267,40 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowSchwarzschild",
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FastFlowSchwarzschild",
                   "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Fast, 100);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.JacobiSchwarzschild",
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.JacobiSchwarzschild",
                   "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Jacobi, 200);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.CurvatureSchwarzschild",
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.CurvatureSchwarzschild",
                   "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Curvature, 200);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowKerr", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FastFlowKerr",
+                  "[Utilities][Unit]") {
   test_kerr(FastFlow::FlowType::Fast, 2.0, 100);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.JacobiKerr", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.JacobiKerr",
+                  "[Utilities][Unit]") {
   // Keep mass at 1.0 so test doesn't timeout.
   test_kerr(FastFlow::FlowType::Jacobi, 1.0, 200);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.CurvatureKerr", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.CurvatureKerr",
+                  "[Utilities][Unit]") {
   // Keep mass at 1.0 so test doesn't timeout.
   test_kerr(FastFlow::FlowType::Curvature, 1.0, 200);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FastFlowMisc",
+                  "[Utilities][Unit]") {
   test_negative_radius_error();
   test_too_many_iterations_error();
   test_construct_from_options_fast();

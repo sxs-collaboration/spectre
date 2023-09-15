@@ -418,8 +418,8 @@ void test_compute_excision_boundary_volume_quantities() {
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.ApparentHorizons.ComputeExcisionBoundaryVolumeQuantities",
-    "[ApparentHorizons][Unit]") {
+    "Unit.ApparentHorizonFinder.ComputeExcisionBoundaryVolumeQuantities",
+    "[ApparentHorizonFinder][Unit]") {
   static_assert(
       tt::assert_conforms_to_v<ah::ComputeExcisionBoundaryVolumeQuantities,
                                intrp::protocols::ComputeVarsToInterpolate>);

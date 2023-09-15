@@ -474,8 +474,8 @@ void test_compute_horizon_volume_quantities() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.ComputeHorizonVolumeQuantities",
+                  "[ApparentHorizonFinder][Unit]") {
   static_assert(
       tt::assert_conforms_to_v<ah::ComputeHorizonVolumeQuantities,
                                intrp::protocols::ComputeVarsToInterpolate>);

@@ -14,7 +14,7 @@ struct SomeTag : db::SimpleTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
-                  "[ApparentHorizons][Unit]") {
+                  "[ApparentHorizonFinder][Unit]") {
   TestHelpers::db::test_simple_tag<gr::surfaces::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<gr::surfaces::Tags::IrreducibleMass>(
       "IrreducibleMass");

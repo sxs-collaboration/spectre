@@ -98,8 +98,8 @@ void test_change_center_of_strahlkorper_to_physical() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.ChangeCenter",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper.ChangeCenter",
+                  "[ApparentHorizonFinder][Unit]") {
   test_change_center_of_strahlkorper();
   test_change_center_of_strahlkorper_to_physical();
 }

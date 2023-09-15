@@ -43,7 +43,7 @@ set(LIBS_TO_LINK
 add_grmhd_executable(
   FishboneMoncriefDisk
   RelativisticEuler::Solutions::FishboneMoncriefDisk,KerrHorizon
-  "${LIBS_TO_LINK};ApparentHorizons;Interpolation;ParallelInterpolation"
+  "${LIBS_TO_LINK};ApparentHorizonFinder;Interpolation;ParallelInterpolation"
   )
 
 add_grmhd_executable(
