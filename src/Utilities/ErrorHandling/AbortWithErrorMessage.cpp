@@ -28,8 +28,9 @@ template <bool ShowTrace>
   }
   os << "Wall time: " << sys::pretty_wall_time() << "\n"
      << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
-     << "Line: " << line << " of " << file << "\n"
-     << "Function: " << pretty_function << "\n"
+     << abbreviated_symbol_name(std::string{pretty_function}) << " in " << file
+     << ":" << line << "\n"
+     << "\n"
      << message << "\n"
      << "############ ERROR ############\n"
      << "\n";
@@ -48,9 +49,10 @@ void abort_with_error_message(const char* expression, const char* file,
      << boost::stacktrace::stacktrace() << "\n"
      << "Wall time: " << sys::pretty_wall_time() << "\n"
      << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
-     << "Line: " << line << " of " << file << "\n"
+     << abbreviated_symbol_name(std::string{pretty_function}) << " in " << file
+     << ":" << line << "\n"
+     << "\n"
      << "'" << expression << "' violated!\n"
-     << "Function: " << pretty_function << "\n"
      << message << "\n"
      << "############ ASSERT FAILED ############\n"
      << "\n";

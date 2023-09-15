@@ -17,8 +17,6 @@
 #include <sstream>
 #include <string>
 
-namespace {
-
 std::string abbreviated_symbol_name(const std::string& symbol_name) {
   // We display the first `abbrev_length_from_start` characters of the symbol
   // name, then " [...] ", and then the last `abbrev_length_from_end` characters
@@ -42,6 +40,8 @@ std::string abbreviated_symbol_name(const std::string& symbol_name) {
          symbol_name.substr(symbol_name.size() - abbrev_length_from_end,
                             abbrev_length_from_end);
 }
+
+namespace {
 
 std::string get_stack_frame(void* addr) {
   std::unique_ptr<char*, decltype(free)*> stack_syms{
