@@ -66,8 +66,8 @@ struct TestingMetavariables {
 void test_mutates() {
   constexpr size_t deriv_order = 2;
   const double t0 = 0.0;
-  const double expr_time = 1.0;
-  double update_time = 1.5;
+  const double expr_time = 1.5;
+  double update_time = expr_time;
   double expiration_time = 2.0;
   domain::FunctionsOfTime::register_derived_with_charm();
 

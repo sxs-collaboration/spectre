@@ -116,12 +116,12 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
         std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
-        0.5};
+        0.6};
     domain::FunctionsOfTime::PiecewisePolynomial<2> pp{
         0.0,
         std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
-        0.5};
+        0.6};
     qfot.update(0.6, DataVector{3, 0.0}, 1.0);
     pp.update(0.6, DataVector{3, 0.0}, 1.0);
 

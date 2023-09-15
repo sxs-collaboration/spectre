@@ -330,7 +330,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
 
     FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func,
-                                                             1.1);
+                                                             2.0);
     FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t2 =
         serialize_and_deserialize(f_of_t);
 
@@ -362,47 +362,14 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         const std::array<DataVector, deriv_order + 1> init_func{
             {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
         FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 0.1);
-        f_of_t.update(2.0, {6.0, 0.0}, 2.1);
-        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+                                                                 2.1);
+        f_of_t.update(2.1, {6.0, 0.0}, 1.9);
       }()),
       Catch::Matchers::ContainsSubstring(
-          "t must be increasing from call to call. Attempted to update "
-          "at time 1") and
+          "Attempt to set the expiration time of PiecewisePolynomial to a "
+          "value 1.") and
           Catch::Matchers::ContainsSubstring(
-              ", which precedes the previous update time of 2"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        // two component system (x**3 and x**2)
-        constexpr size_t deriv_order = 3;
-        const std::array<DataVector, deriv_order + 1> init_func{
-            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 0.1);
-        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
-        f_of_t.update(2.0, {6.0, 0.0}, 1.1);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "expiration_time must be nondecreasing from call to call. "
-          "Attempted to change expiration time to 1.1") and
-          Catch::Matchers::ContainsSubstring(
-              ", which precedes the previous expiration time of 2.1"));
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        // two component system (x**3 and x**2)
-        constexpr size_t deriv_order = 3;
-        const std::array<DataVector, deriv_order + 1> init_func{
-            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 2.0);
-        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempt to update PiecewisePolynomial at a time 1") and
-          Catch::Matchers::ContainsSubstring(
-              " that is earlier than the previous expiration time of 2"));
+              " that is earlier than the current time 2.1"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -414,11 +381,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.update(2.5, {6.0, 0.0}, 2.2);
       }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempt to set the expiration time of PiecewisePolynomial to "
-          "a value 2.2") and
-          Catch::Matchers::ContainsSubstring(
-              " that is earlier than the current time 2.5"));
+      Catch::Matchers::ContainsSubstring("Update must occur at the expiration "
+                                         "time.  Attempted to update at 2.5"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -427,7 +391,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         const std::array<DataVector, deriv_order + 1> init_func{
             {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
         FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
-                                                                 0.1);
+                                                                 1.0);
         f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
       }()),
       Catch::Matchers::ContainsSubstring(

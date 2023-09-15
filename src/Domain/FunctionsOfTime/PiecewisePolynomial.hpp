@@ -53,24 +53,28 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// 0 and `update` has been called for time `t`, the updated value
   /// is ignored.
   std::array<DataVector, 1> func(double t) const override {
-    return func_and_derivs<0>(t, true);
+    return func_and_derivs<0>(t);
   }
   /// Returns the function and its first derivative at an arbitrary time `t`.
   /// If `MaxDeriv` is 1 and `update` has been called for time `t`, the updated
   /// value is ignored.
   std::array<DataVector, 2> func_and_deriv(double t) const override {
-    return func_and_derivs<1>(t, true);
+    return func_and_derivs<1>(t);
   }
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.  If `MaxDeriv` is 2 and `update` has been called for time `t`, the
   /// updated value is ignored.
   std::array<DataVector, 3> func_and_2_derivs(double t) const override {
-    return func_and_derivs<2>(t, true);
+    return func_and_derivs<2>(t);
   }
 
   /// Updates the `MaxDeriv`th derivative of the function at the given time.
   /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component.
   /// `next_expiration_time` is the next expiration time.
+  ///
+  /// The \p time_of_update must be the same as the old expiration
+  /// time.  It is passed as a check that the calling code is
+  /// computing the other arguments with the correct value.
   void update(double time_of_update, DataVector updated_max_deriv,
               double next_expiration_time) override;
 
@@ -107,8 +111,7 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// an arbitrary time `t`.
   /// The function has multiple components.
   template <size_t MaxDerivReturned = MaxDeriv>
-  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(
-      double t, bool check_expiration_time) const;
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const;
 
   // There exists a DataVector for each deriv order that contains
   // the values of that deriv order for all components.

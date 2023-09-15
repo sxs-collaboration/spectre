@@ -95,6 +95,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   ///
   /// `updated_max_deriv` is a datavector of the `MaxDeriv`s for each component.
   /// `next_expiration_time` is the next expiration time.
+  ///
+  /// The \p time_of_update must be the same as the old expiration
+  /// time.  It is passed as a check that the calling code is
+  /// computing the other arguments with the correct value.
   void update(double time_of_update, DataVector updated_max_deriv,
               double next_expiration_time) override;
 
