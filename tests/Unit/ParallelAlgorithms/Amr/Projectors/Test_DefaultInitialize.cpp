@@ -15,7 +15,9 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -53,6 +55,10 @@ void test_h_refinement() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Projectors.DefaultInitialize", "[Domain][Unit]") {
+  static_assert(
+      tt::assert_conforms_to_v<amr::projectors::DefaultInitialize<
+                                   tmpl::list<DefaultTagInt, DefaultTagDouble>>,
+                               amr::protocols::Projector>);
   test_p_refinement();
   test_h_refinement();
 }

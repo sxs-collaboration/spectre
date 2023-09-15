@@ -24,6 +24,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
@@ -311,6 +312,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.TimeStepping",
                   "[Evolution][Unit]") {
   test_gts();
   test_lts();
+  static_assert(tt::assert_conforms_to_v<Initialization::ProjectTimeStepping<1>,
+                                         amr::protocols::Projector>);
   test_p_refine();
   test_split();
   test_join<true>();

@@ -18,7 +18,9 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -106,6 +108,10 @@ void test_p_refine() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Projectors.Tensors", "[ParallelAlgorithms][Unit]") {
+  static_assert(
+      tt::assert_conforms_to_v<amr::projectors::ProjectTensors<
+                                   1, tmpl::list<Tag0, Tag1<1>, Tag2<1>>>,
+                               amr::protocols::Projector>);
   test_p_refine<1>();
   test_p_refine<2>();
   test_p_refine<3>();

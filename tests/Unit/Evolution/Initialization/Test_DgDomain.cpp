@@ -46,11 +46,13 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -797,6 +799,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
     test<2, false>(quadrature);
     test<3, false>(quadrature);
   }
+  static_assert(
+      tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectDomain<1>,
+                               amr::protocols::Projector>);
   test_projectors::test_p_refine<true>();
   test_projectors::test_p_refine<false>();
   test_projectors::test_split<true>();
