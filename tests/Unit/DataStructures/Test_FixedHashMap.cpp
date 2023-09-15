@@ -128,14 +128,12 @@ void test_direction_key() {
   CHECK(std::as_const(map).find(dir3) == map.end());
 
   const auto check_exception = [&dir3](auto& passed_map) {
-    try {
-      passed_map.at(dir3);
-      CHECK(false);
-    } catch (const std::out_of_range& e) {
-      CHECK(e.what() == get_output(dir3) + " not in FixedHashMap");
-    } catch (...) {
-      CHECK(false);
-    }
+    CHECK_THROWS_WITH(passed_map.at(dir3),
+                      Catch::Matchers::ContainsSubstring(
+                          get_output(dir3) + " not in FixedHashMap"));
+    // Can also test that the exception type is `std::out_of_range` once that's
+    // implemented:
+    // CHECK_THROWS_AS(map.at(dir3), std::out_of_range);
   };
   check_exception(map);
   check_exception(std::as_const(map));

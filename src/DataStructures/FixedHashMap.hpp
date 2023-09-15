@@ -15,6 +15,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -483,7 +484,9 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::at(
     const key_type& key) -> mapped_type& {
   auto it = get_data_entry<false>(key);
   if (it == data_.end() or not is_set(*it)) {
-    throw std::out_of_range(get_output(key) + " not in FixedHashMap");
+    // Use `ERROR` instead of `throw` to print a backtrace.
+    // Should throw std::out_of_range once `ERROR` supports exception types.
+    ERROR(get_output(key) + " not in FixedHashMap");
   }
   return it->value().second;
 }
