@@ -85,14 +85,6 @@ class PiecewisePolynomial : public FunctionOfTime {
              expiration_time_.load(std::memory_order_acquire)}};
   }
 
-  /// Return a const reference to the stored deriv info so external classes can
-  /// read the stored times and derivatives (mostly for
-  /// QuaternionFunctionOfTime).
-  const std::list<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>&
-  get_deriv_info() const {
-    return deriv_info_at_update_times_;
-  }
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
