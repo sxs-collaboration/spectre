@@ -65,6 +65,7 @@ struct Metavariables {
 
 void test_data(const std::array<double, 2>& x_coords,
                const double angular_velocity, const double expansion,
+               const std::array<double, 3> linear_velocity,
                const std::optional<std::array<double, 2>>& falloff_widths,
                const std::array<double, 2>& masses,
                const std::string& py_functions_suffix,
@@ -87,6 +88,7 @@ void test_data(const std::array<double, 2>& x_coords,
     CHECK(binary.x_coords() == x_coords);
     CHECK(binary.angular_velocity() == angular_velocity);
     CHECK(binary.expansion() == expansion);
+    CHECK(binary.linear_velocity() == linear_velocity);
     CHECK(binary.falloff_widths() == falloff_widths);
     const auto& superposed_objects = binary.superposed_objects();
     CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild&>(
@@ -121,7 +123,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
                   "[PointwiseFunctions][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
-  test_data({{-5., 6.}}, 0.02, 0.01, {{7., 8.}}, {{1.1, 0.43}}, "bbh_isotropic",
+  test_data({{-5., 6.}}, 0.02, 0.01, {{0.1, 0.2, 0.3}}, {{7., 8.}},
+            {{1.1, 0.43}}, "bbh_isotropic",
             "Binary:\n"
             "  XCoords: [-5., 6.]\n"
             "  ObjectLeft:\n"
@@ -134,6 +137,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
             "      Coordinates: Isotropic\n"
             "  AngularVelocity: 0.02\n"
             "  Expansion: 0.01\n"
+            "  LinearVelocity: [0.1, 0.2, 0.3]\n"
             "  FalloffWidths: [7., 8.]");
 }
 

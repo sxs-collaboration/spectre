@@ -86,6 +86,7 @@ struct BinaryVariables
           local_inv_jacobian,
       const tnsr::I<DataVector, Dim>& local_x,
       const double local_angular_velocity, const double local_expansion,
+      const std::array<double, 3> local_linear_velocity,
       std::optional<std::array<double, 2>> local_falloff_widths,
       std::array<tnsr::I<DataVector, Dim>, 2> local_x_isolated,
       std::array<DataVector, 2> local_windows,
@@ -96,6 +97,7 @@ struct BinaryVariables
         x(local_x),
         angular_velocity(local_angular_velocity),
         expansion(local_expansion),
+        linear_velocity(local_linear_velocity),
         falloff_widths(std::move(local_falloff_widths)),
         x_isolated(std::move(local_x_isolated)),
         windows(std::move(local_windows)),
@@ -105,6 +107,7 @@ struct BinaryVariables
   const tnsr::I<DataVector, Dim>& x;
   const double angular_velocity;
   const double expansion;
+  const std::array<double, 3> linear_velocity;
   const std::optional<std::array<double, 2>> falloff_widths;
   const std::array<tnsr::I<DataVector, Dim>, 2> x_isolated;
   const std::array<DataVector, 2> windows;
@@ -299,10 +302,13 @@ struct BinaryVariables
  * background shift
  *
  * \f{equation} \beta^i_\mathrm{background} = (-\Omega y, \Omega x, 0) +
- * \dot{a}_0 x^i \f}
+ * \dot{a}_0 x^i + v^i_0 \f}
  *
  * where \f$\Omega\f$ is the angular-velocity parameter and \f$\dot{a}_0\f$
  * is an expansion parameter. Both control the eccentricity of the orbit.
+ * The parameter \f$v^i_0\f$ is a constant velocity that can be used to
+ * control the linear momentum of the system (see Eq. (28) in
+ * \cite Ossokine2015yla).
  */
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 class Binary : public elliptic::analytic_data::Background,
@@ -335,6 +341,12 @@ class Binary : public elliptic::analytic_data::Background,
         "radius. Added to the background shift as a term 'adot0 r^i'";
     using type = double;
   };
+  struct LinearVelocity {
+    static constexpr Options::String help =
+        "Constant velocity 'v0' added to the background shift to control the "
+        "linear momentum of the system.";
+    using type = std::array<double, 3>;
+  };
   struct FalloffWidths {
     static constexpr Options::String help =
         "The widths for the window functions around the two objects, or 'None' "
@@ -342,7 +354,7 @@ class Binary : public elliptic::analytic_data::Background,
     using type = Options::Auto<std::array<double, 2>, Options::AutoLabel::None>;
   };
   using options = tmpl::list<XCoords, ObjectLeft, ObjectRight, AngularVelocity,
-                             Expansion, FalloffWidths>;
+                             Expansion, LinearVelocity, FalloffWidths>;
   static constexpr Options::String help =
       "Binary compact-object data in general relativity, constructed from "
       "superpositions of two isolated objects.";
@@ -354,16 +366,18 @@ class Binary : public elliptic::analytic_data::Background,
   Binary& operator=(Binary&&) = default;
   ~Binary() = default;
 
-  Binary(std::array<double, 2> xcoords,
+  Binary(const std::array<double, 2> xcoords,
          std::unique_ptr<IsolatedObjectBase> object_left,
          std::unique_ptr<IsolatedObjectBase> object_right,
-         double angular_velocity, const double expansion,
-         std::optional<std::array<double, 2>> falloff_widths,
+         const double angular_velocity, const double expansion,
+         const std::array<double, 3> linear_velocity,
+         const std::optional<std::array<double, 2>> falloff_widths,
          const Options::Context& context = {})
       : xcoords_(xcoords),
         superposed_objects_({std::move(object_left), std::move(object_right)}),
         angular_velocity_(angular_velocity),
         expansion_(expansion),
+        linear_velocity_(linear_velocity),
         falloff_widths_(falloff_widths) {
     if (xcoords_[0] >= xcoords_[1]) {
       PARSE_ERROR(context, "Specify 'XCoords' ascending from left to right.");
@@ -401,6 +415,7 @@ class Binary : public elliptic::analytic_data::Background,
     p | superposed_objects_;
     p | angular_velocity_;
     p | expansion_;
+    p | linear_velocity_;
     p | falloff_widths_;
   }
 
@@ -414,6 +429,9 @@ class Binary : public elliptic::analytic_data::Background,
   }
   double angular_velocity() const { return angular_velocity_; }
   double expansion() const { return expansion_; }
+  const std::array<double, 3>& linear_velocity() const {
+    return linear_velocity_;
+  }
   const std::optional<std::array<double, 2>>& falloff_widths() const {
     return falloff_widths_;
   }
@@ -424,6 +442,7 @@ class Binary : public elliptic::analytic_data::Background,
   Xcts::Solutions::Flatness flatness_{};
   double angular_velocity_ = std::numeric_limits<double>::signaling_NaN();
   double expansion_ = std::numeric_limits<double>::signaling_NaN();
+  std::array<double, 3> linear_velocity_{};
   std::optional<std::array<double, 2>> falloff_widths_{};
 
   template <typename DataType, typename... RequestedTags>
@@ -463,6 +482,7 @@ class Binary : public elliptic::analytic_data::Background,
                                 x,
                                 angular_velocity_,
                                 expansion_,
+                                linear_velocity_,
                                 falloff_widths_,
                                 std::move(x_isolated),
                                 std::move(windows),

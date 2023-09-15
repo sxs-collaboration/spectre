@@ -53,11 +53,11 @@ void BinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
     const gsl::not_null<Cache*> /*cache*/,
     Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  get<0>(*shift_background) =
-      -angular_velocity * get<1>(x) + expansion * get<0>(x);
+  get<0>(*shift_background) = -angular_velocity * get<1>(x) +
+                              expansion * get<0>(x) + linear_velocity[0];
   get<1>(*shift_background) =
-      angular_velocity * get<0>(x) + expansion * get<1>(x);
-  get<2>(*shift_background) = expansion * get<2>(x);
+      angular_velocity * get<0>(x) + expansion * get<1>(x) + linear_velocity[1];
+  get<2>(*shift_background) = expansion * get<2>(x) + linear_velocity[2];
 }
 
 template <typename DataType>
