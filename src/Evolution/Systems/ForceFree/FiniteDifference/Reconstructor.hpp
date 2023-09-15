@@ -12,6 +12,7 @@
 
 namespace ForceFree::fd {
 /// \cond
+class AdaptiveOrder;
 class MonotonisedCentral;
 class Wcns5z;
 /// \endcond
@@ -35,7 +36,8 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<MonotonisedCentral, Wcns5z>;
+  using creatable_classes =
+      tmpl::list<AdaptiveOrder, MonotonisedCentral, Wcns5z>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 

@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AdaptiveOrder.cpp
   MonotonisedCentral.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
@@ -14,6 +15,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AdaptiveOrder.hpp
   Factory.hpp
   FiniteDifference.hpp
   MonotonisedCentral.hpp
