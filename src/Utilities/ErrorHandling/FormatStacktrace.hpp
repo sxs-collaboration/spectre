@@ -10,5 +10,7 @@
 #include <boost/stacktrace/stacktrace_fwd.hpp>
 #include <ostream>
 
+std::string abbreviated_symbol_name(const std::string& symbol_name);
+
 std::ostream& operator<<(std::ostream& os,
                          const boost::stacktrace::stacktrace& backtrace);
