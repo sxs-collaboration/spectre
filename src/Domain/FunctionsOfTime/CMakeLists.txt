@@ -34,6 +34,7 @@ spectre_target_headers(
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
   Tags.hpp
+  ThreadsafeList.hpp
   )
 
 target_link_libraries(
