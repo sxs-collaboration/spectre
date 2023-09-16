@@ -61,28 +61,51 @@ const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
          "constructed properly?");
 
   auto upper_bound_stored_info = all_stored_infos.begin();
+
+  // If 'upper_bound_stored_info' points to the beginning of the list, we can't
+  // use std::prev
+  const auto check_for_beginning = [&t, &all_stored_infos,
+                                    &upper_bound_stored_info]()
+      -> const StoredInfo<MaxDerivPlusOne, StoreCoefs>& {
+    if (upper_bound_stored_info == all_stored_infos.begin()) {
+      // all elements of times are greater than t
+      // check if t is just less than the min element by roundoff
+      if (not equal_within_roundoff(upper_bound_stored_info->time, t)) {
+        ERROR("requested time " << t << " precedes earliest time "
+                                << upper_bound_stored_info->time
+                                << " of times.");
+      }
+      return *upper_bound_stored_info;
+    } else {
+      return *std::prev(upper_bound_stored_info);
+    }
+  };
+
   // Linear search is faster with std::list because of expensive
-  // std::advance/distance inside std::lower_bound
-  for (size_t i = 0; i < all_info_size; i++, upper_bound_stored_info++) {
+  // std::advance/distance inside std::lower_bound. Only search until size - 1
+  // so we don't send the iterator past-the-end. A past-the-end iterator for a
+  // list *stays* past-the-end even if there was an insert at the end. If
+  // condition is satisfied, t is within the range of times so
+  // 'upper_bound_stored_info' currently points to one index past the desired
+  // index. Here it's safe to use std::prev because we aren't pointing
+  // past-the-end.
+  for (size_t i = 0; i < all_info_size - 1; i++, upper_bound_stored_info++) {
     if (not(upper_bound_stored_info->time < t)) {
-      break;
+      return check_for_beginning();
     }
   }
 
-  if (upper_bound_stored_info == all_stored_infos.begin()) {
-    // all elements of times are greater than t
-    // check if t is just less than the min element by roundoff
-    if (not equal_within_roundoff(upper_bound_stored_info->time, t)) {
-      ERROR("requested time " << t << " precedes earliest time "
-                              << upper_bound_stored_info->time << " of times.");
-    }
+  // Now we need to check the last valid element. 'upper_bound_stored_info'
+  // currently points to this last valid element. If the condition is satisfied,
+  // then just like before, t is within the range of times so
+  // 'upper_bound_stored_info' points one index past the desired index. If the
+  // condition is false, this means that t is greater than all times so we want
+  // to return the last valid element.
+  if (not(upper_bound_stored_info->time < t)) {
+    return check_for_beginning();
+  } else {
     return *upper_bound_stored_info;
   }
-  // t is either greater than all elements of times
-  // or t is within the range of times.
-  // In both cases, 'upper_bound_stored_info' currently points to one index past
-  // the desired index.
-  return *std::prev(upper_bound_stored_info);
 }
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
