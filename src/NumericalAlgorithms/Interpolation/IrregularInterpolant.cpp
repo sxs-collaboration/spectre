@@ -242,6 +242,27 @@ DataVector Irregular<Dim>::interpolate(const DataVector& input) const {
 }
 
 template <size_t Dim>
+void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
+                                 const gsl::span<const double>& input) const {
+  const size_t m = interpolation_matrix_.rows();
+  const size_t k = interpolation_matrix_.columns();
+  ASSERT(input.size() % k == 0,
+         "Number of points in 'input', "
+             << input.size()
+             << ",\n must be a multiple of the source grid points, " << k
+             << ", that was passed into the constructor");
+  const size_t number_of_components = input.size() / k;
+  ASSERT(result->size() == number_of_components * m,
+         "The result must be of size " << number_of_components * m
+                                       << " but got " << result->size());
+  dgemm_<true>('N', 'N', interpolation_matrix_.rows(), number_of_components,
+               interpolation_matrix_.columns(), 1.0,
+               interpolation_matrix_.data(), interpolation_matrix_.rows(),
+               input.data(), interpolation_matrix_.columns(), 0.0,
+               result->data(), interpolation_matrix_.rows());
+}
+
+template <size_t Dim>
 bool operator!=(const Irregular<Dim>& lhs, const Irregular<Dim>& rhs) {
   return not(lhs == rhs);
 }

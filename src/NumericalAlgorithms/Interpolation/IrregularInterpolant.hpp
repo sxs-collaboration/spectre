@@ -68,6 +68,10 @@ class Irregular {
   DataVector interpolate(const DataVector& input) const;
   /// @}
 
+  /// \brief Interpolate multiple variables on the grid to the target points.
+  void interpolate(gsl::not_null<gsl::span<double>*> result,
+                   const gsl::span<const double>& input) const;
+
  private:
   friend bool operator==(const Irregular& lhs, const Irregular& rhs) {
     return lhs.interpolation_matrix_ == rhs.interpolation_matrix_;
@@ -80,31 +84,26 @@ template <typename TagsList>
 void Irregular<Dim>::interpolate(
     const gsl::not_null<Variables<TagsList>*> result,
     const Variables<TagsList>& vars) const {
-  // For matrix multiplication of Interp . Source = Result:
-  //   matrix Interp is m rows by k columns
-  //   matrix Source is k rows by n columns
-  //   matrix Result is m rows by n columns
-  const size_t m = interpolation_matrix_.rows();
-  const size_t k = interpolation_matrix_.columns();
-  const size_t n = vars.number_of_independent_components;
-  ASSERT(k == vars.number_of_grid_points(),
+  if (UNLIKELY(result->number_of_grid_points() !=
+               interpolation_matrix_.rows())) {
+    *result = Variables<TagsList>(interpolation_matrix_.rows(), 0.);
+  }
+  ASSERT(interpolation_matrix_.columns() == vars.number_of_grid_points(),
          "Number of grid points in source 'vars', "
              << vars.number_of_grid_points()
-             << ",\n disagrees with the size of the source_mesh, " << k
+             << ",\n disagrees with the size of the source_mesh, "
+             << interpolation_matrix_.columns()
              << ", that was passed into the constructor");
-  if (result->number_of_grid_points() != m) {
-    *result = Variables<TagsList>(m, 0.);
-  }
-  dgemm_('n', 'n', m, n, k, 1.0, interpolation_matrix_.data(),
-         interpolation_matrix_.spacing(), vars.data(), k, 0.0, result->data(),
-         m);
+  gsl::span<double> result_span{result->data(), result->size()};
+  const gsl::span<const double> vars_span{vars.data(), vars.size()};
+  interpolate(make_not_null(&result_span), vars_span);
 }
 
 template <size_t Dim>
 template <typename TagsList>
 Variables<TagsList> Irregular<Dim>::interpolate(
     const Variables<TagsList>& vars) const {
-  Variables<TagsList> result;
+  Variables<TagsList> result{interpolation_matrix_.rows()};
   interpolate(make_not_null(&result), vars);
   return result;
 }
