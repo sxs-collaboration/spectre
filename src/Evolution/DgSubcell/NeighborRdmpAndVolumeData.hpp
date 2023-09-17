@@ -14,6 +14,7 @@
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -43,7 +44,12 @@ void insert_or_update_neighbor_volume_data(
     const size_t number_of_rdmp_vars_in_buffer,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones);
+    const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_dg_to_fd_interpolants);
 
 /*!
  * \brief Check whether the neighbor sent is DG volume or FD ghost data, and
@@ -63,5 +69,10 @@ void insert_neighbor_rdmp_and_volume_data(
     size_t number_of_rdmp_vars,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
-    const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones);
+    const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_dg_to_fd_interpolants);
 }  // namespace evolution::dg::subcell

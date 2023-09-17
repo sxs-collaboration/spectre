@@ -34,9 +34,39 @@ void test_slice(
     const Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>>& volume_vars,
     const Index<Dim>& volume_extents, size_t num_ghost_pts,
     const Direction<Dim>& direction) {
+  {
+    FixedHashMap<maximum_number_of_neighbors(Dim),
+                 std::pair<Direction<Dim>, ElementId<Dim>>,
+                 std::optional<intrp::Irregular<Dim>>,
+                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+        fd_to_neighbor_fd_interpolants{};
+    fd_to_neighbor_fd_interpolants[std::pair{direction, ElementId<Dim>{0}}] =
+        std::nullopt;
+    const Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>>
+        expected_sliced_vars{
+            volume_extents.slice_away(direction.dimension()).product() *
+                num_ghost_pts,
+            10};
+    Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>> sliced_vars{
+        expected_sliced_vars};
+    evolution::dg::subcell::slice_variable(
+        make_not_null(&sliced_vars), volume_vars, volume_extents, num_ghost_pts,
+        direction, fd_to_neighbor_fd_interpolants);
+#ifdef SPECTRE_DEBUG
+    disable_floating_point_exceptions();
+    CHECK(sliced_vars.size() == expected_sliced_vars.size());
+    for (size_t i = 0; i < sliced_vars.size(); ++i) {
+      CHECK(isnan(
+          *std::next(sliced_vars.data(), static_cast<std::ptrdiff_t>(i))));
+    }
+    CHECK(sliced_vars != expected_sliced_vars);
+    enable_floating_point_exceptions();
+#endif
+  }
+
   // retrieve a sliced Variables object
   auto sliced_vars = evolution::dg::subcell::slice_variable(
-      volume_vars, volume_extents, num_ghost_pts, direction);
+      volume_vars, volume_extents, num_ghost_pts, direction, {});
 
   Index<Dim> sliced_extents = volume_extents;
   sliced_extents[direction.dimension()] = num_ghost_pts;

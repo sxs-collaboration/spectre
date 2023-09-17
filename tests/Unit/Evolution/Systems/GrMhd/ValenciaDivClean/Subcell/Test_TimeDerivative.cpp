@@ -315,7 +315,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
         evolution::dg::subcell::slice_data(
             volume_neighbor_data, subcell_mesh.extents(),
             recons.ghost_zone_size(), std::unordered_set{direction.opposite()},
-            0)
+            0, {})
             .at(direction.opposite());
     const auto key =
         std::pair{direction, *element.neighbors().at(direction).begin()};

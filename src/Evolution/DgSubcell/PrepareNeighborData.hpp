@@ -24,6 +24,7 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -144,64 +145,31 @@ void prepare_neighbor_data(
                     ghost_variables.size() - rdmp_size);
     const DataVector projected_data = evolution::dg::subcell::fd::project(
         data_to_project, dg_mesh, subcell_mesh.extents());
+    typename evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<
+        Dim>::type directions_not_to_slice{};
+    for (const auto& [directional_element_id, _] :
+         db::get<evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<
+             Dim>>(*box)) {
+      directions_not_to_slice[directional_element_id] = std::nullopt;
+    }
     *all_neighbor_data_for_reconstruction = subcell::slice_data(
         projected_data, db::get<subcell::Tags::Mesh<Dim>>(*box).extents(),
-        ghost_zone_size, directions_to_slice, rdmp_size);
-
-    const auto& subcell_options = db::get<Tags::SubcellOptions<Dim>>(*box);
-
-    const bool bordering_dg_block = alg::any_of(
-        element.neighbors(),
-        [&subcell_options](const auto& direction_and_neighbor) {
-          const size_t first_block_id =
-              direction_and_neighbor.second.ids().begin()->block_id();
-          return alg::found(subcell_options.only_dg_block_ids(),
-                            first_block_id);
-        });
-
-    // Subcell allowed if not in a DG only block, and not bordering
-    // a DG only block.
-    const bool subcell_allowed_in_element =
-        not std::binary_search(subcell_options.only_dg_block_ids().begin(),
-                               subcell_options.only_dg_block_ids().end(),
-                               element.id().block_id()) and
-        not bordering_dg_block;
-
-    for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      // Note: this currently orients the data for _each_ neighbor. We can
-      // instead just orient the data once for all in a particular direction.
-
-      // Only subcell elements check for multiple neighbors
-      ASSERT(not subcell_allowed_in_element or neighbors.ids().size() == 1,
-             "Subcell elements can only have one neighbor per direction "
-             "right now.");
-
-      if (not orientation.is_aligned()) {
-        std::array<size_t, Dim> slice_extents{};
-        for (size_t d = 0; d < Dim; ++d) {
-          gsl::at(slice_extents, d) = subcell_mesh.extents(d);
-        }
-
-        gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
-
-        // Only hash the direction once.
-        auto& neighbor_data =
-            all_neighbor_data_for_reconstruction->at(direction);
-        // Make a copy of the local orientation data, then we can re-orient
-        // directly into the send buffer.
-        DataVector local_orientation_data(neighbor_data.size() - rdmp_size);
-        std::copy(neighbor_data.begin(),
-                  std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)),
-                  local_orientation_data.data());
-        // Orient variables expects only the neighbor data, not neighbor data +
-        // rdmp data, so create a non-owning DataVector to just the neighbor
-        // data
-        DataVector oriented_data{neighbor_data.data(),
-                                 neighbor_data.size() - rdmp_size};
-        orient_variables(make_not_null(&oriented_data), local_orientation_data,
-                         Index<Dim>{slice_extents}, orientation);
-      }
+        ghost_zone_size, directions_to_slice, rdmp_size,
+        directions_not_to_slice);
+    for (const auto& [directional_element_id, interpolator] :
+         db::get<evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<
+             Dim>>(*box)) {
+      // NOTE: no orienting is needed, that's done by the interpolation.
+      ASSERT(interpolator.has_value(),
+             "All interpolators must have values. The std::optional is used "
+             "for some local optimizations.");
+      DataVector& data_in_direction = all_neighbor_data_for_reconstruction->at(
+          directional_element_id.first);
+      gsl::span result_in_direction{data_in_direction.data(),
+                                    data_in_direction.size() - rdmp_size};
+      interpolator->interpolate(
+          make_not_null(&result_in_direction),
+          {data_to_project.data(), data_to_project.size()});
     }
   }
 

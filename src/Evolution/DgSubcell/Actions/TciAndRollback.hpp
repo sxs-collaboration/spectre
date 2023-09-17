@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <iterator>
@@ -16,7 +17,11 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -31,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -38,6 +44,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -221,7 +228,13 @@ struct TciAndRollback {
                 std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
                 neighbor_meshes,
-            const size_t ghost_zone_size) {
+            const size_t ghost_zone_size,
+            const FixedHashMap<
+                maximum_number_of_neighbors(Dim),
+                std::pair<Direction<Dim>, ElementId<Dim>>,
+                std::optional<intrp::Irregular<Dim>>,
+                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                neighbor_dg_to_fd_interpolants) {
           ASSERT(active_history_ptr->size() > 0,
                  "We cannot have an empty history when unwinding, that's just "
                  "nutty. Did you call the action too early in the action "
@@ -252,7 +265,8 @@ struct TciAndRollback {
                        ghost_data_ptr->at(directional_element_id)
                            .neighbor_ghost_data_for_reconstruction(),
                        0, directional_element_id, neighbor_mesh, element,
-                       subcell_mesh, ghost_zone_size);
+                       subcell_mesh, ghost_zone_size,
+                       neighbor_dg_to_fd_interpolants);
           }
 
           // Note: We do _not_ project the boundary history here because
@@ -263,7 +277,10 @@ struct TciAndRollback {
         make_not_null(&box),
         db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),
         db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
-            .ghost_zone_size());
+            .ghost_zone_size(),
+        db::get<
+            evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
+            box));
 
     if (UNLIKELY(db::get<::Tags::TimeStepId>(box).slab_number() < 0)) {
       // If we are doing self start, then we need to project the initial

@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -48,6 +49,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -166,9 +168,12 @@ struct SendDataForReconstruction {
               static_cast<std::ptrdiff_t>(volume_data_to_slice.size() -
                                           cell_centered_flux.value().size())));
     }
-    const DirectionMap<Dim, DataVector> all_sliced_data =
-        slice_data(volume_data_to_slice, subcell_mesh.extents(),
-                   ghost_zone_size, element.internal_boundaries(), 0);
+    const DirectionMap<Dim, DataVector> all_sliced_data = slice_data(
+        volume_data_to_slice, subcell_mesh.extents(), ghost_zone_size,
+        element.internal_boundaries(), 0,
+        db::get<
+            evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>>(
+            box));
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
@@ -361,7 +366,13 @@ struct ReceiveDataForReconstruction {
                 std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
                 neighbor_mesh,
-            const auto neighbor_tci_decisions) {
+            const auto neighbor_tci_decisions,
+            const FixedHashMap<
+                maximum_number_of_neighbors(Dim),
+                std::pair<Direction<Dim>, ElementId<Dim>>,
+                std::optional<intrp::Irregular<Dim>>,
+                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                neighbor_dg_to_fd_interpolants) {
           // Remove neighbor meshes for neighbors that don't exist anymore
           domain::remove_nonexistent_neighbors(neighbor_mesh, element);
 
@@ -421,7 +432,8 @@ struct ReceiveDataForReconstruction {
                   *std::get<2>(received_data[directional_element_id]),
                   number_of_rdmp_vars, directional_element_id,
                   neighbor_mesh->at(directional_element_id), element,
-                  subcell_mesh, ghost_zone_size);
+                  subcell_mesh, ghost_zone_size,
+                  neighbor_dg_to_fd_interpolants);
               ASSERT(neighbor_tci_decisions->contains(directional_element_id),
                      "The NeighorTciDecisions should contain the neighbor ("
                          << directional_element_id.first << ", "
@@ -431,7 +443,10 @@ struct ReceiveDataForReconstruction {
             }
           }
         },
-        make_not_null(&box));
+        make_not_null(&box),
+        db::get<
+            evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
+            box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

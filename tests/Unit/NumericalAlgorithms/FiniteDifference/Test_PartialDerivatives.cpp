@@ -117,7 +117,7 @@ void test(const gsl::not_null<std::mt19937*> generator,
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars.data(), neighbor_vars.size()),
         mesh.extents(), (stencil_width - 1) / 2 + 1,
-        std::unordered_set{direction.opposite()}, 0);
+        std::unordered_set{direction.opposite()}, 0, {});
     CAPTURE((stencil_width - 1) / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

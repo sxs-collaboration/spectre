@@ -191,7 +191,7 @@ double test(const size_t num_dg_pts) {
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
             NewtonianEuler::fd::MonotonisedCentralPrim<Dim>{}.ghost_zone_size(),
-            std::unordered_set{direction.opposite()}, 0)
+            std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
     const auto key =
         std::pair{direction, *element.neighbors().at(direction).begin()};

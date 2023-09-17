@@ -3,11 +3,19 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <optional>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -26,7 +34,12 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
-    size_t additional_buffer);
+    size_t additional_buffer,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        fd_to_neighbor_fd_interpolants);
 }  // namespace detail
 
 /// @{
@@ -55,11 +68,16 @@ DirectionMap<Dim, DataVector> slice_data(
     const DataVector& volume_subcell_vars, const Index<Dim>& subcell_extents,
     const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
-    const size_t additional_buffer) {
+    const size_t additional_buffer,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        fd_to_neighbor_fd_interpolants) {
   return detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
       subcell_extents, number_of_ghost_points, directions_to_slice,
-      additional_buffer);
+      additional_buffer, fd_to_neighbor_fd_interpolants);
 }
 
 template <size_t Dim, typename TagList>
@@ -67,12 +85,18 @@ DirectionMap<Dim, DataVector> slice_data(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
-    const size_t additional_buffer) {
+    const size_t additional_buffer,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        fd_to_neighbor_fd_interpolants) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   const DataVector view{const_cast<double*>(volume_subcell_vars.data()),
                         volume_subcell_vars.size()};
   return slice_data(view, subcell_extents, number_of_ghost_points,
-                    directions_to_slice, additional_buffer);
+                    directions_to_slice, additional_buffer,
+                    fd_to_neighbor_fd_interpolants);
 }
 /// @}
 }  // namespace evolution::dg::subcell

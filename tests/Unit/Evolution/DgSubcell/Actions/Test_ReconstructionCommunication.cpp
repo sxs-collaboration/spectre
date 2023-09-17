@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -99,7 +100,9 @@ struct component {
       ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NeighborMesh<Dim>,
-      evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>>;
+      evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -155,6 +158,12 @@ template <size_t Dim>
 void test(const bool use_cell_centered_flux) {
   CAPTURE(Dim);
   CAPTURE(use_cell_centered_flux);
+
+  using Interps =
+      FixedHashMap<maximum_number_of_neighbors(Dim),
+                   std::pair<Direction<Dim>, ElementId<Dim>>,
+                   std::optional<intrp::Irregular<Dim>>,
+                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 
   using metavars = Metavariables<Dim>;
   metavars::ghost_zone_size_invoked = false;
@@ -285,10 +294,12 @@ void test(const bool use_cell_centered_flux) {
                Dim>::type{},
            Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{},
            typename evolution::dg::Tags::NeighborMesh<Dim>::type{},
-           cell_centered_flux});
+           cell_centered_flux, Interps{}, Interps{}});
       ++neighbor_tci_decision;
     }
   }
+  Interps fd_to_neighbor_fd_interpolants{};
+  Interps neighbor_dg_to_fd_interpolants{};
   const int self_tci_decision = 100;
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
@@ -299,7 +310,8 @@ void test(const bool use_cell_centered_flux) {
                                            {min(get(get<Var1>(evolved_vars)))}},
        self_tci_decision, neighbor_decision, evolved_vars, mortar_data,
        mortar_next_id, typename evolution::dg::Tags::NeighborMesh<Dim>::type{},
-       cell_centered_flux});
+       cell_centered_flux, fd_to_neighbor_fd_interpolants,
+       neighbor_dg_to_fd_interpolants});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
@@ -330,7 +342,7 @@ void test(const bool use_cell_centered_flux) {
                            rdmp_tci_data.min_variables_values.size();
   const DirectionMap<Dim, DataVector> all_sliced_data =
       [&evolved_vars, &subcell_mesh, ghost_zone_size, &directions_to_slice,
-       &cell_centered_flux]() {
+       &cell_centered_flux, &fd_to_neighbor_fd_interpolants]() {
         (void)ghost_zone_size;
         if (cell_centered_flux.has_value()) {
           DataVector buffer{evolved_vars.size() +
@@ -347,11 +359,11 @@ void test(const bool use_cell_centered_flux) {
                                                  evolved_vars.size())));
           return evolution::dg::subcell::slice_data(
               buffer, subcell_mesh.extents(), ghost_zone_size,
-              directions_to_slice, 0);
+              directions_to_slice, 0, fd_to_neighbor_fd_interpolants);
         } else {
           return evolution::dg::subcell::slice_data(
               evolved_vars, subcell_mesh.extents(), ghost_zone_size,
-              directions_to_slice, 0);
+              directions_to_slice, 0, fd_to_neighbor_fd_interpolants);
         }
       }();
   {

@@ -20,6 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -198,7 +199,10 @@ struct SetInterpolators {
             my_logical_ghost_zone_coords =
                 evolution::dg::subcell::slice_tensor_for_subcell(
                     my_logical_coords, neighbor_fd_mesh.extents(),
-                    number_of_ghost_zones, direction);
+                    number_of_ghost_zones, direction,
+                    // We want to _set_ the interpolators, so just do a simple
+                    // slice.
+                    {});
         const double delta_xi =
             get<0>(my_logical_coords)[1] - get<0>(my_logical_coords)[0];
         // The sign accounts for whether we are shift along the

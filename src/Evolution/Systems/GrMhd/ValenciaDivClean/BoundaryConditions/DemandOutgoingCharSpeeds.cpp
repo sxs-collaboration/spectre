@@ -138,12 +138,12 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
   // higher-order DemandOutgoingCharSpeeds boundary condition.
 
   auto lapse_at_boundary = evolution::dg::subcell::slice_tensor_for_subcell(
-      interior_lapse, subcell_extents, 1, direction);
+      interior_lapse, subcell_extents, 1, direction, {});
   auto shift_at_boundary = evolution::dg::subcell::slice_tensor_for_subcell(
-      interior_shift, subcell_extents, 1, direction);
+      interior_shift, subcell_extents, 1, direction, {});
   auto spatial_metric_at_boundary =
       evolution::dg::subcell::slice_tensor_for_subcell(
-          interior_spatial_metric, subcell_extents, 1, direction);
+          interior_spatial_metric, subcell_extents, 1, direction, {});
 
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>> buffer{
       num_face_pts};
@@ -229,7 +229,7 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
 
     auto get_boundary_val = [&direction, &subcell_extents](auto volume_tensor) {
       return evolution::dg::subcell::slice_tensor_for_subcell(
-          volume_tensor, subcell_extents, 1, direction);
+          volume_tensor, subcell_extents, 1, direction, {});
     };
 
     get<RestMassDensity>(boundary_vars) =
