@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <boost/container/static_vector.hpp>
+#include <boost/math/quaternion.hpp>
 #include <boost/rational.hpp>
 #include <cstddef>
 #include <type_traits>
@@ -48,9 +49,15 @@ void test_static_vector() {
   vector_ntc.emplace_back(3);
   test_serialization(vector_ntc);
 }
+
+void test_quaternion() {
+  boost::math::quaternion<double> quat(2.0, 3.0, 4.0, 5.0);
+  test_serialization(quat);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Serialization.PupBoost", "[Unit][Serialization]") {
   test_rational();
   test_static_vector();
+  test_quaternion();
 }
