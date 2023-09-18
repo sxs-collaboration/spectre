@@ -7,6 +7,7 @@ centers = [-5.0, 6.0]
 masses = [1.1, 0.43]
 angular_velocity = 0.02
 radial_velocity = 0.01
+linear_velocity = [0.1, 0.2, 0.3]
 falloff_widths = [7.0, 8.0]
 
 
@@ -30,6 +31,7 @@ def shift_background(x):
     return (
         np.array([-angular_velocity * x[1], angular_velocity * x[0], 0.0])
         + radial_velocity * x
+        + np.array(linear_velocity)
     )
 
 
