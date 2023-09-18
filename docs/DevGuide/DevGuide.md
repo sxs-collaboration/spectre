@@ -41,6 +41,8 @@ Designed to give the reader an introduction to SpECTRE's most recurring concepts
 and patterns.
 - \subpage databox_foundations "Towards SpECTRE's DataBox"
 - \subpage protocols "Protocols: metaprogramming interfaces"
+- \subpage variables_foundations "Using the Variables class" to improve
+  efficiency
 
 ### General SpECTRE Terminology
 Terms with SpECTRE-specific meanings are defined here.
