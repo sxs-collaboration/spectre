@@ -211,12 +211,31 @@ void test_serialization_versioning() {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40,
       0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x18, 0x40);
-  REQUIRE(serialize(poly) == serialization_v2);
+  const auto serialization_v3 = vector_char(
+      0x1d, 0x3c, 0x4f, 0x83, 0x49, 0x40, 0x19, 0xac, 0x03, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x1c, 0x40, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40, 0x01, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18,
+      0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, 0x01, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x08, 0x40, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x10, 0x40, 0x01);
+  REQUIRE(serialize(poly) == serialization_v3);
 
-  std::unique_ptr<FunctionsOfTime::FunctionOfTime> deserialized{};
-  deserialize(make_not_null(&deserialized), serialization_v2.data());
-  CHECK(dynamic_cast<const Poly&>(*poly) ==
-        dynamic_cast<const Poly&>(*deserialized));
+  {
+    std::unique_ptr<FunctionsOfTime::FunctionOfTime> deserialized{};
+    deserialize(make_not_null(&deserialized), serialization_v2.data());
+    CHECK(dynamic_cast<const Poly&>(*poly) ==
+          dynamic_cast<const Poly&>(*deserialized));
+  }
+  {
+    std::unique_ptr<FunctionsOfTime::FunctionOfTime> deserialized{};
+    deserialize(make_not_null(&deserialized), serialization_v3.data());
+    CHECK(dynamic_cast<const Poly&>(*poly) ==
+          dynamic_cast<const Poly&>(*deserialized));
+  }
 }
 }  // namespace
 
@@ -342,6 +361,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
 
     INFO("Test stream operator.");
 
+    CHECK(get_output(FunctionsOfTime::PiecewisePolynomial<deriv_order>{})
+              .empty());
     CHECK(get_output(f_of_t) ==
           "t=1: (1,1) (3,2) (3,1) (1,0)\n"
           "t=2: (8,4) (12,4) (6,1) (2,0)");
@@ -365,11 +386,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.1);
         f_of_t.update(2.1, {6.0, 0.0}, 1.9);
       }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempt to set the expiration time of PiecewisePolynomial to a "
-          "value 1.") and
-          Catch::Matchers::ContainsSubstring(
-              " that is earlier than the current time 2.1"));
+      Catch::Matchers::ContainsSubstring("Expiration time 1.") and
+          Catch::Matchers::ContainsSubstring(" is not after update time 2.1"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -379,10 +397,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
             {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
         FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
                                                                  2.0);
-        f_of_t.update(2.5, {6.0, 0.0}, 2.2);
+        f_of_t.update(2.5, {6.0, 0.0}, 3.0);
       }()),
-      Catch::Matchers::ContainsSubstring("Update must occur at the expiration "
-                                         "time.  Attempted to update at 2.5"));
+      Catch::Matchers::ContainsSubstring("Attempted to update at time 2.5") and
+          Catch::Matchers::ContainsSubstring(
+              " instead of the expiration time 2.0"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -409,7 +428,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         f_of_t.update(2.0, {6.0, 0.0}, 2.1);
         f_of_t.func(0.5);
       }()),
-      Catch::Matchers::ContainsSubstring("requested time 5.0") and
+      Catch::Matchers::ContainsSubstring("Requested time 5.0") and
           Catch::Matchers::ContainsSubstring(" precedes earliest time 1"));
 
   CHECK_THROWS_WITH(
@@ -422,10 +441,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                                                                  2.0);
         f_of_t.func(2.2);
       }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempt to evaluate PiecewisePolynomial at a time 2.2") and
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time 2.2") and
           Catch::Matchers::ContainsSubstring(
-              " that is after the expiration time 2"));
+              ", which is after the expiration time 2"));
 
   test_serialization_versioning();
 }
