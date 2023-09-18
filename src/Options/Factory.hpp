@@ -90,12 +90,13 @@ struct is_factory_creatable
 
 template <typename BaseClass, typename Metavariables>
 std::unique_ptr<BaseClass> create(const Option& options) {
-  using creatable_classes = tmpl::filter<
-      typename get_creatable_classes<BaseClass, Metavariables>::type,
-      is_factory_creatable<tmpl::_1>>;
-  static_assert(not std::is_same_v<creatable_classes, tmpl::no_such_type_>,
+  using all_creatable_classes =
+      typename get_creatable_classes<BaseClass, Metavariables>::type;
+  static_assert(not std::is_same_v<all_creatable_classes, tmpl::no_such_type_>,
                 "List of creatable derived types for this class is missing "
                 "from Metavariables::factory_classes.");
+  using creatable_classes =
+      tmpl::filter<all_creatable_classes, is_factory_creatable<tmpl::_1>>;
 
   const auto& node = options.node();
   Option derived_opts(options.context());
