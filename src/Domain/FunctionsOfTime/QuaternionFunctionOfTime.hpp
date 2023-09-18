@@ -4,19 +4,16 @@
 #pragma once
 
 #include <array>
-#include <atomic>
 #include <boost/math/quaternion.hpp>
-#include <cmath>
-#include <limits>
-#include <list>
-#include <mutex>
+#include <cstddef>
+#include <memory>
+#include <ostream>
 #include <pup.h>
-#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/ThreadsafeList.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 
@@ -64,15 +61,9 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
  public:
   QuaternionFunctionOfTime() = default;
   QuaternionFunctionOfTime(
-      double t, std::array<DataVector, 1> initial_quat_func,
+      double t, const std::array<DataVector, 1>& initial_quat_func,
       std::array<DataVector, MaxDeriv + 1> initial_angle_func,
       double expiration_time);
-
-  ~QuaternionFunctionOfTime() override = default;
-  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);
-  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&);
-  QuaternionFunctionOfTime(const QuaternionFunctionOfTime&);
-  QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&);
 
   // LCOV_EXCL_START
   explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/) {}
@@ -86,8 +77,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
 
   /// Returns domain of validity for the function of time
   std::array<double, 2> time_bounds() const override {
-    return std::array{stored_quaternions_and_times_.front().time,
-                      expiration_time_.load(std::memory_order_acquire)};
+    return std::array{stored_quaternions_and_times_.initial_time(),
+                      stored_quaternions_and_times_.expiration_time()};
   }
 
   /// Updates the `MaxDeriv`th derivative of the angle piecewisepolynomial at
@@ -159,21 +150,11 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       std::ostream& os,
       const QuaternionFunctionOfTime<LocalMaxDeriv>& quaternion_f_of_t);
 
-  // In order for this class to be used in the mutable part of the global cache,
-  // stored_quaternions_and_times_ must be a data type that preserves references
-  // to elements upon insertion or resizing. A list fits this requirement
-  std::list<FunctionOfTimeHelpers::StoredInfo<1, false>>
-      stored_quaternions_and_times_;
-  alignas(64) std::atomic_uint64_t stored_quaternion_size_{};
-  // Pad memory to avoid false-sharing when accessing stored_quaternion_size_
-  char unused_padding_quat_size_[64 - (sizeof(std::atomic_uint64_t) % 64)] = {};
-  alignas(64) std::atomic<double> expiration_time_{};
-  // Pad memory to avoid false-sharing when accessing expiration_time_
-  char unused_padding_expr_time_[64 - (sizeof(std::atomic<double>) % 64)] = {};
-  // No need to pup this since a default constructed mutex is always unlocked
-  std::mutex update_mutex_{};
+  FunctionOfTimeHelpers::ThreadsafeList<boost::math::quaternion<double>>
+      stored_quaternions_and_times_{};
+  domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_{};
 
-  domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_;
+  void unpack_old_version(PUP::er& p, size_t version);
 
   /// Integrates the ODE \f$ \dot{q} = \frac{1}{2} q \times \omega \f$ from time
   /// `t0` to time `t`. On input, `quaternion_to_integrate` is the initial
@@ -181,11 +162,6 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   void solve_quaternion_ode(
       gsl::not_null<boost::math::quaternion<double>*> quaternion_to_integrate,
       double t0, double t) const;
-
-  /// Updates the `std::list<StoredInfo>` to have the same number of stored
-  /// quaternions as the `angle_f_of_t_ptr` has stored angles. This is necessary
-  /// to ensure we can solve the ODE at any time `t`
-  void update_stored_info(double next_expiration_time);
 
   /// Does common operations to all the `func` functions such as updating stored
   /// info, solving the ODE, and returning the normalized quaternion as a boost
