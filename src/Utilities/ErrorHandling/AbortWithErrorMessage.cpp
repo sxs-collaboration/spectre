@@ -86,17 +86,16 @@ void abort_with_error_message_no_trace(const char* file, const int line,
 // https://en.cppreference.com/w/cpp/error/exception
 //
 // Then SpECTRE exception classes.
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (std::logic_error, std::invalid_argument,
-                         std::domain_error, std::length_error,
-                         std::out_of_range,
+GENERATE_INSTANTIATIONS(
+    INSTANTIATION, (std::logic_error, std::invalid_argument, std::domain_error,
+                    std::length_error, std::out_of_range,
 
-                         std::runtime_error, std::range_error,
-                         std::overflow_error, std::underflow_error,
+                    std::runtime_error, std::range_error, std::overflow_error,
+                    std::underflow_error,
 
-                         std::ios_base::failure,
+                    std::ios_base::failure,
 
-                         SpectreError, SpectreAssert, convergence_error))
+                    SpectreError, SpectreAssert, SpectreFpe, convergence_error))
 
 #undef INSTANTIATION
 #undef GET_EX_TYPE
