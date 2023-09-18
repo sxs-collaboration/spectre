@@ -26,8 +26,10 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
@@ -148,6 +150,127 @@ struct Mortars {
         std::move(normal_covector_quantities),
         std::move(boundary_data_history));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+/// \brief Initialize/update items related to mortars after an AMR change
+///
+/// Mutates:
+///   - Tags::MortarData<dim>
+///   - Tags::MortarMesh<dim>
+///   - Tags::MortarSize<dim>
+///   - Tags::MortarNextTemporalId<dim>
+///   - evolution::dg::Tags::NormalCovectorAndMagnitude<dim>
+///   - Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>
+///
+/// For p-refinement:
+///   - Does nothing to MortarDataHistory (only valid for global time-stepping)
+///     or MortarNextTemporalId (only valid for no h-refinement)
+///   - Sets the other Mortar tags to be default initialized for each neighbor
+///   - Sets the NormalCovectorAndMagnitude to std::nullopt
+template <typename Metavariables>
+struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
+  static constexpr size_t dim = Metavariables::volume_dim;
+  using dt_variables_tag = typename db::add_tag_prefix<
+      ::Tags::dt, typename Metavariables::system::variables_tag>;
+  using mortar_data_history_type =
+      typename Tags::MortarDataHistory<dim,
+                                       typename dt_variables_tag::type>::type;
+
+  using return_tags =
+      tmpl::list<Tags::MortarData<dim>, Tags::MortarMesh<dim>,
+                 Tags::MortarSize<dim>, Tags::MortarNextTemporalId<dim>,
+                 evolution::dg::Tags::NormalCovectorAndMagnitude<dim>,
+                 Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<dim>, domain::Tags::Element<dim>>;
+
+  static void apply(
+      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+          mortar_data,
+      const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> mortar_mesh,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+          mortar_size,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
+      const gsl::not_null<
+          DirectionMap<dim, std::optional<Variables<tmpl::list<
+                                evolution::dg::Tags::MagnitudeOfNormal,
+                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+          normal_covector_and_magnitude,
+      const gsl::not_null<mortar_data_history_type*>
+      /*mortar_data_history*/,
+      const Mesh<dim>& /*new_mesh*/, const Element<dim>& new_element,
+      const std::pair<Mesh<dim>, Element<dim>>& /*old_mesh_and_element*/) {
+    static_assert(not Metavariables::local_time_stepping,
+                  "AMR with local time-stepping is not yet supported");
+
+    mortar_data->clear();
+    mortar_mesh->clear();
+    mortar_size->clear();
+    // mortar_next_temporal_id is not changed, but this will break when
+    // h-refinement is enabled and the neighbors are no longer the same
+    for (const auto& [direction, neighbors] : new_element.neighbors()) {
+      (*normal_covector_and_magnitude)[direction] = std::nullopt;
+      for (const auto& neighbor : neighbors) {
+        const auto mortar_id = std::make_pair(direction, neighbor);
+        mortar_data->emplace(mortar_id, MortarData<dim>{1});
+        mortar_mesh->emplace(mortar_id, Mesh<dim - 1>{});
+        mortar_size->emplace(
+            mortar_id,
+            ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
+                              neighbors.orientation()));
+      }
+    }
+    for (const auto& direction : new_element.external_boundaries()) {
+      (*normal_covector_and_magnitude)[direction] = std::nullopt;
+    }
+  }
+
+  template <typename... Tags>
+  static void apply(
+      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+      /*mortar_data*/,
+      const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+      /*mortar_size*/,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
+      const gsl::not_null<
+          DirectionMap<dim, std::optional<Variables<tmpl::list<
+                                evolution::dg::Tags::MagnitudeOfNormal,
+                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+      /*normal_covector_and_magnitude*/,
+      const gsl::not_null<mortar_data_history_type*>
+      /*mortar_data_history*/,
+      const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
+      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
+    ERROR("h-refinement not implemented yet");
+  }
+
+  template <typename... Tags>
+  static void apply(
+      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+      /*mortar_data*/,
+      const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+      /*mortar_size*/,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
+      const gsl::not_null<
+          DirectionMap<dim, std::optional<Variables<tmpl::list<
+                                evolution::dg::Tags::MagnitudeOfNormal,
+                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+      /*normal_covector_and_magnitude*/,
+      const gsl::not_null<mortar_data_history_type*>
+      /*mortar_data_history*/,
+      const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
+      const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
+      /*children_items*/) {
+    ERROR("h-refinement not implemented yet");
   }
 };
 }  // namespace evolution::dg::Initialization
