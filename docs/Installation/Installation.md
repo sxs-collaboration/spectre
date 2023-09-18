@@ -58,7 +58,9 @@ all of these dependencies.
 #### Required:
 
 * [GCC](https://gcc.gnu.org/) 9.1 or later,
-[Clang](https://clang.llvm.org/) 11.0 or later, or AppleClang 11.0.0 or later
+[Clang](https://clang.llvm.org/) 13.0 or later (see
+[here](https://apt.llvm.org/) for how to get newer versions of clang through
+apt), or AppleClang 13.0.0 or later
 * [CMake](https://cmake.org/) 3.18.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
   \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
