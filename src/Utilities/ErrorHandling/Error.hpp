@@ -11,6 +11,7 @@
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 #include "Utilities/ErrorHandling/Breakpoint.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Literals.hpp"
@@ -20,12 +21,13 @@
 namespace Error_detail {
 // You can't use ScopedFpeState (a non-literal type) in a constexpr
 // function, but you can call another function that uses it.
-template <typename F>
+template <typename ExceptionTypeToThrow, typename F>
 [[noreturn]] SPECTRE_ALWAYS_INLINE void abort_without_fpes(
     const char* file, const int line, const char* const pretty_function,
     F&& message) {
   const ScopedFpeState disable_fpes(false);
-  abort_with_error_message(file, line, pretty_function, message());
+  abort_with_error_message<ExceptionTypeToThrow>(file, line, pretty_function,
+                                                 message());
 }
 }  // namespace Error_detail
 
@@ -66,7 +68,29 @@ template <typename F>
     if (__builtin_is_constant_evaluated()) {                                 \
       throw std::runtime_error("Failed");                                    \
     } else {                                                                 \
-      Error_detail::abort_without_fpes(                                      \
+      Error_detail::abort_without_fpes<SpectreError>(                        \
+          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
+          [&]() -> std::string {                                             \
+            return MakeString{} << std::setprecision(18) << std::scientific  \
+                                << m;                                        \
+          });                                                                \
+    }                                                                        \
+  } while (false)
+
+/*!
+ * \ingroup ErrorHandlingGroup
+ * \brief Same as ERROR but will throw `EXCEPTION_TYPE` instead of
+ * `SpectreError`.
+ *
+ * \note Any exception types used must have an associated explicit
+ * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
+ */
+#define ERROR_AS(m, EXCEPTION_TYPE)                                          \
+  do {                                                                       \
+    if (__builtin_is_constant_evaluated()) {                                 \
+      throw std::runtime_error("Failed");                                    \
+    } else {                                                                 \
+      Error_detail::abort_without_fpes<EXCEPTION_TYPE>(                      \
           __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
           [&]() -> std::string {                                             \
             return MakeString{} << std::setprecision(18) << std::scientific  \

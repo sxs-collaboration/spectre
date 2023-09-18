@@ -17,9 +17,9 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage",
           Catch::Matchers::ContainsSubstring("Test_AbortWithErrorMessage") &&
           Catch::Matchers::ContainsSubstring("Stack trace:"));
   CHECK_THROWS_WITH(
-      abort_with_error_message(__FILE__, __LINE__,
-                               static_cast<const char*>(__PRETTY_FUNCTION__),
-                               "Test Error"),
+      abort_with_error_message<SpectreError>(
+          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
+          "Test Error"),
       Catch::Matchers::ContainsSubstring("ERROR") &&
           Catch::Matchers::ContainsSubstring("Test Error") &&
           Catch::Matchers::ContainsSubstring("Test_AbortWithErrorMessage") &&
@@ -40,9 +40,9 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage",
   {
     INFO("Demangling");
     CHECK_THROWS_WITH(
-        abort_with_error_message(__FILE__, __LINE__,
-                                 static_cast<const char*>(__PRETTY_FUNCTION__),
-                                 "Test demangling"),
+        abort_with_error_message<SpectreError>(
+            __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
+            "Test demangling"),
         Catch::Matchers::ContainsSubstring("Catch::Session::run()"));
   }
 }
