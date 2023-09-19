@@ -26,6 +26,7 @@
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/InitialTciData.hpp"
+#include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
@@ -33,6 +34,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -89,7 +91,10 @@ struct SetSubcellGrid {
       Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
-      subcell::Tags::ReconstructionOrder<Dim>>;
+      subcell::Tags::ReconstructionOrder<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
   using compute_tags =
       tmpl::list<Tags::MeshCompute<Dim>, Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<

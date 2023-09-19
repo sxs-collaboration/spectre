@@ -176,11 +176,44 @@ EventsAndTriggers:
             PrintTimeToTerminal: True
             ObservePerCore: False
       - ObserveNorms:
-          SubfileName: Norms
+          SubfileName: MaxDensity
           TensorsToObserve:
             - Name: RestMassDensity
               NormType: Max
               Components: Individual
+      - ObserveNorms:
+          SubfileName: Constraints
+          TensorsToObserve:
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+      - ObserveNorms:
+          SubfileName: FluidQuantities
+          TensorsToObserve:
+          - Name: MassWeightedInternalEnergy
+            NormType: VolumeIntegral
+            Components: Sum
+          - Name: MassWeightedKineticEnergy
+            NormType: VolumeIntegral
+            Components: Sum
+          - Name: TildeDUnboundUtCriterion
+            NormType: VolumeIntegral
+            Components: Individual
+          - Name: MassWeightedCoordsMask(None)
+            NormType: VolumeIntegral
+            Components: Individual
+          - Name: MassWeightedCoordsMask(NegativeXOnly)
+            NormType: VolumeIntegral
+            Components: Individual
+          - Name: MassWeightedCoordsMask(PositiveXOnly)
+            NormType: VolumeIntegral
+            Components: Individual
+          - Name: TildeDMask(NegativeXOnly)
+            NormType: VolumeIntegral
+            Components: Individual
+          - Name: TildeDMask(PositiveXOnly)
+            NormType: VolumeIntegral
+            Components: Individual
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:

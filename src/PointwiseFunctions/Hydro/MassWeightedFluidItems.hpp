@@ -56,7 +56,9 @@ struct TildeDUnboundUtCriterion : db::SimpleTag {
 template <typename DataType, HalfPlaneIntegralMask IntegralMask>
 struct TildeDInHalfPlane : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() { return "TildeD" + ::hydro::name(IntegralMask); }
+  static std::string name() {
+    return "TildeDMask(" + ::hydro::name(IntegralMask) + ")";
+  }
 };
 
 /// Contains TildeD * (coordinates in frame Fr).
@@ -67,7 +69,7 @@ template <typename DataType, size_t Dim, HalfPlaneIntegralMask IntegralMask,
 struct MassWeightedCoords : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
   static std::string name() {
-    return "MassWeightedCoords" + ::hydro::name(IntegralMask);
+    return "MassWeightedCoordsMask(" + ::hydro::name(IntegralMask) + ")";
   }
 };
 }  // namespace Tags

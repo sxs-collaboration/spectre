@@ -34,6 +34,7 @@ spectre_target_headers(
   Reconstruction.hpp
   ReconstructionMethod.hpp
   ReconstructionOrder.hpp
+  SetInterpolators.hpp
   SliceData.hpp
   SliceTensor.hpp
   SliceVariable.hpp
