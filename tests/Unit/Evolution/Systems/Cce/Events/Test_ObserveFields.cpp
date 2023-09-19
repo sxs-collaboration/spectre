@@ -122,7 +122,13 @@ struct MockElement {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
-          tmpl::remove<ObserveFields::available_tags_to_observe, Tags::Psi0>,
+          tmpl::list_difference<
+            ObserveFields::available_tags_to_observe,
+            tmpl::list<Tags::Psi0, Tags::Psi1>>,
+          Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                           Spectral::Swsh::Tags::Eth>,
+          Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
+                                           Spectral::Swsh::Tags::Eth>,
           Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
           ::Tags::Time>>>>>;
 };
@@ -140,7 +146,7 @@ void test(const bool write_synchronously) {
   using element = MockElement<metavars>;
 
   const Cce::Events::ObserveFields fields{std::vector<std::string>{
-      "InertialRetardedTime", "J", "Psi0", "Dy(H)", "OneMinusY"}};
+      "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY"}};
   const Cce::Events::ObserveFields serialized_fields =
       serialize_and_deserialize(fields);
 
@@ -196,7 +202,14 @@ void test(const bool write_synchronously) {
   tmpl::for_each<
       tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiH>, Tags::OneMinusY,
                  Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
-                 Tags::BondiK, Tags::BondiR>>([&size_data](auto tag_v) {
+                 Tags::BondiK, Tags::BondiQ, Tags::Dy<Tags::BondiQ>,
+                 Tags::EthRDividedByR,
+                 Tags::Dy<Tags::BondiBeta>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Tags::BondiR>>([&size_data](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     size_data(tag{}, num_volume_grid_points);
   });
@@ -207,7 +220,7 @@ void test(const bool write_synchronously) {
     check_h5_file(filename_prefix);
   } else {
     // 1 for InertialRetardedTime and OneMinusY and 2 for each other tag
-    const size_t expected_number_of_actions = 8;
+    const size_t expected_number_of_actions = 10;
     CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer>(
               runner, 0) == expected_number_of_actions);
     for (size_t i = 0; i < expected_number_of_actions; i++) {
