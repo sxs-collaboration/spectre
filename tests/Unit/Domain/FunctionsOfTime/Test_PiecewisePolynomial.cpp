@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -16,6 +17,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace domain {
 namespace {
@@ -179,6 +182,42 @@ void test_func_and_derivs() {
       quartic(std::array<DataVector, 5>{{c0, c1, c2, c3, c4}}));
 }
 
+void test_serialization_versioning() {
+  using Poly = FunctionsOfTime::PiecewisePolynomial<1>;
+  register_classes_with_charm<Poly>();
+  const std::unique_ptr<FunctionsOfTime::FunctionOfTime> poly(
+      std::make_unique<Poly>(2.0, std::array{DataVector{3.0}, DataVector{4.0}},
+                             5.0));
+  poly->update(5.0, {6.0}, 7.0);
+
+  // Because of the implementation-defined sign, there's no way to
+  // write char literals that won't cause narrowing errors.
+  const auto vector_char = [](auto... values) {
+    return std::vector<char>{static_cast<char>(values)...};
+  };
+
+  // After any serialization change, generate a new set of bytes with:
+  // for (char c : serialize(poly)) {
+  //   printf("0x%02hhx, ", c);
+  // }
+  const auto serialization_v2 = vector_char(
+      0x1d, 0x3c, 0x4f, 0x83, 0x49, 0x40, 0x19, 0xac, 0x02, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1c, 0x40,
+      0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x40, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x40, 0x01, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x40,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x40, 0x01, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2e, 0x40,
+      0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x18, 0x40);
+  REQUIRE(serialize(poly) == serialization_v2);
+
+  std::unique_ptr<FunctionsOfTime::FunctionOfTime> deserialized{};
+  deserialize(make_not_null(&deserialized), serialization_v2.data());
+  CHECK(dynamic_cast<const Poly&>(*poly) ==
+        dynamic_cast<const Poly&>(*deserialized));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
@@ -423,5 +462,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
           "Attempt to evaluate PiecewisePolynomial at a time 2.2") and
           Catch::Matchers::ContainsSubstring(
               " that is after the expiration time 2"));
+
+  test_serialization_versioning();
 }
 }  // namespace domain
