@@ -70,6 +70,65 @@ struct VolumeWeyl<Tags::Psi0> {
 };
 
 /*!
+ * \brief Compute the Weyl scalar \f$\Psi_1\f$ in the volume according to the
+ * standard set of Newman-Penrose vectors.
+ *
+ * \details Our convention is \f$\Psi_1 =
+ * l^\alpha n^\beta l^\mu m^\nu C_{\alpha
+ * \beta \mu \nu}\f$.
+ *
+ * \f{align*}{
+ * \Psi_1 =
+ * &\frac{(1-y)^2}{\sqrt{2048} \sqrt{1 + K} R^2}\Bigg\{
+ * 4 J(\bar{\eth }\beta + \tfrac{1}{2} \bar{Q})
+ * - 4(1 + K) (\eth \beta + \tfrac{1}{2} Q) \\
+ * &+(1-y)\Bigg[
+ * 4 (1 + K)\eth\partial_{y}\beta -4 J\bar{\eth }\partial_{y}\beta
+ * + 4 \left(- J \frac{\bar{\eth }' R}{R} + (1 + K) \frac{\eth ' R}{R}\right)
+ * \partial_{y}\beta \\
+ * &\quad + \frac{1}{K}\Bigg(
+ * J\left\{
+ * -2 \partial_{y}\bar{Q} + \partial_{y}\bar{J} [2 (\eth\beta + \tfrac{1}{2}Q) +
+ * J(\bar{\eth}\beta + \tfrac{1}{2} \bar{Q})]
+ * \right\}\\
+ * &\qquad +(1+K)\Big\{
+ * 2 (\partial_{y}Q + J \partial_{y}\bar{Q}) + (\bar{J} \partial_{y}J - J
+ * \partial_{y}\bar{J}) (\eth\beta + \tfrac{1}{2} Q)
+ * \\
+ * &\qquad\quad - (1+K)
+ * [2 \partial_{y}Q + \partial _{y}J (\bar{\eth }\beta + \tfrac{1}{2} \bar{Q})]
+ * \Big\}\Bigg)\Bigg]\Bigg\}
+ * \f}
+ */
+template <>
+struct VolumeWeyl<Tags::Psi1> {
+  using return_tags = tmpl::list<Tags::Psi1>;
+  using argument_tags =
+      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
+                 Tags::BondiK, Tags::BondiQ,
+                 Tags::Dy<Tags::BondiQ>, Tags::BondiR, Tags::EthRDividedByR,
+                 Tags::Dy<Tags::BondiBeta>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Tags::OneMinusY>;
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> psi_1,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& dy_q,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_beta,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_dy_beta,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
+};
+
+/*!
  * \brief Transform `Tags::BondiJ` from the partially flat coordinates
  * to the Cauchy coordinates.
  *

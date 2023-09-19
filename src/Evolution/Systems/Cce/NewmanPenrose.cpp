@@ -37,6 +37,48 @@ void weyl_psi0_impl(
              0.5 * bondi_j * (1.0 + square(bondi_k)) * dy_j * conj(dy_j)) /
                 square(bondi_k));
 }
+
+void weyl_psi1_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> psi_1,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 2>& dy_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_q,
+    const SpinWeighted<ComplexDataVector, 1>& dy_q,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
+    const SpinWeighted<ComplexDataVector, 0>& dy_beta,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 1>& eth_dy_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  const double prefac = 1./sqrt(2048.); // compile time const, but
+                                        // sqrt is not constexpr yet
+  const auto one_plus_k = 1. + bondi_k;
+  const auto eth_beta_plus_half_q = eth_beta + 0.5 * bondi_q;
+  const auto conj_j_times_dy_j = conj(bondi_j) * dy_j;
+
+  const auto inner_expr =
+    bondi_j
+    * (-2. * conj(dy_q)
+       + conj(dy_j) * (2. * eth_beta_plus_half_q
+                       + bondi_j * conj(eth_beta_plus_half_q)))
+    + one_plus_k
+    * (eth_beta_plus_half_q * (conj_j_times_dy_j
+                               - conj(conj_j_times_dy_j))
+       + 2. * (dy_q + bondi_j * conj(dy_q))
+       - one_plus_k * (2. * dy_q + dy_j * conj(eth_beta_plus_half_q)));
+
+  *psi_1 = prefac * square(one_minus_y) / square(bondi_r) / sqrt(one_plus_k)
+    * (4. * bondi_j * conj(eth_beta_plus_half_q)
+       - 4. * one_plus_k * eth_beta_plus_half_q
+       + one_minus_y
+       * (4. * eth_dy_beta * one_plus_k
+          - 4. * bondi_j * conj(eth_dy_beta)
+          + 4. * dy_beta * (one_plus_k * eth_r_divided_by_r
+                            - bondi_j * conj(eth_r_divided_by_r))
+          + inner_expr / bondi_k));
+}
 }  // namespace
 
 void VolumeWeyl<Tags::Psi0>::apply(
@@ -49,6 +91,25 @@ void VolumeWeyl<Tags::Psi0>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
   weyl_psi0_impl(make_not_null(&get(*psi_0)), get(bondi_j), get(dy_j),
                  get(dy_dy_j), get(bondi_k), get(bondi_r), get(one_minus_y));
+}
+
+void VolumeWeyl<Tags::Psi1>::apply(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& dy_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_dy_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  weyl_psi1_impl(make_not_null(&get(*psi_1)), get(bondi_j), get(dy_j),
+                 get(bondi_k), get(bondi_q), get(dy_q),
+                 get(bondi_r), get(eth_r_divided_by_r), get(dy_beta),
+                 get(eth_beta), get(eth_dy_beta), get(one_minus_y));
 }
 
 void TransformBondiJToCauchyCoords::apply(
