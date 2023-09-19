@@ -244,7 +244,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-      const gsl::not_null<Scalar<DataVector>*> pressure,
+      const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -286,6 +286,7 @@ class DirichletAnalytic final : public BoundaryCondition {
             tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                        hydro::Tags::ElectronFraction<DataVector>,
                        hydro::Tags::Pressure<DataVector>,
+                       hydro::Tags::Temperature<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>,
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::MagneticField<DataVector, 3>,
@@ -299,6 +300,7 @@ class DirichletAnalytic final : public BoundaryCondition {
             tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                        hydro::Tags::ElectronFraction<DataVector>,
                        hydro::Tags::Pressure<DataVector>,
+                       hydro::Tags::Temperature<DataVector>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>,
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::MagneticField<DataVector, 3>,
@@ -317,7 +319,7 @@ class DirichletAnalytic final : public BoundaryCondition {
         get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
     *electron_fraction =
         get<hydro::Tags::ElectronFraction<DataVector>>(boundary_values);
-    *pressure = get<hydro::Tags::Pressure<DataVector>>(boundary_values);
+    *temperature = get<hydro::Tags::Temperature<DataVector>>(boundary_values);
 
     for (size_t i = 0; i < 3; ++i) {
       auto& lorentz_factor =

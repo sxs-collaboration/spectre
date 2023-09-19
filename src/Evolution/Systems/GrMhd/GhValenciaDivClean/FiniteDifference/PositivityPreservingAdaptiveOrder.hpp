@@ -73,7 +73,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
   using positivity_preserving_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>>;
+                 hydro::Tags::Temperature<DataVector>>;
   using non_positive_tags =
       tmpl::list<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,

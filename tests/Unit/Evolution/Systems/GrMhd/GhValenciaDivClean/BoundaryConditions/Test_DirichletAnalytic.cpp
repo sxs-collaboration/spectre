@@ -235,7 +235,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
 
     using tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                             hydro::Tags::ElectronFraction<DataVector>,
-                            hydro::Tags::Pressure<DataVector>,
+                            hydro::Tags::Temperature<DataVector>,
                             hydro::Tags::SpatialVelocity<DataVector, 3>,
                             hydro::Tags::LorentzFactor<DataVector>,
                             hydro::Tags::MagneticField<DataVector, 3>,
@@ -267,8 +267,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
         get<hydro::Tags::RestMassDensity<DataVector>>(analytic_vars);
     get<hydro::Tags::ElectronFraction<DataVector>>(expected) =
         get<hydro::Tags::ElectronFraction<DataVector>>(analytic_vars);
-    get<hydro::Tags::Pressure<DataVector>>(expected) =
-        get<hydro::Tags::Pressure<DataVector>>(analytic_vars);
+    get<hydro::Tags::Temperature<DataVector>>(expected) =
+        get<hydro::Tags::Temperature<DataVector>>(analytic_vars);
 
     for (size_t i = 0; i < 3; ++i) {
       auto& lorentz_factor =
@@ -286,18 +286,19 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(analytic_vars);
     return expected;
   }();
-  auto& [rest_mass_density, electron_fraction, pressure,
+  auto& [rest_mass_density, electron_fraction, temperature,
          lorentz_factor_times_spatial_velocity, magnetic_field,
          divergence_cleaning_field, spacetime_metric, pi, phi] = vars;
 
   boundary_condition.fd_ghost(
       make_not_null(&spacetime_metric), make_not_null(&pi), make_not_null(&phi),
       make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
-      make_not_null(&pressure),
+      make_not_null(&temperature),
       make_not_null(&lorentz_factor_times_spatial_velocity),
       make_not_null(&magnetic_field), make_not_null(&divergence_cleaning_field),
       direction, subcell_mesh, time, functions_of_time, logical_to_grid_map,
       grid_to_inertial_map, reconstructor, analytic_solution_or_data);
+  // failing line
   CHECK(vars == expected_vars);
 }
 

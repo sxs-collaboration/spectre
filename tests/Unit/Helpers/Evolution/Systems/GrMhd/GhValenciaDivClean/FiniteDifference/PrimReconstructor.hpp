@@ -93,7 +93,7 @@ compute_prim_solution(
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) {
   using Rho = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
-  using Pressure = hydro::Tags::Pressure<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
   using MagField = hydro::Tags::MagneticField<DataVector, 3>;
   using Phi = hydro::Tags::DivergenceCleaningField<DataVector>;
   using VelocityW =
@@ -104,7 +104,7 @@ compute_prim_solution(
   for (size_t i = 0; i < 3; ++i) {
     get(get<Rho>(vars)) += coords.get(i);
     get(get<ElectronFraction>(vars)) += coords.get(i);
-    get(get<Pressure>(vars)) += coords.get(i);
+    get(get<Temperature>(vars)) += coords.get(i);
     get(get<Phi>(vars)) += coords.get(i);
     for (size_t j = 0; j < 3; ++j) {
       get<VelocityW>(vars).get(j) += coords.get(i);
@@ -113,7 +113,7 @@ compute_prim_solution(
   }
   get(get<Rho>(vars)) += 2.0;
   get(get<ElectronFraction>(vars)) += 15.0;
-  get(get<Pressure>(vars)) += 30.0;
+  get(get<Temperature>(vars)) += 30.0;
   get(get<Phi>(vars)) += 50.0;
   for (size_t j = 0; j < 3; ++j) {
     get<VelocityW>(vars).get(j) += 1.0e-2 * (j + 2.0) + 10.0;
@@ -267,7 +267,8 @@ void test_prim_reconstructor_impl(
       subcell_mesh.number_of_grid_points()};
   {
     const auto volume_prims_for_recons = compute_prim_solution(logical_coords);
-    tmpl::for_each<tmpl::list<Rho, ElectronFraction, Pressure, MagField, Phi>>(
+    tmpl::for_each<
+        tmpl::list<Rho, ElectronFraction, Temperature, MagField, Phi>>(
         [&volume_prims, &volume_prims_for_recons](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           get<tag>(volume_prims) = get<tag>(volume_prims_for_recons);
@@ -321,19 +322,19 @@ void test_prim_reconstructor_impl(
         compute_prim_solution(logical_coords_face_centered));
     if constexpr (ThermodynamicDim == 2) {
       get<SpecificInternalEnergy>(expected_lower_face_values) =
-          eos.specific_internal_energy_from_density_and_pressure(
+          eos.specific_internal_energy_from_density_and_temperature(
               get<Rho>(expected_lower_face_values),
-              get<Pressure>(expected_lower_face_values));
-      get<Temperature>(expected_lower_face_values) =
-          eos.temperature_from_density_and_energy(
+              get<Temperature>(expected_lower_face_values));
+      get<Pressure>(expected_lower_face_values) =
+          eos.pressure_from_density_and_energy(
               get<Rho>(expected_lower_face_values),
               get<SpecificInternalEnergy>(expected_lower_face_values));
     } else {
       get<SpecificInternalEnergy>(expected_lower_face_values) =
           eos.specific_internal_energy_from_density(
               get<Rho>(expected_lower_face_values));
-      get<Temperature>(expected_lower_face_values) =
-          eos.temperature_from_density(get<Rho>(expected_lower_face_values));
+      get<Pressure>(expected_lower_face_values) =
+          eos.pressure_from_density(get<Rho>(expected_lower_face_values));
     }
     get<SpecificEnthalpy>(expected_lower_face_values) =
         hydro::relativistic_specific_enthalpy(

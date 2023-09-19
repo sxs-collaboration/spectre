@@ -159,6 +159,7 @@ void test(const BoundaryConditionType& boundary_condition,
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
   using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
   using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
@@ -190,6 +191,10 @@ void test(const BoundaryConditionType& boundary_condition,
   get(get<Pressure>(volume_prim_vars)) = 1.0;
   get(get<LorentzFactor>(volume_prim_vars)) = 2.0;
   get(get<SpecificInternalEnergy>(volume_prim_vars)) = 0.3;
+  get<Temperature>(volume_prim_vars) =
+      solution.equation_of_state().temperature_from_density_and_energy(
+          get<RestMassDensity>(volume_prim_vars),
+          get<SpecificInternalEnergy>(volume_prim_vars));
   get(get<SpecificEnthalpy>(volume_prim_vars)) = 1.003;
   for (size_t i = 0; i < 3; ++i) {
     get<SpatialVelocity>(volume_prim_vars).get(i) = 0.1;
@@ -350,7 +355,7 @@ void test(const BoundaryConditionType& boundary_condition,
     using LorentzFactorTimesSpatialVelocity =
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
     using prims_to_reconstruct =
-        tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+        tmpl::list<RestMassDensity, ElectronFraction, Temperature,
                    LorentzFactorTimesSpatialVelocity, MagneticField,
                    DivergenceCleaningField>;
     const size_t num_face_pts{
@@ -375,9 +380,9 @@ void test(const BoundaryConditionType& boundary_condition,
     }
 
     const auto check_fluxes =
-        [&fd_ghost_fluxes](
+        [&fd_ghost_fluxes, &solution](
             const auto& rest_mass_density, const auto& electron_fraction,
-            const auto& specific_internal_energy, const auto& local_pressure,
+            const auto& specific_internal_energy, const auto& local_temperature,
             const auto& spatial_velocity, const auto& lorentz_factor,
             const auto& magnetic_field, const auto& div_cleaning_field,
             const double shift_value) {
@@ -391,6 +396,12 @@ void test(const BoundaryConditionType& boundary_condition,
             spatial_metric.get(i, i) = 1.0;
             inverse_spatial_metric.get(i, i) = 1.0;
           }
+          const auto local_pressure =
+              solution.equation_of_state().pressure_from_density_and_energy(
+                  rest_mass_density,
+                  solution.equation_of_state()
+                      .specific_internal_energy_from_density_and_temperature(
+                          rest_mass_density, local_temperature));
           const Scalar<DataVector> sqrt_det_spatial_metric(
               get(rest_mass_density).size(), 1.0);
           const Scalar<DataVector> lapse(get(rest_mass_density).size(), 1.0);
@@ -467,6 +478,10 @@ void test(const BoundaryConditionType& boundary_condition,
           "GrMhd.SmoothFlow", "pressure", ghost_inertial_coords, time,
           mean_velocity, wave_vector, pressure, adiabatic_index,
           perturbation_size);
+      const auto temperature_py = pypp::call<Scalar<DataVector>>(
+          "GrMhd.SmoothFlow", "temperature", ghost_inertial_coords, time,
+          mean_velocity, wave_vector, pressure, adiabatic_index,
+          perturbation_size);
       const auto specific_internal_energy_py = pypp::call<Scalar<DataVector>>(
           "GrMhd.SmoothFlow", "specific_internal_energy", ghost_inertial_coords,
           time, mean_velocity, wave_vector, pressure, adiabatic_index,
@@ -493,7 +508,7 @@ void test(const BoundaryConditionType& boundary_condition,
                             rest_mass_density_py);
       CHECK_ITERABLE_APPROX(get<ElectronFraction>(fd_ghost_vars),
                             electron_fraction_py);
-      CHECK_ITERABLE_APPROX(get<Pressure>(fd_ghost_vars), pressure_py);
+      CHECK_ITERABLE_APPROX(get<Temperature>(fd_ghost_vars), temperature_py);
       {
         tnsr::I<DataVector, 3> lorentz_factor_times_spatial_velocity_py{
             ghost_zone_size * num_face_pts};
@@ -511,7 +526,7 @@ void test(const BoundaryConditionType& boundary_condition,
                             div_cleaning_field_py);
       if (set_fluxes) {
         check_fluxes(rest_mass_density_py, electron_fraction_py,
-                     specific_internal_energy_py, pressure_py,
+                     specific_internal_energy_py, temperature_py,
                      spatial_velocity_py, lorentz_factor_py, magnetic_field_py,
                      div_cleaning_field_py, 0.0);
       }
@@ -526,7 +541,7 @@ void test(const BoundaryConditionType& boundary_condition,
       Variables<prims_to_reconstruct> expected_ghost_vars{ghost_zone_size *
                                                           num_face_pts};
       get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
-      get(get<Pressure>(expected_ghost_vars)) = 1.0;
+      get(get<Temperature>(expected_ghost_vars)) = 1.0;
       get(get<ElectronFraction>(expected_ghost_vars)) = 0.1;
       for (size_t i = 0; i < 3; ++i) {
         get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
@@ -561,7 +576,7 @@ void test(const BoundaryConditionType& boundary_condition,
         check_fluxes(get<RestMassDensity>(expected_ghost_vars),
                      get<ElectronFraction>(expected_ghost_vars),
                      expected_specific_internal_energy,
-                     get<Pressure>(expected_ghost_vars),
+                     get<Temperature>(expected_ghost_vars),
                      expected_spatial_velocity, expected_lorentz_factor,
                      get<MagneticField>(expected_ghost_vars),
                      get<DivergenceCleaningField>(expected_ghost_vars), -2.0);
@@ -610,7 +625,14 @@ void test(const BoundaryConditionType& boundary_condition,
                                                           num_face_pts};
       // cf) See line 172-179 for values of prim variables in volume.
       get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
-      get(get<Pressure>(expected_ghost_vars)) = 1.0;
+      get(get<Temperature>(expected_ghost_vars)) =
+          get(solution.equation_of_state().temperature_from_density_and_energy(
+              get<RestMassDensity>(expected_ghost_vars),
+              solution.equation_of_state()
+                  .specific_internal_energy_from_density_and_pressure(
+                      get<RestMassDensity>(expected_ghost_vars),
+                      Scalar<DataVector>(
+                          expected_ghost_vars.number_of_grid_points(), 1.0))));
       get(get<ElectronFraction>(expected_ghost_vars)) = 0.1;
       for (size_t i = 0; i < 3; ++i) {
         get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
@@ -648,7 +670,7 @@ void test(const BoundaryConditionType& boundary_condition,
         check_fluxes(get<RestMassDensity>(expected_ghost_vars),
                      get<ElectronFraction>(expected_ghost_vars),
                      expected_specific_internal_energy,
-                     get<Pressure>(expected_ghost_vars),
+                     get<Temperature>(expected_ghost_vars),
                      expected_spatial_velocity, expected_lorentz_factor,
                      get<MagneticField>(expected_ghost_vars),
                      get<DivergenceCleaningField>(expected_ghost_vars), -2.0);
