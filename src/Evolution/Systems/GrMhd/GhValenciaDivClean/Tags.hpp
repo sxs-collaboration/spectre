@@ -63,7 +63,7 @@ struct FourVelocityOneForm : db::SimpleTag {
 using primitive_grmhd_reconstruction_tags =
     tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                hydro::Tags::ElectronFraction<DataVector>,
-               hydro::Tags::Pressure<DataVector>,
+               hydro::Tags::Temperature<DataVector>,
                hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                hydro::Tags::MagneticField<DataVector, 3>,
                hydro::Tags::DivergenceCleaningField<DataVector>>;

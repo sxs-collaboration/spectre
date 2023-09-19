@@ -16,8 +16,8 @@ class Variables;
 namespace grmhd::ValenciaDivClean::subcell {
 /*!
  * \brief Computes the rest mass density \f$\rho\f$, electron fraction
- * \f$Y_e\f$, pressure \f$p\f$, Lorentz factor times the spatial velocity \f$W
- * v^i\f$, magnetic field \f$B^i\f$, and the divergence cleaning field
+ * \f$Y_e\f$, temperature \f$T\f$, Lorentz factor times the spatial velocity
+ * \f$W v^i\f$, magnetic field \f$B^i\f$, and the divergence cleaning field
  * \f$\Phi\f$ so they can be used for reconstruction.
  *
  * The computation copies the data from the primitive variables to a new
@@ -32,7 +32,7 @@ class PrimitiveGhostVariables {
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::DivergenceCleaningField<DataVector>>;

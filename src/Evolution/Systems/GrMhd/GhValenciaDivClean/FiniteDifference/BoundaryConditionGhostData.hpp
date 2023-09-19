@@ -96,7 +96,7 @@ void BoundaryConditionGhostData::apply(
   // Tags and tags list for FD reconstruction
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
-  using Pressure = hydro::Tags::Pressure<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
   using LorentzFactorTimesSpatialVelocity =
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
   using MagneticField = hydro::Tags::MagneticField<DataVector, 3>;
@@ -182,7 +182,7 @@ void BoundaryConditionGhostData::apply(
                           make_not_null(&get<RestMassDensity>(ghost_data_vars)),
                           make_not_null(
                               &get<ElectronFraction>(ghost_data_vars)),
-                          make_not_null(&get<Pressure>(ghost_data_vars)),
+                          make_not_null(&get<Temperature>(ghost_data_vars)),
                           make_not_null(&get<LorentzFactorTimesSpatialVelocity>(
                               ghost_data_vars)),
                           make_not_null(&get<MagneticField>(ghost_data_vars)),

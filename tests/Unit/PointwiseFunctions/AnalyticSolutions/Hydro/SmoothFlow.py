@@ -71,6 +71,26 @@ def specific_internal_energy(
     )
 
 
+def temperature(
+    x,
+    t,
+    mean_velocity,
+    wave_vector,
+    pressure,
+    adiabatic_index,
+    density_amplitude,
+):
+    return (adiabatic_index - 1.0) * specific_internal_energy(
+        x,
+        t,
+        mean_velocity,
+        wave_vector,
+        pressure,
+        adiabatic_index,
+        density_amplitude,
+    )
+
+
 def pressure(
     x,
     t,

@@ -60,10 +60,11 @@ namespace grmhd::ValenciaDivClean::fd {
  */
 class MonotonisedCentralPrim : public Reconstructor {
  private:
+  // pressure -> temperature
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::DivergenceCleaningField<DataVector>>;

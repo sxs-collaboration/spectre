@@ -32,7 +32,7 @@ namespace {
 using copied_tags =
     tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                hydro::Tags::ElectronFraction<DataVector>,
-               hydro::Tags::Pressure<DataVector>,
+               hydro::Tags::Temperature<DataVector>,
                hydro::Tags::MagneticField<DataVector, 3>,
                hydro::Tags::DivergenceCleaningField<DataVector>>;
 using gh_tags = grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
