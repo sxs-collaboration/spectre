@@ -82,6 +82,9 @@ Checks: '*,
 -readability-static-accessed-through-instance,
 # we are okay with lower case,
 -readability-uppercase-literal-suffix,'
+CheckOptions:
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: false
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers
