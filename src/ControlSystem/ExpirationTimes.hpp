@@ -29,7 +29,7 @@ namespace control_system {
  * \f}
  *
  * where \f$T_\mathrm{expr}^\mathrm{FoT}\f$ is the expiration time for the
- * FunctionsOfTime, \f$t\f$ is the current time,
+ * FunctionsOfTime, \f$t\f$ is the update time,
  * \f$\tau_\mathrm{m}^\mathrm{old/new}\f$ is the measurement timescale, and
  * \f$N\f$ is the number of measurements per update.
  *
