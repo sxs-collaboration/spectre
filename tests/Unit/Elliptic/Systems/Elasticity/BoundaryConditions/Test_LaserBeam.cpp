@@ -108,9 +108,11 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
     // Choose a constitutive relation with arbitrary parameters
     const ConstitutiveRelations::IsotropicHomogeneous<3> constitutive_relation{
         1., 2.};
-    // Get the surface stress from the half-space mirror solution
-    const Solutions::HalfSpaceMirror half_space_mirror{beam_width,
-                                                       constitutive_relation};
+    // Get the surface stress from the half-space mirror solution.
+    // Disable relative tolerance because we compare with an absolute tolerance
+    // in the test below.
+    const Solutions::HalfSpaceMirror half_space_mirror{
+        beam_width, constitutive_relation, 350, 1e-12, 0.};
     const auto minus_stress_solution = get<Tags::MinusStress<3>>(
         half_space_mirror.variables(x, tmpl::list<Tags::MinusStress<3>>{}));
     // Get the stress normal to the surface. The solution assumes the material
