@@ -61,7 +61,10 @@ void test_read_data() {
   {
     const DataVector rank1_data{1.0, 2.0, 3.0};
     const std::string dataset_name{"rank1_dataset_datavector"};
-    h5::write_data(group_id, rank1_data, dataset_name);
+    h5::write_data(group_id, DataVector{4.0, 5.0}, dataset_name);
+    CHECK_THROWS_WITH(h5::write_data(group_id, rank1_data, dataset_name),
+                      Catch::Matchers::ContainsSubstring("already exists"));
+    h5::write_data(group_id, rank1_data, dataset_name, true);
     const auto rank1_data_from_file =
         h5::read_data<1, DataVector>(group_id, dataset_name);
     CHECK(rank1_data_from_file == rank1_data);
@@ -85,11 +88,21 @@ void test_read_data() {
       tmpl::list<double, int, unsigned int, long, unsigned long, long long,
                  unsigned long long>;
 
-  h5::write_data(group_id, std::vector<double>{1.0 / 3.0}, {},
+  h5::write_data(group_id, std::vector<double>{4.0}, {},
                  "scalar_dataset");
+  CHECK_THROWS_WITH((h5::write_data(group_id, std::vector<double>{1.0 / 3.0},
+                                    {}, "scalar_dataset")),
+                    Catch::Matchers::ContainsSubstring("already exists"));
+  h5::write_data(group_id, std::vector<double>{1.0 / 3.0}, {},
+                 "scalar_dataset", true);
   CHECK(h5::read_data<0, double>(group_id, "scalar_dataset") == 1.0 / 3.0);
-  h5::write_data(group_id, std::vector<float>{1.0f / 3.0f}, {},
+  h5::write_data(group_id, std::vector<float>{4.0}, {},
                  "scalar_dataset_float");
+  CHECK_THROWS_WITH((h5::write_data(group_id, std::vector<float>{1.0f / 3.0f},
+                                    {}, "scalar_dataset_float")),
+                    Catch::Matchers::ContainsSubstring("already exists"));
+  h5::write_data(group_id, std::vector<float>{1.0f / 3.0f}, {},
+                 "scalar_dataset_float", true);
   CHECK(h5::read_data<0, float>(group_id, "scalar_dataset_float") ==
         static_cast<float>(1.0 / 3.0));
 

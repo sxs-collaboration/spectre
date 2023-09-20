@@ -26,10 +26,11 @@ void bind_h5vol(py::module& m) {
            py::arg("elements"), py::arg("serialized_domain") = std::nullopt,
            py::arg("serialized_functions_of_time") = std::nullopt)
       .def("write_tensor_component",
-           py::overload_cast<size_t, const std::string&, const DataVector&>(
-               &h5::VolumeData::write_tensor_component),
+           py::overload_cast<size_t, const std::string&, const DataVector&,
+                             bool>(&h5::VolumeData::write_tensor_component),
            py::arg("observation_id"), py::arg("component_name"),
-           py::arg("contiguous_tensor_data"))
+           py::arg("contiguous_tensor_data"),
+           py::arg("overwrite_existing") = false)
       .def("list_observation_ids", &h5::VolumeData::list_observation_ids)
       .def("get_observation_value", &h5::VolumeData::get_observation_value,
            py::arg("observation_id"))

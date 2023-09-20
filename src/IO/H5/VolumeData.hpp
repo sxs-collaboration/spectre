@@ -125,11 +125,13 @@ class VolumeData : public h5::Object {
 
   void write_tensor_component(const size_t observation_id,
                               const std::string& component_name,
-                              const DataVector& contiguous_tensor_data);
+                              const DataVector& contiguous_tensor_data,
+                              bool overwrite_existing = false);
 
   void write_tensor_component(const size_t observation_id,
                               const std::string& component_name,
-                              const std::vector<float>& contiguous_tensor_data);
+                              const std::vector<float>& contiguous_tensor_data,
+                              bool overwrite_existing = false);
 
   /// List all the integral observation ids in the subfile
   ///

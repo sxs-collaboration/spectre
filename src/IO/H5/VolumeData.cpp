@@ -398,22 +398,25 @@ void VolumeData::extend_connectivity_data(
 
 void VolumeData::write_tensor_component(
     const size_t observation_id, const std::string& component_name,
-    const DataVector& contiguous_tensor_data) {
+    const DataVector& contiguous_tensor_data,
+    const bool overwrite_existing) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
-  h5::write_data(observation_group.id(), contiguous_tensor_data,
-                 component_name);
+  h5::write_data(observation_group.id(), contiguous_tensor_data, component_name,
+                 overwrite_existing);
 }
 
 void VolumeData::write_tensor_component(
     const size_t observation_id, const std::string& component_name,
-    const std::vector<float>& contiguous_tensor_data) {
+    const std::vector<float>& contiguous_tensor_data,
+    const bool overwrite_existing) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
   h5::write_data(observation_group.id(), contiguous_tensor_data,
-                 {contiguous_tensor_data.size()}, component_name);
+                 {contiguous_tensor_data.size()}, component_name,
+                 overwrite_existing);
 }
 
 std::vector<size_t> VolumeData::list_observation_ids() const {

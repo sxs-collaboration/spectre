@@ -122,6 +122,11 @@ class TestTransformVolumeData(unittest.TestCase):
         ]
 
         transform_volume_data(volfiles=open_volfiles, kernels=kernels)
+        with self.assertRaisesRegex(RuntimeError, "already exists"):
+            transform_volume_data(volfiles=open_volfiles, kernels=kernels)
+        transform_volume_data(
+            volfiles=open_volfiles, kernels=kernels, force=True
+        )
 
         obs_id = open_volfiles[0].list_observation_ids()[0]
         result_psisq = (

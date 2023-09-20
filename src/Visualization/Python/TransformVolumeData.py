@@ -443,6 +443,7 @@ def transform_volume_data(
     volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
     kernels: Sequence[Kernel],
     integrate: bool = False,
+    force: bool = False,
 ) -> Union[None, Dict[str, Sequence[float]]]:
     """Transforms data in the 'volfiles' with a sequence of 'kernels'
 
@@ -460,6 +461,7 @@ def transform_volume_data(
         vector named 'Shift' then this function returns integrals named
         'Shift(_x,_y,_z)'. In addition, the corresponding observation values are
         returned (named 'Time'), and the inertial volume (named 'Volume').
+      force: Overwrite existing datasets in the volume files (default: False).
 
     Returns:
       None, or the volume integrals if 'integrate' is True.
@@ -609,6 +611,7 @@ def transform_volume_data(
                                 + transformed_tensor.component_suffix(i)
                             ),
                             contiguous_tensor_data=component,
+                            overwrite_existing=force,
                         )
     if integrate:
         return integrals
@@ -719,6 +722,12 @@ def parse_kernels(kernels, exec_files, map_input_names):
     "--output-subfile",
     help="Subfile name in the '--output' / '-o' file, if it is an H5 file.",
 )
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    help="Overwrite existing data.",
+)
 def transform_volume_data_command(
     h5files,
     subfile_name,
@@ -728,6 +737,7 @@ def transform_volume_data_command(
     integrate,
     output,
     output_subfile,
+    force,
     **kwargs,
 ):
     """Transform volume data with Python functions
@@ -781,10 +791,14 @@ def transform_volume_data_command(
 
     # Print available subfile names and exit
     if not subfile_name:
-        import rich.columns
+        available_subfile_names = open_h5_files[0].all_vol_files()
+        if len(available_subfile_names) == 1:
+            subfile_name = available_subfile_names[0]
+        else:
+            import rich.columns
 
-        rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
-        return
+            rich.print(rich.columns.Columns())
+            return
 
     if subfile_name.endswith(".vol"):
         subfile_name = subfile_name[:-4]
@@ -812,7 +826,11 @@ def transform_volume_data_command(
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:
         integrals = transform_volume_data(
-            volfiles_progress, kernels=kernels, integrate=integrate, **kwargs
+            volfiles_progress,
+            kernels=kernels,
+            integrate=integrate,
+            force=force,
+            **kwargs,
         )
         progress.update(task_id, completed=len(volfiles))
 
