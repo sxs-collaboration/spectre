@@ -196,9 +196,8 @@ struct ContributeReductionData {
             Parallel::threaded_action<
                 ThreadedActions::CollectReductionDataOnNode>(
                 local_writer, observation_id,
-                Parallel::ArrayComponentId{
-                    std::add_pointer_t<ParallelComponent>{nullptr},
-                    Parallel::ArrayIndex<ArrayIndex>(array_index)},
+                Parallel::make_array_component_id<ParallelComponent>(
+                    array_index),
                 subfile_name, (*reduction_names_map)[observation_id],
                 std::move((*reduction_data_map)[observation_id]),
                 std::move(formatter), observe_with_core_id);

@@ -370,17 +370,13 @@ struct RegisterContributorWithObserver {
         Parallel::simple_action<
             Actions::RegisterReductionContributorWithObserverWriter>(
             observer_writer, observation_key,
-            Parallel::ArrayComponentId{
-                std::add_pointer_t<ParallelComponent>{nullptr},
-                Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::make_array_component_id<ParallelComponent>(array_index));
         return;
       case TypeOfObservation::Volume:
         Parallel::simple_action<
             Actions::RegisterVolumeContributorWithObserverWriter>(
             observer_writer, observation_key,
-            Parallel::ArrayComponentId{
-                std::add_pointer_t<ParallelComponent>{nullptr},
-                Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::make_array_component_id<ParallelComponent>(array_index));
         return;
       default:
         ERROR(
@@ -452,17 +448,13 @@ struct DeregisterContributorWithObserver {
         Parallel::simple_action<
             Actions::DeregisterReductionContributorWithObserverWriter>(
             observer_writer, observation_key,
-            Parallel::ArrayComponentId{
-                std::add_pointer_t<ParallelComponent>{nullptr},
-                Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::make_array_component_id<ParallelComponent>(array_index));
         return;
       case TypeOfObservation::Volume:
         Parallel::simple_action<
             Actions::DeregisterVolumeContributorWithObserverWriter>(
             observer_writer, observation_key,
-            Parallel::ArrayComponentId{
-                std::add_pointer_t<ParallelComponent>{nullptr},
-                Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::make_array_component_id<ParallelComponent>(array_index));
         return;
       default:
         ERROR(

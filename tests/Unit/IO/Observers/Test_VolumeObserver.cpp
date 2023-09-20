@@ -101,9 +101,8 @@ void check_write_volume_data(
   const std::string h5_write_volume_group_name{"/element_data"};
   const std::string h5_write_volume_element_name{"TestElement"};
 
-  const Parallel::ArrayComponentId h5_write_volume_array_id(
-      std::add_pointer_t<ElementComp>{nullptr},
-      Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
+  const Parallel::ArrayComponentId h5_write_volume_array_id =
+      Parallel::make_array_component_id<ElementComp>(element_id);
 
   // Although the WriteVolumeData action would typically be writing
   // 2D surface "volume" data from a Strahlkorper, to simplify this test, here
@@ -233,9 +232,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Test passing volume data...
   const observers::ObservationId observation_id{3., "ElementObservationType"};
   for (const auto& id : element_ids) {
-    const Parallel::ArrayComponentId array_id(
-        std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementId<2>>{id});
+    const Parallel::ArrayComponentId array_id =
+        Parallel::make_array_component_id<element_comp>(id);
 
     auto [mesh, fake_volume_data] = make_fake_volume_data(array_id);
     runner
@@ -317,9 +315,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   for (size_t i = 0; i < sorted_element_ids.size(); i++) {
     const auto& element_id = sorted_element_ids[i];
     const std::string grid_name = MakeString{} << element_id;
-    const Parallel::ArrayComponentId array_id(
-        std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
+    const Parallel::ArrayComponentId array_id =
+        Parallel::make_array_component_id<element_comp>(element_id);
     const auto volume_data_fakes = make_fake_volume_data(array_id);
     // Each element contains as many data points as the product of its
     // extents, compute this number

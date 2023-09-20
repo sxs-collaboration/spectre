@@ -229,9 +229,8 @@ void test_reduction_observer(const bool observe_per_core) {
 
     // Test passing reduction data.
     for (const auto& id : element_ids) {
-      const Parallel::ArrayComponentId array_id(
-          std::add_pointer_t<element_comp>{nullptr},
-          Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
+      const Parallel::ArrayComponentId array_id =
+          Parallel::make_array_component_id<element_comp>(id);
 
       auto reduction_data_fakes =
           make_fake_reduction_data(array_id, time, reduction_data{});
@@ -247,11 +246,9 @@ void test_reduction_observer(const bool observe_per_core) {
                            observers::Actions::ContributeReductionData>(
           get_global_core_id(id),
           observers::ObservationId{time, "ElementObservationType"},
-          Parallel::ArrayComponentId{
-              std::add_pointer_t<element_comp>{nullptr},
-              Parallel::ArrayIndex<typename element_comp::array_index>(id)},
-          "/element_data", legend, std::move(reduction_data_fakes),
-          std::move(formatter), observe_per_core);
+          Parallel::make_array_component_id<element_comp>(id), "/element_data",
+          legend, std::move(reduction_data_fakes), std::move(formatter),
+          observe_per_core);
     }
     // Invoke the threaded action 'CollectReductionDataOnNode'
     for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
@@ -311,9 +308,8 @@ void test_reduction_observer(const bool observe_per_core) {
               element_ids, data,
               [&time, &make_fake_reduction_data](reduction_data state,
                                                  const ElementId<2>& id) {
-                const Parallel::ArrayComponentId array_id(
-                    std::add_pointer_t<element_comp>{nullptr},
-                    Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
+                const Parallel::ArrayComponentId array_id =
+                    Parallel::make_array_component_id<element_comp>(id);
                 return state.combine(
                     make_fake_reduction_data(array_id, time, reduction_data{}));
               })

@@ -404,6 +404,8 @@ struct ReadAllVolumeDataAndDistribute {
       // with the same index are also registered.
       // Since the way the component is encoded in `ArrayComponentId` is
       // private to that class, we construct one and compare.
+      // Can't use Parallel::make_array_component_id here because we need the
+      // original array_index type, not a CkArrayIndex.
       if (element_array_component_id !=
           Parallel::ArrayComponentId(
               std::add_pointer_t<ReceiveComponent>{nullptr},
@@ -555,9 +557,8 @@ struct ReadAllVolumeDataAndDistribute {
       std::unordered_set<ElementId<Dim>> completed_target_elements{};
       for (const auto& target_element_id : target_element_ids) {
         const auto& target_points = get<Tags::RegisteredElements<Dim>>(box).at(
-            Parallel::ArrayComponentId(
-                std::add_pointer_t<ReceiveComponent>{nullptr},
-                Parallel::ArrayIndex<ElementId<Dim>>(target_element_id)));
+            Parallel::make_array_component_id<ReceiveComponent>(
+                target_element_id));
         const auto target_grid_name = get_output(target_element_id);
 
         // Proceed with the registered element only if it overlaps with the
@@ -708,9 +709,8 @@ struct ReadAllVolumeDataAndDistribute {
       for (const auto& target_element_id : target_element_ids) {
         const auto& target_inertial_coords =
             get<Tags::RegisteredElements<Dim>>(box).at(
-                Parallel::ArrayComponentId(
-                    std::add_pointer_t<ReceiveComponent>{nullptr},
-                    Parallel::ArrayIndex<ElementId<Dim>>(target_element_id)));
+                Parallel::make_array_component_id<ReceiveComponent>(
+                    target_element_id));
         const size_t target_num_points = target_inertial_coords.begin()->size();
         const auto& indices_of_filled_interp_points =
             all_indices_of_filled_interp_points[target_element_id];

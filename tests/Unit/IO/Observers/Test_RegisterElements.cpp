@@ -135,15 +135,13 @@ void check_observer_registration() {
       expected_obs_ids{};
   for (const auto& id : element_ids) {
     expected_obs_ids[obs_id_key].insert(
-        Parallel::ArrayComponentId{std::add_pointer_t<element_comp>{nullptr},
-                                   Parallel::ArrayIndex<ElementId<2>>(id)});
+        Parallel::make_array_component_id<element_comp>(id));
   }
   std::unordered_map<observers::ObservationKey,
                      std::unordered_set<Parallel::ArrayComponentId>>
       expected_obs_writer_ids{};
   expected_obs_writer_ids[obs_id_key].insert(
-      Parallel::ArrayComponentId{std::add_pointer_t<obs_component>{nullptr},
-                                 Parallel::ArrayIndex<int>(0)});
+      Parallel::make_array_component_id<obs_component>(static_cast<int>(0)));
 
   CHECK(
       ActionTesting::get_databox_tag<

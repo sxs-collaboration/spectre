@@ -207,9 +207,7 @@ struct ExportCoordinates {
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
-        Parallel::ArrayComponentId(
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components), mesh});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -241,9 +239,7 @@ struct FindGlobalMinimumGridSpacing {
             cache));
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(time, "min_grid_spacing"),
-        Parallel::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(element_id)},
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         std::string{"/MinGridSpacing"},
         std::vector<std::string>{"Time", "MinGridSpacing"},
         MinGridSpacingReductionData{time, local_min_grid_spacing},

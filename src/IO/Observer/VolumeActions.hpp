@@ -136,9 +136,8 @@ struct ContributeVolumeData {
             Parallel::threaded_action<
                 ThreadedActions::ContributeVolumeDataToWriter>(
                 local_writer, observation_id,
-                Parallel::ArrayComponentId{
-                    std::add_pointer_t<ParallelComponent>{nullptr},
-                    Parallel::ArrayIndex<ArrayIndex>(array_index)},
+                Parallel::make_array_component_id<ParallelComponent>(
+                    array_index),
                 subfile_name, std::move((*volume_data)[observation_id]));
             volume_data->erase(observation_id);
           }

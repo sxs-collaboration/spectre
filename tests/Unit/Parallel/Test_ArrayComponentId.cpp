@@ -24,10 +24,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.ArrayComponentId", "[Unit][Parallel]") {
   ArrayComponentId c0id1{std::add_pointer_t<Component0>{nullptr},
                          Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
 
-  ArrayComponentId c1id0{std::add_pointer_t<Component1>{nullptr},
-                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};
-  ArrayComponentId c1id1{std::add_pointer_t<Component1>{nullptr},
-                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
+  ArrayComponentId c1id0 =
+      Parallel::make_array_component_id<Component1>(ElementId<1>{0});
+  ArrayComponentId c1id1 =
+      Parallel::make_array_component_id<Component1>(ElementId<1>{1});
 
   CHECK(c0id0 == c0id0);
   CHECK_FALSE(c0id0 != c0id0);

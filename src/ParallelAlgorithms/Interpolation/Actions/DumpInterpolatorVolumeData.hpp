@@ -91,9 +91,8 @@ struct DumpInterpolatorVolumeData {
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache));
 
-    const Parallel::ArrayComponentId array_component_id{
-        std::add_pointer_t<ParallelComponent>{nullptr},
-        Parallel::ArrayIndex<std::decay_t<ArrayIndex>>(array_index)};
+    const Parallel::ArrayComponentId array_component_id =
+        Parallel::make_array_component_id<ParallelComponent>(array_index);
 
     tmpl::for_each<AllTemporalIds>([&box, &observer_writer,
                                     &array_component_id](auto temporal_id_v) {

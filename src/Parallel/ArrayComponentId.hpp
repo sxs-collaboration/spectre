@@ -8,7 +8,9 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <type_traits>
 
+#include "Parallel/ArrayIndex.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace PUP {
@@ -56,6 +58,16 @@ bool operator!=(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
 std::ostream& operator<<(std::ostream& os,
                          const ArrayComponentId& array_component_id);
+
+/*!
+ * \brief A convenience function that will make an `ArrayComponentId` from the
+ * templated `ParallelComponent` and the passed in `array_index`.
+ */
+template <typename ParallelComponent, typename ArrayIndexType>
+ArrayComponentId make_array_component_id(const ArrayIndexType& array_index) {
+  return ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
+                          Parallel::ArrayIndex<ArrayIndexType>(array_index)};
+}
 }  // namespace Parallel
 
 namespace std {

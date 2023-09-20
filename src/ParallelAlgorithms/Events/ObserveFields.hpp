@@ -280,9 +280,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         observers::ObservationId(observation_value.value,
                                  subfile_path + ".vol"),
         subfile_path,
-        Parallel::ArrayComponentId(
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<VolumeDim>>(element_id)),
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components),
                           interpolation_mesh.value_or(mesh)});
   }

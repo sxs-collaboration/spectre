@@ -155,8 +155,7 @@ void contribute_to_subdomain_stats_observation(
       observers::ObservationId(iteration_id,
                                pretty_type::get_name<OptionsGroup>() +
                                    section_observation_key + "SubdomainSolves"),
-      Parallel::ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                                 Parallel::ArrayIndex<ArrayIndex>(array_index)},
+      Parallel::make_array_component_id<ParallelComponent>(array_index),
       std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "SubdomainSolves"},
       std::vector<std::string>{"Iteration", "NumSubdomains", "AvgNumIterations",

@@ -88,9 +88,7 @@ struct RegisterWithElementDataReader {
     }();
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
-        Parallel::ArrayComponentId(
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
+        Parallel::make_array_component_id<ParallelComponent>(array_index),
         coords);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

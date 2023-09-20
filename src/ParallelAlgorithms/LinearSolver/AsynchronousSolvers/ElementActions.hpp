@@ -112,8 +112,7 @@ void contribute_to_residual_observation(
       observers::ObservationId(
           iteration_id,
           pretty_type::get_name<OptionsGroup>() + section_observation_key),
-      Parallel::ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                                 Parallel::ArrayIndex<ArrayIndex>(array_index)},
+      Parallel::make_array_component_id<ParallelComponent>(array_index),
       std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},

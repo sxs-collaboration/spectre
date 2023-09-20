@@ -205,13 +205,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
           observers::ObservationKey("element_data.dat"));
     // Need an `or` because we don't know what order actions are run in
     CHECK((MockRegisterContributorWithObserver::result.array_component_id ==
-               Parallel::ArrayComponentId(
-                   std::add_pointer_t<my_component>{nullptr},
-                   Parallel::ArrayIndex<int>{0}) or
+               Parallel::make_array_component_id<my_component>(
+                   static_cast<int>(0)) or
            MockRegisterContributorWithObserver::result.array_component_id ==
-               Parallel::ArrayComponentId(
-                   std::add_pointer_t<my_component>{nullptr},
-                   Parallel::ArrayIndex<int>{1})));
+               Parallel::make_array_component_id<my_component>(
+                   static_cast<int>(1))));
     CHECK(MockRegisterContributorWithObserver::result.type_of_observation ==
           observers::TypeOfObservation::Reduction);
   }
@@ -236,13 +234,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
             observers::ObservationKey("element_data.dat"));
       // Need an `or` because we don't know what order actions are run in
       CHECK((MockDeregisterContributorWithObserver::result.array_component_id ==
-                 Parallel::ArrayComponentId(
-                     std::add_pointer_t<my_component>{nullptr},
-                     Parallel::ArrayIndex<int>{0}) or
+                 Parallel::make_array_component_id<my_component>(
+                     static_cast<int>(0)) or
              MockDeregisterContributorWithObserver::result.array_component_id ==
-                 Parallel::ArrayComponentId(
-                     std::add_pointer_t<my_component>{nullptr},
-                     Parallel::ArrayIndex<int>{1})));
+                 Parallel::make_array_component_id<my_component>(
+                     static_cast<int>(1))));
       CHECK(MockDeregisterContributorWithObserver::result.type_of_observation ==
             observers::TypeOfObservation::Reduction);
     }

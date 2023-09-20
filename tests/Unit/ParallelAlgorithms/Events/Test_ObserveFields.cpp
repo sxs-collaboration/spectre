@@ -213,9 +213,7 @@ void test_observe(
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.array_component_id ==
-        Parallel::ArrayComponentId(
-            std::add_pointer_t<element_component>{},
-            Parallel::ArrayIndex<ElementId<volume_dim>>(array_index)));
+        Parallel::make_array_component_id<element_component>(array_index));
   CHECK(results.received_volume_data.extents.size() == volume_dim);
   CHECK(std::equal(results.received_volume_data.extents.begin(),
                    results.received_volume_data.extents.end(),

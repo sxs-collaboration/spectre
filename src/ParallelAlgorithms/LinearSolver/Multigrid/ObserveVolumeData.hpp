@@ -109,9 +109,7 @@ struct ObserveVolumeData {
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(observation_id, subfile_path),
         subfile_path,
-        Parallel::ArrayComponentId(
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components), mesh});
 
     // Increment observation ID
