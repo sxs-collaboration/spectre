@@ -1,10 +1,29 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# If you change this file please push a new image to DockerHub so that the
-# new image is used. Docker must be run as root on your machine. There are 3
-# different images in this Dockerfile. Here is how to build them for x86_64
-# (for Apple Silicon, replace linux/amd64 with linux/arm64):
+# If you change this file please push the new images to DockerHub. If you do not
+# have permission to push to DockerHub please coordinate with someone who does.
+# Since changes to this image affect our testing infrastructure it is important
+# all changes be carefully reviewed before they are pushed. This is how you use
+# GitHub Actions to build and push the new images:
+#
+# 1. Push your changes to the `develop` branch on your fork of the spectre
+#    repository on GitHub (https://github.com/YOURNAME/spectre).
+# 2. Go to https://github.com/YOURNAME/spectre/actions/workflows/BuildDockerContainer.yaml.
+# 3. Select "Run workflow". Here you can select the location on DockerHub where
+#    you want the new images pushed. Select `sxscollaboration/spectre` (which is
+#    used by CI) or a location on your own DockerHub account. Either way, you
+#    need to set the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets in the
+#    repository to credentials that have write access.
+# 4. The images will be built and pushed to DockerHub and CI will run over them.
+#    See `.github/workflows/BuildDockerContainer.yaml` for details.
+#
+# Alternatively, you can build the container locally and push it, but remember
+# to build and push both x86 and ARM versions. Docker must be run as root on
+# your machine. There are 3 different images in this Dockerfile. Here is how to
+# build them for x86_64 (for Apple Silicon, replace linux/amd64 with
+# linux/arm64):
+#
 # 1. `dev`
 #
 #   cd $SPECTRE_HOME
@@ -38,11 +57,7 @@
 #    and then to push the `demo` image to DockerHub:
 #
 #   docker push sxscollaboration/spectre:demo
-#
-# If you do not have permission to push to DockerHub please coordinate with
-# someone who does. Since changes to this image effect our testing
-# infrastructure it is important all changes be carefully reviewed.
-#
+
 FROM ubuntu:22.04 AS base
 
 # See
