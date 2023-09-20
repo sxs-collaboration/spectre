@@ -414,7 +414,7 @@ jobs:
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
-          - compiler: clang-11
+          - compiler: clang-13
             build_type: Release
             BUILD_SHARED_LIBS: OFF
             use_xsimd: OFF
@@ -1087,8 +1087,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         compiler:
           - gcc-9
           - gcc-10
-          - clang-11
           - clang-13
+          - clang-14
         include:
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake")
@@ -1098,10 +1098,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             compiler: gcc-10
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
-            compiler: clang-11
+            compiler: clang-13
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
-            compiler: clang-13
+            compiler: clang-14
     container:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
       env:
