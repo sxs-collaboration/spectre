@@ -33,7 +33,7 @@ PhaseChangeAndTriggers:
       - VisitAndReturn(LoadBalancing)
 
 AnalyticSolution: &InitialData
-  TovStar:
+  GeneralizedHarmonic(TovStar):
     CentralDensity: 1.28e-3
     EquationOfState:
         PolytropicFluid:
@@ -52,10 +52,13 @@ DomainCreator:
     TimeDependence: None
     BoundaryConditionInX:
       DirichletAnalytic:
+        AnalyticPrescription: *InitialData
     BoundaryConditionInY:
       DirichletAnalytic:
+        AnalyticPrescription: *InitialData
     BoundaryConditionInZ:
       DirichletAnalytic:
+        AnalyticPrescription: *InitialData
 
 VariableFixing:
   FixConservatives:

@@ -81,11 +81,12 @@ template <size_t Dim>
 void test_gauge_wave(const Mesh<Dim>& mesh) {
   const auto gauge_condition = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<gh::gauges::GaugeCondition>,
-                                 Metavariables<Dim>>("AnalyticChristoffel:\n"
-                                                     "  AnalyticPrescription:\n"
-                                                     "    GaugeWave:\n"
-                                                     "      Amplitude: 0.0012\n"
-                                                     "      Wavelength: 1.4\n")
+                                 Metavariables<Dim>>(
+          "AnalyticChristoffel:\n"
+          "  AnalyticPrescription:\n"
+          "    GeneralizedHarmonic(GaugeWave):\n"
+          "      Amplitude: 0.0012\n"
+          "      Wavelength: 1.4\n")
           ->get_clone());
   CHECK_FALSE(gauge_condition->is_harmonic());
 
@@ -118,7 +119,7 @@ void test_ks(const Mesh<3>& mesh) {
                                  Metavariables<3>>(
           "AnalyticChristoffel:\n"
           "  AnalyticPrescription:\n"
-          "    KerrSchild:\n"
+          "    GeneralizedHarmonic(KerrSchild):\n"
           "      Mass: 1.2\n"
           "      Spin: [0.1, 0.2, 0.3]\n"
           "      Center: [-0.1, -0.2, -0.4]\n")

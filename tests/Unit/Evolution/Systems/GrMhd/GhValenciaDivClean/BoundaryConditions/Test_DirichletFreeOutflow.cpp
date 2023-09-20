@@ -20,6 +20,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
@@ -36,12 +37,15 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -52,9 +56,6 @@
 namespace helpers = ::TestHelpers::evolution::dg;
 
 namespace {
-struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
-  using type = gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedTovStar>;
-};
 
 struct Metavariables {
   struct factory_creation
@@ -65,8 +66,10 @@ struct Metavariables {
             tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
                            DirichletFreeOutflow>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::list<gh::Solutions::WrappedGr<
-                       grmhd::Solutions::BondiMichel>>>>;
+                   ghmhd::GhValenciaDivClean::InitialData::initial_data_list>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            tmpl::list<grmhd::AnalyticData::InitialMagneticFields::Poloidal>>>;
   };
 };
 
@@ -232,8 +235,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::Temperature<DataVector>>(prim_vars),
 
-      coords, interior_gamma1, interior_gamma2, time,
-      analytic_solution_or_data);
+      coords, interior_gamma1, interior_gamma2, time);
   CHECK(not result.has_value());
 
   grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow
@@ -453,7 +455,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
       get<hydro::Tags::MagneticField<DataVector, 3>>(prim_vars),
 
       time, functions_of_time, logical_to_grid_map, grid_to_inertial_map,
-      reconstructor, analytic_solution_or_data);
+      reconstructor);
 
   grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow
       grmhd_free_outflow{};
@@ -508,15 +510,24 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
   register_factory_classes_with_charm<Metavariables>();
+  EquationsOfState::register_derived_with_charm();
 
-  const auto product_boundary_condition =
-      TestHelpers::test_creation<
-          std::unique_ptr<
-              grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
-          Metavariables>("DirichletFreeOutflow:\n")
-          ->get_clone();
   {
     INFO("Test with analytic solution");
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<
+            std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
+                                BoundaryCondition>,
+            Metavariables>(
+            "DirichletFreeOutflow:\n"
+            "  AnalyticPrescription:\n"
+            "    GeneralizedHarmonic(BondiMichel):\n"
+            "        Mass: 1.0\n"
+            "        SonicRadius: 4.0\n"
+            "        SonicDensity: 0.1\n"
+            "        PolytropicExponent: 2.0\n"
+            "        MagFieldStrength: 0.01\n")
+            ->get_clone();
     const gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
         analytic_solution_or_data{1.0, 4.0, 0.1, 2.0, 0.01};
     const auto serialized_and_deserialized_condition =
@@ -531,6 +542,28 @@ SPECTRE_TEST_CASE(
   }
   {
     INFO("Test with analytic data");
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<
+            std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
+                                BoundaryCondition>,
+            Metavariables>(
+            "DirichletFreeOutflow:\n"
+            "  AnalyticPrescription:\n"
+            "      GeneralizedHarmonic(MagnetizedTovStar):\n"
+            "        CentralDensity: 1.28e-3\n"
+            "        EquationOfState:\n"
+            "          PolytropicFluid:\n"
+            "            PolytropicConstant: 100.0\n"
+            "            PolytropicExponent: 2.0\n"
+            "        Coordinates: Schwarzschild\n"
+            "        MagneticFields: \n"
+            "          - Poloidal:\n"
+            "              PressureExponent: 2\n"
+            "              CutoffPressure: 0.04\n"
+            "              VectorPotentialAmplitude: 2500\n"
+            "              Center: [0.0, 0.0, 0.0]\n"
+            "              MaxDistanceFromCenter: 100.0\n")
+            ->get_clone();
     const gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedTovStar>
         analytic_solution_or_data{
             1.28e-3,

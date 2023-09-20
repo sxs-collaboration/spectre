@@ -107,7 +107,7 @@ void test() {
           "constraint_gamma2", "lapse", "shift"},
       "DirichletAnalytic:\n"
       "  AnalyticPrescription:\n"
-      "    GaugeWave:\n"
+      "    GeneralizedHarmonic(GaugeWave):\n"
       "      Amplitude: 0.2\n"
       "      Wavelength: 10.0\n",
       Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_soln,

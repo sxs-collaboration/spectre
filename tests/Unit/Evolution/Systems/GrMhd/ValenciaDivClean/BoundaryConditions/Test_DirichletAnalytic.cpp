@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Rusanov.hpp"
@@ -26,6 +27,21 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace helpers = TestHelpers::evolution::dg;
+
+namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
+            tmpl::list<grmhd::ValenciaDivClean::BoundaryConditions::
+                           DirichletAnalytic>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   grmhd::ValenciaDivClean::InitialData::initial_data_list>>;
+  };
+};
+}  // namespace
 
 namespace {
 struct ConvertSmoothFlow {
@@ -102,6 +118,8 @@ struct ConvertMagneticRotor {
 };
 
 void test_soln() {
+  register_classes_with_charm(
+      grmhd::ValenciaDivClean::InitialData::initial_data_list{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
       Tags::Time, Tags::AnalyticSolution<grmhd::Solutions::SmoothFlow>>>(
@@ -112,7 +130,9 @@ void test_soln() {
       grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
       grmhd::ValenciaDivClean::System,
       tmpl::list<grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>,
-      tmpl::list<ConvertSmoothFlow>>(
+      tmpl::list<ConvertSmoothFlow>,
+      tmpl::list<Tags::AnalyticSolution<grmhd::Solutions::SmoothFlow>>,
+      Metavariables>(
       make_not_null(&gen),
       "Evolution.Systems.GrMhd.ValenciaDivClean.BoundaryConditions."
       "DirichletAnalytic",
@@ -157,11 +177,20 @@ void test_soln() {
           "soln_flux_tilde_ye", "soln_flux_tilde_tau", "soln_flux_tilde_s",
           "soln_flux_tilde_b", "soln_flux_tilde_phi", "soln_lapse",
           "soln_shift"},
-      "DirichletAnalytic:\n", Index<2>{5}, box_analytic_soln,
-      tuples::TaggedTuple<>{});
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    SmoothFlow:\n"
+      "      WaveVector: [0.1, 1.1, 2.1 ]\n"
+      "      MeanVelocity: [0.9, 0.4, -0.1]\n"
+      "      Pressure: 1.0\n"
+      "      AdiabaticIndex: 1.6666666666666666\n"
+      "      PerturbationSize: 0.2",
+      Index<2>{5}, box_analytic_soln, tuples::TaggedTuple<>{});
 }
 
 void test_data() {
+  register_classes_with_charm(
+      grmhd::ValenciaDivClean::InitialData::initial_data_list{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_data = db::create<db::AddSimpleTags<
       Tags::Time, Tags::AnalyticData<grmhd::AnalyticData::MagneticRotor>>>(
@@ -172,7 +201,9 @@ void test_data() {
       grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
       grmhd::ValenciaDivClean::System,
       tmpl::list<grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>,
-      tmpl::list<ConvertMagneticRotor>>(
+      tmpl::list<ConvertMagneticRotor>,
+      tmpl::list<Tags::AnalyticData<grmhd::AnalyticData::MagneticRotor>>,
+      Metavariables>(
       make_not_null(&gen),
       "Evolution.Systems.GrMhd.ValenciaDivClean.BoundaryConditions."
       "DirichletAnalytic",
@@ -217,8 +248,17 @@ void test_data() {
           "data_flux_tilde_ye", "data_flux_tilde_tau", "data_flux_tilde_s",
           "data_flux_tilde_b", "data_flux_tilde_phi", "soln_lapse",
           "soln_shift"},
-      "DirichletAnalytic:\n", Index<2>{5}, box_analytic_data,
-      tuples::TaggedTuple<>{});
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    MagneticRotor:\n"
+      "      RotorRadius: 0.1\n"
+      "      RotorDensity: 10.0\n"
+      "      BackgroundDensity: 1.0\n"
+      "      Pressure: 1.0\n"
+      "      AngularVelocity: 9.95\n"
+      "      MagneticField: [3.54490770181103205, 0.0, 0.0]\n"
+      "      AdiabaticIndex: 1.666666666666666666",
+      Index<2>{5}, box_analytic_data, tuples::TaggedTuple<>{});
 }
 }  // namespace
 

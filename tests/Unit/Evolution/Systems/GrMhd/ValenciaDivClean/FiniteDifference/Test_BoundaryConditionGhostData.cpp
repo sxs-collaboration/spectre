@@ -73,12 +73,20 @@ struct EvolutionMetaVars {
   };
 };
 
+using SolutionForTest = Solutions::SmoothFlow;
+
 template <typename T>
 using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
 
+const std::array<double, 3> mean_velocity = {{0.23, 0.01, 0.31}};
+const std::array<double, 3> wave_vector = {{0.11, 0.23, 0.32}};
+const double pressure = 1.0;
+const double adiabatic_index = 1.4;
+const double perturbation_size = 0.3;
+
 template <typename BoundaryConditionType>
 void test(const BoundaryConditionType& boundary_condition,
-          const bool set_fluxes) {
+          const bool set_fluxes, SolutionForTest solution) {
   CAPTURE(set_fluxes);
   const size_t num_dg_pts = 3;
 
@@ -139,15 +147,6 @@ void test(const BoundaryConditionType& boundary_condition,
 
   const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
 
-  using SolutionForTest = Solutions::SmoothFlow;
-  const std::array<double, 3> mean_velocity = {{0.23, 0.01, 0.31}};
-  const std::array<double, 3> wave_vector = {{0.11, 0.23, 0.32}};
-  const double pressure = 1.0;
-  const double adiabatic_index = 1.4;
-  const double perturbation_size = 0.3;
-  const SolutionForTest solution{mean_velocity, wave_vector, pressure,
-                                 adiabatic_index, perturbation_size};
-
   // Below are tags used for testing DemandOutgoingCharSpeeds boundary condition
   //  - volume metric and primitive variables on subcell mesh
   //  - mesh velocity
@@ -185,7 +184,6 @@ void test(const BoundaryConditionType& boundary_condition,
 
   Variables<typename System::primitive_variables_tag::tags_list>
       volume_prim_vars{subcell_mesh.number_of_grid_points()};
-
   get(get<RestMassDensity>(volume_prim_vars)) = 1.0;
   get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
   get(get<Pressure>(volume_prim_vars)) = 1.0;
@@ -320,7 +318,6 @@ void test(const BoundaryConditionType& boundary_condition,
                                                   Frame::Inertial>,
       typename System::spacetime_variables_tag,
       typename System::primitive_variables_tag,
-      ::Tags::AnalyticSolution<SolutionForTest>,
       evolution::dg::subcell::Tags::CellCenteredFlux<
           typename System::flux_variables, 3>>>(
       EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
@@ -335,7 +332,7 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_spacetime_vars, volume_prim_vars, solution, cell_centered_fluxes);
+      volume_spacetime_vars, volume_prim_vars, cell_centered_fluxes);
 
   {
     // compute FD ghost data and retrieve the result
@@ -466,7 +463,6 @@ void test(const BoundaryConditionType& boundary_condition,
               subcell_mesh, ghost_zone_size, direction);
       const auto ghost_inertial_coords = (*grid_to_inertial_map)(
           logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
-
       const auto rest_mass_density_py = pypp::call<Scalar<DataVector>>(
           "GrMhd.SmoothFlow", "rest_mass_density", ghost_inertial_coords, time,
           mean_velocity, wave_vector, pressure, adiabatic_index,
@@ -721,21 +717,27 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/"};
 
+  const SolutionForTest solution{mean_velocity, wave_vector, pressure,
+                                 adiabatic_index, perturbation_size};
+
   for (const bool set_fluxes : {true, false}) {
-    test(BoundaryConditions::DirichletAnalytic{}, set_fluxes);
-    test(BoundaryConditions::DemandOutgoingCharSpeeds{}, set_fluxes);
-    test(BoundaryConditions::HydroFreeOutflow{}, set_fluxes);
+    test(
+        BoundaryConditions::DirichletAnalytic{
+            std::make_unique<SolutionForTest>(solution)},
+        set_fluxes, solution);
+    test(BoundaryConditions::DemandOutgoingCharSpeeds{}, set_fluxes, solution);
+    test(BoundaryConditions::HydroFreeOutflow{}, set_fluxes, solution);
   }
 
 // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(([]() {
-                      test(domain::BoundaryConditions::Periodic<
-                               BoundaryConditions::BoundaryCondition>{},
-                           false);
-                    })(),
-                    Catch::Matchers::ContainsSubstring(
-                        "not on external boundaries"));
+  CHECK_THROWS_WITH(
+      ([&solution]() {
+        test(domain::BoundaryConditions::Periodic<
+                 BoundaryConditions::BoundaryCondition>{},
+             false, solution);
+      })(),
+      Catch::Matchers::ContainsSubstring("not on external boundaries"));
 #endif
 }
 }  // namespace

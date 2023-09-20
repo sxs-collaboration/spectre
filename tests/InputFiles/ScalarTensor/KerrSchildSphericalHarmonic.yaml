@@ -38,7 +38,7 @@ Evolution:
 PhaseChangeAndTriggers:
 
 InitialData: &InitialData
-  KerrSphericalHarmonic:
+  GeneralizedHarmonic(KerrSphericalHarmonic):
     Mass: 1.0
     Spin: [0.0, 0.0, 0.0]
     Amplitude: 0.001
