@@ -15,8 +15,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -103,13 +103,13 @@ struct ImporterOptions : db::SimpleTag {
  * \brief The elements that will receive data from the importer.
  *
  * \details Identifiers for elements from multiple parallel components can be
- * stored. Each element is identified by an `observers::ArrayComponentId` and
+ * stored. Each element is identified by an `Parallel::ArrayComponentId` and
  * also needs to provide the inertial coordinates of its grid points. The
  * imported data will be interpolated to these grid points.
  */
 template <size_t Dim>
 struct RegisteredElements : db::SimpleTag {
-  using type = std::unordered_map<observers::ArrayComponentId,
+  using type = std::unordered_map<Parallel::ArrayComponentId,
                                   tnsr::I<DataVector, Dim, Frame::Inertial>>;
 };
 

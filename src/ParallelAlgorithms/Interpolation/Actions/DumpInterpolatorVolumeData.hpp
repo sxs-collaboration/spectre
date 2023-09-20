@@ -12,7 +12,6 @@
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -20,6 +19,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -91,7 +91,7 @@ struct DumpInterpolatorVolumeData {
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache));
 
-    const observers::ArrayComponentId array_component_id{
+    const Parallel::ArrayComponentId array_component_id{
         std::add_pointer_t<ParallelComponent>{nullptr},
         Parallel::ArrayIndex<std::decay_t<ArrayIndex>>(array_index)};
 
@@ -121,7 +121,7 @@ struct DumpInterpolatorVolumeData {
                 InterpolationTarget_detail::get_temporal_id_value(temporal_id),
                 subfile_name},
             array_component_id, subfile_name,
-            std::unordered_map<observers::ArrayComponentId,
+            std::unordered_map<Parallel::ArrayComponentId,
                                std::vector<ElementVolumeData>>{
                 {array_component_id, std::move(element_volume_data)}});
       }

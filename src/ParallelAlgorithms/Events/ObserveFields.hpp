@@ -23,7 +23,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -32,6 +31,7 @@
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -280,7 +280,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         observers::ObservationId(observation_value.value,
                                  subfile_path + ".vol"),
         subfile_path,
-        observers::ArrayComponentId(
+        Parallel::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(element_id)),
         ElementVolumeData{element_id, std::move(components),

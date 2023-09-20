@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"

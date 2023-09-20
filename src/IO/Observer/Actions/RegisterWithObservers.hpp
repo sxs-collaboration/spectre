@@ -66,7 +66,7 @@ struct RegisterWithObservers
 
     Parallel::simple_action<RegisterOrDeregisterAction>(
         observer, observation_id,
-        observers::ArrayComponentId(
+        Parallel::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
         type_of_observation);

@@ -11,10 +11,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -43,16 +43,17 @@ struct RegisterVolumeContributorWithObserverWriter {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) {
+                    const Parallel::ArrayComponentId& id_of_caller) {
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        [&id_of_caller, &observation_key](
-            const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                volume_observers_registered) {
+        [&id_of_caller,
+         &observation_key](const gsl::not_null<std::unordered_map<
+                               ObservationKey,
+                               std::unordered_set<Parallel::ArrayComponentId>>*>
+                               volume_observers_registered) {
           if (volume_observers_registered->find(observation_key) ==
               volume_observers_registered->end()) {
             (*volume_observers_registered)[observation_key] =
-                std::unordered_set<ArrayComponentId>{};
+                std::unordered_set<Parallel::ArrayComponentId>{};
           }
 
           if (UNLIKELY(
@@ -84,12 +85,13 @@ struct DeregisterVolumeContributorWithObserverWriter {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) {
+                    const Parallel::ArrayComponentId& id_of_caller) {
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        [&id_of_caller, &observation_key](
-            const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                volume_observers_registered) {
+        [&id_of_caller,
+         &observation_key](const gsl::not_null<std::unordered_map<
+                               ObservationKey,
+                               std::unordered_set<Parallel::ArrayComponentId>>*>
+                               volume_observers_registered) {
           if (UNLIKELY(volume_observers_registered->find(observation_key) ==
                        volume_observers_registered->end())) {
             ERROR(
@@ -221,19 +223,20 @@ struct RegisterReductionContributorWithObserverWriter {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) {
+                    const Parallel::ArrayComponentId& id_of_caller) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     const auto node_id =
         Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        [&cache, &id_of_caller, &node_id, &observation_key](
-            const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                reduction_observers_registered) {
+        [&cache, &id_of_caller, &node_id,
+         &observation_key](const gsl::not_null<std::unordered_map<
+                               ObservationKey,
+                               std::unordered_set<Parallel::ArrayComponentId>>*>
+                               reduction_observers_registered) {
           if (reduction_observers_registered->find(observation_key) ==
               reduction_observers_registered->end()) {
             (*reduction_observers_registered)[observation_key] =
-                std::unordered_set<ArrayComponentId>{};
+                std::unordered_set<Parallel::ArrayComponentId>{};
             Parallel::simple_action<
                 Actions::RegisterReductionNodeWithWritingNode>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
@@ -273,15 +276,16 @@ struct DeregisterReductionContributorWithObserverWriter {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) {
+                    const Parallel::ArrayComponentId& id_of_caller) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     const auto node_id =
         Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
     db::mutate<Tags::ExpectedContributorsForObservations>(
-        [&cache, &id_of_caller, &node_id, &observation_key](
-            const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                reduction_observers_registered) {
+        [&cache, &id_of_caller, &node_id,
+         &observation_key](const gsl::not_null<std::unordered_map<
+                               ObservationKey,
+                               std::unordered_set<Parallel::ArrayComponentId>>*>
+                               reduction_observers_registered) {
           if (UNLIKELY(reduction_observers_registered->find(observation_key) ==
                        reduction_observers_registered->end())) {
             ERROR(
@@ -324,13 +328,14 @@ struct RegisterContributorWithObserver {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const observers::ObservationKey& observation_key,
-                    const observers::ArrayComponentId& component_id,
+                    const Parallel::ArrayComponentId& component_id,
                     const TypeOfObservation& type_of_observation) {
     bool observation_key_already_registered = true;
     db::mutate<observers::Tags::ExpectedContributorsForObservations>(
         [&component_id, &observation_key, &observation_key_already_registered](
             const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
+                ObservationKey,
+                std::unordered_set<Parallel::ArrayComponentId>>*>
                 array_component_ids) {
           observation_key_already_registered =
               (array_component_ids->find(observation_key) !=
@@ -365,15 +370,17 @@ struct RegisterContributorWithObserver {
         Parallel::simple_action<
             Actions::RegisterReductionContributorWithObserverWriter>(
             observer_writer, observation_key,
-            ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                             Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::ArrayComponentId{
+                std::add_pointer_t<ParallelComponent>{nullptr},
+                Parallel::ArrayIndex<ArrayIndex>(array_index)});
         return;
       case TypeOfObservation::Volume:
         Parallel::simple_action<
             Actions::RegisterVolumeContributorWithObserverWriter>(
             observer_writer, observation_key,
-            ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                             Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::ArrayComponentId{
+                std::add_pointer_t<ParallelComponent>{nullptr},
+                Parallel::ArrayIndex<ArrayIndex>(array_index)});
         return;
       default:
         ERROR(
@@ -397,14 +404,15 @@ struct DeregisterContributorWithObserver {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const observers::ObservationKey& observation_key,
-                    const observers::ArrayComponentId& component_id,
+                    const Parallel::ArrayComponentId& component_id,
                     const TypeOfObservation& type_of_observation) {
     bool all_array_components_have_been_deregistered = false;
     db::mutate<observers::Tags::ExpectedContributorsForObservations>(
         [&component_id, &observation_key,
          &all_array_components_have_been_deregistered](
             const gsl::not_null<std::unordered_map<
-                ObservationKey, std::unordered_set<ArrayComponentId>>*>
+                ObservationKey,
+                std::unordered_set<Parallel::ArrayComponentId>>*>
                 array_component_ids) {
           if (UNLIKELY(array_component_ids->find(observation_key) ==
                        array_component_ids->end())) {
@@ -444,15 +452,17 @@ struct DeregisterContributorWithObserver {
         Parallel::simple_action<
             Actions::DeregisterReductionContributorWithObserverWriter>(
             observer_writer, observation_key,
-            ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                             Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::ArrayComponentId{
+                std::add_pointer_t<ParallelComponent>{nullptr},
+                Parallel::ArrayIndex<ArrayIndex>(array_index)});
         return;
       case TypeOfObservation::Volume:
         Parallel::simple_action<
             Actions::DeregisterVolumeContributorWithObserverWriter>(
             observer_writer, observation_key,
-            ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                             Parallel::ArrayIndex<ArrayIndex>(array_index)});
+            Parallel::ArrayComponentId{
+                std::add_pointer_t<ParallelComponent>{nullptr},
+                Parallel::ArrayIndex<ArrayIndex>(array_index)});
         return;
       default:
         ERROR(

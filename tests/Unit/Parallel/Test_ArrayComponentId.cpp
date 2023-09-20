@@ -9,15 +9,15 @@
 
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 
 namespace {
 struct Component0 {};
 struct Component1 {};
 
-SPECTRE_TEST_CASE("Unit.IO.Observers.ArrayComponentId", "[Unit][Observers]") {
-  using ArrayComponentId = observers::ArrayComponentId;
+SPECTRE_TEST_CASE("Unit.Parallel.ArrayComponentId", "[Unit][Parallel]") {
+  using ArrayComponentId = Parallel::ArrayComponentId;
   using Hash = std::hash<ArrayComponentId>;
   ArrayComponentId c0id0{std::add_pointer_t<Component0>{nullptr},
                          Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};

@@ -24,10 +24,10 @@
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -335,7 +335,7 @@ struct ReadVolumeData {
  * `ReceiveComponent` to populate `importers::Tags::VolumeData` in the element's
  * inbox with a `tuples::tagged_tuple_from_typelist<FieldTagsList>` containing
  * the tensor data for that element. The `ReceiveComponent` must the the same
- * that was encoded into the `observers::ArrayComponentId` used to register the
+ * that was encoded into the `Parallel::ArrayComponentId` used to register the
  * elements. The `volume_data_id` passed to this action is used as key.
  *
  * \par Memory consumption
@@ -405,7 +405,7 @@ struct ReadAllVolumeDataAndDistribute {
       // Since the way the component is encoded in `ArrayComponentId` is
       // private to that class, we construct one and compare.
       if (element_array_component_id !=
-          observers::ArrayComponentId(
+          Parallel::ArrayComponentId(
               std::add_pointer_t<ReceiveComponent>{nullptr},
               raw_element_index)) {
         continue;
@@ -555,7 +555,7 @@ struct ReadAllVolumeDataAndDistribute {
       std::unordered_set<ElementId<Dim>> completed_target_elements{};
       for (const auto& target_element_id : target_element_ids) {
         const auto& target_points = get<Tags::RegisteredElements<Dim>>(box).at(
-            observers::ArrayComponentId(
+            Parallel::ArrayComponentId(
                 std::add_pointer_t<ReceiveComponent>{nullptr},
                 Parallel::ArrayIndex<ElementId<Dim>>(target_element_id)));
         const auto target_grid_name = get_output(target_element_id);
@@ -708,7 +708,7 @@ struct ReadAllVolumeDataAndDistribute {
       for (const auto& target_element_id : target_element_ids) {
         const auto& target_inertial_coords =
             get<Tags::RegisteredElements<Dim>>(box).at(
-                observers::ArrayComponentId(
+                Parallel::ArrayComponentId(
                     std::add_pointer_t<ReceiveComponent>{nullptr},
                     Parallel::ArrayIndex<ElementId<Dim>>(target_element_id)));
         const size_t target_num_points = target_inertial_coords.begin()->size();

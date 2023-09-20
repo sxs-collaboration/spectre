@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
@@ -21,6 +20,7 @@
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -189,7 +189,7 @@ class ObserveTimeStep : public Event {
         local_observer,
         observers::ObservationId(observation_value.value,
                                  subfile_path_ + ".dat"),
-        observers::ArrayComponentId{
+        Parallel::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ArrayIndex>(array_index)},
         subfile_path_,

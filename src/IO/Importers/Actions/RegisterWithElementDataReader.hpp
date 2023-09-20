@@ -11,8 +11,8 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -88,7 +88,7 @@ struct RegisterWithElementDataReader {
     }();
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
-        observers::ArrayComponentId(
+        Parallel::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
         coords);
@@ -113,12 +113,12 @@ struct RegisterElementWithSelf {
       db::DataBox<DbTagsList>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const observers::ArrayComponentId& array_component_id,
+      const Parallel::ArrayComponentId& array_component_id,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
     db::mutate<Tags::RegisteredElements<Dim>>(
         [&array_component_id, &inertial_coords](
             const gsl::not_null<
-                std::unordered_map<observers::ArrayComponentId,
+                std::unordered_map<Parallel::ArrayComponentId,
                                    tnsr::I<DataVector, Dim, Frame::Inertial>>*>
                 registered_elements) {
           (*registered_elements)[array_component_id] = inertial_coords;

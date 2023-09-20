@@ -1,11 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "IO/Observer/ArrayComponentId.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 
 #include <pup.h>
 
-namespace observers {
+namespace Parallel {
 void ArrayComponentId::pup(PUP::er& p) {
   p | component_id_;
   p | array_index_;
@@ -24,4 +24,4 @@ std::ostream& operator<<(std::ostream& os,
                          const ArrayComponentId& array_component_id) {
   return os << std::hash<ArrayComponentId>{}(array_component_id);
 }
-}  // namespace observers
+}  // namespace Parallel

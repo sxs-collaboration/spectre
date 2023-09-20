@@ -14,13 +14,13 @@
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Phase.hpp"
@@ -95,7 +95,7 @@ struct Component {
 struct MockRegisterContributorWithObserver {
   struct Result {
     observers::ObservationKey observation_key{};
-    observers::ArrayComponentId array_component_id{};
+    Parallel::ArrayComponentId array_component_id{};
     observers::TypeOfObservation type_of_observation{};
   };
   static Result result;
@@ -106,7 +106,7 @@ struct MockRegisterContributorWithObserver {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const observers::ArrayComponentId& component_id,
+                    const Parallel::ArrayComponentId& component_id,
                     const observers::TypeOfObservation& type_of_observation) {
     result.observation_key = observation_key;
     result.array_component_id = component_id;
@@ -117,7 +117,7 @@ struct MockRegisterContributorWithObserver {
 struct MockDeregisterContributorWithObserver {
   struct Result {
     observers::ObservationKey observation_key{};
-    observers::ArrayComponentId array_component_id{};
+    Parallel::ArrayComponentId array_component_id{};
     observers::TypeOfObservation type_of_observation{};
   };
   static Result result;
@@ -128,7 +128,7 @@ struct MockDeregisterContributorWithObserver {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const observers::ArrayComponentId& component_id,
+                    const Parallel::ArrayComponentId& component_id,
                     const observers::TypeOfObservation& type_of_observation) {
     result.observation_key = observation_key;
     result.array_component_id = component_id;
@@ -205,11 +205,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
           observers::ObservationKey("element_data.dat"));
     // Need an `or` because we don't know what order actions are run in
     CHECK((MockRegisterContributorWithObserver::result.array_component_id ==
-               observers::ArrayComponentId(
+               Parallel::ArrayComponentId(
                    std::add_pointer_t<my_component>{nullptr},
                    Parallel::ArrayIndex<int>{0}) or
            MockRegisterContributorWithObserver::result.array_component_id ==
-               observers::ArrayComponentId(
+               Parallel::ArrayComponentId(
                    std::add_pointer_t<my_component>{nullptr},
                    Parallel::ArrayIndex<int>{1})));
     CHECK(MockRegisterContributorWithObserver::result.type_of_observation ==
@@ -236,11 +236,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
             observers::ObservationKey("element_data.dat"));
       // Need an `or` because we don't know what order actions are run in
       CHECK((MockDeregisterContributorWithObserver::result.array_component_id ==
-                 observers::ArrayComponentId(
+                 Parallel::ArrayComponentId(
                      std::add_pointer_t<my_component>{nullptr},
                      Parallel::ArrayIndex<int>{0}) or
              MockDeregisterContributorWithObserver::result.array_component_id ==
-                 observers::ArrayComponentId(
+                 Parallel::ArrayComponentId(
                      std::add_pointer_t<my_component>{nullptr},
                      Parallel::ArrayIndex<int>{1})));
       CHECK(MockDeregisterContributorWithObserver::result.type_of_observation ==

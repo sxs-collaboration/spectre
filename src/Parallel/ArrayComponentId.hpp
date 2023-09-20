@@ -15,9 +15,8 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-namespace observers {
+namespace Parallel {
 /*!
- * \ingroup ObserversGroup
  * \brief An ID type that identifies both the parallel component and the index
  * in the parallel component.
  *
@@ -57,12 +56,12 @@ bool operator!=(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
 std::ostream& operator<<(std::ostream& os,
                          const ArrayComponentId& array_component_id);
-}  // namespace observers
+}  // namespace Parallel
 
 namespace std {
 template <>
-struct hash<observers::ArrayComponentId> {
-  size_t operator()(const observers::ArrayComponentId& t) const {
+struct hash<Parallel::ArrayComponentId> {
+  size_t operator()(const Parallel::ArrayComponentId& t) const {
     size_t result = t.component_id();
     boost::hash_combine(result, t.array_index().hash());
     return result;

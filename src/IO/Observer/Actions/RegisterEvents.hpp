@@ -9,11 +9,11 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -170,7 +170,7 @@ struct RegisterEventsWithObservers
          type_of_observation_and_observation_key_pairs) {
       Parallel::simple_action<RegisterOrDeregisterAction>(
           observer, observation_key,
-          observers::ArrayComponentId(
+          Parallel::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
               Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
           type_of_observation);

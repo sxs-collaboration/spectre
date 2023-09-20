@@ -35,7 +35,6 @@
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
@@ -45,6 +44,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -58,9 +58,9 @@
 namespace helpers = TestObservers_detail;
 
 namespace {
-auto make_fake_volume_data(const observers::ArrayComponentId& id) {
+auto make_fake_volume_data(const Parallel::ArrayComponentId& id) {
   const auto hashed_id =
-      static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
+      static_cast<double>(std::hash<Parallel::ArrayComponentId>{}(id));
   std::vector<TensorComponent> data(6);
   data[0] =
       TensorComponent("T_x"s, DataVector{0.5 * hashed_id, 1.0 * hashed_id,
@@ -101,7 +101,7 @@ void check_write_volume_data(
   const std::string h5_write_volume_group_name{"/element_data"};
   const std::string h5_write_volume_element_name{"TestElement"};
 
-  const observers::ArrayComponentId h5_write_volume_array_id(
+  const Parallel::ArrayComponentId h5_write_volume_array_id(
       std::add_pointer_t<ElementComp>{nullptr},
       Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
 
@@ -233,7 +233,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Test passing volume data...
   const observers::ObservationId observation_id{3., "ElementObservationType"};
   for (const auto& id : element_ids) {
-    const observers::ArrayComponentId array_id(
+    const Parallel::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
         Parallel::ArrayIndex<ElementId<2>>{id});
 
@@ -317,7 +317,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   for (size_t i = 0; i < sorted_element_ids.size(); i++) {
     const auto& element_id = sorted_element_ids[i];
     const std::string grid_name = MakeString{} << element_id;
-    const observers::ArrayComponentId array_id(
+    const Parallel::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
         Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
     const auto volume_data_fakes = make_fake_volume_data(array_id);

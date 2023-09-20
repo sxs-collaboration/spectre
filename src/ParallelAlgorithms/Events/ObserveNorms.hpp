@@ -463,7 +463,7 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
       local_observer,
       observers::ObservationId(observation_value.value,
                                subfile_path_with_suffix + ".dat"),
-      observers::ArrayComponentId{
+      Parallel::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
       subfile_path_with_suffix, std::move(legend),

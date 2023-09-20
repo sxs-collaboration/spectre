@@ -18,12 +18,12 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -64,21 +64,22 @@ struct ContributeVolumeData {
                     const ArrayIndex& array_index,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
-                    const observers::ArrayComponentId& sender_array_id,
+                    const Parallel::ArrayComponentId& sender_array_id,
                     ElementVolumeData&& received_volume_data) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         [&array_index, &cache, &received_volume_data, &observation_id,
          &sender_array_id, &subfile_name](
             const gsl::not_null<std::unordered_map<
                 observers::ObservationId,
-                std::unordered_map<observers::ArrayComponentId,
+                std::unordered_map<Parallel::ArrayComponentId,
                                    ElementVolumeData>>*>
                 volume_data,
             const gsl::not_null<std::unordered_map<
-                ObservationId, std::unordered_set<ArrayComponentId>>*>
+                ObservationId, std::unordered_set<Parallel::ArrayComponentId>>*>
                 contributed_volume_data_ids,
-            const std::unordered_map<ObservationKey,
-                                     std::unordered_set<ArrayComponentId>>&
+            const std::unordered_map<
+                ObservationKey,
+                std::unordered_set<Parallel::ArrayComponentId>>&
                 registered_array_component_ids) mutable {  // NOLINT(spectre-mutable)
           const ObservationKey& key{observation_id.observation_key()};
           if (UNLIKELY(registered_array_component_ids.find(key) ==
@@ -135,8 +136,9 @@ struct ContributeVolumeData {
             Parallel::threaded_action<
                 ThreadedActions::ContributeVolumeDataToWriter>(
                 local_writer, observation_id,
-                ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                                 Parallel::ArrayIndex<ArrayIndex>(array_index)},
+                Parallel::ArrayComponentId{
+                    std::add_pointer_t<ParallelComponent>{nullptr},
+                    Parallel::ArrayIndex<ArrayIndex>(array_index)},
                 subfile_name, std::move((*volume_data)[observation_id]));
             volume_data->erase(observation_id);
           }
@@ -169,9 +171,9 @@ struct ContributeVolumeDataToWriter {
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
-                    ArrayComponentId observer_group_id,
+                    Parallel::ArrayComponentId observer_group_id,
                     const std::string& subfile_name,
-                    std::unordered_map<observers::ArrayComponentId,
+                    std::unordered_map<Parallel::ArrayComponentId,
                                        std::vector<ElementVolumeData>>&&
                         received_volume_data) {
     apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
@@ -186,8 +188,9 @@ struct ContributeVolumeDataToWriter {
       const ArrayIndex& /*array_index*/,
       const gsl::not_null<Parallel::NodeLock*> node_lock,
       const observers::ObservationId& observation_id,
-      ArrayComponentId observer_group_id, const std::string& subfile_name,
-      std::unordered_map<observers::ArrayComponentId, ElementVolumeData>&&
+      Parallel::ArrayComponentId observer_group_id,
+      const std::string& subfile_name,
+      std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>&&
           received_volume_data) {
     apply_impl<Tags::TensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
@@ -202,7 +205,7 @@ struct ContributeVolumeDataToWriter {
                          Parallel::GlobalCache<Metavariables>& cache,
                          const gsl::not_null<Parallel::NodeLock*> node_lock,
                          const observers::ObservationId& observation_id,
-                         ArrayComponentId observer_group_id,
+                         Parallel::ArrayComponentId observer_group_id,
                          const std::string& subfile_name,
                          const VolumeDataAtObsId& received_volume_data) {
     // The below gymnastics with pointers is done in order to minimize the
@@ -217,7 +220,8 @@ struct ContributeVolumeDataToWriter {
     typename TensorDataTag::type* all_volume_data = nullptr;
     VolumeDataAtObsId volume_data;
     Parallel::NodeLock* volume_file_lock = nullptr;
-    std::unordered_map<ObservationId, std::unordered_set<ArrayComponentId>>*
+    std::unordered_map<ObservationId,
+                       std::unordered_set<Parallel::ArrayComponentId>>*
         volume_observers_contributed = nullptr;
     Parallel::NodeLock* volume_data_lock = nullptr;
     size_t observations_registered_with_id = std::numeric_limits<size_t>::max();
@@ -232,12 +236,14 @@ struct ContributeVolumeDataToWriter {
               const gsl::not_null<typename TensorDataTag::type*>
                   volume_data_ptr,
               const gsl::not_null<std::unordered_map<
-                  ObservationId, std::unordered_set<ArrayComponentId>>*>
+                  ObservationId,
+                  std::unordered_set<Parallel::ArrayComponentId>>*>
                   volume_observers_contributed_ptr,
               const gsl::not_null<Parallel::NodeLock*> volume_data_lock_ptr,
               const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
-              const std::unordered_map<ObservationKey,
-                                       std::unordered_set<ArrayComponentId>>&
+              const std::unordered_map<
+                  ObservationKey,
+                  std::unordered_set<Parallel::ArrayComponentId>>&
                   observations_registered) {
             const ObservationKey& key{observation_id.observation_key()};
             const auto& registered_group_ids = observations_registered.at(key);

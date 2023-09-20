@@ -4,7 +4,6 @@
 set(LIBRARY "Test_Observer")
 
 set(LIBRARY_SOURCES
-  Test_ArrayComponentId.cpp
   Test_GetLockPointer.cpp
   Test_Initialize.cpp
   Test_ObservationId.cpp

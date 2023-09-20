@@ -12,12 +12,12 @@
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
@@ -131,19 +131,19 @@ void check_observer_registration() {
   // Test registration occurred as expected
   const observers::ObservationKey obs_id_key{"ElementObservationType"};
   std::unordered_map<observers::ObservationKey,
-                     std::unordered_set<observers::ArrayComponentId>>
+                     std::unordered_set<Parallel::ArrayComponentId>>
       expected_obs_ids{};
   for (const auto& id : element_ids) {
     expected_obs_ids[obs_id_key].insert(
-        observers::ArrayComponentId{std::add_pointer_t<element_comp>{nullptr},
-                                    Parallel::ArrayIndex<ElementId<2>>(id)});
+        Parallel::ArrayComponentId{std::add_pointer_t<element_comp>{nullptr},
+                                   Parallel::ArrayIndex<ElementId<2>>(id)});
   }
   std::unordered_map<observers::ObservationKey,
-                     std::unordered_set<observers::ArrayComponentId>>
+                     std::unordered_set<Parallel::ArrayComponentId>>
       expected_obs_writer_ids{};
   expected_obs_writer_ids[obs_id_key].insert(
-      observers::ArrayComponentId{std::add_pointer_t<obs_component>{nullptr},
-                                  Parallel::ArrayIndex<int>(0)});
+      Parallel::ArrayComponentId{std::add_pointer_t<obs_component>{nullptr},
+                                 Parallel::ArrayIndex<int>(0)});
 
   CHECK(
       ActionTesting::get_databox_tag<
