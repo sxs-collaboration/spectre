@@ -221,6 +221,12 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Configure annotations
+        # Has to be accessible outside the container, see issue:
+        # https://github.com/actions/toolkit/issues/305
+        run: |
+          cp .github/problem_matchers/ClangTidy.json "$HOME/"
+          echo "::add-matcher::$HOME/ClangTidy.json"
       - name: Fetch sxs-collaboration/spectre/develop
         run: >
           cd $GITHUB_WORKSPACE
