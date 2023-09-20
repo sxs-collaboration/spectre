@@ -127,7 +127,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
       // Same for v0 and v1
       p | angle_f_of_t_;
       expiration_time_.store(angle_f_of_t_.time_bounds()[1],
-                             std::memory_order_relaxed);
+                             std::memory_order_release);
 
       if (version == 0) {
         stored_quaternion_size_.store(stored_quaternions_and_times_.size(),
@@ -146,7 +146,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
         p | expiration_time_;
       } else {
         expiration_time_.store(angle_f_of_t_.time_bounds()[1],
-                               std::memory_order_relaxed);
+                               std::memory_order_release);
       }
 
       size_t size = 0;
