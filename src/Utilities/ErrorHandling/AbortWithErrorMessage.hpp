@@ -26,12 +26,15 @@
 /// We try to demangle and format the backtrace. Long symbol names are
 /// abbreviated, unless you set the `SPECTRE_SHOW_FULL_BACKTRACE_SYMBOLS`
 /// environment variable to a non-empty value (e.g. "1").
+template <typename ExceptionTypeToThrow>
 [[noreturn]] void abort_with_error_message(const char* file, int line,
                                            const char* pretty_function,
                                            const std::string& message);
 
 /// \ingroup ErrorHandlingGroup
 /// Compose an error message without a backtrace and abort the program.
+///
+/// \note This always throws `SpectreError` as the exception type.
 [[noreturn]] void abort_with_error_message_no_trace(const char* file, int line,
                                                     const char* pretty_function,
                                                     const std::string& message);

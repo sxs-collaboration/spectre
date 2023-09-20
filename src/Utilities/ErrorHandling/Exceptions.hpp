@@ -20,6 +20,17 @@ class SpectreError : public std::runtime_error {
 };
 
 /// \ingroup ErrorHandlingGroup
+/// Exception indicating an ERROR was triggered because of an FPE
+///
+/// \note You cannot rely on catching this exception for recovering from
+/// FPEs because not all compilers and hardware properly support throwing
+/// exceptions on FPEs.
+class SpectreFpe : public std::runtime_error {
+ public:
+  explicit SpectreFpe(const std::string& message) : runtime_error(message) {}
+};
+
+/// \ingroup ErrorHandlingGroup
 /// Exception indicating convergence failure
 class convergence_error : public std::runtime_error {
  public:

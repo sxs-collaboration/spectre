@@ -5,6 +5,7 @@
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 
 #include <csignal>
 
@@ -30,7 +31,7 @@ const int exception_flags = FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW;
 #elif SPECTRE_FPE_FENV
   feenableexcept(exception_flags);
 #endif
-  ERROR("Floating point exception!");
+  ERROR_AS("Floating point exception!", SpectreFpe);
 }
 }  // namespace
 

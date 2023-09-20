@@ -3,10 +3,12 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <catch2/matchers/catch_matchers.hpp>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 #if SPECTRE_FPE_CSR
@@ -58,14 +60,20 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions",
   CHECK(true);
 #else
   enable_floating_point_exceptions();
-  CHECK_THROWS_WITH(throw_invalid(), Catch::Matchers::ContainsSubstring(
-                                         "Floating point exception!"));
+  CHECK_THROWS_MATCHES(
+      throw_invalid(), SpectreFpe,
+      Catch::Matchers::MessageMatches(
+          Catch::Matchers::ContainsSubstring("Floating point exception!")));
 
-  CHECK_THROWS_WITH(throw_overflow(), Catch::Matchers::ContainsSubstring(
-                                          "Floating point exception!"));
+  CHECK_THROWS_MATCHES(
+      throw_overflow(), SpectreFpe,
+      Catch::Matchers::MessageMatches(
+          Catch::Matchers::ContainsSubstring("Floating point exception!")));
 
-  CHECK_THROWS_WITH(throw_div_by_zero(), Catch::Matchers::ContainsSubstring(
-                                             "Floating point exception!"));
+  CHECK_THROWS_MATCHES(
+      throw_div_by_zero(), SpectreFpe,
+      Catch::Matchers::MessageMatches(
+          Catch::Matchers::ContainsSubstring("Floating point exception!")));
 #endif
 }
 
