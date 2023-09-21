@@ -52,8 +52,8 @@ void weyl_psi1_impl(
     const SpinWeighted<ComplexDataVector, 1>& eth_dy_beta,
     const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
 
-  const double prefac = 1./sqrt(2048.); // compile time const, but
-                                        // sqrt is not constexpr yet
+  const double prefac = 1./sqrt(128.); // compile time const, but
+                                       // sqrt is not constexpr yet
   const auto one_plus_k = 1. + bondi_k;
   const auto eth_beta_plus_half_q = eth_beta + 0.5 * bondi_q;
   const auto conj_j_times_dy_j = conj(bondi_j) * dy_j;
@@ -69,15 +69,15 @@ void weyl_psi1_impl(
        + 2. * (dy_q + bondi_j * conj(dy_q))
        - one_plus_k * (2. * dy_q + dy_j * conj(eth_beta_plus_half_q)));
 
-  *psi_1 = prefac * square(one_minus_y) / square(bondi_r) / sqrt(one_plus_k)
-    * (4. * bondi_j * conj(eth_beta_plus_half_q)
-       - 4. * one_plus_k * eth_beta_plus_half_q
+  *psi_1 = prefac * square(one_minus_y) / (square(bondi_r) * sqrt(one_plus_k))
+    * (bondi_j * conj(eth_beta_plus_half_q)
+       - one_plus_k * eth_beta_plus_half_q
        + one_minus_y
-       * (4. * eth_dy_beta * one_plus_k
-          - 4. * bondi_j * conj(eth_dy_beta)
-          + 4. * dy_beta * (one_plus_k * eth_r_divided_by_r
-                            - bondi_j * conj(eth_r_divided_by_r))
-          + inner_expr / bondi_k));
+       * (eth_dy_beta * one_plus_k
+          - bondi_j * conj(eth_dy_beta)
+          + dy_beta * (one_plus_k * eth_r_divided_by_r
+                       - bondi_j * conj(eth_r_divided_by_r))
+          + 0.25 * inner_expr / bondi_k));
 }
 }  // namespace
 

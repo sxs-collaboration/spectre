@@ -79,22 +79,21 @@ struct VolumeWeyl<Tags::Psi0> {
  *
  * \f{align*}{
  * \Psi_1 =
- * &\frac{(1-y)^2}{\sqrt{2048} \sqrt{1 + K} R^2}\Bigg\{
- * 4 J(\bar{\eth }\beta + \tfrac{1}{2} \bar{Q})
- * - 4(1 + K) (\eth \beta + \tfrac{1}{2} Q) \\
+ * &\frac{(1-y)^2}{\sqrt{128} \sqrt{1 + K} R^2}\Bigg\{
+ * J(\bar{\eth }\beta + \tfrac{1}{2} \bar{Q})
+ * - (1 + K) (\eth \beta + \tfrac{1}{2} Q) \\
  * &+(1-y)\Bigg[
- * 4 (1 + K)\eth\partial_{y}\beta -4 J\bar{\eth }\partial_{y}\beta
- * + 4 \left(- J \frac{\bar{\eth }' R}{R} + (1 + K) \frac{\eth ' R}{R}\right)
+ * (1 + K)\eth\partial_{y}\beta - J\bar{\eth }\partial_{y}\beta
+ * + \left(- J \frac{\bar{\eth} R}{R} + (1 + K) \frac{\eth R}{R}\right)
  * \partial_{y}\beta \\
- * &\quad + \frac{1}{K}\Bigg(
+ * &\quad + \frac{1}{4K}\Bigg(
  * J\left\{
  * -2 \partial_{y}\bar{Q} + \partial_{y}\bar{J} [2 (\eth\beta + \tfrac{1}{2}Q) +
  * J(\bar{\eth}\beta + \tfrac{1}{2} \bar{Q})]
  * \right\}\\
  * &\qquad +(1+K)\Big\{
  * 2 (\partial_{y}Q + J \partial_{y}\bar{Q}) + (\bar{J} \partial_{y}J - J
- * \partial_{y}\bar{J}) (\eth\beta + \tfrac{1}{2} Q)
- * \\
+ * \partial_{y}\bar{J}) (\eth\beta + \tfrac{1}{2} Q) \\
  * &\qquad\quad - (1+K)
  * [2 \partial_{y}Q + \partial _{y}J (\bar{\eth }\beta + \tfrac{1}{2} \bar{Q})]
  * \Big\}\Bigg)\Bigg]\Bigg\}
