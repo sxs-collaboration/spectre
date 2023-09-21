@@ -238,7 +238,6 @@ jobs:
 
           git fetch upstream develop
       - name: Configure with cmake
-        working-directory: /work
         # Notes on the build configuration:
         # - Set `BUILD_TESTING=OFF` to test a CMake configuration with tests
         #   turned off.
@@ -257,15 +256,24 @@ jobs:
           -D BUILD_PYTHON_BINDINGS=ON
           -D BUILD_TESTING=OFF
           $GITHUB_WORKSPACE
+
+          make SpectrePch
+      - name: Use new clang-tidy-diff
+        # The clang-tidy-diff tool shipped with clang 14 doesn't report exit
+        # codes, so we grab the version that does:
+        # https://github.com/llvm/llvm-project/commit/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47
+        run: |
+          wget https://raw.githubusercontent.com/llvm/llvm-project/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47/clang-tools-extra/clang-tidy/tool/clang-tidy-diff.py
+          chmod +x clang-tidy-diff.py
+          mv clang-tidy-diff.py /usr/bin/clang-tidy-diff
       - name: Check clang-tidy
-        working-directory: /work/build
         run: >
-          UPSTREAM_HASH=$(
-            cd $GITHUB_WORKSPACE && git merge-base HEAD upstream/develop)
+          UPSTREAM_HASH=$(git merge-base HEAD upstream/develop)
 
           echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
-          make clang-tidy-hash HASH=$UPSTREAM_HASH NUM_THREADS=2
+          git diff -U0 $UPSTREAM_HASH |
+            clang-tidy-diff -path build -p1 -use-color -j2
 
   # Build the documentation and check for problems, then upload as a workflow
   # artifact and deploy to gh-pages.
