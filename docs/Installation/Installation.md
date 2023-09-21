@@ -57,10 +57,12 @@ all of these dependencies.
 
 #### Required:
 
-* [GCC](https://gcc.gnu.org/) 9.1 or later,
-[Clang](https://clang.llvm.org/) 13.0 or later (see
-[here](https://apt.llvm.org/) for how to get newer versions of clang through
-apt), or AppleClang 13.0.0 or later
+* A C++ compiler. We currently test the following:
+  - [GCC](https://gcc.gnu.org/) 9.5.0, 10.5.0, 11.4.0
+  - [Clang](https://clang.llvm.org/) 13.0.1, 14.0.0
+    (see [here](https://apt.llvm.org/) for how to get newer versions of clang
+    through apt)
+  - AppleClang 13.0.0 (tested on CI), 14.0.3 (tested on personal dev machines)
 * [CMake](https://cmake.org/) 3.18.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
   \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
