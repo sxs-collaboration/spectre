@@ -227,7 +227,7 @@ struct mock_interpolation_target {
                                intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
-  using array_index = size_t;
+  using array_index = int;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename InterpolationTargetTag::compute_target_points,
@@ -247,7 +247,7 @@ template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
-  using array_index = size_t;
+  using array_index = int;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolator<
@@ -379,7 +379,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    for (size_t indx = 0; indx < 5; ++indx) {
+    for (int indx = 0; indx < 5; ++indx) {
       ActionTesting::next_action<interp_component>(make_not_null(&runner),
                                                    indx);
     }

@@ -19,6 +19,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -141,13 +142,15 @@ struct simple_action_check_and_use_stored_double {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) {
+                    const ArrayIndex& array_index) {
     ++number_of_calls_to_check_and_use_stored_double_is_ready;
     auto& this_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
+    const auto array_component_id =
+        Parallel::make_array_component_id<ParallelComponent>(array_index);
     const bool is_ready =
         ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
-            cache,
+            cache, array_component_id,
             [&this_proxy](const std::vector<double>& VectorOfDoubles)
                 -> std::unique_ptr<Parallel::Callback> {
               return VectorOfDoubles.empty()
@@ -175,14 +178,16 @@ struct use_stored_double {
       db::DataBox<DbTags>& /*box*/,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     ++number_of_calls_to_use_stored_double_is_ready;
     // [check_mutable_cache_item_is_ready]
     auto& this_proxy = Parallel::get_parallel_component<
         UseMutatedCacheComponent<Metavariables>>(cache);
+    const Parallel::ArrayComponentId array_component_id =
+        Parallel::make_array_component_id<ParallelComponent>(array_index);
     if (not ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
-            cache,
+            cache, array_component_id,
             [&this_proxy](const std::vector<double>& VectorOfDoubles)
                 -> std::unique_ptr<Parallel::Callback> {
               return VectorOfDoubles.empty()

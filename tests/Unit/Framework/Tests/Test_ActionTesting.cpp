@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"
@@ -1171,21 +1172,19 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
 
   auto& cache = ActionTesting::cache<component>(runner, 0);
   auto& element_proxy = ::Parallel::get_parallel_component<component>(cache)[0];
+  const auto array_component_id =
+      Parallel::make_array_component_id<component>(static_cast<int>(0));
 
   CHECK(Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [](const int /*value*/) {
+      cache, array_component_id, [](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>{};
       }));
 
+  // We cannot have two different types of callbacks at once in the mutable
+  // cache, so we test the simple action callbacks first while mutating the
+  // cache, then test the algorithm callbacks
   CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&element_proxy](const int /*value*/) {
-        return std::unique_ptr<Parallel::Callback>(
-            new Parallel::PerformAlgorithmCallback<decltype(element_proxy)>(
-                element_proxy));
-      }));
-
-  CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&element_proxy](const int /*value*/) {
+      cache, array_component_id, [&element_proxy](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>(
             new Parallel::SimpleActionCallback<SimpleActionToTest,
                                                decltype(element_proxy)>(
@@ -1213,7 +1212,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   auto& all_elements_proxy =
       ::Parallel::get_parallel_component<component>(cache);
   CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&all_elements_proxy](const int /*value*/) {
+      cache, array_component_id, [&all_elements_proxy](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>(
             new Parallel::SimpleActionCallback<SimpleActionToTest,
                                                decltype(all_elements_proxy)>(
@@ -1236,6 +1235,12 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   // Currently perform_algorithm cannot be called on all elements at
   // once (in the ActionTesting framework), but this is not difficult
   // to add in the future.
+  CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
+      cache, array_component_id, [&element_proxy](const int /*value*/) {
+        return std::unique_ptr<Parallel::Callback>(
+            new Parallel::PerformAlgorithmCallback<decltype(element_proxy)>(
+                element_proxy));
+      }));
 }
 }  // namespace TestMutableGlobalCache
 
