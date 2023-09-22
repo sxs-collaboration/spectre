@@ -133,6 +133,9 @@ Worldtube:
         Interval: 200
         Offset: 0
 
+Interpolator:
+  Verbosity: Silent
+
 InterpolationTargets:
   PsiAlongAxis1:
     Begin: [0., 0., 0.]

@@ -200,6 +200,7 @@ Observers:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+  Verbosity: Silent
 
 ApparentHorizons:
   AhA: &AhA

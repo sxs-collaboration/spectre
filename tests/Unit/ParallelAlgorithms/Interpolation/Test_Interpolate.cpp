@@ -24,6 +24,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -230,7 +231,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
           0.0, std::array<DataVector, 1>{{DataVector{1, 0.0}}},
           initial_expr_time);
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {}, {std::move(functions_of_time)}};
+      {::Verbosity::Silent}, {std::move(functions_of_time)}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);

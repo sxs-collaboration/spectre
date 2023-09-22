@@ -10,10 +10,14 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -128,6 +132,12 @@ struct ReceivePoints {
           }
         },
         make_not_null(&box));
+
+    if (Parallel::get<intrp::Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+      Parallel::printf("%s, received points.\n",
+                       InterpolationTarget_detail::interpolator_output_prefix<
+                           InterpolationTargetTag>(temporal_id));
+    }
 
     try_to_interpolate<InterpolationTargetTag>(
         make_not_null(&box), make_not_null(&cache), temporal_id);

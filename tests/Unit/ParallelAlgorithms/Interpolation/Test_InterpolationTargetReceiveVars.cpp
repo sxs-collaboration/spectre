@@ -28,6 +28,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -361,16 +362,21 @@ void test_interpolation_target_receive_vars() {
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
             0.0, std::array<double, 3>({{0.0, 0.0, 0.0}})));
+    tuples::TaggedTuple<domain::Tags::Domain<3>, intrp::Tags::Verbosity>
+        const_opts{domain_creator.create_domain(), ::Verbosity::Silent};
+    tuples::TaggedTuple<domain::Tags::FunctionsOfTimeInitialize> mutable_opts{
+        domain_creator.functions_of_time(initial_expiration_times)};
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
-        domain_creator.create_domain(),
-        domain_creator.functions_of_time(initial_expiration_times));
+        std::move(const_opts), std::move(mutable_opts));
   } else {
     current_temporal_ids.insert(current_temporal_ids.end(),
                                 {first_time, second_time});
     const auto domain_creator = domain::creators::Sphere(
         0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+    tuples::TaggedTuple<domain::Tags::Domain<3>, intrp::Tags::Verbosity> opts{
+        domain_creator.create_domain(), ::Verbosity::Silent};
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
-        domain_creator.create_domain());
+        std::move(opts));
   }
   auto& runner = *runner_ptr;
 

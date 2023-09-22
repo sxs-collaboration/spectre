@@ -36,6 +36,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -261,9 +262,9 @@ void run_test(gsl::not_null<Generator*> generator,
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       ::intrp::Tags::LineSegment<typename metavars::LineA, Dim>,
                       ::intrp::Tags::LineSegment<typename metavars::LineB, Dim>,
-                      domain::Tags::Domain<Dim>>
+                      ::intrp::Tags::Verbosity, domain::Tags::Domain<Dim>>
       tuple_of_opts{h5_file_prefix, line_segment_opts_A, line_segment_opts_B,
-                    domain_creator.create_domain()};
+                    ::Verbosity::Silent, domain_creator.create_domain()};
 
   // Three mock nodes, with 2, 1, and 4 mock cores.
   ActionTesting::MockRuntimeSystem<metavars> runner{

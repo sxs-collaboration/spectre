@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <sstream>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -89,6 +91,16 @@ struct InterpolationTargetVarsFromElement {
         not InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Use InterpolationTargetGetVarsFromElement only with non-sequential"
         " compute_target_points");
+    std::stringstream ss{};
+    const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool debug_print = verbosity >= ::Verbosity::Debug;
+    const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+    if (verbose_print) {
+      ss << InterpolationTarget_detail::target_output_prefix<
+                InterpolationTargetVarsFromElement, InterpolationTargetTag>(
+                temporal_id)
+         << ", ";
+    }
     // Check if we already have completed interpolation at this
     // temporal_id.
     const auto& completed_ids =
@@ -150,7 +162,7 @@ struct InterpolationTargetVarsFromElement {
     }
 
     if (InterpolationTarget_detail::have_data_at_all_points<
-            InterpolationTargetTag>(box, temporal_id)) {
+            InterpolationTargetTag>(box, temporal_id, verbosity)) {
       // Check if functions of time are ready on this component. Since this
       // simple action has already been called, we don't need to resend the
       // data, so we just pass empty vectors for vars_src and
@@ -174,6 +186,13 @@ struct InterpolationTargetVarsFromElement {
           make_not_null(&box), make_not_null(&cache), temporal_id);
       InterpolationTarget_detail::clean_up_interpolation_target<
           InterpolationTargetTag>(make_not_null(&box), temporal_id);
+      if (verbose_print) {
+        ss << "calling callbacks and cleaning up target.";
+        Parallel::printf("%s\n", ss.str());
+      }
+    } else if (debug_print) {
+      ss << "not enough data. Waiting. See Total/valid/invalid points line.";
+      Parallel::printf("%s\n", ss.str());
     }
   }
 };

@@ -3,18 +3,25 @@
 
 #pragma once
 
+#include <limits>
+#include <sstream>
+#include <string>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace intrp::Actions {
 
@@ -28,6 +35,15 @@ void verify_temporal_ids_and_send_points_time_independent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     Parallel::GlobalCache<Metavariables>& cache) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
+  std::stringstream ss{};
+  const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+  const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+  if (verbose_print) {
+    ss << InterpolationTarget_detail::target_output_prefix<
+              VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
+              InterpolationTargetTag>()
+       << ", ";
+  }
 
   // Move all PendingTemporalIds to TemporalIds, provided
   // that they are not already there, and fill new_temporal_ids
@@ -76,6 +92,14 @@ void verify_temporal_ids_and_send_points_time_independent(
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
           my_proxy, new_temporal_ids.front());
+
+      if (verbose_print) {
+        ss << "Calling simple action to send points to interpolator at "
+              "temporal id "
+           << new_temporal_ids.front();
+      }
+    } else if (verbose_print) {
+      ss << "No temporal ids to send points at.";
     }
   } else {
     // Non-sequential: start interpolation for all new_temporal_ids.
@@ -85,6 +109,16 @@ void verify_temporal_ids_and_send_points_time_independent(
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
                                                                      id);
     }
+    if (verbose_print) {
+      using ::operator<<;
+      ss << "Calling simple action to send points to interpolator at temporal "
+            "ids "
+         << new_temporal_ids;
+    }
+  }
+
+  if (verbose_print) {
+    Parallel::printf("%s\n", ss.str());
   }
 }
 
@@ -95,10 +129,23 @@ void verify_temporal_ids_and_send_points_time_dependent(
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
+  std::stringstream ss{};
+  const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+  const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+  if (verbose_print) {
+    ss << InterpolationTarget_detail::target_output_prefix<
+              VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
+              InterpolationTargetTag>()
+       << ", ";
+  }
 
   const auto& pending_temporal_ids =
       db::get<Tags::PendingTemporalIds<TemporalId>>(*box);
   if (pending_temporal_ids.empty()) {
+    if (verbose_print) {
+      ss << "No pending temporal ids to send points at.";
+      Parallel::printf("%s\n", ss.str());
+    }
     return;  // Nothing to do if there are no pending temporal_ids.
   }
 
@@ -162,6 +209,10 @@ void verify_temporal_ids_and_send_points_time_dependent(
     // A callback has been set so that VerifyTemporalIdsAndSendPoints will
     // be called by the GlobalCache when domain::Tags::FunctionsOfTime is
     // updated.  So we can exit now.
+    if (verbose_print) {
+      ss << "At least one temporal id is not ready.";
+      Parallel::printf("%s\n", ss.str());
+    }
     return;
   }
 
@@ -217,6 +268,13 @@ void verify_temporal_ids_and_send_points_time_dependent(
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
           my_proxy, new_temporal_ids.front());
+      if (verbose_print) {
+        ss << "Calling simple action to send points to interpolator at "
+              "temporal id "
+           << new_temporal_ids.front();
+      }
+    } else if (verbose_print) {
+      ss << "No temporal ids to send points at.";
     }
   } else {
     // Non-sequential: start interpolation for all new_temporal_ids.
@@ -233,6 +291,17 @@ void verify_temporal_ids_and_send_points_time_dependent(
       Parallel::simple_action<
           VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(my_proxy);
     }
+
+    if (verbose_print) {
+      using ::operator<<;
+      ss << "Calling simple action to send points to interpolator at temporal "
+            "ids "
+         << new_temporal_ids;
+    }
+  }
+
+  if (verbose_print) {
+    Parallel::printf("%s\n", ss.str());
   }
 }
 }  // namespace detail
