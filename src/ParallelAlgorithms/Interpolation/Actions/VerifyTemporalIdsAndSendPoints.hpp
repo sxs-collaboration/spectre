@@ -6,6 +6,7 @@
 #include <deque>
 #include <limits>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -14,16 +15,19 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace intrp::Actions {
 /// \ingroup ActionsGroup
@@ -79,12 +83,32 @@ struct VerifyTemporalIdsAndSendPoints {
 
     using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
+    std::stringstream ss{};
+    const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+    if (verbose_print) {
+      ss << InterpolationTarget_detail::target_output_prefix<
+                VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
+                InterpolationTargetTag>()
+         << ", ";
+    }
+
     const auto& pending_temporal_ids =
         db::get<Tags::PendingTemporalIds<TemporalId>>(box);
     // Nothing to do if there's an interpolation in progress or there are no
     // pending temporal_ids.
     if (db::get<Tags::CurrentTemporalId<TemporalId>>(box).has_value() or
         pending_temporal_ids.empty()) {
+      if (verbose_print) {
+        if (db::get<Tags::CurrentTemporalId<TemporalId>>(box).has_value()) {
+          ss << "Interpolation already in progess at id "
+             << db::get<Tags::CurrentTemporalId<TemporalId>>(box).value();
+        } else {
+          ss << "No pending temporal ids to send points at.";
+        }
+        Parallel::printf("%s\n", ss.str());
+      }
+
       return;
     }
 
@@ -142,6 +166,12 @@ struct VerifyTemporalIdsAndSendPoints {
         }();
 
         if (not next_pending_id_is_ready) {
+          if (verbose_print) {
+            ss << "The next pending temporal id " << next_pending_id
+               << " is not ready.";
+            Parallel::printf("%s\n", ss.str());
+          }
+
           // A callback has been set so that VerifyTemporalIdsAndSendPoints will
           // be called by the GlobalCache when domain::Tags::FunctionsOfTime is
           // updated.  So we can exit now.
@@ -200,8 +230,18 @@ struct VerifyTemporalIdsAndSendPoints {
     if (const auto& current_id =
             db::get<Tags::CurrentTemporalId<TemporalId>>(box);
         current_id.has_value()) {
+      if (verbose_print) {
+        ss << "Going to send points to interpolator at temporal id "
+           << current_id.value();
+      }
       Actions::SendPointsToInterpolator<InterpolationTargetTag>::template apply<
           ParallelComponent>(box, cache, array_index, current_id.value());
+    } else if (verbose_print) {
+      ss << "No temporal ids to send points at.";
+    }
+
+    if (verbose_print) {
+      Parallel::printf("%s\n", ss.str());
     }
   }
 };
