@@ -78,6 +78,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const override;
 
+  double expiration_after(double time) const override;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

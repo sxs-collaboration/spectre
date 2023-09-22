@@ -60,6 +60,8 @@ void test(
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == initial_time);
   CHECK(t_bounds[1] == std::numeric_limits<double>::infinity());
+  CHECK(f_of_t->expiration_after(check_time) ==
+        std::numeric_limits<double>::infinity());
 
   INFO("Test stream operator.");
   CHECK(

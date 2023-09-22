@@ -47,6 +47,9 @@ void test(
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == 10.0);
+  CHECK(t_bounds[1] == std::numeric_limits<double>::infinity());
+  CHECK(f_of_t->expiration_after(match_time) ==
+        std::numeric_limits<double>::infinity());
 }
 }  // namespace
 

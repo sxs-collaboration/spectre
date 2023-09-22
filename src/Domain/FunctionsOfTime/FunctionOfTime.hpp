@@ -55,6 +55,16 @@ class FunctionOfTime : public PUP::able {
   /// interval.
   virtual std::array<double, 2> time_bounds() const = 0;
 
+  /// \brief The first expiration time after \p time.
+  ///
+  /// \details For non-updatable functions, this returns infinity. For
+  /// updatable functions, the first expiration time after \p time is
+  /// found by determining the update immediately before \p time. The
+  /// expiration time of this update is what is returned. If \p time
+  /// happens to be an update itself, then the expiration of that
+  /// update is returned.
+  virtual double expiration_after(double time) const = 0;
+
   /// Updates the maximum derivative of the FunctionOfTime at a given time while
   /// also resetting the expiration. By default, a FunctionOfTime cannot be
   /// updated.

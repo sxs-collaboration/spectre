@@ -280,7 +280,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
       t += time_step;
       expir_time += time_step;
       qfot.update(t, DataVector{3, 0.0}, expir_time);
+      CHECK(qfot.expiration_after(t) == expir_time);
+      CHECK(qfot.expiration_after(t + 0.5 * time_step) == expir_time);
+      CHECK(qfot.expiration_after(t - 0.5 * time_step) == t);
     }
+    CHECK(qfot.expiration_after(0.0) == time_step);
 
     // Get the quaternion and 2 derivatives at a certain time.
     double check_time = 5.398;
@@ -352,7 +356,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
       t += time_step;
       expir_time += time_step;
       qfot.update(t, DataVector{{0.0, 0.0, 2.0 * fac1}}, expir_time);
+      CHECK(qfot.expiration_after(t) == expir_time);
+      CHECK(qfot.expiration_after(t + 0.5 * time_step) == expir_time);
+      CHECK(qfot.expiration_after(t - 0.5 * time_step) == t);
     }
+    CHECK(qfot.expiration_after(0.0) == time_step);
 
     // Get the quaternion and 2 derivatives at a certain time.
     double check_time = 5.398;
@@ -431,7 +439,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
       t += time_step;
       expir_time += time_step;
       qfot.update(t, DataVector{{0.0, 0.0, 6.0 * fac1}}, expir_time);
+      CHECK(qfot.expiration_after(t) == expir_time);
+      CHECK(qfot.expiration_after(t + 0.5 * time_step) == expir_time);
+      CHECK(qfot.expiration_after(t - 0.5 * time_step) == t);
     }
+    CHECK(qfot.expiration_after(0.0) == time_step);
 
     // Get the quaternion and 2 derivatives at a certain time.
     double check_time = 5.398;

@@ -84,6 +84,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// Returns domain of validity for the function of time
   std::array<double, 2> time_bounds() const override;
 
+  double expiration_after(double time) const override;
+
   /// Updates the `MaxDeriv`th derivative of the angle piecewisepolynomial at
   /// the given time, then updates the stored quaternions.
   ///
