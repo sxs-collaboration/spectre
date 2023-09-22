@@ -111,9 +111,24 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         rest_mass_density_times_lorentz_factor / current_lorentz_factor;
 
     if (converged) {
-      return PrimitiveRecoveryData{current_rest_mass_density,
-                                   current_lorentz_factor, current_pressure,
-                                   rho_h_w_squared, electron_fraction};
+      double current_specific_internal_energy{};
+      if constexpr (ThermodynamicDim == 1) {
+        current_specific_internal_energy =
+            get(equation_of_state.specific_internal_energy_from_density(
+                Scalar<double>(current_rest_mass_density)));
+      } else if constexpr (ThermodynamicDim == 2) {
+        current_specific_internal_energy =
+            get(equation_of_state
+                    .specific_internal_energy_from_density_and_pressure(
+                        Scalar<double>(current_rest_mass_density),
+                        Scalar<double>(current_pressure)));
+      } else if constexpr (ThermodynamicDim == 3) {
+        ERROR("3d EOS not implemented");
+      }
+      return PrimitiveRecoveryData{
+          current_rest_mass_density, current_lorentz_factor,
+          current_pressure,          current_specific_internal_energy,
+          rho_h_w_squared,           electron_fraction};
     }
 
     const double current_specific_enthalpy = [rho_h_w_squared,

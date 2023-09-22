@@ -137,12 +137,15 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
   const double rest_mass_density =
       rest_mass_density_times_lorentz_factor / lorentz_factor;
   double pressure = std::numeric_limits<double>::signaling_NaN();
+  double specific_internal_energy = f_of_x.specific_internal_energy(
+      specific_enthalpy_times_lorentz_factor, lorentz_factor);
   if constexpr (ThermodynamicDim == 1) {
     pressure = get(equation_of_state.pressure_from_density(
         Scalar<double>(rest_mass_density)));
+    specific_internal_energy =
+        get(equation_of_state.specific_internal_energy_from_density(
+            Scalar<double>(rest_mass_density)));
   } else if constexpr (ThermodynamicDim == 2) {
-    const double specific_internal_energy = f_of_x.specific_internal_energy(
-        specific_enthalpy_times_lorentz_factor, lorentz_factor);
     pressure = get(equation_of_state.pressure_from_density_and_energy(
         Scalar<double>(rest_mass_density),
         Scalar<double>(specific_internal_energy)));
@@ -150,7 +153,10 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     ERROR("3d EOS not implemented");
   }
 
-  return PrimitiveRecoveryData{rest_mass_density, lorentz_factor, pressure,
+  return PrimitiveRecoveryData{rest_mass_density,
+                               lorentz_factor,
+                               pressure,
+                               specific_internal_energy,
                                specific_enthalpy_times_lorentz_factor *
                                    rest_mass_density_times_lorentz_factor,
                                electron_fraction};

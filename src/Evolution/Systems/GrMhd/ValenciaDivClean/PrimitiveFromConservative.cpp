@@ -134,7 +134,11 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
         const double specific_enthalpy_at_point =
             1.0 + specific_energy_at_point + pressure_at_point / floorD;
         primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
-            floorD, 1.0, pressure_at_point, floorD * specific_enthalpy_at_point,
+            floorD,
+            1.0,
+            pressure_at_point,
+            specific_energy_at_point,
+            floorD * specific_enthalpy_at_point,
             get(*electron_fraction)[s]};
       }
       else if constexpr (ThermodynamicDim == 1) {
@@ -148,7 +152,11 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
         const double specific_enthalpy_at_point =
             1.0 + specific_energy_at_point + pressure_at_point / floorD;
         primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
-            floorD, 1.0, pressure_at_point, floorD * specific_enthalpy_at_point,
+            floorD,
+            1.0,
+            pressure_at_point,
+            specific_energy_at_point,
+            floorD * specific_enthalpy_at_point,
             get(*electron_fraction)[s]};
       }
     } else {
@@ -202,19 +210,12 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
-
-      // We store rho * h here temporarily and divide by rho two lines later.
-      get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
-                                   (primitive_data.value().lorentz_factor *
-                                    primitive_data.value().lorentz_factor);
       get(*specific_internal_energy)[s] =
-          (get(*specific_enthalpy)[s] -
-           primitive_data.value().rest_mass_density -
-           primitive_data.value().pressure) /
-          primitive_data.value().rest_mass_density;
-
-      get(*specific_enthalpy)[s] /= primitive_data.value().rest_mass_density;
-
+          primitive_data.value().specific_internal_energy;
+      get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
+                                   (primitive_data.value().rest_mass_density *
+                                    primitive_data.value().lorentz_factor *
+                                    primitive_data.value().lorentz_factor);
     } else {
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "

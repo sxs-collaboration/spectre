@@ -326,12 +326,14 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
              specific_internal_energy, q_bar, r_bar_squared] =
       f_of_mu.primitives(one_over_specific_enthalpy_times_lorentz_factor);
 
-  (void)(specific_internal_energy);
   (void)(q_bar);
   (void)(r_bar_squared);
 
   return PrimitiveRecoveryData{
-      rest_mass_density, lorentz_factor, pressure,
+      rest_mass_density,
+      lorentz_factor,
+      pressure,
+      specific_internal_energy,
       rest_mass_density_times_lorentz_factor /
           one_over_specific_enthalpy_times_lorentz_factor,
       electron_fraction};

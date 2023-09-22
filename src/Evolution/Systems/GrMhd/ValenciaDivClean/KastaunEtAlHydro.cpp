@@ -45,7 +45,6 @@ class FunctionOfZ {
             rest_mass_density_times_lorentz_factor),
         electron_fraction_(electron_fraction),
         equation_of_state_(equation_of_state) {
-
     // Internal consistency check
     //
     const double rho_min =
@@ -198,7 +197,10 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
              specific_internal_energy] = f_of_z.primitives(z);
 
   return PrimitiveRecoveryData{
-      rest_mass_density, lorentz_factor, pressure,
+      rest_mass_density,
+      lorentz_factor,
+      pressure,
+      specific_internal_energy,
       (rest_mass_density * (1. + specific_internal_energy) + pressure) *
           (1. + z * z),
       electron_fraction};
