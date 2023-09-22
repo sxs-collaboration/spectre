@@ -103,7 +103,7 @@ apt), or AppleClang 13.0.0 or later
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
   bindings \cite Pybind11
-* [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 or later — to
+* [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 to 1.9.6 — to
   generate documentation
 * Python dev dependencies listed in `support/Python/dev_requirements.txt`
   — for documentation pre- and post-processing, formatting code, etc.
