@@ -22,8 +22,8 @@ namespace PrimitiveRecoverySchemes {
  * the scheme of [Palenzuela et al, Phys. Rev. D 92, 044045
  * (2015)](https://doi.org/10.1103/PhysRevD.92.044045).
  *
- * In the notation of the Palenzuela paper, `total_energy_density` is \f$D
- * (1+q)\f$, `momentum_density_squared` is \f$r^2 D^2\f$,
+ * In the notation of the Palenzuela paper, `tau` is \f$D q\f$,
+ * `momentum_density_squared` is \f$r^2 D^2\f$,
  * `momentum_density_dot_magnetic_field` is \f$t D^{\frac{3}{2}}\f$,
  * `magnetic_field_squared` is \f$s D\f$, and
  * `rest_mass_density_times_lorentz_factor` is \f$D\f$.
@@ -49,7 +49,7 @@ class PalenzuelaEtAl {
  public:
   template <size_t ThermodynamicDim>
   static std::optional<PrimitiveRecoveryData> apply(
-      double /*initial_guess_pressure*/, double total_energy_density,
+      double /*initial_guess_pressure*/, double tau,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,

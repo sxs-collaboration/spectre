@@ -23,8 +23,8 @@ namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
  * \brief Compute the primitive variables from the conservative variables using
  * the scheme of \cite Kastaun2020uxr.
  *
- * In the notation of the Kastaun paper, `total_energy_density` is \f$D
- * (1+q)\f$, `momentum_density_squared` is \f$r^2 D^2\f$,
+ * In the notation of the Kastaun paper, `tau` is \f$D q)\f$,
+ * `momentum_density_squared` is \f$r^2 D^2\f$,
  * `momentum_density_dot_magnetic_field` is \f$t D^{\frac{3}{2}}\f$,
  * `magnetic_field_squared` is \f$s D\f$, and
  * `rest_mass_density_times_lorentz_factor` is \f$D\f$.
@@ -51,7 +51,7 @@ class KastaunEtAl {
  public:
   template <size_t ThermodynamicDim>
   static std::optional<PrimitiveRecoveryData> apply(
-      double initial_guess_pressure, double total_energy_density,
+      double initial_guess_pressure, double tau,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,

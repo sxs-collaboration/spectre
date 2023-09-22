@@ -69,17 +69,15 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   for (size_t i = 0; i < 3; ++i) {
     magnetic_field->get(i) = tilde_b.get(i) / get(sqrt_det_spatial_metric);
   }
-  const size_t size = get<0>(tilde_b).size();
+  const size_t number_of_points = get<0>(tilde_b).size();
   Variables<
       tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                  ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
                  ::Tags::TempScalar<4>, ::Tags::TempI<5, 3, Frame::Inertial>>>
-      temp_buffer(size);
+      temp_buffer(number_of_points);
 
-  DataVector& total_energy_density =
-      get(get<::Tags::TempScalar<0>>(temp_buffer));
-  total_energy_density =
-      (get(tilde_tau) + get(tilde_d)) / get(sqrt_det_spatial_metric);
+  DataVector& tau = get(get<::Tags::TempScalar<0>>(temp_buffer));
+  tau = get(tilde_tau) / get(sqrt_det_spatial_metric);
 
   tnsr::I<DataVector, 3, Frame::Inertial>& tilde_s_upper =
       get<::Tags::TempI<5, 3, Frame::Inertial>>(temp_buffer);
@@ -115,7 +113,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
 
   // This may need bounds
   // limit Ye to table bounds once that is implemented
-  for (size_t s = 0; s < total_energy_density.size(); ++s) {
+  for (size_t s = 0; s < number_of_points; ++s) {
     get(*electron_fraction)[s] =
         std::min(0.5, std::max(get(tilde_ye)[s] / get(tilde_d)[s], 0.));
 
@@ -154,37 +152,37 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             get(*electron_fraction)[s]};
       }
     } else {
+      auto apply_scheme =
+          [&pressure, &primitive_data, &tau, &momentum_density_squared,
+           &momentum_density_dot_magnetic_field, &magnetic_field_squared,
+           &rest_mass_density_times_lorentz_factor, &equation_of_state, &s,
+           &electron_fraction](auto scheme) {
+            using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
+            if (not primitive_data.has_value()) {
+              primitive_data =
+                  primitive_recovery_scheme::template apply<ThermodynamicDim>(
+                      get(*pressure)[s], tau[s],
+                      get(momentum_density_squared)[s],
+                      get(momentum_density_dot_magnetic_field)[s],
+                      get(magnetic_field_squared)[s],
+                      rest_mass_density_times_lorentz_factor[s],
+                      get(*electron_fraction)[s], equation_of_state);
+            }
+          };
 
-    auto apply_scheme =
-        [&pressure, &primitive_data, &total_energy_density,
-         &momentum_density_squared, &momentum_density_dot_magnetic_field,
-         &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
-         &equation_of_state, &s, &electron_fraction](auto scheme) {
-          using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
-          if (not primitive_data.has_value()) {
-            primitive_data =
-                primitive_recovery_scheme::template apply<ThermodynamicDim>(
-                    get(*pressure)[s], total_energy_density[s],
-                    get(momentum_density_squared)[s],
-                    get(momentum_density_dot_magnetic_field)[s],
-                    get(magnetic_field_squared)[s],
-                    rest_mass_density_times_lorentz_factor[s],
-                    get(*electron_fraction)[s], equation_of_state);
-          }
-        };
-
-    // Check consistency
-    if (use_hydro_optimization and
-        equal_within_roundoff(
-            total_energy_density[s],
-            get(magnetic_field_squared)[s] * 0.5 + total_energy_density[s])) {
-      tmpl::for_each<
-          tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                         KastaunEtAlHydro<EnforcePhysicality>>>(apply_scheme);
-    } else {
-      tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(apply_scheme);
+      // Check consistency
+      if (use_hydro_optimization and
+          equal_within_roundoff(
+              tau[s] + rest_mass_density_times_lorentz_factor[s],
+              get(magnetic_field_squared)[s] * 0.5 + tau[s] +
+                  rest_mass_density_times_lorentz_factor[s])) {
+        tmpl::for_each<
+            tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                           KastaunEtAlHydro<EnforcePhysicality>>>(apply_scheme);
+      } else {
+        tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(apply_scheme);
+      }
     }
-   }
 
     if (primitive_data.has_value()) {
       get(*rest_mass_density)[s] = primitive_data.value().rest_mass_density;
@@ -221,8 +219,9 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "
               << s << ".\n"
-              << std::setprecision(17)
-              << "total_energy_density = " << total_energy_density[s] << "\n"
+              << std::setprecision(17) << "tau = " << tau[s] << "\n"
+              << "rest_mass_density_times_lorentz_factor = "
+              << rest_mass_density_times_lorentz_factor[s] << "\n"
               << "momentum_density_squared = "
               << get(momentum_density_squared)[s] << "\n"
               << "momentum_density_dot_magnetic_field = "
