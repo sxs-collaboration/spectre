@@ -1,0 +1,18 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "clang-tidy",
+      "pattern": [
+        {
+          "regexp": "^(?:\\x1b\\[[\\d;]+m)*(.+):(\\d+):(\\d+):\\s(?:\\x1b\\[[\\d;]+m)*(error):\\s(?:\\x1b\\[[\\d;]+m)*(.+)\\s\\[(.+)\\](?:\\x1b\\[[\\d;]+m)*$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5,
+          "code": 6
+        }
+      ]
+    }
+  ]
+}
