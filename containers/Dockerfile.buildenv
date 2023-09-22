@@ -281,7 +281,7 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
     && git checkout v7.0.0 \
     && git apply /work/v7.0.0.patch \
     && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
-        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
+        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
 
@@ -359,7 +359,7 @@ RUN apt-get install -y libopenmpi-dev
 # environments have charm built with mpi and we should test that.
 RUN cd /work/charm_7_0_0 \
     && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
-        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared
+        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production
 
 # Download and extract the intel Software Development Emulator binaries
 RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz -O sde-external.tar.xz \
