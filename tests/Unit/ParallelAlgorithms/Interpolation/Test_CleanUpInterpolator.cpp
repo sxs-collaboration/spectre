@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
@@ -48,6 +49,7 @@ struct mock_interpolator {
       tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
                  intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
+  using const_global_cache_tags = tmpl::list<intrp::Tags::Verbosity>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -135,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
                                            metavars, ::Tags::Time>::Info>>
       volume_vars_info_ad{{temporal_id.substep_time(), {}}};
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{::Verbosity::Silent}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
       {0_st,

@@ -16,6 +16,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
@@ -157,11 +158,9 @@ void test_interpolation_target(
                 typename InterpolationTargetTag::compute_target_points,
                 intrp::protocols::ComputeTargetPoints>);
 
-  tuples::TaggedTuple<InterpolationTargetOptionTag,
-                      domain::Tags::Domain<metavars::volume_dim>>
-      tuple_of_opts{std::move(options), Domain<metavars::volume_dim>{}};
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {std::move(options), Domain<metavars::volume_dim>{},
+       ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<target_component>(&runner, 0);

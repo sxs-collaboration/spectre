@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <sstream>
+#include <string>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
@@ -14,8 +16,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
@@ -23,6 +27,7 @@
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -101,6 +106,17 @@ struct InterpolationTargetReceiveVars {
     // temporal_id.
     const auto& completed_ids =
         db::get<Tags::CompletedTemporalIds<TemporalId>>(box);
+    std::stringstream ss{};
+    const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool debug_print = verbosity >= ::Verbosity::Debug;
+    const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+    if (verbose_print) {
+      ss << InterpolationTarget_detail::target_output_prefix<
+                InterpolationTargetReceiveVars, InterpolationTargetTag>(
+                temporal_id)
+         << ", ";
+    }
+
     // (Search from the end because temporal_id is more likely to be
     // at the end of the list then at the beginning.)
     if (UNLIKELY(std::find(completed_ids.rbegin(), completed_ids.rend(),
@@ -142,7 +158,10 @@ struct InterpolationTargetReceiveVars {
                                   temporal_id);
     }
     if (InterpolationTarget_detail::have_data_at_all_points<
-            InterpolationTargetTag>(box, temporal_id)) {
+            InterpolationTargetTag>(box, temporal_id, verbosity)) {
+      if (verbose_print) {
+        ss << "calling callbacks ";
+      }
       // All the valid points have been interpolated.
 
       // Check if functions of time are ready on this component. Since this
@@ -160,6 +179,9 @@ struct InterpolationTargetReceiveVars {
 
       if (InterpolationTarget_detail::call_callbacks<InterpolationTargetTag>(
               make_not_null(&box), make_not_null(&cache), temporal_id)) {
+        if (verbose_print) {
+          ss << "and cleaning up target.";
+        }
         InterpolationTarget_detail::clean_up_interpolation_target<
             InterpolationTargetTag>(make_not_null(&box), temporal_id);
         auto& interpolator_proxy =
@@ -179,11 +201,28 @@ struct InterpolationTargetReceiveVars {
                "current temporal id shouldn't have a value, but it does "
                    << current_id.value());
         if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
+          if (verbose_print) {
+            using ::operator<<;
+            ss << " Verifying next pending temporal id out of "
+               << db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty();
+          }
           // Call directly
           Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>::
               template apply<ParallelComponent>(box, cache, array_index);
+        } else if (verbose_print) {
+          ss << " No pending temporal ids to verify.";
         }
+
+        if (verbose_print) {
+          Parallel::printf("%s\n", ss.str());
+        }
+      } else if (debug_print) {
+        ss << "and NOT cleaning up target.";
+        Parallel::printf("%s\n", ss.str());
       }
+    } else if (debug_print) {
+      ss << "not enough data. Waiting. See Total/valid/invalid points line.";
+      Parallel::printf("%s\n", ss.str());
     }
   }
 };
