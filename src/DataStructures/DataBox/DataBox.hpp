@@ -58,8 +58,10 @@ class DataBox;
 /// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
 /// `DataBoxType`.
 template <typename Tag, typename DataBoxType>
-using tag_is_retrievable = tmpl::any<typename DataBoxType::tags_list,
-                                     std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>;
+using tag_is_retrievable =
+    tmpl::or_<std::is_same<Tag, ::Tags::DataBox>,
+              tmpl::any<typename DataBoxType::tags_list,
+                        std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
 
 template <typename Tag, typename DataBoxType>
 constexpr bool tag_is_retrievable_v =
@@ -707,6 +709,12 @@ db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
  * The `invokable` may have function return values, and any returns are
  * forwarded as returns to the `db::mutate` call.
  *
+ * For convenience in generic programming, if `::Tags::DataBox` is
+ * passed as the sole `MutateTags` parameter, this function will
+ * simply call its first argument with its remaining arguments.
+ * Except for this case, `::Tags::DataBox` is not usable with this
+ * function.
+ *
  * \warning Using `db::mutate` returns to obtain non-const references or
  * pointers to box items is potentially very dangerous. The \ref DataBoxGroup
  * "DataBox" cannot track any subsequent changes to quantities that have been
@@ -718,60 +726,70 @@ template <typename... MutateTags, typename TagList, typename Invokable,
 decltype(auto) mutate(Invokable&& invokable,
                       const gsl::not_null<DataBox<TagList>*> box,
                       Args&&... args) {
-  static_assert(
-      tmpl2::flat_all_v<
-          detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
-      "One of the tags being mutated could not be found in the DataBox or "
-      "is a base tag identifying more than one tag.");
-  static_assert(tmpl2::flat_all_v<tmpl::list_contains_v<
-                    typename DataBox<TagList>::mutable_item_tags,
-                    detail::first_matching_tag<TagList, MutateTags>>...>,
-                "Can only mutate mutable items");
-  if (UNLIKELY(box->mutate_locked_box_)) {
-    ERROR(
-        "Unable to mutate a DataBox that is already being mutated. This "
-        "error occurs when mutating a DataBox from inside the invokable "
-        "passed to the mutate function.");
+  if constexpr ((... or std::is_same_v<MutateTags, Tags::DataBox>)) {
+    // This branch doesn't directly access the box, so no locking or
+    // resetting is necessary.
+    static_assert(
+        std::is_same_v<tmpl::list<MutateTags...>, tmpl::list<Tags::DataBox>>,
+        "Cannot mutate other tags when obtaining the mutable DataBox.");
+    return invokable(box, std::forward<Args>(args)...);
+  } else {
+    static_assert(
+        tmpl2::flat_all_v<
+            detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
+        "One of the tags being mutated could not be found in the DataBox or "
+        "is a base tag identifying more than one tag.");
+    static_assert(tmpl2::flat_all_v<tmpl::list_contains_v<
+                      typename DataBox<TagList>::mutable_item_tags,
+                      detail::first_matching_tag<TagList, MutateTags>>...>,
+                  "Can only mutate mutable items");
+    if (UNLIKELY(box->mutate_locked_box_)) {
+      ERROR(
+          "Unable to mutate a DataBox that is already being mutated. This "
+          "error occurs when mutating a DataBox from inside the invokable "
+          "passed to the mutate function.");
+    }
+    using mutate_tags_list =
+        tmpl::list<detail::first_matching_tag<TagList, MutateTags>...>;
+    // For all the tags in the DataBox, check if one of their subtags is
+    // being mutated and if so add the parent to the list of tags
+    // being mutated. Then, remove any tags that would be passed
+    // multiple times.
+    using extra_mutated_tags = tmpl::list_difference<
+        tmpl::filter<TagList,
+                     tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
+                                tmpl::pin<tmpl::bind<
+                                    tmpl::list_contains,
+                                    tmpl::pin<mutate_tags_list>, tmpl::_1>>>>,
+        mutate_tags_list>;
+    // Extract the subtags inside the MutateTags and reset compute items
+    // depending on those too.
+    using full_mutated_items =
+        tmpl::append<detail::expand_subitems<mutate_tags_list>,
+                     extra_mutated_tags>;
+
+    using first_compute_items_to_reset = tmpl::remove_duplicates<
+        tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
+                                     tmpl::bind<tmpl::list_contains,
+                                                tmpl::pin<full_mutated_items>,
+                                                tmpl::get_source<tmpl::_1>>>,
+                        tmpl::get_destination<tmpl::_1>>>;
+
+    const CleanupRoutine unlock_box = [&box]() {
+      box->mutate_locked_box_ = false;
+      EXPAND_PACK_LEFT_TO_RIGHT(
+          box->template mutate_mutable_subitems<MutateTags>(
+              typename Subitems<MutateTags>::type{}));
+      box->template reset_compute_items_after_mutate(
+          first_compute_items_to_reset{});
+    };
+    box->mutate_locked_box_ = true;
+    return invokable(
+        make_not_null(&box->template get_item<
+                              detail::first_matching_tag<TagList, MutateTags>>()
+                           .mutate())...,
+        std::forward<Args>(args)...);
   }
-  using mutate_tags_list =
-      tmpl::list<detail::first_matching_tag<TagList, MutateTags>...>;
-  // For all the tags in the DataBox, check if one of their subtags is
-  // being mutated and if so add the parent to the list of tags
-  // being mutated. Then, remove any tags that would be passed
-  // multiple times.
-  using extra_mutated_tags = tmpl::list_difference<
-      tmpl::filter<TagList,
-                   tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
-                              tmpl::pin<tmpl::bind<tmpl::list_contains,
-                                                   tmpl::pin<mutate_tags_list>,
-                                                   tmpl::_1>>>>,
-      mutate_tags_list>;
-  // Extract the subtags inside the MutateTags and reset compute items
-  // depending on those too.
-  using full_mutated_items =
-      tmpl::append<detail::expand_subitems<mutate_tags_list>,
-                   extra_mutated_tags>;
-
-  using first_compute_items_to_reset = tmpl::remove_duplicates<
-      tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
-                                   tmpl::bind<tmpl::list_contains,
-                                              tmpl::pin<full_mutated_items>,
-                                              tmpl::get_source<tmpl::_1>>>,
-                      tmpl::get_destination<tmpl::_1>>>;
-
-  const CleanupRoutine unlock_box = [&box]() {
-    box->mutate_locked_box_ = false;
-    EXPAND_PACK_LEFT_TO_RIGHT(box->template mutate_mutable_subitems<MutateTags>(
-        typename Subitems<MutateTags>::type{}));
-    box->template reset_compute_items_after_mutate(
-        first_compute_items_to_reset{});
-  };
-  box->mutate_locked_box_ = true;
-  return invokable(
-      make_not_null(&box->template get_item<
-                            detail::first_matching_tag<TagList, MutateTags>>()
-                         .mutate())...,
-      std::forward<Args>(args)...);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1135,7 +1153,12 @@ static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                             tmpl::list<ArgumentTags...> /*meta*/,
                             Args&&... args) {
   if constexpr (is_apply_callable_v<
-                    F, const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+                    F,
+                    tmpl::conditional_t<
+                        std::is_same_v<ArgumentTags, ::Tags::DataBox>,
+                        const DataBox<BoxTags>&,
+                        const_item_type<ArgumentTags, BoxTags>>...,
+                    Args...>) {
     return F::apply(::db::get<ArgumentTags>(box)...,
                     std::forward<Args>(args)...);
   } else if constexpr (::tt::is_callable_v<
@@ -1227,45 +1250,51 @@ SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
 /// @}
 
 namespace detail {
+template <typename Tag, typename BoxTags>
+using tag_return_type =
+    tmpl::conditional_t<std::is_same_v<Tag, ::Tags::DataBox>,
+                        db::DataBox<BoxTags>, typename Tag::type>;
+
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) {
-  static_assert(
-      not tmpl2::flat_any_v<std::is_same_v<ArgumentTags, Tags::DataBox>...> and
-          not tmpl2::flat_any_v<std::is_same_v<ReturnTags, Tags::DataBox>...>,
-      "Cannot pass a DataBox to mutate_apply since the db::get won't work "
-      "inside mutate_apply.");
-  if constexpr (is_apply_callable_v<
-                    F, const gsl::not_null<typename ReturnTags::type*>...,
-                    const_item_type<ArgumentTags, BoxTags>..., Args...>) {
-    return ::db::mutate<ReturnTags...>(
-        [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
-           const_item_type<ArgumentTags, BoxTags>... args_items,
-           decltype(std::forward<Args>(args))... l_args) {
-          return std::decay_t<F>::apply(mutated_items..., args_items...,
-                                        std::forward<Args>(l_args)...);
-        },
-        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
-  } else if constexpr (::tt::is_callable_v<
-                           F,
-                           const gsl::not_null<typename ReturnTags::type*>...,
-                           const_item_type<ArgumentTags, BoxTags>...,
-                           Args...>) {
-    return ::db::mutate<ReturnTags...>(
-        [&f](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
+  if constexpr (sizeof...(ReturnTags) == 0) {
+    return apply<tmpl::list<ArgumentTags...>>(std::forward<F>(f), *box,
+                                              std::forward<Args>(args)...);
+  } else {
+    detail::check_tags_are_in_databox(BoxTags{}, tmpl::list<ReturnTags...>{});
+    detail::check_tags_are_in_databox(BoxTags{}, tmpl::list<ArgumentTags...>{});
+    static_assert(not(... or std::is_same_v<ArgumentTags, Tags::DataBox>),
+                  "Cannot pass Tags::DataBox to mutate_apply when mutating "
+                  "since the db::get won't work inside mutate_apply.");
+    if constexpr (is_apply_callable_v<
+                      F,
+                      const gsl::not_null<
+                          tag_return_type<ReturnTags, BoxTags>*>...,
+                      const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+      return ::db::mutate<ReturnTags...>(
+          [](const gsl::not_null<
+                 tag_return_type<ReturnTags, BoxTags>*>... mutated_items,
              const_item_type<ArgumentTags, BoxTags>... args_items,
              decltype(std::forward<Args>(args))... l_args) {
-          return f(mutated_items..., args_items...,
-                   std::forward<Args>(l_args)...);
-        },
-        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
-  } else {
-    error_function_not_callable<F, gsl::not_null<typename ReturnTags::type*>...,
-                                const_item_type<ArgumentTags, BoxTags>...,
-                                Args...>();
+            return std::decay_t<F>::apply(mutated_items..., args_items...,
+                                          std::forward<Args>(l_args)...);
+          },
+          box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
+    } else if constexpr (
+        ::tt::is_callable_v<
+            F, const gsl::not_null<tag_return_type<ReturnTags, BoxTags>*>...,
+            const_item_type<ArgumentTags, BoxTags>..., Args...>) {
+      return ::db::mutate<ReturnTags...>(f, box, db::get<ArgumentTags>(*box)...,
+                                         std::forward<Args>(args)...);
+    } else {
+      error_function_not_callable<
+          F, gsl::not_null<tag_return_type<ReturnTags, BoxTags>*>...,
+          const_item_type<ArgumentTags, BoxTags>..., Args...>();
+    }
   }
 }
 }  // namespace detail
@@ -1288,6 +1317,11 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
  *
  * Any return values of the invokable `f` are forwarded as returns to the
  * `mutate_apply` call.
+ *
+ * \note If `MutateTags` is empty this will forward to `db::apply`, so
+ * `::Tags::DataBox` will be available.  Otherwise it will call
+ * `db::mutate`.  See those functions for more details on retrieving
+ * the entire box.
  *
  * \example
  * An example of using `mutate_apply` with a lambda:
@@ -1313,8 +1347,6 @@ template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) {
-  detail::check_tags_are_in_databox(BoxTags{}, MutateTags{});
-  detail::check_tags_are_in_databox(BoxTags{}, ArgumentTags{});
   return detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
                               ArgumentTags{}, std::forward<Args>(args)...);
 }

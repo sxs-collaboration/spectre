@@ -367,12 +367,19 @@ void test_get_databox() {
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   // [databox_self_tag_example]
-  auto check_result_no_args = [](const auto& box) {
+  auto check_result_no_args = [](const decltype(original_box)& box) {
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
   };
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   // [databox_self_tag_example]
+  struct CheckResultNoArgsApply {
+    static void apply(const decltype(original_box)& box) {
+      CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+      CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
+    }
+  };
+  db::apply<tmpl::list<Tags::DataBox>>(CheckResultNoArgsApply{}, original_box);
 }
 
 void trigger_get_databox_error() {
@@ -509,6 +516,20 @@ void test_mutate_locked() {
           "Unable to mutate a DataBox that is already being "
           "mutated. This error occurs when mutating a DataBox from "
           "inside the invokable passed to the mutate function"));
+}
+
+void test_mutate_box() {
+  INFO("test mutate entire box");
+  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0>>(3.14);
+  db::mutate<Tags::DataBox>(
+      [&box](const gsl::not_null<decltype(box)*> mutate_box) {
+        CHECK(&box == &*mutate_box);
+        // Verify that the box is not locked
+        db::mutate<test_databox_tags::Tag0>(
+            [](const gsl::not_null<double*> x) { CHECK(*x == 3.14); },
+            mutate_box);
+      },
+      make_not_null(&box));
 }
 
 struct NonCopyableFunctor {
@@ -1375,6 +1396,45 @@ void test_mutate_apply() {
 
     db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
     CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
+  }
+
+  {
+    INFO("Tags::DataBox");
+    db::mutate_apply<tmpl::list<>,
+                     tmpl::list<::Tags::DataBox, test_databox_tags::Tag0>>(
+        [](const decltype(box)& /*box*/, const double& /*tag0*/) {},
+        make_not_null(&box));
+    db::mutate_apply<tmpl::list<::Tags::DataBox>,
+                     tmpl::list<test_databox_tags::Tag0>>(
+        [](const gsl::not_null<decltype(box)*> /*box*/,
+           const double& /*tag0*/) {},
+        make_not_null(&box));
+
+    struct ReadApply {
+      using return_tags = tmpl::list<>;
+      using argument_tags = tmpl::list<::Tags::DataBox>;
+      static void apply(const decltype(box)& /*box*/) {}
+    };
+    struct ReadCall {
+      using return_tags = tmpl::list<>;
+      using argument_tags = tmpl::list<::Tags::DataBox>;
+      void operator()(const decltype(box)& /*box*/) const {}
+    };
+    struct WriteApply {
+      using return_tags = tmpl::list<::Tags::DataBox>;
+      using argument_tags = tmpl::list<>;
+      static void apply(const gsl::not_null<decltype(box)*> /*box*/) {}
+    };
+    struct WriteCall {
+      using return_tags = tmpl::list<::Tags::DataBox>;
+      using argument_tags = tmpl::list<>;
+      void operator()(const gsl::not_null<decltype(box)*> /*box*/) const {}
+    };
+
+    db::mutate_apply<ReadApply>(make_not_null(&box));
+    db::mutate_apply<ReadCall>(make_not_null(&box));
+    db::mutate_apply<WriteApply>(make_not_null(&box));
+    db::mutate_apply<WriteCall>(make_not_null(&box));
   }
 }
 
@@ -2931,6 +2991,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_get_databox_error();
   test_mutate();
   test_mutate_locked();
+  test_mutate_box();
   test_apply();
   test_variables();
   test_variables2();
@@ -2975,6 +3036,10 @@ static_assert(
 static_assert(
     not db::tag_is_retrievable_v<
         tags_types::DummyTag, db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+    "Failed testing tag_is_retrievable_v");
+static_assert(
+    db::tag_is_retrievable_v<::Tags::DataBox,
+                             db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
     "Failed testing tag_is_retrievable_v");
 
 namespace test_creation_tag {
