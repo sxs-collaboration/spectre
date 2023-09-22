@@ -87,10 +87,8 @@ std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone()
 template <size_t MaxDeriv>
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
-PiecewisePolynomial<MaxDeriv>::func_and_derivs(
-    const double t, const bool check_expiration_time) const {
-  if (check_expiration_time and
-      t > expiration_time_.load(std::memory_order_acquire)) {
+PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const {
+  if (t > expiration_time_.load(std::memory_order_acquire)) {
     ERROR("Attempt to evaluate PiecewisePolynomial at a time "
           << t << " that is after the expiration time " << expiration_time_
           << ". The difference between times is " << t - expiration_time_
@@ -135,28 +133,10 @@ void PiecewisePolynomial<MaxDeriv>::update(
   const std::lock_guard<std::mutex> update_lock{update_mutex_};
   double current_expiration_time =
       expiration_time_.load(std::memory_order_acquire);
-  // We can use `.back()` here because we only allow one thread to call update
-  // at once
-  if (time_of_update <= deriv_info_at_update_times_.back().time) {
-    ERROR("t must be increasing from call to call. "
-          << "Attempted to update at time " << time_of_update
-          << ", which precedes the previous update time of "
-          << deriv_info_at_update_times_.back().time << ".");
-  }
-  if (next_expiration_time < current_expiration_time) {
-    ERROR("expiration_time must be nondecreasing from call to call. "
-          << "Attempted to change expiration time to " << next_expiration_time
-          << ", which precedes the previous expiration time of "
+  if (time_of_update != current_expiration_time) {
+    ERROR("Update must occur at the expiration time.  "
+          << "Attempted to update at " << time_of_update << " instead of "
           << current_expiration_time << ".");
-  }
-  if (time_of_update < current_expiration_time) {
-    ERROR("Attempt to update PiecewisePolynomial at a time "
-          << time_of_update
-          << " that is earlier than the previous expiration time of "
-          << expiration_time_
-          << ". This is bad because some asynchronous process may have already "
-             "used PiecewisePolynomial at a time later than the current time "
-          << time_of_update << ".");
   }
   if (time_of_update > next_expiration_time) {
     ERROR(
@@ -166,11 +146,7 @@ void PiecewisePolynomial<MaxDeriv>::update(
         << time_of_update << ".");
   }
 
-  // Normally, func_and_derivs(t) throws an error if t>expiration_time_.
-  // But here, we want to allow time_of_update to be greater than the *previous*
-  // expiration time, so we just ignore the expiration time check. We get the
-  // current values before updating the `MaxDeriv'th deriv
-  value_type func = func_and_derivs(time_of_update, false);
+  value_type func = func_and_derivs(time_of_update);
 
   if (updated_max_deriv.size() != func.back().size()) {
     ERROR("the number of components trying to be updated ("
@@ -345,7 +321,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 #define INSTANTIATE(_, data)                                          \
   template std::array<DataVector, DIMRETURNED(data) + 1>              \
   PiecewisePolynomial<DIM(data)>::func_and_derivs<DIMRETURNED(data)>( \
-      const double, const bool) const;
+      const double) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4), (0, 1, 2))
 

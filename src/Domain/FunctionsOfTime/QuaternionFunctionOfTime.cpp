@@ -17,7 +17,6 @@
 
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
 #include "NumericalAlgorithms/OdeIntegration/OdeIntegration.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -189,26 +188,12 @@ void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info(
     const double next_expiration_time) {
   double current_expiration_time =
       expiration_time_.load(std::memory_order_acquire);
-  const auto& angle_deriv_info = angle_f_of_t_.get_deriv_info();
-
-  // We copy the size so this whole function uses the same index
-  const size_t last_index =
-      stored_quaternion_size_.load(std::memory_order_acquire);
-
-  ASSERT(
-      angle_deriv_info.size() == last_index + 1,
-      "The number of stored quaternions is not one less than the number of "
-      "stored angles (which it should be after an update). Currently there are "
-          << angle_deriv_info.size() << " stored angles and " << last_index
-          << " stored quaternions.");
 
   // Final time, initial time, and quaternion
   // We can use `.back()` and `.end()` here because we only allow one thread to
   // call update at once
-  const double t = angle_deriv_info.back().time;
-  // 2 here because only 1 would be the very last element and we want second to
-  // last
-  const double t0 = std::prev(angle_deriv_info.end(), 2)->time;
+  const double t = current_expiration_time;
+  const double t0 = stored_quaternions_and_times_.back().time;
   boost::math::quaternion<double> quaternion_to_integrate =
       datavector_to_quaternion(
           std::prev(stored_quaternions_and_times_.end())->stored_quantities[0]);
@@ -238,12 +223,6 @@ void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info(
         << current_expiration_time << " for the new expiration time "
         << next_expiration_time);
   }
-
-  ASSERT(angle_deriv_info.size() == stored_quaternions_and_times_.size(),
-         "The number of stored angles must be the same as the number of stored "
-         "quaternions after updating the missing quaternion. Now there are "
-             << angle_deriv_info.size() << " stored angles and "
-             << stored_quaternions_and_times_.size() << " stored quaternions.");
 }
 
 template <size_t MaxDeriv>
