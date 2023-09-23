@@ -325,12 +325,18 @@ ARG TARGETARCH
 # remembered (and it doesn't hurt to redefine the env variable).
 ARG PARALLEL_MAKE_ARG=-j2
 
+# Add LLVM apt repository for newer versions of clang
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
+        tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
+    && add-apt-repository -y \
+        'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
+
 # Install all the compilers we are going to test on CI
 RUN apt-get update -y \
     && apt-get install -y \
         gcc-9 g++-9 gfortran-9 \
         gcc-10 g++-10 gfortran-10 \
-        clang-13 clang-15
+        clang-13 clang-15 clang-16
 
 # Install minimum required CMake version so that we test compatibility with it.
 # For this version of CMake no ARM binary is available.
