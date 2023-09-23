@@ -24,7 +24,7 @@ Evolution:
 PhaseChangeAndTriggers:
 
 # Values taken from the Xcts/HeadOnBns.yaml input file
-EquationOfState:
+EquationOfState: &eos
   PolytropicFluid:
       PolytropicConstant: 123.6489
       PolytropicExponent: 2.
@@ -65,18 +65,18 @@ DomainCreator:
 
 VariableFixing:
   FixConservatives:
-    CutoffD: &CutoffD 2.0e-12
-    MinimumValueOfD: &MinimumD 1.0e-12
+    CutoffD: &CutoffD 1.1e-15
+    MinimumValueOfD: &MinimumD 1.0e-15
     CutoffYe: 0.0
     MinimumValueOfYe: 0.0
-    SafetyFactorForB: 1.0e-12
-    SafetyFactorForS: 1.0e-12
+    SafetyFactorForB: &BSafetyFactor 1.0e-12
+    SafetyFactorForS: 1.0e-4
     SafetyFactorForSCutoffD: 1.0e-8
     SafetyFactorForSSlope: 0.0001
   FixToAtmosphere:
-    DensityOfAtmosphere: 1.0e-12
-    DensityCutoff: &density_cutoff 1.0e-12
-    TransitionDensityCutoff: 1.0e-11
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    TransitionDensityCutoff: 9.0e-15
     MaxVelocityMagnitude: 1.0e-4
   LimitLorentzFactor:
     MaxDensityCutoff: 1.0e-08
@@ -93,29 +93,51 @@ EvolutionSystem:
     # These gauge parameters will need some tuning for the binary
     GaugeCondition: Harmonic
     DampingFunctionGamma0:
-      GaussianPlusConstant:
-        Constant: 0.001
-        Amplitude: 0.1
-        Width: 80.
-        Center: [0.0, 0.0, 0.0]
+      # Parameters from SpEC run of equal mass non-spinning,
+      # polytrope K=100 Gamma=2
+      TimeDependentTripleGaussian:
+        Constant: 0.01
+        Gaussian1:
+          Amplitude: 0.06277857994
+          Width: 7.884855
+          Center: [16, 0.0, 0.0]
+        Gaussian2:
+          Amplitude: 0.06277857994
+          Width: 7.884855
+          Center: [-16, 0.0, 0.0]
+        Gaussian3:
+          Amplitude: 0.06277857994
+          Width: 51.60996
+          Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -0.999
         Amplitude: 0.999
-        Width: 200.
+        Width: 318.534
         Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma2:
-      GaussianPlusConstant:
-        Constant: 0.001
-        Amplitude: 4.0
-        Width: 80.
-        Center: [0.0, 0.0, 0.0]
+      # Parameters from SpEC run of equal mass non-spinning,
+      # polytrope K=100 Gamma=2
+      TimeDependentTripleGaussian:
+        Constant: 0.01
+        Gaussian1:
+          Amplitude: 0.94167869922
+          Width: 7.884855
+          Center: [16, 0.0, 0.0] # [x_A, 0, 0]
+        Gaussian2:
+          Amplitude: 0.94167869922
+          Width: 7.884855
+          Center: [-16, 0.0, 0.0]  # [x_B, 0, 0]
+        Gaussian3:
+          Amplitude: 0.19182343873
+          Width: 51.60996
+          Center: [0.0, 0.0, 0.0]
 
 SpatialDiscretization:
   BoundaryCorrection:
-    ProductUpwindPenaltyAndRusanov:
+    ProductUpwindPenaltyAndHll:
       UpwindPenalty:
-      Rusanov:
+      Hll:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
@@ -130,18 +152,22 @@ SpatialDiscretization:
       AlwaysUseSubcells: False
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: True
-      OnlyDgBlocksAndGroups: [Wedges]
+      OnlyDgBlocksAndGroups: []
       FiniteDifferenceDerivativeOrder: 2
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20
       MinimumValueOfTildeTau: 1.0e-50
-      AtmosphereDensity: 1.01e-15
-      SafetyFactorForB: 1.0e-12
+      AtmosphereDensity: *AtmosphereDensityCutoff
+      SafetyFactorForB: *BSafetyFactor
       MagneticFieldCutoff: DoNotCheckMagneticField
   SubcellSolver:
     Reconstructor:
-      MonotonisedCentralPrim:
+      PositivityPreservingAdaptiveOrderPrim:
+        Alpha5: 3.8
+        Alpha7: None
+        Alpha9: None
+        LowOrderReconstructor: MonotonisedCentral
     FilterOptions:
       SpacetimeDissipation: 0.1
 
@@ -153,7 +179,7 @@ Filtering:
     BlocksToFilter: All
 
 EventsAndTriggers:
-  # Set time step based on CLF condition
+  # Set time step at t=0
   - Trigger:
       Slabs:
         Specified:
@@ -163,14 +189,32 @@ EventsAndTriggers:
           DelayChange: 0
           StepChoosers:
             - Cfl:
-                SafetyFactor: 0.5
+                SafetyFactor: &CflSafetyFactor 0.5
+  # Update time step size regularly.
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 100
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 20
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: *CflSafetyFactor
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 50
+          Offset: 0
+    Events:
+      - BondiSachsInterpolation
   - Trigger:
       Slabs:
         EvenlySpaced:
           Interval: 1
           Offset: 0
     Events:
-      - BondiSachsInterpolation
       - ObserveTimeStep:
             SubfileName: TimeSteps
             PrintTimeToTerminal: True
@@ -187,6 +231,18 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(GaugeConstraint)
             NormType: L2Norm
             Components: Sum
+          - Name: DetSpatialMetric
+            NormType: Max
+            Components: Individual
+          - Name: DetSpatialMetric
+            NormType: Min
+            Components: Individual
+          - Name: Lapse
+            NormType: Max
+            Components: Individual
+          - Name: Lapse
+            NormType: Min
+            Components: Individual
       - ObserveNorms:
           SubfileName: FluidQuantities
           TensorsToObserve:
@@ -218,16 +274,21 @@ EventsAndTriggers:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
+            - Lapse
+            - Shift
+            - DetSpatialMetric
             - RestMassDensity
             - Pressure
             - SpatialVelocity
             - LorentzFactor
             - SpecificEnthalpy
             - SpecificInternalEnergy
+            - Temperature
             - MagneticField
             - ElectronFraction
             - DivergenceCleaningField
             - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
             - TciStatus
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
@@ -261,6 +322,29 @@ EventsAndDenseTriggers:
 EventsRunAtCleanup:
   ObservationValue: -1000.0
   Events:
+    - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - Lapse
+          - Shift
+          - DetSpatialMetric
+          - RestMassDensity
+          - Pressure
+          - SpatialVelocity
+          - LorentzFactor
+          - SpecificEnthalpy
+          - SpecificInternalEnergy
+          - Temperature
+          - MagneticField
+          - ElectronFraction
+          - DivergenceCleaningField
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+          - TciStatus
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
 
 # Control systems are disabled by default
 ControlSystems:
@@ -284,7 +368,7 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Rotation:
-    IsActive: false
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
@@ -301,6 +385,11 @@ ControlSystems:
     ControlError:
 
 InitialData:
+  # SpecInitialData:
+  #   DataDirectory: "/path/to/EvID"
+  #   EquationOfState: *eos
+  #   DensityCutoff: *AtmosphereDensityCutoff
+  #   ElectronFraction: 0.15
   NumericInitialData:
     FileGlob: BnsVolume*.h5
     Subgroup: VolumeData
@@ -316,4 +405,4 @@ InitialData:
       LowerSpatialFourVelocity: LowerSpatialFourVelocity
       ElectronFraction: 0.15
       MagneticField: 0.
-    DensityCutoff: *density_cutoff
+    DensityCutoff: *AtmosphereDensityCutoff
