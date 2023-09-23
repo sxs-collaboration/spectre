@@ -180,10 +180,8 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
 
       // Check consistency
       if (use_hydro_optimization and
-          equal_within_roundoff(
-              tau[s] + rest_mass_density_times_lorentz_factor[s],
-              get(magnetic_field_squared)[s] * 0.5 + tau[s] +
-                  rest_mass_density_times_lorentz_factor[s])) {
+          (get(magnetic_field_squared)[s] <
+           100.0 * std::numeric_limits<double>::epsilon() * tau[s])) {
         tmpl::for_each<
             tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
                            KastaunEtAlHydro<EnforcePhysicality>>>(apply_scheme);
