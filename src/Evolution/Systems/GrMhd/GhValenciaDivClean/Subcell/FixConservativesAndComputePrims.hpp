@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
@@ -41,6 +42,7 @@ struct FixConservativesAndComputePrims {
                                  typename System::variables_tag,
                                  typename System::primitive_variables_tag>;
   using argument_tags = tmpl::list<
+      evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
       hydro::Tags::EquationOfStateBase,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
@@ -51,9 +53,10 @@ struct FixConservativesAndComputePrims {
       gsl::not_null<typename System::variables_tag::type*> conserved_vars_ptr,
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
           primitive_vars_ptr,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
       const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
-        primitive_from_conservative_options);
+          primitive_from_conservative_options);
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell
