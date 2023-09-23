@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ArrayComponentId.cpp
   ObservationId.cpp
   ReductionActions.cpp
   TypeOfObservation.cpp
@@ -19,7 +18,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ArrayComponentId.hpp
   GetSectionObservationKey.hpp
   Helpers.hpp
   Initialize.hpp

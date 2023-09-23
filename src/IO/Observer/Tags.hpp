@@ -16,9 +16,9 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/TensorData.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -35,7 +35,8 @@ namespace Tags {
 /// component.
 struct ExpectedContributorsForObservations : db::SimpleTag {
   using type =
-      std::unordered_map<ObservationKey, std::unordered_set<ArrayComponentId>>;
+      std::unordered_map<ObservationKey,
+                         std::unordered_set<Parallel::ArrayComponentId>>;
 };
 
 /// \brief The set of `ArrayComponentId` that have contributed to each
@@ -46,7 +47,8 @@ struct ExpectedContributorsForObservations : db::SimpleTag {
 /// both cases.
 struct ContributorsOfReductionData : db::SimpleTag {
   using type =
-      std::unordered_map<ObservationId, std::unordered_set<ArrayComponentId>>;
+      std::unordered_map<ObservationId,
+                         std::unordered_set<Parallel::ArrayComponentId>>;
 };
 
 /// \brief The set of nodes that have contributed to each `ObservationId` for
@@ -87,7 +89,8 @@ struct ReductionDataLock : db::SimpleTag {
 /// both cases.
 struct ContributorsOfTensorData : db::SimpleTag {
   using type =
-      std::unordered_map<ObservationId, std::unordered_set<ArrayComponentId>>;
+      std::unordered_map<ObservationId,
+                         std::unordered_set<Parallel::ArrayComponentId>>;
 };
 
 /// \brief Lock used when contributing volume data.
@@ -102,14 +105,14 @@ struct VolumeDataLock : db::SimpleTag {
 struct TensorData : db::SimpleTag {
   using type = std::unordered_map<
       observers::ObservationId,
-      std::unordered_map<observers::ArrayComponentId, ElementVolumeData>>;
+      std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>>;
 };
 
 /// Volume tensor data to be written to disk from the Interpolator
 struct InterpolatorTensorData : db::SimpleTag {
   using type =
       std::unordered_map<observers::ObservationId,
-                         std::unordered_map<observers::ArrayComponentId,
+                         std::unordered_map<Parallel::ArrayComponentId,
                                             std::vector<ElementVolumeData>>>;
 };
 

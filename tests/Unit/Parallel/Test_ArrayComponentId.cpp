@@ -9,25 +9,25 @@
 
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 
 namespace {
 struct Component0 {};
 struct Component1 {};
 
-SPECTRE_TEST_CASE("Unit.IO.Observers.ArrayComponentId", "[Unit][Observers]") {
-  using ArrayComponentId = observers::ArrayComponentId;
+SPECTRE_TEST_CASE("Unit.Parallel.ArrayComponentId", "[Unit][Parallel]") {
+  using ArrayComponentId = Parallel::ArrayComponentId;
   using Hash = std::hash<ArrayComponentId>;
   ArrayComponentId c0id0{std::add_pointer_t<Component0>{nullptr},
                          Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};
   ArrayComponentId c0id1{std::add_pointer_t<Component0>{nullptr},
                          Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
 
-  ArrayComponentId c1id0{std::add_pointer_t<Component1>{nullptr},
-                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};
-  ArrayComponentId c1id1{std::add_pointer_t<Component1>{nullptr},
-                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
+  ArrayComponentId c1id0 =
+      Parallel::make_array_component_id<Component1>(ElementId<1>{0});
+  ArrayComponentId c1id1 =
+      Parallel::make_array_component_id<Component1>(ElementId<1>{1});
 
   CHECK(c0id0 == c0id0);
   CHECK_FALSE(c0id0 != c0id0);

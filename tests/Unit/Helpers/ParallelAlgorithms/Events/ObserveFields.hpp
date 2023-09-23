@@ -21,10 +21,10 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -54,7 +54,7 @@ struct MockContributeVolumeData {
   struct Results {
     observers::ObservationId observation_id{};
     std::string subfile_name{};
-    observers::ArrayComponentId array_component_id{};
+    Parallel::ArrayComponentId array_component_id{};
     ElementVolumeData received_volume_data{};
   };
   static Results results;
@@ -66,7 +66,7 @@ struct MockContributeVolumeData {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
-                    const observers::ArrayComponentId& array_component_id,
+                    const Parallel::ArrayComponentId& array_component_id,
                     ElementVolumeData&& received_volume_data) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;

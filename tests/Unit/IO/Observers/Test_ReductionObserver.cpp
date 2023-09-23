@@ -24,13 +24,13 @@
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -150,20 +150,20 @@ void test_reduction_observer(const bool observe_per_core) {
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const auto make_fake_reduction_data = Overloader{
-      [](const observers::ArrayComponentId& id, const double time,
+      [](const Parallel::ArrayComponentId& id, const double time,
          const helpers::reduction_data_from_doubles& /*meta*/) {
         const auto hashed_id =
-            static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
+            static_cast<double>(std::hash<Parallel::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
         const double error0 = 1.0e-10 * hashed_id + time;
         const double error1 = 1.0e-12 * hashed_id + 2.0 * time;
         return helpers::reduction_data_from_doubles{time, number_of_grid_points,
                                                     error0, error1};
       },
-      [](const observers::ArrayComponentId& id, const double time,
+      [](const Parallel::ArrayComponentId& id, const double time,
          const helpers::reduction_data_from_vector& /*meta*/) {
         const auto hashed_id =
-            static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
+            static_cast<double>(std::hash<Parallel::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
         const std::vector<double> data{1.0e-10 * hashed_id + time,
                                        1.0e-12 * hashed_id + 2.0 * time,
@@ -171,10 +171,10 @@ void test_reduction_observer(const bool observe_per_core) {
         return helpers::reduction_data_from_vector{time, number_of_grid_points,
                                                    data};
       },
-      [](const observers::ArrayComponentId& id, const double time,
+      [](const Parallel::ArrayComponentId& id, const double time,
          const helpers::reduction_data_from_ds_and_vs& /*meta*/) {
         const auto hashed_id =
-            static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
+            static_cast<double>(std::hash<Parallel::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
         const double error0 = 1.0e-10 * hashed_id + time;
         const double error1 = 1.0e-12 * hashed_id + 2.0 * time;
@@ -229,9 +229,8 @@ void test_reduction_observer(const bool observe_per_core) {
 
     // Test passing reduction data.
     for (const auto& id : element_ids) {
-      const observers::ArrayComponentId array_id(
-          std::add_pointer_t<element_comp>{nullptr},
-          Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
+      const Parallel::ArrayComponentId array_id =
+          Parallel::make_array_component_id<element_comp>(id);
 
       auto reduction_data_fakes =
           make_fake_reduction_data(array_id, time, reduction_data{});
@@ -247,11 +246,9 @@ void test_reduction_observer(const bool observe_per_core) {
                            observers::Actions::ContributeReductionData>(
           get_global_core_id(id),
           observers::ObservationId{time, "ElementObservationType"},
-          observers::ArrayComponentId{
-              std::add_pointer_t<element_comp>{nullptr},
-              Parallel::ArrayIndex<typename element_comp::array_index>(id)},
-          "/element_data", legend, std::move(reduction_data_fakes),
-          std::move(formatter), observe_per_core);
+          Parallel::make_array_component_id<element_comp>(id), "/element_data",
+          legend, std::move(reduction_data_fakes), std::move(formatter),
+          observe_per_core);
     }
     // Invoke the threaded action 'CollectReductionDataOnNode'
     for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
@@ -311,9 +308,8 @@ void test_reduction_observer(const bool observe_per_core) {
               element_ids, data,
               [&time, &make_fake_reduction_data](reduction_data state,
                                                  const ElementId<2>& id) {
-                const observers::ArrayComponentId array_id(
-                    std::add_pointer_t<element_comp>{nullptr},
-                    Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
+                const Parallel::ArrayComponentId array_id =
+                    Parallel::make_array_component_id<element_comp>(id);
                 return state.combine(
                     make_fake_reduction_data(array_id, time, reduction_data{}));
               })

@@ -90,7 +90,7 @@ struct mock_interpolation_target {
                                intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = int;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using mutable_global_cache_tags =
       tmpl::conditional_t<metavariables::use_time_dependent_maps,
@@ -156,7 +156,7 @@ void test_add_temporal_ids() {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
-  for (size_t i = 0; i < 2; ++i) {
+  for (int i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

@@ -16,7 +16,6 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -30,6 +29,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -112,9 +112,7 @@ void contribute_to_residual_observation(
       observers::ObservationId(
           iteration_id,
           pretty_type::get_name<OptionsGroup>() + section_observation_key),
-      observers::ArrayComponentId{
-          std::add_pointer_t<ParallelComponent>{nullptr},
-          Parallel::ArrayIndex<ArrayIndex>(array_index)},
+      Parallel::make_array_component_id<ParallelComponent>(array_index),
       std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},

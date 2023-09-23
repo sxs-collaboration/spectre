@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -88,10 +89,11 @@ void verify_temporal_ids_and_send_points_time_independent(
 }
 
 template <typename InterpolationTargetTag, typename ParallelComponent,
-          typename DbTags, typename Metavariables>
+          typename DbTags, typename Metavariables, typename ArrayIndex>
 void verify_temporal_ids_and_send_points_time_dependent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    Parallel::GlobalCache<Metavariables>& cache) {
+    Parallel::GlobalCache<Metavariables>& cache,
+    const ArrayIndex& array_index) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   const auto& pending_temporal_ids =
@@ -102,9 +104,11 @@ void verify_temporal_ids_and_send_points_time_dependent(
 
   auto& this_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   double min_expiration_time = std::numeric_limits<double>::max();
+  const Parallel::ArrayComponentId array_component_id =
+      Parallel::make_array_component_id<ParallelComponent>(array_index);
   const bool at_least_one_pending_temporal_id_is_ready =
       ::Parallel::mutable_cache_item_is_ready<domain::Tags::FunctionsOfTime>(
-          cache,
+          cache, array_component_id,
           [&this_proxy, &pending_temporal_ids, &min_expiration_time](
               const std::unordered_map<
                   std::string,
@@ -126,6 +130,12 @@ void verify_temporal_ids_and_send_points_time_dependent(
               }
             }
             // Failure: none of the pending_temporal_ids are ok.
+            // Even though the GlobalCache docs say to only return a
+            // PerformAlgorithmCallback, we return a SimpleActionCallback here
+            // because it was already like this, and the effort to change it is
+            // too great right now. This is alright because this code should
+            // never be executed because the functions of time should always be
+            // valid for times sent to the interpolation target
             return std::unique_ptr<Parallel::Callback>(
                 new Parallel::SimpleActionCallback<
                     VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
@@ -262,7 +272,7 @@ struct VerifyTemporalIdsAndSendPoints {
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) {
+                    const ArrayIndex& array_index) {
     if constexpr (std::is_same_v<typename InterpolationTargetTag::
                                      compute_target_points::frame,
                                  ::Frame::Grid>) {
@@ -277,7 +287,7 @@ struct VerifyTemporalIdsAndSendPoints {
                           Metavariables, domain::Tags::FunctionsOfTime>) {
           detail::verify_temporal_ids_and_send_points_time_dependent<
               InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
-                                                         cache);
+                                                         cache, array_index);
         } else {
           // We error here because the maps are time-dependent, yet
           // the cache does not contain FunctionsOfTime.  It would be

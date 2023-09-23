@@ -27,7 +27,6 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
@@ -41,6 +40,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -155,9 +155,7 @@ void contribute_to_subdomain_stats_observation(
       observers::ObservationId(iteration_id,
                                pretty_type::get_name<OptionsGroup>() +
                                    section_observation_key + "SubdomainSolves"),
-      observers::ArrayComponentId{
-          std::add_pointer_t<ParallelComponent>{nullptr},
-          Parallel::ArrayIndex<ArrayIndex>(array_index)},
+      Parallel::make_array_component_id<ParallelComponent>(array_index),
       std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "SubdomainSolves"},
       std::vector<std::string>{"Iteration", "NumSubdomains", "AvgNumIterations",

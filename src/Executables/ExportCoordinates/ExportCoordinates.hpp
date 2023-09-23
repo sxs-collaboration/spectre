@@ -30,7 +30,6 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -43,6 +42,7 @@
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
@@ -207,9 +207,7 @@ struct ExportCoordinates {
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
-        observers::ArrayComponentId(
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         ElementVolumeData{element_id, std::move(components), mesh});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -241,9 +239,7 @@ struct FindGlobalMinimumGridSpacing {
             cache));
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(time, "min_grid_spacing"),
-        observers::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(element_id)},
+        Parallel::make_array_component_id<ParallelComponent>(element_id),
         std::string{"/MinGridSpacing"},
         std::vector<std::string>{"Time", "MinGridSpacing"},
         MinGridSpacingReductionData{time, local_min_grid_spacing},

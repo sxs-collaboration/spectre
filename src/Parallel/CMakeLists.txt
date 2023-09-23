@@ -11,6 +11,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ArrayComponentId.cpp
   InitializationFunctions.cpp
   NodeLock.cpp
   Phase.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   HEADERS
   AlgorithmExecution.hpp
   AlgorithmMetafunctions.hpp
+  ArrayComponentId.hpp
   ArrayIndex.hpp
   Callback.hpp
   CharmMain.tpp

@@ -22,12 +22,12 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -79,7 +79,7 @@ struct MockContributeReductionData {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
-                    observers::ArrayComponentId /*sender_array_id*/,
+                    Parallel::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     ReductionData&& reduction_data,

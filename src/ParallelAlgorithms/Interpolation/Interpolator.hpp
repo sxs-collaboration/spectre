@@ -7,10 +7,10 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -44,9 +44,8 @@ struct RegisterWithObserverWriter {
 
     const observers::ObservationKey observation_key{
         "/InterpolatorVolumeData_"s + db::tag_name<TemporalIdTag>()};
-    const observers::ArrayComponentId array_component_id{
-        std::add_pointer_t<ParallelComponent>{nullptr},
-        Parallel::ArrayIndex<std::decay_t<ArrayIndex>>(array_index)};
+    const Parallel::ArrayComponentId array_component_id =
+        Parallel::make_array_component_id<ParallelComponent>(array_index);
 
     Parallel::simple_action<
         observers::Actions::RegisterVolumeContributorWithObserverWriter>(

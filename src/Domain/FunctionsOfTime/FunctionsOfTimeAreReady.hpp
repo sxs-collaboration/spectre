@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -52,13 +53,16 @@ bool functions_of_time_are_ready(
         std::array<std::string, 0>{}) {
   const auto& proxy =
       ::Parallel::get_parallel_component<Component>(cache)[array_index];
+  const Parallel::ArrayComponentId array_component_id =
+      Parallel::make_array_component_id<Component>(array_index);
 
   return Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&functions_to_check, &proxy,
-              &time](const std::unordered_map<
-                     std::string,
-                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                         functions_of_time) {
+      cache, array_component_id,
+      [&functions_to_check, &proxy,
+       &time](const std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+                  functions_of_time) {
         using ::operator<<;
         ASSERT(alg::all_of(
                    functions_to_check,

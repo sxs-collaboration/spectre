@@ -16,11 +16,11 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -120,7 +120,7 @@ struct ContributeReductionData {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const observers::ObservationId& observation_id,
-                    const ArrayComponentId& sender_array_id,
+                    const Parallel::ArrayComponentId& sender_array_id,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data,
@@ -138,10 +138,11 @@ struct ContributeReductionData {
                 std::unordered_map<ObservationId, std::vector<std::string>>*>
                 reduction_names_map,
             const gsl::not_null<std::unordered_map<
-                ObservationId, std::unordered_set<ArrayComponentId>>*>
+                ObservationId, std::unordered_set<Parallel::ArrayComponentId>>*>
                 reduction_observers_contributed,
-            const std::unordered_map<ObservationKey,
-                                     std::unordered_set<ArrayComponentId>>&
+            const std::unordered_map<
+                ObservationKey,
+                std::unordered_set<Parallel::ArrayComponentId>>&
                 observations_registered) mutable {  // NOLINT(spectre-mutable)
           ASSERT(
               observations_registered.find(observation_id.observation_key()) !=
@@ -195,8 +196,8 @@ struct ContributeReductionData {
             Parallel::threaded_action<
                 ThreadedActions::CollectReductionDataOnNode>(
                 local_writer, observation_id,
-                ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
-                                 Parallel::ArrayIndex<ArrayIndex>(array_index)},
+                Parallel::make_array_component_id<ParallelComponent>(
+                    array_index),
                 subfile_name, (*reduction_names_map)[observation_id],
                 std::move((*reduction_data_map)[observation_id]),
                 std::move(formatter), observe_with_core_id);
@@ -268,7 +269,8 @@ struct CollectReductionDataOnNode {
       const ArrayIndex& /*array_index*/,
       const gsl::not_null<Parallel::NodeLock*> node_lock,
       const observers::ObservationId& observation_id,
-      ArrayComponentId observer_group_id, const std::string& subfile_name,
+      Parallel::ArrayComponentId observer_group_id,
+      const std::string& subfile_name,
       std::vector<std::string>&& reduction_names,
       Parallel::ReductionData<ReductionDatums...>&& received_reduction_data,
       std::optional<Formatter>&& formatter = std::nullopt,
@@ -288,7 +290,7 @@ struct CollectReductionDataOnNode {
     std::unordered_map<ObservationId, std::vector<std::string>>*
         reduction_names_map = nullptr;
     std::unordered_map<observers::ObservationId,
-                       std::unordered_set<ArrayComponentId>>*
+                       std::unordered_set<Parallel::ArrayComponentId>>*
         reduction_observers_contributed = nullptr;
     Parallel::NodeLock* reduction_data_lock = nullptr;
     Parallel::NodeLock* reduction_file_lock = nullptr;
@@ -311,14 +313,15 @@ struct CollectReductionDataOnNode {
               const gsl::not_null<
                   std::unordered_map<ObservationId, std::vector<std::string>>*>
                   reduction_names_map_ptr,
-              const gsl::not_null<
-                  std::unordered_map<observers::ObservationId,
-                                     std::unordered_set<ArrayComponentId>>*>
+              const gsl::not_null<std::unordered_map<
+                  observers::ObservationId,
+                  std::unordered_set<Parallel::ArrayComponentId>>*>
                   reduction_observers_contributed_ptr,
               const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
               const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
-              const std::unordered_map<ObservationKey,
-                                       std::unordered_set<ArrayComponentId>>&
+              const std::unordered_map<
+                  ObservationKey,
+                  std::unordered_set<Parallel::ArrayComponentId>>&
                   observations_registered) {
             const ObservationKey& key{observation_id.observation_key()};
             const auto& registered_group_ids = observations_registered.at(key);

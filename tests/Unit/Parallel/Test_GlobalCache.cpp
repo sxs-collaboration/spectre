@@ -19,6 +19,7 @@
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -225,9 +226,7 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
       : callback_(callback) {}
   using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
-  void pup(PUP::er& p) override {
-    p | callback_;
-  }
+  void pup(PUP::er& p) override { p | callback_; }
 
  private:
   CkCallback callback_;
@@ -283,8 +282,11 @@ void TestArrayChare<Metavariables>::run_test_two() {
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_two(),
                  this->thisProxy[this->thisIndex]);
+  const auto array_component_id =
+      Parallel::make_array_component_id<TestArrayChare<Metavariables>>(
+          static_cast<int>(this->thisIndex));
   if (Parallel::mutable_cache_item_is_ready<weight>(
-          *Parallel::local_branch(global_cache_proxy_),
+          *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](
               const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
             return weight_l == 150 ? std::unique_ptr<Parallel::Callback>{}
@@ -308,8 +310,11 @@ void TestArrayChare<Metavariables>::run_test_three() {
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_three(),
                  this->thisProxy[this->thisIndex]);
+  const auto array_component_id =
+      Parallel::make_array_component_id<TestArrayChare<Metavariables>>(
+          static_cast<int>(this->thisIndex));
   if (Parallel::mutable_cache_item_is_ready<email>(
-          *Parallel::local_branch(global_cache_proxy_),
+          *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](const std::string& email_l)
               -> std::unique_ptr<Parallel::Callback> {
             return email_l == "albert@einstein.de"
@@ -332,8 +337,11 @@ void TestArrayChare<Metavariables>::run_test_four() {
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_four(),
                  this->thisProxy[this->thisIndex]);
+  const auto array_component_id =
+      Parallel::make_array_component_id<TestArrayChare<Metavariables>>(
+          static_cast<int>(this->thisIndex));
   if (Parallel::mutable_cache_item_is_ready<animal>(
-          *Parallel::local_branch(global_cache_proxy_),
+          *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](
               const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 8
@@ -356,8 +364,11 @@ void TestArrayChare<Metavariables>::run_test_five() {
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_five(),
                  this->thisProxy[this->thisIndex]);
+  const auto array_component_id =
+      Parallel::make_array_component_id<TestArrayChare<Metavariables>>(
+          static_cast<int>(this->thisIndex));
   if (Parallel::mutable_cache_item_is_ready<animal_base>(
-          *Parallel::local_branch(global_cache_proxy_),
+          *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](
               const Animal& animal_l) -> std::unique_ptr<Parallel::Callback> {
             return animal_l.number_of_legs() == 30

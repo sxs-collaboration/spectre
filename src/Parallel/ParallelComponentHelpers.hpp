@@ -4,8 +4,10 @@
 #pragma once
 
 #include <mutex>
+#include <unordered_map>
 #include <utility>
 
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -189,8 +191,9 @@ struct MutexTag {
 template <typename Tag>
 struct MutableCacheTag {
   using tag = Tag;
-  using type =
-      std::tuple<typename Tag::type, std::vector<std::unique_ptr<Callback>>>;
+  using type = std::tuple<typename Tag::type,
+                          std::unordered_map<Parallel::ArrayComponentId,
+                                             std::unique_ptr<Callback>>>;
 };
 
 template <typename Tag>

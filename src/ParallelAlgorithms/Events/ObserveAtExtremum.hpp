@@ -23,6 +23,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -376,9 +377,7 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
         local_observer,
         observers::ObservationId(observation_value.value,
                                  subfile_path_with_suffix + ".dat"),
-        observers::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
+        Parallel::make_array_component_id<ParallelComponent>(array_index),
         subfile_path_with_suffix, std::move(legend),
         ReductionData<funcl::Max<>>{observation_value.value,
                                     std::move(data_to_reduce)});
@@ -387,9 +386,7 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
         local_observer,
         observers::ObservationId(observation_value.value,
                                  subfile_path_with_suffix + ".dat"),
-        observers::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
+        Parallel::make_array_component_id<ParallelComponent>(array_index),
         subfile_path_with_suffix, std::move(legend),
         ReductionData<funcl::Min<>>{observation_value.value,
                                     std::move(data_to_reduce)});

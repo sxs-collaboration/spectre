@@ -14,11 +14,13 @@
 #include <pup.h>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/Info.hpp"
@@ -76,7 +78,8 @@ template <typename... Tags>
 auto make_mutable_cache_tag_storage(tuples::TaggedTuple<Tags...>&& input) {
   return tuples::TaggedTuple<MutableCacheTag<Tags>...>(
       std::make_tuple(std::move(tuples::get<Tags>(input)),
-                      std::vector<std::unique_ptr<Callback>>{})...);
+                      std::unordered_map<Parallel::ArrayComponentId,
+                                         std::unique_ptr<Callback>>{})...);
 }
 
 template <typename ParallelComponent, typename ComponentList>
@@ -273,13 +276,25 @@ class GlobalCache
    *   `std::unique_ptr<CallBack>`
    * - if the data is not ready, returns a `std::unique_ptr<CallBack>`,
    *   where the `Callback` will re-invoke the current action on the
-   *   current parallel component.
+   *   current parallel component. This callback should be a
+   *   `Parallel::PerformAlgorithmCallback`. Other types of callbacks are not
+   *   supported at this time.
    *
+   * \parblock
    * \warning The `function` may be called twice so it should not modify any
    * state in its scope.
+   * \endparblock
+   *
+   * \parblock
+   * \warning If there has already been a callback registered for the given
+   * `array_component_id`, then the callback returned by `function` will **not**
+   * be registered or called.
+   * \endparblock
    */
   template <typename GlobalCacheTag, typename Function>
-  bool mutable_cache_item_is_ready(const Function& function);
+  bool mutable_cache_item_is_ready(
+      const Parallel::ArrayComponentId& array_component_id,
+      const Function& function);
 
   /// Mutates the non-const object identified by GlobalCacheTag.
   /// \requires `GlobalCacheTag` is a tag in `mutable_global_cache_tags`
@@ -429,6 +444,7 @@ void GlobalCache<Metavariables>::set_parallel_components(
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function>
 bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
+    const Parallel::ArrayComponentId& array_component_id,
     const Function& function) {
   using tag = MutableCacheTag<GlobalCache_detail::get_matching_mutable_tag<
       GlobalCacheTag, Metavariables>>;
@@ -455,12 +471,11 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     {
       // Scoped for lock guard
       const std::lock_guard<std::mutex> lock(mutex);
-      std::get<1>(tuples::get<tag>(mutable_global_cache_))
-          .push_back(std::move(optional_callback));
-      if (std::get<1>(tuples::get<tag>(mutable_global_cache_)).size() > 20000) {
-        ERROR("The number of callbacks for the mutable tag "
-              << pretty_type::short_name<GlobalCacheTag>()
-              << " has gotten too large, and may be growing without bound");
+      std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>&
+          callbacks = std::get<1>(tuples::get<tag>(mutable_global_cache_));
+
+      if (callbacks.count(array_component_id) != 1) {
+        callbacks[array_component_id] = std::move(optional_callback);
       }
     }
 
@@ -486,22 +501,24 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     // the object was mutated) and E can continue on.
     //
     // If this second check reveals that the object *is* ready, then we have an
-    // unecessary callback floating around that will get executed at some point.
-    // If this is a `perform_algorithm` callback (likely), then this won't
-    // matter because a) if the algorithm is already running, nothing happens
-    // and b) if the algorithm was paused, it will just restart and another
-    // check should stop it if necessary. Other types of callbacks should
-    // exhibit the same behavior. If they don't, the same code may be executed
-    // twice assuming the same inputs, except the second time through the inputs
-    // have already been changed.
+    // unecessary callback in our map, so we remove it.
     //
     // If this second check reveals that the object *isn't* ready, then we don't
-    // bother adding another callback to the vector because one already exists.
-    // No need to call a callback twice.
+    // bother adding another callback to the map because one already exists. No
+    // need to call a callback twice.
     //
     // This function returns true if no callback was registered and false if one
     // was registered.
-    return not callback_was_registered();
+    const bool cache_item_is_ready = not callback_was_registered();
+    if (cache_item_is_ready) {
+      const std::lock_guard<std::mutex> lock(mutex);
+      std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>&
+          callbacks = std::get<1>(tuples::get<tag>(mutable_global_cache_));
+
+      callbacks.erase(array_component_id);
+    }
+
+    return cache_item_is_ready;
   } else {
     // The user-defined `function` didn't specify a callback, which
     // means that the item is ready.
@@ -535,29 +552,30 @@ void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
       },
       args);
 
-  // A callback might call mutable_cache_item_is_ready, which might
-  // add yet another callback to the vector of callbacks.  We don't
-  // want to immediately invoke this new callback as it might just add another
-  // callback again (and again in an infinite loop). And we don't want to remove
-  // it from the vector of callbacks before it is invoked otherwise we could get
-  // a deadlock. Therefore, after locking it, we std::move the vector of
-  // callbacks into a temporary vector, clear the original vector, and invoke
-  // the callbacks in the temporary vector.
-  std::vector<std::unique_ptr<Callback>> callbacks{};
-  // Second mutex is for vector of callbacks
+  // A callback might call mutable_cache_item_is_ready, which might add yet
+  // another callback to the vector of callbacks.  We don't want to immediately
+  // invoke this new callback as it might just add another callback again (and
+  // again in an infinite loop). And we don't want to remove it from the map of
+  // callbacks before it is invoked otherwise we could get a deadlock.
+  // Therefore, after locking it, we std::move the map of callbacks into a
+  // temporary map, clear the original map, and invoke the callbacks in the
+  // temporary map.
+  std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>
+      callbacks{};
+  // Second mutex is for map of callbacks
   std::mutex& mutex = tuples::get<MutexTag<tag>>(mutexes_).second;
   {
     // Scoped for lock guard
     const std::lock_guard<std::mutex> lock(mutex);
     callbacks = std::move(std::get<1>(tuples::get<tag>(mutable_global_cache_)));
     std::get<1>(tuples::get<tag>(mutable_global_cache_)).clear();
-    std::get<1>(tuples::get<tag>(mutable_global_cache_)).shrink_to_fit();
   }
 
   // Invoke the callbacks.  Any new callbacks that are added to the
   // list (if a callback calls mutable_cache_item_is_ready) will be
   // saved and will not be invoked here.
-  for (auto& callback : callbacks) {
+  for (auto& [array_component_id, callback] : callbacks) {
+    (void)array_component_id;
     callback->invoke();
   }
 }
@@ -794,10 +812,17 @@ auto get(const GlobalCache<Metavariables>& cache)
 /// appends the `std::unique_ptr<Callback>` to an
 /// internal list of callbacks to be called on `mutate`, and then
 /// returns false.
+///
+/// \note If `function` is returning a valid callback, it should only return a
+/// `Parallel::PerformAlgorithmCallback`. Other types of callbacks are not
+/// supported at this time.
 template <typename GlobalCacheTag, typename Function, typename Metavariables>
-bool mutable_cache_item_is_ready(GlobalCache<Metavariables>& cache,
-                                 const Function& function) {
-  return cache.template mutable_cache_item_is_ready<GlobalCacheTag>(function);
+bool mutable_cache_item_is_ready(
+    GlobalCache<Metavariables>& cache,
+    const Parallel::ArrayComponentId& array_component_id,
+    const Function& function) {
+  return cache.template mutable_cache_item_is_ready<GlobalCacheTag>(
+      array_component_id, function);
 }
 
 /// \ingroup ParallelGroup

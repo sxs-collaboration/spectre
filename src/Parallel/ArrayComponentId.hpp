@@ -8,16 +8,17 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <type_traits>
 
+#include "Parallel/ArrayIndex.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace PUP {
 class er;
 }  // namespace PUP
 
-namespace observers {
+namespace Parallel {
 /*!
- * \ingroup ObserversGroup
  * \brief An ID type that identifies both the parallel component and the index
  * in the parallel component.
  *
@@ -57,12 +58,22 @@ bool operator!=(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
 std::ostream& operator<<(std::ostream& os,
                          const ArrayComponentId& array_component_id);
-}  // namespace observers
+
+/*!
+ * \brief A convenience function that will make an `ArrayComponentId` from the
+ * templated `ParallelComponent` and the passed in `array_index`.
+ */
+template <typename ParallelComponent, typename ArrayIndexType>
+ArrayComponentId make_array_component_id(const ArrayIndexType& array_index) {
+  return ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
+                          Parallel::ArrayIndex<ArrayIndexType>(array_index)};
+}
+}  // namespace Parallel
 
 namespace std {
 template <>
-struct hash<observers::ArrayComponentId> {
-  size_t operator()(const observers::ArrayComponentId& t) const {
+struct hash<Parallel::ArrayComponentId> {
+  size_t operator()(const Parallel::ArrayComponentId& t) const {
     size_t result = t.component_id();
     boost::hash_combine(result, t.array_index().hash());
     return result;

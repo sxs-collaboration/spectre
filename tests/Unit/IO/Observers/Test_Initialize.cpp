@@ -8,9 +8,9 @@
 #include <unordered_set>
 
 #include "Framework/ActionTesting.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
-#include "IO/Observer/Tags.hpp"                   // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"           // IWYU pragma: keep
+#include "Parallel/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
