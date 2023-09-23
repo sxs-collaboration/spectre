@@ -63,6 +63,10 @@ namespace grmhd::AnalyticData::InitialMagneticFields {
  *        2(p-p_{\mathrm{cut}})^{n_s}.
  * \f}
  *
+ * Note that the coordinates are relative to the `Center` passed in, so the
+ * field can be centered about any arbitrary point. The field is also zero
+ * outside of `MaxDistanceFromCenter`, so that compact support can be imposed if
+ * necessary.
  */
 class Poloidal : public InitialMagneticField {
  public:
@@ -87,8 +91,23 @@ class Poloidal : public InitialMagneticField {
     static type lower_bound() { return 0.0; }
   };
 
+  struct Center {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "The center of the magnetic field."};
+  };
+
+  struct MaxDistanceFromCenter {
+    using type = double;
+    static constexpr Options::String help = {
+        "The maximum distance from the center to compute the magnetic field. "
+        "Everywhere outside the field is set to zero."};
+    static type lower_bound() { return 0.0; }
+  };
+
   using options =
-      tmpl::list<PressureExponent, CutoffPressure, VectorPotentialAmplitude>;
+      tmpl::list<PressureExponent, CutoffPressure, VectorPotentialAmplitude,
+                 Center, MaxDistanceFromCenter>;
 
   static constexpr Options::String help = {"Poloidal initial magnetic field"};
 
@@ -100,7 +119,8 @@ class Poloidal : public InitialMagneticField {
   ~Poloidal() override = default;
 
   Poloidal(size_t pressure_exponent, double cutoff_pressure,
-           double vector_potential_amplitude);
+           double vector_potential_amplitude, std::array<double, 3> center,
+           double max_distance_from_center);
 
   auto get_clone() const -> std::unique_ptr<InitialMagneticField> override;
 
@@ -125,6 +145,11 @@ class Poloidal : public InitialMagneticField {
   size_t pressure_exponent_ = std::numeric_limits<size_t>::max();
   double cutoff_pressure_ = std::numeric_limits<double>::signaling_NaN();
   double vector_potential_amplitude_ =
+      std::numeric_limits<double>::signaling_NaN();
+  std::array<double, 3> center_{{std::numeric_limits<double>::signaling_NaN(),
+                                 std::numeric_limits<double>::signaling_NaN(),
+                                 std::numeric_limits<double>::signaling_NaN()}};
+  double max_distance_from_center_ =
       std::numeric_limits<double>::signaling_NaN();
 
   friend bool operator==(const Poloidal& lhs, const Poloidal& rhs);

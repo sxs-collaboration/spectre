@@ -45,16 +45,18 @@ SPECTRE_TEST_CASE(
   const auto solution = TestHelpers::test_creation<Toroidal>(
       "  PressureExponent: 2\n"
       "  CutoffPressure: 1.0e-5\n"
-      "  VectorPotentialAmplitude: 1000.0\n");
-  CHECK(solution == Toroidal(2, 1.0e-5, 1000.0));
+      "  VectorPotentialAmplitude: 1000.0\n"
+      "  Center: [0.0, 0.0, 0.0]\n"
+      "  MaxDistanceFromCenter: 100.0\n");
+  CHECK(solution == Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
 
   // test serialize
   test_serialization(solution);
 
   // test move
   {
-    Toroidal toroidal_field{2, 1.0e-5, 1000.0};
-    Toroidal toroidal_field_copy{2, 1.0e-5, 1000.0};
+    Toroidal toroidal_field{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
+    Toroidal toroidal_field_copy{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
     test_move_semantics(std::move(toroidal_field), toroidal_field_copy);
   }
 
@@ -67,12 +69,14 @@ SPECTRE_TEST_CASE(
   CHECK(dynamic_cast<Toroidal*>(deserialized_base_ptr.get()) != nullptr);
 
   // test equality
-  const Toroidal field_original{2, 1.0e-5, 1000.0};
+  const Toroidal field_original{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
   const auto field = serialize_and_deserialize(field_original);
-  CHECK(field == Toroidal(2, 1.0e-5, 1000.0));
-  CHECK(field != Toroidal(3, 1.0e-5, 1000.0));
-  CHECK(field != Toroidal(2, 2.0e-5, 1000.0));
-  CHECK(field != Toroidal(2, 1.0e-5, 2000.0));
+  CHECK(field == Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Toroidal(3, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Toroidal(2, 2.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Toroidal(2, 1.0e-5, 2000.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Toroidal(2, 1.0e-5, 1000.0, {{1.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 10.0));
 
   // test solution implementation
   pypp::SetupLocalPythonEnvironment local_python_env{
@@ -86,7 +90,7 @@ SPECTRE_TEST_CASE(
   pypp::check_with_random_values<1>(
       &ToroidalProxy::return_variables<double>,
       ToroidalProxy(pressure_exponent, cutoff_pressure,
-                    vector_potential_amplitude),
+                    vector_potential_amplitude, {{0.0, 0.0, 0.0}}, 10000.0),
       "Toroidal", {"magnetic_field"}, {{{-10.0, 10.0}}},
       std::make_tuple(pressure_exponent, cutoff_pressure,
                       vector_potential_amplitude),
@@ -96,7 +100,8 @@ SPECTRE_TEST_CASE(
   // branch for p < p_cutoff
   pypp::check_with_random_values<1>(
       &ToroidalProxy::return_variables<double>,
-      ToroidalProxy(pressure_exponent, 1e5, vector_potential_amplitude),
+      ToroidalProxy(pressure_exponent, 1e5, vector_potential_amplitude,
+                    {{0.0, 0.0, 0.0}}, 10000.0),
       "Toroidal", {"magnetic_field"}, {{{-1.0, 1.0}}},
       std::make_tuple(pressure_exponent, 1e5, vector_potential_amplitude),
       used_for_size);

@@ -24,16 +24,22 @@ void Poloidal::pup(PUP::er& p) {
   p | pressure_exponent_;
   p | cutoff_pressure_;
   p | vector_potential_amplitude_;
+  p | center_;
+  p | max_distance_from_center_;
 }
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Poloidal::my_PUP_ID = 0;
 
 Poloidal::Poloidal(const size_t pressure_exponent, const double cutoff_pressure,
-                   const double vector_potential_amplitude)
+                   const double vector_potential_amplitude,
+                   const std::array<double, 3> center,
+                   const double max_distance_from_center)
     : pressure_exponent_(pressure_exponent),
       cutoff_pressure_(cutoff_pressure),
-      vector_potential_amplitude_(vector_potential_amplitude) {}
+      vector_potential_amplitude_(vector_potential_amplitude),
+      center_(center),
+      max_distance_from_center_(max_distance_from_center) {}
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
@@ -46,7 +52,11 @@ Poloidal::variables(const tnsr::I<DataType, 3>& coords,
 
   for (size_t i = 0; i < num_pts; ++i) {
     const double pressure_i = get_element(get(pressure), i);
-    if (pressure_i < cutoff_pressure_) {
+    const double x = get_element(coords.get(0), i) - center_[0];
+    const double y = get_element(coords.get(1), i) - center_[1];
+    const double z = get_element(coords.get(2), i) - center_[2];
+    const double radius = sqrt(x * x + y * y + z * z);
+    if (pressure_i < cutoff_pressure_ or radius > max_distance_from_center_) {
       get_element(magnetic_field.get(0), i) = 0.0;
       get_element(magnetic_field.get(1), i) = 0.0;
       get_element(magnetic_field.get(2), i) = 0.0;
@@ -54,15 +64,13 @@ Poloidal::variables(const tnsr::I<DataType, 3>& coords,
     }
 
     // (p - p_c)^{n_s}
-    const double pressure_term =
-        pow(pressure_i - cutoff_pressure_, pressure_exponent_);
+    const double pressure_term = pow(pressure_i - cutoff_pressure_,
+                                     static_cast<int>(pressure_exponent_));
     // n_s * (p - p_c)^{n_s-1}
     const double n_times_pressure_to_n_minus_1 =
-        pressure_exponent_ * pow(pressure_i - cutoff_pressure_,
-                                 static_cast<int>(pressure_exponent_) - 1);
-
-    const double x = get_element(coords.get(0), i);
-    const double y = get_element(coords.get(1), i);
+        static_cast<double>(pressure_exponent_) *
+        pow(pressure_i - cutoff_pressure_,
+            static_cast<int>(pressure_exponent_) - 1);
 
     const auto& dp_dx = get_element(dcoords_pressure.get(0), i);
     const auto& dp_dy = get_element(dcoords_pressure.get(1), i);
@@ -89,7 +97,9 @@ Poloidal::variables(const tnsr::I<DataType, 3>& coords,
 bool operator==(const Poloidal& lhs, const Poloidal& rhs) {
   return lhs.pressure_exponent_ == rhs.pressure_exponent_ and
          lhs.cutoff_pressure_ == rhs.cutoff_pressure_ and
-         lhs.vector_potential_amplitude_ == rhs.vector_potential_amplitude_;
+         lhs.vector_potential_amplitude_ == rhs.vector_potential_amplitude_ and
+         lhs.center_ == rhs.center_ and
+         lhs.max_distance_from_center_ == rhs.max_distance_from_center_;
 }
 
 bool operator!=(const Poloidal& lhs, const Poloidal& rhs) {

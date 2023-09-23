@@ -45,16 +45,18 @@ SPECTRE_TEST_CASE(
   const auto solution = TestHelpers::test_creation<Poloidal>(
       "  PressureExponent: 2\n"
       "  CutoffPressure: 1.0e-5\n"
-      "  VectorPotentialAmplitude: 2500.0\n");
-  CHECK(solution == Poloidal(2, 1.0e-5, 2500.0));
+      "  VectorPotentialAmplitude: 2500.0\n"
+      "  Center: [0.0, 0.0, 0.0]\n"
+      "  MaxDistanceFromCenter: 100.0\n");
+  CHECK(solution == Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
 
   // test serialize
   test_serialization(solution);
 
   // test move
   {
-    Poloidal poloidal_field{2, 1.0e-5, 2500.0};
-    Poloidal poloidal_field_copy{2, 1.0e-5, 2500.0};
+    Poloidal poloidal_field{2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0};
+    Poloidal poloidal_field_copy{2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0};
     test_move_semantics(std::move(poloidal_field), poloidal_field_copy);
   }
 
@@ -67,12 +69,14 @@ SPECTRE_TEST_CASE(
   CHECK(dynamic_cast<Poloidal*>(deserialized_base_ptr.get()) != nullptr);
 
   // test equality
-  const Poloidal field_original{2, 1.0e-5, 2500.0};
+  const Poloidal field_original{2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0};
   const auto field = serialize_and_deserialize(field_original);
-  CHECK(field == Poloidal(2, 1.0e-5, 2500.0));
-  CHECK(field != Poloidal(3, 1.0e-5, 2500.0));
-  CHECK(field != Poloidal(2, 2.0e-5, 2500.0));
-  CHECK(field != Poloidal(2, 1.0e-5, 3500.0));
+  CHECK(field == Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Poloidal(3, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Poloidal(2, 2.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Poloidal(2, 1.0e-5, 3500.0, {{0.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Poloidal(2, 1.0e-5, 2500.0, {{1.0, 0.0, 0.0}}, 100.0));
+  CHECK(field != Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 10.0));
 
   // test solution implementation
   pypp::SetupLocalPythonEnvironment local_python_env{
@@ -86,7 +90,7 @@ SPECTRE_TEST_CASE(
   pypp::check_with_random_values<1>(
       &PoloidalProxy::return_variables<double>,
       PoloidalProxy(pressure_exponent, cutoff_pressure,
-                    vector_potential_amplitude),
+                    vector_potential_amplitude, {{0.0, 0.0, 0.0}}, 100.0),
       "Poloidal", {"magnetic_field"}, {{{-10.0, 10.0}}},
       std::make_tuple(pressure_exponent, cutoff_pressure,
                       vector_potential_amplitude),
