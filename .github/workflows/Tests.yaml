@@ -238,9 +238,6 @@ jobs:
 
           git fetch upstream develop
       - name: Configure with cmake
-        # Notes on the build configuration:
-        # - Set `BUILD_TESTING=OFF` to test a CMake configuration with tests
-        #   turned off.
         run: >
           mkdir build && cd build
 
@@ -254,10 +251,9 @@ jobs:
           -D USE_CCACHE=OFF
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
-          -D BUILD_TESTING=OFF
           $GITHUB_WORKSPACE
 
-          make SpectrePch
+          make -j2 SpectrePch module_All
       - name: Use new clang-tidy-diff
         # The clang-tidy-diff tool shipped with clang 14 doesn't report exit
         # codes, so we grab the version that does:
@@ -322,8 +318,10 @@ jobs:
           key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
             ${{ env.CACHE_KEY_PREFIX }}-
-      # Make sure to use the same build configuration as the unit tests from
-      # which we restore the ccache.
+      # - Make sure to use the same build configuration as the unit tests from
+      #   which we restore the ccache.
+      # - Set `BUILD_TESTING=OFF` to test a CMake configuration with tests
+      #   turned off.
       - name: Configure with cmake
         run: >
           mkdir build && cd build
@@ -345,6 +343,7 @@ jobs:
           -D BUILD_SHARED_LIBS=ON
           -D MEMORY_ALLOCATOR=SYSTEM
           -D BUILD_DOCS=ON
+          -D BUILD_TESTING=OFF
           $GITHUB_WORKSPACE
       - name: Check documentation
         working-directory: build
