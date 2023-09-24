@@ -120,3 +120,13 @@ set_property(TARGET Boost::boost
   APPEND PROPERTY
   INTERFACE_COMPILE_DEFINITIONS
   $<$<COMPILE_LANGUAGE:CXX>:${BOOST_MULTI_ARRAY_TYPES_HEADER_GUARD}>)
+
+# Work around boost not building with clang 15 (fixed in boost 1.83.0)
+# (https://github.com/boostorg/functional/pull/21)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND BOOST_VERSION VERSION_LESS 1.83.0)
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "15.0.0" OR
+      CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "15.0.0")
+        target_compile_definitions(Boost::boost INTERFACE _HAS_AUTO_PTR_ETC=0)
+  endif()
+endif()
+
