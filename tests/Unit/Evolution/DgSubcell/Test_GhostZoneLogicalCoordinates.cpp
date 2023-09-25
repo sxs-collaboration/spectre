@@ -48,7 +48,7 @@ void test() {
       // For 3D if `direction` is along x-axis, y and z components would remain
       // same as volume slice. (*)
       auto expected_coordinates = slice_tensor_for_subcell(
-          logical_coordinates(subcell_mesh), subcell_extents, 1, direction);
+          logical_coordinates(subcell_mesh), subcell_extents, 1, direction, {});
 
       for (size_t i_slice = 0; i_slice < ghost_zone_size; ++i_slice) {
         auto ghost_zone_coords_ith_slice = data_on_slice(

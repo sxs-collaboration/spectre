@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Framework/TestingFramework.hpp"
+
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
@@ -16,6 +18,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -26,6 +29,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
@@ -33,6 +37,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -76,7 +81,7 @@ compute_ghost_data(
         gsl::make_span(neighbor_vars_for_reconstruction.data(),
                        neighbor_vars_for_reconstruction.size()),
         subcell_mesh.extents(), ghost_zone_size,
-        std::unordered_set{direction.opposite()}, 0);
+        std::unordered_set{direction.opposite()}, 0, {});
 
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

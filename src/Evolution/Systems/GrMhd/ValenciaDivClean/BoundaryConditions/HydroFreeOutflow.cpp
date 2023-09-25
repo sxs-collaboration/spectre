@@ -350,7 +350,7 @@ void HydroFreeOutflow::fd_ghost_impl(
   // `outermost_prim_vars`
   auto get_boundary_val = [&direction, &subcell_extents](auto volume_tensor) {
     return evolution::dg::subcell::slice_tensor_for_subcell(
-        volume_tensor, subcell_extents, 1, direction);
+        volume_tensor, subcell_extents, 1, direction, {});
   };
 
   get<RestMassDensity>(outermost_prim_vars) =

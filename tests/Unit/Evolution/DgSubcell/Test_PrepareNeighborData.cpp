@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -179,6 +180,11 @@ void test(const bool all_neighbors_are_doing_dg,
   CAPTURE(all_neighbors_are_doing_dg);
   CAPTURE(fd_derivative_order);
   CAPTURE(Dim);
+  using Interps =
+      FixedHashMap<maximum_number_of_neighbors(Dim),
+                   std::pair<Direction<Dim>, ElementId<Dim>>,
+                   std::optional<intrp::Irregular<Dim>>,
+                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
@@ -215,18 +221,44 @@ void test(const bool all_neighbors_are_doing_dg,
               fd_derivative_order},
           TestCreator<Dim>{}};
 
-  auto box =
-      db::create<tmpl::list<Tags::Reconstructor, domain::Tags::Mesh<Dim>,
-                            evolution::dg::subcell::Tags::Mesh<Dim>,
-                            domain::Tags::Element<Dim>, variables_tag,
-                            evolution::dg::subcell::Tags::DataForRdmpTci,
-                            evolution::dg::Tags::NeighborMesh<Dim>,
-                            evolution::dg::subcell::Tags::SubcellOptions<Dim>>>(
-          std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh,
-          element, vars,
-          // Set RDMP data since it would've been calculated before already.
-          evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
-          subcell_options);
+  Interps fd_to_fd_neighbor_interpolants{};
+  Interps dg_to_fd_neighbor_interpolants{};
+  if constexpr (Dim == 3) {
+    const auto direction = expected_neighbor_directions<Dim>()[1];
+    const auto& orientation_map =
+        element.neighbors().at(direction).orientation();
+    const auto& neighbor_element_id =
+        *element.neighbors().at(direction).begin();
+    const auto logical_fd_coords = logical_coordinates(subcell_mesh);
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
+    for (size_t i = 0; i < Dim; ++i) {
+      oriented_logical_coords.get(i) = orient_variables(
+          logical_fd_coords.get(i), subcell_mesh.extents(), orientation_map);
+    }
+    const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
+        oriented_logical_coords, subcell_mesh.extents(), ghost_zone_size,
+        orientation_map(direction), {});
+    dg_to_fd_neighbor_interpolants[std::pair{direction, neighbor_element_id}] =
+        intrp::Irregular<Dim>{dg_mesh, target_points};
+
+    fd_to_fd_neighbor_interpolants[std::pair{direction, neighbor_element_id}] =
+        intrp::Irregular<Dim>{subcell_mesh, target_points};
+  }
+
+  auto box = db::create<tmpl::list<
+      Tags::Reconstructor, domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      variables_tag, evolution::dg::subcell::Tags::DataForRdmpTci,
+      evolution::dg::Tags::NeighborMesh<Dim>,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
+      evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>>(
+      std::make_unique<DummyReconstructor>(), dg_mesh, subcell_mesh, element,
+      vars,
+      // Set RDMP data since it would've been calculated before already.
+      evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}}, neighbor_meshes,
+      subcell_options, fd_to_fd_neighbor_interpolants,
+      dg_to_fd_neighbor_interpolants);
 
   Mesh<Dim> ghost_data_mesh{};
   DirectionMap<Dim, DataVector> data_for_neighbors{};
@@ -290,12 +322,14 @@ void test(const bool all_neighbors_are_doing_dg,
         return evolution::dg::subcell::slice_data(
             evolution::dg::subcell::fd::project(expected_var_and_flux, dg_mesh,
                                                 subcell_mesh.extents()),
-            subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
+            subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0,
+            {});
       } else {
         return evolution::dg::subcell::slice_data(
             evolution::dg::subcell::fd::project(expected_vars, dg_mesh,
                                                 subcell_mesh.extents()),
-            subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
+            subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0,
+            {});
       }
     }();
     if constexpr (Dim == 3) {
@@ -309,6 +343,7 @@ void test(const bool all_neighbors_are_doing_dg,
   }
 
   for (const auto& direction : expected_neighbor_directions<Dim>()) {
+    CAPTURE(direction);
     const auto& data_in_direction = data_for_neighbors.at(direction);
     CHECK_ITERABLE_APPROX(
         expected_neighbor_data.at(direction),
@@ -324,9 +359,9 @@ void test(const bool all_neighbors_are_doing_dg,
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.PrepareNeighborData",
                   "[Evolution][Unit]") {
   for (const auto& [all_neighbors_are_doing_dg, fd_deriv_order] :
-       cartesian_product(make_array(true, false),
-                         make_array(::fd::DerivativeOrder::Two,
-                                    ::fd::DerivativeOrder::Four))) {
+       cartesian_product(std::array{true, false},
+                         std::array{::fd::DerivativeOrder::Two,
+                                    ::fd::DerivativeOrder::Four})) {
     test<1>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<2>(all_neighbors_are_doing_dg, fd_deriv_order);
     test<3>(all_neighbors_are_doing_dg, fd_deriv_order);

@@ -112,7 +112,8 @@ struct component {
           ::Tags::Variables<tmpl::list<Var1>>,
           ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<::Tags::Variables<tmpl::list<Var1>>>,
-          evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>,
+          evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
+          evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>,
       tmpl::conditional_t<
           Metavariables::has_prims,
           tmpl::list<::Tags::Variables<tmpl::list<PrimVar1>>,
@@ -269,6 +270,11 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(neighbor_is_troubled);
   CAPTURE(disable_subcell_in_block);
 
+  using Interps =
+      FixedHashMap<maximum_number_of_neighbors(Dim),
+                   std::pair<Direction<Dim>, ElementId<Dim>>,
+                   std::optional<intrp::Irregular<Dim>>,
+                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
@@ -421,7 +427,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
          subcell_mesh, element, active_grid, did_rollback, ghost_data,
          tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
          time_stepper_history, initial_value_evolved_vars, neighbor_decisions,
-         prim_vars, initial_value_prim_vars});
+         Interps{}, prim_vars, initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
@@ -430,7 +436,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         {std::make_unique<DummyReconstructor>(), time_step_id, dg_mesh,
          subcell_mesh, element, active_grid, did_rollback, ghost_data,
          tci_decision, rdmp_tci_data, neighbor_meshes, evolved_vars,
-         time_stepper_history, initial_value_evolved_vars, neighbor_decisions});
+         time_stepper_history, initial_value_evolved_vars, neighbor_decisions,
+         Interps{}});
   }
 
   // Invoke the TciAndRollback action on the runner
@@ -524,7 +531,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           make_not_null(&expected_ghost_data),
           expected_ghost_data.at(directional_element_id)
               .neighbor_ghost_data_for_reconstruction(),
-          0, directional_element_id, neighbor_mesh, element, subcell_mesh, 2);
+          0, directional_element_id, neighbor_mesh, element, subcell_mesh, 2,
+          Interps{});
     }
     const auto& ghost_data_for_reconstruction = ActionTesting::get_databox_tag<
         comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(

@@ -67,7 +67,7 @@ compute_ghost_data(const Mesh<Dim>& subcell_mesh,
         gsl::make_span(neighbor_vars_for_reconstruction.data(),
                        neighbor_vars_for_reconstruction.size()),
         subcell_mesh.extents(), ghost_zone_size,
-        std::unordered_set{direction.opposite()}, 0);
+        std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
     ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};

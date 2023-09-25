@@ -101,7 +101,7 @@ void test_reconstruction_is_exact_if_in_basis(
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars.data(), neighbor_vars.size()),
         mesh.extents(), (stencil_width - 1) / 2 + 1,
-        std::unordered_set{direction.opposite()}, 0);
+        std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
     neighbor_data[direction] = sliced_data.at(direction.opposite());

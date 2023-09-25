@@ -159,7 +159,7 @@ double test(const size_t num_dg_pts) {
             prims_to_reconstruct, subcell_mesh.extents(),
             grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim{}
                 .ghost_zone_size(),
-            std::unordered_set{direction.opposite()}, 0)
+            std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
 
     const auto key =

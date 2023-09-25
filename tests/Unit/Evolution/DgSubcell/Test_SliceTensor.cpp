@@ -14,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -55,14 +56,41 @@ void test() {
       auto& volume_tensor_IJ = get<Tags::TensorIJ<Dim>>(volume_vars);
 
       for (const auto& direction : Direction<Dim>::all_directions()) {
+        {
+          FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+              fd_to_neighbor_fd_interpolants{};
+          fd_to_neighbor_fd_interpolants[std::pair{
+              direction, ElementId<Dim>{0}}] = std::nullopt;
+          const Scalar<DataVector> expected_sliced_scalar{
+              volume_extents.slice_away(direction.dimension()).product() *
+                  num_ghost_pts,
+              10.0};
+          Scalar<DataVector> sliced_scalar = expected_sliced_scalar;
+          evolution::dg::subcell::slice_tensor_for_subcell(
+              make_not_null(&sliced_scalar), volume_scalar, volume_extents,
+              num_ghost_pts, direction, fd_to_neighbor_fd_interpolants);
+#ifdef SPECTRE_DEBUG
+          disable_floating_point_exceptions();
+          CHECK(get(sliced_scalar).size() ==
+                get(expected_sliced_scalar).size());
+          for (const double value_at_point : get(sliced_scalar)) {
+            CHECK(isnan(value_at_point));
+          }
+          enable_floating_point_exceptions();
+#endif
+        }
+
         // slice data
         auto sliced_scalar = evolution::dg::subcell::slice_tensor_for_subcell(
-            volume_scalar, volume_extents, num_ghost_pts, direction);
+            volume_scalar, volume_extents, num_ghost_pts, direction, {});
         auto sliced_tensor = evolution::dg::subcell::slice_tensor_for_subcell(
-            volume_tensor, volume_extents, num_ghost_pts, direction);
+            volume_tensor, volume_extents, num_ghost_pts, direction, {});
         auto sliced_tensor_IJ =
             evolution::dg::subcell::slice_tensor_for_subcell(
-                volume_tensor_IJ, volume_extents, num_ghost_pts, direction);
+                volume_tensor_IJ, volume_extents, num_ghost_pts, direction, {});
 
         Index<Dim> sliced_extents = volume_extents;
         sliced_extents[direction.dimension()] = num_ghost_pts;

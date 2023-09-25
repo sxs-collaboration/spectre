@@ -169,7 +169,7 @@ void test(const fd::DerivativeOrder correction_order) {
 
     const auto sliced_data = evolution::dg::subcell::slice_data(
         neighbor_vars, mesh.extents(), number_of_ghost_points,
-        std::unordered_set{direction.opposite()}, 0);
+        std::unordered_set{direction.opposite()}, 0, {});
     CAPTURE(number_of_ghost_points);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));

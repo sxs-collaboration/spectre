@@ -98,9 +98,33 @@ void test_slice_data(
         directions_to_slice.erase(*do_not_slice_in_direction);
       }
 
+      {
+        FixedHashMap<maximum_number_of_neighbors(Dim),
+                     std::pair<Direction<Dim>, ElementId<Dim>>,
+                     std::optional<intrp::Irregular<Dim>>,
+                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+            fd_to_neighbor_fd_interpolants{};
+        for (const auto& direction : directions_to_slice) {
+          fd_to_neighbor_fd_interpolants[std::pair{
+              direction, ElementId<Dim>{0}}] = std::nullopt;
+        }
+        const auto sliced_data = subcell::slice_data(
+            volume_vars, extents, number_of_ghost_points, directions_to_slice,
+            additional_buffer_size, fd_to_neighbor_fd_interpolants);
+#ifdef SPECTRE_DEBUG
+        disable_floating_point_exceptions();
+        for (const auto& [_, data_in_direction] : sliced_data) {
+          for (const double& at_point : data_in_direction) {
+            CHECK(isnan(at_point));
+          }
+        }
+        enable_floating_point_exceptions();
+#endif
+      }
+
       const auto sliced_data =
           subcell::slice_data(volume_vars, extents, number_of_ghost_points,
-                              directions_to_slice, additional_buffer_size);
+                              directions_to_slice, additional_buffer_size, {});
       for (const auto& direction : all_directions) {
         CAPTURE(direction);
         if (directions_to_slice.count(direction) == 1) {

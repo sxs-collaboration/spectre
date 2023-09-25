@@ -26,7 +26,12 @@ void slice_variable(
     const gsl::not_null<Variables<TagList>*>& sliced_subcell_vars,
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t ghost_zone_size,
-    const Direction<Dim>& direction) {
+    const Direction<Dim>& direction,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        fd_to_neighbor_fd_interpolants) {
   // check the size of sliced_subcell_vars (output)
   const size_t num_sliced_pts =
       subcell_extents.slice_away(direction.dimension()).product() *
@@ -41,7 +46,8 @@ void slice_variable(
 
   const DataVector sliced_data{detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
-      subcell_extents, ghost_zone_size, directions_to_slice, 0)[direction]};
+      subcell_extents, ghost_zone_size, directions_to_slice, 0,
+      fd_to_neighbor_fd_interpolants)[direction]};
 
   // copy the returned DataVector data into sliced variables
   std::copy(sliced_data.begin(), sliced_data.end(),
@@ -49,15 +55,21 @@ void slice_variable(
 }
 
 template <size_t Dim, typename TagList>
-Variables<TagList> slice_variable(const Variables<TagList>& volume_subcell_vars,
-                                  const Index<Dim>& subcell_extents,
-                                  const size_t ghost_zone_size,
-                                  const Direction<Dim>& direction) {
+Variables<TagList> slice_variable(
+    const Variables<TagList>& volume_subcell_vars,
+    const Index<Dim>& subcell_extents, const size_t ghost_zone_size,
+    const Direction<Dim>& direction,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>,
+                       std::optional<intrp::Irregular<Dim>>,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        fd_to_neighbor_fd_interpolants) {
   Variables<TagList> sliced_subcell_vars{
       subcell_extents.slice_away(direction.dimension()).product() *
       ghost_zone_size};
   slice_variable(make_not_null(&sliced_subcell_vars), volume_subcell_vars,
-                 subcell_extents, ghost_zone_size, direction);
+                 subcell_extents, ghost_zone_size, direction,
+                 fd_to_neighbor_fd_interpolants);
   return sliced_subcell_vars;
 }
 /// @}
