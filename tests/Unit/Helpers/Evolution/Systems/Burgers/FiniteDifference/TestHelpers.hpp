@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Framework/TestingFramework.hpp"
+
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
