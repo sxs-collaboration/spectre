@@ -18,7 +18,15 @@ from spectre.Visualization.ReadH5 import available_subfiles
 
 def write_dat_data(dat_path, h5_filename, out_dir, precision):
     with h5py.File(h5_filename, "r") as h5file:
+        if not dat_path.endswith(".dat"):
+            dat_path = dat_path + ".dat"
         dat_file = h5file.get(dat_path)
+        if dat_file is None:
+            subfiles = available_subfiles(h5_filename, extension=".dat")
+            raise ValueError(
+                f"Unable to find subfile {dat_path}. Known "
+                f"files are:\n{subfiles}"
+            )
         legend = dat_file.attrs["Legend"]
         dat_data = np.array(dat_file)
 
