@@ -34,6 +34,7 @@
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -62,6 +63,10 @@ struct PendingTemporalIds;
 template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
+namespace TargetPoints {
+template <typename InterpolationTargetTag, typename Frame>
+struct Sphere;
+}  // namespace TargetPoints
 }  // namespace intrp
 template <typename Id>
 struct LinkedMessageId;
@@ -604,7 +609,15 @@ void set_up_interpolation(
         // Set the indices of invalid points.
         indices_of_invalid_points->erase(temporal_id);
         for (size_t i = 0; i < block_logical_coords.size(); ++i) {
-          if (not block_logical_coords[i].has_value()) {
+          // The sphere target is optimized specially. Because of this, a
+          // nullopt in block_logical_coords from the sphere target doesn't
+          // actually mean the point is invalid. Therefore we ignore this check
+          // for the sphere target. The downside of this is that we don't catch
+          // invalid points here.
+          constexpr bool is_sphere = tt::is_a_v<
+              TargetPoints::Sphere,
+              typename InterpolationTargetTag::compute_target_points>;
+          if (not is_sphere and not block_logical_coords[i].has_value()) {
             (*indices_of_invalid_points)[temporal_id].insert(i);
           }
         }

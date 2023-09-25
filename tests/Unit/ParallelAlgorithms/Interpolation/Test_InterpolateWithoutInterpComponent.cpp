@@ -16,6 +16,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
@@ -31,6 +32,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -72,8 +74,8 @@ struct initialize_elements_and_queue_simple_actions {
 
     // Run event on all elements.
     for (const auto& element_id : element_ids) {
-      // 1. Get vars and mesh
-      const auto& [vars, mesh] =
+      // 1. Get vars, mesh, and coords
+      const auto& [vars, mesh, inertial_coords] =
           InterpolateOnElementTestHelpers::make_volume_data_and_mesh<
               ElemComponent, Metavariables::use_time_dependent_maps>(
               domain_creator, runner, domain, element_id, temporal_id);
@@ -84,9 +86,11 @@ struct initialize_elements_and_queue_simple_actions {
           typename metavars::InterpolationTargetA::temporal_id,
           intrp::Tags::InterpPointInfo<metavars>,
           ::Events::Tags::ObserverMesh<metavars::volume_dim>,
+          domain::Tags::Coordinates<metavars::volume_dim, Frame::Inertial>,
           ::Tags::Variables<
               typename std::remove_reference_t<decltype(vars)>::tags_list>>>(
-          metavars{}, temporal_id, interp_point_info, mesh, vars);
+          metavars{}, temporal_id, interp_point_info, mesh, inertial_coords,
+          vars);
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
@@ -131,9 +135,8 @@ struct MockMetavariables {
         tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>;
     // The following are not used in this test, but must be there to
     // conform to the protocol.
-    using compute_target_points = ::intrp::TargetPoints::LineSegment<
-        InterpolationTargetAWithoutComputeVarsToInterpolate, 3,
-        Frame::Inertial>;
+    using compute_target_points = ::intrp::TargetPoints::Sphere<
+        InterpolationTargetAWithoutComputeVarsToInterpolate, Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetAWithoutComputeVarsToInterpolate>;
