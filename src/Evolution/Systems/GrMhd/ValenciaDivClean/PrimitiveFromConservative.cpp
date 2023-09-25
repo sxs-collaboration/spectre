@@ -37,7 +37,7 @@
 namespace grmhd::ValenciaDivClean {
 
 template <typename OrderedListOfPrimitiveRecoverySchemes, bool ErrorOnFailure>
-template <size_t ThermodynamicDim>
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
 bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
                                ErrorOnFailure>::
     apply(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
@@ -178,9 +178,9 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
         equal_within_roundoff(
             total_energy_density[s],
             get(magnetic_field_squared)[s] * 0.5 + total_energy_density[s])) {
-      tmpl::for_each<tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>>(
-          apply_scheme);
+      tmpl::for_each<
+          tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                         KastaunEtAlHydro<EnforcePhysicality>>>(apply_scheme);
     } else {
       tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(apply_scheme);
     }
@@ -283,48 +283,52 @@ GENERATE_INSTANTIATIONS(
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATION(_, data)                                                \
-  template bool grmhd::ValenciaDivClean::PrimitiveFromConservative<           \
-      RECOVERY(data), ERROR_ON_FAILURE(data)>::                               \
-      apply<THERMODIM(data)>(                                                 \
-          const gsl::not_null<Scalar<DataVector>*> rest_mass_density,         \
-          const gsl::not_null<Scalar<DataVector>*> electron_fraction,         \
-          const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,  \
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>       \
-              spatial_velocity,                                               \
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>       \
-              magnetic_field,                                                 \
-          const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field, \
-          const gsl::not_null<Scalar<DataVector>*> lorentz_factor,            \
-          const gsl::not_null<Scalar<DataVector>*> pressure,                  \
-          const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,         \
-          const gsl::not_null<Scalar<DataVector>*> temperature,               \
-          const Scalar<DataVector>& tilde_d,                                  \
-          const Scalar<DataVector>& tilde_ye,                                 \
-          const Scalar<DataVector>& tilde_tau,                                \
-          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,             \
-          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,             \
-          const Scalar<DataVector>& tilde_phi,                                \
-          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,     \
-          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric, \
-          const Scalar<DataVector>& sqrt_det_spatial_metric,                  \
-          const EquationsOfState::EquationOfState<true, THERMODIM(data)>&     \
-              equation_of_state,                                              \
-          const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&    \
-              primitive_from_conservative_options);
+#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(3, data)
+
+#define INSTANTIATION(_, data)                                               \
+  template bool grmhd::ValenciaDivClean::PrimitiveFromConservative<          \
+      RECOVERY(data), ERROR_ON_FAILURE(data)>::apply<PHYSICALITY(data),      \
+                                                     THERMODIM(data)>(       \
+      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,            \
+      const gsl::not_null<Scalar<DataVector>*> electron_fraction,            \
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,     \
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>          \
+          spatial_velocity,                                                  \
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>          \
+          magnetic_field,                                                    \
+      const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,    \
+      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,               \
+      const gsl::not_null<Scalar<DataVector>*> pressure,                     \
+      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,            \
+      const gsl::not_null<Scalar<DataVector>*> temperature,                  \
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
+      const Scalar<DataVector>& tilde_tau,                                   \
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
+      const Scalar<DataVector>& tilde_phi,                                   \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
+          equation_of_state,                                                 \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
-     tmpl::list<
-         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+     tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                    KastaunEtAlHydro<true>>,
+     tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                    KastaunEtAlHydro<false>>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanHamlinThenPalenzuelaEtAl, KastaunThenNewmanThenPalenzuela),
-    (true, false), (1, 2))
+    (true, false), (1, 2), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM
+#undef PHYSICALITY
 #undef RECOVERY

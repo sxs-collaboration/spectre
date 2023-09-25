@@ -44,6 +44,7 @@ struct PrimitiveRecoveryData;
  *
  * \note This scheme does not use the initial guess for the pressure.
  */
+template <bool EnforcePhysicality = true>
 class KastaunEtAlHydro {
  public:
   template <size_t ThermodynamicDim>

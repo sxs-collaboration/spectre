@@ -284,6 +284,26 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   CHECK_ITERABLE_APPROX(expected_magnetic_field, magnetic_field);
   CHECK_ITERABLE_APPROX(expected_divergence_cleaning_field,
                         divergence_cleaning_field);
+
+  if constexpr (not UseMagneticField) {
+    // Test KastaunHydro for FPE safety
+    tilde_tau = make_with_value<Scalar<DataVector>>(used_for_size, -10.);
+
+    grmhd::ValenciaDivClean::PrimitiveFromConservative<
+        OrderedListOfPrimitiveRecoverySchemes,
+        false>::apply(make_not_null(&rest_mass_density),
+                      make_not_null(&electron_fraction),
+                      make_not_null(&specific_internal_energy),
+                      make_not_null(&spatial_velocity),
+                      make_not_null(&magnetic_field),
+                      make_not_null(&divergence_cleaning_field),
+                      make_not_null(&lorentz_factor), make_not_null(&pressure),
+                      make_not_null(&specific_enthalpy),
+                      make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau,
+                      tilde_s, tilde_b, tilde_phi, spatial_metric,
+                      inv_spatial_metric, sqrt_det_spatial_metric, ideal_fluid,
+                      primitive_from_conservative_options);
+  }
 }
 
 }  // namespace
@@ -300,8 +320,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
   test_primitive_from_conservative_known<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                     KastaunEtAlHydro<true>>,
       false>(dv);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
@@ -331,11 +351,11 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       2>(&generator, ideal_fluid, dv);
 
   test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                     KastaunEtAlHydro<true>>,
       1, false>(&generator, polytropic_fluid, dv);
   test_primitive_from_conservative_random<
-      tmpl::list<
-          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
+                     KastaunEtAlHydro<true>>,
       2, false>(&generator, ideal_fluid, dv);
 }
