@@ -19,8 +19,11 @@
 class DataVector;
 template <size_t VolumeDim>
 class Domain;
+template <size_t VolumeDim>
+class Block;
 /// \endcond
 
+/// @{
 /// \ingroup ComputationalDomainGroup
 ///
 /// Computes the block logical coordinates and the containing `BlockId` of
@@ -35,6 +38,11 @@ class Domain;
 /// If a point is on a shared boundary of two or more `Block`s, it is
 /// returned only once, and is considered to belong to the `Block`
 /// with the smaller `BlockId`.
+///
+/// The `block_logical_coordinates_single_point` function will search the passed
+/// in block for the passed in coordinate and return the logical coordinates of
+/// that point. It will return a `std::nullopt` if it can't find the point in
+/// that block.
 ///
 /// \warning Since map inverses can involve numerical roundoff error, care must
 /// be taken with points on shared block boundaries. They will be assigned to
@@ -61,3 +69,15 @@ auto block_logical_coordinates(
             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
     -> std::vector<std::optional<
         IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>>>;
+
+template <size_t Dim, typename Frame>
+std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
+block_logical_coordinates_single_point(
+    const tnsr::I<double, Dim, Frame>& input_point, const Block<Dim>& block,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = std::unordered_map<
+            std::string,
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{});
+/// @}
