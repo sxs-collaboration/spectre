@@ -632,7 +632,10 @@ def schedule(
                 f"Unable to parse job ID from output: " + submit_process.stdout
             )
             jobid = None
-        logger.info(f"Submitted job '{job_name}' ({jobid}).")
+        logger.info(
+            f"Submitted job '{job_name}' ({jobid}). "
+            f"Output will be written to: {out_file}"
+        )
         return submit_process
 
 
