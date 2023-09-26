@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -53,8 +54,8 @@ template <typename FacesTag>
 struct Subitems<
     FacesTag,
     Requires<std::is_base_of_v<domain::Tags::Faces<FacesTag::volume_dim,
-                                                 typename FacesTag::tag>,
-                             FacesTag> and
+                                                   typename FacesTag::tag>,
+                               FacesTag> and
              tt::is_a_v<Variables, typename FacesTag::tag::type>>> {
   static constexpr size_t Dim = FacesTag::volume_dim;
   using VariablesTag = typename FacesTag::tag;
@@ -120,13 +121,12 @@ namespace Tags {
 /// tensor on faces, and the `FacesComputeTag` represents the full Variables on
 /// faces.
 template <typename FacesSubitemTag, typename FacesComputeTag>
-struct Subitem<
-    FacesSubitemTag, FacesComputeTag,
-    Requires<
-        std::is_base_of_v<domain::Tags::Faces<FacesComputeTag::volume_dim,
-                                              typename FacesComputeTag::tag>,
-                          FacesComputeTag>>>
-    : db::ComputeTag, FacesSubitemTag {
+struct Subitem<FacesSubitemTag, FacesComputeTag,
+               Requires<std::is_base_of_v<
+                   domain::Tags::Faces<FacesComputeTag::volume_dim,
+                                       typename FacesComputeTag::tag>,
+                   FacesComputeTag>>> : db::ComputeTag,
+                                        FacesSubitemTag {
   using base = FacesSubitemTag;
   using return_type = typename base::type;
   using parent_tag = FacesComputeTag;
