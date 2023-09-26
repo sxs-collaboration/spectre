@@ -30,15 +30,14 @@ struct Primitives {
 template <size_t ThermodynamicDim, bool EnforcePhysicality>
 class FunctionOfZ {
  public:
-  FunctionOfZ(const double total_energy_density,
-              const double momentum_density_squared,
+  FunctionOfZ(const double tau, const double momentum_density_squared,
               const double /* momentum_density_dot_magnetic_field */,
               const double /* magnetic_field_squared */,
               const double rest_mass_density_times_lorentz_factor,
               const double electron_fraction,
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                   equation_of_state)
-      : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
+      : q_(tau / rest_mass_density_times_lorentz_factor),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
         r_(std::sqrt(r_squared_)),
@@ -46,7 +45,6 @@ class FunctionOfZ {
             rest_mass_density_times_lorentz_factor),
         electron_fraction_(electron_fraction),
         equation_of_state_(equation_of_state) {
-
     // Internal consistency check
     //
     const double rho_min =
@@ -157,7 +155,7 @@ template <bool EnforcePhysicality>
 template <size_t ThermodynamicDim>
 std::optional<PrimitiveRecoveryData>
 KastaunEtAlHydro<EnforcePhysicality>::apply(
-    const double /*initial_guess_pressure*/, const double total_energy_density,
+    const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
@@ -167,7 +165,7 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
         equation_of_state) {
   // Master function see Equation (44)
   auto f_of_z = FunctionOfZ<ThermodynamicDim, EnforcePhysicality>{
-      total_energy_density,
+      tau,
       momentum_density_squared,
       momentum_density_dot_magnetic_field,
       magnetic_field_squared,
@@ -199,7 +197,10 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
              specific_internal_energy] = f_of_z.primitives(z);
 
   return PrimitiveRecoveryData{
-      rest_mass_density, lorentz_factor, pressure,
+      rest_mass_density,
+      lorentz_factor,
+      pressure,
+      specific_internal_energy,
       (rest_mass_density * (1. + specific_internal_energy) + pressure) *
           (1. + z * z),
       electron_fraction};
@@ -213,8 +214,7 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
                              PrimitiveRecoveryData>                          \
   grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::                        \
       KastaunEtAlHydro<PHYSICALITY(data)>::apply<THERMODIM(data)>(           \
-          const double initial_guess_pressure,                               \
-          const double total_energy_density,                                 \
+          const double initial_guess_pressure, const double tau,             \
           const double momentum_density_squared,                             \
           const double momentum_density_dot_magnetic_field,                  \
           const double magnetic_field_squared,                               \

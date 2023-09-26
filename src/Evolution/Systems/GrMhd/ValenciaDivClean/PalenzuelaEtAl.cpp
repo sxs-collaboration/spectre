@@ -23,15 +23,14 @@ namespace {
 template <size_t ThermodynamicDim>
 class FunctionOfX {
  public:
-  FunctionOfX(const double total_energy_density,
-              const double momentum_density_squared,
+  FunctionOfX(const double tau, const double momentum_density_squared,
               const double momentum_density_dot_magnetic_field,
               const double magnetic_field_squared,
               const double rest_mass_density_times_lorentz_factor,
               const double electron_fraction,
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                   equation_of_state)
-      : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
+      : q_(tau / rest_mass_density_times_lorentz_factor),
         r_(momentum_density_squared /
            square(rest_mass_density_times_lorentz_factor)),
         s_(magnetic_field_squared / rest_mass_density_times_lorentz_factor),
@@ -100,7 +99,7 @@ class FunctionOfX {
 
 template <size_t ThermodynamicDim>
 std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
-    const double /*initial_guess_pressure*/, const double total_energy_density,
+    const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
@@ -108,13 +107,14 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
-  const double lower_bound = (total_energy_density - magnetic_field_squared) /
-                             rest_mass_density_times_lorentz_factor;
-  const double upper_bound =
-      (2.0 * total_energy_density - magnetic_field_squared) /
-      rest_mass_density_times_lorentz_factor;
+  const double lower_bound =
+      (tau - magnetic_field_squared) / rest_mass_density_times_lorentz_factor +
+      1.0;
+  const double upper_bound = (2.0 * tau - magnetic_field_squared) /
+                                 rest_mass_density_times_lorentz_factor +
+                             2.0;
   const auto f_of_x =
-      FunctionOfX<ThermodynamicDim>{total_energy_density,
+      FunctionOfX<ThermodynamicDim>{tau,
                                     momentum_density_squared,
                                     momentum_density_dot_magnetic_field,
                                     magnetic_field_squared,
@@ -137,12 +137,15 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
   const double rest_mass_density =
       rest_mass_density_times_lorentz_factor / lorentz_factor;
   double pressure = std::numeric_limits<double>::signaling_NaN();
+  double specific_internal_energy = f_of_x.specific_internal_energy(
+      specific_enthalpy_times_lorentz_factor, lorentz_factor);
   if constexpr (ThermodynamicDim == 1) {
     pressure = get(equation_of_state.pressure_from_density(
         Scalar<double>(rest_mass_density)));
+    specific_internal_energy =
+        get(equation_of_state.specific_internal_energy_from_density(
+            Scalar<double>(rest_mass_density)));
   } else if constexpr (ThermodynamicDim == 2) {
-    const double specific_internal_energy = f_of_x.specific_internal_energy(
-        specific_enthalpy_times_lorentz_factor, lorentz_factor);
     pressure = get(equation_of_state.pressure_from_density_and_energy(
         Scalar<double>(rest_mass_density),
         Scalar<double>(specific_internal_energy)));
@@ -150,7 +153,10 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     ERROR("3d EOS not implemented");
   }
 
-  return PrimitiveRecoveryData{rest_mass_density, lorentz_factor, pressure,
+  return PrimitiveRecoveryData{rest_mass_density,
+                               lorentz_factor,
+                               pressure,
+                               specific_internal_energy,
                                specific_enthalpy_times_lorentz_factor *
                                    rest_mass_density_times_lorentz_factor,
                                electron_fraction};
@@ -163,8 +169,7 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                              PrimitiveRecoveryData>                          \
   grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl::apply<  \
       THERMODIM(data)>(                                                      \
-      const double /*initial_guess_pressure*/,                               \
-      const double total_energy_density,                                     \
+      const double /*initial_guess_pressure*/, const double tau,             \
       const double momentum_density_squared,                                 \
       const double momentum_density_dot_magnetic_field,                      \
       const double magnetic_field_squared,                                   \

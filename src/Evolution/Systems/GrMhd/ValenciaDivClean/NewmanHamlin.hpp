@@ -21,7 +21,7 @@ namespace PrimitiveRecoverySchemes {
  * the scheme of [Newman and Hamlin, SIAM J. Sci. Comput., 36(4)
  * B661-B683 (2014)](https://epubs.siam.org/doi/10.1137/140956749).
  *
- * In the Newman and Hamlin paper, `total_energy_density` is \f$e\f$,
+ * In the Newman and Hamlin paper, `tau` is \f$e - \rho W\f$,
  * `momentum_density_squared` is\f${\cal M}^2\f$,
  * `momentum_density_dot_magnetic_field` is \f${\cal T}\f$,
  * `magnetic_field_squared` is \f${\cal B}^2\f$, and
@@ -48,7 +48,7 @@ class NewmanHamlin {
  public:
   template <size_t ThermodynamicDim>
   static std::optional<PrimitiveRecoveryData> apply(
-      double initial_guess_for_pressure, double total_energy_density,
+      double initial_guess_for_pressure, double tau,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,

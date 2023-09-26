@@ -20,6 +20,7 @@ struct PrimitiveRecoveryData {
   double rest_mass_density;
   double lorentz_factor;
   double pressure;
+  double specific_internal_energy;
   double rho_h_w_squared;
   double electron_fraction;
 };

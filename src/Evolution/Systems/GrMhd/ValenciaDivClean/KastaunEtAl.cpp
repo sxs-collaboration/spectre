@@ -109,15 +109,14 @@ class AuxiliaryFunction {
 template <size_t ThermodynamicDim>
 class FunctionOfMu {
  public:
-  FunctionOfMu(const double total_energy_density,
-               const double momentum_density_squared,
+  FunctionOfMu(const double tau, const double momentum_density_squared,
                const double momentum_density_dot_magnetic_field,
                const double magnetic_field_squared,
                const double rest_mass_density_times_lorentz_factor,
                const double electron_fraction,
                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                    equation_of_state)
-      : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
+      : q_(tau / rest_mass_density_times_lorentz_factor),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
         b_squared_(magnetic_field_squared /
@@ -286,7 +285,7 @@ double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const {
 
 template <size_t ThermodynamicDim>
 std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
-    const double /*initial_guess_pressure*/, const double total_energy_density,
+    const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
@@ -296,7 +295,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
         equation_of_state) {
   // Master function see Equation (44)
   const auto f_of_mu =
-      FunctionOfMu<ThermodynamicDim>{total_energy_density,
+      FunctionOfMu<ThermodynamicDim>{tau,
                                      momentum_density_squared,
                                      momentum_density_dot_magnetic_field,
                                      magnetic_field_squared,
@@ -327,12 +326,14 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
              specific_internal_energy, q_bar, r_bar_squared] =
       f_of_mu.primitives(one_over_specific_enthalpy_times_lorentz_factor);
 
-  (void)(specific_internal_energy);
   (void)(q_bar);
   (void)(r_bar_squared);
 
   return PrimitiveRecoveryData{
-      rest_mass_density, lorentz_factor, pressure,
+      rest_mass_density,
+      lorentz_factor,
+      pressure,
+      specific_internal_energy,
       rest_mass_density_times_lorentz_factor /
           one_over_specific_enthalpy_times_lorentz_factor,
       electron_fraction};
@@ -340,18 +341,18 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(_, data)                                                \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
-                             PrimitiveRecoveryData>                           \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl::apply<      \
-      THERMODIM(data)>(                                                       \
-      const double initial_guess_pressure, const double total_energy_density, \
-      const double momentum_density_squared,                                  \
-      const double momentum_density_dot_magnetic_field,                       \
-      const double magnetic_field_squared,                                    \
-      const double rest_mass_density_times_lorentz_factor,                    \
-      const double electron_fraction,                                         \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
+#define INSTANTIATION(_, data)                                               \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
+                             PrimitiveRecoveryData>                          \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl::apply<     \
+      THERMODIM(data)>(                                                      \
+      const double initial_guess_pressure, const double tau,                 \
+      const double momentum_density_squared,                                 \
+      const double momentum_density_dot_magnetic_field,                      \
+      const double magnetic_field_squared,                                   \
+      const double rest_mass_density_times_lorentz_factor,                   \
+      const double electron_fraction,                                        \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
           equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
