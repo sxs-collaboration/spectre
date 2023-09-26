@@ -80,6 +80,8 @@ check_cmakelists_for_missing_cxx() {
                    'src/Informer/InfoAtCompile.cpp$' \
                    'src/Informer/InfoAtLink.cpp$' \
                    'src/IO/External/InterpolateFromSpec.hpp$' \
+                   'src/IO/External/InterpolateFromFuka.cpp$' \
+                   'src/IO/External/InterpolateFromFuka.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.hpp$' \
                    'src/PointwiseFunctions/AnalyticData/GeneralRelativity/SpecInitialData.cpp$' \
                    'src/PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp$' \
