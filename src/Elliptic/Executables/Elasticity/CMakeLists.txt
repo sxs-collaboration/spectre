@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Charmxx::main
   ConstitutiveRelations
   Convergence
   CoordinateMaps
@@ -29,13 +30,18 @@ set(LIBS_TO_LINK
   )
 
 function(add_elasticity_executable DIM)
-  add_spectre_parallel_executable(
-    "SolveElasticity${DIM}D"
-    SolveElasticity
-    Elliptic/Executables/Elasticity
-    "Metavariables<${DIM}>"
-    "${LIBS_TO_LINK}"
+  set(EXECUTABLE "SolveElasticity${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    SolveElasticity.cpp
     )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction(add_elasticity_executable)
 
 add_elasticity_executable(2)

@@ -21,18 +21,15 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/System/Exit.hpp"
@@ -544,11 +541,10 @@ PUP::able::PUP_ID Square::my_PUP_ID = 0;        // NOLINT
 PUP::able::PUP_ID Arthropod::my_PUP_ID = 0;     // NOLINT
 // clang-format on
 
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
-
-using charmxx_main_component = Test_GlobalCache<TestMetavariables>;
-
-#include "Parallel/CharmMain.tpp"  // IWYU pragma: keep
+extern "C" void CkRegisterMainModule() {
+  using charmxx_main_component = Test_GlobalCache<TestMetavariables>;
+  (void)charmxx_main_component{
+      Parallel::charmxx::MainChareRegistrationConstructor{}};
+  Parallel::charmxx::register_parallel_components();
+  Parallel::charmxx::register_init_node_and_proc({}, {});
+}

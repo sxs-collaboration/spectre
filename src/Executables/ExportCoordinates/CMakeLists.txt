@@ -5,6 +5,7 @@ set(LIBS_TO_LINK
   Amr
   AmrCriteria
   AmrProjectors
+  Charmxx::main
   CoordinateMaps
   DgSubcell
   Domain
@@ -22,34 +23,27 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  ExportCoordinates1D
-  ExportCoordinates
-  Executables/ExportCoordinates
-  Metavariables<1,false>
-  "${LIBS_TO_LINK}"
-  )
+function(add_export_coordinates_executable DIM TIME_DEPENDENT)
+  if(TIME_DEPENDENT STREQUAL "true")
+    set(EXECUTABLE "ExportTimeDependentCoordinates${DIM}D")
+  else()
+    set(EXECUTABLE "ExportCoordinates${DIM}D")
+  endif()
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    ExportCoordinates.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    TIME_DEPENDENT=${TIME_DEPENDENT}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
-add_spectre_parallel_executable(
-  ExportCoordinates2D
-  ExportCoordinates
-  Executables/ExportCoordinates
-  Metavariables<2,false>
-  "${LIBS_TO_LINK}"
-  )
-
-add_spectre_parallel_executable(
-  ExportCoordinates3D
-  ExportCoordinates
-  Executables/ExportCoordinates
-  Metavariables<3,false>
-  "${LIBS_TO_LINK}"
-  )
-
-add_spectre_parallel_executable(
-  ExportTimeDependentCoordinates3D
-  ExportCoordinates
-  Executables/ExportCoordinates
-  Metavariables<3,true>
-  "${LIBS_TO_LINK}"
-  )
+add_export_coordinates_executable(1 false)
+add_export_coordinates_executable(2 false)
+add_export_coordinates_executable(3 false)
+add_export_coordinates_executable(3 true)

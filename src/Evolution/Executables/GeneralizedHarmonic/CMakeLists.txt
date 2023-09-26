@@ -1,18 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-function(add_generalized_harmonic_executable_without_horizon
-    DIM LIBS_TO_LINK)
-  add_spectre_parallel_executable(
-    "EvolveGhNoBlackHole${DIM}D"
-    EvolveGhNoBlackHole
-    Evolution/Executables/GeneralizedHarmonic
-    "EvolutionMetavars<${DIM}>"
-    "${LIBS_TO_LINK}"
-    )
-endfunction(add_generalized_harmonic_executable_without_horizon)
-
 set(LIBS_TO_LINK
+  Charmxx::main
   CoordinateMaps
   DiscontinuousGalerkin
   Domain
@@ -39,54 +29,82 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  EvolveGhSingleBlackHole
-  EvolveGhSingleBlackHole
-  Evolution/Executables/GeneralizedHarmonic
-  "EvolutionMetavars<3>"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ControlSystem"
+# GH without horizons
+function(add_generalized_harmonic_executable_without_horizon DIM)
+  set(EXECUTABLE "EvolveGhNoBlackHole${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveGhNoBlackHole.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
+
+add_generalized_harmonic_executable_without_horizon(1)
+add_generalized_harmonic_executable_without_horizon(2)
+add_generalized_harmonic_executable_without_horizon(3)
+
+# Single BH
+set(SINGLE_BH_EXECUTABLE EvolveGhSingleBlackHole)
+add_spectre_executable(
+  ${SINGLE_BH_EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveGhSingleBlackHole.cpp
+  )
+target_link_libraries(
+  ${SINGLE_BH_EXECUTABLE}
+  PRIVATE
+  ${LIBS_TO_LINK}
+  ApparentHorizonFinder
+  ControlSystem
   )
 
-add_generalized_harmonic_executable_without_horizon(
-  1
-  "${LIBS_TO_LINK}"
+# BBH
+set(BBH_EXECUTABLE EvolveGhBinaryBlackHole)
+add_spectre_executable(
+  ${BBH_EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveGhBinaryBlackHole.cpp
 )
-
-add_generalized_harmonic_executable_without_horizon(
-  2
-  "${LIBS_TO_LINK}"
-)
-
-add_generalized_harmonic_executable_without_horizon(
-  3
-  "${LIBS_TO_LINK}"
-)
-
-add_spectre_parallel_executable(
-  "EvolveGhBinaryBlackHole"
-  EvolveGhBinaryBlackHole
-  Evolution/Executables/GeneralizedHarmonic
-  "EvolutionMetavars"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;Cce;ControlSystem;Deadlock;EvolutionTriggers"
-)
-
+target_link_libraries(
+  ${BBH_EXECUTABLE}
+  PRIVATE
+  ${LIBS_TO_LINK}
+  ApparentHorizonFinder
+  Cce
+  ControlSystem
+  Deadlock
+  EvolutionTriggers
+  )
 if (TARGET SpEC::Exporter)
   target_compile_definitions(
-    EvolveGhBinaryBlackHole PRIVATE HAS_SPEC_EXPORTER)
+    ${BBH_EXECUTABLE} PRIVATE HAS_SPEC_EXPORTER)
 endif()
 
-add_spectre_parallel_executable(
-  "EvolveGhCce"
-  EvolveGhAndCharacteristic
-  Evolution/Executables/GeneralizedHarmonic
-  "EvolutionMetavars<3, false>"
-  "${LIBS_TO_LINK};Cce"
-)
+# GH + characteristic
+function(add_gh_and_characteristic_executable EXECUTABLE EVOLVE_CCM)
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveGhAndCharacteristic.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    EVOLVE_CCM=${EVOLVE_CCM}
+    )
+  target_link_libraries(
+    ${EXECUTABLE}
+    PRIVATE
+    ${LIBS_TO_LINK}
+    Cce
+    )
+endfunction()
 
-add_spectre_parallel_executable(
-  "EvolveGhCcm"
-  EvolveGhAndCharacteristic
-  Evolution/Executables/GeneralizedHarmonic
-  "EvolutionMetavars<3, true>"
-  "${LIBS_TO_LINK};Cce"
-)
+add_gh_and_characteristic_executable(EvolveGhCce false)
+add_gh_and_characteristic_executable(EvolveGhCcm true)

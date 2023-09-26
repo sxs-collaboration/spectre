@@ -1,7 +1,18 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBS_TO_LINK
+set(EXECUTABLE "EvolveForceFree")
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveForceFree.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE
+  Charmxx::main
   DiscontinuousGalerkin
   DomainCreators
   EventsAndDenseTriggers
@@ -20,12 +31,4 @@ set(LIBS_TO_LINK
   PhaseControl
   Time
   Utilities
-  )
-
-add_spectre_parallel_executable(
-  "EvolveForceFree"
-  EvolveForceFree
-  Evolution/Executables/ForceFree
-  "EvolutionMetavars"
-  "${LIBS_TO_LINK}"
   )

@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   ApparentHorizonFinder
+  Charmxx::main
   CoordinateMaps
   DomainCreators
   EllipticDg
@@ -18,18 +19,25 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  FindHorizons3D
-  FindHorizons
-  Executables/FindHorizons
-  FindHorizons::Metavariables<3,false>
-  "${LIBS_TO_LINK}"
-  )
+function(add_find_horizons_executable DIM TWO_HORIZONS)
+  if(TWO_HORIZONS STREQUAL "true")
+    set(EXECUTABLE "FindTwoHorizons${DIM}D")
+  else()
+    set(EXECUTABLE "FindHorizons${DIM}D")
+  endif()
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    FindHorizons.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    TWO_HORIZONS=${TWO_HORIZONS}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
-add_spectre_parallel_executable(
-  FindTwoHorizons3D
-  FindHorizons
-  Executables/FindHorizons
-  FindHorizons::Metavariables<3,true>
-  "${LIBS_TO_LINK}"
-  )
+add_find_horizons_executable(3 false)
+add_find_horizons_executable(3 true)

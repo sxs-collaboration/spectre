@@ -34,6 +34,7 @@ target_link_libraries(
   )
 
 set(LIBS_TO_LINK
+  Charmxx::main
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
@@ -61,15 +62,21 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_newtonian_euler_executable INITIAL_DATA_NAME DIM INITIAL_DATA)
-  add_spectre_parallel_executable(
-    "EvolveNewtonianEuler${INITIAL_DATA_NAME}${DIM}D"
-    EvolveNewtonianEuler
-    Evolution/Executables/NewtonianEuler
-    "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
-    "${LIBS_TO_LINK}"
+function(add_newtonian_euler_executable SUFFIX DIM INITIAL_DATA)
+  set(EXECUTABLE "EvolveNewtonianEuler${SUFFIX}${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveNewtonianEuler.cpp
     )
-endfunction(add_newtonian_euler_executable)
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    INITIAL_DATA=${INITIAL_DATA}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
 function(add_riemann_problem_executable DIM)
   add_newtonian_euler_executable(

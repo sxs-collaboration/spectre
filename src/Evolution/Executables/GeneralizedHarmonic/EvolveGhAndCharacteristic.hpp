@@ -6,9 +6,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
-#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Executables/Cce/CharacteristicExtractBase.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
@@ -31,13 +28,7 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Tags/Filter.hpp"
-#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -60,12 +51,8 @@
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Tags/TimeStepId.hpp"
-#include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 /// \cond
 namespace Frame {
@@ -78,10 +65,10 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t VolumeDim, bool EvolveCcm>
-struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
+template <bool EvolveCcm>
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3>,
                            public CharacteristicExtractDefaults<EvolveCcm> {
-  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr size_t volume_dim = 3;
   using cce_base = CharacteristicExtractDefaults<EvolveCcm>;
   using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
@@ -243,21 +230,3 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim>,
       "with a coupled CCE evolution for asymptotic wave data output.\n"
       "The system shouldn't have black holes."};
 };
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
-    &setup_memory_allocation_failure_reporting,
-    &disable_openblas_multithreading,
-    &domain::creators::time_dependence::register_derived_with_charm,
-    &domain::FunctionsOfTime::register_derived_with_charm,
-    &domain::creators::register_derived_with_charm,
-    &gh::BoundaryCorrections::register_derived_with_charm,
-    &gh::ConstraintDamping::register_derived_with_charm,
-    &Cce::register_initialize_j_with_charm<
-        metavariables::evolve_ccm, metavariables::cce_boundary_component>,
-    &register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
-    &register_derived_classes_with_charm<intrp::SpanInterpolator>,
-    &register_factory_classes_with_charm<metavariables>};
-
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};

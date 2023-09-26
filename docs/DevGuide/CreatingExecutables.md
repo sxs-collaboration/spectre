@@ -27,7 +27,7 @@ example, the only additional phase (besides `Initialization` and
 `Exit`) is `Execute`, and the phases are executed in order.
 `SingletonHelloWorld` defines a single component `HelloWorld`
 
-\snippet SingletonHelloWorld.hpp executable_example_singleton
+\snippet SingletonHelloWorld.cpp executable_example_singleton
 
 which specifies via the `chare_type` type alias that it is a singleton
 parallel component which means that only one such object will exist
@@ -37,7 +37,7 @@ during the phases (other than `Initialization` and `Exit`) defined in
 the metavariables struct.  In `SingletonHelloWorld`, the
 `PrintMessage` action is called during the `Execute` phase.
 
-\snippet  SingletonHelloWorld.hpp executable_example_action
+\snippet  SingletonHelloWorld.cpp executable_example_action
 
 The `PrintMessage` action is executed on whatever process the singleton
 component is created upon, and prints a message.
@@ -54,7 +54,7 @@ the `allocate_array` function of an array component (by specifying
 tags in the `allocation_tags` type alias of the component).
 `SingletonHelloWorld` specifies a single option
 
-\snippet SingletonHelloWorld.hpp executable_example_options
+\snippet SingletonHelloWorld.cpp executable_example_options
 
 which a string specifying a name that will be placed into the constant global
 cache.  The string is fetched when performing the `PrintMessage` action. Items
@@ -66,7 +66,7 @@ ignored).
 
 Furthermore among the included header files
 
-\snippet  SingletonHelloWorld.hpp executable_example_includes
+\snippet  SingletonHelloWorld.cpp executable_example_includes
 
 must be the appropriate header for each parallel component type, which in the
 `SingletonHelloWorld` example is `AlgorithmSingleton.hpp`.  Note that
