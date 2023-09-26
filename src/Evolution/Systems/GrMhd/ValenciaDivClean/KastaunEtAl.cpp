@@ -14,6 +14,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -328,15 +329,33 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
 
   (void)(q_bar);
   (void)(r_bar_squared);
-
-  return PrimitiveRecoveryData{
-      rest_mass_density,
-      lorentz_factor,
-      pressure,
-      specific_internal_energy,
-      rest_mass_density_times_lorentz_factor /
-          one_over_specific_enthalpy_times_lorentz_factor,
-      electron_fraction};
+  if constexpr (ThermodynamicDim == 1) {
+    // recovered energy and enthalpy must be overridden
+    // for 1D EOS as they are not independent from rest_mass_density
+    (void)(specific_internal_energy);
+    const Scalar<double> local_epsilon =
+        (equation_of_state.specific_internal_energy_from_density(
+            Scalar<double>(rest_mass_density)));
+    return PrimitiveRecoveryData{
+        rest_mass_density,
+        lorentz_factor,
+        pressure,
+        get(local_epsilon),
+        rest_mass_density_times_lorentz_factor *
+            (lorentz_factor * get(hydro::relativistic_specific_enthalpy(
+                                  Scalar<double>(rest_mass_density),
+                                  local_epsilon, Scalar<double>(pressure)))),
+        electron_fraction};
+  } else {
+    return PrimitiveRecoveryData{
+        rest_mass_density,
+        lorentz_factor,
+        pressure,
+        specific_internal_energy,
+        rest_mass_density_times_lorentz_factor /
+            one_over_specific_enthalpy_times_lorentz_factor,
+        electron_fraction};
+  }
 }
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
