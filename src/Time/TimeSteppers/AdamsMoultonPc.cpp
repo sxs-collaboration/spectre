@@ -202,10 +202,11 @@ bool AdamsMoultonPc::can_change_step_size_impl(
   // complete.  We need to wait during the main evolution so we don't
   // increase the step size and step to a time still in use from
   // self-start, as that would cause the coefficients to diverge.
-  const evolution_less<Time> less{time_id.time_runs_forward()};
+  const evolution_less_equal<Time> less_equal{time_id.time_runs_forward()};
   return not ::SelfStart::is_self_starting(time_id) and
          alg::all_of(history, [&](const auto& record) {
-           return less(record.time_step_id.step_time(), time_id.step_time());
+           return less_equal(record.time_step_id.step_time(),
+                             time_id.step_time());
          });
 }
 

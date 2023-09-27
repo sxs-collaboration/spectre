@@ -78,6 +78,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   CHECK_FALSE(can_change(true, mid, end, start));
   CHECK_FALSE(can_change(true, end, start, mid));
   CHECK_FALSE(can_change(true, end, mid, start));
+  CHECK(can_change(true, start, mid, mid));
+  CHECK_FALSE(can_change(true, start, mid, start));
 
   CHECK(can_change(false, end, mid, start));
   CHECK_FALSE(can_change(false, end, start, mid));
@@ -85,6 +87,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   CHECK_FALSE(can_change(false, mid, start, end));
   CHECK_FALSE(can_change(false, start, end, mid));
   CHECK_FALSE(can_change(false, start, mid, end));
+  CHECK(can_change(false, end, mid, mid));
+  CHECK_FALSE(can_change(false, end, mid, end));
 
   {
     TimeSteppers::AdamsMoultonPc am4(4);
