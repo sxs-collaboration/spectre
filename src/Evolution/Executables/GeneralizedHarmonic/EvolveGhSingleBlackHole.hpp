@@ -173,7 +173,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
       tmpl::push_back<typename gh_base::dg_registration_list,
                       intrp::Actions::RegisterElementWithInterpolator>;
 
-  using typename gh_base::step_actions;
+  using step_actions = typename gh_base::template step_actions<control_systems>;
 
   using initialization_actions = tmpl::push_back<
       tmpl::pop_back<typename gh_base::template initialization_actions<

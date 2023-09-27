@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
@@ -828,6 +829,7 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::list<Actions::RecordTimeStepperData<system>,
                      evolution::Actions::RunEventsAndDenseTriggers<
                          events_and_dense_triggers_subcell_postprocessors>,
+                     control_system::Actions::LimitTimeStep<control_systems>,
                      Actions::UpdateU<system>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
@@ -856,6 +858,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
+      control_system::Actions::LimitTimeStep<control_systems>,
       Actions::UpdateU<system>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<

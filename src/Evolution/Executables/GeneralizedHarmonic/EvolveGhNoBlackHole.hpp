@@ -28,8 +28,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
                                                         false>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::observed_reduction_data_tags;
-  using typename gh_base::step_actions;
   using typename gh_base::system;
+
+  using step_actions = typename gh_base::template step_actions<tmpl::list<>>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
