@@ -80,6 +80,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "SpecificInternalEnergy");
   TestHelpers::db::test_simple_tag<hydro::Tags::Temperature<DataVector>>(
       "Temperature");
+  TestHelpers::db::test_simple_tag<
+      hydro::Tags::TransportVelocity<DataVector, 3, Frame::Inertial>>(
+      "TransportVelocity");
   TestHelpers::db::test_simple_tag<hydro::Tags::LowerSpatialFourVelocity<
       DataVector, 3, Frame::ElementLogical>>("LowerSpatialFourVelocity");
   TestHelpers::db::test_simple_tag<

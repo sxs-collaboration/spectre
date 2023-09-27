@@ -18,6 +18,7 @@ spectre_target_sources(
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   StressEnergy.cpp
+  TransportVelocity.cpp
   )
 
 spectre_target_headers(
@@ -37,6 +38,7 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   Temperature.hpp
+  TransportVelocity.hpp
   Units.hpp
   )
 

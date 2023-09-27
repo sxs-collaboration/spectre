@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_Temperature.cpp
   Test_TestHelpers.cpp
+  Test_TransportVelocity.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

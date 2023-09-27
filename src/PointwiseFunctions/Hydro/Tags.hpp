@@ -237,6 +237,16 @@ struct Temperature : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// \brief Tag containing the transport velocity.
+///
+/// The transport velocity is defined as \f$v_t^i=\alpha v^i-\beta^i\f$,
+/// with $v^i$ being the spatial velocity, $\alpha$ the lapse, and
+/// $\beta^i$ the shift.
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct TransportVelocity : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Fr>;
+};
+
 /// The spatial components of the four-velocity one-form \f$u_i\f$.
 template <typename DataType, size_t Dim, typename Fr>
 struct LowerSpatialFourVelocity : db::SimpleTag {
