@@ -9,6 +9,7 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
@@ -24,11 +25,14 @@ struct TestParams {
   // the various logic tests.
   const double original_target_char_speed{0.011};
   const double damping_time{0.1};
+  const std::optional<double> average_radial_distance{
+      0.01};  // This is what SpEC calls DeltaR.
   // Defaults are values for quantities that we will vary so that the
   // logic makes different decisions.
   double min_char_speed{0.01};
   double min_comoving_char_speed{-0.02};
   double control_err_delta_r{0.03};
+  std::optional<double> max_allowed_radial_distance{1.e100};
   control_system::size::CrossingTimeInfo crossing_time_info{
       std::nullopt, std::nullopt, std::nullopt};
 };
@@ -65,7 +69,8 @@ void do_test(const TestParams& test_params,
 
   const control_system::size::StateUpdateArgs update_args{
       test_params.min_char_speed, test_params.min_comoving_char_speed,
-      test_params.control_err_delta_r};
+      test_params.control_err_delta_r, test_params.average_radial_distance,
+      test_params.max_allowed_radial_distance};
   control_system::size::Info info{std::make_unique<InitialState>(),
                                   test_params.damping_time,
                                   test_params.original_target_char_speed,
@@ -180,6 +185,19 @@ void test_size_control_update() {
       test_params, true, 0.89 * test_params.damping_time,
       test_params.min_char_speed * 1.01);
 
+  // Trigger DeltaRDriftOutward by changing max_allowed_radial_distance
+  test_params.max_allowed_radial_distance = 0.001;
+  // Make sure nothing is in danger.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
+  // Comoving speed should be <0 or else we get state DeltaR and not
+  // DeltaRDriftOutward.
+  test_params.min_comoving_char_speed = -0.02;
+  do_test<control_system::size::States::Initial,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, true, std::nullopt, test_params.original_target_char_speed);
+  test_params.max_allowed_radial_distance = 1.e100;
+
   // Now do DeltaR tests
   test_params.min_comoving_char_speed = -0.02;
   test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
@@ -263,6 +281,19 @@ void test_size_control_update() {
           control_system::size::States::AhSpeed>(
       test_params, true, 0.89 * test_params.damping_time,
       test_params.min_char_speed * 1.01);
+
+  // Trigger DeltaRDriftOutward by changing max_allowed_radial_distance
+  test_params.max_allowed_radial_distance = 0.001;
+  // Make sure nothing is in danger.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
+  // Comoving speed should be <0 or else we get state DeltaR and not
+  // DeltaRDriftOutward.
+  test_params.min_comoving_char_speed = -0.02;
+  do_test<control_system::size::States::DeltaR,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, true, std::nullopt, test_params.original_target_char_speed);
+  test_params.max_allowed_radial_distance = 1.e100;
 
   // Now do AhSpeed tests
   test_params.min_comoving_char_speed = -0.02;
@@ -398,12 +429,78 @@ void test_size_control_update() {
   do_test<control_system::size::States::AhSpeed,
           control_system::size::States::DeltaR>(
       test_params, true, std::nullopt, test_params.original_target_char_speed);
+
+  // Now do DeltaRDriftOutward tests
+  test_params.min_comoving_char_speed = -0.02;
+  test_params.control_err_delta_r = 0.03;
+  test_params.max_allowed_radial_distance = 0.001;
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
+
+  // Should do nothing.
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, false, std::nullopt, test_params.original_target_char_speed);
+
+  // Make deltar cross zero *slightly* before damping time; it should still do
+  // nothing (depends on tolerance in control_system::size::DeltaRDriftOutward).
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, 0.999 * test_params.damping_time);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, false, std::nullopt, test_params.original_target_char_speed);
+
+  // Make charspeed cross zero slightly after damping time; it should
+  // still do nothing.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      1.001 * test_params.damping_time, std::nullopt, std::nullopt);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, false, std::nullopt, test_params.original_target_char_speed);
+
+  // Make deltar cross zero before damping time. Now it should suggest
+  // a new damping time.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, 0.9 * test_params.damping_time);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, false, 0.9 * test_params.damping_time,
+      test_params.original_target_char_speed);
+
+  // Make deltar and charspeed cross zero before damping time, deltar
+  // faster than char speed.  Should suggest new damping time.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      0.91 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaRDriftOutward>(
+      test_params, false, 0.9 * test_params.damping_time,
+      test_params.original_target_char_speed);
+
+  // Make deltar and charspeed cross zero before damping time, deltar
+  // slower than char speed.  Should go to AhSpeed.
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      0.89 * test_params.damping_time, std::nullopt,
+      0.9 * test_params.damping_time);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::AhSpeed>(
+      test_params, true, 0.89 * test_params.damping_time,
+      1.01 * test_params.min_char_speed);
+
+  // Should go to state DeltaR because distance < max_allowed_radial_distance.
+  test_params.max_allowed_radial_distance = 1.e100;
+  test_params.crossing_time_info = control_system::size::CrossingTimeInfo(
+      std::nullopt, std::nullopt, std::nullopt);
+  do_test<control_system::size::States::DeltaRDriftOutward,
+          control_system::size::States::DeltaR>(
+      test_params, true, std::nullopt, test_params.original_target_char_speed);
 }
 
 void test_size_control_error() {
   // This is a very rudimentary test.  It just computes
   // the same thing as the thing it is testing, but coded differently.
-  const control_system::size::ControlErrorArgs args{0.01, 0.03, 1.2, 0.33};
+  const control_system::size::ControlErrorArgs args{0.01, 0.03, 0.04, 1.2,
+                                                    0.33};
   const control_system::size::Info info{
       std::make_unique<control_system::size::States::Initial>(),
       1.1,
@@ -417,6 +514,8 @@ void test_size_control_error() {
         approx(0.001 * sqrt(4.0 * M_PI) / 1.2));
   CHECK(control_system::size::States::DeltaR{}.control_error(info, args) ==
         0.03);
+  CHECK(control_system::size::States::DeltaRDriftOutward{}.control_error(
+            info, args) == 0.04);
 }
 
 template <typename State>
@@ -440,6 +539,8 @@ void test_name_and_number() {
   const control_system::size::States::Initial initial{};
   const control_system::size::States::AhSpeed ah_speed{};
   const control_system::size::States::DeltaR delta_r{};
+  const control_system::size::States::DeltaRDriftOutward
+      delta_r_drift_outward{};
 
   CHECK(initial.name() == "Initial"s);
   CHECK(initial.number() == 0_st);
@@ -447,6 +548,8 @@ void test_name_and_number() {
   CHECK(ah_speed.number() == 1_st);
   CHECK(delta_r.name() == "DeltaR"s);
   CHECK(delta_r.number() == 2_st);
+  CHECK(delta_r_drift_outward.name() == "DeltaRDriftOutward"s);
+  CHECK(delta_r_drift_outward.number() == 5_st);
 }
 
 }  // namespace
@@ -458,5 +561,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeControlStates", "[Domain][Unit]") {
   test_clone_and_serialization<control_system::size::States::Initial>();
   test_clone_and_serialization<control_system::size::States::AhSpeed>();
   test_clone_and_serialization<control_system::size::States::DeltaR>();
+  test_clone_and_serialization<
+      control_system::size::States::DeltaRDriftOutward>();
   test_name_and_number();
 }

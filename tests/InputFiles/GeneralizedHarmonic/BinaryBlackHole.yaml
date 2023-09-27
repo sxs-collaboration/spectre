@@ -369,6 +369,7 @@ ControlSystems:
     ControlError:
       MaxNumTimesForZeroCrossingPredictor: 4
       SmoothAvgTimescaleFraction: 0.25
+      DeltaRDriftOutwardOptions: None
       SmootherTuner:
         InitialTimescales: [0.2]
         MinTimescale: 1.0e-4

@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf.hpp"
@@ -189,8 +190,46 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
         "TimescaleTuner for smoothing horizon measurements."};
   };
 
+  struct DeltaRDriftOutwardOptions {
+    using type =
+        Options::Auto<DeltaRDriftOutwardOptions, Options::AutoLabel::None>;
+    static constexpr Options::String help{
+        "Options for State DeltaRDriftOutward. Specify 'None' to disable State "
+        "DeltaRDriftOutward."};
+    struct MaxAllowedRadialDistance {
+      using type = double;
+      static constexpr Options::String help{
+          "Drift excision boundary outward if distance from horizon to "
+          "excision exceeds this."};
+    };
+    struct OutwardDriftVelocity {
+      using type = double;
+      static constexpr Options::String help{
+          "Constant drift velocity term, if triggered by "
+          "MaxAllowedRadialDistance."};
+    };
+    struct OutwardDriftTimescale {
+      using type = double;
+      static constexpr Options::String help{
+          "Denominator in non-constant drift velocity term, if triggered by "
+          "MaxAllowedRadialDistance."};
+    };
+    using options = tmpl::list<MaxAllowedRadialDistance, OutwardDriftVelocity,
+                               OutwardDriftTimescale>;
+    void pup(PUP::er& p) {
+      p | max_allowed_radial_distance;
+      p | outward_drift_velocity;
+      p | outward_drift_timescale;
+    }
+
+    double max_allowed_radial_distance{};
+    double outward_drift_velocity{};
+    double outward_drift_timescale{};
+  };
+
   using options = tmpl::list<MaxNumTimesForZeroCrossingPredictor,
-                             SmoothAvgTimescaleFraction, SmootherTuner>;
+                             SmoothAvgTimescaleFraction, SmootherTuner,
+                             DeltaRDriftOutwardOptions>;
   static constexpr Options::String help{
       "Computes the control error for size control. Will also write a "
       "diagnostics file if the control systems are allowed to write data to "
@@ -211,7 +250,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
    * is moved inside this class.
    */
   Size(const int max_times, const double smooth_avg_timescale_frac,
-       TimescaleTuner smoother_tuner);
+       TimescaleTuner smoother_tuner,
+       std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options);
 
   /// Returns the internal `control_system::size::Info::suggested_time_scale`. A
   /// std::nullopt means that no timescale is suggested.
@@ -358,6 +398,16 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     const double control_error_delta_r = size::control_error_delta_r(
         horizon_00, dt_horizon_00, lambda_00, dt_lambda_00,
         grid_frame_excision_sphere_radius);
+    const std::optional<double> control_error_delta_r_outward =
+        delta_r_drift_outward_options_.has_value()
+            ? std::optional<double>(control_error_delta_r -
+                                    delta_r_drift_outward_options_.value()
+                                        .outward_drift_velocity -
+                                    (lambda_00 + horizon_00 -
+                                     grid_frame_excision_sphere_radius / Y00) /
+                                        delta_r_drift_outward_options_.value()
+                                            .outward_drift_timescale)
+            : std::nullopt;
 
     info_.damping_time = min(tuner.current_timescale());
 
@@ -365,6 +415,11 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
         make_not_null(&info_), make_not_null(&char_speed_predictor_),
         make_not_null(&comoving_char_speed_predictor_),
         make_not_null(&delta_radius_predictor_), time, control_error_delta_r,
+        control_error_delta_r_outward,
+        delta_r_drift_outward_options_.has_value()
+            ? std::optional<double>(delta_r_drift_outward_options_.value()
+                                        .max_allowed_radial_distance)
+            : std::nullopt,
         dt_lambda_00, apparent_horizon, excision_surface, lapse,
         shifty_quantity, spatial_metric_on_excision,
         inverse_spatial_metric_on_excision);
@@ -425,6 +480,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   size::StateHistory state_history_{};
   std::vector<std::string> legend_{};
   std::string subfile_name_{};
+  std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options_{};
 };
 }  // namespace ControlErrors
 }  // namespace control_system

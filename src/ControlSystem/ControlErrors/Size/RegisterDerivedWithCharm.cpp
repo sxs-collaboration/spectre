@@ -8,12 +8,13 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace control_system::size {
 void register_derived_with_charm() {
-  register_classes_with_charm<States::Initial, States::AhSpeed,
-                              States::DeltaR>();
+  register_classes_with_charm<States::Initial, States::AhSpeed, States::DeltaR,
+                              States::DeltaRDriftOutward>();
 }
 }  // namespace control_system::size

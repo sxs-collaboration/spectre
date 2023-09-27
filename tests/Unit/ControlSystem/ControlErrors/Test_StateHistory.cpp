@@ -12,6 +12,7 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
@@ -25,10 +26,10 @@ void test_state_history(const size_t num_times_to_store) {
   CAPTURE(num_times_to_store);
   Info info{
       std::make_unique<States::Initial>(), 1.0, 1.0, 1.0, std::nullopt, false};
-  ControlErrorArgs control_error_args{1.0, 1.0, 1.0, 1.0};
+  ControlErrorArgs control_error_args{1.0, 1.0, 1.0, 1.0, 1.0};
 
   StateHistory state_history{num_times_to_store};
-  const std::vector<size_t> states{0, 1, 2};
+  const std::vector<size_t> states{0, 1, 2, 5};
 
   // Test that as we fill up the history, we have the expected number of stored
   // entries and that they are the correct values, for each state
@@ -54,6 +55,9 @@ void test_state_history(const size_t num_times_to_store) {
             CHECK(control_error == 0.0);
             break;
           case 2:
+            CHECK(control_error == 1.0);
+            break;
+          case 5:
             CHECK(control_error == 1.0);
             break;
           default:
