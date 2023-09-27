@@ -96,7 +96,7 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_lower_bound(
       const double rest_mass_density) const override {
-    return get(specific_internal_energy_from_density_impl(
+    return get(specific_internal_energy_from_density(
         Scalar<double>(rest_mass_density)));
   }
 
@@ -104,7 +104,7 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_upper_bound(
       const double rest_mass_density) const override {
-    return get(specific_internal_energy_from_density_impl(
+    return get(specific_internal_energy_from_density(
         Scalar<double>(rest_mass_density)));
   }
 
