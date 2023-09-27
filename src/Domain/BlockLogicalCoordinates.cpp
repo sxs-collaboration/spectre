@@ -83,13 +83,13 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
             //    because only those Blocks have distortion maps. Thus,
             //    the Blocks that are skipped here are those that are far
             //    from horizons).
-            continue; // Not in this block
+            continue;  // Not in this block
           }
           const auto moving_inv =
               block.moving_mesh_grid_to_distorted_map().inverse(
                   x_frame, time, functions_of_time);
           if (not moving_inv.has_value()) {
-            continue; // Not in this block
+            continue;  // Not in this block
           }
           // logical to grid map is time-independent.
           const auto inv = block.moving_mesh_logical_to_grid_map().inverse(
@@ -104,7 +104,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           // Currently 'time' is unused in this branch.
           // To make the compiler happy, need to trick it to think that
           // 'time' is used.
-          (void) time;
+          (void)time;
           // Currently we only support Grid, Distorted and Inertial
           // frames in the block, so make sure Frame is
           // ::Frame::Grid. (The Inertial and Distorted cases were

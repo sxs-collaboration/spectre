@@ -201,24 +201,24 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
   Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  const auto inertial_coords =
-      [&element_id, &block, &mesh, &runner, &temporal_id]() {
-        if constexpr (UseTimeDependentMaps) {
-          const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(
-              ActionTesting::cache<ElemComponent>(runner, element_id));
-          ElementMap<3, ::Frame::Grid> map_logical_to_grid{
-              element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
-          return block.moving_mesh_grid_to_inertial_map()(
-              map_logical_to_grid(logical_coordinates(mesh)),
-              temporal_id.substep_time(), functions_of_time);
-        } else {
-          (void)runner;
-          (void)temporal_id;
-          ElementMap<3, Frame::Inertial> map{
-              element_id, block.stationary_map().get_clone()};
-          return map(logical_coordinates(mesh));
-        }
-      }();
+  const auto inertial_coords = [&element_id, &block, &mesh, &runner,
+                                &temporal_id]() {
+    if constexpr (UseTimeDependentMaps) {
+      const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(
+          ActionTesting::cache<ElemComponent>(runner, element_id));
+      ElementMap<3, ::Frame::Grid> map_logical_to_grid{
+          element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+      return block.moving_mesh_grid_to_inertial_map()(
+          map_logical_to_grid(logical_coordinates(mesh)),
+          temporal_id.substep_time(), functions_of_time);
+    } else {
+      (void)runner;
+      (void)temporal_id;
+      ElementMap<3, Frame::Inertial> map{element_id,
+                                         block.stationary_map().get_clone()};
+      return map(logical_coordinates(mesh));
+    }
+  }();
 
   // create volume data
   Variables<tmpl::list<Tags::TestSolution>> vars(mesh.number_of_grid_points());

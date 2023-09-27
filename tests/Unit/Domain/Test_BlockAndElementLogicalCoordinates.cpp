@@ -251,7 +251,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   // For this test, we test distorted coords only if the first block has
   // a distorted frame.  For this test, either all blocks have a distorted
   // frame or none of them do.
-  if(domain.blocks().begin()->has_distorted_frame()) {
+  if (domain.blocks().begin()->has_distorted_frame()) {
     const auto distorted_coords = [&n_pts, &domain, &block_ids, &block_coords,
                                    &time, &functions_of_time]() {
       tnsr::I<DataVector, Dim, Frame::Distorted> coords(n_pts);
@@ -361,10 +361,10 @@ void fuzzy_test_block_and_element_logical_coordinates_distorted_brick(
   const auto domain = brick.create_domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.
-  fuzzy_test_block_and_element_logical_coordinates_unrefined(
-      domain, n_pts, 0.0, functions_of_time);
-  fuzzy_test_block_and_element_logical_coordinates_unrefined(
-      domain, n_pts, 0.1, functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.0,
+                                                             functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.1,
+                                                             functions_of_time);
 }
 
 void fuzzy_test_block_and_element_logical_coordinates3(const size_t n_pts) {
