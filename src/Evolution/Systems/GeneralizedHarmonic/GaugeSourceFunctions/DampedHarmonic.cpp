@@ -358,7 +358,7 @@ void damped_harmonic_impl(
     }
   }
 
-  // d_t lapse / lapse = 0.5 * n^a n^b (lapse Pi_{ab} - shift^i Phi_{iab})
+  // d_t lapse = lapse * (0.5 * n^a n^b (lapse Pi_{ab} - shift^i Phi_{iab}))
   get<0>(d4_muS_over_lapse) = -get<0>(shift) * get<0>(half_phi_two_normals);
   for (size_t i = 1; i < SpatialDim; ++i) {
     get<0>(d4_muS_over_lapse) -= shift.get(i) * half_phi_two_normals.get(i);
@@ -390,7 +390,7 @@ void damped_harmonic_impl(
   //  0.5 * n^a n^b Pi_{ab}
   //  0.5 * n^a n^b Phi_{iab}
   // so we reuse that work by taking them as arguments.
-  get<0>(d4_muS_over_lapse) *= -get(mu_S);
+  get<0>(d4_muS_over_lapse) *= -get(mu_S) * get(one_over_lapse);
   get<0>(d4_muS_over_lapse) += get<0>(d4_mu_S);
   get<0>(d4_muS_over_lapse) *= get(one_over_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
