@@ -87,20 +87,22 @@ CCE using external data are:
 Once you have the reduction data output file from a successful CCE run, you can
 confirm the integrity of the h5 file and its contents by running
 ```
-h5ls CharacteristicExtractReductionData.h5/Cce.dir
+h5ls -r CharacteristicExtractReduction.h5/Cce.dir
 ```
 
 For the reduction file produced by a successful run, the output of the `h5ls`
 should resemble
 ```
-EthInertialRetardedTime.dat Dataset {3995/Inf, 163}
-News.dat                 Dataset {3995/Inf, 163}
-Psi0.dat                 Dataset {3995/Inf, 163}
-Psi1.dat                 Dataset {3995/Inf, 163}
-Psi2.dat                 Dataset {3995/Inf, 163}
-Psi3.dat                 Dataset {3995/Inf, 163}
-Psi4.dat                 Dataset {3995/Inf, 163}
-Strain.dat               Dataset {3995/Inf, 163}
+/                        Group
+/Cce                     Group
+/Cce/EthInertialRetardedTime.dat Dataset {3995/Inf, 163}
+/Cce/News.dat                 Dataset {3995/Inf, 163}
+/Cce/Psi0.dat                 Dataset {3995/Inf, 163}
+/Cce/Psi1.dat                 Dataset {3995/Inf, 163}
+/Cce/Psi2.dat                 Dataset {3995/Inf, 163}
+/Cce/Psi3.dat                 Dataset {3995/Inf, 163}
+/Cce/Psi4.dat                 Dataset {3995/Inf, 163}
+/Cce/Strain.dat               Dataset {3995/Inf, 163}
 src.tar.gz               Dataset {3750199}
 ```
 
@@ -143,7 +145,7 @@ def get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):
 
 plot_quantities = ["Strain", "News", "Psi0", "Psi1", "Psi2", "Psi3", "Psi4"]
 mode_set = [[2, 2], [3, 3]]
-filename = "CharacteristicExtractReductionData.h5"
+filename = "CharacteristicExtractReduction.h5"
 output_plot_filename = "CCE_plot.pdf"
 
 legend = []
@@ -157,7 +159,10 @@ plt.figure(figsize=(8, 1.9 * len(plot_quantities)))
 for i in range(len(plot_quantities)):
     ax = plt.subplot(len(plot_quantities), 1, i + 1)
     timeseries = np.transpose(
-        get_modes_from_block_output(filename, plot_quantities[i], mode_set))
+        get_modes_from_block_output(
+            filename, f"/Cce/{plot_quantities[i]}", mode_set
+        )
+    )
     for j in range(len(mode_set)):
         plt.plot(timeseries[0], timeseries[j + 1], linestyle='--', marker='')
     ax.set_xlabel("Simulation time (M)")

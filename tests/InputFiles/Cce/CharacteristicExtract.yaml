@@ -23,8 +23,8 @@ ResourceInfo:
       Exclusive: False
 
 Observers:
-  VolumeFileName: "CharacteristicExtractVolume"
-  ReductionFileName: "CharacteristicExtractUnusedReduction"
+  VolumeFileName: "CharacteristicExtractUnusedVolume"
+  ReductionFileName: "CharacteristicExtractReduction"
 
 EventsAndTriggers:
   - Trigger:
