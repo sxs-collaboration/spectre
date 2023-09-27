@@ -95,15 +95,17 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_lower_bound(
-      const double /* rest_mass_density */) const override {
-    return 0.0;
+      const double rest_mass_density) const override {
+    return get(specific_internal_energy_from_density_impl(
+        Scalar<double>(rest_mass_density)));
   }
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_upper_bound(
-      const double /* rest_mass_density */) const override {
-    return std::numeric_limits<double>::max();
+      const double rest_mass_density) const override {
+    return get(specific_internal_energy_from_density_impl(
+        Scalar<double>(rest_mass_density)));
   }
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
