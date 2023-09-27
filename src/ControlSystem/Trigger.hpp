@@ -139,7 +139,8 @@ class Trigger : public DenseTrigger {
         domain::functions_of_time_are_ready_algorithm_callback<
             control_system::Tags::MeasurementTimescales>(
             cache, array_index, component, time,
-            std::unordered_set{measurement_name_});
+            std::unordered_set{
+                control_system::combined_name<ControlSystems>()});
     if (not is_ready) {
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
         Parallel::printf(
@@ -174,14 +175,16 @@ class Trigger : public DenseTrigger {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
+    const std::string& measurement_name =
+        control_system::combined_name<ControlSystems>();
     ASSERT(
-        measurement_timescales.count(measurement_name_) == 1,
+        measurement_timescales.count(measurement_name) == 1,
         "Control system trigger expects a measurement timescale with the name '"
-            << measurement_name_
+            << measurement_name
             << "' but could not find one. Available names are: "
             << keys_of(measurement_timescales));
     const DataVector timescale =
-        measurement_timescales.at(measurement_name_)->func(time)[0];
+        measurement_timescales.at(measurement_name)->func(time)[0];
     ASSERT(timescale.size() == 1,
            "Control system trigger assumes measurement timescale size is 1, "
            "but it is "
@@ -197,9 +200,6 @@ class Trigger : public DenseTrigger {
   }
 
   std::optional<double> next_trigger_{};
-  // No need to pup this because it can be created from the template parameter
-  std::string measurement_name_{
-      control_system::combined_name<ControlSystems>()};
 };
 
 /// \cond
