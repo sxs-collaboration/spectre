@@ -181,7 +181,7 @@ void test_with_python(const DataVector& used_for_size) {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function_rollon",
        "spacetime_deriv_damped_harmonic_gauge_source_function_rollon"},
-      {{{-0.01, 0.01}}}, used_for_size);
+      {{{-0.1, 0.1}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
       &wrap_damped_harmonic<SpatialDim, Frame>,
@@ -189,7 +189,7 @@ void test_with_python(const DataVector& used_for_size) {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function",
        "spacetime_deriv_damped_harmonic_gauge_source_function"},
-      {{{-0.01, 0.01}}}, used_for_size);
+      {{{-0.1, 0.1}}}, used_for_size);
 }
 
 template <size_t Dim>
