@@ -4,6 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -13,7 +15,13 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -27,6 +35,7 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
@@ -57,6 +66,27 @@ struct SquareCompute : Square, db::ComputeTag {
   using return_type = Scalar<DataVector>;
 };
 }  // namespace Tags
+
+struct ResetFoT {
+  static void apply(
+      const gsl::not_null<std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+          f_of_t_list,
+      const std::string& f_of_t_name, const double new_expiration_time) {
+    const double initial_time = f_of_t_list->at(f_of_t_name)->time_bounds()[0];
+    std::array<DataVector, 4> init_func_and_2_derivs{
+        DataVector{3, 0.0}, DataVector{3, 0.0}, DataVector{3, 0.0},
+        DataVector{3, 0.0}};
+
+    f_of_t_list->erase(f_of_t_name);
+
+    (*f_of_t_list)[f_of_t_name] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time, std::move(init_func_and_2_derivs),
+            new_expiration_time);
+  }
+};
 
 struct MockComputeTargetPoints
     : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
@@ -122,7 +152,7 @@ struct mock_interpolation_target {
                                intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = int;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
@@ -136,6 +166,7 @@ struct mock_interpolation_target {
           typename InterpolationTargetTag::compute_items_on_target>>>>;
 };
 
+template <bool UseTimeDepMaps>
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -147,16 +178,25 @@ struct MockMetavariables {
   };
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
+  using mutable_global_cache_tags =
+      tmpl::conditional_t<UseTimeDepMaps,
+                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
+                          tmpl::list<>>;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
-                  "[Unit]") {
+template <bool UseTimeDepMaps>
+void test() {
   domain::creators::register_derived_with_charm();
 
-  using metavars = MockMetavariables;
+  if constexpr (UseTimeDepMaps) {
+    domain::creators::time_dependence::register_derived_with_charm();
+    domain::FunctionsOfTime::register_derived_with_charm();
+  }
+
+  using metavars = MockMetavariables<UseTimeDepMaps>;
   using temporal_id_type =
       typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
@@ -166,16 +206,45 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   Slab slab(0.0, 1.0);
   const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
   const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const domain::creators::Sphere domain_creator = [&slab]() {
+    if constexpr (UseTimeDepMaps) {
+      return domain::creators::Sphere(
+          0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false,
+          std::nullopt, {}, {domain::CoordinateMaps::Distribution::Linear},
+          ShellWedges::All,
+          // Doesn't actually have to move. Just needs to go through the time
+          // dependent code
+          std::make_unique<
+              domain::creators::time_dependence::RotationAboutZAxis<3>>(
+              slab.start().value(), 0.0, 0.0, 0.0));
+    } else {
+      (void)slab;
+      return domain::creators::Sphere(
+          0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+    }
+  }();
 
   // Type alias for better readability below.
   using vars_type = Variables<
       typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>;
 
+  std::unordered_map<std::string, double> init_expr_times{};
+  const std::string name = "Rotation";
+  init_expr_times[name] = slab.end().value();
+
   // Initialization
-  ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain()}};
+  ActionTesting::MockRuntimeSystem<metavars> runner = [&domain_creator,
+                                                       &init_expr_times]() {
+    if constexpr (UseTimeDepMaps) {
+      return ActionTesting::MockRuntimeSystem<metavars>(
+          domain_creator.create_domain(),
+          domain_creator.functions_of_time(init_expr_times));
+    } else {
+      (void)init_expr_times;
+      return ActionTesting::MockRuntimeSystem<metavars>(
+          domain_creator.create_domain());
+    }
+  }();
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0,
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
@@ -217,10 +286,22 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   // set up those coordinates appropriately.
   auto& target_box =
       ActionTesting::get_databox<target_component>(make_not_null(&runner), 0);
-  const auto block_logical_coords =
-      intrp::InterpolationTarget_detail::block_logical_coords<
-          typename metavars::InterpolationTargetA>(target_box,
-                                                   tmpl::type_<metavars>{});
+
+  using BlockLogicalCoordType = std::vector<std::optional<
+      IdPair<domain::BlockId, tnsr::I<double, 3, ::Frame::BlockLogical>>>>;
+  BlockLogicalCoordType block_logical_coords{};
+  if constexpr (UseTimeDepMaps) {
+    block_logical_coords =
+        intrp::InterpolationTarget_detail::block_logical_coords<
+            typename metavars::InterpolationTargetA>(
+            target_box, ActionTesting::cache<target_component>(runner, 0),
+            first_temporal_id);
+  } else {
+    block_logical_coords =
+        intrp::InterpolationTarget_detail::block_logical_coords<
+            typename metavars::InterpolationTargetA>(target_box,
+                                                     tmpl::type_<metavars>{});
+  }
 
   // Add points at first_temporal_id
   add_to_vars_src({{3.0, 6.0}}, {{3, 6}});
@@ -317,9 +398,16 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
           .at(second_temporal_id)
           .size() == 8);
 
+  // Reset FoT expiration to something before the current slab value
+  if constexpr (UseTimeDepMaps) {
+    Parallel::mutate<domain::Tags::FunctionsOfTime, ResetFoT>(
+        ActionTesting::cache<target_component>(runner, 0), name,
+        first_temporal_id.substep_time() / 2.0);
+  }
+
   // Now add enough points at second_temporal_id so it triggers the
-  // callback.  (The first temporal id doesn't yet have enough points, so
-  // here we also test asynchronicity).
+  // callback (if the FoTs are ready).  (The first temporal id doesn't yet have
+  // enough points, so here we also test asynchronicity).
   vars_src.clear();
   global_offsets.clear();
   add_to_vars_src({{18.0, 14.0}}, {{9, 7}});
@@ -328,6 +416,54 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
                             typename metavars::InterpolationTargetA>>(
       make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
       second_temporal_id);
+
+  if constexpr (UseTimeDepMaps) {
+    // The interpolation should have finished, but the callback shouldn't have
+    // been called and the target shouldn't have been cleaned up. So we should
+    // still have two temporal ids, and all of the filled points. And the first
+    // temporal id should not have been touched
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+              .size() == 0);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
+              runner, 0)
+              .size() == 2);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .count(second_temporal_id) == 1);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .at(second_temporal_id)
+              .size() == 10);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .count(first_temporal_id) == 1);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .at(first_temporal_id)
+              .size() == 8);
+
+    // Change the expiration back to the original value, which will cause a
+    // simple action to run on the target.
+    Parallel::mutate<domain::Tags::FunctionsOfTime, ResetFoT>(
+        ActionTesting::cache<target_component>(runner, 0), name,
+        init_expr_times.at(name));
+    // Should be a queued simple action on the target component
+    CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
+              runner, 0) == 1);
+    ActionTesting::invoke_queued_simple_action<target_component>(
+        make_not_null(&runner), 0);
+  }
 
   // It should have interpolated all the points by now,
   // and the list of points should have been cleaned up.
@@ -397,5 +533,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   // Should be no queued simple action.
   CHECK(
       ActionTesting::is_simple_action_queue_empty<target_component>(runner, 0));
+}
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
+                  "[Unit]") {
+  test<false>();
+  test<true>();
 }
 }  // namespace

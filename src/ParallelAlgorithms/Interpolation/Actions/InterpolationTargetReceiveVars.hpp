@@ -5,12 +5,14 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
@@ -24,7 +26,9 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare db::DataBox
+namespace domain::Tags {
+struct FunctionsOfTime;
+}  // namespace domain::Tags
 namespace intrp {
 namespace Tags {
 template <typename TemporalId>
@@ -46,6 +50,9 @@ namespace Actions {
 ///  of the target points.
 ///
 /// If interpolated variables for all target points have been received, then
+/// - Checks if functions of time are ready (if there are any). If they are not
+///   ready, register a simple action callback with the GlobalCache to this
+///   action.
 /// - Calls `InterpolationTargetTag::post_interpolation_callback`
 /// - Tells `Interpolator`s that the interpolation is complete
 ///  (by calling
@@ -79,12 +86,13 @@ struct InterpolationTargetReceiveVars {
             typename ArrayIndex, typename TemporalId>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
+      const ArrayIndex& array_index,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& temporal_id) {
+      const TemporalId& temporal_id,
+      const bool vars_have_already_been_received = false) {
     // Check if we already have completed interpolation at this
     // temporal_id.
     const auto& completed_ids =
@@ -124,11 +132,28 @@ struct InterpolationTargetReceiveVars {
       return;
     }
 
-    InterpolationTarget_detail::add_received_variables<InterpolationTargetTag>(
-        make_not_null(&box), vars_src, global_offsets, temporal_id);
+    if (not vars_have_already_been_received) {
+      InterpolationTarget_detail::add_received_variables<
+          InterpolationTargetTag>(make_not_null(&box), vars_src, global_offsets,
+                                  temporal_id);
+    }
     if (InterpolationTarget_detail::have_data_at_all_points<
             InterpolationTargetTag>(box, temporal_id)) {
       // All the valid points have been interpolated.
+
+      // Check if functions of time are ready on this component. Since this
+      // simple action has already been called, we don't need to resend the
+      // data, so we just pass empty vectors for vars_src and global_offsets
+      if (not domain::functions_of_time_are_ready_simple_action_callback<
+              domain::Tags::FunctionsOfTime, InterpolationTargetReceiveVars>(
+              cache, array_index,
+              std::add_pointer_t<ParallelComponent>{nullptr},
+              InterpolationTarget_detail::get_temporal_id_value(temporal_id),
+              std::nullopt, std::decay_t<decltype(vars_src)>{},
+              std::decay_t<decltype(global_offsets)>{}, temporal_id, true)) {
+        return;
+      }
+
       if (InterpolationTarget_detail::call_callback<InterpolationTargetTag>(
               make_not_null(&box), make_not_null(&cache), temporal_id)) {
         InterpolationTarget_detail::clean_up_interpolation_target<

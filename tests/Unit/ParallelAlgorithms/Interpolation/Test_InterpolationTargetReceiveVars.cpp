@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -23,6 +24,7 @@
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -192,6 +194,27 @@ struct SquareCompute : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
+struct ResetFoT {
+  static void apply(
+      const gsl::not_null<std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+          f_of_t_list,
+      const std::string& f_of_t_name, const double new_expiration_time) {
+    const double initial_time = f_of_t_list->at(f_of_t_name)->time_bounds()[0];
+    std::array<DataVector, 4> init_func_and_2_derivs{
+        DataVector{3, 0.0}, DataVector{3, 0.0}, DataVector{3, 0.0},
+        DataVector{3, 0.0}};
+
+    f_of_t_list->erase(f_of_t_name);
+
+    (*f_of_t_list)[f_of_t_name] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time, std::move(init_func_and_2_derivs),
+            new_expiration_time);
+  }
+};
+
 template <typename DbTags, typename TemporalId>
 void callback_impl(const db::DataBox<DbTags>& box,
                    const TemporalId& temporal_id) {
@@ -333,9 +356,11 @@ void test_interpolation_target_receive_vars() {
     const auto domain_creator = domain::creators::Brick(
         {{-1.2, 3.0, 2.5}}, {{0.8, 5.0, 3.0}}, {{1, 1, 1}}, {{5, 4, 3}},
         {{false, false, false}},
+        // Doesn't actually have to move. Just needs to go through the time
+        // dependent code
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, std::array<double, 3>({{0.1, 0.2, 0.3}})));
+            0.0, std::array<double, 3>({{0.0, 0.0, 0.0}})));
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
         domain_creator.create_domain(),
         domain_creator.functions_of_time(initial_expiration_times));
@@ -460,17 +485,22 @@ void test_interpolation_target_receive_vars() {
   global_offsets.clear();
   add_to_vars_src({{9.0, 5.0}}, {{9, 5}});
 
-  // This will call InterpolationTargetA::post_interpolation_callback
+  // Reset FoT expiration to something before the current temporal ids
+  if constexpr (IsTimeDependent::value) {
+    Parallel::mutate<domain::Tags::FunctionsOfTime, ResetFoT>(
+        ActionTesting::cache<target_component>(runner, 0), f_of_t_name,
+        first_time / 2.0);
+  }
+
+  // This will try to call InterpolationTargetA::post_interpolation_callback
   // where we check that the points are correct.
   ActionTesting::simple_action<target_component,
                                intrp::Actions::InterpolationTargetReceiveVars<
                                    typename metavars::InterpolationTargetA>>(
       make_not_null(&runner), 0, vars_src, global_offsets, first_time);
 
-  if (NumberOfExpectedCleanUpActions == 0) {
-    // We called the function without cleanup, as a test, so there should
-    // be no queued simple actions (tested below outside the if-else).
-
+  const auto check_zero_cleanup = [&runner, &first_time,
+                                   &current_temporal_ids]() {
     // It should have interpolated all the points by now.
     // But those points should have not been cleaned up.
     CHECK(ActionTesting::get_databox_tag<
@@ -499,7 +529,30 @@ void test_interpolation_target_receive_vars() {
               target_component,
               intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
               .empty());
+  };
 
+  if constexpr (IsTimeDependent::value) {
+    // The interpolation should have finished, but the callback shouldn't have
+    // been called and the target shouldn't have been cleaned up.
+    check_zero_cleanup();
+
+    // Change the expiration back to the original value, which will cause a
+    // simple action to be queued on the target.
+    Parallel::mutate<domain::Tags::FunctionsOfTime, ResetFoT>(
+        ActionTesting::cache<target_component>(runner, 0), f_of_t_name,
+        initial_expiration_times.at(f_of_t_name));
+    // Should be a queued simple action on the target component
+    CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
+              runner, 0) == 1);
+    // Now cleanup may or may not happen
+    ActionTesting::invoke_queued_simple_action<target_component>(
+        make_not_null(&runner), 0);
+  }
+
+  if (NumberOfExpectedCleanUpActions == 0) {
+    // We called the function without cleanup, as a test, so there should
+    // be no queued simple actions (tested below outside the if-else).
+    check_zero_cleanup();
   } else {
     // This is the (usual) case where we want a cleanup.
 
