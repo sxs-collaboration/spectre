@@ -59,7 +59,7 @@ void forward_to_time_deriv(
       make_not_null(&get<typename TimeDerivativeTerms<
                         Dim>::PressureLapseSqrtDetSpatialMetric>(temp)),
       make_not_null(
-          &get<typename TimeDerivativeTerms<Dim>::TransportVelocity>(temp)),
+          &get<typename hydro::Tags::TransportVelocity<DataVector, Dim>>(temp)),
       make_not_null(&get<typename TimeDerivativeTerms<Dim>::TildeSUp>(temp)),
       make_not_null(
           &get<typename TimeDerivativeTerms<Dim>::DensitizedStress>(temp)),

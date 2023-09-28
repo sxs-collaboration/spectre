@@ -8,6 +8,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,9 +31,6 @@ struct TimeDerivativeTerms {
   struct PressureLapseSqrtDetSpatialMetric : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
-  struct TransportVelocity : db::SimpleTag {
-    using type = Scalar<DataVector>;
-  };
 
   struct TildeSUp : db::SimpleTag {
     using type = tnsr::I<DataVector, Dim, Frame::Inertial>;
@@ -43,7 +41,8 @@ struct TimeDerivativeTerms {
 
   using temporary_tags = tmpl::list<
       // Flux terms
-      PressureLapseSqrtDetSpatialMetric, TransportVelocity,
+      PressureLapseSqrtDetSpatialMetric,
+      hydro::Tags::TransportVelocity<DataVector, Dim, Frame::Inertial>,
 
       // Source terms
       TildeSUp, DensitizedStress,
@@ -90,7 +89,8 @@ struct TimeDerivativeTerms {
 
       // For fluxes
       gsl::not_null<Scalar<DataVector>*> pressure_lapse_sqrt_det_spatial_metric,
-      gsl::not_null<Scalar<DataVector>*> transport_velocity,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          transport_velocity,
 
       // For sources
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_s_up,

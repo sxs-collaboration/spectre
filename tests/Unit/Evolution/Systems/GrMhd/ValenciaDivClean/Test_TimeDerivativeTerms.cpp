@@ -85,8 +85,9 @@ void forward_to_time_deriv(
                              PressureStar>(temp)),
       make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              PressureStarLapseSqrtDetSpatialMetric>(temp)),
-      make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
-                             TransportVelocity>(temp)),
+      make_not_null(
+          &get<hydro::Tags::TransportVelocity<DataVector, 3, Frame::Inertial>>(
+              temp)),
       make_not_null(&get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              LapseTimesbOverW>(temp)),
 

@@ -9,6 +9,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -42,9 +43,6 @@ struct TimeDerivativeTerms {
   struct PressureStarLapseSqrtDetSpatialMetric : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
-  struct TransportVelocity : db::SimpleTag {
-    using type = Scalar<DataVector>;
-  };
   struct PressureStar : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
@@ -62,7 +60,8 @@ struct TimeDerivativeTerms {
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>,
       OneOverLorentzFactorSquared, PressureStar,
-      PressureStarLapseSqrtDetSpatialMetric, TransportVelocity,
+      PressureStarLapseSqrtDetSpatialMetric,
+      hydro::Tags::TransportVelocity<DataVector, 3, Frame::Inertial>,
       LapseTimesbOverW,
 
       // Source terms
@@ -130,7 +129,8 @@ struct TimeDerivativeTerms {
       gsl::not_null<Scalar<DataVector>*> pressure_star,
       gsl::not_null<Scalar<DataVector>*>
           pressure_star_lapse_sqrt_det_spatial_metric,
-      gsl::not_null<Scalar<DataVector>*> transport_velocity,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          transport_velocity,
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> lapse_b_over_w,
 
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_s_up,

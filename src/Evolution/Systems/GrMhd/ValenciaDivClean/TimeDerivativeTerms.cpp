@@ -50,7 +50,8 @@ void TimeDerivativeTerms::apply(
     const gsl::not_null<Scalar<DataVector>*> pressure_star,
     const gsl::not_null<Scalar<DataVector>*>
         pressure_star_lapse_sqrt_det_spatial_metric,
-    const gsl::not_null<Scalar<DataVector>*> transport_velocity,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        transport_velocity,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         lapse_b_over_w,
 

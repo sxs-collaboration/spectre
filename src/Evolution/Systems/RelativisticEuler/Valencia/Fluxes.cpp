@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
+#include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 
 #include <cstddef>
 
@@ -24,20 +25,21 @@ void fluxes_impl(
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
         tilde_s_flux,
-    const gsl::not_null<DataVector*> transport_velocity_I,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        transport_velocity,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
     const DataVector& p_alpha_sqrt_det_g) {
+  hydro::transport_velocity(transport_velocity, spatial_velocity, lapse, shift);
   for (size_t i = 0; i < Dim; ++i) {
-    *transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
-    tilde_d_flux->get(i) = get(tilde_d) * *transport_velocity_I;
-    tilde_tau_flux->get(i) = get(tilde_tau) * *transport_velocity_I +
+    tilde_d_flux->get(i) = get(tilde_d) * transport_velocity->get(i);
+    tilde_tau_flux->get(i) = get(tilde_tau) * transport_velocity->get(i) +
                              p_alpha_sqrt_det_g * spatial_velocity.get(i);
     for (size_t j = 0; j < Dim; ++j) {
-      tilde_s_flux->get(i, j) = tilde_s.get(j) * *transport_velocity_I;
+      tilde_s_flux->get(i, j) = tilde_s.get(j) * transport_velocity->get(i);
     }
     tilde_s_flux->get(i, i) += p_alpha_sqrt_det_g;
   }
@@ -62,9 +64,10 @@ void ComputeFluxes<Dim>::apply(
   const DataVector p_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
   // Outside the loop to save allocations
-  DataVector transport_velocity_I(p_alpha_sqrt_det_g.size());
+  tnsr::I<DataVector, Dim, Frame::Inertial>
+      transport_velocity(p_alpha_sqrt_det_g.size());
   detail::fluxes_impl(tilde_d_flux, tilde_tau_flux, tilde_s_flux,
-                      make_not_null(&transport_velocity_I), tilde_d, tilde_tau,
+                      make_not_null(&transport_velocity), tilde_d, tilde_tau,
                       tilde_s, lapse, shift, spatial_velocity,
                       p_alpha_sqrt_det_g);
 }
@@ -80,7 +83,8 @@ void ComputeFluxes<Dim>::apply(
           tilde_tau_flux,                                                      \
       gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Inertial>*>         \
           tilde_s_flux,                                                        \
-      gsl::not_null<DataVector*> transport_velocity_I,                         \
+      gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
+          transport_velocity,                                                  \
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,  \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& tilde_s,          \
       const Scalar<DataVector>& lapse,                                         \

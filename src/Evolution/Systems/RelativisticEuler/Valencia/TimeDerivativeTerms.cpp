@@ -19,7 +19,8 @@ void fluxes_impl(
     gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,
     gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_tau_flux,
     gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*> tilde_s_flux,
-    gsl::not_null<DataVector*> transport_velocity_I,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        transport_velocity,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
     const Scalar<DataVector>& lapse,
@@ -62,7 +63,8 @@ void TimeDerivativeTerms<Dim>::apply(
     // For fluxes
     const gsl::not_null<Scalar<DataVector>*>
         pressure_lapse_sqrt_det_spatial_metric,
-    const gsl::not_null<Scalar<DataVector>*> transport_velocity,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        transport_velocity,
 
     // For sources
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_s_up,
@@ -104,7 +106,7 @@ void TimeDerivativeTerms<Dim>::apply(
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
 
   detail::fluxes_impl(tilde_d_flux, tilde_tau_flux, tilde_s_flux,
-                      make_not_null(&get(*transport_velocity)), tilde_d,
+                      transport_velocity, tilde_d,
                       tilde_tau, tilde_s, lapse, shift, spatial_velocity,
                       get(*pressure_lapse_sqrt_det_spatial_metric));
 
