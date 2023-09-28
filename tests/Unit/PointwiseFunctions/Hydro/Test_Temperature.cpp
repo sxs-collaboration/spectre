@@ -84,8 +84,8 @@ class DummySolution
   tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> variables(
       const tnsr::I<DataType, Dim>& coords,
       tmpl::list<hydro::Tags::Temperature<DataType>> tvar) const {
-    return TemperatureInitialization<
-        DummySolution<EosType, Dim>>::template variables(coords, tvar);
+    return TemperatureInitialization<DummySolution<EosType, Dim>>::variables(
+        coords, tvar);
   }
 
   EosType const equation_of_state() const { return eos_; };
