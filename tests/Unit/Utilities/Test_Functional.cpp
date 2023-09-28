@@ -480,6 +480,13 @@ void test_vector_plus() {
                         (std::vector<double>{0.24, -41.74, 6.4}));
 }
 
+void test_map_merge() {
+  using MapType = std::map<int, std::string>;
+  CHECK(funcl::Merge<>{}(MapType{std::make_pair(0, "0")},
+                         MapType{std::make_pair(1, "1")}) ==
+        MapType{std::make_pair(0, "0"), std::make_pair(1, "1")});
+}
+
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   MAKE_GENERATOR(generator);
   test_generic_unaries(make_not_null(&generator));
@@ -490,6 +497,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   test_assert_equal();
   test_get_argument();
   test_vector_plus();
+  test_map_merge();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((AssertEqual<>{}(7, 8)),
