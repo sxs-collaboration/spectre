@@ -59,7 +59,7 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
     get(converted_electron_fraction) = root_from_lambda;
 
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       const auto& log_rho = get(log_rest_mass_density)[s];
       const auto& log_T = get(log_temperature)[s];
 
@@ -157,9 +157,8 @@ void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
   // assuming an effective mass scale
   // set by the neutron mass
 
-  constexpr double nb_fm3_to_geom =
-      hydro::units::nuclear::neutron_mass  /
-      hydro::units::nuclear::pressure_unit;
+  constexpr double nb_fm3_to_geom = hydro::units::nuclear::neutron_mass /
+                                    hydro::units::nuclear::pressure_unit;
 
   for (double& log_density_i : log_density) {
     log_density_i += std::log(nb_fm3_to_geom);
@@ -291,7 +290,7 @@ void Tabulated3D<IsRelativistic>::enforce_physicality(
                  temperature_lower_bound());
 
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       get(rest_mass_density)[s] = std::max(
           std::min(get(rest_mass_density)[s], rest_mass_density_upper_bound()),
           rest_mass_density_lower_bound());
@@ -349,7 +348,7 @@ Tabulated3D<IsRelativistic>::pressure_from_density_and_temperature_impl(
     get(pressure) = std::exp(interpolated_state[0]);
 
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       auto weights = interpolator_.get_weights(
           get(log_temperature)[s], get(log_rest_mass_density)[s],
           get(converted_electron_fraction)[s]);
@@ -409,7 +408,7 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
                  specific_internal_energy_lower_bound(get(rest_mass_density),
                                                       get(electron_fraction)));
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       get(log_specific_internal_energy)[s] = std::max(
           std::min(get(specific_internal_energy)[s],
                    specific_internal_energy_upper_bound(
@@ -460,7 +459,7 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
     get(temperature) = exp(root_from_lambda);
 
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       const auto& log_eps = get(log_specific_internal_energy)[s];
       const auto& log_rho = get(log_rest_mass_density)[s];
       const auto& ye = get(converted_electron_fraction)[s];
@@ -483,7 +482,7 @@ Tabulated3D<IsRelativistic>::temperature_from_density_and_energy_impl(
       }
 
       if (fabs(f(upper_bound_tolerance_ * table_log_temperature_.back())) <=
-               1.0e-14) {
+          1.0e-14) {
         root_from_lambda = table_log_temperature_.back();
         need_root_finding = false;
       }
@@ -528,7 +527,7 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
     get(specific_internal_energy) =
         std::exp(interpolated_state[0]) + energy_shift_;
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       auto weights = interpolator_.get_weights(
           get(log_temperature)[s], get(log_rest_mass_density)[s],
           get(converted_electron_fraction)[s]);
@@ -570,7 +569,7 @@ Scalar<DataType> Tabulated3D<IsRelativistic>::
     get(cs2) = interpolated_state[0];
 
   } else if constexpr (std::is_same_v<DataType, DataVector>) {
-    for (size_t s = 0; s < electron_fraction.size(); ++s) {
+    for (size_t s = 0; s < get(electron_fraction).size(); ++s) {
       auto weights = interpolator_.get_weights(
           get(log_temperature)[s], get(log_rest_mass_density)[s],
           get(converted_electron_fraction)[s]);
