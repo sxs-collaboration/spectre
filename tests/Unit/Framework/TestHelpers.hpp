@@ -92,38 +92,6 @@ void test_serialization_via_base(Args&&... args) {
   CHECK(derived == dynamic_cast<const D&>(*pupped_base));
 }
 
-/// Test for copy semantics assuming operator== is implement correctly
-template <typename T>
-void test_copy_semantics(const T& a) {
-  INFO("Copy semantics");
-  static_assert(tt::has_equivalence_v<T>,
-                "Class has no operator== implemented");
-  static_assert(std::is_copy_assignable<T>::value,
-                "Class is not copy assignable.");
-  static_assert(std::is_copy_constructible<T>::value,
-                "Class is not copy constructible.");
-  static_assert(std::is_default_constructible_v<T>,
-                "Class needs to be default constructible to check copy "
-                "assignment operator");
-  T b{};
-  b = a;
-  CHECK(b == a);
-  // clang-tidy: intentionally not a reference to force invocation of copy
-  // constructor
-  const T c(a);  // NOLINT
-  CHECK(c == a);
-#if defined(__clang__) && __clang_major__ > 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
-#endif  // defined(__clang__) && __clang_major__ > 6
-  // clang-tidy: self-assignment
-  b = b;  // NOLINT
-#if defined(__clang__) && __clang_major__ > 6
-#pragma GCC diagnostic pop
-#endif  // defined(__clang__) && __clang_major__ > 6
-  CHECK(b == a);
-}
-
 /// Test for move semantics assuming operator== is implemented correctly.
 /// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true.
 /// If T is not default constructible, you pass additional
@@ -148,12 +116,55 @@ void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
   {
     INFO("Test move assignment");
     CHECK(b == comparison);
+    CHECK_FALSE(b != comparison);
   }
   T c(std::move(b));
   {
     INFO("Test move construction");
     CHECK(c == comparison);
+    CHECK_FALSE(c != comparison);
   }
+}
+
+/// Test for copy and move semantics assuming operator== is
+/// implemented correctly.
+///
+/// If T is not default constructible, pass additional arguments that
+/// are used to construct a T.
+template <typename T, typename... Args>
+void test_copy_semantics(const T& a, Args&&... args) {
+  INFO("Copy semantics");
+  static_assert(tt::has_equivalence_v<T>,
+                "Class has no operator== implemented");
+  static_assert(std::is_copy_assignable<T>::value,
+                "Class is not copy assignable.");
+  static_assert(std::is_copy_constructible<T>::value,
+                "Class is not copy constructible.");
+  static_assert(std::is_default_constructible_v<T>,
+                "Class needs to be default constructible to check copy "
+                "assignment operator");
+  T b{};
+  b = a;
+  CHECK(b == a);
+  CHECK_FALSE(b != a);
+  // clang-tidy: intentionally not a reference to force invocation of copy
+  // constructor
+  const T c(a);  // NOLINT
+  CHECK(c == a);
+  CHECK_FALSE(c != a);
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif  // defined(__clang__) && __clang_major__ > 6
+  // clang-tidy: self-assignment
+  b = b;  // NOLINT
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic pop
+#endif  // defined(__clang__) && __clang_major__ > 6
+  CHECK(b == a);
+  CHECK_FALSE(b != a);
+
+  test_move_semantics(std::move(b), a, std::forward<Args>(args)...);
 }
 
 // Test for iterators
