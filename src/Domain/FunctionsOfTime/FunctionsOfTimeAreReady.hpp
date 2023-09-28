@@ -10,6 +10,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -18,6 +19,7 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -36,55 +38,107 @@ class TaggedTuple;
 /// \endcond
 
 namespace domain {
+namespace detail {
+template <typename CacheTag, typename Callback, typename Metavariables,
+          typename ArrayIndex, typename Component, typename... Args>
+bool functions_of_time_are_ready_impl(
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const Component* /*meta*/, const double time,
+    const std::optional<std::unordered_set<std::string>>& functions_to_check,
+    Args&&... args) {
+  if constexpr (Parallel::is_in_global_cache<Metavariables, CacheTag>) {
+    const auto& proxy =
+        ::Parallel::get_parallel_component<Component>(cache)[array_index];
+    const Parallel::ArrayComponentId array_component_id =
+        Parallel::make_array_component_id<Component>(array_index);
+
+    return Parallel::mutable_cache_item_is_ready<CacheTag>(
+        cache, array_component_id,
+        [&functions_to_check, &proxy, &time,
+         &args...](const std::unordered_map<
+                   std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+                       functions_of_time) {
+          using ::operator<<;
+          ASSERT(
+              alg::all_of(
+                  functions_to_check.value_or(
+                      std::unordered_set<std::string>{}),
+                  [&functions_of_time](const std::string& function_to_check) {
+                    return functions_of_time.count(function_to_check) == 1;
+                  }),
+              "Not all functions to check ("
+                  << functions_to_check.value() << ") are in the global cache ("
+                  << keys_of(functions_of_time) << ")");
+          for (const auto& [name, f_of_t] : functions_of_time) {
+            if (functions_to_check.has_value() and
+                functions_to_check->count(name) == 0) {
+              continue;
+            }
+            const double expiration_time = f_of_t->time_bounds()[1];
+            if (time > expiration_time) {
+              return std::unique_ptr<Parallel::Callback>(
+                  new Callback(proxy, std::forward<Args>(args)...));
+            }
+          }
+          return std::unique_ptr<Parallel::Callback>{};
+        });
+  } else {
+    (void)cache;
+    (void)array_index;
+    (void)time;
+    (void)functions_to_check;
+    EXPAND_PACK_LEFT_TO_RIGHT((void)args);
+    return true;
+  }
+}
+}  // namespace detail
+
 /// \ingroup ComputationalDomainGroup
 /// Check that functions of time are up-to-date.
 ///
 /// Check that functions of time in \p CacheTag with names in \p
-/// functions_to_check are ready at time \p time.  If no names are
-/// listed in \p functions_to_check, checks all functions in \p
-/// CacheTag.  If any function is not ready, schedules a
-/// `Parallel::PerformAlgorithmCallback` with the GlobalCache.
+/// functions_to_check are ready at time \p time.  If  \p functions_to_check is
+/// a `std::nullopt`, checks all functions in \p CacheTag.  If any function is
+/// not ready, schedules a `Parallel::PerformAlgorithmCallback` with the
+/// GlobalCache..
 template <typename CacheTag, typename Metavariables, typename ArrayIndex,
-          typename Component, size_t N = 0>
-bool functions_of_time_are_ready(
+          typename Component>
+bool functions_of_time_are_ready_algorithm_callback(
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
-    const Component* /*meta*/, const double time,
-    const std::array<std::string, N>& functions_to_check =
-        std::array<std::string, 0>{}) {
-  const auto& proxy =
-      ::Parallel::get_parallel_component<Component>(cache)[array_index];
-  const Parallel::ArrayComponentId array_component_id =
-      Parallel::make_array_component_id<Component>(array_index);
+    const Component* component_p, const double time,
+    const std::optional<std::unordered_set<std::string>>& functions_to_check =
+        std::nullopt) {
+  using ProxyType = std::decay_t<decltype(
+      ::Parallel::get_parallel_component<Component>(cache)[array_index])>;
+  return detail::functions_of_time_are_ready_impl<
+      CacheTag, Parallel::PerformAlgorithmCallback<ProxyType>>(
+      cache, array_index, component_p, time, functions_to_check);
+}
 
-  return Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, array_component_id,
-      [&functions_to_check, &proxy,
-       &time](const std::unordered_map<
-              std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                  functions_of_time) {
-        using ::operator<<;
-        ASSERT(alg::all_of(
-                   functions_to_check,
-                   [&functions_of_time](const std::string& function_to_check) {
-                     return functions_of_time.count(function_to_check) == 1;
-                   }),
-               "Not all functions to check ("
-                   << functions_to_check << ") are in the global cache ("
-                   << keys_of(functions_of_time) << ")");
-        for (const auto& [name, f_of_t] : functions_of_time) {
-          if ((not functions_to_check.empty()) and
-              alg::find(functions_to_check, name) == functions_to_check.end()) {
-            continue;
-          }
-          const double expiration_time = f_of_t->time_bounds()[1];
-          if (time > expiration_time) {
-            return std::unique_ptr<Parallel::Callback>(
-                new Parallel::PerformAlgorithmCallback(proxy));
-          }
-        }
-        return std::unique_ptr<Parallel::Callback>{};
-      });
+/// \ingroup ComputationalDomainGroup
+/// Check that functions of time are up-to-date.
+///
+/// Check that functions of time in \p CacheTag with names in \p
+/// functions_to_check are ready at time \p time.  If  \p functions_to_check is
+/// a `std::nullopt`, checks all functions in \p CacheTag.  If any function is
+/// ready, schedules a `Parallel::SimpleActionCallback` with the GlobalCache
+/// which calls the simple action passed in as a template parameter. The `Args`
+/// are moved into the callback.
+template <typename CacheTag, typename SimpleAction, typename Metavariables,
+          typename ArrayIndex, typename Component, typename... Args>
+bool functions_of_time_are_ready_simple_action_callback(
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const Component* component_p, const double time,
+    const std::optional<std::unordered_set<std::string>>& functions_to_check,
+    Args&&... args) {
+  using ProxyType = std::decay_t<decltype(
+      ::Parallel::get_parallel_component<Component>(cache)[array_index])>;
+  return detail::functions_of_time_are_ready_impl<
+      CacheTag,
+      Parallel::SimpleActionCallback<SimpleAction, ProxyType, Args...>>(
+      cache, array_index, component_p, time, functions_to_check,
+      std::forward<Args>(args)...);
 }
 
 namespace Actions {
@@ -104,9 +158,9 @@ struct CheckFunctionsOfTimeAreReady {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* component) {
-    const bool ready =
-        functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
-            cache, array_index, component, db::get<::Tags::Time>(box));
+    const bool ready = functions_of_time_are_ready_algorithm_callback<
+        domain::Tags::FunctionsOfTime>(cache, array_index, component,
+                                       db::get<::Tags::Time>(box));
     return {ready ? Parallel::AlgorithmExecution::Continue
                   : Parallel::AlgorithmExecution::Retry,
             std::nullopt};
@@ -134,8 +188,9 @@ struct CheckFunctionsOfTimeAreReadyPostprocessor {
       const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ParallelComponent* component) {
-    return functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
-        cache, array_index, component, db::get<::Tags::Time>(*box));
+    return functions_of_time_are_ready_algorithm_callback<
+        domain::Tags::FunctionsOfTime>(cache, array_index, component,
+                                       db::get<::Tags::Time>(*box));
   }
 };
 }  // namespace domain

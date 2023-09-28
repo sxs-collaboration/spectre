@@ -126,9 +126,8 @@ class Event : public ::Event {
     // measurement is being made for.  We need all of them to access
     // coordinate-dependent quantities, which almost all control
     // measurements will need.
-    const bool ready =
-        domain::functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
-            cache, array_index, component, time);
+    const bool ready = domain::functions_of_time_are_ready_algorithm_callback<
+        domain::Tags::FunctionsOfTime>(cache, array_index, component, time);
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
       Parallel::printf("%s, time = %.16f: Control system events are%s ready.\n",
