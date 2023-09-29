@@ -143,10 +143,24 @@ void test_min_max_element() {
   std::vector<int> t{3, 5, 8, -1};
   CHECK(*alg::min_element(t) == -1);
   CHECK(*alg::max_element(t) == 8);
+
+  {
+    const auto [min, max] = alg::minmax_element(t);
+    CHECK(*min == -1);
+    CHECK(*max == 8);
+  }
+
   CHECK(*alg::min_element(t, [](const int a, const int b) { return a > b; }) ==
         8);
   CHECK(*alg::max_element(t, [](const int a, const int b) { return a > b; }) ==
         -1);
+
+  {
+    const auto [min, max] =
+        alg::minmax_element(t, [](const int a, const int b) { return a > b; });
+    CHECK(*min == 8);
+    CHECK(*max == -1);
+  }
 }
 
 void test_find_related() {

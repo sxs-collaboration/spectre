@@ -45,6 +45,8 @@ class GlobalCache;
 namespace domain::Tags {
 template <size_t Dim>
 struct Mesh;
+template <size_t Dim, typename Frame>
+struct Coordinates;
 }  // namespace domain::Tags
 /// \endcond
 
@@ -106,7 +108,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
     using argument_tags =
         tmpl::push_front<::ah::source_vars<3>, intrp::Tags::InterpPointInfoBase,
-                         domain::Tags::Mesh<3>>;
+                         domain::Tags::Mesh<3>,
+                         domain::Tags::Coordinates<3, ::Frame::Grid>>;
 
     template <typename Metavariables, typename ParallelComponent,
               typename ControlSystems>
@@ -114,6 +117,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         const typename intrp::Tags::InterpPointInfo<Metavariables>::type&
             point_infos,
         const Mesh<3>& mesh,
+        const tnsr::I<DataVector, 3, ::Frame::Grid>& grid_coords,
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
         const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
@@ -129,9 +133,9 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
       Event event{};
 
       // ObservationValue unused
-      event(measurement_id, point_infos, mesh, spacetime_metric, pi, phi,
-            deriv_phi, constraint_gamma1, cache, array_index, component,
-            ::Event::ObservationValue{});
+      event(measurement_id, point_infos, mesh, grid_coords, spacetime_metric,
+            pi, phi, deriv_phi, constraint_gamma1, cache, array_index,
+            component, ::Event::ObservationValue{});
     }
   };
 

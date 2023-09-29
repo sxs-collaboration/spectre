@@ -365,8 +365,7 @@ struct GeneralizedHarmonicTemplateBase {
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
-          typename system::variables_tag,
-          domain::Tags::Mesh<volume_dim>,
+          typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename system::gradient_variables>>,

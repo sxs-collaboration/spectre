@@ -10,6 +10,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/Cce/Actions/SendGhVarsToCce.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -32,11 +33,12 @@ struct mock_element {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Metavariables::volume_dim>;
-  using simple_tags =
-      tmpl::list<::Tags::Time, domain::Tags::Mesh<Metavariables::volume_dim>,
-                 ::Tags::Variables<tmpl::list<
-                     InterpolateOnElementTestHelpers::Tags::TestSolution>>,
-                 intrp::Tags::InterpPointInfo<Metavariables>>;
+  using simple_tags = tmpl::list<
+      ::Tags::Time, domain::Tags::Mesh<Metavariables::volume_dim>,
+      ::Tags::Variables<
+          tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>,
+      intrp::Tags::InterpPointInfo<Metavariables>,
+      domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>>;
   using compute_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -60,8 +62,8 @@ struct initialize_elements_and_queue_simple_actions {
 
     // Emplace elements.
     for (const auto& element_id : element_ids) {
-      // 1. Get vars and mesh
-      auto [vars, mesh] =
+      // 1. Get vars, mesh, and coords
+      auto [vars, mesh, inertial_coords] =
           InterpolateOnElementTestHelpers::make_volume_data_and_mesh<
               ElemComponent, false>(domain_creator, runner, domain, element_id,
                                     time);
@@ -69,7 +71,8 @@ struct initialize_elements_and_queue_simple_actions {
       // 2. emplace element.
       ActionTesting::emplace_component_and_initialize<elem_component>(
           &runner, element_id,
-          {time, mesh, std::move(vars), interp_point_info});
+          {time, mesh, std::move(vars), interp_point_info,
+           std::move(inertial_coords)});
     }
 
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

@@ -14,6 +14,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
+#include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/ElementMap.hpp"
@@ -32,6 +33,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -126,7 +128,7 @@ struct MockInterpolationTargetVarsFromElement {
       const std::vector<std::optional<
           IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
                                           typename ::Frame::BlockLogical>>>>&
-      /*block_logical_coords*/,
+          block_logical_coords,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& /*temporal_id*/) {
     CHECK(global_offsets.size() == vars_src.size());
@@ -134,6 +136,17 @@ struct MockInterpolationTargetVarsFromElement {
     // directly from the elements; the outer vector is used only by
     // the Interpolator parallel component.
     CHECK(global_offsets.size() == 1);
+
+    if constexpr (tt::is_a_v<
+                      intrp::TargetPoints::Sphere,
+                      typename InterpolationTargetTag::compute_target_points>) {
+      for (size_t offset : global_offsets[0]) {
+        CHECK(block_logical_coords[offset].has_value());
+      }
+    } else {
+      CHECK(alg::all_of(block_logical_coords,
+                        [](const auto& t) { return t.has_value(); }));
+    }
 
     // Here we have received only some of the points.
     const size_t num_pts_received = global_offsets[0].size();
@@ -180,6 +193,10 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using simple_tags = tmpl::list<Tags::TestTargetPoints>;
+  using const_global_cache_tags = tmpl::conditional_t<
+      tt::is_a_v<intrp::TargetPoints::Sphere,
+                 typename InterpolationTargetTag::compute_target_points>,
+      tmpl::list<intrp::Tags::Sphere<InterpolationTargetTag>>, tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -192,7 +209,8 @@ struct mock_interpolation_target {
 
 template <typename ElemComponent, bool UseTimeDependentMaps,
           typename DomainCreator, typename Runner, typename TemporalId>
-std::tuple<Variables<tmpl::list<Tags::TestSolution>>, Mesh<3>>
+std::tuple<Variables<tmpl::list<Tags::TestSolution>>, Mesh<3>,
+           tnsr::I<DataVector, 3, Frame::Inertial>>
 make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
                           const Domain<3>& domain,
                           const ElementId<3>& element_id,
@@ -201,29 +219,28 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
   Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  const auto inertial_coords =
-      [&element_id, &block, &mesh, &runner, &temporal_id]() {
-        if constexpr (UseTimeDependentMaps) {
-          const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(
-              ActionTesting::cache<ElemComponent>(runner, element_id));
-          ElementMap<3, ::Frame::Grid> map_logical_to_grid{
-              element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
-          return block.moving_mesh_grid_to_inertial_map()(
-              map_logical_to_grid(logical_coordinates(mesh)),
-              temporal_id.substep_time(), functions_of_time);
-        } else {
-          (void)runner;
-          (void)temporal_id;
-          ElementMap<3, Frame::Inertial> map{
-              element_id, block.stationary_map().get_clone()};
-          return map(logical_coordinates(mesh));
-        }
-      }();
+  auto inertial_coords = [&element_id, &block, &mesh, &runner, &temporal_id]() {
+    if constexpr (UseTimeDependentMaps) {
+      const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(
+          ActionTesting::cache<ElemComponent>(runner, element_id));
+      ElementMap<3, ::Frame::Grid> map_logical_to_grid{
+          element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+      return block.moving_mesh_grid_to_inertial_map()(
+          map_logical_to_grid(logical_coordinates(mesh)),
+          temporal_id.substep_time(), functions_of_time);
+    } else {
+      (void)runner;
+      (void)temporal_id;
+      ElementMap<3, Frame::Inertial> map{element_id,
+                                         block.stationary_map().get_clone()};
+      return map(logical_coordinates(mesh));
+    }
+  }();
 
   // create volume data
   Variables<tmpl::list<Tags::TestSolution>> vars(mesh.number_of_grid_points());
   fill_variables<Tags::TestSolution>(make_not_null(&vars), inertial_coords);
-  return std::make_tuple(std::move(vars), mesh);
+  return std::make_tuple(std::move(vars), mesh, std::move(inertial_coords));
 }
 
 // This is the main test; Takes a functor as an argument so that
@@ -232,9 +249,11 @@ template <typename Metavariables, typename elem_component, typename Functor>
 void test_interpolate_on_element(
     Functor initialize_elements_and_queue_simple_actions) {
   using metavars = Metavariables;
-  using target_component =
-      mock_interpolation_target<metavars,
-                                typename metavars::InterpolationTargetA>;
+  using target_tag = typename metavars::InterpolationTargetA;
+  constexpr bool is_sphere =
+      tt::is_a_v<intrp::TargetPoints::Sphere,
+                 typename target_tag::compute_target_points>;
+  using target_component = mock_interpolation_target<metavars, target_tag>;
 
   const auto domain_creator = []() {
     if constexpr (Metavariables::use_time_dependent_maps) {
@@ -242,9 +261,10 @@ void test_interpolate_on_element(
           0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false,
           std::nullopt, {}, {domain::CoordinateMaps::Distribution::Linear},
           ShellWedges::All,
+          // Rotation so points always remain in domain
           std::make_unique<
-              domain::creators::time_dependence::UniformTranslation<3>>(
-              0.0, std::array<double, 3>({{0.1, 0.2, 0.3}})));
+              domain::creators::time_dependence::RotationAboutZAxis<3>>(
+              0.0, 0.0, 0.1, 0.0));
     } else {
       return domain::creators::Sphere(
           0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false);
@@ -266,7 +286,8 @@ void test_interpolate_on_element(
       13.5 / 16.0;  // Arbitrary value greater than temporal_id above.
 
   // Create target points and interp_point_info
-  const size_t num_points = 10;
+  const size_t ell = 4;
+  const size_t num_points = is_sphere ? 2 * (ell + 1) * (2 * ell + 1) : 10_st;
   tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_points);
   const typename intrp::Tags::InterpPointInfo<
       metavars>::type interp_point_info = [&target_points]() {
@@ -288,16 +309,32 @@ void test_interpolate_on_element(
     return interp_point_info_l;
   }();
 
+  tuples::tagged_tuple_from_typelist<tmpl::conditional_t<
+      is_sphere,
+      tmpl::list<domain::Tags::Domain<3>, intrp::Tags::Sphere<target_tag>>,
+      tmpl::list<domain::Tags::Domain<3>>>>
+      init_tuple{};
+
+  tuples::get<domain::Tags::Domain<3>>(init_tuple) =
+      std::move(domain_creator.create_domain());
+
+  if constexpr (is_sphere) {
+    tuples::get<intrp::Tags::Sphere<target_tag>>(init_tuple) =
+        intrp::OptionHolders::Sphere{ell, std::array{0.0, 0.0, 0.0},
+                                     std::vector<double>{1.0, 2.5},
+                                     intrp::AngularOrdering::Cce};
+  }
+
   // Emplace target component.
-  auto runner = [&domain_creator, &initial_expiration_times]() {
+  auto runner = [&domain_creator, &init_tuple, &initial_expiration_times]() {
     if constexpr (Metavariables::use_time_dependent_maps) {
       return ActionTesting::MockRuntimeSystem<metavars>(
-          domain_creator.create_domain(),
+          std::move(init_tuple),
           domain_creator.functions_of_time(initial_expiration_times));
     } else {
+      (void)domain_creator;
       (void)initial_expiration_times;
-      return ActionTesting::MockRuntimeSystem<metavars>(
-          domain_creator.create_domain());
+      return ActionTesting::MockRuntimeSystem<metavars>(std::move(init_tuple));
     }
   }();
 

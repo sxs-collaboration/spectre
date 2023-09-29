@@ -251,7 +251,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   // For this test, we test distorted coords only if the first block has
   // a distorted frame.  For this test, either all blocks have a distorted
   // frame or none of them do.
-  if(domain.blocks().begin()->has_distorted_frame()) {
+  if (domain.blocks().begin()->has_distorted_frame()) {
     const auto distorted_coords = [&n_pts, &domain, &block_ids, &block_coords,
                                    &time, &functions_of_time]() {
       tnsr::I<DataVector, Dim, Frame::Distorted> coords(n_pts);
@@ -361,10 +361,10 @@ void fuzzy_test_block_and_element_logical_coordinates_distorted_brick(
   const auto domain = brick.create_domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.
-  fuzzy_test_block_and_element_logical_coordinates_unrefined(
-      domain, n_pts, 0.0, functions_of_time);
-  fuzzy_test_block_and_element_logical_coordinates_unrefined(
-      domain, n_pts, 0.1, functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.0,
+                                                             functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.1,
+                                                             functions_of_time);
 }
 
 void fuzzy_test_block_and_element_logical_coordinates3(const size_t n_pts) {
@@ -432,12 +432,35 @@ void test_block_and_element_logical_coordinates(
     }
   }
 
+  std::vector<tnsr::I<double, Dim, Frame::BlockLogical>>
+      block_logical_single_point_result(x_inertial.size());
+  for (size_t i = 0; i < x_inertial.size(); i++) {
+    tnsr::I<double, Dim, Frame::Inertial> inertial_coords_double{};
+    for (size_t d = 0; d < Dim; d++) {
+      inertial_coords_double.get(d) = inertial_coords.get(d)[i];
+    }
+
+    // We have to loop over every block because this function requires a block.
+    // We only append to block_logical_single_point_result for the block that
+    // has the point
+    for (const auto& block : domain.blocks()) {
+      if (auto inv_point = block_logical_coordinates_single_point(
+              inertial_coords_double, block);
+          inv_point.has_value()) {
+        block_logical_single_point_result[i] = std::move(inv_point.value());
+        break;
+      }
+    }
+  }
+
   const auto block_logical_result =
       block_logical_coordinates(domain, inertial_coords);
   for (size_t s = 0; s < x_inertial.size(); ++s) {
     CHECK(block_logical_result[s].value().id.get_index() ==
           expected_block_ids[s]);
     CHECK_ITERABLE_APPROX(block_logical_result[s].value().data,
+                          expected_logical_coords[s]);
+    CHECK_ITERABLE_APPROX(block_logical_single_point_result[s],
                           expected_logical_coords[s]);
   }
 

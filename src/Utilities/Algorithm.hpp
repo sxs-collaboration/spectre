@@ -354,6 +354,22 @@ constexpr decltype(auto) min_element(const Container& c, Compare&& comp) {
   return std::min_element(begin(c), end(c), std::forward<Compare>(comp));
 }
 
+/// Convenience wrapper around std::minmax_element
+template <class Container>
+constexpr decltype(auto) minmax_element(const Container& c) {
+  using std::begin;
+  using std::end;
+  return std::minmax_element(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::minmax_element
+template <class Container, class Compare>
+constexpr decltype(auto) minmax_element(const Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::minmax_element(begin(c), end(c), std::forward<Compare>(comp));
+}
+
 /// Convenience wrapper around std::remove
 template <class Container, class T>
 decltype(auto) remove(Container& c, const T& value) {
