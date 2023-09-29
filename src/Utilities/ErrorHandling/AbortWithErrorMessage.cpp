@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include "Utilities/ErrorHandling/Breakpoint.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/ErrorHandling/FormatStacktrace.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -33,8 +34,9 @@ template <bool ShowTrace, typename ExceptionTypeToThrow>
      << abbreviated_symbol_name(std::string{pretty_function}) << " in " << file
      << ":" << line << "\n"
      << "\n"
-     << message << "\n"
-     << "############ ERROR ############\n"
+     << message << "\n";
+  print_captures_for_error(os);
+  os << "############ ERROR ############\n"
      << "\n";
   breakpoint();
   throw ExceptionTypeToThrow(os.str());
@@ -55,8 +57,9 @@ void abort_with_error_message(const char* expression, const char* file,
      << ":" << line << "\n"
      << "\n"
      << "'" << expression << "' violated!\n"
-     << message << "\n"
-     << "############ ASSERT FAILED ############\n"
+     << message << "\n";
+  print_captures_for_error(os);
+  os << "############ ASSERT FAILED ############\n"
      << "\n";
   breakpoint();
   throw SpectreAssert(os.str());

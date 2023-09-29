@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AbortWithErrorMessage.cpp
   Breakpoint.cpp
+  CaptureForError.cpp
   FloatingPointExceptions.cpp
   FormatStacktrace.cpp
   SegfaultHandler.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   AbortWithErrorMessage.hpp
   Assert.hpp
   Breakpoint.hpp
+  CaptureForError.hpp
   Error.hpp
   Exceptions.hpp
   ExpectsAndEnsures.hpp
