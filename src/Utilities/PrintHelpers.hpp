@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -20,7 +21,7 @@ void sequence_print_helper(std::ostream& out, ForwardIt begin,
   out << "(";
   if (begin != end) {
     while (true) {
-      f(out, begin++);
+      f(out, *begin++);
       if (begin == end) {
         break;
       }
@@ -39,7 +40,10 @@ void sequence_print_helper(std::ostream& out, ForwardIt begin,
                            const ForwardIt& end) {
   sequence_print_helper(
       out, std::move(begin), end,
-      [](std::ostream& os, const ForwardIt& it) { os << *it; });
+      [](std::ostream& os,
+         const typename std::iterator_traits<ForwardIt>::value_type& it) {
+        os << it;
+      });
 }
 
 /// @{
@@ -53,7 +57,7 @@ void unordered_print_helper(std::ostream& out, ForwardIt begin,
   std::vector<std::string> entries;
   while (begin != end) {
     std::ostringstream ss;
-    f(ss, begin++);
+    f(ss, *begin++);
     entries.push_back(ss.str());
   }
   std::sort(entries.begin(), entries.end());
@@ -65,6 +69,9 @@ void unordered_print_helper(std::ostream& out, ForwardIt begin,
                             const ForwardIt& end) {
   unordered_print_helper(
       out, std::move(begin), end,
-      [](std::ostream& os, const ForwardIt& it) { os << *it; });
+      [](std::ostream& os,
+         const typename std::iterator_traits<ForwardIt>::value_type& it) {
+        os << it;
+      });
 }
 /// @}

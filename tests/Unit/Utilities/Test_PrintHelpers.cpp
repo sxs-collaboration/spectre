@@ -57,8 +57,8 @@ void test_vector_and_list(const F& test) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.PrintHelpers", "[Utilities][Unit]") {
-  const auto stars = [](std::ostream& os, const auto& it) {
-    os << "*" << *it << "*";
+  const auto stars = [](std::ostream& os, const int value) {
+    os << "*" << value << "*";
   };
 
   test_vector_and_list([](auto&& begin, auto&& end) {

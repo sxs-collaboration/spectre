@@ -123,8 +123,8 @@ inline std::ostream& operator<<(std::ostream& os,
   unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
-         typename std::unordered_map<K, V, H>::const_iterator it) {
-        out << "[" << it->first << "," << it->second << "]";
+         const typename std::unordered_map<K, V, H>::value_type& value) {
+        out << "[" << value.first << "," << value.second << "]";
       });
   return os;
 }
@@ -137,8 +137,9 @@ template <typename K, typename V, typename C>
 inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
   sequence_print_helper(
       os, begin(m), end(m),
-      [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
-        out << "[" << it->first << "," << it->second << "]";
+      [](std::ostream& out,
+         const typename std::map<K, V, C>::value_type& value) {
+        out << "[" << value.first << "," << value.second << "]";
       });
   return os;
 }
@@ -226,8 +227,8 @@ inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
   unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
-         typename std::unordered_map<K, V, H>::const_iterator it) {
-        out << it->first;
+         const typename std::unordered_map<K, V, H>::value_type& value) {
+        out << value.first;
       });
   return os.str();
 }
@@ -241,8 +242,9 @@ inline std::string keys_of(const std::map<K, V, C>& m) {
   std::ostringstream os;
   sequence_print_helper(
       os, begin(m), end(m),
-      [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
-        out << it->first;
+      [](std::ostream& out,
+         const typename std::map<K, V, C>::value_type& value) {
+        out << value.first;
       });
   return os.str();
 }
