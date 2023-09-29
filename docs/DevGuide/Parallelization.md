@@ -746,7 +746,7 @@ GlobalCache items.
 Most items in the GlobalCache are constant, and are specified
 by type aliases called `const_global_cache_tags` as
 described above. However, the GlobalCache can also store mutable
-items. Because of asynchronous execution, care must be taken when
+items. Because of asynchronous execution, **EXTREME** care must be taken when
 mutating items in the GlobalCache, as described below.
 
 A mutable item can be of any type, as long as that type is something
@@ -805,8 +805,8 @@ will be invoked; in this case the callback function re-runs
 
 \snippet Test_AlgorithmGlobalCache.cpp check_mutable_cache_item_is_ready
 
-Note that `Parallel::mutable_cache_item_is_ready` is called on a local
-core and does no parallel communication.
+Note that `Parallel::mutable_cache_item_is_ready` is called on the local
+node and does no parallel communication.
 
 ### 2. Retrieving the item
 
@@ -814,7 +814,7 @@ The item is retrieved using `Parallel::get` just like for constant items.
 For example, to retrieve the item `Tags::VectorOfDoubles`:
 \snippet Test_AlgorithmGlobalCache.cpp retrieve_mutable_cache_item
 
-Note that `Parallel::get` is called on a local core and does no
+Note that `Parallel::get` is called on the local node and does no
 parallel communication.
 
 Whereas we support getting *non-mutable* items in the GlobalCache from
@@ -839,11 +839,13 @@ mutator function.  For the following example,
 the mutator function is defined as below:
 \snippet Test_AlgorithmGlobalCache.cpp mutate_global_cache_item_mutator
 
-`Parallel::mutate` broadcasts to every core, where it calls the
+`Parallel::mutate` broadcasts to every node, where it calls the
 mutator function and then calls all the callbacks that have been set
-on that core by `Parallel::mutable_cache_item_is_ready`.  The
+on that node by `Parallel::mutable_cache_item_is_ready`.  The
 `Parallel::mutate` operation is guaranteed to be thread-safe without
-any further action by the developer.
+any further action by the developer so long as the item being mutated can be
+mutated in a threadsafe way. See the `Parallel::GlobalCache` docs for more
+details.
 
 # Charm++ Node and Processor Level Initialization Functions {#dev_guide_parallelization_charm_node_processor_level_initialization}
 
