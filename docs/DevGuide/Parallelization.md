@@ -731,6 +731,16 @@ And the corresponding invocation:
 
 \snippet Test_AlgorithmLocalSyncAction.cpp synchronous_action_invocation_example
 
+\warning Say an action is being run on a component on a node where a mutable
+item in the GlobalCache is up-to-date. This action then calls another action on
+a different component on a different node. It is **NOT** guaranteed that this
+mutable item in the GlobalCache is up-to-date on this new node. It is up to the
+user to ensure the mutable item is up-to-date on whatever node they run an
+action on, even if it was up-to-date on the node that sent the message. The
+\ref dev_guide_parallelization_mutable_global_cache
+"Mutable items in the GlobalCache" section gives details about mutable
+GlobalCache items.
+
 # Mutable items in the GlobalCache {#dev_guide_parallelization_mutable_global_cache}
 
 Most items in the GlobalCache are constant, and are specified
