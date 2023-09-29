@@ -15,8 +15,8 @@
  * end, separated by commas and surrounded by parens.
  */
 template <typename ForwardIt, typename Func>
-void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                           ForwardIt&& end, Func f) {
+void sequence_print_helper(std::ostream& out, ForwardIt begin,
+                           const ForwardIt& end, Func f) {
   out << "(";
   if (begin != end) {
     while (true) {
@@ -35,10 +35,10 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
  * \brief Prints all the items as a comma separated list surrounded by parens.
  */
 template <typename ForwardIt>
-void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                           ForwardIt&& end) {
+void sequence_print_helper(std::ostream& out, ForwardIt begin,
+                           const ForwardIt& end) {
   sequence_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
+      out, std::move(begin), end,
       [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 
@@ -48,8 +48,8 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
  * Like sequence_print_helper, but sorts the string representations.
  */
 template <typename ForwardIt, typename Func>
-void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                            ForwardIt&& end, Func f) {
+void unordered_print_helper(std::ostream& out, ForwardIt begin,
+                            const ForwardIt& end, Func f) {
   std::vector<std::string> entries;
   while (begin != end) {
     std::ostringstream ss;
@@ -61,10 +61,10 @@ void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
 }
 
 template <typename ForwardIt>
-void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                            ForwardIt&& end) {
+void unordered_print_helper(std::ostream& out, ForwardIt begin,
+                            const ForwardIt& end) {
   unordered_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
+      out, std::move(begin), end,
       [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 /// @}
