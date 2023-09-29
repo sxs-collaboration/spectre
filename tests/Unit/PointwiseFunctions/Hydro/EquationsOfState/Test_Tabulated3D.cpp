@@ -101,7 +101,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   }
 
   auto test_eos = [&](auto state) {
-
     enum TableIndex { Temp = 0, Rho = 1, Ye = 2 };
 
     // We use a simple ideal fluid like EOS with a Ye variable Gamma:
@@ -164,9 +163,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   std::array<Scalar<double>, 3> state{};
   std::array<Scalar<DataVector>, 3> vector_state{};
 
+  constexpr size_t data_vector_length = 5;
+
   for (size_t n = 0; n < 3; ++n) {
-    get(state[n]) = pure_state[n];
-    get(vector_state[n]) = DataVector{1, pure_state[n]};
+    get(gsl::at(state, n)) = gsl::at(pure_state, n);
+    get(gsl::at(vector_state, n)) =
+        DataVector{data_vector_length, gsl::at(pure_state, n)};
   }
 
   pure_state[0] = std::log(pure_state[0]);
@@ -189,10 +191,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
       eos.specific_internal_energy_from_density_and_temperature(
           vector_state[1], vector_state[0], vector_state[2]);
 
-  CHECK(std::abs(std::exp(pure_state[0]) -
-                 get(eos.temperature_from_density_and_energy(
-                     vector_state[1], eps_interp, vector_state[2]))[0]) <
-        1.e-12);
+  // Ensure the tabulated EoS is applied to all elements in the datavector, not
+  // just the first element
+  for (size_t vector_index = 0; vector_index < data_vector_length;
+       vector_index++) {
+    CHECK(std::abs(std::exp(pure_state[0]) -
+                   get(eos.temperature_from_density_and_energy(
+                       vector_state[1], eps_interp,
+                       vector_state[2]))[vector_index]) < 1.e-12);
+  }
 
   CHECK(std::abs((std::exp(output[TEoS::Epsilon]) + energy_shift) -
                  get(eos.specific_internal_energy_from_density_and_temperature(
