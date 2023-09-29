@@ -34,6 +34,7 @@ SPECTRE_TEST_CASE(
   // fixed. We're really only testing that the mutator calls the correct
   // functions.
   const size_t num_pts = 1;
+  tnsr::I<DataVector, 3, Frame::Inertial> subcell_coords{num_pts, 0.0};
   tnsr::aa<DataVector, 3, Frame::Inertial> spacetime_metric{num_pts, 0.0};
   get<0, 0>(spacetime_metric) = -1.0;
   for (size_t i = 1; i < 4; ++i) {
@@ -65,13 +66,14 @@ SPECTRE_TEST_CASE(
                                         density_when_skipping_inversion);
 
   auto box = db::create<db::AddSimpleTags<
+      evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag, typename System::primitive_variables_tag,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
-      false, cons_vars,
+      subcell_coords, false, cons_vars,
       typename System::primitive_variables_tag::type{num_pts, 1.0e-4},
       variable_fixer,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{

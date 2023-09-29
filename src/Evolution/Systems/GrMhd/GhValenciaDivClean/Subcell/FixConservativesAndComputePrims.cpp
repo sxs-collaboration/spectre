@@ -19,6 +19,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -31,30 +33,42 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
         conserved_vars_ptr,
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
         primitive_vars_ptr,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
     const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
         primitive_from_conservative_options) {
+  CAPTURE_FOR_ERROR(subcell_coords);
+  const auto& cons_vars = *conserved_vars_ptr;
+  CAPTURE_FOR_ERROR(cons_vars);
   // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
   // metric}}. Storing the allocation or the result in the DataBox might
   // actually be useful here, but unclear. We will need to profile.
-  Variables<tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
-                       gr::Tags::InverseSpatialMetric<DataVector, 3>,
+  Variables<tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                       gr::Tags::DetSpatialMetric<DataVector>,
                        gr::Tags::SqrtDetSpatialMetric<DataVector>>>
       temp_buffer{conserved_vars_ptr->number_of_grid_points()};
-  auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<DataVector, 3>>(temp_buffer);
-  gr::spatial_metric(
-      make_not_null(&spatial_metric),
-      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*conserved_vars_ptr));
+  const tnsr::ii<DataVector, 3, Frame::Inertial> spatial_metric{};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      make_const_view(
+          make_not_null(&spatial_metric.get(i, j)),
+          get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*conserved_vars_ptr)
+              .get(i + 1, j + 1),
+          0, temp_buffer.number_of_grid_points());
+    }
+  }
   auto& inverse_spatial_metric =
       get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp_buffer);
+  auto& det_spatial_metric =
+      get<gr::Tags::DetSpatialMetric<DataVector>>(temp_buffer);
   auto& sqrt_det_spatial_metric =
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(temp_buffer);
-  determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
+  determinant_and_inverse(make_not_null(&det_spatial_metric),
                           make_not_null(&inverse_spatial_metric),
                           spatial_metric);
-  get(sqrt_det_spatial_metric) = sqrt(get(sqrt_det_spatial_metric));
+  CAPTURE_FOR_ERROR(det_spatial_metric);
+  get(sqrt_det_spatial_metric) = sqrt(get(det_spatial_metric));
 
   *needed_fixing = fix_conservatives(
       make_not_null(&get<ValenciaDivClean::Tags::TildeD>(*conserved_vars_ptr)),
@@ -120,6 +134,7 @@ using KastaunThenNewmanThenPalenzuela =
           conserved_vars_ptr,                                               \
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>        \
           primitive_vars_ptr,                                               \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,        \
       const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,   \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
