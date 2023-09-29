@@ -197,9 +197,11 @@ struct TestMetavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
+  // [deadlock_analysis_function]
   static void run_deadlock_analysis_simple_actions(
       Parallel::GlobalCache<TestMetavariables>& cache,
       const std::vector<std::string>& deadlocked_components) {
+    // [deadlock_analysis_function]
     SPECTRE_PARALLEL_REQUIRE(
         alg::find(deadlocked_components, std::string{"ArrayComponent"}) !=
         deadlocked_components.end());

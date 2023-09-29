@@ -111,14 +111,30 @@ phase is determined and the `execute_next_phase` function is called on
 all the parallel components.
 
 At the end of an execution the `Exit` phase has the executable wait to make sure
-no parallel components are performing or need to perform any more tasks, and
-then exits. An example where this approach is important is if we are done
-evolving a system but still need to write data to disk. We do not want to exit
-the simulation until all data has been written to disk, even though we've
-reached the final time of the evolution.
+no \ref dev_guide_parallelization_parallel_components "parallel components" are
+performing or need to perform any more tasks, and then exits. An example where
+this approach is important is if we are done evolving a system but still need to
+write data to disk. We do not want to exit the simulation until all data has
+been written to disk, even though we've reached the final time of the evolution.
 
-\warning Currently dead-locks are treated as successful termination. In the
-future checks against deadlocks will be performed before terminating.
+If we reach the `Exit` phase, but some \ref
+dev_guide_parallelization_parallel_components "parallel components" have not
+terminated properly, this means a deadlock has occurred. A deadlock usually
+implies some error in the order messages have been sent/received. For example,
+if core 0 was paused and waiting to receive a message from core 1, but core 1
+was also paused and waiting to receive a message from core 0, this would be
+considered a deadlock. We detect deadlocks during the `Exit` phase. All
+executables have the option to specify a function with the following signature
+
+\snippet Test_DetectHangArray.cpp deadlock_analysis_function
+
+If this function is specified in the metavariables and a deadlock occurs, this
+function and all the simple actions in it will run. The information printed
+during this function call is executable dependent, but it should print enough
+information for you to determine why the deadlock occurred. If this function
+isn't specified and a deadlock occurs, a message about how to add this function
+to your metavariables is printed, but nothing else. After this, the executable
+aborts.
 
 # The Algorithm {#dev_guide_parallelization_core_algorithm}
 
