@@ -143,8 +143,8 @@ template <typename MockMetavariables>
 void run_test() {
   using metavars = MockMetavariables;
   using elem_component = mock_element<metavars>;
-  InterpolateOnElementTestHelpers::test_interpolate_on_element<metavars,
-                                                               elem_component>(
+  InterpolateOnElementTestHelpers::test_interpolate_on_element<
+      metavars, elem_component, false>(
       initialize_elements_and_queue_simple_actions<elem_component>{});
 }
 
