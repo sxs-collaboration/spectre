@@ -7,6 +7,7 @@
 #pragma once
 
 #include <boost/container/static_vector.hpp>
+#include <boost/math/quaternion.hpp>
 #include <boost/rational.hpp>
 #include <pup.h>
 
@@ -52,5 +53,26 @@ void pup(PUP::er& p, boost::container::static_vector<T, N>& v) {
 template <class T, size_t N>
 void operator|(PUP::er& p, boost::container::static_vector<T, N>& v) {
   pup(p, v);
+}
+
+template <typename T>
+void pup(PUP::er& p, boost::math::quaternion<T>& quaternion) {
+  T component_1 = quaternion.R_component_1();
+  T component_2 = quaternion.R_component_2();
+  T component_3 = quaternion.R_component_3();
+  T component_4 = quaternion.R_component_4();
+  p | component_1;
+  p | component_2;
+  p | component_3;
+  p | component_4;
+  if (p.isUnpacking()) {
+    quaternion = boost::math::quaternion<T>(component_1, component_2,
+                                            component_3, component_4);
+  }
+}
+
+template <typename T>
+void operator|(PUP::er& p, boost::math::quaternion<T>& quaternion) {
+  pup(p, quaternion);
 }
 }  // namespace PUP

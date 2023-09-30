@@ -7,80 +7,41 @@
 // included before odeint
 #include "DataStructures/BoostMultiArray.hpp"
 
-#include <atomic>
+#include <algorithm>
+#include <array>
+#include <boost/math/quaternion.hpp>
 #include <boost/numeric/odeint.hpp>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
-#include <list>
-#include <mutex>
+#include <iterator>
+#include <limits>
+#include <memory>
 #include <ostream>
+#include <pup.h>
 #include <pup_stl.h>
+#include <utility>
+#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
 #include "NumericalAlgorithms/OdeIntegration/OdeIntegration.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/MakeArray.hpp"
-#include "Utilities/Serialization/PupStlCpp11.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
 
 namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
 QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
-    const double t, std::array<DataVector, 1> initial_quat_func,
+    const double t, const std::array<DataVector, 1>& initial_quat_func,
     std::array<DataVector, MaxDeriv + 1> initial_angle_func,
     const double expiration_time)
-    : stored_quaternions_and_times_{{t, std::move(initial_quat_func)}},
+    : stored_quaternions_and_times_(t),
       angle_f_of_t_(t, std::move(initial_angle_func), expiration_time) {
-  stored_quaternion_size_.store(1, std::memory_order_release);
-  expiration_time_.store(expiration_time, std::memory_order_release);
-}
-
-template <size_t MaxDeriv>
-QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
-    QuaternionFunctionOfTime<MaxDeriv>&& rhs) {
-  *this = std::move(rhs);
-}
-
-template <size_t MaxDeriv>
-QuaternionFunctionOfTime<MaxDeriv>&
-QuaternionFunctionOfTime<MaxDeriv>::operator=(
-    QuaternionFunctionOfTime<MaxDeriv>&& rhs) {
-  if (this == &rhs) {
-    return *this;
-  }
-  stored_quaternions_and_times_ = std::move(rhs.stored_quaternions_and_times_);
-  angle_f_of_t_ = std::move(rhs.angle_f_of_t_);
-  stored_quaternion_size_.store(
-      rhs.stored_quaternion_size_.exchange(0, std::memory_order_acq_rel),
-      std::memory_order_release);
-  expiration_time_.store(
-      rhs.expiration_time_.exchange(0, std::memory_order_acq_rel),
-      std::memory_order_release);
-  return *this;
-}
-
-template <size_t MaxDeriv>
-QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
-    const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
-  *this = rhs;
-}
-
-template <size_t MaxDeriv>
-QuaternionFunctionOfTime<MaxDeriv>&
-// NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
-QuaternionFunctionOfTime<MaxDeriv>::operator=(
-    const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
-  if (this == &rhs) {
-    return *this;
-  }
-  stored_quaternions_and_times_ = rhs.stored_quaternions_and_times_;
-  angle_f_of_t_ = rhs.angle_f_of_t_;
-  stored_quaternion_size_.store(
-      rhs.stored_quaternion_size_.load(std::memory_order_acquire),
-      std::memory_order_release);
-  expiration_time_.store(rhs.expiration_time_.load(std::memory_order_acquire),
-                         std::memory_order_release);
-  return *this;
+  stored_quaternions_and_times_.insert(
+      t, datavector_to_quaternion(initial_quat_func[0]), expiration_time);
 }
 
 template <size_t MaxDeriv>
@@ -92,137 +53,115 @@ std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 3;
+  size_t version = 4;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
   // whenever possible. See `Domain` docs for details.
 
-  // Here is where we must retain support for older versions
-  if (p.isUnpacking()) {
-    // For versions 0 and 1, we stored the data first, then angle fot, then
-    // possibly the size
-    if (version <= 1) {
-      if (version == 0) {
-        // Version 0 had a std::vector rather than a std::list
-        std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
-            pupped_quaternions{};
-        p | pupped_quaternions;
-        for (auto& pupped_quaternion : pupped_quaternions) {
-          stored_quaternions_and_times_.emplace_back(
-              std::move(pupped_quaternion));
-        }
-      } else {
-        // Version 1 had a std::deque rather than a std::list
-        std::deque<FunctionOfTimeHelpers::StoredInfo<1, false>>
-            pupped_quaternions{};
-        p | pupped_quaternions;
-        for (auto& pupped_quaternion : pupped_quaternions) {
-          stored_quaternions_and_times_.emplace_back(
-              std::move(pupped_quaternion));
-        }
-      }
+  if (version < 4) {
+    unpack_old_version(p, version);
+    return;
+  }
 
-      // Same for v0 and v1
-      p | angle_f_of_t_;
-      expiration_time_.store(angle_f_of_t_.time_bounds()[1],
-                             std::memory_order_release);
+  p | stored_quaternions_and_times_;
+  p | angle_f_of_t_;
+}
 
-      if (version == 0) {
-        stored_quaternion_size_.store(stored_quaternions_and_times_.size(),
-                                      std::memory_order_release);
-      } else {
-        p | stored_quaternion_size_;
-      }
-    } else if (version >= 2) {
-      // However, for v2+, we store angle fot, expiration time, size, then data
-      // for thread-safety reasons
-      p | angle_f_of_t_;
+namespace {
+struct LegacyStoredInfo {
+  double time{std::numeric_limits<double>::signaling_NaN()};
+  std::array<DataVector, 1> stored_quantities;
 
-      // For v3+ we pup our own expiration time, while for 2 we have to get it
-      // from the angle_f_of_t_.
-      if (version >= 3) {
-        p | expiration_time_;
-      } else {
-        expiration_time_.store(angle_f_of_t_.time_bounds()[1],
-                               std::memory_order_release);
-      }
+  void pup(PUP::er& p) {
+    p | time;
+    p | stored_quantities;
+  }
+};
+}  // namespace
 
-      size_t size = 0;
-      p | size;
-      stored_quaternion_size_.store(size, std::memory_order_release);
-      stored_quaternions_and_times_.clear();
-      stored_quaternions_and_times_.resize(
-          stored_quaternion_size_.load(std::memory_order_acquire));
-      // Using range-based loop here is ok because we won't be updating while
-      // packing/unpacking
-      for (auto& stored_quaternion : stored_quaternions_and_times_) {
-        p | stored_quaternion;
-      }
+template <size_t MaxDeriv>
+void QuaternionFunctionOfTime<MaxDeriv>::unpack_old_version(
+    PUP::er& p, const size_t version) {
+  ASSERT(p.isUnpacking(), "Can't serialize old version");
+
+  std::vector<LegacyStoredInfo> quaternions{};
+  double expiration_time{};
+
+  // For versions 0 and 1, we stored the data first, then angle fot, then
+  // possibly the size
+  if (version <= 1) {
+    if (version == 0) {
+      // Version 0 had a std::vector
+      p | quaternions;
+    } else {
+      // Version 1 had a std::deque
+      std::deque<LegacyStoredInfo> pupped_quaternions{};
+      p | pupped_quaternions;
+      quaternions.assign(std::move_iterator(pupped_quaternions.begin()),
+                         std::move_iterator(pupped_quaternions.end()));
     }
-  } else {
+
+    // Same for v0 and v1
     p | angle_f_of_t_;
-    p | expiration_time_;
-    // This is guaranteed to be thread-safe for both packing and sizing
-    size_t size = stored_quaternion_size_.load(std::memory_order_acquire);
+    expiration_time = angle_f_of_t_.time_bounds()[1];
+
+    if (version == 1) {
+      uint64_t stored_quaternion_size{};
+      p | stored_quaternion_size;
+    }
+  } else if (version >= 2) {
+    // However, for v2+, we store angle fot, expiration time, size, then data
+    // for thread-safety reasons
+    p | angle_f_of_t_;
+
+    // For v3+ we pup our own expiration time, while for 2 we have to get it
+    // from the angle_f_of_t_.
+    if (version >= 3) {
+      p | expiration_time;
+    } else {
+      expiration_time = angle_f_of_t_.time_bounds()[1];
+    }
+
+    size_t size = 0;
     p | size;
-    auto it = stored_quaternions_and_times_.begin();
-    for (size_t i = 0; i < size; i++, it++) {
-      p | *it;
+    quaternions.resize(size);
+    for (auto& stored_quaternion : quaternions) {
+      p | stored_quaternion;
     }
   }
+
+  stored_quaternions_and_times_ =
+      decltype(stored_quaternions_and_times_)(quaternions.front().time);
+  for (size_t i = 0; i < quaternions.size() - 1; ++i) {
+    stored_quaternions_and_times_.insert(
+        quaternions[i].time,
+        datavector_to_quaternion(quaternions[i].stored_quantities[0]),
+        quaternions[i + 1].time);
+  }
+  stored_quaternions_and_times_.insert(
+      quaternions.back().time,
+      datavector_to_quaternion(quaternions.back().stored_quantities[0]),
+      expiration_time);
 }
 
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::update(
     const double time_of_update, DataVector updated_max_deriv,
     const double next_expiration_time) {
-  const std::lock_guard<std::mutex> update_lock{update_mutex_};
   angle_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
                        next_expiration_time);
-  update_stored_info(next_expiration_time);
-}
 
-template <size_t MaxDeriv>
-void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info(
-    const double next_expiration_time) {
-  double current_expiration_time =
-      expiration_time_.load(std::memory_order_acquire);
+  const auto old_interval = stored_quaternions_and_times_(time_of_update);
+  boost::math::quaternion<double> quaternion_to_integrate = old_interval.data;
 
-  // Final time, initial time, and quaternion
-  // We can use `.back()` and `.end()` here because we only allow one thread to
-  // call update at once
-  const double t = current_expiration_time;
-  const double t0 = stored_quaternions_and_times_.back().time;
-  boost::math::quaternion<double> quaternion_to_integrate =
-      datavector_to_quaternion(
-          std::prev(stored_quaternions_and_times_.end())->stored_quantities[0]);
+  solve_quaternion_ode(make_not_null(&quaternion_to_integrate),
+                       old_interval.update, old_interval.expiration);
 
-  solve_quaternion_ode(make_not_null(&quaternion_to_integrate), t0, t);
-
-  // normalize quaternion
   normalize_quaternion(make_not_null(&quaternion_to_integrate));
 
-  // While it is technically possible for a different thread to call `update`
-  // during this call, there should never be two different threads trying to
-  // update this object at the same time in our algorithm. An update should come
-  // from only one place and nowhere else so this emplacement should be ok
-  //
-  // See the code comment at the bottom of the PiecewisePolynomial::update
-  // function for why we have to update these members in this specific order.
-  stored_quaternions_and_times_.emplace_back(
-      t, std::array<DataVector, 1>{
-             quaternion_to_datavector(quaternion_to_integrate)});
-  stored_quaternion_size_.fetch_add(1, std::memory_order_acq_rel);
-  if (not expiration_time_.compare_exchange_strong(current_expiration_time,
-                                                   next_expiration_time,
-                                                   std::memory_order_acq_rel)) {
-    ERROR(
-        "QuaternionFunctionOfTime could not exchange the current expiration "
-        "time "
-        << current_expiration_time << " for the new expiration time "
-        << next_expiration_time);
-  }
+  stored_quaternions_and_times_.insert(time_of_update, quaternion_to_integrate,
+                                       next_expiration_time);
 }
 
 template <size_t MaxDeriv>
@@ -269,15 +208,12 @@ template <size_t MaxDeriv>
 boost::math::quaternion<double> QuaternionFunctionOfTime<MaxDeriv>::setup_func(
     const double t) const {
   // Get quaternion and time at closest time before t
-  const auto& stored_info_at_t0 = stored_info_from_upper_bound(
-      t, stored_quaternions_and_times_,
-      stored_quaternion_size_.load(std::memory_order_acquire));
-  boost::math::quaternion<double> quat_to_integrate =
-      datavector_to_quaternion(stored_info_at_t0.stored_quantities[0]);
+  const auto stored_info_at_t0 = stored_quaternions_and_times_(t);
+  boost::math::quaternion<double> quat_to_integrate = stored_info_at_t0.data;
 
   // Solve the ode and store the result in quat_to_integrate
   solve_quaternion_ode(make_not_null(&quat_to_integrate),
-                       stored_info_at_t0.time, t);
+                       stored_info_at_t0.update, t);
 
   // Make unit quaternion
   normalize_quaternion(make_not_null(&quat_to_integrate));
@@ -337,9 +273,7 @@ bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return lhs.stored_quaternions_and_times_ ==
              rhs.stored_quaternions_and_times_ and
-         lhs.angle_f_of_t_ == rhs.angle_f_of_t_ and
-         lhs.expiration_time_ == rhs.expiration_time_ and
-         lhs.stored_quaternion_size_ == rhs.stored_quaternion_size_;
+         lhs.angle_f_of_t_ == rhs.angle_f_of_t_;
 }
 
 template <size_t MaxDeriv>
@@ -352,15 +286,28 @@ template <size_t MaxDeriv>
 std::ostream& operator<<(
     std::ostream& os,
     const QuaternionFunctionOfTime<MaxDeriv>& quaternion_f_of_t) {
-  const size_t writable_size =
-      quaternion_f_of_t.stored_quaternion_size_.load(std::memory_order_acquire);
+  const auto quaternions_begin =
+      quaternion_f_of_t.stored_quaternions_and_times_.begin();
+  const auto quaternions_end =
+      quaternion_f_of_t.stored_quaternions_and_times_.end();
+  // We want to write the entries in order, but the iterator goes the
+  // other way.
+  std::vector<std::decay_t<decltype(quaternions_begin)>> iters{};
+  if (quaternions_begin != quaternions_end) {
+    iters.push_back(quaternions_begin);
+    for (;;) {
+      auto next = std::next(iters.back());
+      if (next == quaternions_end) {
+        break;
+      }
+      iters.push_back(std::move(next));
+    }
+  }
+  std::reverse(iters.begin(), iters.end());
+
   os << "Quaternion:\n";
-  auto it = quaternion_f_of_t.stored_quaternions_and_times_.begin();
-  // Can't use .end() because of thread-safety and don't want to do expensive
-  // std::next() call, so we just loop over allowed size while incrementing an
-  // iterator
-  for (size_t i = 0; i < writable_size; i++, it++) {
-    os << *it << "\n";
+  for (const auto& entry : iters) {
+    os << "t=" << entry->update << ": " << entry->data << "\n";
   }
   os << "Angle:\n";
   os << quaternion_f_of_t.angle_f_of_t_;

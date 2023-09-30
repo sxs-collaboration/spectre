@@ -4,18 +4,14 @@
 #pragma once
 
 #include <array>
-#include <atomic>
 #include <cstddef>
-#include <limits>
-#include <list>
 #include <memory>
-#include <mutex>
 #include <ostream>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
+#include "Domain/FunctionsOfTime/ThreadsafeList.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain {
@@ -34,12 +30,6 @@ class PiecewisePolynomial : public FunctionOfTime {
   PiecewisePolynomial(
       double t, std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
       double expiration_time);
-
-  ~PiecewisePolynomial() override = default;
-  PiecewisePolynomial(PiecewisePolynomial&&);
-  PiecewisePolynomial& operator=(PiecewisePolynomial&&);
-  PiecewisePolynomial(const PiecewisePolynomial&);
-  PiecewisePolynomial& operator=(const PiecewisePolynomial&);
 
   explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/) {}
 
@@ -81,8 +71,8 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
   std::array<double, 2> time_bounds() const override {
-    return {{deriv_info_at_update_times_.front().time,
-             expiration_time_.load(std::memory_order_acquire)}};
+    return {{deriv_info_at_update_times_.initial_time(),
+             deriv_info_at_update_times_.expiration_time()}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -99,29 +89,20 @@ class PiecewisePolynomial : public FunctionOfTime {
       std::ostream& os,
       const PiecewisePolynomial<LocalMaxDeriv>& piecewise_polynomial);
 
+  void unpack_old_version(PUP::er& p, size_t version);
+
   /// Returns the function and `MaxDerivReturned` derivatives at
   /// an arbitrary time `t`.
   /// The function has multiple components.
   template <size_t MaxDerivReturned = MaxDeriv>
   std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const;
 
-  // There exists a DataVector for each deriv order that contains
-  // the values of that deriv order for all components.
-  using value_type = std::array<DataVector, MaxDeriv + 1>;
+  void store_entry(double time_of_update,
+                   std::array<DataVector, MaxDeriv + 1> func_and_derivs,
+                   double next_expiration_time);
 
-  // In order for this class to be used in the mutable part of the global cache,
-  // deriv_info_at_update_times_ must be a data type that preserves references
-  // to elements upon insertion or resizing. A std::list fits this requirement
-  std::list<FunctionOfTimeHelpers::StoredInfo<MaxDeriv + 1>>
+  FunctionOfTimeHelpers::ThreadsafeList<std::array<DataVector, MaxDeriv + 1>>
       deriv_info_at_update_times_;
-  alignas(64) std::atomic<double> expiration_time_{};
-  // Pad memory to avoid false-sharing when accessing expiration_time_
-  char unused_padding_expr_[64 - (sizeof(std::atomic<double>) % 64)] = {};
-  alignas(64) std::atomic_uint64_t deriv_info_size_{};
-  // Pad memory to avoid false-sharing when accessing deriv_info_size_
-  char unused_padding_info_size_[64 - (sizeof(std::atomic_uint64_t) % 64)] = {};
-  // No need to pup this since a default constructed mutex is always unlocked
-  std::mutex update_mutex_{};
 };
 
 template <size_t MaxDeriv>
