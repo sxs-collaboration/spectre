@@ -127,6 +127,11 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();
   if constexpr (ThermodynamicDim == 1) {
+    // Note: we do not reset epsilon to satisfy the EOS because in that case
+    // we are not guaranteed to be able to find a solution. That's because
+    // the conserved-variable solution is inconsistent with the restrictive
+    // 1d-EOS. Instead, we recover the primitives and then reset the
+    // specific internal energy and specific enthalpy using the EOS.
     p_hat =
         get(equation_of_state_.pressure_from_density(Scalar<double>(rho_hat)));
   } else if constexpr (ThermodynamicDim == 2) {

@@ -208,12 +208,14 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
-      get(*specific_internal_energy)[s] =
-          primitive_data.value().specific_internal_energy;
-      get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
-                                   (primitive_data.value().rest_mass_density *
-                                    primitive_data.value().lorentz_factor *
-                                    primitive_data.value().lorentz_factor);
+      if constexpr (ThermodynamicDim != 1) {
+        get(*specific_internal_energy)[s] =
+            primitive_data.value().specific_internal_energy;
+        get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
+                                     (primitive_data.value().rest_mass_density *
+                                      primitive_data.value().lorentz_factor *
+                                      primitive_data.value().lorentz_factor);
+      }
     } else {
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "
@@ -240,8 +242,17 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     }
   }
   if constexpr (ThermodynamicDim == 1) {
+    // Since the primitive recovery scheme is not restricted to lie on the
+    // EOS-satisfying sub-manifold, we project back to the sub-manifold by
+    // recomputing the specific internal energy and specific enthalpy from the
+    // EOS.
+    *specific_internal_energy =
+        equation_of_state.specific_internal_energy_from_density(
+            *rest_mass_density);
     *temperature =
         equation_of_state.temperature_from_density(*rest_mass_density);
+    hydro::relativistic_specific_enthalpy(specific_enthalpy, *rest_mass_density,
+                                          *specific_internal_energy, *pressure);
   } else if constexpr (ThermodynamicDim == 2) {
     *temperature = equation_of_state.temperature_from_density_and_energy(
         *rest_mass_density, *specific_internal_energy);
