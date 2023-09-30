@@ -275,15 +275,23 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_lower_bound(
-      const double rest_mass_density) const = 0;
+      double rest_mass_density) const = 0;
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_upper_bound(
-      const double rest_mass_density) const = 0;
+      double rest_mass_density) const = 0;
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
+
+  /// The lower bound of the temperature that is valid for this EOS
+  virtual double temperature_lower_bound() const { return 0.0; };
+
+  /// The upper bound of the temperature that is valid for this EOS
+  virtual double temperature_upper_bound() const {
+    return std::numeric_limits<double>::max();
+  };
 
   /// The vacuum mass of a baryon for this EOS
   virtual double baryon_mass() const {
