@@ -80,11 +80,6 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
       const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
-      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
-
-  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double /*t*/,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const

@@ -42,11 +42,13 @@ struct System {
   using gradient_variables = tmpl::list<>;
   using primitive_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim>>>;
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::Temperature<DataVector>>>;
   using spacetime_variables_tag =
       ::Tags::Variables<gr::tags_for_hydro<Dim, DataVector>>;
 
