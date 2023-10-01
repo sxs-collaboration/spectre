@@ -4,7 +4,12 @@
 
 #pragma once
 
+#include <cstddef>
+
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace hydro {
 
@@ -16,10 +21,11 @@ namespace hydro {
 
 template <typename DerivedSolution>
 class TemperatureInitialization {
- public:
+ private:
   template <typename DataType, size_t Dim, typename... Args>
-  auto variables(const tnsr::I<DataType, Dim>& x, Args&... extra_args,
-                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+  auto variables_impl(const tnsr::I<DataType, Dim>& x,
+                      tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
+                      Args&... extra_args) const
       -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
     const auto* derived = static_cast<DerivedSolution const*>(this);
     const auto& eos = derived->equation_of_state();
@@ -48,6 +54,22 @@ class TemperatureInitialization {
               x, extra_args...,
               tmpl::list<hydro::Tags::ElectronFraction<DataType>>{})));
     }
+  }
+
+ public:
+  template <typename DataType, size_t Dim>
+  auto variables(const tnsr::I<DataType, Dim>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return variables_impl(x, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+  }
+
+  template <typename DataType, size_t Dim>
+  auto variables(const tnsr::I<DataType, Dim>& x, const double t,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
+    return variables_impl(x, tmpl::list<hydro::Tags::Temperature<DataType>>{},
+                          t);
   }
 
   template <typename ExtraVars, typename DataType, size_t Dim, typename... Args>

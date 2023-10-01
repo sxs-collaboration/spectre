@@ -98,9 +98,8 @@ class SmoothFlow : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, Dim>& x, double t,
                  tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> {
-    return hydro::TemperatureInitialization<SmoothFlow<Dim>>::
-        template variables<DataType, Dim, double>(
-            x, t, tmpl::list<hydro::Tags::Temperature<DataType>>{});
+    return hydro::TemperatureInitialization<SmoothFlow<Dim>>::variables(
+        x, t, tmpl::list<hydro::Tags::Temperature<DataType>>{});
   }
 
   template <typename DataType>
