@@ -150,10 +150,14 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // Extremum for x, y, z, r
       std::array<std::pair<double, double>, 4> min_max_coordinates{};
 
-      // Calculate r^2 because sqrt is expensive
+      const auto& sphere =
+          Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
+      const std::array<double, 3>& center = sphere.center;
+
+      // Calculate r^2 from center of sphere because sqrt is expensive
       DataVector radii_squared{get<0>(coordinates).size(), 0.0};
       for (size_t i = 0; i < VolumeDim; i++) {
-        radii_squared += square(coordinates.get(i));
+        radii_squared += square(coordinates.get(i) - gsl::at(center, i));
       }
 
       // Compute min and max
@@ -163,8 +167,6 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         min_max_coordinates[3].second = *max;
       }
 
-      const auto& sphere =
-          Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
       const std::set<double>& radii_of_sphere_target = sphere.radii;
       const size_t l_max = sphere.l_max;
 

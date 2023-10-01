@@ -163,12 +163,12 @@ struct MockMetavariables {
   };
 };
 
-template <typename MockMetavariables>
+template <typename MockMetavariables, bool OffCenter = false>
 void run_test() {
   using metavars = MockMetavariables;
   using elem_component = mock_element<metavars>;
-  InterpolateOnElementTestHelpers::test_interpolate_on_element<metavars,
-                                                               elem_component>(
+  InterpolateOnElementTestHelpers::test_interpolate_on_element<
+      metavars, elem_component, OffCenter>(
       initialize_elements_and_queue_simple_actions<metavars, elem_component>{});
 }
 
@@ -182,5 +182,8 @@ SPECTRE_TEST_CASE(
   run_test<MockMetavariables<true, false>>();
   run_test<MockMetavariables<false, true>>();
   run_test<MockMetavariables<true, true>>();
+
+  // Off-center test
+  run_test<MockMetavariables<false, false>, true>();
 }
 }  // namespace

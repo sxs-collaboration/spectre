@@ -142,11 +142,14 @@ struct InterpolatorReceiveVolumeData {
         make_not_null(&box));
 
     // Try to interpolate data for all InterpolationTargets for this
-    // temporal_id.
+    // temporal_id. Also make sure this target is using the interpolator. No
+    // sense in calling this for targets that don't use it.
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&box, &cache, &temporal_id](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
-          if constexpr (std::is_same_v<typename tag::temporal_id, TemporalId>) {
+          if constexpr (detail::using_interpolator_component_v<Metavariables,
+                                                               tag> and
+                        std::is_same_v<typename tag::temporal_id, TemporalId>) {
             try_to_interpolate<tag>(make_not_null(&box), make_not_null(&cache),
                                     temporal_id);
           }

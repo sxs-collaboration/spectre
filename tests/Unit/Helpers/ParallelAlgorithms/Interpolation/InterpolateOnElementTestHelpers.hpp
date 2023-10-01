@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
@@ -245,7 +246,8 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
 
 // This is the main test; Takes a functor as an argument so that
 // different tests can call it to do slightly different things.
-template <typename Metavariables, typename elem_component, typename Functor>
+template <typename Metavariables, typename elem_component, bool OffCenter,
+          typename Functor>
 void test_interpolate_on_element(
     Functor initialize_elements_and_queue_simple_actions) {
   using metavars = Metavariables;
@@ -255,22 +257,48 @@ void test_interpolate_on_element(
                  typename target_tag::compute_target_points>;
   using target_component = mock_interpolation_target<metavars, target_tag>;
 
-  const auto domain_creator = []() {
+  if constexpr (OffCenter) {
+    static_assert(is_sphere,
+                  "Only sphere target can be off center for this test.");
+  }
+
+  const std::unique_ptr<DomainCreator<3>> domain_creator_ptr = []() {
     if constexpr (Metavariables::use_time_dependent_maps) {
-      return domain::creators::Sphere(
+      static_assert(not OffCenter,
+                    "Off-center test not supported for time dependent map test "
+                    "at this time.");
+      return std::make_unique<domain::creators::Sphere>(
           0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false,
-          std::nullopt, {}, {domain::CoordinateMaps::Distribution::Linear},
-          ShellWedges::All,
+          std::nullopt, std::vector<double>{},
+          domain::CoordinateMaps::Distribution::Linear, ShellWedges::All,
           // Rotation so points always remain in domain
           std::make_unique<
               domain::creators::time_dependence::RotationAboutZAxis<3>>(
               0.0, 0.0, 0.1, 0.0));
     } else {
-      return domain::creators::Sphere(
-          0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false);
+      if constexpr (OffCenter) {
+        using BCO = domain::creators::BinaryCompactObject;
+        return std::make_unique<BCO>(
+            BCO::Object{0.9, 2.9, 4.0, true, true},
+            BCO::Object{0.9, 2.9, -4.0, true, true}, 20.0, 100.0,
+            // Only object B needs to have the refinement for this test
+            std::unordered_map<std::string, std::array<size_t, 3>>{
+                {"ObjectAShell", std::array{0_st, 0_st, 0_st}},
+                {"ObjectACube", std::array{0_st, 0_st, 0_st}},
+                {"ObjectBShell", std::array{2_st, 2_st, 2_st}},
+                {"ObjectBCube", std::array{2_st, 2_st, 2_st}},
+                {"Envelope", std::array{0_st, 0_st, 0_st}},
+                {"OuterShell", std::array{0_st, 0_st, 0_st}}},
+            7_st);
+      } else {
+        return std::make_unique<domain::creators::Sphere>(
+            0.9, 2.9, domain::creators::Sphere::Excision{}, 2_st, 7_st, false);
+      }
     }
   }();
+  const DomainCreator<3>& domain_creator = *domain_creator_ptr;
   const auto domain = domain_creator.create_domain();
+  const double x_center = OffCenter ? -4.0 : 0.0;
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
@@ -290,7 +318,7 @@ void test_interpolate_on_element(
   const size_t num_points = is_sphere ? 2 * (ell + 1) * (2 * ell + 1) : 10_st;
   tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_points);
   const typename intrp::Tags::InterpPointInfo<
-      metavars>::type interp_point_info = [&target_points]() {
+      metavars>::type interp_point_info = [&target_points, &x_center]() {
     MAKE_GENERATOR(gen);
     std::uniform_real_distribution<> r_dist(0.9001, 2.8999);
     std::uniform_real_distribution<> theta_dist(0.0, M_PI);
@@ -299,7 +327,7 @@ void test_interpolate_on_element(
       const double r = r_dist(gen);
       const double theta = theta_dist(gen);
       const double phi = phi_dist(gen);
-      get<0>(target_points)[i] = r * sin(theta) * cos(phi);
+      get<0>(target_points)[i] = x_center + r * sin(theta) * cos(phi);
       get<1>(target_points)[i] = r * sin(theta) * sin(phi);
       get<2>(target_points)[i] = r * cos(theta);
     }
@@ -320,7 +348,7 @@ void test_interpolate_on_element(
 
   if constexpr (is_sphere) {
     tuples::get<intrp::Tags::Sphere<target_tag>>(init_tuple) =
-        intrp::OptionHolders::Sphere{ell, std::array{0.0, 0.0, 0.0},
+        intrp::OptionHolders::Sphere{ell, std::array{x_center, 0.0, 0.0},
                                      std::vector<double>{1.0, 2.5},
                                      intrp::AngularOrdering::Cce};
   }
