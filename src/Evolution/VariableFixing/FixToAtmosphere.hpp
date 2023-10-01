@@ -11,6 +11,7 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma:  keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -137,8 +138,10 @@ class FixToAtmosphere {
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>>;
-  using argument_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Temperature<DataVector>>;
+  using argument_tags = tmpl::list<hydro::Tags::ElectronFraction<DataVector>,
+                                   gr::Tags::SpatialMetric<DataVector, Dim>,
                                    hydro::Tags::EquationOfStateBase>;
 
   // for use in `db::mutate_apply`
@@ -151,6 +154,8 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      gsl::not_null<Scalar<DataVector>*> temperature,
+      const Scalar<DataVector>& electron_fraction,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state) const;
@@ -160,17 +165,19 @@ class FixToAtmosphere {
   void set_density_to_atmosphere(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const Scalar<DataVector>& electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state,
       size_t grid_index) const;
 
   void set_to_magnetic_free_transition(
-      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           spatial_velocity,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      const Scalar<DataVector>& rest_mass_density,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       size_t grid_index) const;
 
