@@ -46,7 +46,7 @@ namespace PrimitiveRecoverySchemes {
  */
 class NewmanHamlin {
  public:
-  template <size_t ThermodynamicDim>
+  template <bool EnforcePhysicality, size_t ThermodynamicDim>
   static std::optional<PrimitiveRecoveryData> apply(
       double initial_guess_for_pressure, double tau,
       double momentum_density_squared,

@@ -156,10 +156,8 @@ double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
 }
 }  // namespace
 
-template <bool EnforcePhysicality>
-template <size_t ThermodynamicDim>
-std::optional<PrimitiveRecoveryData>
-KastaunEtAlHydro<EnforcePhysicality>::apply(
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
+std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
@@ -214,19 +212,19 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(_, data)                                               \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                             PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::                        \
-      KastaunEtAlHydro<PHYSICALITY(data)>::apply<THERMODIM(data)>(           \
-          const double initial_guess_pressure, const double tau,             \
-          const double momentum_density_squared,                             \
-          const double momentum_density_dot_magnetic_field,                  \
-          const double magnetic_field_squared,                               \
-          const double rest_mass_density_times_lorentz_factor,               \
-          const double electron_fraction,                                    \
-          const EquationsOfState::EquationOfState<true, THERMODIM(data)>&    \
-              equation_of_state);
+#define INSTANTIATION(_, data)                                                \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
+                             PrimitiveRecoveryData>                           \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro::apply< \
+      PHYSICALITY(data), THERMODIM(data)>(                                    \
+      const double initial_guess_pressure, const double tau,                  \
+      const double momentum_density_squared,                                  \
+      const double momentum_density_dot_magnetic_field,                       \
+      const double magnetic_field_squared,                                    \
+      const double rest_mass_density_times_lorentz_factor,                    \
+      const double electron_fraction,                                         \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 

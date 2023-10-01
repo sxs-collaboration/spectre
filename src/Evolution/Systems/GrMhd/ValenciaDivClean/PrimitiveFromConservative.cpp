@@ -7,6 +7,7 @@
 #include <limits>
 #include <optional>
 #include <ostream>
+#include <type_traits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -140,8 +141,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             specific_energy_at_point,
             floorD * specific_enthalpy_at_point,
             get(*electron_fraction)[s]};
-      }
-      else if constexpr (ThermodynamicDim == 1) {
+      } else if constexpr (ThermodynamicDim == 1) {
         const double specific_energy_at_point =
             get(equation_of_state
                     .specific_internal_energy_from_density(
@@ -160,6 +160,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             get(*electron_fraction)[s]};
       }
     } else {
+      // not in atmosphere.
       auto apply_scheme =
           [&pressure, &primitive_data, &tau, &momentum_density_squared,
            &momentum_density_dot_magnetic_field, &magnetic_field_squared,
@@ -168,7 +169,8 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
             if (not primitive_data.has_value()) {
               primitive_data =
-                  primitive_recovery_scheme::template apply<ThermodynamicDim>(
+                  primitive_recovery_scheme::template apply<EnforcePhysicality,
+                                                            ThermodynamicDim>(
                       get(*pressure)[s], tau[s],
                       get(momentum_density_squared)[s],
                       get(momentum_density_dot_magnetic_field)[s],
@@ -184,7 +186,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
            100.0 * std::numeric_limits<double>::epsilon() * tau[s])) {
         tmpl::for_each<
             tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                           KastaunEtAlHydro<EnforcePhysicality>>>(apply_scheme);
+                           KastaunEtAlHydro>>(apply_scheme);
       } else {
         tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(apply_scheme);
       }
@@ -326,10 +328,8 @@ GENERATE_INSTANTIATIONS(
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
-     tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                    KastaunEtAlHydro<true>>,
-     tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                    KastaunEtAlHydro<false>>,
+     tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<

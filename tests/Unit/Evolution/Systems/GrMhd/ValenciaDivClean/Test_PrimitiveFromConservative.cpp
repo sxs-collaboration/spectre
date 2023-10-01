@@ -320,8 +320,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
   test_primitive_from_conservative_known<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       false>(dv);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
@@ -351,11 +351,11 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       2>(&generator, ideal_fluid, dv);
 
   test_primitive_from_conservative_random<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       1, false>(&generator, polytropic_fluid, dv);
   test_primitive_from_conservative_random<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       2, false>(&generator, ideal_fluid, dv);
 }
