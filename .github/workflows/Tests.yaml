@@ -464,7 +464,7 @@ jobs:
           - compiler: clang-14
             build_type: Release
             # Test compatibility with oldest supported CMake version
-            CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
+            CMAKE_VERSION: "3.18.2"
             # Use an MPI version of Charm
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
@@ -531,6 +531,15 @@ jobs:
           else
             apt-get install -y $CC $FC
           fi
+      # Install specific CMake version if requested
+      - name: Install CMake version
+        if: matrix.CMAKE_VERSION
+        working-directory: /work
+        run: |
+          CMAKE_VERSION=${{ matrix.CMAKE_VERSION }}
+          wget -O cmake-install.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
+          sh cmake-install.sh --prefix=/usr --skip-license
+          rm cmake-install.sh
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
@@ -569,7 +578,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
-          CMAKE_EXECUTABLE=${{ matrix.CMAKE_EXECUTABLE }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
@@ -581,7 +589,9 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
           INPUT_FILE_MIN_PRIO=${{ matrix.input_file_tests_min_priority }}
 
-          ${CMAKE_EXECUTABLE:-'cmake'}
+          cmake --version
+
+          cmake
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
