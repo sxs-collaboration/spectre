@@ -12,6 +12,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "ControlSystem/CombinedName.hpp"
@@ -134,9 +135,11 @@ class Trigger : public DenseTrigger {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
     // At least one control system is active
-    const bool is_ready = domain::functions_of_time_are_ready<
-        control_system::Tags::MeasurementTimescales>(
-        cache, array_index, component, time, std::array{measurement_name_});
+    const bool is_ready =
+        domain::functions_of_time_are_ready_algorithm_callback<
+            control_system::Tags::MeasurementTimescales>(
+            cache, array_index, component, time,
+            std::unordered_set{measurement_name_});
     if (not is_ready) {
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
         Parallel::printf(

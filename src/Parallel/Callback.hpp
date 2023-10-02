@@ -37,9 +37,9 @@ class SimpleActionCallback : public Callback {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
   SimpleActionCallback() = default;
-  SimpleActionCallback(Proxy proxy, Args&&... args)
-      : proxy_(proxy),
-        args_(std::make_tuple<Args...>(std::forward<Args>(args)...)) {}
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  SimpleActionCallback(Proxy proxy, std::decay_t<Args>... args)
+      : proxy_(proxy), args_(std::move(args)...) {}
   SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override {
@@ -56,7 +56,7 @@ class SimpleActionCallback : public Callback {
 
  private:
   Proxy proxy_{};
-  std::tuple<Args...> args_{};
+  std::tuple<std::decay_t<Args>...> args_{};
 };
 
 /// Wraps a call to a simple action without arguments.

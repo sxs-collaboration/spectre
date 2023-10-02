@@ -97,8 +97,8 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
   bool is_ready(const double time, Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index,
                 const Component* const component) const {
-    return domain::functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
-        cache, array_index, component, time);
+    return domain::functions_of_time_are_ready_algorithm_callback<
+        domain::Tags::FunctionsOfTime>(cache, array_index, component, time);
   }
 
   bool needs_evolved_variables() const override { return true; }
