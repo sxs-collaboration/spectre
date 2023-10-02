@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -13,6 +12,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -34,10 +34,26 @@
 
 namespace intrp {
 namespace callbacks {
+namespace detail {
+// Fills the legend and row of spherical harmonic data to write to disk
+//
+// The number of coefficients to write is based on `max_l`, the maximum value
+// that the input `strahlkorper` could possibly have. When
+// `strahlkorper.l_max() < max_l`, coefficients with \f$l\f$ higher than
+// `strahlkorper.l_max()` will simply be zero. Assuming the same `max_l` is
+// always used for a given surface, we will always write the same number of
+// columns for each row, as `max_l` sets the number of columns to write
+template <typename Frame>
+void fill_ylm_legend_and_data(gsl::not_null<std::vector<std::string>*> legend,
+                              gsl::not_null<std::vector<double>*> data,
+                              const ylm::Strahlkorper<Frame>& strahlkorper,
+                              double time, size_t max_l);
+}  // namespace detail
 
-/// \brief post_interpolation_callback that outputs
-/// 2D "volume" data on a surface.
+/// \brief post_interpolation_callback that outputs 2D "volume" data on a
+/// surface and the surface's spherical harmonic data
 ///
+/// \details
 /// Uses:
 /// - Metavariables
 ///   - `temporal_id`
@@ -48,6 +64,27 @@ namespace callbacks {
 ///
 /// For requirements on InterpolationTargetTag, see
 /// intrp::protocols::InterpolationTargetTag
+///
+/// The columns of spherical harmonic data written take the form
+///
+/// \code
+/// [Time, {Frame}ExpansionCenter_x, {Frame}ExpansionCenter_y,
+/// {Frame}ExpansionCenter_z, Lmax, coef(0,0), ... coef(Lmax,Lmax)]
+/// \endcode
+///
+/// where `coef(l,m)` refers to the strahlkorper coefficients stored and defined
+/// by `ylm::Strahlkorper::coefficients() const`. It is assumed that
+/// \f$l_{max} = m_{max}\f$.
+///
+/// \note Currently, \f$l_{max}\f$ for a given surface does not change over the
+/// course of the simulation, which means that the total number of columns of
+/// coefficients that we need to write is also constant. The current
+/// implementation of writing the coefficients at one time assumes \f$l_{max}\f$
+/// of a surface remains constant. If and when in the future functionality for
+/// an adaptive \f$l_{max}\f$ is added, the implementation for writing the
+/// coefficients will need to be updated to account for this. One possible way
+/// to address this is to have a known maximum \f$l_{max}\f$ for a given surface
+/// and write all coefficients up to that maximum \f$l_{max}\f$.
 template <typename TagsToObserve, typename InterpolationTargetTag,
           typename HorizonFrame>
 struct ObserveSurfaceData
@@ -82,6 +119,7 @@ struct ObserveSurfaceData
       tensor_components.push_back(
           {"InertialCoordinates_z"s, get<2>(inertial_strahlkorper_coords)});
     }
+
     // Output each tag if it is a scalar. Otherwise, throw a compile-time
     // error. This could be generalized to handle tensors of nonzero rank by
     // looping over the components, so each component could be visualized
@@ -108,9 +146,9 @@ struct ObserveSurfaceData
         2, Spectral::Basis::SphericalHarmonic};
     const std::vector<Spectral::Quadrature> quadratures_vector{
         {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
-    const observers::ObservationId& observation_id = observers::ObservationId(
-        InterpolationTarget_detail::get_temporal_id_value(temporal_id),
-        subfile_path + ".vol");
+    const double time =
+        InterpolationTarget_detail::get_temporal_id_value(temporal_id);
+    const observers::ObservationId observation_id{time, subfile_path + ".vol"};
 
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
@@ -123,6 +161,29 @@ struct ObserveSurfaceData
         std::vector<ElementVolumeData>{{surface_name, tensor_components,
                                         extents_vector, bases_vector,
                                         quadratures_vector}});
+
+    std::vector<std::string> ylm_legend{};
+    std::vector<double> ylm_data{};
+    // The number of coefficients written will be (l_max + 1)^2 where l_max is
+    // the current value of l_max for this surface's strahlkorper. Because l_max
+    // remains constant, the number of coefficient columns written does, too. In
+    // the future when l_max is adaptive, instead of passing in the current
+    // l_max of the strahlkorper, we could pass in the maximum value that l_max
+    // could be to ensure that we (a) have enough columns to write all the
+    // coefficients regardless of the current value of l_max and (b) write a
+    // constant number of columns for each row of data regardless of the current
+    // l_max.
+    detail::fill_ylm_legend_and_data(make_not_null(&ylm_legend),
+                                     make_not_null(&ylm_data), strahlkorper,
+                                     time, strahlkorper.l_max());
+
+    const std::string ylm_subfile_name{std::string{"/"} + surface_name +
+                                       "_Ylm"};
+
+    Parallel::threaded_action<
+        observers::ThreadedActions::WriteReductionDataRow>(
+        proxy[0], ylm_subfile_name, std::move(ylm_legend),
+        std::make_tuple(std::move(ylm_data)));
   }
 };
 }  // namespace callbacks

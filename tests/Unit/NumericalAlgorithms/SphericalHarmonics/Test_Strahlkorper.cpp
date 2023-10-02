@@ -7,11 +7,13 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
@@ -73,6 +75,34 @@ void test_invert_spec_phys_transform() {
       CHECK(final_coefs[iter_high_res.set(l, m)()] == approx(0.0));
     }
   }
+}
+
+void test_phys_spec_constructor_consistency() {
+  const size_t l_max = 12;
+  const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
+  const size_t physical_size = ylm::Spherepack::physical_size(l_max, l_max);
+
+  std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  MAKE_GENERATOR(generator);
+
+  // create Strahlkorper using radius at collocation points
+  const auto radius = make_with_random_values<DataVector>(
+      make_not_null(&generator), distribution,
+      DataVector(physical_size, std::numeric_limits<double>::signaling_NaN()));
+  const Strahlkorper<Frame::Inertial> strahlkorper_physical(l_max, l_max,
+                                                            radius, center);
+
+  // create Strahlkorper using spectral coefficients
+  const size_t spectral_size = ylm::Spherepack::spectral_size(l_max, l_max);
+  ModalVector spectral_coefficients(
+      spectral_size, std::numeric_limits<double>::signaling_NaN());
+  std::copy(strahlkorper_physical.coefficients().begin(),
+            strahlkorper_physical.coefficients().end(),
+            spectral_coefficients.begin());
+  const Strahlkorper<Frame::Inertial> strahlkorper_spectral(
+      l_max, l_max, spectral_coefficients, center);
+
+  CHECK(strahlkorper_physical == strahlkorper_spectral);
 }
 
 void test_average_radius() {
@@ -171,6 +201,7 @@ void test_construct_from_options() {
 SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper",
                   "[ApparentHorizonFinder][Unit]") {
   test_invert_spec_phys_transform();
+  test_phys_spec_constructor_consistency();
   test_copy_and_move();
   test_average_radius();
   test_physical_center();
