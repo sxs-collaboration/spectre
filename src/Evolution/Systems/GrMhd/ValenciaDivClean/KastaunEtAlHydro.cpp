@@ -57,7 +57,7 @@ class FunctionOfZ {
       r_ = std::min(r_, kmax_ * (q_ + 1.));
     } else {
       if ((q_ < eps_min) or (r_ > kmax_ * (q_ + 1.))) {
-        state_is_unphysical = true;
+        state_is_unphysical_ = true;
       }
     }
   }
@@ -68,13 +68,13 @@ class FunctionOfZ {
 
   double operator()(double z) const;
 
-  bool has_no_root() { return state_is_unphysical; };
+  bool has_no_root() { return state_is_unphysical_; };
 
  private:
   double q_;
   double r_squared_;
   double r_;
-  bool state_is_unphysical = false;
+  bool state_is_unphysical_ = false;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
