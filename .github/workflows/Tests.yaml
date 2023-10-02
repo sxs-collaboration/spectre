@@ -417,6 +417,10 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
+            # Test 3D rendering with ParaView
+            test_3d_rendering: ON
+            # Need Python version consistent with ParaView
+            PYTHON_VERSION: "3.9"
           # Don't modify the gcc-11 Debug build so its cache can be reused for
           # the documentation build
           # - compiler: gcc-11
@@ -552,6 +556,24 @@ jobs:
           python3 -m pip install pybind11~=2.6.1
           python3 -m pip install -r support/Python/requirements.txt \
             -r support/Python/dev_requirements.txt
+          python3 -m pip list -v
+      - name: Install ParaView
+        if: matrix.test_3d_rendering == 'ON'
+        working-directory: /work
+        # Can't just `apt-get install python3-paraview` because we need the
+        # headless build of ParaView. So we download a binary from paraview.org
+        # (which is built for a specific Python version unfortunately).
+        run: |
+          apt-get install -y libglvnd-dev  # Needed to find 'libglapi.so'
+          wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz"
+          tar -xzf paraview.tar.gz
+          rm paraview.tar.gz
+          mv ParaView-* /opt/paraview
+          # Make 'paraview' Python package available
+          PYTHONPATH=/opt/paraview/lib/python3.9/site-packages:$PYTHONPATH
+          # Give system-installed Python packages priority over ParaView's
+          PYTHONPATH=$pythonLocation/lib/python3.9/site-packages:$PYTHONPATH
+          echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
