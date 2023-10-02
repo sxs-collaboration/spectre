@@ -27,11 +27,12 @@ spectre_unload_modules() {
     module unload git/2.8.4
     module unload lcov/1.13
     module unload charm/7.0.0-intelmpi-smp
-    module unload envs/spectre-python
     module unload pybind11/2.6.1
     module unload hdf5/1.12.2
     module unload libbacktrace/1.0
     module unload spec-exporter/2023-07
+    module unload paraview/5.11.1-osmesa
+    module unload envs/spectre-python
 }
 
 spectre_load_modules() {
@@ -54,11 +55,13 @@ spectre_load_modules() {
     module load git/2.8.4
     module load lcov/1.13
     module load charm/7.0.0-intelmpi-smp
-    module load envs/spectre-python
     module load pybind11/2.6.1
     module load hdf5/1.12.2
     module load libbacktrace/1.0
     module load spec-exporter/2023-07
+    module load paraview/5.11.1-osmesa
+    # Load after ParaView to give priority to the packages in the environment
+    module load envs/spectre-python
 }
 
 spectre_run_cmake() {

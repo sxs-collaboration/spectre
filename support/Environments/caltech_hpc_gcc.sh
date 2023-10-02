@@ -30,12 +30,14 @@ spectre_load_modules() {
     module load gsl/2.4
     module load libsharp/1.0.0
     module load libxsmm/1.16.1
-    module load envs/spectre-python
     module load yaml-cpp/0.6.2
     module load charm/7.0.0
     module load libbacktrace/1.0
     module load spec-exporter/2023-07
     module load fuka/2023-08
+    module load paraview/5.11.1-osmesa
+    # Load after ParaView to give priority to the packages in the environment
+    module load envs/spectre-python
 }
 
 spectre_unload_modules() {
@@ -57,12 +59,13 @@ spectre_unload_modules() {
     module unload gsl/2.4
     module unload libsharp/1.0.0
     module unload libxsmm/1.16.1
-    module unload envs/spectre-python
     module unload yaml-cpp/0.6.2
     module unload charm/7.0.0
     module unload libbacktrace/1.0
     module unload spec-exporter/2023-07
     module unload fuka/2023-08
+    module unload paraview/5.11.1-osmesa
+    module unload envs/spectre-python
 }
 
 spectre_run_cmake() {
