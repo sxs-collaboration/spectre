@@ -615,6 +615,16 @@ RotatingStar::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> RotatingStar::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> vars,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
+  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
+  return {equation_of_state_.temperature_from_density(rest_mass_density)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
@@ -918,8 +928,8 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
      hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
-     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
-     hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
+     hydro::Tags::Temperature, hydro::Tags::DivergenceCleaningField,
+     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
      gr::Tags::SqrtDetSpatialMetric))
 
 #undef INSTANTIATE_SCALARS

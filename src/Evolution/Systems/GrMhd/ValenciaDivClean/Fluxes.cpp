@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -34,7 +35,8 @@ void fluxes_impl(
         tilde_phi_flux,
 
     // Temporaries
-    const gsl::not_null<Scalar<DataVector>*> transport_velocity,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        transport_velocity,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w,
     const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataVector>& pressure_star_lapse_sqrt_det_spatial_metric,
@@ -48,23 +50,22 @@ void fluxes_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity) {
-  DataVector& transport_velocity_I = get(*transport_velocity);
+  hydro::transport_velocity(transport_velocity, spatial_velocity, lapse, shift);
   for (size_t i = 0; i < 3; ++i) {
-    transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
-    tilde_d_flux->get(i) = get(tilde_d) * transport_velocity_I;
-    tilde_ye_flux->get(i) = get(tilde_ye) * transport_velocity_I;
+    tilde_d_flux->get(i) = get(tilde_d) * transport_velocity->get(i);
+    tilde_ye_flux->get(i) = get(tilde_ye) * transport_velocity->get(i);
     tilde_tau_flux->get(i) =
-        get(tilde_tau) * transport_velocity_I +
+        get(tilde_tau) * transport_velocity->get(i) +
         get(pressure_star_lapse_sqrt_det_spatial_metric) *
             spatial_velocity.get(i) -
         get(lapse) * get(magnetic_field_dot_spatial_velocity) * tilde_b.get(i);
     tilde_phi_flux->get(i) =
         get(lapse) * tilde_b.get(i) - get(tilde_phi) * shift.get(i);
     for (size_t j = 0; j < 3; ++j) {
-      tilde_s_flux->get(i, j) = tilde_s.get(j) * transport_velocity_I -
+      tilde_s_flux->get(i, j) = tilde_s.get(j) * transport_velocity->get(i) -
                                 lapse_b_over_w.get(j) * tilde_b.get(i);
       tilde_b_flux->get(i, j) =
-          tilde_b.get(j) * transport_velocity_I +
+          tilde_b.get(j) * transport_velocity->get(i) +
           get(lapse) * (get(tilde_phi) * inv_spatial_metric.get(i, j) -
                         spatial_velocity.get(j) * tilde_b.get(i));
     }
@@ -100,7 +101,7 @@ void ComputeFluxes::apply(
                        hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
                        hydro::Tags::MagneticFieldSquared<DataVector>,
                        ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>>>
+                       ::Tags::TempI<2, 3, Frame::Inertial>>>
       temp_tensors{get<0>(shift).size()};
 
   auto& spatial_velocity_one_form =
@@ -143,14 +144,15 @@ void ComputeFluxes::apply(
   }
 
   // Outside the loop to save allocations
-  detail::fluxes_impl(tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
-                      tilde_b_flux, tilde_phi_flux,
-                      // Temporaries
-                      make_not_null(&get<::Tags::TempScalar<2>>(temp_tensors)),
-                      lapse_b_over_w, magnetic_field_dot_spatial_velocity,
-                      pressure_star_lapse_sqrt_det_spatial_metric,
-                      // Extra args
-                      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-                      lapse, shift, inv_spatial_metric, spatial_velocity);
+  detail::fluxes_impl(
+      tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux, tilde_b_flux,
+      tilde_phi_flux,
+      // Temporaries
+      make_not_null(&get<::Tags::TempI<2, 3, Frame::Inertial>>(temp_tensors)),
+      lapse_b_over_w, magnetic_field_dot_spatial_velocity,
+      pressure_star_lapse_sqrt_det_spatial_metric,
+      // Extra args
+      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
+      inv_spatial_metric, spatial_velocity);
 }
 }  // namespace grmhd::ValenciaDivClean

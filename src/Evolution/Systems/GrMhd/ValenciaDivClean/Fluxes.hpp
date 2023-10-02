@@ -39,7 +39,7 @@ void fluxes_impl(
     gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
 
     // Temporaries
-    gsl::not_null<Scalar<DataVector>*> transport_velocity,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> transport_velocity,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w,
     const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataVector>& pressure_star_lapse_sqrt_det_spatial_metric,

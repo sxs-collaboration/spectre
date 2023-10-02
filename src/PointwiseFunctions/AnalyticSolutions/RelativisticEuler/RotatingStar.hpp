@@ -489,6 +489,12 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   template <typename DataType>
   auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
                  const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>;
+
+  template <typename DataType>
+  auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
+                 const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 

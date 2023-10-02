@@ -166,6 +166,7 @@
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -299,7 +300,16 @@ struct EvolutionMetavars {
           ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
           DataVector, volume_dim,
-          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>>,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>,
+          hydro::Tags::SpatialVelocity<DataVector, volume_dim,
+                                       Frame::Inertial>>,
+      hydro::Tags::TransportVelocityCompute<DataVector, volume_dim,
+                                                               Frame::Inertial>,
+      grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
+          DataVector, volume_dim,
+          ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>,
+          hydro::Tags::TransportVelocity<DataVector, volume_dim,
+                                         Frame::Inertial>>,
       hydro::Tags::InversePlasmaBetaCompute<DataVector>>;
   using non_tensor_compute_tags = tmpl::list<
       tmpl::conditional_t<

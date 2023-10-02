@@ -6,11 +6,12 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/QuadrupoleFormula.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -54,15 +55,18 @@ struct QuadrupoleMomentCompute
 /// $\gamma$ being the determinant of the spatial metric, \f$x\f$ the
 /// coordinates in Frame Fr, and \f$v\f$ the corresponding spatial velocity.
 template <typename DataType, size_t Dim, typename OutputCoordsTag,
-          typename Fr = Frame::Inertial>
+          typename VelocityTag, typename Fr = Frame::Inertial>
 struct QuadrupoleMomentDerivativeCompute
     : hydro::Tags::QuadrupoleMomentDerivative<DataType, Dim, Fr>,
       db::ComputeTag {
-  using argument_tags = tmpl::list<TildeD, OutputCoordsTag,
-                              hydro::Tags::SpatialVelocity<DataType, Dim, Fr>>;
+  using argument_tags = tmpl::list<TildeD, OutputCoordsTag, VelocityTag>;
 
   using base = hydro::Tags::QuadrupoleMomentDerivative<DataType, Dim, Fr>;
   using return_type = typename base::type;
+
+  static std::string name() {
+    return "QuadrupoleMomentDerivative(" + db::tag_name<VelocityTag>() + ")";
+  }
 
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::ii<DataType, Dim, Fr>*> result,
