@@ -111,14 +111,30 @@ phase is determined and the `execute_next_phase` function is called on
 all the parallel components.
 
 At the end of an execution the `Exit` phase has the executable wait to make sure
-no parallel components are performing or need to perform any more tasks, and
-then exits. An example where this approach is important is if we are done
-evolving a system but still need to write data to disk. We do not want to exit
-the simulation until all data has been written to disk, even though we've
-reached the final time of the evolution.
+no \ref dev_guide_parallelization_parallel_components "parallel components" are
+performing or need to perform any more tasks, and then exits. An example where
+this approach is important is if we are done evolving a system but still need to
+write data to disk. We do not want to exit the simulation until all data has
+been written to disk, even though we've reached the final time of the evolution.
 
-\warning Currently dead-locks are treated as successful termination. In the
-future checks against deadlocks will be performed before terminating.
+If we reach the `Exit` phase, but some \ref
+dev_guide_parallelization_parallel_components "parallel components" have not
+terminated properly, this means a deadlock has occurred. A deadlock usually
+implies some error in the order messages have been sent/received. For example,
+if core 0 was paused and waiting to receive a message from core 1, but core 1
+was also paused and waiting to receive a message from core 0, this would be
+considered a deadlock. We detect deadlocks during the `Exit` phase. All
+executables have the option to specify a function with the following signature
+
+\snippet Test_DetectHangArray.cpp deadlock_analysis_function
+
+If this function is specified in the metavariables and a deadlock occurs, this
+function and all the simple actions in it will run. The information printed
+during this function call is executable dependent, but it should print enough
+information for you to determine why the deadlock occurred. If this function
+isn't specified and a deadlock occurs, a message about how to add this function
+to your metavariables is printed, but nothing else. After this, the executable
+aborts.
 
 # The Algorithm {#dev_guide_parallelization_core_algorithm}
 
@@ -715,12 +731,22 @@ And the corresponding invocation:
 
 \snippet Test_AlgorithmLocalSyncAction.cpp synchronous_action_invocation_example
 
+\warning Say an action is being run on a component on a node where a mutable
+item in the GlobalCache is up-to-date. This action then calls another action on
+a different component on a different node. It is **NOT** guaranteed that this
+mutable item in the GlobalCache is up-to-date on this new node. It is up to the
+user to ensure the mutable item is up-to-date on whatever node they run an
+action on, even if it was up-to-date on the node that sent the message. The
+\ref dev_guide_parallelization_mutable_global_cache
+"Mutable items in the GlobalCache" section gives details about mutable
+GlobalCache items.
+
 # Mutable items in the GlobalCache {#dev_guide_parallelization_mutable_global_cache}
 
 Most items in the GlobalCache are constant, and are specified
 by type aliases called `const_global_cache_tags` as
 described above. However, the GlobalCache can also store mutable
-items. Because of asynchronous execution, care must be taken when
+items. Because of asynchronous execution, **EXTREME** care must be taken when
 mutating items in the GlobalCache, as described below.
 
 A mutable item can be of any type, as long as that type is something
@@ -779,8 +805,8 @@ will be invoked; in this case the callback function re-runs
 
 \snippet Test_AlgorithmGlobalCache.cpp check_mutable_cache_item_is_ready
 
-Note that `Parallel::mutable_cache_item_is_ready` is called on a local
-core and does no parallel communication.
+Note that `Parallel::mutable_cache_item_is_ready` is called on the local
+node and does no parallel communication.
 
 ### 2. Retrieving the item
 
@@ -788,7 +814,7 @@ The item is retrieved using `Parallel::get` just like for constant items.
 For example, to retrieve the item `Tags::VectorOfDoubles`:
 \snippet Test_AlgorithmGlobalCache.cpp retrieve_mutable_cache_item
 
-Note that `Parallel::get` is called on a local core and does no
+Note that `Parallel::get` is called on the local node and does no
 parallel communication.
 
 Whereas we support getting *non-mutable* items in the GlobalCache from
@@ -813,11 +839,13 @@ mutator function.  For the following example,
 the mutator function is defined as below:
 \snippet Test_AlgorithmGlobalCache.cpp mutate_global_cache_item_mutator
 
-`Parallel::mutate` broadcasts to every core, where it calls the
+`Parallel::mutate` broadcasts to every node, where it calls the
 mutator function and then calls all the callbacks that have been set
-on that core by `Parallel::mutable_cache_item_is_ready`.  The
+on that node by `Parallel::mutable_cache_item_is_ready`.  The
 `Parallel::mutate` operation is guaranteed to be thread-safe without
-any further action by the developer.
+any further action by the developer so long as the item being mutated can be
+mutated in a threadsafe way. See the `Parallel::GlobalCache` docs for more
+details.
 
 # Charm++ Node and Processor Level Initialization Functions {#dev_guide_parallelization_charm_node_processor_level_initialization}
 
