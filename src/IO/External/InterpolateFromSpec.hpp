@@ -16,7 +16,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace gr::AnalyticData {
+namespace io {
 
 /*!
  * \brief Interpolate numerical SpEC initial data to arbitrary points
@@ -117,4 +117,4 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_from_spec(
   return interpolation_buffer;
 }
 
-}  // namespace gr::AnalyticData
+}  // namespace io

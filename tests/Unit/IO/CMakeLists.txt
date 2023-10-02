@@ -19,6 +19,7 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(External)
 add_subdirectory(H5)
 add_subdirectory(Importers)
 add_subdirectory(Logging)

@@ -70,4 +70,23 @@ if (TARGET SpEC::Exporter)
     )
 endif()
 
+if (TARGET FUKA::Exporter)
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    FukaInitialData.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    FukaInitialData.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    ExternalIO
+    )
+endif()
+
 add_subdirectory(InitialMagneticFields)

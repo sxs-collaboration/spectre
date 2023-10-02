@@ -20,6 +20,7 @@ spectre_load_modules() {
     module load cmake/3.18.0
     module load git/2.37.2
     module load clang/12.0.1  # for clang-format
+    module load fftw/3.3.8
     # Installed in SXS group
     module load blaze/3.8
     module load boost/1.82.0
@@ -34,6 +35,7 @@ spectre_load_modules() {
     module load charm/7.0.0
     module load libbacktrace/1.0
     module load spec-exporter/2023-07
+    module load fuka/2023-08
 }
 
 spectre_unload_modules() {
@@ -45,6 +47,7 @@ spectre_unload_modules() {
     module unload cmake/3.18.0
     module unload git/2.37.2
     module unload clang/12.0.1
+    module unload fftw/3.3.8
     # Installed in SXS group
     module unload blaze/3.8
     module unload boost/1.82.0
@@ -59,6 +62,7 @@ spectre_unload_modules() {
     module unload charm/7.0.0
     module unload libbacktrace/1.0
     module unload spec-exporter/2023-07
+    module unload fuka/2023-08
 }
 
 spectre_run_cmake() {

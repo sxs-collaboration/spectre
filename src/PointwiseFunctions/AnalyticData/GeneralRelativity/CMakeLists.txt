@@ -40,12 +40,12 @@ if (TARGET SpEC::Exporter)
     ${LIBRARY}
     INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
     HEADERS
-    InterpolateFromSpec.hpp
     SpecInitialData.hpp
     )
   target_link_libraries(
     ${LIBRARY}
     PUBLIC
+    ExternalIO
     SpEC::Exporter
     )
 endif()

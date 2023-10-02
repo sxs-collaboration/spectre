@@ -19,6 +19,12 @@ set(LIBRARY_SOURCES
   Test_SlabJet.cpp
   )
 
+if (TARGET FUKA::Exporter)
+  list(APPEND LIBRARY_SOURCES
+    Test_FukaInitialData.cpp
+    )
+endif()
+
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
 target_link_libraries(
