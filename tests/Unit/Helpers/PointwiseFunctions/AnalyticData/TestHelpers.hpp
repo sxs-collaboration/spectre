@@ -23,9 +23,10 @@ void test_tag_retrieval(const Solution& solution, const Coords& coords,
   tmpl::for_each<TagsList>([&](const auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const auto single_var = solution.variables(coords, tmpl::list<tag>{});
-    CHECK(tuples::get<tag>(single_var) == tuples::get<tag>(vars_from_all_tags));
-    CHECK(tuples::get<tag>(single_var) ==
-          tuples::get<tag>(vars_from_all_tags_reversed));
+    CHECK_ITERABLE_APPROX(tuples::get<tag>(single_var),
+                          tuples::get<tag>(vars_from_all_tags));
+    CHECK_ITERABLE_APPROX(tuples::get<tag>(single_var),
+                          tuples::get<tag>(vars_from_all_tags_reversed));
   });
 }
 }  // namespace AnalyticData

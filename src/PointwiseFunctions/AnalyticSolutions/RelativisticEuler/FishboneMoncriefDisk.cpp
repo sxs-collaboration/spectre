@@ -154,7 +154,7 @@ FishboneMoncriefDisk::variables(
   const auto specific_enthalpy = get<hydro::Tags::SpecificEnthalpy<DataType>>(
       variables(x, tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>>{}, vars,
                 index));
-  auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
+  auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 1.0e-15);
   variables_impl(vars, [&rest_mass_density, &specific_enthalpy, this](
                            const size_t s, const double /*potential_at_s*/) {
     get_element(get(rest_mass_density), s) =
