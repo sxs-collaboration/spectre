@@ -1,0 +1,36 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+name: Parse compiler
+
+description: |
+  Parse the compiler name and version from the input and set the environment
+  variables CC, CXX, FC, COMPILER_ID, and COMPILER_VERSION.
+
+inputs:
+  compiler:
+    description: Compiler to parse, e.g. 'gcc-10'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        if [[ ${{ inputs.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
+          COMPILER_ID=${BASH_REMATCH[1]}
+          COMPILER_VERSION=${BASH_REMATCH[2]}
+          CC=${COMPILER_ID}-${COMPILER_VERSION};
+          if [[ $COMPILER_ID = gcc ]]; then
+            CXX=g++-${COMPILER_VERSION};
+            FC=gfortran-${COMPILER_VERSION};
+          else
+            CXX=clang++-${COMPILER_VERSION};
+            FC=gfortran-11;
+          fi
+        fi
+        echo "CC=$CC" >> $GITHUB_ENV
+        echo "CXX=$CXX" >> $GITHUB_ENV
+        echo "FC=$FC" >> $GITHUB_ENV
+        echo "COMPILER_ID=$COMPILER_ID" >> $GITHUB_ENV
+        echo "COMPILER_VERSION=$COMPILER_VERSION" >> $GITHUB_ENV
+      shell: bash

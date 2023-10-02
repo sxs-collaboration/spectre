@@ -244,7 +244,7 @@ jobs:
           cmake
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
-          -D CMAKE_Fortran_COMPILER=gfortran-9
+          -D CMAKE_Fortran_COMPILER=gfortran
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D OVERRIDE_ARCH=x86-64
@@ -518,6 +518,19 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/parse-compiler
+        with:
+          compiler: ${{ matrix.compiler }}
+      # Install the selected compiler. We don't bundle all of them in the
+      # container because they take up a lot of space.
+      - name: Install compiler
+        run: |
+          apt-get update -y
+          if [[ $COMPILER_ID = gcc ]]; then
+            apt-get install -y $CC $CXX $FC
+          else
+            apt-get install -y $CC $FC
+          fi
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
@@ -552,17 +565,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         #   memory usage.
         run: >
           mkdir build && cd build
-
-          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-              CXX=g++-${BASH_REMATCH[2]};
-              FC=gfortran-${BASH_REMATCH[2]};
-            else
-              CXX=clang++-${BASH_REMATCH[2]};
-              FC=gfortran-9;
-            fi
-          fi
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
@@ -735,17 +737,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           tar xf spectre_src.tar.gz;
           mkdir build;
           cd build
-
-          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-              CXX=g++-${BASH_REMATCH[2]};
-              FC=gfortran-${BASH_REMATCH[2]};
-            else
-              CXX=clang++-${BASH_REMATCH[2]};
-              FC=gfortran-9;
-            fi
-          fi
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
@@ -1133,6 +1124,24 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/parse-compiler
+        with:
+          compiler: ${{ matrix.compiler }}
+      - name: Install compiler
+        run: |
+          apt-get update -y
+          if [[ $COMPILER_ID = gcc ]]; then
+            apt-get install -y $CC $CXX $FC
+          else
+            apt-get install -y $CC $FC
+          fi
+      - name: Install Intel SDE
+        working-directory: /work
+        run: |
+          wget -O sde-external.tar.xz https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
+          tar -xJf sde-external.tar.xz
+          mv sde-external-* sde
+          rm sde-*
       - name: Configure, build, and run tests
         working-directory: /work
         # Notes on the build configuration:
@@ -1149,16 +1158,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             cd /work
             BUILD_DIR=build$OVERRIDE_ARCH
             mkdir $BUILD_DIR && cd $BUILD_DIR
-            if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-              CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-              if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-                CXX=g++-${BASH_REMATCH[2]};
-                FC=gfortran-${BASH_REMATCH[2]};
-              else
-                CXX=clang++-${BASH_REMATCH[2]};
-                FC=gfortran-9;
-              fi
-            fi
 
             cmake\
             -D CMAKE_C_COMPILER=${CC}\

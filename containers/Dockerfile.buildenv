@@ -65,9 +65,15 @@ FROM ubuntu:22.04 AS base
 # for how TARGETARCH is defined.
 ARG TARGETARCH
 
-# Install add-apt-repository
+# Install add-apt-repository and basic tools
 RUN apt-get update -y \
-    && apt-get install -y software-properties-common
+    && apt-get install -y software-properties-common wget git
+
+# Add LLVM apt repository for newer versions of clang
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
+    tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
+    && add-apt-repository -y \
+    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
 
 # Install compilers and build tools
 RUN apt-get update -y \
@@ -75,7 +81,7 @@ RUN apt-get update -y \
         gcc g++ gfortran \
         clang clang-format clang-tidy lld \
         bison flex libncurses-dev \
-        gdb git wget cmake autoconf automake ninja-build lcov
+        gdb cmake autoconf automake ninja-build lcov
 
 # Install SpECTRE dependencies that are available through apt
 #
@@ -317,26 +323,21 @@ RUN apt-get -y clean
 WORKDIR /work
 
 
-# Everything we need to run tests on CI on GitHub.
+# Everything we need to run tests on CI on GitHub. We install most things
+# on-demand on CI for a number of reasons:
+# - Smaller container size and hence less disk usage on CI, where space is very
+#   limited.
+# - Flexibility to change compilers, Python versions, etc. without rebuilding
+#   the container.
+# - There's no advantage to "pre-downloading" things available through apt here
+#   in the Dockerfile, since the amount of data to download on CI will be the
+#   same.
 FROM dev as ci
 ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
 ARG PARALLEL_MAKE_ARG=-j2
-
-# Add LLVM apt repository for newer versions of clang
-RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
-        tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
-    && add-apt-repository -y \
-        'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
-
-# Install all the compilers we are going to test on CI
-RUN apt-get update -y \
-    && apt-get install -y \
-        gcc-9 g++-9 gfortran-9 \
-        gcc-10 g++-10 gfortran-10 \
-        clang-13 clang-15 clang-16
 
 # Install minimum required CMake version so that we test compatibility with it.
 # For this version of CMake no ARM binary is available.
@@ -366,12 +367,6 @@ RUN apt-get install -y libopenmpi-dev
 RUN cd /work/charm_7_0_0 \
     && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production
-
-# Download and extract the intel Software Development Emulator binaries
-RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz -O sde-external.tar.xz \
-    && tar -xJf sde-external.tar.xz \
-    && mv sde-external-* sde \
-    && rm sde-*
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
