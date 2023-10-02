@@ -101,9 +101,10 @@ struct MockReceivePoints {
       std::vector<std::optional<
           IdPair<domain::BlockId,
                  tnsr::I<double, VolumeDim, typename Frame::BlockLogical>>>>&&
-          block_coord_holders) {
+          block_coord_holders,
+      const size_t iteration = 0_st) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        [&temporal_id, &block_coord_holders](
+        [&temporal_id, &block_coord_holders, &iteration](
             const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
                 Metavariables>::type*>
                 vars_holders) {
@@ -117,7 +118,7 @@ struct MockReceivePoints {
               temporal_id,
               intrp::Vars::Info<VolumeDim, typename InterpolationTargetTag::
                                                vars_to_interpolate_to_target>{
-                  std::move(block_coord_holders)}));
+                  std::move(block_coord_holders), iteration}));
         },
         make_not_null(&box));
   }
@@ -131,12 +132,11 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<
-              intrp::Actions::InitializeInterpolator<
-                  intrp::Tags::VolumeVarsInfo<
-                      Metavariables, typename Metavariables::
-                                         InterpolationTargetA::temporal_id>,
-                  intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<
+                  Metavariables,
+                  typename Metavariables::InterpolationTargetA::temporal_id>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
@@ -235,9 +235,10 @@ void test_interpolation_target(
   const auto& info = vars_infos.at(temporal_id);
   const auto& block_coord_holders = info.block_coord_holders;
 
-  // Check number of points
+  // Check number of points and iteration
   const size_t number_of_points = expected_block_coord_holders.size();
   CHECK(block_coord_holders.size() == number_of_points);
+  CHECK(info.iteration == 0_st);
 
   for (size_t i = 0; i < number_of_points; ++i) {
     CHECK(block_coord_holders[i].value().id ==
@@ -255,10 +256,12 @@ void test_interpolation_target(
   ActionTesting::invoke_queued_simple_action<interp_component>(
       make_not_null(&runner), 0);
 
-  // Should be two entries in the vars_infos
+  // Should be two entries in the vars_infos. Second should also have iteration
+  // 0
   CHECK(vars_infos.size() == 2);
-  const auto& new_block_coord_holders =
-      vars_infos.at(new_temporal_id).block_coord_holders;
+  const auto& new_info = vars_infos.at(new_temporal_id);
+  const auto& new_block_coord_holders = new_info.block_coord_holders;
+  CHECK(new_info.iteration == 0_st);
   for (size_t i = 0; i < number_of_points; ++i) {
     CHECK(new_block_coord_holders[i].value().id ==
           expected_block_coord_holders[i].value().id);

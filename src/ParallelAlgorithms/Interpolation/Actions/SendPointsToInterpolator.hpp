@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -17,6 +18,11 @@ namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Sets up points on an `InterpolationTarget` at a new `temporal_id`
 /// and sends these points to an `Interpolator`.
+///
+/// The `iteration` parameter tags each set of points so the `Interpolator`
+/// knows which are newer points and which are older points.
+///
+/// \see `intrp::Actions::ReceivePoints`
 ///
 /// Uses:
 /// - DataBox:
@@ -38,7 +44,8 @@ struct SendPointsToInterpolator {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) {
+                    const TemporalId& temporal_id,
+                    const size_t iteration = 0_st) {
     auto coords = InterpolationTarget_detail::block_logical_coords<
         InterpolationTargetTag>(box, cache, temporal_id);
     InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
@@ -46,7 +53,7 @@ struct SendPointsToInterpolator {
     auto& receiver_proxy =
         Parallel::get_parallel_component<Interpolator<Metavariables>>(cache);
     Parallel::simple_action<Actions::ReceivePoints<InterpolationTargetTag>>(
-        receiver_proxy, temporal_id, std::move(coords));
+        receiver_proxy, temporal_id, std::move(coords), iteration);
   }
 };
 
