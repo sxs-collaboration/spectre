@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "Domain/FunctionsOfTime/ThreadsafeList.hpp"
+#include "Domain/FunctionsOfTime/ThreadsafeList.tpp"
 #include "Framework/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ThreadsafeList",

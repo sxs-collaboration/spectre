@@ -26,12 +26,18 @@ namespace FunctionsOfTime {
 template <size_t MaxDeriv>
 class PiecewisePolynomial : public FunctionOfTime {
  public:
-  PiecewisePolynomial() = default;
+  PiecewisePolynomial();
+  PiecewisePolynomial(PiecewisePolynomial&&);
+  PiecewisePolynomial(const PiecewisePolynomial&);
+  PiecewisePolynomial& operator=(PiecewisePolynomial&&);
+  PiecewisePolynomial& operator=(const PiecewisePolynomial&);
+  ~PiecewisePolynomial() override;
+
   PiecewisePolynomial(
       double t, std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
       double expiration_time);
 
-  explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/) {}
+  explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/);
 
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
@@ -70,10 +76,7 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.
-  std::array<double, 2> time_bounds() const override {
-    return {{deriv_info_at_update_times_.initial_time(),
-             deriv_info_at_update_times_.expiration_time()}};
-  }
+  std::array<double, 2> time_bounds() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

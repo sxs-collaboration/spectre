@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/ThreadsafeList.tpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -26,6 +27,28 @@
 
 namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial() = default;
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(PiecewisePolynomial&&) =
+    default;
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(const PiecewisePolynomial&) =
+    default;
+
+template <size_t MaxDeriv>
+auto PiecewisePolynomial<MaxDeriv>::operator=(PiecewisePolynomial&&)
+    -> PiecewisePolynomial& = default;
+
+template <size_t MaxDeriv>
+auto PiecewisePolynomial<MaxDeriv>::operator=(const PiecewisePolynomial&)
+    -> PiecewisePolynomial& = default;
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::~PiecewisePolynomial() = default;
+
+template <size_t MaxDeriv>
 PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double t,
     std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
@@ -33,6 +56,10 @@ PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     : deriv_info_at_update_times_(t) {
   store_entry(t, std::move(initial_func_and_derivs), expiration_time);
 }
+
+template <size_t MaxDeriv>
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
+    CkMigrateMessage* /*unused*/) {}
 
 template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone()
@@ -114,6 +141,12 @@ void PiecewisePolynomial<MaxDeriv>::update(const double time_of_update,
 
   func[MaxDeriv] = std::move(updated_max_deriv);
   store_entry(time_of_update, std::move(func), next_expiration_time);
+}
+
+template <size_t MaxDeriv>
+std::array<double, 2> PiecewisePolynomial<MaxDeriv>::time_bounds() const {
+  return {{deriv_info_at_update_times_.initial_time(),
+           deriv_info_at_update_times_.expiration_time()}};
 }
 
 template <size_t MaxDeriv>

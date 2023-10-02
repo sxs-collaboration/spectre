@@ -25,6 +25,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
+#include "Domain/FunctionsOfTime/ThreadsafeList.tpp"
 #include "NumericalAlgorithms/OdeIntegration/OdeIntegration.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -33,6 +34,28 @@
 #include "Utilities/Serialization/PupBoost.hpp"
 
 namespace domain::FunctionsOfTime {
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime() = default;
+
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
+    QuaternionFunctionOfTime&&) = default;
+
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
+    const QuaternionFunctionOfTime&) = default;
+
+template <size_t MaxDeriv>
+auto QuaternionFunctionOfTime<MaxDeriv>::operator=(QuaternionFunctionOfTime&&)
+    -> QuaternionFunctionOfTime& = default;
+
+template <size_t MaxDeriv>
+auto QuaternionFunctionOfTime<MaxDeriv>::operator=(
+    const QuaternionFunctionOfTime&) -> QuaternionFunctionOfTime& = default;
+
+template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::~QuaternionFunctionOfTime() = default;
+
 template <size_t MaxDeriv>
 QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
     const double t, const std::array<DataVector, 1>& initial_quat_func,
@@ -45,9 +68,19 @@ QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
 }
 
 template <size_t MaxDeriv>
+QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
+    CkMigrateMessage* /*unused*/) {}
+
+template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
     const {
   return std::make_unique<QuaternionFunctionOfTime>(*this);
+}
+
+template <size_t MaxDeriv>
+std::array<double, 2> QuaternionFunctionOfTime<MaxDeriv>::time_bounds() const {
+  return std::array{stored_quaternions_and_times_.initial_time(),
+                    stored_quaternions_and_times_.expiration_time()};
 }
 
 template <size_t MaxDeriv>
