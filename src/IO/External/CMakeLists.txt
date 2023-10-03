@@ -3,11 +3,12 @@
 
 set(LIBRARY ExternalIO)
 
-if (NOT TARGET SpEC::Exporter AND NOT TARGET FUKA::Exporter)
-  return()
+set(_LIB_TYPE INTERFACE)
+if (TARGET FUKA::Exporter)
+  set(_LIB_TYPE "")
 endif()
 
-add_spectre_library(${LIBRARY})
+add_spectre_library(${LIBRARY} ${_LIB_TYPE})
 
 if (TARGET SpEC::Exporter)
   spectre_target_headers(
@@ -18,11 +19,14 @@ if (TARGET SpEC::Exporter)
     )
   target_link_libraries(
     ${LIBRARY}
-    PUBLIC
+    INTERFACE
+    DataStructures
+    ErrorHandling
     SpEC::Exporter
+    Utilities
     )
   target_compile_definitions(
-    ExternalIO INTERFACE HAS_SPEC_EXPORTER)
+    ${LIBRARY} INTERFACE HAS_SPEC_EXPORTER)
 endif()
 
 if (TARGET FUKA::Exporter)
@@ -40,18 +44,14 @@ if (TARGET FUKA::Exporter)
   target_link_libraries(
     ${LIBRARY}
     PUBLIC
+    DataStructures
     FUKA::Exporter
     GeneralRelativity
     Hydro
+    Utilities
+    PRIVATE
+    ErrorHandling
     )
   target_compile_definitions(
-    ExternalIO INTERFACE HAS_FUKA_EXPORTER)
+    ${LIBRARY} INTERFACE HAS_FUKA_EXPORTER)
 endif()
-
-target_link_libraries(
-  ${LIBRARY}
-  PUBLIC
-  DataStructures
-  ErrorHandling
-  Utilities
-  )
