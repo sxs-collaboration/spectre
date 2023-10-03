@@ -339,7 +339,6 @@ jobs:
           -D USE_XSIMD=ON
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=ON
-          -D Python_EXECUTABLE=/usr/bin/python3
           -D BUILD_SHARED_LIBS=ON
           -D MEMORY_ALLOCATOR=SYSTEM
           -D BUILD_DOCS=ON
@@ -423,7 +422,7 @@ jobs:
           # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
             build_type: Debug
-            PYTHON_EXECUTABLE: /usr/bin/python3.8
+            PYTHON_VERSION: "3.8"
           # Disable building executable for this build for now because it
           # exceeds the available memory. See issue:
           # https://github.com/sxs-collaboration/spectre/issues/5472
@@ -540,6 +539,17 @@ jobs:
           wget -O cmake-install.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
           sh cmake-install.sh --prefix=/usr --skip-license
           rm cmake-install.sh
+      - name: Install Python version
+        if: matrix.PYTHON_VERSION
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+      - name: Install Python dependencies
+        if: matrix.PYTHON_VERSION
+        run: |
+          python3 -m pip install pybind11~=2.6.1
+          python3 -m pip install -r support/Python/requirements.txt \
+            -r support/Python/dev_requirements.txt
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
@@ -577,7 +587,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
-          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
@@ -612,7 +621,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_CCACHE=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
-          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
@@ -749,7 +757,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           cd build
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
-          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
           USE_PCH=${{ matrix.use_pch }};
@@ -773,7 +780,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
-          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
           ..
