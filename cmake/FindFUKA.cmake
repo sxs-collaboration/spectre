@@ -24,17 +24,19 @@ find_library(
 
 # Link MPI (should be the same MPI that FUKA was built with)
 find_package(MPI COMPONENTS C)
-find_package(FFTW)
 
-if (FUKA_LIB AND MPI_C_FOUND AND FFTW_FOUND)
-  add_library(FUKA::Exporter INTERFACE IMPORTED)
-  target_link_libraries(
-    FUKA::Exporter
-    INTERFACE
-    MPI::MPI_C
-    FFTW::FFTW
-    ${FUKA_LIB}
-  )
+if (FUKA_LIB AND MPI_C_FOUND)
+  find_package(FFTW)
+  if (FFTW_FOUND)
+    add_library(FUKA::Exporter INTERFACE IMPORTED)
+    target_link_libraries(
+      FUKA::Exporter
+      INTERFACE
+      MPI::MPI_C
+      FFTW::FFTW
+      ${FUKA_LIB}
+    )
+  endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
