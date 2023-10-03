@@ -417,17 +417,19 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
+          # Don't modify the gcc-11 Debug build so its cache can be reused for
+          # the documentation build
+          # - compiler: gcc-11
+          #   build_type: Debug
           # Test with Python 3.8 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
-            build_type: Debug
-            PYTHON_VERSION: "3.8"
-          # Disable building executable for this build for now because it
-          # exceeds the available memory. See issue:
-          # https://github.com/sxs-collaboration/spectre/issues/5472
-          - compiler: gcc-11
             build_type: Release
+            PYTHON_VERSION: "3.8"
+            # Disable building executable for this build for now because it
+            # exceeds the available memory. See issue:
+            # https://github.com/sxs-collaboration/spectre/issues/5472
             test_executables: OFF
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
