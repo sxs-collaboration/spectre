@@ -51,10 +51,10 @@ void test_system_to_combined_names() {
 void test_combined_name() {
   using list_of_names = tmpl::list<Name<3>, Name<0>, Name<2>, Name<1>>;
 
-  const std::string combined = control_system::combined_name<list_of_names>();
+  const std::string& combined = control_system::combined_name<list_of_names>();
   CHECK(combined == "Name0Name1Name2Name3");
 
-  const std::string empty = control_system::combined_name<tmpl::list<>>();
+  const std::string& empty = control_system::combined_name<tmpl::list<>>();
   CHECK(empty.empty());
 }
 

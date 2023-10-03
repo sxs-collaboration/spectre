@@ -23,23 +23,26 @@ namespace control_system {
  * \tparam ListOfControlSystems `tmpl::list` of control systems
  */
 template <typename ListOfControlSystems>
-std::string combined_name() {
-  std::vector<std::string> control_system_names{};
-  control_system_names.reserve(tmpl::size<ListOfControlSystems>::value);
-  std::string combined_name{};
+const std::string& combined_name() {
+  static const std::string combined_name = []() {
+    std::vector<std::string> control_system_names{};
+    control_system_names.reserve(tmpl::size<ListOfControlSystems>::value);
+    std::string local_combined_name{};
 
-  tmpl::for_each<ListOfControlSystems>(
-      [&control_system_names](auto control_system_v) {
-        using control_system = tmpl::type_from<decltype(control_system_v)>;
-        control_system_names.emplace_back(control_system::name());
-      });
+    tmpl::for_each<ListOfControlSystems>(
+        [&control_system_names](auto control_system_v) {
+          using control_system = tmpl::type_from<decltype(control_system_v)>;
+          control_system_names.emplace_back(control_system::name());
+        });
 
-  alg::sort(control_system_names);
+    alg::sort(control_system_names);
 
-  for (const std::string& name : control_system_names) {
-    combined_name += name;
-  }
+    for (const std::string& name : control_system_names) {
+      local_combined_name += name;
+    }
 
+    return local_combined_name;
+  }();
   return combined_name;
 }
 
@@ -74,7 +77,7 @@ std::unordered_map<std::string, std::string> system_to_combined_names() {
                                                         auto list_v) {
     using control_systems_with_measurement = tmpl::type_from<decltype(list_v)>;
 
-    const std::string combined_name =
+    const std::string& combined_name =
         control_system::combined_name<control_systems_with_measurement>();
 
     tmpl::for_each<control_systems_with_measurement>(
