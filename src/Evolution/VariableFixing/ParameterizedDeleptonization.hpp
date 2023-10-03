@@ -158,7 +158,8 @@ class ParameterizedDeleptonization {
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>>;
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Temperature<DataVector>>;
 
   // Things you want from DataBox that won't be change and are passed in as
   // const-refs
@@ -172,6 +173,7 @@ class ParameterizedDeleptonization {
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      gsl::not_null<Scalar<DataVector>*> temperature,
       const Scalar<DataVector>& rest_mass_density,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state) const;
@@ -183,6 +185,7 @@ class ParameterizedDeleptonization {
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      gsl::not_null<Scalar<DataVector>*> temperature,
       const Scalar<DataVector>& rest_mass_density,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state,

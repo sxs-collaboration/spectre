@@ -8,15 +8,18 @@
 #include "Evolution/VariableFixing/ParameterizedDeleptonization.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Informer/InfoFromBuild.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Tabulated3d.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {
 
+// 1D EoS version
 void test_variable_fixer(
     const VariableFixing::ParameterizedDeleptonization& variable_fixer,
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
@@ -26,6 +29,10 @@ void test_variable_fixer(
 
   const Scalar<DataVector> density{DataVector{0.8e-10, 1.5e-10, 3e-10}};
   Scalar<DataVector> electron_fraction{DataVector{0.5, 0.5, 0.5}};
+  // Temperature should remain unchanged with 1D EoS
+  Scalar<DataVector> dummy_temperature{DataVector{1.0, 1.0, 1.0}};
+  Scalar<DataVector> expected_temperature = dummy_temperature;
+
   // These should remain unchanged, sinced param delep can only make Ye drop
   Scalar<DataVector> electron_fraction_low{DataVector{0.1, 0.15, 0.2}};
 
@@ -37,19 +44,22 @@ void test_variable_fixer(
 
   // check Ye values that will naturally decrease
   variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
-                 &specific_enthalpy, density, equation_of_state);
+                 &specific_enthalpy, &dummy_temperature, density,
+                 equation_of_state);
 
   const Scalar<DataVector> expected_electron_fraction{
       DataVector{0.5, 0.40980370118030457, 0.285}};
 
   CHECK_ITERABLE_APPROX(electron_fraction, expected_electron_fraction);
+  CHECK_ITERABLE_APPROX(dummy_temperature, expected_temperature);
 
   // check Ye values that will stay constant
   const Scalar<DataVector> expected_electron_fraction_low{
       electron_fraction_low};
 
   variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
-                 &specific_enthalpy, density, equation_of_state);
+                 &specific_enthalpy, &dummy_temperature, density,
+                 equation_of_state);
 
   CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
 }
@@ -60,9 +70,12 @@ void test_variable_fixer(
     const EquationsOfState::EquationOfState<true, 2>& equation_of_state) {
   const Scalar<DataVector> density{DataVector{3.0e-9, 3.7e-9, 4.0e-9}};
   Scalar<DataVector> electron_fraction{DataVector{0.5, 0.5, 0.5}};
+  // Temperature should remain unchanged with 2D EoS
+  Scalar<DataVector> dummy_temperature{DataVector{1.0, 1.0, 1.0}};
+  Scalar<DataVector> expected_temperature = dummy_temperature;
+
   // These should remain unchanged, sinced param delep can only make Ye drop
   Scalar<DataVector> electron_fraction_low{DataVector{0.1, 0.15, 0.2}};
-
   Scalar<DataVector> specific_internal_energy{DataVector{1.0, 2.0, 3.0}};
   auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy);
@@ -71,7 +84,50 @@ void test_variable_fixer(
 
   // check Ye values that will naturally decrease
   variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
-                 &specific_enthalpy, density, equation_of_state);
+                 &specific_enthalpy, &dummy_temperature, density,
+                 equation_of_state);
+
+  const Scalar<DataVector> expected_electron_fraction{
+      DataVector{0.49, 0.3077746733472282, 0.2}};
+
+  CHECK_ITERABLE_APPROX(electron_fraction, expected_electron_fraction);
+  CHECK_ITERABLE_APPROX(dummy_temperature, expected_temperature);
+
+  // check Ye values that will stay constant
+  const Scalar<DataVector> expected_electron_fraction_low{
+      electron_fraction_low};
+  variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
+                 &specific_enthalpy, &dummy_temperature, density,
+                 equation_of_state);
+
+  CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
+}
+
+// 3D EoS version
+void test_variable_fixer(
+    const VariableFixing::ParameterizedDeleptonization& variable_fixer,
+    const EquationsOfState::EquationOfState<true, 3>& equation_of_state) {
+  const Scalar<DataVector> density{DataVector{3.0e-9, 3.7e-9, 4.0e-9}};
+  const Scalar<DataVector> initial_density = density;
+  Scalar<DataVector> electron_fraction{DataVector{0.5, 0.5, 0.5}};
+  Scalar<DataVector> temperature{DataVector{1.0, 1.0, 1.0}};
+  Scalar<DataVector> initial_temperature = temperature;
+
+  // These should remain unchanged, sinced param delep can only make Ye drop
+  Scalar<DataVector> electron_fraction_low{DataVector{0.1, 0.15, 0.2}};
+  Scalar<DataVector> specific_internal_energy{DataVector{1.0, 2.0, 3.0}};
+  Scalar<DataVector> initial_specific_internal_energy =
+      specific_internal_energy;
+  auto pressure = equation_of_state.pressure_from_density_and_energy(
+      density, specific_internal_energy, electron_fraction);
+  auto initial_pressure = pressure;
+  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      density, specific_internal_energy, pressure);
+  auto initial_specific_enthalpy = specific_enthalpy;
+
+  // check Ye values that will naturally decrease
+  variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
+                 &specific_enthalpy, &temperature, density, equation_of_state);
 
   const Scalar<DataVector> expected_electron_fraction{
       DataVector{0.49, 0.3077746733472282, 0.2}};
@@ -82,10 +138,30 @@ void test_variable_fixer(
   const Scalar<DataVector> expected_electron_fraction_low{
       electron_fraction_low};
   variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
-                 &specific_enthalpy, density, equation_of_state);
+                 &specific_enthalpy, &temperature, density, equation_of_state);
 
   CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
-}
+
+  // For a 3D EoS call...
+  // density should not change
+  CHECK_ITERABLE_APPROX(density, initial_density);
+
+  // specific internal energy should not change
+  // Note in the entropy conserving version of param delep, this will change,
+  // according to the neutrino chemical potential
+  CHECK_ITERABLE_APPROX(specific_internal_energy,
+                        initial_specific_internal_energy);
+
+  // pressure should change
+  CHECK_FALSE(pressure == initial_pressure);
+
+  // therefore specific enthalpy should change
+  CHECK_FALSE(specific_enthalpy == initial_specific_enthalpy);
+
+  // temperature should change
+  CHECK_FALSE(temperature == initial_temperature);
+
+}  // end 3D
 
 void test_variable_fixer() {
   // Test for representative 1-d equation of state
@@ -109,27 +185,25 @@ void test_variable_fixer() {
   const EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
 
   // catch error messages
-  CHECK_THROWS_WITH(([&hi_dens_cutoff, &lo_dens_cutoff, &ye_at_hi_dens,
-                      &ye_at_lo_dens, &ye_magnitude_scale]() {
-                      const VariableFixing::ParameterizedDeleptonization
-                          variable_fixer_dens_error{
-                              enable_param_delep,    hi_dens_cutoff,
-                              10.0 * lo_dens_cutoff, ye_at_hi_dens,
-                              ye_at_lo_dens,         ye_magnitude_scale};
-                    })(),
-                    Catch::Matchers::ContainsSubstring(
-                        "The high density scale"));
+  CHECK_THROWS_WITH(
+      ([&hi_dens_cutoff, &lo_dens_cutoff, &ye_at_hi_dens, &ye_at_lo_dens,
+        &ye_magnitude_scale]() {
+        const VariableFixing::ParameterizedDeleptonization
+            variable_fixer_dens_error{
+                enable_param_delep, hi_dens_cutoff, 10.0 * lo_dens_cutoff,
+                ye_at_hi_dens,      ye_at_lo_dens,  ye_magnitude_scale};
+      })(),
+      Catch::Matchers::ContainsSubstring("The high density scale"));
 
-  CHECK_THROWS_WITH(([&hi_dens_cutoff, &lo_dens_cutoff, &ye_at_lo_dens,
-                      &ye_magnitude_scale]() {
-                      const VariableFixing::ParameterizedDeleptonization
-                          variable_fixer_dens_error{
-                              enable_param_delep, hi_dens_cutoff,
-                              lo_dens_cutoff,     10.0 * ye_at_lo_dens,
-                              ye_at_lo_dens,      ye_magnitude_scale};
-                    })(),
-                    Catch::Matchers::ContainsSubstring(
-                        "The Ye at high density("));
+  CHECK_THROWS_WITH(
+      ([&hi_dens_cutoff, &lo_dens_cutoff, &ye_at_lo_dens,
+        &ye_magnitude_scale]() {
+        const VariableFixing::ParameterizedDeleptonization
+            variable_fixer_dens_error{enable_param_delep, hi_dens_cutoff,
+                                      lo_dens_cutoff,     10.0 * ye_at_lo_dens,
+                                      ye_at_lo_dens,      ye_magnitude_scale};
+      })(),
+      Catch::Matchers::ContainsSubstring("The Ye at high density("));
 
   // check expected values
   test_variable_fixer(variable_fixer, polytrope);
@@ -164,6 +238,32 @@ void test_variable_fixer() {
     EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
     test_serialization(fixer_from_options);
     test_variable_fixer(fixer_from_options, ideal_fluid);
+  }
+
+  {
+    INFO("Test 3D EOS");
+    const auto fixer_from_options = TestHelpers::test_creation<
+        VariableFixing::ParameterizedDeleptonization>(
+        "Enable: true\n"
+        "HighDensityScale: 4.0e-9\n"
+        "LowDensityScale: 3.0e-9\n"
+        "ElectronFractionAtHighDensity: 0.2\n"
+        "ElectronFractionAtLowDensity: 0.49\n"
+        "ElectronFractionCorrectionScale: 0.05");
+
+    EquationsOfState::Tabulated3D<true> tabulated_eos;
+
+    std::string h5_file_name{
+        unit_test_src_path() +
+        "PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5"};
+
+    h5::H5File<h5::AccessType::ReadOnly> eos_file{h5_file_name};
+    const auto& compose_eos = eos_file.get<h5::EosTable>("/dd2");
+
+    tabulated_eos.initialize(compose_eos);
+
+    test_serialization(fixer_from_options);
+    test_variable_fixer(fixer_from_options, tabulated_eos);
   }
 }
 }  // namespace
