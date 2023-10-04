@@ -54,9 +54,14 @@ files whose names can be specified in the YAML file under the options
 produced from each Charm++ node that is used to run the
 executable. Each volume data file will have its corresponding node
 number appended to its file name.  Visualization of the volume data
-will be described in the next section.
+will be described in the next sections.
 
-### 3D Data Volume Data In ParaView
+### Plotting data with Python
+
+See the tutorial on \ref tutorial_vis_python to learn how to load and visualize
+volume data in Python.
+
+### 3D Volume Data In ParaView
 
 A SpECTRE executable with observers produces volume and/or reduced data h5
 files. An XDMF file must be created from the volume data in order to do
