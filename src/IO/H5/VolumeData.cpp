@@ -295,12 +295,16 @@ void VolumeData::write_volume_data(
                     std::decay_t<decltype(*contiguous_tensor_data_ptr)>,
                     std::vector<double>>,
                 DataVector, std::vector<float>>;
+            const auto& tensor_component = element.tensor_components[i];
+            ASSERT(tensor_component.name == component_name,
+                   "Tensor components must be in the same order for all "
+                   "elements. Expected '"
+                       << component_name << "' but found '"
+                       << tensor_component.name << "' at index " << i << ".");
             contiguous_tensor_data_ptr->insert(
                 contiguous_tensor_data_ptr->end(),
-                std::get<type_from_variant>(element.tensor_components[i].data)
-                    .begin(),
-                std::get<type_from_variant>(element.tensor_components[i].data)
-                    .end());
+                std::get<type_from_variant>(tensor_component.data).begin(),
+                std::get<type_from_variant>(tensor_component.data).end());
           }  // for each element
           h5::write_data(observation_group.id(), *contiguous_tensor_data_ptr,
                          {contiguous_tensor_data_ptr->size()}, component_name);

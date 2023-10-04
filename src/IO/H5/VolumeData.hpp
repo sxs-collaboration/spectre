@@ -110,6 +110,8 @@ class VolumeData : public h5::Object {
   /// Insert tensor components at `observation_id` with floating point value
   /// `observation_value`. Optionally write a serialized representation of the
   /// domain and the functions of time into the subfile as well.
+  ///
+  /// All `elements` must contain the same tensor components in the same order.
   void write_volume_data(
       size_t observation_id, double observation_value,
       const std::vector<ElementVolumeData>& elements,
