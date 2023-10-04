@@ -33,6 +33,7 @@ spectre_target_headers(
   SettleToConstant.hpp
   Tags.hpp
   ThreadsafeList.hpp
+  ThreadsafeList.tpp
   )
 
 target_link_libraries(

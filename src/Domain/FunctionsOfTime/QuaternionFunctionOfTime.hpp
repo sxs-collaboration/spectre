@@ -59,14 +59,20 @@ namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
 class QuaternionFunctionOfTime : public FunctionOfTime {
  public:
-  QuaternionFunctionOfTime() = default;
+  QuaternionFunctionOfTime();
+  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&);
+  QuaternionFunctionOfTime(const QuaternionFunctionOfTime&);
+  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&);
+  QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&);
+  ~QuaternionFunctionOfTime() override;
+
   QuaternionFunctionOfTime(
       double t, const std::array<DataVector, 1>& initial_quat_func,
       std::array<DataVector, MaxDeriv + 1> initial_angle_func,
       double expiration_time);
 
   // LCOV_EXCL_START
-  explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/) {}
+  explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/);
   // LCOV_EXCL_STOP
 
   auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
@@ -76,10 +82,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
   /// Returns domain of validity for the function of time
-  std::array<double, 2> time_bounds() const override {
-    return std::array{stored_quaternions_and_times_.initial_time(),
-                      stored_quaternions_and_times_.expiration_time()};
-  }
+  std::array<double, 2> time_bounds() const override;
 
   /// Updates the `MaxDeriv`th derivative of the angle piecewisepolynomial at
   /// the given time, then updates the stored quaternions.

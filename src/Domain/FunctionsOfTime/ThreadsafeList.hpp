@@ -9,15 +9,19 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <pup.h>
-#include <pup_stl.h>
-#include <utility>
 
-#include "Utilities/EqualWithinRoundoff.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
 
 namespace domain::FunctionsOfTime::FunctionOfTimeHelpers {
+namespace ThreadsafeList_detail {
+template <typename T>
+struct Interval;
+}  // namespace ThreadsafeList_detail
+
 /// A list of time intervals that allows safe access to existing
 /// elements even during modification.
 ///
@@ -28,26 +32,19 @@ namespace domain::FunctionsOfTime::FunctionOfTimeHelpers {
 template <typename T>
 class ThreadsafeList {
  private:
-  struct Interval {
-    double expiration;
-    T data;
-    std::unique_ptr<Interval> previous;
-
-    void pup(PUP::er& p);
-  };
+  using Interval = ThreadsafeList_detail::Interval<T>;
 
  public:
   /// No operations are valid on a default-initialized object except
   /// for assignment and deserialization.
-  ThreadsafeList() = default;
-  ThreadsafeList(ThreadsafeList&& other) { *this = std::move(other); }
-  ThreadsafeList(const ThreadsafeList& other) { *this = other; }
+  ThreadsafeList();
+  ThreadsafeList(ThreadsafeList&& other);
+  ThreadsafeList(const ThreadsafeList& other);
   ThreadsafeList& operator=(ThreadsafeList&& other);
   ThreadsafeList& operator=(const ThreadsafeList& other);
-  ~ThreadsafeList() = default;
+  ~ThreadsafeList();
 
-  explicit ThreadsafeList(const double initial_time)
-      : initial_time_(initial_time), most_recent_interval_(nullptr) {}
+  explicit ThreadsafeList(double initial_time);
 
   /// Insert data valid over the interval from \p update_time to \p
   /// expiration_time.
@@ -79,7 +76,7 @@ class ThreadsafeList {
   /// interval.
   IntervalInfo operator()(double time) const;
 
-  double initial_time() const { return initial_time_; }
+  double initial_time() const;
 
   /// The expiration time of the last data interval.
   double expiration_time() const;
@@ -114,8 +111,7 @@ class ThreadsafeList {
    private:
     friend class ThreadsafeList;
 
-    iterator(const double initial_time, const Interval* const interval)
-        : initial_time_(initial_time), interval_(interval) {}
+    iterator(double initial_time, const Interval* interval);
 
     double initial_time_ = std::numeric_limits<double>::signaling_NaN();
     const Interval* interval_ = nullptr;
@@ -125,7 +121,7 @@ class ThreadsafeList {
   /// (i.e., most recent first).
   /// @{
   iterator begin() const;
-  iterator end() const { return {}; }
+  iterator end() const;
   /// @}
 
  private:
@@ -144,209 +140,8 @@ class ThreadsafeList {
 };
 
 template <typename T>
-void ThreadsafeList<T>::Interval::pup(PUP::er& p) {
-  p | expiration;
-  p | data;
-  p | previous;
-}
+bool operator==(const ThreadsafeList<T>& a, const ThreadsafeList<T>& b);
 
 template <typename T>
-auto ThreadsafeList<T>::operator=(ThreadsafeList&& other) -> ThreadsafeList& {
-  if (this == &other) {
-    return *this;
-  }
-  initial_time_ = other.initial_time_;
-  interval_list_ = std::move(other.interval_list_);
-  most_recent_interval_.store(interval_list_.get(), std::memory_order_release);
-  other.most_recent_interval_.store(nullptr, std::memory_order_release);
-  return *this;
-}
-
-template <typename T>
-auto ThreadsafeList<T>::operator=(const ThreadsafeList& other)
-    -> ThreadsafeList& {
-  if (this == &other) {
-    return *this;
-  }
-  initial_time_ = other.initial_time_;
-
-  std::unique_ptr<Interval>* previous_pointer = &interval_list_;
-  for (auto&& entry : other) {
-    // make_unique doesn't work on aggregates until C++20
-    previous_pointer->reset(
-        new Interval{entry.expiration, entry.data, nullptr});
-    previous_pointer = &(*previous_pointer)->previous;
-  }
-
-  most_recent_interval_.store(interval_list_.get(), std::memory_order_release);
-  return *this;
-}
-
-template <typename T>
-void ThreadsafeList<T>::insert(const double update_time, T data,
-                               const double expiration_time) {
-  const auto* old_interval =
-      most_recent_interval_.load(std::memory_order_acquire);
-  const double old_expiration =
-      old_interval != nullptr ? old_interval->expiration : initial_time_;
-  if (old_expiration != update_time) {
-    ERROR("Tried to insert at time "
-          << update_time << ", which is not the old expiration time "
-          << old_expiration);
-  }
-  if (expiration_time <= update_time) {
-    ERROR("Expiration time " << expiration_time << " is not after update time "
-                             << update_time);
-  }
-  // make_unique doesn't work on aggregates until C++20
-  std::unique_ptr<Interval> new_interval(new Interval{
-      expiration_time, std::move(data), std::move(interval_list_)});
-  const auto* const new_interval_p = new_interval.get();
-  interval_list_ = std::move(new_interval);
-  if (not most_recent_interval_.compare_exchange_strong(
-          old_interval, new_interval_p, std::memory_order_acq_rel)) {
-    ERROR("Attempt at concurrent modification detected.");
-  }
-}
-
-template <typename T>
-auto ThreadsafeList<T>::operator()(const double time) const -> IntervalInfo {
-  if (time < initial_time_ and not equal_within_roundoff(time, initial_time_)) {
-    ERROR("Requested time " << time << " precedes earliest time "
-                            << initial_time_);
-  }
-  const auto& interval = find_interval(time, false);
-  const double start = interval.previous != nullptr
-                           ? interval.previous->expiration
-                           : initial_time_;
-  return {start, interval.data, interval.expiration};
-}
-
-template <typename T>
-double ThreadsafeList<T>::expiration_time() const {
-  auto* interval = most_recent_interval_.load(std::memory_order_acquire);
-  return interval != nullptr ? interval->expiration : initial_time_;
-}
-
-template <typename T>
-double ThreadsafeList<T>::expiration_after(const double time) const {
-  return find_interval(time, true).expiration;
-}
-
-template <typename T>
-void ThreadsafeList<T>::pup(PUP::er& p) {
-  size_t version = 0;
-  p | version;
-  // Remember to increment the version number when making changes to this
-  // function. Retain support for unpacking data written by previous versions
-  // whenever possible. See `Domain` docs for details.
-
-  if (version != 0) {
-    ERROR("Unrecognized version " << version);
-  }
-
-  p | initial_time_;
-  // We can't just `p | interval_list_` because serialization has to
-  // be threadsafe.  (Deserialization does not.)
-  if (p.isUnpacking()) {
-    bool empty{};
-    p | empty;
-    interval_list_.reset();
-    if (not empty) {
-      interval_list_ = std::make_unique<Interval>();
-      p | *interval_list_;
-    }
-    most_recent_interval_.store(interval_list_.get(),
-                                std::memory_order_release);
-  } else {
-    const Interval* const threadsafe_interval_list =
-        most_recent_interval_.load(std::memory_order_acquire);
-    bool empty = threadsafe_interval_list == nullptr;
-    p | empty;
-    if (not empty) {
-      // const_cast is fine both because (a) pupping only modifies the
-      // object if `p.isUnpacking()`, which is false here, and (b) we
-      // know this points into mutable storage as part of
-      // interval_list_.
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-      p | const_cast<Interval&>(*threadsafe_interval_list);
-    }
-  }
-}
-
-template <typename T>
-auto ThreadsafeList<T>::iterator::operator++() -> iterator& {
-  interval_ = interval_->previous.get();
-  return *this;
-}
-
-template <typename T>
-auto ThreadsafeList<T>::iterator::operator++(int) -> iterator {
-  auto result = *this;
-  ++*this;
-  return result;
-}
-
-template <typename T>
-auto ThreadsafeList<T>::iterator::operator*() const -> reference {
-  return {interval_->previous != nullptr ? interval_->previous->expiration
-                                         : initial_time_,
-          interval_->data, interval_->expiration};
-}
-
-template <typename T>
-auto ThreadsafeList<T>::iterator::operator->() const -> pointer {
-  return {**this};
-}
-
-template <typename T>
-auto ThreadsafeList<T>::begin() const -> iterator {
-  return {initial_time_, most_recent_interval_.load(std::memory_order_acquire)};
-}
-
-template <typename T>
-auto ThreadsafeList<T>::find_interval(const double time,
-                                      const bool interval_after_boundary) const
-    -> const Interval& {
-  auto* interval = most_recent_interval_.load(std::memory_order_acquire);
-  if (interval == nullptr) {
-    ERROR("Attempt to access an empty function of time.");
-  }
-  if (time > interval->expiration or
-      (interval_after_boundary and time == interval->expiration)) {
-    ERROR("Attempt to evaluate at time "
-          << time << ", which is after the expiration time "
-          << interval->expiration);
-  }
-  // Loop over the intervals until we find the one containing `time`,
-  // possibly at the endpoint determined by `interval_after_boundary`.
-  for (;;) {
-    const auto* const previous_interval = interval->previous.get();
-    if (previous_interval == nullptr or time > previous_interval->expiration or
-        (interval_after_boundary and time == previous_interval->expiration)) {
-      return *interval;
-    }
-    interval = previous_interval;
-  }
-}
-
-template <typename T>
-bool operator==(const ThreadsafeList<T>& a, const ThreadsafeList<T>& b) {
-  if (a.initial_time() != b.initial_time()) {
-    return false;
-  }
-  auto a_iter = a.begin();
-  auto b_iter = b.begin();
-  while (a_iter != a.end() and b_iter != b.end()) {
-    if (*a_iter++ != *b_iter++) {
-      return false;
-    }
-  }
-  return a_iter == a.end() and b_iter == b.end();
-}
-
-template <typename T>
-bool operator!=(const ThreadsafeList<T>& a, const ThreadsafeList<T>& b) {
-  return not(a == b);
-}
+bool operator!=(const ThreadsafeList<T>& a, const ThreadsafeList<T>& b);
 }  // namespace domain::FunctionsOfTime::FunctionOfTimeHelpers
