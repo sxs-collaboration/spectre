@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/GradUnitNormalOneForm.hpp"
