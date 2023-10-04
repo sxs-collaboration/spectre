@@ -29,10 +29,12 @@ from spectre.Spectral import Mesh, logical_coordinates
 class Element:
     id: Union[ElementId[1], ElementId[2], ElementId[3]]
     mesh: Union[Mesh[1], Mesh[2], Mesh[3]]
-    map: Union[
-        CoordinateMapElementLogicalToInertial1D,
-        CoordinateMapElementLogicalToInertial2D,
-        CoordinateMapElementLogicalToInertial3D,
+    map: Optional[
+        Union[
+            CoordinateMapElementLogicalToInertial1D,
+            CoordinateMapElementLogicalToInertial2D,
+            CoordinateMapElementLogicalToInertial3D,
+        ]
     ]
     time: Optional[float]
     functions_of_time: Optional[Dict[str, FunctionOfTime]]
@@ -49,18 +51,30 @@ class Element:
 
     @cached_property
     def inertial_coordinates(self):
+        assert self.map, (
+            "No element map available. Ensure the domain is written in the H5"
+            " file."
+        )
         return self.map(
             self.logical_coordinates, self.time, self.functions_of_time
         )
 
     @cached_property
     def inv_jacobian(self):
+        assert self.map, (
+            "No element map available. Ensure the domain is written in the H5"
+            " file."
+        )
         return self.map.inv_jacobian(
             self.logical_coordinates, self.time, self.functions_of_time
         )
 
     @cached_property
     def jacobian(self):
+        assert self.map, (
+            "No element map available. Ensure the domain is written in the H5"
+            " file."
+        )
         return self.map.jacobian(
             self.logical_coordinates, self.time, self.functions_of_time
         )
@@ -166,9 +180,11 @@ def iter_elements(
             ]
             # Deserialize domain and functions of time
             if not domain:
-                domain = deserialize_domain[dim](volfile.get_domain(obs_id))
+                serialized_domain = volfile.get_domain(obs_id)
+                if serialized_domain:
+                    domain = deserialize_domain[dim](serialized_domain)
             time = volfile.get_observation_value(obs_id)
-            if domain.is_time_dependent():
+            if domain and domain.is_time_dependent():
                 functions_of_time = deserialize_functions_of_time(
                     volfile.get_functions_of_time(obs_id)
                 )
@@ -191,7 +207,10 @@ def iter_elements(
                     grid_name, all_grid_names, all_extents
                 )
                 data_slice = slice(offset, offset + length)
-                element_map = ElementMap(element_id, domain)
+                if domain:
+                    element_map = ElementMap(element_id, domain)
+                else:
+                    element_map = None
                 element = Element(
                     element_id,
                     mesh=mesh,
