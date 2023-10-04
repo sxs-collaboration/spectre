@@ -318,7 +318,7 @@ struct ElementArray {
 
 // After the algorithm completes we perform a cleanup phase that checks the
 // expected output file was written and deletes it.
-template <bool CheckExpectedOutput>
+template <bool CheckExpectedOutput, bool ExpectReductions, bool ExpectVolume>
 struct CleanOutput {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -333,7 +333,7 @@ struct CleanOutput {
         get<observers::Tags::ReductionFileName>(box) + ".h5";
     if (file_system::check_if_file_exists(reductions_file_name)) {
       file_system::rm(reductions_file_name, true);
-    } else if (CheckExpectedOutput) {
+    } else if (CheckExpectedOutput and ExpectReductions) {
       ERROR("Expected reductions file '" << reductions_file_name
                                          << "' does not exist");
     }
@@ -341,21 +341,26 @@ struct CleanOutput {
         get<observers::Tags::VolumeFileName>(box) + "0.h5";
     if (file_system::check_if_file_exists(volume_file_name)) {
       file_system::rm(volume_file_name, true);
+    } else if (CheckExpectedOutput and ExpectVolume) {
+      ERROR("Expected volume file '" << volume_file_name << "' does not exist");
     }
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
-template <typename Metavariables>
+template <typename Metavariables, bool ExpectReductions = true,
+          bool ExpectVolume = false>
 struct OutputCleaner {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        tmpl::list<CleanOutput<false>>>,
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<CleanOutput<false, ExpectReductions, ExpectVolume>>>,
 
-                 Parallel::PhaseActions<Parallel::Phase::Cleanup,
-                                        tmpl::list<CleanOutput<true>>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Cleanup,
+          tmpl::list<CleanOutput<true, ExpectReductions, ExpectVolume>>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
