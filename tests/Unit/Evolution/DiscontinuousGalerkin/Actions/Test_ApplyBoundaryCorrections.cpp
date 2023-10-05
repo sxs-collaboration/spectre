@@ -305,9 +305,8 @@ struct SetLocalMortarData {
                                          evolution::dg::Tags::NormalCovector<
                                              Metavariables::volume_dim>>>>>&
                       normal_covector_and_magnitude) {
-                mortar_data_history_ptr->at(mortar_id).integration_order(2);
-                mortar_data_history_ptr->at(mortar_id).local_insert(
-                    past_time_step_id, past_mortar_data);
+                mortar_data_history_ptr->at(mortar_id).local().insert(
+                    past_time_step_id, 2, past_mortar_data);
 
                 // Now add the current data into the history.
                 evolution::dg::MortarData<Metavariables::volume_dim>&
@@ -346,8 +345,8 @@ struct SetLocalMortarData {
                   local_mortar_data.insert_local_face_normal_magnitude(
                       face_normal_magnitude);
                 }
-                mortar_data_history_ptr->at(mortar_id).local_insert(
-                    time_step_id, std::move(local_mortar_data));
+                mortar_data_history_ptr->at(mortar_id).local().insert(
+                    time_step_id, 2, std::move(local_mortar_data));
                 local_mortar_data = {};
               },
               make_not_null(&box),
@@ -473,7 +472,8 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   // Use a second-order time stepper so that we test the local Jacobian and
   // normal magnitude history is handled correctly.
-  const TimeSteppers::AdamsBashforth time_stepper{2};
+  const size_t integration_order = 2;
+  const TimeSteppers::AdamsBashforth time_stepper{integration_order};
 
   // The reference element in 2d denoted by X below:
   // ^ eta
@@ -605,19 +605,19 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor : neighbors_in_direction) {
         const std::pair mortar_id{direction, neighbor};
         // Copy past and current mortar data from element's DataBox
-        mortar_data_history.emplace(mortar_id, 2);
-        mortar_data_history.at(mortar_id).local_insert(
-            past_time_step_id,
+        mortar_data_history.insert({mortar_id, {}});
+        mortar_data_history.at(mortar_id).local().insert(
+            past_time_step_id, integration_order,
             get_tag<evolution::dg::Tags::MortarDataHistory<
                 Dim, typename dt_variables_tag::type>>(runner, self_id)
                 .at(mortar_id)
-                .local_data(past_time_step_id));
-        mortar_data_history.at(mortar_id).local_insert(
-            time_step_id,
+                .local().data(past_time_step_id));
+        mortar_data_history.at(mortar_id).local().insert(
+            time_step_id, integration_order,
             get_tag<evolution::dg::Tags::MortarDataHistory<
                 Dim, typename dt_variables_tag::type>>(runner, self_id)
                 .at(mortar_id)
-                .local_data(time_step_id));
+                .local().data(time_step_id));
       }
     }
     // If the local history doesn't agree, the rest of the test will fail.
@@ -684,8 +684,9 @@ void test_impl(const Spectral::Quadrature quadrature,
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
           nhbr_mortar_data.insert_neighbor_mortar_data(neighbor_time_step_id,
                                                        face_mesh, flux_data);
-          mortar_data_history.at(mortar_id).remote_insert(
-              neighbor_time_step_id, std::move(nhbr_mortar_data));
+          mortar_data_history.at(mortar_id).remote().insert(
+              neighbor_time_step_id, integration_order,
+              std::move(nhbr_mortar_data));
         }
       } else {
         all_mortar_data.at(mortar_id).insert_neighbor_mortar_data(

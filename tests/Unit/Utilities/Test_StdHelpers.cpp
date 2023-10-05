@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -118,4 +119,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
 
   CHECK("1.19e+01 10 test" ==
         formatted_string("%1.2e %d %s", 11.87, 10, "test"));
+
+  {
+    std::ostringstream ss{};
+    print_stl(ss, 5);
+    CHECK(ss.str() == get_output(5));
+  }
+  {
+    std::ostringstream ss{};
+    print_stl(ss, std::vector{5});
+    CHECK(ss.str() == get_output(std::vector{5}));
+  }
 }

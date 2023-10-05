@@ -17,11 +17,12 @@ namespace PUP {
 class er;
 }  // namespace PUP
 namespace TimeSteppers {
-class BoundaryHistoryCleaner;
 template <typename T>
 class BoundaryHistoryEvaluator;
+class ConstBoundaryHistoryTimes;
 template <typename T>
 class ConstUntypedHistory;
+class MutableBoundaryHistoryTimes;
 template <typename T>
 class MutableUntypedHistory;
 }  // namespace TimeSteppers
@@ -264,18 +265,23 @@ class AdamsBashforth : public LtsTimeStepper {
   template <typename T>
   void add_boundary_delta_impl(
       gsl::not_null<T*> result,
+      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,
       const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
-      const TimeSteppers::BoundaryHistoryCleaner& cleaner,
       const TimeDelta& time_step) const;
 
   template <typename T>
   void boundary_dense_output_impl(
       gsl::not_null<T*> result,
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
       const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
       const double time) const;
 
   template <typename T, typename TimeType>
   void boundary_impl(gsl::not_null<T*> result,
+                     const ConstBoundaryHistoryTimes& local_times,
+                     const ConstBoundaryHistoryTimes& remote_times,
                      const BoundaryHistoryEvaluator<T>& coupling,
                      const TimeType& end_time) const;
 

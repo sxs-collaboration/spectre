@@ -1842,11 +1842,13 @@ void test_impl(const Spectral::Quadrature quadrature,
         get_tag(::evolution::dg::Tags::MortarDataHistory<
                     Dim, typename dt_variables_tag::type>{})
             .at(mortar_id_east)
-            .local_data(time_step_id);
+            .local()
+            .data(time_step_id);
     CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
                       Dim, typename dt_variables_tag::type>{})
               .at(mortar_id_east)
-              .integration_order() == 1);
+              .local()
+              .integration_order(time_step_id) == 1);
     check_mortar_data(east_mortar_data, mortar_id_east);
   } else {
     CHECK_ITERABLE_APPROX(
@@ -1905,11 +1907,13 @@ void test_impl(const Spectral::Quadrature quadrature,
           get_tag(::evolution::dg::Tags::MortarDataHistory<
                       Dim, typename dt_variables_tag::type>{})
               .at(mortar_id_south)
-              .local_data(time_step_id);
+              .local()
+              .data(time_step_id);
       CHECK(get_tag(::evolution::dg::Tags::MortarDataHistory<
                         Dim, typename dt_variables_tag::type>{})
                 .at(mortar_id_south)
-                .integration_order() == 1);
+                .local()
+                .integration_order(time_step_id) == 1);
       check_mortar_data(south_mortar_data, mortar_id_south);
     } else {
       CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})

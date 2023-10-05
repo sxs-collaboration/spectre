@@ -218,6 +218,19 @@ inline std::ostream& operator<<(std::ostream& os, const std::optional<T>& t) {
 
 /*!
  * \ingroup UtilitiesGroup
+ * \brief Equivalent to `os << t`.
+ *
+ * For some reason this sometimes works when trying to stream directly
+ * doesn't find our STL container stream operators.
+ */
+template <typename T>
+void print_stl(std::ostream& os, const T& t) {
+  using ::operator<<;
+  os << t;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
  * \brief Construct a string containing the keys of a std::unordered_map
  */
 template <typename K, typename V, typename H>

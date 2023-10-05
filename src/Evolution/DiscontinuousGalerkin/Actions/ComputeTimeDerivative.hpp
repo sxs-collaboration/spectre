@@ -849,10 +849,9 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                          << " because the unordered map has not been "
                             "initialized "
                             "to have the mortar id.");
-              boundary_data_history->at(mortar_id).local_insert(
-                  time_step_id, std::move(mortar_data->at(mortar_id)));
-              boundary_data_history->at(mortar_id).integration_order(
-                  integration_order);
+              boundary_data_history->at(mortar_id).local().insert(
+                  time_step_id, integration_order,
+                  std::move(mortar_data->at(mortar_id)));
               mortar_data->at(mortar_id) = MortarData<Dim>{};
             }
           }

@@ -4,487 +4,640 @@
 #pragma once
 
 #include <algorithm>
+#include <boost/container/static_vector.hpp>
 #include <cstddef>
-#include <deque>
-#include <map>
+#include <optional>
 #include <ostream>
 #include <pup.h>
-#include <pup_stl.h>  // IWYU pragma: keep
+#include <pup_stl.h>
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/CircularDeque.hpp"
 #include "DataStructures/MathWrapper.hpp"
-#include "Time/Time.hpp"  // IWYU pragma: keep
+#include "DataStructures/StaticDeque.hpp"
+#include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Serialization/PupBoost.hpp"
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StlBoilerplate.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace TimeSteppers {
 
 /// \ingroup TimeSteppersGroup
-/// Type erased base class for evaluating BoundaryHistory couplings.
-template <typename T>
-class BoundaryHistoryEvaluator {
+/// Access to the list of `TimeStepId`s in a `BoundaryHistory`.
+///
+/// For simplicity of implementation, iterable-container access is not
+/// provided for substeps within a step, but is instead provided
+/// through additional methods on this class.
+/// @{
+class ConstBoundaryHistoryTimes
+    : public stl_boilerplate::RandomAccessSequence<ConstBoundaryHistoryTimes,
+                                                   const TimeStepId, false> {
  protected:
-  BoundaryHistoryEvaluator() = default;
-  BoundaryHistoryEvaluator(const BoundaryHistoryEvaluator&) = default;
-  BoundaryHistoryEvaluator(BoundaryHistoryEvaluator&&) = default;
-  BoundaryHistoryEvaluator& operator=(const BoundaryHistoryEvaluator&) =
-      default;
-  BoundaryHistoryEvaluator& operator=(BoundaryHistoryEvaluator&&) = default;
-  ~BoundaryHistoryEvaluator() = default;
+  ~ConstBoundaryHistoryTimes() = default;
 
  public:
-  using iterator = std::deque<Time>::const_iterator;
-
-  /// The current order of integration.
-  virtual size_t integration_order() const = 0;
-
-  /// Access to the sequence of times on the indicated side.
-  /// @{
-  virtual iterator local_begin() const = 0;
-  virtual iterator local_end() const = 0;
-
-  virtual iterator remote_begin() const = 0;
-  virtual iterator remote_end() const = 0;
-
-  virtual size_t local_size() const = 0;
-  virtual size_t remote_size() const = 0;
-  /// @}
-
-  /// Evaluate the coupling function at the given local and remote
-  /// history entries.  The coupling function will be passed the local
-  /// and remote vars and should return a CouplingResult.  Values are
-  /// cached in the associated BoundaryHistory object.
-  virtual MathWrapper<const T> operator()(const iterator& local,
-                                          const iterator& remote) const = 0;
+  virtual size_t size() const = 0;
+  virtual const TimeStepId& operator[](size_t n) const = 0;
+  virtual const TimeStepId& operator[](
+      const std::pair<size_t, size_t>& step_and_substep) const = 0;
+  virtual size_t integration_order(size_t n) const = 0;
+  virtual size_t integration_order(const TimeStepId& id) const = 0;
+  virtual size_t number_of_substeps(size_t n) const = 0;
+  /// This returns the same value for any substep of the same step.
+  virtual size_t number_of_substeps(const TimeStepId& id) const = 0;
 };
 
-/// \ingroup TimeSteppersGroup
-/// Type erased base class for removing BoundaryHistory entries.
-class BoundaryHistoryCleaner {
+class MutableBoundaryHistoryTimes : public ConstBoundaryHistoryTimes {
  protected:
-  BoundaryHistoryCleaner() = default;
-  BoundaryHistoryCleaner(const BoundaryHistoryCleaner&) = default;
-  BoundaryHistoryCleaner(BoundaryHistoryCleaner&&) = default;
-  BoundaryHistoryCleaner& operator=(const BoundaryHistoryCleaner&) = default;
-  BoundaryHistoryCleaner& operator=(BoundaryHistoryCleaner&&) = default;
-  ~BoundaryHistoryCleaner() = default;
+  ~MutableBoundaryHistoryTimes() = default;
 
  public:
-  using iterator = std::deque<Time>::const_iterator;
+  /// Remove the earliest step and its substeps.
+  virtual void pop_front() const = 0;
+  virtual void clear() const = 0;
+  /// Remove all substeps for step \p n except for the step itself.
+  virtual void clear_substeps(size_t n) const = 0;
+};
+/// @}
 
-  /// The current order of integration.
-  virtual size_t integration_order() const = 0;
+/// \ingroup TimeSteppersGroup
+/// Type erased base class for evaluating BoundaryHistory couplings.
+///
+/// The results are cached in the `BoundaryHistory` class.
+template <typename UntypedCouplingResult>
+class BoundaryHistoryEvaluator {
+ public:
+  virtual MathWrapper<const UntypedCouplingResult> operator()(
+      const TimeStepId& local_id, const TimeStepId& remote_id) const = 0;
 
-  /// Access to the sequence of times on the indicated side.
-  /// @{
-  virtual iterator local_begin() const = 0;
-  virtual iterator local_end() const = 0;
-
-  virtual iterator remote_begin() const = 0;
-  virtual iterator remote_end() const = 0;
-
-  virtual size_t local_size() const = 0;
-  virtual size_t remote_size() const = 0;
-  /// @}
-
-  /// Mark all data before the passed point in history on the
-  /// indicated side as unneeded so it can be removed.  Calling this
-  /// outside of time stepper implementations should not often be
-  /// necessary.
-  /// @{
-  virtual void local_mark_unneeded(const iterator& first_needed) const = 0;
-  virtual void remote_mark_unneeded(const iterator& first_needed) const = 0;
-  /// @}
+ protected:
+  ~BoundaryHistoryEvaluator() = default;
 };
 
 /// \ingroup TimeSteppersGroup
 /// History data used by a TimeStepper for boundary integration.
-/// \tparam LocalVars local variables passed to the boundary coupling
-/// \tparam RemoteVars remote variables passed to the boundary coupling
-/// \tparam CouplingResult result of the coupling function
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+///
+/// \tparam LocalData local data passed to the boundary coupling
+/// \tparam RemoteData remote data passed to the boundary coupling
+/// \tparam CouplingResult type of cached boundary couplings
+template <typename LocalData, typename RemoteData, typename CouplingResult>
 class BoundaryHistory {
  public:
-  using iterator = std::deque<Time>::const_iterator;
-
-  // No copying because of the pointers in the cache.  Moving is fine
-  // because we also move the container being pointed into and maps
-  // guarantee that this doesn't invalidate pointers.
   BoundaryHistory() = default;
-  BoundaryHistory(const BoundaryHistory&) = delete;
+  BoundaryHistory(const BoundaryHistory& other) = default;
   BoundaryHistory(BoundaryHistory&&) = default;
-  BoundaryHistory& operator=(const BoundaryHistory&) = delete;
+  BoundaryHistory& operator=(const BoundaryHistory& other) = default;
   BoundaryHistory& operator=(BoundaryHistory&&) = default;
   ~BoundaryHistory() = default;
 
-  explicit BoundaryHistory(const size_t integration_order)
-      : integration_order_(integration_order) {}
+  /// The wrapped types presented by the type-erased history.  One of
+  /// the types in \ref MATH_WRAPPER_TYPES.
+  using UntypedCouplingResult = math_wrapper_type<CouplingResult>;
 
-  /// The current order of integration.  This should match the value
-  /// in the History.
-  /// @{
-  size_t integration_order() const { return integration_order_; }
-  void integration_order(const size_t integration_order) {
-    integration_order_ = integration_order;
-  }
-  /// @}
-
-  /// Add a new value to the end of the history of the indicated side.
-  /// @{
-  void local_insert(const TimeStepId& time_id, LocalVars vars) {
-    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    local_data_.first.emplace_back(time_id.step_time());
-    local_data_.second.emplace_back(std::move(vars));
-  }
-  void remote_insert(const TimeStepId& time_id, RemoteVars vars) {
-    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    remote_data_.first.emplace_back(time_id.step_time());
-    remote_data_.second.emplace_back(std::move(vars));
-  }
-  /// @}
-
-  /// Add a new value to the front of the history of the indicated
-  /// side.  This is often convenient for setting initial data.
-  /// @{
-  void local_insert_initial(const TimeStepId& time_id, LocalVars vars) {
-    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    local_data_.first.emplace_front(time_id.step_time());
-    local_data_.second.emplace_front(std::move(vars));
-  }
-  void remote_insert_initial(const TimeStepId& time_id, RemoteVars vars) {
-    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
-    remote_data_.first.emplace_front(time_id.step_time());
-    remote_data_.second.emplace_front(std::move(vars));
-  }
-  /// @}
-
-  /// Access to the sequence of times on the indicated side.
-  /// @{
-  iterator local_begin() const { return local_data_.first.begin(); }
-  iterator local_end() const { return local_data_.first.end(); }
-
-  iterator remote_begin() const { return remote_data_.first.begin(); }
-  iterator remote_end() const { return remote_data_.first.end(); }
-
-  size_t local_size() const { return local_data_.first.size(); }
-  size_t remote_size() const { return remote_data_.first.size(); }
-  /// @}
-
-  /// Look up the stored local data at the `time_id`. It is an error to request
-  /// data at a `time_id` that has not been inserted yet.
-  const LocalVars& local_data(const TimeStepId& time_id) const;
-
-  /// Apply \p local_func and \p remote_func to `make_not_null(&e)`
-  /// for `e` every local and remote value in the history,
-  /// respectively.  Invalidates all cached values.
-  ///
-  /// A convenience overload using the same value for the two
-  /// functions is also provided.
-  /// @{
-  template <typename LocalFunc, typename RemoteFunc>
-  void map_entries(LocalFunc&& local_func, RemoteFunc&& remote_func);
-
-  template <typename Func>
-  void map_entries(Func&& func);
-  /// @}
-
- private:
-  template <typename Coupling>
-  class BoundaryHistoryEvaluatorImpl final
-      : public BoundaryHistoryEvaluator<math_wrapper_type<CouplingResult>> {
+  // Factored out of ConstSideAccess so that the base classes of
+  // MutableSideAccess can have protected destructors.
+  template <bool Local, bool Mutable>
+  class SideAccessCommon
+      : public tmpl::conditional_t<Mutable, MutableBoundaryHistoryTimes,
+                                   ConstBoundaryHistoryTimes> {
    public:
-    static_assert(
-        std::is_same_v<CouplingResult,
-                       std::invoke_result_t<Coupling, const LocalVars&,
-                                            const RemoteVars&>>,
-        "Provided coupling return type does not match type stored in the "
-        "history.");
+    using MutableData = tmpl::conditional_t<Local, LocalData, RemoteData>;
+    using Data = tmpl::conditional_t<Mutable, MutableData, const MutableData>;
+
+    size_t size() const override { return parent_data().size(); }
+    static constexpr size_t max_size() {
+      return decltype(std::declval<ConstSideAccess>()
+                          .parent_data())::max_size();
+    }
+
+    const TimeStepId& operator[](const size_t n) const override {
+      return (*this)[{n, 0}];
+    }
+    const TimeStepId& operator[](
+        const std::pair<size_t, size_t>& step_and_substep) const override {
+      return entry(step_and_substep).id;
+    }
+
+    size_t integration_order(const size_t n) const override {
+      return parent_data()[n].integration_order;
+    }
+    size_t integration_order(const TimeStepId& id) const override {
+      return step_data(id).integration_order;
+    }
+
+    size_t number_of_substeps(const size_t n) const override {
+      return parent_data()[n].substeps.size();
+    }
+    size_t number_of_substeps(const TimeStepId& id) const override {
+      return step_data(id).substeps.size();
+    }
+
+    /// Access the data stored on the side.  When performed through a
+    /// `MutableSideAccess`, these allow modification of the data.
+    /// Performing such modifications likely invalidates the coupling
+    /// cache for the associated `BoundaryHistory` object, which
+    /// should be cleared.
+    /// @{
+    Data& data(const size_t n) const {
+      return parent_data()[n].substeps.front().data;
+    }
+    Data& data(const TimeStepId& id) const {
+      return entry(id).data;
+    }
+    /// @}
+
+    /// Apply \p func to each entry.
+    ///
+    /// The function \p func must accept two arguments, one of type
+    /// `const TimeStepId&` and a second of either type `const Data&`
+    /// or `gsl::not_null<Data*>`.  (Note that `Data` may be a
+    /// const-qualified type.)  If entries are modified, the coupling
+    /// cache must be cleared by calling `clear_coupling_cache()` on
+    /// the parent `BoundaryHistory` object.
+    template <typename Func>
+    void for_each(Func&& func) const;
+
+   protected:
+    ~SideAccessCommon() = default;
+
+    auto& parent_data() const {
+      if constexpr (Local) {
+        return parent_->local_data_;
+      } else {
+        return parent_->remote_data_;
+      }
+    }
+
+    auto& step_data(const TimeStepId& id) const {
+      auto entry =
+          std::upper_bound(parent_data().begin(), parent_data().end(), id);
+      ASSERT(entry != parent_data().begin(), "Id " << id << " not present.");
+      --entry;
+      ASSERT(id.substep() < entry->substeps.size() and
+             entry->substeps[id.substep()].id == id,
+             "Id " << id << " not present.");
+      return *entry;
+    }
+
+    auto& entry(const TimeStepId& id) const {
+      // Bounds and consistency are checked in step_data()
+      return step_data(id).substeps[id.substep()];
+    }
+
+    auto& entry(const std::pair<size_t, size_t>& step_and_substep) const {
+      ASSERT(step_and_substep.first < parent_data().size(),
+             "Step out of range: " << step_and_substep.first);
+      auto& substeps = parent_data()[step_and_substep.first].substeps;
+      ASSERT(step_and_substep.second < substeps.size(),
+             "Substep out of range: " << step_and_substep.second);
+      return substeps[step_and_substep.second];
+    }
+
+    using StoredHistory =
+        tmpl::conditional_t<Mutable, BoundaryHistory, const BoundaryHistory>;
+    explicit SideAccessCommon(const gsl::not_null<StoredHistory*> parent)
+        : parent_(parent) {}
+
+    gsl::not_null<StoredHistory*> parent_;
+  };
+
+  /// \cond
+  template <bool Local>
+  class ConstSideAccess;
+  /// \endcond
+
+  template <bool Local>
+  class MutableSideAccess final : public SideAccessCommon<Local, true> {
+   public:
+    using Data = tmpl::conditional_t<Local, LocalData, RemoteData>;
+
+    void pop_front() const override;
+    void clear() const override;
+    void clear_substeps(size_t n) const override;
+
+    void insert(const TimeStepId& id, size_t integration_order,
+                Data data) const;
+
+    void insert_initial(const TimeStepId& id, size_t integration_order,
+                        Data data) const;
 
    private:
     friend class BoundaryHistory;
-    BoundaryHistoryEvaluatorImpl(
-        const gsl::not_null<const BoundaryHistory*> history, Coupling coupling)
-        : history_(history), coupling_(std::forward<Coupling>(coupling)) {}
+    friend class ConstSideAccess<Local>;
+    explicit MutableSideAccess(const gsl::not_null<BoundaryHistory*> parent)
+        : SideAccessCommon<Local, true>(parent) {}
+  };
 
+  template <bool Local>
+  class ConstSideAccess final : public SideAccessCommon<Local, false> {
+   private:
+    friend class BoundaryHistory;
+    explicit ConstSideAccess(const gsl::not_null<const BoundaryHistory*> parent)
+        : SideAccessCommon<Local, false>(parent) {}
+  };
+
+  MutableSideAccess<true> local() { return MutableSideAccess<true>(this); }
+  ConstSideAccess<true> local() const { return ConstSideAccess<true>(this); }
+
+  MutableSideAccess<false> remote() { return MutableSideAccess<false>(this); }
+  ConstSideAccess<false> remote() const { return ConstSideAccess<false>(this); }
+
+ private:
+  template <typename Coupling>
+  class EvaluatorImpl final
+      : public BoundaryHistoryEvaluator<UntypedCouplingResult> {
    public:
-    size_t integration_order() const override {
-      return history_->integration_order();
-    }
-
-    iterator local_begin() const override { return history_->local_begin(); }
-    iterator local_end() const override { return history_->local_end(); }
-
-    iterator remote_begin() const override { return history_->remote_begin(); }
-    iterator remote_end() const override { return history_->remote_end(); }
-
-    size_t local_size() const override { return history_->local_size(); }
-    size_t remote_size() const override { return history_->remote_size(); }
-
-    MathWrapper<const math_wrapper_type<CouplingResult>> operator()(
-        const iterator& local, const iterator& remote) const override;
+    MathWrapper<const UntypedCouplingResult> operator()(
+        const TimeStepId& local_id, const TimeStepId& remote_id) const;
 
    private:
-    gsl::not_null<const BoundaryHistory*> history_;
+    friend class BoundaryHistory;
+
+    EvaluatorImpl(const gsl::not_null<const BoundaryHistory*> parent,
+                  Coupling coupling)
+        : parent_(parent), coupling_(std::move(coupling)) {}
+
+    gsl::not_null<const BoundaryHistory*> parent_;
     Coupling coupling_;
   };
 
  public:
-  /// Returns an unspecified type derived from
-  /// `BoundaryHistoryEvaluator<math_wrapper_type<CouplingResult>>`
-  /// usable for evaluating the passed coupling.  Every call to this
-  /// function must pass an equivalent value for `coupling` (in the
-  /// sense that the same arguments produce the same result).
+  /// Obtain an object that can evaluate type-erased boundary
+  /// couplings.
+  ///
+  /// The passed functor must take objects of types `LocalData` and
+  /// `RemoteData` and return an object convertible to
+  /// `CouplingResult`.  Results are cached, so different calls to
+  /// this function should pass equivalent couplings.
   template <typename Coupling>
   auto evaluator(Coupling&& coupling) const {
-    using Result = BoundaryHistoryEvaluatorImpl<Coupling>;
-    // Check the guarantee in the docs
-    static_assert(
-        std::is_convertible_v<
-            Result*,
-            BoundaryHistoryEvaluator<math_wrapper_type<CouplingResult>>*>);
-    return Result(this, std::forward<Coupling>(coupling));
+    return EvaluatorImpl<Coupling>(this, std::forward<Coupling>(coupling));
   }
 
- private:
-  class BoundaryHistoryCleanerImpl final : public BoundaryHistoryCleaner {
-   public:
-    size_t integration_order() const override {
-      return history_->integration_order();
-    }
+  /// Clear the cached values.
+  ///
+  /// This is required after existing history entries that have been
+  /// used in coupling calculations are mutated.
+  void clear_coupling_cache();
 
-    iterator local_begin() const override { return history_->local_begin(); }
-    iterator local_end() const override { return history_->local_end(); }
-
-    iterator remote_begin() const override { return history_->remote_begin(); }
-    iterator remote_end() const override { return history_->remote_end(); }
-
-    size_t local_size() const override { return history_->local_size(); }
-    size_t remote_size() const override { return history_->remote_size(); }
-
-    void local_mark_unneeded(const iterator& first_needed) const override {
-      history_->template mark_unneeded<0>(first_needed);
-    }
-    void remote_mark_unneeded(const iterator& first_needed) const override {
-      history_->template mark_unneeded<1>(first_needed);
-    }
-
-   private:
-    friend class BoundaryHistory;
-    explicit BoundaryHistoryCleanerImpl(BoundaryHistory* const history)
-        : history_(history) {}
-
-    gsl::not_null<BoundaryHistory*> history_;
-  };
-
- public:
-  /// Returns an unspecified class derived from
-  /// `BoundaryHistoryCleaner` suitable for expiring history entries.
-  auto cleaner() {
-    // Check the guarantee in the docs
-    static_assert(std::is_convertible_v<BoundaryHistoryCleanerImpl*,
-                                        BoundaryHistoryCleaner*>);
-    return BoundaryHistoryCleanerImpl(this);
-  }
-
-  // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
   template <bool IncludeData>
-  std::ostream& print(std::ostream& os, const size_t padding_size = 0) const;
+  std::ostream& print(std::ostream& os, size_t padding_size = 0) const;
 
  private:
-  template <size_t Side>
-  void mark_unneeded(const iterator& first_needed);
+  template <typename Data>
+  struct StepData {
+    struct Entry {
+      TimeStepId id;
+      Data data;
 
-  size_t integration_order_{0};
-  // The type erased classes need access to the list of times, so we
-  // can't store the (time, data) pairs in the natural data structure
-  // but have to invert the deque and pair entries.
-  std::pair<std::deque<Time>, std::deque<LocalVars>> local_data_;
-  std::pair<std::deque<Time>, std::deque<RemoteVars>> remote_data_;
-  // We use pointers instead of iterators because deque invalidates
-  // iterators when elements are inserted or removed at the ends, but
-  // not pointers.
+      void pup(PUP::er& p) {
+        p | id;
+        p | data;
+      }
+    };
+
+    size_t integration_order;
+    // Unlike in History, the full step is the first entry, so we need
+    // one more element.
+    boost::container::static_vector<Entry, history_max_substeps + 1> substeps;
+
+    void pup(PUP::er& p) {
+      p | integration_order;
+      p | substeps;
+    }
+
+    friend bool operator<(const StepData& a, const StepData& b) {
+      return a.substeps.front().id < b.substeps.front().id;
+    }
+    friend bool operator<(const TimeStepId& a, const StepData& b) {
+      return a < b.substeps.front().id;
+    }
+    friend bool operator<(const StepData& a, const TimeStepId& b) {
+      return a.substeps.front().id < b;
+    }
+  };
+
+  void insert_local(const TimeStepId& id, size_t integration_order,
+                    LocalData data);
+  void insert_remote(const TimeStepId& id, size_t integration_order,
+                     RemoteData data);
+
+  void insert_initial_local(const TimeStepId& id, size_t integration_order,
+                            LocalData data);
+  void insert_initial_remote(const TimeStepId& id, size_t integration_order,
+                             RemoteData data);
+
+  void pop_local();
+  void pop_remote();
+
+  void clear_substeps_local(size_t n);
+  void clear_substeps_remote(size_t n);
+
+  StaticDeque<StepData<LocalData>, history_max_past_steps + 2> local_data_{};
+  CircularDeque<StepData<RemoteData>> remote_data_{};
+
+  template <typename Data>
+  using CouplingSubsteps =
+      boost::container::static_vector<Data, history_max_substeps + 1>;
+
+  // Putting the CircularDeque outermost means that we are inserting
+  // and removing containers that do not allocate, so we don't have to
+  // worry about that.
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable std::map<std::pair<const Time*, const Time*>, CouplingResult>
-      coupling_cache_;
+  mutable CircularDeque<CouplingSubsteps<
+      StaticDeque<CouplingSubsteps<std::optional<CouplingResult>>,
+                  decltype(local_data_)::max_size()>>>
+      couplings_;
 };
 
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-template <size_t Side>
-void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::mark_unneeded(
-    const iterator& first_needed) {
-  auto& data = [this]() -> auto& {
-    if constexpr (Side == 0) {
-      return local_data_;
-    } else {
-      return remote_data_;
-    }
-  }();
-  for (auto it = data.first.begin(); it != first_needed; ++it) {
-    // Clean out cache entries referring to the entry we are removing.
-    for (auto cache_entry = coupling_cache_.begin();
-         cache_entry != coupling_cache_.end();) {
-      if (std::get<Side>(cache_entry->first) == &*it) {
-        cache_entry = coupling_cache_.erase(cache_entry);
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local, bool Mutable>
+template <typename Func>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::SideAccessCommon<
+    Local, Mutable>::for_each(Func&& func) const {
+  for (auto& step : parent_data()) {
+    for (auto& substep : step.substeps) {
+      if constexpr (std::is_invocable_v<Func&, const TimeStepId&,
+                                        const Data&>) {
+        func(std::as_const(substep.id), std::as_const(substep.data));
       } else {
-        ++cache_entry;
+        func(std::as_const(substep.id), make_not_null(&substep.data));
       }
     }
   }
-  data.second.erase(data.second.begin(),
-                    data.second.begin() + (first_needed - data.first.begin()));
-  data.first.erase(data.first.begin(), first_needed);
 }
 
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-const LocalVars&
-BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::local_data(
-    const TimeStepId& time_id) const {
-  const Time& time = time_id.step_time();
-  // Look up the data for this time, starting at the end of the `std::deque`,
-  // i.e. the most-recently inserted data.
-  auto value_it = local_data_.second.rbegin();
-  for (auto time_it = local_data_.first.rbegin();
-       time_it != local_data_.first.rend();
-       ++time_it, ++value_it) {
-    if (*time_it == time) {
-      return *value_it;
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::MutableSideAccess<
+    Local>::pop_front() const {
+  if constexpr (Local) {
+    this->parent_->pop_local();
+  } else {
+    this->parent_->pop_remote();
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData,
+                     CouplingResult>::MutableSideAccess<Local>::clear() const {
+  while (not this->empty()) {
+    pop_front();
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::MutableSideAccess<
+    Local>::clear_substeps(const size_t n) const {
+  if constexpr (Local) {
+    this->parent_->clear_substeps_local(n);
+  } else {
+    this->parent_->clear_substeps_remote(n);
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::MutableSideAccess<
+    Local>::insert(const TimeStepId& id, const size_t integration_order,
+                   Data data) const {
+  ASSERT(this->parent_data().empty() or
+             id > this->parent_data().back().substeps.back().id,
+         "New data not newer than current data.");
+  if constexpr (Local) {
+    this->parent_->insert_local(id, integration_order, std::move(data));
+  } else {
+    this->parent_->insert_remote(id, integration_order, std::move(data));
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <bool Local>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::MutableSideAccess<
+    Local>::insert_initial(const TimeStepId& id, const size_t integration_order,
+                           Data data) const {
+  ASSERT(id.substep() == 0, "Cannot insert_initial with substeps.");
+  ASSERT(this->parent_data().empty() or
+             id < this->parent_data().front().substeps.front().id,
+         "New data not older than current data.");
+  if constexpr (Local) {
+    this->parent_->insert_initial_local(id, integration_order, std::move(data));
+  } else {
+    this->parent_->insert_initial_remote(id, integration_order,
+                                         std::move(data));
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+template <typename Coupling>
+auto BoundaryHistory<LocalData, RemoteData, CouplingResult>::EvaluatorImpl<
+    Coupling>::operator()(const TimeStepId& local_id,
+                          const TimeStepId& remote_id) const
+    -> MathWrapper<const UntypedCouplingResult> {
+  auto local_entry = std::upper_bound(
+      parent_->local_data_.begin(), parent_->local_data_.end(), local_id);
+  ASSERT(local_entry != parent_->local_data_.begin(), "local_id not present");
+  --local_entry;
+  ASSERT(local_id.substep() < local_entry->substeps.size() and
+         local_entry->substeps[local_id.substep()].id == local_id,
+         "local_id not present");
+  const auto local_step_offset =
+      static_cast<size_t>(local_entry - parent_->local_data_.begin());
+
+  auto remote_entry = std::upper_bound(
+      parent_->remote_data_.begin(), parent_->remote_data_.end(), remote_id);
+  ASSERT(remote_entry != parent_->remote_data_.begin(),
+         "remote_id not present");
+  --remote_entry;
+  ASSERT(remote_id.substep() < remote_entry->substeps.size() and
+         remote_entry->substeps[remote_id.substep()].id == remote_id,
+         "remote_id not present");
+  const auto remote_step_offset =
+      static_cast<size_t>(remote_entry - parent_->remote_data_.begin());
+
+  auto& coupling_entry = parent_->couplings_[remote_step_offset]
+                             [remote_id.substep()][local_step_offset]
+                             [local_id.substep()];
+  if (not coupling_entry.has_value()) {
+    coupling_entry.emplace(coupling_(
+        local_entry->substeps[local_id.substep()].data,
+        remote_entry->substeps[remote_id.substep()].data));
+  }
+  return make_math_wrapper(*coupling_entry);
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData,
+                     CouplingResult>::clear_coupling_cache() {
+  for (auto& remote_step : couplings_) {
+    for (auto& remote_substep : remote_step) {
+      for (auto& local_step : remote_substep) {
+        for (auto& local_substep : local_step) {
+          local_substep.reset();
+        }
+      }
     }
   }
-  ERROR("No local data was found at time " << time << ".");
 }
 
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-template <typename LocalFunc, typename RemoteFunc>
-void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::map_entries(
-    LocalFunc&& local_func, RemoteFunc&& remote_func) {
-  coupling_cache_.clear();
-  alg::for_each(local_data_.second,
-                [&](LocalVars& v) { local_func(make_not_null(&v)); });
-  alg::for_each(remote_data_.second,
-                [&](RemoteVars& v) { remote_func(make_not_null(&v)); });
-}
-
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-template <typename Func>
-void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::map_entries(
-    Func&& func) {
-  map_entries(func, func);
-}
-
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::pup(PUP::er& p) {
-  p | integration_order_;
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::pup(PUP::er& p) {
   p | local_data_;
   p | remote_data_;
-
-  const size_t cache_size = PUP_stl_container_size(p, coupling_cache_);
-  if (p.isUnpacking()) {
-    for (size_t entry_num = 0; entry_num < cache_size; ++entry_num) {
-      size_t local_index = 0;
-      size_t remote_index = 0;
-      CouplingResult cache_value;
-      p | local_index;
-      p | remote_index;
-      p | cache_value;
-      const auto cache_key = std::make_pair(&local_data_.first[local_index],
-                                            &remote_data_.first[remote_index]);
-      coupling_cache_.insert(std::make_pair(cache_key, cache_value));
-    }
-  } else {
-    for (auto& cache_entry : coupling_cache_) {
-      // clang-tidy: modernize-use-auto - Ensuring the correct type is
-      // important here to prevent undefined behavior in charm.  I
-      // want to be explicit.
-      size_t local_index = static_cast<size_t>(  // NOLINT
-          std::find_if(local_data_.first.begin(), local_data_.first.end(),
-                       [goal = cache_entry.first.first](const auto& entry) {
-                         return &entry == goal;
-                       }) -
-          local_data_.first.begin());
-      ASSERT(local_index < local_data_.first.size(),
-             "Failed to find local history entry for cache entry");
-
-      // clang-tidy: modernize-use-auto - Ensuring the correct type is
-      // important here to prevent undefined behavior in charm.  I
-      // want to be explicit.
-      size_t remote_index = static_cast<size_t>(  // NOLINT
-          std::find_if(remote_data_.first.begin(), remote_data_.first.end(),
-                       [goal = cache_entry.first.second](const auto& entry) {
-                         return &entry == goal;
-                       }) -
-          remote_data_.first.begin());
-      ASSERT(remote_index < remote_data_.first.size(),
-             "Failed to find remote history entry for cache entry");
-
-      p | local_index;
-      p | remote_index;
-      p | cache_entry.second;
-    }
-  }
+  p | couplings_;
 }
 
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-template <typename Coupling>
-MathWrapper<const math_wrapper_type<CouplingResult>>
-BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::
-    BoundaryHistoryEvaluatorImpl<Coupling>::operator()(
-        const iterator& local, const iterator& remote) const {
-  const auto insert_result = history_->coupling_cache_.insert(
-      std::make_pair(std::make_pair(&*local, &*remote), CouplingResult{}));
-  CouplingResult& inserted_value = insert_result.first->second;
-  const bool is_new_value = insert_result.second;
-  if (is_new_value) {
-    inserted_value =
-        coupling_(history_->local_data_.second[static_cast<size_t>(
-                      local - history_->local_data_.first.begin())],
-                  history_->remote_data_.second[static_cast<size_t>(
-                      remote - history_->remote_data_.first.begin())]);
-  }
-  return make_math_wrapper(inserted_value);
-}
-
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+template <typename LocalData, typename RemoteData, typename CouplingResult>
 template <bool IncludeData>
-std::ostream& BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::print(
+std::ostream& BoundaryHistory<LocalData, RemoteData, CouplingResult>::print(
     std::ostream& os, const size_t padding_size) const {
-  os << std::scientific << std::setprecision(16);
   const std::string pad(padding_size, ' ');
   using ::operator<<;
-  os << pad << "Integration order: " << integration_order_ << "\n";
-  os << pad << " Local Data:\n";
-  auto local_value_it = local_data_.second.begin();
-  for (auto local_time_it = local_data_.first.begin();
-       local_time_it != local_data_.first.end();
-       ++local_time_it, ++local_value_it) {
-    os << pad << "  Time: " << *local_time_it << "\n";
-    if constexpr (IncludeData) {
-      os << pad << "   Data: " << *local_value_it << "\n";
+  const auto do_print = [&os, &pad](const auto& times) {
+    for (size_t step = 0; step < times.size(); ++step) {
+      const size_t number_of_substeps = times.number_of_substeps(step);
+      for (size_t substep = 0; substep < number_of_substeps; ++substep) {
+        const auto id = times[{step, substep}];
+        os << pad << " Time: " << id;
+        if (substep == 0) {
+          os << " (order " << times.integration_order(step) << ")";
+        }
+        os << "\n";
+        if constexpr (IncludeData) {
+          os << pad << "  Data: ";
+          // os << times.data(id) fails to compile on gcc-11
+          print_stl(os, times.data(id));
+          os << "\n";
+        }
+      }
     }
-  }
-  os << pad << " Remote Data:\n";
-  auto remote_value_it = remote_data_.second.begin();
-  for (auto remote_time_it = remote_data_.first.begin();
-       remote_time_it != remote_data_.first.end();
-       ++remote_time_it, ++remote_value_it) {
-    os << pad << "  Time: " << *remote_time_it << "\n";
-    if constexpr (IncludeData) {
-      os << pad << "   Data: " << *remote_value_it << "\n";
-    }
-  }
+  };
+  os << pad << "Local Data:\n";
+  do_print(local());
+  os << pad << "Remote Data:\n";
+  do_print(remote());
   return os;
 }
 
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::insert_local(
+    const TimeStepId& id, const size_t integration_order, LocalData data) {
+  if (id.substep() == 0) {
+    local_data_.push_back({integration_order, {}});
+  } else {
+    ASSERT(integration_order == local_data_.back().integration_order,
+           "Cannot change integration order during a step.");
+  }
+  local_data_.back().substeps.push_back({id, std::move(data)});
+  for (auto& remote_step : couplings_) {
+    for (auto& remote_substep : remote_step) {
+      if (id.substep() == 0) {
+        remote_substep.emplace_back(1_st);
+      } else {
+        remote_substep.back().emplace_back();
+      }
+    }
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::insert_remote(
+    const TimeStepId& id, const size_t integration_order, RemoteData data) {
+  if (id.substep() == 0) {
+    remote_data_.push_back({integration_order, {}});
+  } else {
+    ASSERT(integration_order == remote_data_.back().integration_order,
+           "Cannot change integration order during a step.");
+  }
+  remote_data_.back().substeps.push_back({id, std::move(data)});
+  if (id.substep() == 0) {
+    couplings_.emplace_back(1_st);
+  } else {
+    couplings_.back().emplace_back();
+  }
+  for (const auto& local_step : local_data_) {
+    couplings_.back().back().emplace_back(local_step.substeps.size());
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::
+    insert_initial_local(const TimeStepId& id, const size_t integration_order,
+                         LocalData data) {
+  local_data_.push_front({integration_order, {}});
+  local_data_.front().substeps.push_back({id, std::move(data)});
+  for (auto& remote_step : couplings_) {
+    for (auto& remote_substep : remote_step) {
+      remote_substep.emplace_front(1_st);
+    }
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::
+    insert_initial_remote(const TimeStepId& id, const size_t integration_order,
+                          RemoteData data) {
+  remote_data_.push_front({integration_order, {}});
+  remote_data_.front().substeps.push_back({id, std::move(data)});
+  couplings_.emplace_front(1_st);
+  for (const auto& local_step : local_data_) {
+    couplings_.front().back().emplace_back(local_step.substeps.size());
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::pop_local() {
+  local_data_.pop_front();
+  for (auto& remote_step : couplings_) {
+    for (auto& remote_substep : remote_step) {
+      remote_substep.pop_front();
+    }
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData, CouplingResult>::pop_remote() {
+  remote_data_.pop_front();
+  couplings_.pop_front();
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData,
+                     CouplingResult>::clear_substeps_local(const size_t n) {
+  local_data_[n].substeps.erase(local_data_[n].substeps.begin() + 1,
+                                local_data_[n].substeps.end());
+  for (auto& remote_step : couplings_) {
+    for (auto& remote_substep : remote_step) {
+      auto& local_step = remote_substep[n];
+      local_step.erase(local_step.begin() + 1, local_step.end());
+    }
+  }
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+void BoundaryHistory<LocalData, RemoteData,
+                     CouplingResult>::clear_substeps_remote(const size_t n) {
+  remote_data_[n].substeps.erase(remote_data_[n].substeps.begin() + 1,
+                                 remote_data_[n].substeps.end());
+  auto& remote_step = couplings_[n];
+  remote_step.erase(remote_step.begin() + 1, remote_step.end());
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
 std::ostream& operator<<(
     std::ostream& os,
-    const BoundaryHistory<LocalVars, RemoteVars, CouplingResult>& history) {
+    const BoundaryHistory<LocalData, RemoteData, CouplingResult>& history) {
   return history.template print<true>(os);
 }
 }  // namespace TimeSteppers

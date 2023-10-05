@@ -86,6 +86,10 @@ Checks: '*,
 CheckOptions:
   - key: performance-move-const-arg.CheckTriviallyCopyableMove
     value: false
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: true
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers

@@ -221,22 +221,23 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
   const Slab slab = dt[0].slab();
   Time t = forward_in_time ? slab.start() : slab.end();
 
-  TimeSteppers::AdamsBashforth ab4(4);
+  const size_t order = 4;
+  TimeSteppers::AdamsBashforth ab4(order);
 
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{};
   {
     const Slab init_slab = slab.advance_towards(-dt[0]);
 
     for (int32_t step = 1; step <= 3; ++step) {
       {
         const Time now = t - step * dt[0].with_slab(init_slab);
-        history.local_insert_initial(make_time_id(now),
-                                     NCd(quartic_side1(now.value())));
+        history.local().insert_initial(make_time_id(now), order,
+                                       NCd(quartic_side1(now.value())));
       }
       {
         const Time now = t - step * dt[1].with_slab(init_slab);
-        history.remote_insert_initial(make_time_id(now),
-                                      NCd(quartic_side2(now.value())));
+        history.remote().insert_initial(make_time_id(now), order,
+                                        NCd(quartic_side2(now.value())));
       }
     }
   }
@@ -250,9 +251,11 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
         - next.cbegin());
 
     if (side == 0) {
-      history.local_insert(make_time_id(t), NCd(quartic_side1(t.value())));
+      history.local().insert(make_time_id(t), order,
+                             NCd(quartic_side1(t.value())));
     } else {
-      history.remote_insert(make_time_id(t), NCd(quartic_side2(t.value())));
+      history.remote().insert(make_time_id(t), order,
+                              NCd(quartic_side2(t.value())));
     }
 
     gsl::at(next, side) += gsl::at(dt, side);
@@ -281,9 +284,10 @@ void check_lts_vts() {
 
   Time t = slab.start();
 
-  TimeSteppers::AdamsBashforth ab4(4);
+  const size_t order = 4;
+  TimeSteppers::AdamsBashforth ab4(order);
 
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{};
   {
     const Slab init_slab = slab.retreat();
     const TimeDelta init_dt = init_slab.duration() / 4;
@@ -292,10 +296,10 @@ void check_lts_vts() {
     for (int32_t step = 1; step <= 3; ++step) {  // NOLINT
       // clang-tidy misfeature: warns about boost internals here
       const Time now = t - step * init_dt;  // NOLINT
-      history.local_insert_initial(make_time_id(now),
-                                   NCd(quartic_side1(now.value())));
-      history.remote_insert_initial(make_time_id(now),
-                                    NCd(quartic_side2(now.value())));
+      history.local().insert_initial(make_time_id(now), order,
+                                     NCd(quartic_side1(now.value())));
+      history.remote().insert_initial(make_time_id(now), order,
+                                      NCd(quartic_side2(now.value())));
     }
   }
 
@@ -312,11 +316,11 @@ void check_lts_vts() {
         std::min_element(next.cbegin(), next.cend()) - next.cbegin());
 
     if (side == 0) {
-      history.local_insert(make_time_id(next[0]),
-                           NCd(quartic_side1(next[0].value())));
+      history.local().insert(make_time_id(next[0]), order,
+                             NCd(quartic_side1(next[0].value())));
     } else {
-      history.remote_insert(make_time_id(next[1]),
-                            NCd(quartic_side2(next[1].value())));
+      history.remote().insert(make_time_id(next[1]), order,
+                              NCd(quartic_side2(next[1].value())));
     }
 
     const TimeDelta this_dt = gsl::at(dt, side).front();
@@ -411,7 +415,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Reversal",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary.Reversal",
                   "[Unit][Time]") {
-  const TimeSteppers::AdamsBashforth ab3(3);
+  const size_t order = 3;
+  const TimeSteppers::AdamsBashforth ab3(order);
 
   const auto f = [](const double t) {
     return 1. + t * (2. + t * (3. + t * 4.));
@@ -419,13 +424,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary.Reversal",
   const auto df = [](const double t) { return 2. + t * (6. + t * 12.); };
 
   const Slab slab(0., 1.);
-  TimeSteppers::BoundaryHistory<double, double, double> history{3};
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
   const auto add_history = [&df, &history](const TimeStepId& time_id) {
-    history.local_insert(time_id, df(time_id.step_time().value()));
-    history.remote_insert(time_id, 0.);
+    history.local().insert(time_id, order, df(time_id.step_time().value()));
+    history.remote().insert(time_id, order, 0.);
   };
   add_history(TimeStepId(true, 0, slab.start()));
-  add_history(TimeStepId(true, 0, slab.end()));
+  add_history(TimeStepId(true, 0, slab.start() + slab.duration() * 3 / 4));
   add_history(TimeStepId(true, 1, slab.start() + slab.duration() / 3));
   double y = f(1. / 3.);
   ab3.add_boundary_delta(
