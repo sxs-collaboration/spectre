@@ -124,7 +124,7 @@ def schedule(
     input_file_name: Optional[str] = None,
     submit_script_name: str = "Submit.sh",
     out_file_name: str = "spectre.out",
-    context_file_name: str = "SubmitContext.yaml",
+    context_file_name: str = "SchedulerContext.yaml",
     submit: Optional[bool] = None,
     clean_output: bool = False,
     force: bool = False,
@@ -285,7 +285,7 @@ def schedule(
         "spectre.out")
       context_file_name: Optional. Name of the file that stores the context
         for resubmissions in the `run_dir`. Used by `spectre.support.resubmit`.
-        (Default: "SubmitContext.yaml")
+        (Default: "SchedulerContext.yaml")
       submit: Optional. If 'True', automatically submit jobs using the
         'scheduler'. If 'False', skip the job submission. If 'None', prompt for
         confirmation before submitting.
@@ -904,7 +904,7 @@ def _parse_params(ctx, param, all_values):
 )
 @click.option(
     "--context-file-name",
-    default="SubmitContext.yaml",
+    default="SchedulerContext.yaml",
     show_default=True,
     help="Name of the context file that supports resubmissions.",
 )

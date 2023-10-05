@@ -178,8 +178,8 @@ NUM_NODES={{ num_nodes | default(1) }}
             [
                 self.test_dir / "Segments/Segment_0000",
                 self.test_dir / "Segments/Segment_0000/InputFile.yaml",
+                self.test_dir / "Segments/Segment_0000/SchedulerContext.yaml",
                 self.test_dir / "Segments/Segment_0000/Submit.sh",
-                self.test_dir / "Segments/Segment_0000/SubmitContext.yaml",
                 self.test_dir / "Segments/Segment_0000/jobid.txt",
                 self.test_dir / "Segments/Segment_0000/out.txt",
                 self.test_dir / "Segments/SubmitTemplate.sh",
@@ -202,14 +202,14 @@ NUM_NODES={{ num_nodes | default(1) }}
             ],
         )
         with open(
-            self.test_dir / "Segments/Segment_0000/SubmitContext.yaml", "r"
+            self.test_dir / "Segments/Segment_0000/SchedulerContext.yaml", "r"
         ) as open_context_file:
             context = yaml.safe_load(open_context_file)
         self.assertDictEqual(
             context,
             dict(
                 clean_output=False,
-                context_file_name="SubmitContext.yaml",
+                context_file_name="SchedulerContext.yaml",
                 copy_executable=None,
                 executable=str(self.test_dir / "Segments/TestExec"),
                 executable_name="TestExec",
