@@ -6,17 +6,12 @@
 #include <pup.h>
 #include <utility>
 
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 
 namespace grmhd::AnalyticData {
 
 PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(
-    MagnetizedFmDisk fm_disk, domain::CoordinateMaps::SphericalTorus torus_map)
-    : fm_disk_(std::move(fm_disk)),
-      torus_map_(
-          domain::make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
-              torus_map)),
-      bare_torus_map_(std::move(torus_map)) {}
+    MagnetizedFmDisk fm_disk, grmhd::AnalyticData::SphericalTorus torus_map)
+    : fm_disk_(std::move(fm_disk)), torus_map_(std::move(torus_map)) {}
 
 std::unique_ptr<evolution::initial_data::InitialData>
 PolarMagnetizedFmDisk::get_clone() const {
@@ -29,7 +24,6 @@ PolarMagnetizedFmDisk::PolarMagnetizedFmDisk(CkMigrateMessage* msg)
 void PolarMagnetizedFmDisk::pup(PUP::er& p) {
   p | fm_disk_;
   p | torus_map_;
-  p | bare_torus_map_;
 }
 
 PUP::able::PUP_ID PolarMagnetizedFmDisk::my_PUP_ID = 0; // NOLINT

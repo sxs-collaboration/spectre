@@ -20,6 +20,7 @@ spectre_target_sources(
   PolarMagnetizedFmDisk.cpp
   RiemannProblem.cpp
   SlabJet.cpp
+  SphericalTorus.cpp
   )
 
 spectre_target_headers(
@@ -39,6 +40,7 @@ spectre_target_headers(
   PolarMagnetizedFmDisk.hpp
   RiemannProblem.hpp
   SlabJet.hpp
+  SphericalTorus.hpp
   )
 
 target_link_libraries(

@@ -10,9 +10,9 @@
 #include <optional>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
-#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {
@@ -24,10 +24,8 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace domain::CoordinateMaps {
+namespace grmhd::AnalyticData {
 /*!
- * \ingroup CoordinateMapsGroup
- *
  * \brief Torus made by removing two polar cones from a spherical shell
  *
  * Maps source coordinates \f$(\xi, \eta, \zeta)\f$ to
@@ -100,27 +98,25 @@ class SphericalTorus {
   SphericalTorus() = default;
 
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  tnsr::I<T, 3> operator()(const tnsr::I<T, 3>& source_coords) const;
 
-  std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const;
+  tnsr::I<double, 3> inverse(const tnsr::I<double, 3>& target_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const;
+  Jacobian<T, 3, Frame::BlockLogical, Frame::Inertial> jacobian(
+      const tnsr::I<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const;
+  InverseJacobian<T, 3, Frame::BlockLogical, Frame::Inertial> inv_jacobian(
+      const tnsr::I<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ijj<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> hessian(
-      const std::array<T, 3>& source_coords) const;
+  tnsr::Ijj<T, 3, Frame::NoFrame> hessian(
+      const tnsr::I<T, 3>& source_coords) const;
 
   template <typename T>
-  tnsr::Ijk<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-  derivative_of_inv_jacobian(const std::array<T, 3>& source_coords) const;
+  tnsr::Ijk<T, 3, Frame::NoFrame> derivative_of_inv_jacobian(
+      const tnsr::I<T, 3>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -129,14 +125,13 @@ class SphericalTorus {
 
  private:
   template <typename T>
-  tt::remove_cvref_wrap_t<T> radius(const T& x) const;
+  T radius(const T& x) const;
 
   template <typename T>
-  void radius(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> r,
-              const T& x) const;
+  void radius(gsl::not_null<T*> r, const T& x) const;
 
   template <typename T>
-  tt::remove_cvref_wrap_t<T> radius_inverse(const T& r) const;
+  T radius_inverse(const T& r) const;
 
   friend bool operator==(const SphericalTorus& lhs, const SphericalTorus& rhs);
 
@@ -148,4 +143,4 @@ class SphericalTorus {
 };
 
 bool operator!=(const SphericalTorus& lhs, const SphericalTorus& rhs);
-}  // namespace domain::CoordinateMaps
+}  // namespace grmhd::AnalyticData

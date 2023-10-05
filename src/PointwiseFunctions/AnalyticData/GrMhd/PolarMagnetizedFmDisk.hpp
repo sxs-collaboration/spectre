@@ -12,12 +12,11 @@
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/SphericalTorus.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/SphericalTorus.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -36,7 +35,7 @@ namespace grmhd::AnalyticData {
 /*!
  * \brief Magnetized fluid disk orbiting a Kerr black hole in the Kerr-Schild
  * Cartesian coordinates, but in a toroidal mesh defined from a torus map
- * (see doamin::CoordinateMaps::SphericalTorus).
+ * (see grmhd::AnalyticData::SphericalTorus).
  */
 class PolarMagnetizedFmDisk
     : public virtual evolution::initial_data::InitialData,
@@ -49,7 +48,7 @@ class PolarMagnetizedFmDisk
   };
 
   struct TorusParameters {
-    using type = domain::CoordinateMaps::SphericalTorus;
+    using type = grmhd::AnalyticData::SphericalTorus;
     static constexpr Options::String help =
         "Parameters for the evolution region.";
   };
@@ -68,7 +67,7 @@ class PolarMagnetizedFmDisk
   ~PolarMagnetizedFmDisk() override = default;
 
   PolarMagnetizedFmDisk(MagnetizedFmDisk fm_disk,
-                        domain::CoordinateMaps::SphericalTorus torus_map);
+                        grmhd::AnalyticData::SphericalTorus torus_map);
 
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
@@ -91,15 +90,7 @@ class PolarMagnetizedFmDisk
     // solution uses Frame::Inertial.  This means the input and output
     // have to be converted to the correct label.
 
-    // We have to copy here to match the CoordinateMap interface.
-    tnsr::I<DataType, 3, Frame::BlockLogical> x_logical;
-    std::array<DataType, 3> x_array;
-    for (size_t i = 0; i < 3; ++i) {
-      x_logical.get(i) = x.get(i);
-      gsl::at(x_array, i) = x.get(i);
-    }
-
-    const tnsr::I<DataType, 3> observation_coordinates(torus_map_(x_logical));
+    const tnsr::I<DataType, 3> observation_coordinates(torus_map_(x));
 
     using dependencies = tmpl::map<
         tmpl::pair<gr::AnalyticSolution<3>::DerivShift<DataType>,
@@ -113,10 +104,10 @@ class PolarMagnetizedFmDisk
     auto observation_data =
         fm_disk_.variables(observation_coordinates, required_tags{});
 
-    const auto jacobian = torus_map_.jacobian(x_logical);
-    const auto inv_jacobian = torus_map_.inv_jacobian(x_logical);
+    const auto jacobian = torus_map_.jacobian(x);
+    const auto inv_jacobian = torus_map_.inv_jacobian(x);
 
-    const auto change_frame = [this, &inv_jacobian, &jacobian, &x_array](
+    const auto change_frame = [this, &inv_jacobian, &jacobian, &x](
                                   const auto& data, auto tag) {
       using Tag = decltype(tag);
       auto result =
@@ -125,7 +116,7 @@ class PolarMagnetizedFmDisk
       if constexpr (std::is_same_v<
                         Tag, gr::AnalyticSolution<3>::DerivShift<DataType>>) {
         const auto deriv_inv_jacobian =
-            bare_torus_map_.derivative_of_inv_jacobian(x_array);
+            torus_map_.derivative_of_inv_jacobian(x);
         const auto& shift =
             get<gr::Tags::Shift<DataType, 3, Frame::Inertial>>(data);
         for (size_t i = 0; i < 3; ++i) {
@@ -139,7 +130,7 @@ class PolarMagnetizedFmDisk
       } else if constexpr (std::is_same_v<
                                Tag, gr::AnalyticSolution<3>::DerivSpatialMetric<
                                         DataType>>) {
-        const auto hessian = bare_torus_map_.hessian(x_array);
+        const auto hessian = torus_map_.hessian(x);
         const auto& spatial_metric =
             get<gr::Tags::SpatialMetric<DataType, 3, Frame::Inertial>>(data);
         for (size_t i = 0; i < 3; ++i) {
@@ -184,10 +175,7 @@ class PolarMagnetizedFmDisk
                          const PolarMagnetizedFmDisk& rhs);
 
   MagnetizedFmDisk fm_disk_;
-  domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                        domain::CoordinateMaps::SphericalTorus>
-      torus_map_;
-  domain::CoordinateMaps::SphericalTorus bare_torus_map_;
+  grmhd::AnalyticData::SphericalTorus torus_map_;
 };
 
 bool operator!=(const PolarMagnetizedFmDisk& lhs,

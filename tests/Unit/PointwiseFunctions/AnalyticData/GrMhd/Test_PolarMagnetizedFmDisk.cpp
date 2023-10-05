@@ -9,13 +9,13 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/SphericalTorus.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticData/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/PolarMagnetizedFmDisk.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/SphericalTorus.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -60,30 +60,29 @@ void test_create_from_options() {
   const auto& disk =
       dynamic_cast<const grmhd::AnalyticData::PolarMagnetizedFmDisk&>(
           *deserialized_option_solution);
-  CHECK(disk ==
-        grmhd::AnalyticData::PolarMagnetizedFmDisk(
-            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
-                                                  0.065, 1.654, 0.42, 85.0, 6),
-            domain::CoordinateMaps::SphericalTorus(2.5, 3.6, 0.9, 0.7)));
+  CHECK(disk == grmhd::AnalyticData::PolarMagnetizedFmDisk(
+                    grmhd::AnalyticData::MagnetizedFmDisk(
+                        1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 6),
+                    grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7)));
 }
 
 void test_move() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
-            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
-                                                  0.065, 1.654, 0.42, 85.0, 6),
-            domain::CoordinateMaps::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+      grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
+                                            1.654, 0.42, 85.0, 6),
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk_copy(
-            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
-                                                  0.065, 1.654, 0.42, 85.0, 6),
-            domain::CoordinateMaps::SphericalTorus(2.5, 3.6, 0.9, 0.7));
-  test_move_semantics(std::move(disk), disk_copy);  
+      grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
+                                            1.654, 0.42, 85.0, 6),
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+  test_move_semantics(std::move(disk), disk_copy);
 }
 
 void test_serialize() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
-            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
-                                                  0.065, 1.654, 0.42, 85.0, 6),
-            domain::CoordinateMaps::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+      grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
+                                            1.654, 0.42, 85.0, 6),
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
   test_serialization(disk);
 }
 
@@ -112,7 +111,7 @@ void test_variables(const DataType& used_for_size) {
           bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
           polytropic_constant, polytropic_exponent, threshold_density,
           inverse_plasma_beta),
-      domain::CoordinateMaps::SphericalTorus(3.0, 20.0, 1.0, 0.3));
+      grmhd::AnalyticData::SphericalTorus(3.0, 20.0, 1.0, 0.3));
 
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.5);
 
