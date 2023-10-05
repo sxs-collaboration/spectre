@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Charmxx::main
   Cce
   Time
   Interpolation
@@ -15,18 +16,25 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  CharacteristicExtract
-  CharacteristicExtract
-  Evolution/Executables/Cce
-  EvolutionMetavars<Cce::H5WorldtubeBoundary>
-  "${LIBS_TO_LINK}"
+function(add_cce_executable EXECUTABLE BOUNDARY_COMPONENT)
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    CharacteristicExtract.cpp
   )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    BOUNDARY_COMPONENT=${BOUNDARY_COMPONENT}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
-add_spectre_parallel_executable(
-  AnalyticTestCharacteristicExtract
+add_cce_executable(
   CharacteristicExtract
-  Evolution/Executables/Cce
-  EvolutionMetavars<Cce::AnalyticWorldtubeBoundary>
-  "${LIBS_TO_LINK}"
+  Cce::H5WorldtubeBoundary
+  )
+add_cce_executable(
+  AnalyticTestCharacteristicExtract
+  Cce::AnalyticWorldtubeBoundary
   )

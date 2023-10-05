@@ -11,7 +11,6 @@
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -20,7 +19,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
@@ -30,7 +28,6 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
-#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
@@ -39,10 +36,7 @@
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -119,11 +113,3 @@ struct RandomAmrMetavars {
         evolution::dg::Tags::Quadrature>>;
   };
 };
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>,
-    &amr::register_callbacks<metavariables,
-                             typename metavariables::dg_element_array>};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};

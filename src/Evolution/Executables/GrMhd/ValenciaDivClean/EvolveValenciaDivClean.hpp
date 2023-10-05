@@ -7,9 +7,6 @@
 #include <vector>
 
 #include "Domain/Creators/Factory3D.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
-#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
@@ -97,7 +94,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
@@ -181,13 +177,8 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
-#include "Utilities/Blas.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -203,8 +194,11 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+template <typename InitialData, typename InterpolationTargetTags>
+struct EvolutionMetavars;
+
 template <typename InitialData, typename... InterpolationTargetTags>
-struct EvolutionMetavars {
+struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
@@ -687,18 +681,3 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using interpolating_component =
       typename Metavariables::dg_element_array_component;
 };
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
-    &setup_memory_allocation_failure_reporting,
-    &disable_openblas_multithreading,
-    &domain::creators::register_derived_with_charm,
-    &domain::creators::time_dependence::register_derived_with_charm,
-    &domain::FunctionsOfTime::register_derived_with_charm,
-    &grmhd::ValenciaDivClean::BoundaryCorrections::register_derived_with_charm,
-    &grmhd::ValenciaDivClean::fd::register_derived_with_charm,
-    &EquationsOfState::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>};
-
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};

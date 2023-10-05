@@ -21,9 +21,9 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
@@ -34,9 +34,6 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Slab.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Utilities/Blas.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -430,12 +427,7 @@ struct TestMetavariables {
 };
 }  // namespace
 
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
-    &disable_openblas_multithreading};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
-
-using charmxx_main_component = Parallel::Main<TestMetavariables>;
-
-#include "Parallel/CharmMain.tpp"
+extern "C" void CkRegisterMainModule() {
+  Parallel::charmxx::register_main_module<TestMetavariables>();
+  Parallel::charmxx::register_init_node_and_proc({}, {});
+}

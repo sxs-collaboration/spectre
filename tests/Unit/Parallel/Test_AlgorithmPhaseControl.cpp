@@ -21,9 +21,9 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
@@ -36,11 +36,8 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -430,15 +427,9 @@ struct TestMetavariables {
 };
 
 // [charm_init_funcs_example]
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
-    &register_factory_classes_with_charm<TestMetavariables>};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
+extern "C" void CkRegisterMainModule() {
+  Parallel::charmxx::register_main_module<TestMetavariables>();
+  Parallel::charmxx::register_init_node_and_proc(
+      {&register_factory_classes_with_charm<TestMetavariables>}, {});
+}
 // [charm_init_funcs_example]
-
-// [charm_main_example]
-using charmxx_main_component = Parallel::Main<TestMetavariables>;
-// [charm_main_example]
-
-#include "Parallel/CharmMain.tpp"  // IWYU pragma: keep

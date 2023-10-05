@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Charmxx::main
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
@@ -24,13 +25,18 @@ set(LIBS_TO_LINK
   )
 
 function(add_scalar_wave_executable DIM)
-  add_spectre_parallel_executable(
-    "EvolveScalarWave${DIM}D"
-    EvolveScalarWave
-    Evolution/Executables/ScalarWave
-    "EvolutionMetavars<${DIM}>"
-    "${LIBS_TO_LINK}"
+  set(EXECUTABLE "EvolveScalarWave${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveScalarWave.cpp
     )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction(add_scalar_wave_executable)
 
 add_scalar_wave_executable(1)

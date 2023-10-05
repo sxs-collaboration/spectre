@@ -11,8 +11,6 @@ SpECTRE executable that will simply print some useful information
 about the executable and then exit.
 
 Specifically, this tutorial will introduce:
-- `add_spectre_parallel_executable`, a CMake function that will add a
-  build target for a SpECTRE executable
 - A user-provided `Metavariables`, a C++ struct that is used to
   specify the metaprogram that is converted into a C++ executable.
 - how to build a SpECTRE executable
@@ -38,64 +36,35 @@ directory for the executable, you will need to edit the
 \snippet Examples/CMakeLists.txt add_subdirectory
 
 The second step is to edit (or create) the `CMakeLists.txt` file in
-the executable directory and add a call to
-`add_spectre_parallel_executable` such as:
+the executable directory and add a call to `add_spectre_executable` such as:
 
 \snippet ParallelTutorial/CMakeLists.txt add_spectre_executable
 
-The (SpECTRE defined) `CMake` function `add_spectre_executable` takes
-five arguments:
+The `add_spectre_executable` just forwards its arguments to CMake's
+`add_executable`. It works just like `add_executable` in that you pass it a
+source file that defines your executable.
 
-- The name of the executable (in the given example `MinimalExample`)
-  that will be created, which will also be the name of the
-  corresponding build target.
-- The base name (in the given example `MinimalExecutable`) of the two
-  user-provided files that declare (`MinimalExecutableFwd.hpp`) and
-  define (`MinimalExecutable.hpp`) a C++ struct (or struct template)
-  that will describe the metaprogram that is converted into a C++
-  executable.  We will refer to this struct (template) as the
-  metavariables struct (template), and the files declaring and
-  defining the metavariables struct (template) as the metavariables
-  files.
-- The path relative to `SPECTRE_ROOT/src` to the directory holding the
-  metavariables files (in the given example
-  `Executables/Examples/ParallelTutorial`)
-- The specific metavariables struct (in the given example
-  `Metavariables`) that will be used to create the executable.  This
-  is either the name of the metavariables struct in the metavariables
-  files, or a specific instantiation of the metavariables struct
-  template in the metavariables files.
-- A list of SpECTRE libraries that the executable will be linked
-  against (in the given example the `CMake` list `LIBS_TO_LINK` where
-  `%Informer` and `Utilities` are two SpECTRE libraries)
+Your source file needs a `CkRegisterMainModule()` function. This is the "main"
+function of the Charm++ program:
+
+\snippet ParallelTutorial/MinimalExecutable.cpp main_function
+
+It just calls `Parallel::charmxx::register_main_module<Metavariables>()`. This
+is where SpECTRE code takes over. SpECTRE programs are defined by the
+`Metavariables` class that is passed to this function.
 
 ### Writing the metavariables files
 
-The header files from which an executable is generated must declare
-and define a metavariables struct that can be thought of as a
-compile-time input file that defines what the executable will do.
+The metavariables can be thought of as a compile-time input file that defines
+what the executable will do:
 
-The first metavariables file (`MinimalExecutableFwd.hpp`) is simply a
-forward declaration of the metavariables struct:
-
-\snippet MinimalExecutableFwd.hpp metavariables_forward_declaration
-
-(Note that `#%pragma once` tells the compiler to only include the file
-once per compilation, and the `/// \%cond` and `/// \%endcond` around
-the code tells doxygen not to generate documentation from the wrapped
-region)
-
-The second metavariables file (`MinimalExecutable.hpp`) holds the
-definition of the metavariables struct.
-
-\snippet MinimalExecutable.hpp metavariables_definition
+\snippet MinimalExecutable.cpp metavariables_definition
 
 The metavariables struct must define a `static constexpr
 std::array<Parallel::Phase, N> default_phase_order` that is used to
 define the default order in which phases are executed.  In this
 example the executable will execute the `Initialization` phase
-followed by the `Exit` phase.  (`Parallel::CProxy_GlobalCache` is an
-unused proxy to the `GlobalCache` that is explained below)
+followed by the `Exit` phase.
 
 The metavariables struct must define a type alias `component_list`
 that is a `tmpl::list` (a typelist defined in `Utilities/TMPL.hpp`) of
@@ -105,16 +74,6 @@ parallel components are used.
 The metavariables struct must define `help`, a `static constexpr
 Options::String` that will be printed as part of the help message of the
 executable. (`Options::String` is defined in `Options/Options.hpp`.)
-
-In addition to defining the metavaribles struct, the metavariables
-file must define the two vectors of functions `charm_init_node_funcs`
-and `charm_init_proc_funcs`
-
-\snippet  MinimalExecutable.hpp executable_example_charm_init
-
-that are executed at startup by Charm++ on each node and processing
-element (PE) the executable runs on.  In this example, the vectors are
-empty.
 
 ### Building a SpECTRE executable
 

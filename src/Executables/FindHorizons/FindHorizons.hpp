@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/Creators/Factory3D.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -29,7 +28,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -59,12 +57,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
-#include "Utilities/Blas.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -307,12 +301,4 @@ struct Metavariables {
 };
 
 }  // namespace FindHorizons
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
-    &disable_openblas_multithreading,
-    &domain::creators::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
 /// \endcond

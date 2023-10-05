@@ -10,12 +10,8 @@
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/InitializationFunctions.hpp"
-#include "Parallel/Main.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -63,13 +59,10 @@ struct Metavariables {
 
 }  // namespace
 
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
-    &domain::creators::register_derived_with_charm,
-    &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
-
-using charmxx_main_component = Parallel::Main<Metavariables>;
-
-#include "Parallel/CharmMain.tpp"  // IWYU pragma: keep
+extern "C" void CkRegisterMainModule() {
+  Parallel::charmxx::register_main_module<Metavariables>();
+  Parallel::charmxx::register_init_node_and_proc(
+      {&domain::creators::register_derived_with_charm,
+       &TestHelpers::domain::BoundaryConditions::register_derived_with_charm},
+      {});
+}

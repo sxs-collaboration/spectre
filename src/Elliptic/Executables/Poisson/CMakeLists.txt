@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Charmxx::main
   Convergence
   CoordinateMaps
   DiscontinuousGalerkin
@@ -27,13 +28,18 @@ set(LIBS_TO_LINK
   )
 
 function(add_poisson_executable DIM)
-  add_spectre_parallel_executable(
-    "SolvePoisson${DIM}D"
-    SolvePoisson
-    Elliptic/Executables/Poisson
-    "Metavariables<${DIM}>"
-    "${LIBS_TO_LINK}"
+  set(EXECUTABLE "SolvePoisson${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    SolvePoisson.cpp
     )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction(add_poisson_executable)
 
 add_poisson_executable(1)

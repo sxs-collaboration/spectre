@@ -1,7 +1,18 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBS_TO_LINK
+set(EXECUTABLE SolvePunctures)
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  SolvePunctures.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE
+  Charmxx::main
   Convergence
   CoordinateMaps
   DataStructures
@@ -32,12 +43,4 @@ set(LIBS_TO_LINK
   PuncturesBoundaryConditions
   PuncturesPointwiseFunctions
   PuncturesSolutions
-  )
-
-add_spectre_parallel_executable(
-  SolvePunctures
-  SolvePunctures
-  Elliptic/Executables/Punctures
-  "Metavariables"
-  "${LIBS_TO_LINK}"
   )

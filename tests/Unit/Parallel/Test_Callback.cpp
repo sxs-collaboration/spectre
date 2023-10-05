@@ -14,14 +14,11 @@
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/Callback.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -257,12 +254,7 @@ void register_callbacks() {
 }
 }  //  namespace
 
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
-    &register_callbacks};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
-
-using charmxx_main_component = Parallel::Main<TestMetavariables>;
-
-#include "Parallel/CharmMain.tpp"
+extern "C" void CkRegisterMainModule() {
+  Parallel::charmxx::register_main_module<TestMetavariables>();
+  Parallel::charmxx::register_init_node_and_proc({&register_callbacks}, {});
+}

@@ -1,7 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBS_TO_LINK
+set(EXECUTABLE EvolveScalarTensorSingleBlackHole)
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveScalarTensorSingleBlackHole.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE
+  ApparentHorizonFinder
+  Charmxx::main
+  ControlSystem
   CoordinateMaps
   CurvedScalarWave
   DiscontinuousGalerkin
@@ -30,12 +43,4 @@ set(LIBS_TO_LINK
   Serialization
   Time
   Utilities
-  )
-
-add_spectre_parallel_executable(
-  EvolveScalarTensorSingleBlackHole
-  EvolveScalarTensorSingleBlackHole
-  Evolution/Executables/ScalarTensor
-  "EvolutionMetavars"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ControlSystem"
   )

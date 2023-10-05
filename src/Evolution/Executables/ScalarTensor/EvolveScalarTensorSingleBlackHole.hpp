@@ -12,17 +12,11 @@
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Trigger.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
-#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Executables/ScalarTensor/ScalarTensorBase.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryCorrections/RegisterDerived.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -60,12 +54,8 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags/Time.hpp"
-#include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
   using st_base = ScalarTensorTemplateBase<EvolutionMetavars>;
@@ -252,16 +242,3 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                       tmpl::bind<intrp::InterpolationTarget,
                                  tmpl::pin<EvolutionMetavars>, tmpl::_1>>>>;
 };
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
-    &disable_openblas_multithreading,
-    &domain::creators::time_dependence::register_derived_with_charm,
-    &domain::FunctionsOfTime::register_derived_with_charm,
-    &ScalarTensor::BoundaryCorrections::register_derived_with_charm,
-    &domain::creators::register_derived_with_charm,
-    &gh::ConstraintDamping::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>};
-
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};

@@ -2,18 +2,21 @@
 # See LICENSE.txt for details.
 
 # [add_spectre_executable]
-set(LIBS_TO_LINK
+set(EXECUTABLE MinimalExample)
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  MinimalExecutable.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE
+  Charmxx::main
   Informer
   Options
   Parallel
   Utilities
-  )
-
-add_spectre_parallel_executable(
-  MinimalExample
-  MinimalExecutable
-  Executables/Examples/ParallelTutorial
-  Metavariables
-  "${LIBS_TO_LINK}"
   )
 # [add_spectre_executable]

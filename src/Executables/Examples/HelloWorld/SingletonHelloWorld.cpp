@@ -1,34 +1,30 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#pragma once
+// [executable_example_includes]
+#include <string>
 
-/// \cond
-/// [executable_example_includes]
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
 class er;
 }  // namespace PUP
-/// [executable_example_includes]
+// [executable_example_includes]
 
-/// [executable_example_options]
+// [executable_example_options]
 namespace OptionTags {
 struct Name {
   using type = std::string;
@@ -47,9 +43,9 @@ struct Name : db::SimpleTag {
   }
 };
 }  // namespace Tags
-/// [executable_example_options]
+// [executable_example_options]
 
-/// [executable_example_action]
+// [executable_example_action]
 namespace Actions {
 struct PrintMessage {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -63,9 +59,9 @@ struct PrintMessage {
   }
 };
 }  // namespace Actions
-/// [executable_example_action]
+// [executable_example_action]
 
-/// [executable_example_singleton]
+// [executable_example_singleton]
 template <class Metavariables>
 struct HelloWorld {
   using const_global_cache_tags = tmpl::list<Tags::Name>;
@@ -88,9 +84,9 @@ void HelloWorld<Metavariables>::execute_next_phase(
       Parallel::get_parallel_component<HelloWorld>(
           *Parallel::local_branch(global_cache)));
 }
-/// [executable_example_singleton]
+// [executable_example_singleton]
 
-/// [executable_example_metavariables]
+// [executable_example_metavariables]
 struct Metavars {
   using component_list = tmpl::list<HelloWorld<Metavars>>;
 
@@ -104,12 +100,11 @@ struct Metavars {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };
-/// [executable_example_metavariables]
+// [executable_example_metavariables]
 
-/// [executable_example_charm_init]
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};
-/// [executable_example_charm_init]
-/// \endcond
+// [executable_example_charm_init]
+extern "C" void CkRegisterMainModule() {
+  Parallel::charmxx::register_main_module<Metavars>();
+  Parallel::charmxx::register_init_node_and_proc({}, {});
+}
+// [executable_example_charm_init]

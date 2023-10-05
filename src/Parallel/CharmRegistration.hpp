@@ -216,10 +216,8 @@ struct RegisterParallelComponent : RegistrationHelper {
  * The main chare must also have a constructor that takes a `const
  * Parallel::charmxx::MainChareRegistrationConstructor&` as its only argument.
  * This constructor is only used to trigger the `RegisterChare::registrar` code
- * needed for automatic registration. The main chare is determined by specifying
- * the type alias `charmxx_main_component` before the `Parallel/CharmMain.tpp`
- * include.
- * \snippet Test_AlgorithmCore.cpp charm_main_example
+ * needed for automatic registration. The main chare is set up in
+ * `Parallel::charmxx::register_main_module<Metavariables>`.
  */
 template <typename Chare, typename CkIndex>
 struct RegisterChare : RegistrationHelper {

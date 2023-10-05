@@ -5,6 +5,7 @@ set(LIBS_TO_LINK
   Amr
   AmrCriteria
   AmrProjectors
+  Charmxx::main
   DomainCreators
   Informer
   Options
@@ -13,26 +14,21 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  RandomAmr1D
-  RandomAmr
-  Executables/Examples/RandomAmr
-  RandomAmrMetavars<1>
-  "${LIBS_TO_LINK}"
-  )
+function(add_random_amr_executable DIM)
+  set(EXECUTABLE "RandomAmr${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    RandomAmr.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
-add_spectre_parallel_executable(
-  RandomAmr2D
-  RandomAmr
-  Executables/Examples/RandomAmr
-  RandomAmrMetavars<2>
-  "${LIBS_TO_LINK}"
-  )
-
-add_spectre_parallel_executable(
-  RandomAmr3D
-  RandomAmr
-  Executables/Examples/RandomAmr
-  RandomAmrMetavars<3>
-  "${LIBS_TO_LINK}"
-  )
+add_random_amr_executable(1)
+add_random_amr_executable(2)
+add_random_amr_executable(3)

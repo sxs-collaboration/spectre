@@ -852,13 +852,8 @@ details.
 Charm++ allows running functions once per core and once per node before the
 construction of any parallel components. This is commonly used for setting up
 error handling and enabling floating point exceptions. Other functions could
-also be run. Which functions are run on each node and core is set by specifying
-a `std::vector<void (*)()>` called `charm_init_node_funcs` and
-`charm_init_proc_funcs` with function pointers to the functions to be called.
-For example,
-\snippet Test_AlgorithmCore.cpp charm_init_funcs_example
+also be run. Which functions are run on each node and core is set by calling
+`Parallel::charmxx::register_init_node_and_proc` in `CkRegisterMainModule()`
+with function pointers to the functions to be called. For example:
 
-Finally, the user must include the `Parallel/CharmMain.tpp` file at the end of
-the main executable cpp file. So, the end of an executables main cpp file will
-then typically look as follows:
-\snippet Test_AlgorithmParallel.cpp charm_include_example
+\snippet Test_AlgorithmPhaseControl.cpp charm_init_funcs_example

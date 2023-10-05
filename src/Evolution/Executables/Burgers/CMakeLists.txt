@@ -1,10 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBS_TO_LINK
+set(EXECUTABLE EvolveBurgers)
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveBurgers.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE
   Burgers
   BurgersAnalyticData
   BurgersSolutions
+  Charmxx::main
   DgSubcell
   DiscontinuousGalerkin
   DomainCreators
@@ -22,12 +33,4 @@ set(LIBS_TO_LINK
   Serialization
   Time
   Utilities
-  )
-
-add_spectre_parallel_executable(
-  "EvolveBurgers"
-  EvolveBurgers
-  Evolution/Executables/Burgers
-  "EvolutionMetavars"
-  "${LIBS_TO_LINK}"
   )

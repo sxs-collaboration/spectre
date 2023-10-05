@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Charmxx::main
   CoordinateMaps
   CurvedScalarWave
   CurvedWaveEquationAnalyticData
@@ -30,25 +31,25 @@ set(INTERPOLATION_LIBS_TO_LINK
   ParallelInterpolation
 )
 
-function(add_curved_scalar_wave_executable EXECUTABLE_NAME DIM BACKGROUND INITIAL_DATA)
-  add_spectre_parallel_executable(
-    "EvolveCurvedScalarWave${EXECUTABLE_NAME}${DIM}D"
-    EvolveCurvedScalarWave
-    Evolution/Executables/CurvedScalarWave
-    "EvolutionMetavars<${DIM},${BACKGROUND},${INITIAL_DATA}>"
-    "${LIBS_TO_LINK}"
+function(add_curved_scalar_wave_executable EXECUTABLE_SUFFIX DIM BACKGROUND INITIAL_DATA)
+  set(EXECUTABLE "EvolveCurvedScalarWave${EXECUTABLE_SUFFIX}${DIM}D")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveCurvedScalarWave.cpp
     )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    DIM=${DIM}
+    BACKGROUND=${BACKGROUND}
+    INITIAL_DATA=${INITIAL_DATA}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+  if (DIM EQUAL 3)
+    target_link_libraries(${EXECUTABLE} PRIVATE ${INTERPOLATION_LIBS_TO_LINK})
+  endif()
 endfunction(add_curved_scalar_wave_executable)
-
-function(add_interpolating_curved_scalar_wave_executable EXECUTABLE_NAME DIM BACKGROUND INITIAL_DATA)
-  add_spectre_parallel_executable(
-    "EvolveCurvedScalarWave${EXECUTABLE_NAME}${DIM}D"
-    EvolveCurvedScalarWave
-    Evolution/Executables/CurvedScalarWave
-    "EvolutionMetavars<${DIM},${BACKGROUND},${INITIAL_DATA}>"
-    "${LIBS_TO_LINK};${INTERPOLATION_LIBS_TO_LINK}"
-  )
-endfunction(add_interpolating_curved_scalar_wave_executable)
 
 function(add_flat_plane_wave_executable DIM)
   add_curved_scalar_wave_executable(
@@ -61,25 +62,25 @@ endfunction(add_flat_plane_wave_executable)
 
 add_flat_plane_wave_executable(1)
 add_flat_plane_wave_executable(2)
+add_flat_plane_wave_executable(3)
 
-add_interpolating_curved_scalar_wave_executable(
-  PlaneWaveMinkowski
-  3
-  gr::Solutions::Minkowski<3>
-  ScalarWave::Solutions::PlaneWave<3>
-)
-
-add_interpolating_curved_scalar_wave_executable(
-  ScalarWaveKerrSchild
+add_curved_scalar_wave_executable(
+  KerrSchild
   3
   gr::Solutions::KerrSchild
   CurvedScalarWave::AnalyticData::PureSphericalHarmonic
 )
 
-add_spectre_parallel_executable(
-  "EvolveWorldtubeCurvedScalarWaveKerrSchild3D"
-  EvolveWorldtubeCurvedScalarWave
-  Evolution/Executables/CurvedScalarWave
-  "EvolutionMetavars<gr::Solutions::KerrSchild,ScalarWave::Solutions::PlaneWave<3>>"
-  "${LIBS_TO_LINK};${INTERPOLATION_LIBS_TO_LINK};ScalarWaveWorldtube"
-)
+set(WORLDTUBE_EXECUTABLE EvolveWorldtubeCurvedScalarWaveKerrSchild3D)
+add_spectre_executable(
+  ${WORLDTUBE_EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveWorldtubeCurvedScalarWave.cpp
+  )
+target_link_libraries(
+  ${WORLDTUBE_EXECUTABLE}
+  PRIVATE
+  ${LIBS_TO_LINK}
+  ${INTERPOLATION_LIBS_TO_LINK}
+  ScalarWaveWorldtube
+  )

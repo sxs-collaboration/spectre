@@ -1,27 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-function(add_ghmhd_executable INITIAL_DATA_NAME INITIAL_DATA LIBS_TO_LINK)
-  add_spectre_parallel_executable(
-    "EvolveGhValenciaDivClean${INITIAL_DATA_NAME}"
-    EvolveGhValenciaDivClean
-    Evolution/Executables/GrMhd/GhValenciaDivClean
-    "EvolutionMetavars<${INITIAL_DATA}>"
-    "${LIBS_TO_LINK}"
-    )
-endfunction(add_ghmhd_executable)
-
-function(add_ghmhd_with_horizon_executable INITIAL_DATA_NAME INITIAL_DATA LIBS_TO_LINK)
-  add_spectre_parallel_executable(
-    "EvolveGhValenciaDivClean${INITIAL_DATA_NAME}"
-    EvolveGhValenciaDivCleanWithHorizon
-    Evolution/Executables/GrMhd/GhValenciaDivClean
-    "EvolutionMetavars<${INITIAL_DATA}>"
-    "${LIBS_TO_LINK}"
-    )
-endfunction(add_ghmhd_with_horizon_executable)
-
 set(LIBS_TO_LINK
+  ApparentHorizonFinder
+  Charmxx::main
   Cce
   CoordinateMaps
   DiscontinuousGalerkin
@@ -45,6 +27,7 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  ParallelInterpolation
   PhaseControl
   RelativisticEulerSolutions
   Serialization
@@ -54,55 +37,92 @@ set(LIBS_TO_LINK
   )
 
 set(LIBS_TO_LINK_WITH_CONTROL_SYSTEM
-    ControlSystem
-    ControlSystemMeasurements
-    ${LIBS_TO_LINK}
-)
+  ControlSystem
+  ControlSystemMeasurements
+  )
+
+function(add_ghmhd_executable SUFFIX INITIAL_DATA USE_CONTROL_SYSTEMS)
+  set(EXECUTABLE "EvolveGhValenciaDivClean${SUFFIX}")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveGhValenciaDivClean.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    INITIAL_DATA=${INITIAL_DATA}
+    USE_CONTROL_SYSTEMS=${USE_CONTROL_SYSTEMS}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+  if (USE_CONTROL_SYSTEMS STREQUAL "true")
+    target_link_libraries(
+      ${EXECUTABLE}
+      PRIVATE
+      ${LIBS_TO_LINK_WITH_CONTROL_SYSTEM}
+      )
+  endif()
+endfunction()
 
 add_ghmhd_executable(
   ""
-  "evolution::NumericInitialData,false,BondiSachs"
-  "${LIBS_TO_LINK}"
+  evolution::NumericInitialData
+  false
   )
 
 add_ghmhd_executable(
   "Bns"
-  "evolution::NumericInitialData,true,BondiSachs"
-  "${LIBS_TO_LINK_WITH_CONTROL_SYSTEM}"
+  evolution::NumericInitialData
+  true
   )
+
+function(add_ghmhd_with_horizon_executable SUFFIX INITIAL_DATA)
+  set(EXECUTABLE "EvolveGhValenciaDivClean${SUFFIX}")
+  add_spectre_executable(
+    ${EXECUTABLE}
+    EXCLUDE_FROM_ALL
+    EvolveGhValenciaDivCleanWithHorizon.cpp
+    )
+  target_compile_definitions(
+    ${EXECUTABLE}
+    PRIVATE
+    INITIAL_DATA=${INITIAL_DATA}
+    )
+  target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
+endfunction()
 
 add_ghmhd_with_horizon_executable(
   BondiHoyleAccretion
-  "gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
+  gh::Solutions::WrappedGr<grmhd::AnalyticData::BondiHoyleAccretion>
+  false
   )
 
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
-  "gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
+  gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>
+  false
   )
 
 add_ghmhd_with_horizon_executable(
   BondiMichel
-  "gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
+  gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
+  false
   )
 
 add_ghmhd_with_horizon_executable(
   FishboneMoncriefDisk
-  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>,false,BondiSachs"
-  "${LIBS_TO_LINK};ApparentHorizonFinder;ParallelInterpolation"
+  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::FishboneMoncriefDisk>
+  false
   )
 
 add_ghmhd_executable(
   CcsnCollapse
-  "gh::Solutions::WrappedGr<grmhd::AnalyticData::CcsnCollapse>,false,BondiSachs"
-  "${LIBS_TO_LINK}"
+  gh::Solutions::WrappedGr<grmhd::AnalyticData::CcsnCollapse>
+  false
   )
 
 add_ghmhd_executable(
   TovStar
-  "gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>,false,BondiSachs"
-  "${LIBS_TO_LINK}"
+  gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>
+  false
   )

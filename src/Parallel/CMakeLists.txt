@@ -61,6 +61,7 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Boost::boost
+  Boost::program_options
   DataStructures
   Informer
   PUBLIC

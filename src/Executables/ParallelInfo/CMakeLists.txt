@@ -12,6 +12,7 @@ add_charm_module(${EXECUTABLE})
 
 add_spectre_executable(
   ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
   ${EXECUTABLE_SOURCES}
   )
 

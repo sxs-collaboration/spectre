@@ -32,14 +32,11 @@
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/OptionTags.hpp"
-#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
-#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
@@ -61,7 +58,6 @@
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -70,14 +66,10 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
-#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -495,13 +487,3 @@ struct Metavariables {
   void pup(PUP::er& /*p*/) {}
 };
 /// [metavars]
-
-static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
-    &setup_memory_allocation_failure_reporting,
-    &domain::creators::register_derived_with_charm,
-    &domain::creators::time_dependence::register_derived_with_charm,
-    &domain::FunctionsOfTime::register_derived_with_charm,
-    &register_factory_classes_with_charm<metavariables>};
-static const std::vector<void (*)()> charm_init_proc_funcs{
-    &enable_floating_point_exceptions, &enable_segfault_handler};

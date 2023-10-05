@@ -25,21 +25,24 @@ target_link_libraries(
 
 function(add_algorithm_test TEST_NAME DIM)
   set(TEST_BASE ${TEST_NAME}${DIM}D)
-  set(HPP_NAME Test_${TEST_NAME})
-  set(EXECUTABLE_NAME ${HPP_NAME}${DIM}D)
+  set(CPP_NAME Test_${TEST_NAME})
+  set(EXECUTABLE_NAME ${CPP_NAME}${DIM}D)
   set(TEST_IDENTIFIER Integration.Importers.${TEST_BASE})
 
-  add_spectre_parallel_executable(
+  add_spectre_executable(
     ${EXECUTABLE_NAME}
-    ${HPP_NAME}
-    IO/Importers
-    Metavariables<${DIM}>
-    ""
+    EXCLUDE_FROM_ALL
+    ${CPP_NAME}.cpp
     )
-
+  target_compile_definitions(
+    ${EXECUTABLE_NAME}
+    PRIVATE
+    DIM=${DIM}
+    )
   target_link_libraries(
     ${EXECUTABLE_NAME}
     PRIVATE
+    Charmxx::main
     Catch2::Catch2
     DataStructures
     DgSubcell
