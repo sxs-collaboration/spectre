@@ -119,6 +119,23 @@ struct MockGlobalCache {
   explicit MockGlobalCache(CkMigrateMessage* /*msg*/) {}
   virtual ~MockGlobalCache() = default;
   virtual void pup(PUP::er& /*p*/) {}
+
+  static bool isIrreducible() { return true; }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#elif defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__)
+  template <typename T>
+  static void contribute(T&& /*unused*/) {
+    ERROR("Not implemented.");
+  }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #ifdef SPECTRE_CHARM_HAS_MAIN

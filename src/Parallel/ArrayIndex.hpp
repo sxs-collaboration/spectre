@@ -26,7 +26,7 @@ namespace Parallel {
  */
 template <class Index>
 struct ArrayIndex : public CkArrayIndex {
-  static_assert(std::is_pod<Index>::value,
+  static_assert(std::is_standard_layout_v<Index> and std::is_trivial_v<Index>,
                 "The array index type must be a POD, plain-old-data");
   // clang-tidy: suspicious use of sizeof
   static_assert(sizeof(Index) <= 3 * sizeof(int),  // NOLINT

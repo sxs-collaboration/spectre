@@ -162,7 +162,7 @@ Direction<VolumeDim> get_direction_normal_to_face(
                      two_to_the(VolumeDim - 1)>& face_pts) {
   const auto summed_point = alg::accumulate(
       face_pts, tnsr::I<double, VolumeDim, Frame::BlockLogical>(0.0),
-      [](tnsr::I<double, VolumeDim, Frame::BlockLogical>& prior,
+      [](auto&& prior,
          const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];

@@ -51,7 +51,6 @@ class SubdomainOperator {
  public:
   static constexpr size_t volume_dim = Dim;
 
- protected:
   SubdomainOperator() = default;
 };
 

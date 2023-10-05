@@ -84,6 +84,9 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
 
   bool operator==(const MathFunction<1, Fr>& other) const override;
   bool operator!=(const MathFunction<1, Fr>& other) const override;
+
+  bool operator==(const Gaussian<1, Fr>& other) const;
+  bool operator!=(const Gaussian<1, Fr>& other) const;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
@@ -168,6 +171,9 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
 
   bool operator==(const MathFunction<VolumeDim, Fr>& other) const override;
   bool operator!=(const MathFunction<VolumeDim, Fr>& other) const override;
+
+  bool operator==(const Gaussian<VolumeDim, Fr>& other) const;
+  bool operator!=(const Gaussian<VolumeDim, Fr>& other) const;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

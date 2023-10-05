@@ -24,7 +24,7 @@ DataType evaluate_with_function_basis(const std::vector<double>& coefficients,
   return std::accumulate(
       coefficients.begin(), coefficients.end(),
       make_with_value<DataType>(x, 0.0),
-      [&x, &f_of_k_and_x, &counter](auto& sum, const auto& coefficient) {
+      [&x, &f_of_k_and_x, &counter](auto&& sum, const auto& coefficient) {
         counter++;
         return sum + coefficient * f_of_k_and_x(counter - 1, x);
       });

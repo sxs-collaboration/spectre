@@ -22,12 +22,15 @@
 // The `static_assert`s verify that `ElementId` satisfies the constraints
 // imposed by Charm++ to make `ElementId` able to act as an index into Charm++'s
 // arrays. These constraints are:
-// - `ElementId` must satisfy `std::is_pod`
+// - `ElementId` must satisfy `std::is_standard_layout` and `std::is_trivial`
 // - `ElementId` must not be larger than the size of three `int`s, i.e.
 //   `sizeof(ElementId) <= 3 * sizeof(int)`
-static_assert(std::is_pod<ElementId<1>>::value, "ElementId is not POD");
-static_assert(std::is_pod<ElementId<2>>::value, "ElementId is not POD");
-static_assert(std::is_pod<ElementId<3>>::value, "ElementId is not POD");
+static_assert(std::is_standard_layout_v<ElementId<1>> and
+              std::is_trivial_v<ElementId<1>>);
+static_assert(std::is_standard_layout_v<ElementId<2>> and
+              std::is_trivial_v<ElementId<2>>);
+static_assert(std::is_standard_layout_v<ElementId<3>> and
+              std::is_trivial_v<ElementId<3>>);
 
 static_assert(sizeof(ElementId<1>) == 3 * sizeof(int),
               "Wrong size for ElementId<1>");

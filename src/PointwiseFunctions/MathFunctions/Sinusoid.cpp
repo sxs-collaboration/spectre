@@ -101,6 +101,18 @@ bool Sinusoid<1, Fr>::operator!=(const MathFunction<1, Fr>& other) const {
 }
 
 template <typename Fr>
+bool Sinusoid<1, Fr>::operator==(const Sinusoid<1, Fr>& other) const {
+  return (this->amplitude_ == other.amplitude_) and
+         (this->wavenumber_ == other.wavenumber_) and
+         (this->phase_ == other.phase_);
+}
+
+template <typename Fr>
+bool Sinusoid<1, Fr>::operator!=(const Sinusoid<1, Fr>& other) const {
+  return not(*this == other);
+}
+
+template <typename Fr>
 void Sinusoid<1, Fr>::pup(PUP::er& p) {
   MathFunction<1, Fr>::pup(p);
   p | amplitude_;

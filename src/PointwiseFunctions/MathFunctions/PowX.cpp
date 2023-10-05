@@ -88,16 +88,24 @@ T PowX<1, Fr>::apply_third_deriv(const T& x) const {
 template <typename Fr>
 bool PowX<1, Fr>::operator==(const MathFunction<1, Fr>& other) const {
   const auto* derived_other = dynamic_cast<const PowX<1, Fr>*>(&other);
-  if (derived_other != nullptr) {
-    return this->power_ == derived_other->power_;
-  }
-  return false;
+  return derived_other != nullptr and (*this == *derived_other);
 }
 
 template <typename Fr>
 bool PowX<1, Fr>::operator!=(const MathFunction<1, Fr>& other) const {
   return not(*this == other);
 }
+
+template <typename Fr>
+bool PowX<1, Fr>::operator==(const PowX<1, Fr>& other) const {
+  return this->power_ == other.power_;
+}
+
+template <typename Fr>
+bool PowX<1, Fr>::operator!=(const PowX<1, Fr>& other) const {
+  return not(*this == other);
+}
+
 template <typename Fr>
 void PowX<1, Fr>::pup(PUP::er& p) {
   MathFunction<1, Fr>::pup(p);
