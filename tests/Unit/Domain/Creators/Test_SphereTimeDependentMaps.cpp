@@ -27,12 +27,8 @@ struct Inertial;
 
 namespace domain::creators::sphere {
 namespace {
-std::string create_option_string(const bool use_non_zero_shape,
-                                 const bool use_size_from_shape) {
+std::string create_option_string(const bool use_non_zero_shape) {
   return "InitialTime: 1.5\n"
-         "SizeMap:\n" +
-         (use_size_from_shape ? "  InitialValues: Auto\n"s
-                              : "  InitialValues: [0.9, 0.08, 0.007]\n"s) +
          "ShapeMap:\n"
          "  LMax: 8\n" +
          (use_non_zero_shape ? "  InitialValues:\n"
@@ -40,20 +36,14 @@ std::string create_option_string(const bool use_non_zero_shape,
                                "    Spin: [0.0, 0.0, 0.0]\n"s
                              : "  InitialValues: Spherical\n"s);
 }
-void test(const bool use_non_zero_shape, const bool use_size_from_shape) {
+void test(const bool use_non_zero_shape) {
   CAPTURE(use_non_zero_shape);
-  CAPTURE(use_size_from_shape);
   const double initial_time = 1.5;
   const size_t l_max = 8;
-  std::optional<std::array<double, 3>> size_values{};
-
-  if (not use_size_from_shape) {
-    size_values = std::array{0.9, 0.08, 0.007};
-  }
 
   TimeDependentMapOptions time_dep_options =
       TestHelpers::test_creation<TimeDependentMapOptions>(
-          create_option_string(use_non_zero_shape, use_size_from_shape));
+          create_option_string(use_non_zero_shape));
 
   std::unordered_map<std::string, double> expiration_times{
       {TimeDependentMapOptions::shape_name, 15.5},
@@ -69,11 +59,6 @@ void test(const bool use_non_zero_shape, const bool use_size_from_shape) {
   DataVector size_func{1, 0.0};
   DataVector size_deriv{1, 0.0};
   DataVector size_2nd_deriv{1, 0.0};
-  if (not use_size_from_shape) {
-    size_func[0] = gsl::at(size_values.value(), 0);
-    size_deriv[0] = gsl::at(size_values.value(), 1);
-    size_2nd_deriv[0] = gsl::at(size_values.value(), 2);
-  }
   PP3 size{
       initial_time,
       std::array<DataVector, 4>{{size_func, size_deriv, size_2nd_deriv, {0.0}}},
@@ -150,9 +135,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.SphereTimeDependentMaps",
                   "[Domain][Unit]") {
   test_shape_initial_values();
 
-  for (auto& [use_non_zero_shape, use_size_from_shape] :
-       cartesian_product(make_array(true, false), make_array(true, false))) {
-    test(use_non_zero_shape, use_size_from_shape);
-  }
+  test(true);
+  test(false);
 }
 }  // namespace domain::creators::sphere

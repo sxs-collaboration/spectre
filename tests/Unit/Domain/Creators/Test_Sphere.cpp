@@ -136,8 +136,6 @@ std::string option_string(
       time_dependent ? (hard_coded_time_dependent_maps
                             ? "  TimeDependentMaps:\n"
                               "    InitialTime: 1.0\n"
-                              "    SizeMap:\n"
-                              "      InitialValues: [0.5, -0.04, 0.003]\n"
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"
@@ -535,14 +533,13 @@ void test_parse_errors() {
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like "
           "an outflow-type boundary condition, you must use that."));
+  using TDMO = domain::creators::sphere::TimeDependentMapOptions;
   CHECK_THROWS_WITH(
-      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
-                       initial_extents, use_equiangular_map,
-                       equatorial_compression, radial_partitioning,
-                       radial_distribution, which_wedges,
-                       domain::creators::sphere::TimeDependentMapOptions{
-                           1.0, std::nullopt, 5, std::nullopt},
-                       nullptr),
+      creators::Sphere(
+          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
+          use_equiangular_map, equatorial_compression, radial_partitioning,
+          radial_distribution, which_wedges,
+          TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt}}, nullptr),
       Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
           "cube. Use a TimeDependence instead."));
@@ -579,7 +576,7 @@ void test_sphere() {
                            {domain::CoordinateMaps::Distribution::Linear}}};
 
   const std::array<double, 3> velocity{{2.3, -0.3, 0.5}};
-  const std::array<double, 3> size_values{0.5, -0.04, 0.003};
+  const std::array<double, 3> size_values{0.0, 0.0, 0.0};
   const size_t l_max = 10;
   const std::vector<double> times{1., 10.};
 
@@ -633,7 +630,8 @@ void test_sphere() {
     if (time_dependent) {
       if (use_hard_coded_time_dep_options) {
         time_dependent_options = creators::sphere::TimeDependentMapOptions(
-            1.0, size_values, l_max, std::nullopt);
+            1.0, creators::sphere::TimeDependentMapOptions::ShapeMapOptions{
+                     l_max, std::nullopt});
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(
@@ -660,7 +658,7 @@ void test_sphere() {
         with_boundary_conditions,
         time_dependent ? times : std::vector<double>{0.},
         time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}},
-        time_dependent ? size_values : std::array<double, 3>{{0., 0., 0.}});
+        size_values);
     TestHelpers::domain::creators::test_creation(
         option_string(inner_radius, outer_radius, interior, initial_refinement,
                       initial_extents, equiangular, equatorial_compression,
