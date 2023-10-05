@@ -66,24 +66,27 @@ void ParameterizedDeleptonization::operator()(
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
     const Scalar<DataVector>& rest_mass_density,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) const {
   if (LIKELY(enable_)) {
     for (size_t i = 0; i < rest_mass_density.get().size(); i++) {
       correct_electron_fraction(specific_internal_energy, electron_fraction,
-                                pressure, specific_enthalpy, rest_mass_density,
-                                equation_of_state, i);
+                                pressure, specific_enthalpy, temperature,
+                                rest_mass_density, equation_of_state, i);
     }
   }
 }
 
 template <size_t ThermodynamicDim>
 void ParameterizedDeleptonization::correct_electron_fraction(
-    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*>
+        specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-    const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> pressure,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> temperature,
     const Scalar<DataVector>& rest_mass_density,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
@@ -110,24 +113,25 @@ void ParameterizedDeleptonization::correct_electron_fraction(
     electron_fraction->get()[grid_index] = electron_fraction_from_analytic;
   }
 
-  // call EoS (eventually Ye dependent tabulated eos here)
-  if constexpr (ThermodynamicDim == 1) {
-    pressure->get()[grid_index] = get(equation_of_state.pressure_from_density(
-        Scalar<double>{rest_mass_density.get()[grid_index]}));
-    specific_internal_energy->get()[grid_index] =
-        get(equation_of_state.specific_internal_energy_from_density(
-            Scalar<double>{rest_mass_density.get()[grid_index]}));
-  } else if constexpr (ThermodynamicDim == 2) {
+  if constexpr (ThermodynamicDim == 3) {
     pressure->get()[grid_index] =
         get(equation_of_state.pressure_from_density_and_energy(
             Scalar<double>{rest_mass_density.get()[grid_index]},
-            Scalar<double>{specific_internal_energy->get()[grid_index]}));
+            Scalar<double>{specific_internal_energy->get()[grid_index]},
+            Scalar<double>{electron_fraction->get()[grid_index]}));
+
+    temperature->get()[grid_index] =
+        get(equation_of_state.temperature_from_density_and_energy(
+            Scalar<double>{rest_mass_density.get()[grid_index]},
+            Scalar<double>{specific_internal_energy->get()[grid_index]},
+            Scalar<double>{electron_fraction->get()[grid_index]}));
+
+    specific_enthalpy->get()[grid_index] =
+        get(hydro::relativistic_specific_enthalpy(
+            Scalar<double>{rest_mass_density.get()[grid_index]},
+            Scalar<double>{specific_internal_energy->get()[grid_index]},
+            Scalar<double>{pressure->get()[grid_index]}));
   }
-  specific_enthalpy->get()[grid_index] =
-      get(hydro::relativistic_specific_enthalpy(
-          Scalar<double>{rest_mass_density.get()[grid_index]},
-          Scalar<double>{specific_internal_energy->get()[grid_index]},
-          Scalar<double>{pressure->get()[grid_index]}));
 }
 
 bool operator==(const ParameterizedDeleptonization& lhs,
@@ -153,28 +157,27 @@ bool operator!=(const ParameterizedDeleptonization& lhs,
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                             \
-  template class ParameterizedDeleptonization;  \
-  template bool operator==(                                \
-      const ParameterizedDeleptonization& lhs,  \
-      const ParameterizedDeleptonization& rhs); \
-  template bool operator!=(                                \
-      const ParameterizedDeleptonization& lhs,  \
-      const ParameterizedDeleptonization& rhs);
+#define INSTANTIATION(r, data)                                       \
+  template class ParameterizedDeleptonization;                       \
+  template bool operator==(const ParameterizedDeleptonization& lhs,  \
+                           const ParameterizedDeleptonization& rhs); \
+  template bool operator!=(const ParameterizedDeleptonization& lhs,  \
+                           const ParameterizedDeleptonization& rhs);
 
 #undef INSTANTIATION
 
 #define INSTANTIATION(r, data)                                           \
-  template void ParameterizedDeleptonization::operator()(     \
+  template void ParameterizedDeleptonization::operator()(                \
       const gsl::not_null<Scalar<DataVector>*> specific_internal_energy, \
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,        \
       const gsl::not_null<Scalar<DataVector>*> pressure,                 \
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,        \
+      const gsl::not_null<Scalar<DataVector>*> temperature,              \
       const Scalar<DataVector>& rest_mass_density,                       \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&   \
           equation_of_state) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef THERMO_DIM
 #undef INSTANTIATION
