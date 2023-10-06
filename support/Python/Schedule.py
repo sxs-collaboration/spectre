@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import functools
 import logging
 import re
 import shutil
@@ -734,6 +735,159 @@ def _parse_params(ctx, param, all_values):
     return params
 
 
+def scheduler_options(f):
+    """CLI options for the 'schedule' function.
+
+    These options can be reused by other CLI commands that call the 'schedule'
+    function.
+    """
+
+    @click.option(
+        "--executable",
+        "-e",
+        show_default="executable listed in input file",
+        help=(
+            "The executable to run. Can be a path, or just the name of the"
+            " executable if it's in the 'PATH'. If unspecified, the"
+            " 'Executable' listed in the input file metadata is used."
+        ),
+    )
+    @click.option(
+        "--run-dir",
+        "-o",
+        # No `type=click.Path` because this can be a Jinja template
+        help=(
+            "The directory to which input file, submit script, etc. are "
+            "copied, relative to which the executable will run, and to "
+            "which output files are written. "
+            "Defaults to the current working directory if the input file is "
+            "already there. "
+            "Mutually exclusive with '--segments-dir' / '-O'."
+        ),
+    )
+    @click.option(
+        "--segments-dir",
+        "-O",
+        # No `type=click.Path` because this can be a Jinja template
+        help=(
+            "The directory in which to create the next segment. "
+            "Requires '--from-checkpoint' or '--from-last-checkpoint' "
+            "unless starting the first segment."
+        ),
+    )
+    @click.option(
+        "--copy-executable/--no-copy-executable",
+        default=None,
+        help=(
+            "Copy the executable to the run or segments directory. "
+            "(1) When no flag is specified: "
+            "If '--run-dir' / '-o' is set, don't copy. "
+            "If '--segments-dir' / '-O' is set, copy to segments "
+            "directory to support resubmission. "
+            "(2) When '--copy-executable' is specified: "
+            "If '--run-dir' / '-o' is set, copy to the run "
+            "directory. "
+            "If '--segments-dir' / '-O' is set, copy to segments "
+            "directory to support resubmission. Still don't copy to "
+            "individual segments. "
+            "(3) When '--no-copy-executable' is specified: "
+            "Never copy."
+        ),
+    )
+    @click.option(
+        "--clean-output",
+        "-C",
+        is_flag=True,
+        help=(
+            "Clean up existing output files in the run directory "
+            "before running the executable. "
+            "See the 'spectre clean-output' command for details."
+        ),
+    )
+    @click.option(
+        "--force",
+        "-f",
+        is_flag=True,
+        help=(
+            "Overwrite existing files in the '--run-dir' / '-o'. "
+            "You may also want to use '--clean-output'."
+        ),
+    )
+    # Scheduling options
+    @click.option(
+        "--scheduler",
+        default=("sbatch" if default_submit_script_template.exists() else None),
+        show_default=(
+            True if default_submit_script_template.exists() else "none"
+        ),
+        help="The scheduler invoked to queue jobs on the machine.",
+    )
+    @click.option(
+        "--no-schedule",
+        is_flag=True,
+        help="Run the executable directly, without scheduling it.",
+    )
+    @click.option(
+        "--submit-script-template",
+        default=default_submit_script_template,
+        show_default=True,
+        # No `type=click.Path` because this can be a Jinja template
+        help=(
+            "Path to a submit script. "
+            "It will be copied to the 'run_dir'. It can be a [Jinja template]("
+            "https://jinja.palletsprojects.com/en/3.0.x/templates/) "
+            "(see main help text for possible placeholders)."
+        ),
+    )
+    @click.option(
+        "--job-name",
+        "-J",
+        show_default="executable name",
+        help=(
+            "A short name for the job "
+            "(see main help text for possible placeholders)."
+        ),
+    )
+    @click.option(
+        "--num-procs",
+        "-j",
+        "-c",
+        type=_parse_param,
+        help=(
+            "Number of worker threads. "
+            "Mutually exclusive with '--num-nodes' / '-N'."
+        ),
+    )
+    @click.option(
+        "--num-nodes", "-N", type=_parse_param, help="Number of nodes"
+    )
+    @click.option("--queue", help="Name of the queue.")
+    @click.option(
+        "--time-limit",
+        help="Wall time limit. Must be compatible with the chosen queue.",
+    )
+    @click.option(
+        "--submit/--no-submit",
+        default=None,
+        help=(
+            "Submit jobs automatically. If neither option is "
+            "specified, a prompt will ask for confirmation before "
+            "a job is submitted."
+        ),
+    )
+    @click.option(
+        "--context-file-name",
+        default="SchedulerContext.yaml",
+        show_default=True,
+        help="Name of the context file that supports resubmissions.",
+    )
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
 @click.command(
     name="schedule", help=schedule.__doc__.replace("**kwargs", "--params")
 )
@@ -747,59 +901,7 @@ def _parse_params(ctx, param, all_values):
         path_type=Path,
     ),
 )
-@click.option(
-    "--executable",
-    "-e",
-    show_default="executable listed in input file",
-    help=(
-        "The executable to run. Can be a path, or just the name "
-        "of the executable if it's in the 'PATH'. "
-        "If unspecified, the 'Executable' listed in the input file metadata "
-        "is used."
-    ),
-)
-@click.option(
-    "--run-dir",
-    "-o",
-    # No `type=click.Path` because this can be a Jinja template
-    help=(
-        "The directory to which input file, submit script, etc. are "
-        "copied, relative to which the executable will run, and to "
-        "which output files are written. "
-        "Defaults to the current working directory if the input file is "
-        "already there. "
-        "Mutually exclusive with '--segments-dir' / '-O'."
-    ),
-)
-@click.option(
-    "--segments-dir",
-    "-O",
-    # No `type=click.Path` because this can be a Jinja template
-    help=(
-        "The directory in which to create the next segment. "
-        "Requires '--from-checkpoint' or '--from-last-checkpoint' "
-        "unless starting the first segment."
-    ),
-)
-@click.option(
-    "--copy-executable/--no-copy-executable",
-    default=None,
-    help=(
-        "Copy the executable to the run or segments directory. "
-        "(1) When no flag is specified: "
-        "If '--run-dir' / '-o' is set, don't copy. "
-        "If '--segments-dir' / '-O' is set, copy to segments "
-        "directory to support resubmission. "
-        "(2) When '--copy-executable' is specified: "
-        "If '--run-dir' / '-o' is set, copy to the run "
-        "directory. "
-        "If '--segments-dir' / '-O' is set, copy to segments "
-        "directory to support resubmission. Still don't copy to "
-        "individual segments. "
-        "(3) When '--no-copy-executable' is specified: "
-        "Never copy."
-    ),
-)
+@scheduler_options
 @click.option(
     "--from-checkpoint",
     type=click.Path(
@@ -823,26 +925,6 @@ def _parse_params(ctx, param, all_values):
     help="Restart from the last checkpoint in this directory.",
 )
 @click.option(
-    "--job-name",
-    "-J",
-    show_default="executable name",
-    help=(
-        "A short name for the job "
-        "(see main help text for possible placeholders)."
-    ),
-)
-@click.option(
-    "--num-procs",
-    "-j",
-    "-c",
-    type=_parse_param,
-    help=(
-        "Number of worker threads. "
-        "Mutually exclusive with '--num-nodes' / '-N'."
-    ),
-)
-@click.option("--num-nodes", "-N", type=_parse_param, help="Number of nodes")
-@click.option(
     "--param",
     "-p",
     "params",
@@ -864,69 +946,6 @@ def _parse_params(ctx, param, all_values):
         "in the 'run_dir' or 'segment_dir', and when scheduling "
         "ranges of runs you probably should."
     ),
-)
-@click.option(
-    "--clean-output",
-    "-C",
-    is_flag=True,
-    help=(
-        "Clean up existing output files in the run directory "
-        "before running the executable. "
-        "See the 'spectre clean-output' command for details."
-    ),
-)
-@click.option(
-    "--force",
-    "-f",
-    is_flag=True,
-    help=(
-        "Overwrite existing files in the '--run-dir' / '-o'. "
-        "You may also want to use '--clean-output'."
-    ),
-)
-# Scheduling options
-@click.option(
-    "--submit-script-template",
-    default=default_submit_script_template,
-    show_default=True,
-    # No `type=click.Path` because this can be a Jinja template
-    help=(
-        "Path to a submit script. "
-        "It will be copied to the 'run_dir'. It can be a [Jinja template]("
-        "https://jinja.palletsprojects.com/en/3.0.x/templates/) "
-        "(see main help text for possible placeholders)."
-    ),
-)
-@click.option("--queue", help="Name of the queue.")
-@click.option(
-    "--time-limit",
-    help="Wall time limit. Must be compatible with the chosen queue.",
-)
-@click.option(
-    "--scheduler",
-    default=("sbatch" if default_submit_script_template.exists() else None),
-    show_default=True if default_submit_script_template.exists() else "none",
-    help="The scheduler invoked to queue jobs on the machine.",
-)
-@click.option(
-    "--no-schedule",
-    is_flag=True,
-    help="Run the executable directly, without scheduling it.",
-)
-@click.option(
-    "--submit/--no-submit",
-    default=None,
-    help=(
-        "Submit jobs automatically. If neither option is "
-        "specified, a prompt will ask for confirmation before "
-        "a job is submitted."
-    ),
-)
-@click.option(
-    "--context-file-name",
-    default="SchedulerContext.yaml",
-    show_default=True,
-    help="Name of the context file that supports resubmissions.",
 )
 def schedule_command(
     params,
