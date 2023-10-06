@@ -567,6 +567,8 @@ def schedule(
         if from_checkpoint:
             run_command += ["+restart", str(from_checkpoint)]
         logger.debug(f"Run command: {run_command}")
+        if submit is False:
+            return
         process = subprocess.Popen(run_command, cwd=run_dir)
         # Realtime streaming of _captured_ stdout and stderr to the console
         # doesn't seem to work reliably, so we just let the process stream
