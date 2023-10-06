@@ -7,6 +7,12 @@
 # their corresponding .def.h and decl.h files in the charm module outputs.
 # This is used to override default charm behavior with custom versions or to
 # patch bugs
+#
+# You can create a patch by running:
+#
+# git diff file_original file_update > file.patch
+#
+# This works even outside a git repository.
 
 set -e
 
