@@ -12,6 +12,7 @@ import click
 import jinja2
 import jinja2.meta
 import yaml
+from rich.pretty import pretty_repr
 
 from spectre.support.DirectoryStructure import (
     Checkpoint,
@@ -485,6 +486,10 @@ def schedule(
     # Configure input file
     input_file_path = run_dir / input_file_name
     context.update(input_file=input_file_name)
+    logger.debug(
+        f"Configure input file template '{input_file_template}' with these"
+        f" parameters: {pretty_repr(context)}"
+    )
     rendered_input_file = template_env.from_string(input_file_contents).render(
         context
     )
@@ -543,13 +548,18 @@ def schedule(
         logger.info(
             f"Run '{executable.name}' in '{run_dir}' on {provision_info}."
         )
-        run_command = [executable, "--input-file", input_file_path.resolve()]
+        run_command = [
+            str(executable),
+            "--input-file",
+            str(input_file_path.resolve()),
+        ]
         if auto_provision:
             run_command += ["+auto-provision"]
         else:
             run_command += ["+p", str(num_procs)]
         if from_checkpoint:
-            run_command += ["+restart", from_checkpoint]
+            run_command += ["+restart", str(from_checkpoint)]
+        logger.debug(f"Run command: {run_command}")
         process = subprocess.Popen(run_command, cwd=run_dir)
         # Realtime streaming of _captured_ stdout and stderr to the console
         # doesn't seem to work reliably, so we just let the process stream
@@ -583,6 +593,10 @@ def schedule(
             force=force,
         )
     context.update(submit_script_template=submit_script_template)
+    logger.debug(
+        f"Configure submit script template '{submit_script_template}' with"
+        f" these parameters: {pretty_repr(context)}"
+    )
     # Use a FileSystemLoader to support template inheritance
     submit_script_template_env = template_env.overlay(
         loader=jinja2.FileSystemLoader(submit_script_template.parent)
