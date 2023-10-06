@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -326,7 +327,9 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     const double rest_mass_density_times_lorentz_factor,
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) {
+        equation_of_state,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   // Master function see Equation (44)
   const auto f_of_mu = FunctionOfMu<EnforcePhysicality, ThermodynamicDim>{
       tau,
@@ -336,7 +339,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       rest_mass_density_times_lorentz_factor,
       electron_fraction,
       equation_of_state,
-      1.e3};
+      primitive_from_conservative_options.kastaun_max_lorentz_factor()};
   if (f_of_mu.state_is_unphysical()) {
     return std::nullopt;
   }
@@ -392,7 +395,9 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const double rest_mass_density_times_lorentz_factor,                   \
       const double electron_fraction,                                        \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state);
+          equation_of_state,                                                 \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 

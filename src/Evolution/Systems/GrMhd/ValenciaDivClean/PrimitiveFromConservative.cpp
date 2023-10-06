@@ -161,24 +161,26 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
     } else {
       // not in atmosphere.
-      auto apply_scheme =
-          [&pressure, &primitive_data, &tau, &momentum_density_squared,
-           &momentum_density_dot_magnetic_field, &magnetic_field_squared,
-           &rest_mass_density_times_lorentz_factor, &equation_of_state, &s,
-           &electron_fraction](auto scheme) {
-            using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
-            if (not primitive_data.has_value()) {
-              primitive_data =
-                  primitive_recovery_scheme::template apply<EnforcePhysicality,
-                                                            ThermodynamicDim>(
-                      get(*pressure)[s], tau[s],
-                      get(momentum_density_squared)[s],
-                      get(momentum_density_dot_magnetic_field)[s],
-                      get(magnetic_field_squared)[s],
-                      rest_mass_density_times_lorentz_factor[s],
-                      get(*electron_fraction)[s], equation_of_state);
-            }
-          };
+      auto apply_scheme = [&pressure, &primitive_data, &tau,
+                           &momentum_density_squared,
+                           &momentum_density_dot_magnetic_field,
+                           &magnetic_field_squared,
+                           &rest_mass_density_times_lorentz_factor,
+                           &equation_of_state, &s, &electron_fraction,
+                           &primitive_from_conservative_options](auto scheme) {
+        using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
+        if (not primitive_data.has_value()) {
+          primitive_data =
+              primitive_recovery_scheme::template apply<EnforcePhysicality,
+                                                        ThermodynamicDim>(
+                  get(*pressure)[s], tau[s], get(momentum_density_squared)[s],
+                  get(momentum_density_dot_magnetic_field)[s],
+                  get(magnetic_field_squared)[s],
+                  rest_mass_density_times_lorentz_factor[s],
+                  get(*electron_fraction)[s], equation_of_state,
+                  primitive_from_conservative_options);
+        }
+      };
 
       // Check consistency
       if (use_hydro_optimization and

@@ -8,13 +8,18 @@
 #include <string>
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+/// \cond
+namespace EquationsOfState {
+template <bool, size_t>
+class EquationOfState;
+}  // namespace EquationsOfState
+namespace grmhd::ValenciaDivClean {
+class PrimitiveFromConservativeOptions;
+}  // namespace grmhd::ValenciaDivClean
+/// \endcond
 
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace PrimitiveRecoverySchemes {
+namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 /*!
  * \brief Compute the primitive variables from the conservative variables using
@@ -53,7 +58,9 @@ class NewmanHamlin {
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state);
+          equation_of_state,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+          primitive_from_conservative_options);
 
   static const std::string name() { return "Newman Hamlin"; }
 
@@ -61,6 +68,4 @@ class NewmanHamlin {
   static constexpr size_t max_iterations_ = 50;
   static constexpr double relative_tolerance_ = 1.e-10;
 };
-}  // namespace PrimitiveRecoverySchemes
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes

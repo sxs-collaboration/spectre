@@ -10,10 +10,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
@@ -106,7 +105,9 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     const double rest_mass_density_times_lorentz_factor,
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) {
+        equation_of_state,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+    /*primitive_from_conservative_options*/) {
   const double lower_bound =
       (tau - magnetic_field_squared) / rest_mass_density_times_lorentz_factor +
       1.0;
@@ -177,7 +178,9 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
       const double rest_mass_density_times_lorentz_factor,                   \
       const double electron_fraction,                                        \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state);
+          equation_of_state,                                                 \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 

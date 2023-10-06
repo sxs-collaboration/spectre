@@ -125,9 +125,11 @@ void test_primitive_from_conservative_random(
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = 1.0e4;
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
-    primitive_from_conservative_options(cutoff_d_for_inversion,
-                                        density_when_skipping_inversion);
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
 
   Scalar<DataVector> rest_mass_density(number_of_points);
   Scalar<DataVector> electron_fraction(number_of_points);
@@ -233,9 +235,11 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = 1.0e4;
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
-    primitive_from_conservative_options(cutoff_d_for_inversion,
-                                        density_when_skipping_inversion);
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
 
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_ye),

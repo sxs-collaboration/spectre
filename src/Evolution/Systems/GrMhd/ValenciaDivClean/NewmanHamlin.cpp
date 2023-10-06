@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -27,7 +28,9 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double rest_mass_density_times_lorentz_factor,
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) {
+        equation_of_state,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+    /*primitive_from_conservative_options*/) {
   const double total_energy_density =
       tau + rest_mass_density_times_lorentz_factor;
   // constant in cubic equation  f(eps) = eps^3 - a eps^2 + d
@@ -203,7 +206,9 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       const double rest_mass_density_times_lorentz_factor,                   \
       const double electron_fraction,                                        \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state);
+          equation_of_state,                                                 \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 
