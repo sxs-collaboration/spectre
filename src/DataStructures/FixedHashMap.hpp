@@ -599,9 +599,9 @@ std::ostream& operator<<(
   unordered_print_helper(
       os, std::begin(m), std::end(m),
       [](std::ostream& out,
-         typename FixedHashMap<MaxSize, Key, ValueType, Hash,
-                               KeyEqual>::const_iterator it) {
-        out << "[" << it->first << "," << it->second << "]";
+         const typename FixedHashMap<MaxSize, Key, ValueType, Hash,
+                                     KeyEqual>::value_type& entry) {
+        out << "[" << entry.first << "," << entry.second << "]";
       });
   return os;
 }

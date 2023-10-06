@@ -33,6 +33,7 @@ set(LIBRARY_SOURCES
   Test_Overloader.cpp
   Test_ParallelInfo.cpp
   Test_PrettyType.cpp
+  Test_PrintHelpers.cpp
   Test_ProtocolHelpers.cpp
   Test_Rational.cpp
   Test_Registration.cpp
