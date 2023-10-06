@@ -115,6 +115,7 @@ def _path_representer(dumper: yaml.Dumper, path: Path) -> yaml.nodes.ScalarNode:
 def schedule(
     input_file_template: Union[str, Path],
     scheduler: Optional[Union[str, Sequence]],
+    no_schedule: Optional[bool] = None,
     executable: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -254,6 +255,9 @@ def schedule(
         'run_dir'. It can be a Jinja template (see above).
       scheduler: 'None' to run the executable directly, or a scheduler such as
         "sbatch" to submit the run to a queue.
+      no_schedule: Optional. If 'True', override the 'scheduler' to 'None'.
+        Useful to specify on the command line where the 'scheduler' defaults to
+        "sbatch" on clusters.
       executable: Path or name of the executable to run. If unspecified, use the
         'Executable' set in the input file metadata.
       run_dir: The directory to which input file, submit script, etc. are
@@ -305,6 +309,8 @@ def schedule(
     input_file_template = Path(input_file_template)
     if not input_file_name:
         input_file_name = input_file_template.resolve().name
+    if no_schedule:
+        scheduler = None
     if isinstance(from_checkpoint, Checkpoint):
         from_checkpoint = from_checkpoint.path
     if from_checkpoint:
@@ -924,15 +930,11 @@ def _parse_params(ctx, param, all_values):
 )
 def schedule_command(
     params,
-    scheduler,
-    no_schedule,
     from_checkpoint,
     from_last_checkpoint,
     **kwargs,
 ):
     _rich_traceback_guard = True  # Hide traceback until here
-    if no_schedule:
-        scheduler = None
     if from_checkpoint and from_last_checkpoint:
         raise click.UsageError(
             "Specify either '--from-checkpoint' or '--from-last-checkpoint', "
@@ -957,9 +959,7 @@ def schedule_command(
                 f"that match the pattern '{Checkpoint.NAME_PATTERN.pattern}'."
             )
         from_checkpoint = all_checkpoints[-1]
-    schedule(
-        scheduler=scheduler, from_checkpoint=from_checkpoint, **kwargs, **params
-    )
+    schedule(from_checkpoint=from_checkpoint, **kwargs, **params)
 
 
 if __name__ == "__main__":
