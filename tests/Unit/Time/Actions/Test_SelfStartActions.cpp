@@ -7,6 +7,7 @@
 #include <complex>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <initializer_list>  // IWYU pragma: keep
 #include <limits>
 #include <memory>
