@@ -39,8 +39,7 @@ class FunctionOfZ {
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                   equation_of_state,
               const double lorentz_max)
-      : lorentz_max_(lorentz_max),
-        q_(tau / rest_mass_density_times_lorentz_factor),
+      : q_(tau / rest_mass_density_times_lorentz_factor),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
         r_(std::sqrt(r_squared_)),
@@ -51,15 +50,17 @@ class FunctionOfZ {
     // Internal consistency check
     //
     const double rho_min =
-        rest_mass_density_times_lorentz_factor_ / lorentz_max_;
+        rest_mass_density_times_lorentz_factor_ / lorentz_max;
     const double eps_min =
         equation_of_state_.specific_internal_energy_lower_bound(rho_min);
+    const double v_0_squared = 1. - 1. / (lorentz_max * lorentz_max);
+    const double kmax = 2. * std::sqrt(v_0_squared) / (1. + v_0_squared);
 
     if constexpr (EnforcePhysicality) {
       q_ = std::max(q_, eps_min);
-      r_ = std::min(r_, kmax_ * (q_ + 1.));
+      r_ = std::min(r_, kmax * (q_ + 1.));
     } else {
-      if ((q_ < eps_min) or (r_ > kmax_ * (q_ + 1.))) {
+      if ((q_ < eps_min) or (r_ > kmax * (q_ + 1.))) {
         state_is_unphysical_ = true;
       }
     }
@@ -74,7 +75,6 @@ class FunctionOfZ {
   bool has_no_root() { return state_is_unphysical_; };
 
  private:
-  const double lorentz_max_ = 1000.;
   double q_;
   double r_squared_;
   double r_;
@@ -83,8 +83,6 @@ class FunctionOfZ {
   const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
       equation_of_state_;
-  const double v_0_squared_ = 1. - 1. / (lorentz_max_ * lorentz_max_);
-  const double kmax_ = 2. * std::sqrt(v_0_squared_) / (1. + v_0_squared_);
 };
 
 template <size_t ThermodynamicDim, bool EnforcePhysicality>
