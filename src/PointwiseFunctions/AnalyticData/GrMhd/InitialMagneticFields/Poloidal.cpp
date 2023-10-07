@@ -41,6 +41,11 @@ Poloidal::Poloidal(const size_t pressure_exponent, const double cutoff_pressure,
       center_(center),
       max_distance_from_center_(max_distance_from_center) {}
 
+bool Poloidal::is_equal(const InitialMagneticField& rhs) const {
+  const auto& derived_ptr = dynamic_cast<const Poloidal* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 Poloidal::variables(const tnsr::I<DataType, 3>& coords,

@@ -71,12 +71,18 @@ SPECTRE_TEST_CASE(
   // test equality
   const Poloidal field_original{2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0};
   const auto field = serialize_and_deserialize(field_original);
-  CHECK(field == Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Poloidal(3, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Poloidal(2, 2.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Poloidal(2, 1.0e-5, 3500.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Poloidal(2, 1.0e-5, 2500.0, {{1.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 10.0));
+  CHECK(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(3, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(2, 2.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(2, 1.0e-5, 3500.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(2, 1.0e-5, 2500.0, {{1.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 10.0)));
 
   // test solution implementation
   pypp::SetupLocalPythonEnvironment local_python_env{

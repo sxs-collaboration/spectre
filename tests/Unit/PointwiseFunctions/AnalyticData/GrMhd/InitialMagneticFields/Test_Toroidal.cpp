@@ -71,12 +71,18 @@ SPECTRE_TEST_CASE(
   // test equality
   const Toroidal field_original{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
   const auto field = serialize_and_deserialize(field_original);
-  CHECK(field == Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Toroidal(3, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Toroidal(2, 2.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Toroidal(2, 1.0e-5, 2000.0, {{0.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Toroidal(2, 1.0e-5, 1000.0, {{1.0, 0.0, 0.0}}, 100.0));
-  CHECK(field != Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 10.0));
+  CHECK(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(3, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 2.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 2000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{1.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 10.0)));
 
   // test solution implementation
   pypp::SetupLocalPythonEnvironment local_python_env{

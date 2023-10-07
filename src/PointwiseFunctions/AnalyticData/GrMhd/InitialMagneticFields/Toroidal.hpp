@@ -115,6 +115,8 @@ class Toroidal : public InitialMagneticField {
   void pup(PUP::er& p) override;
 
   /// Retrieve magnetic fields at `(x)`
+  bool is_equal(const InitialMagneticField& rhs) const override;
+
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& coords,
                  const Scalar<DataType>& pressure,

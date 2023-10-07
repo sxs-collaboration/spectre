@@ -96,6 +96,11 @@ Toroidal::variables(const tnsr::I<DataType, 3>& coords,
   return {std::move(magnetic_field)};
 }
 
+bool Toroidal::is_equal(const InitialMagneticField& rhs) const {
+  const auto& derived_ptr = dynamic_cast<const Toroidal* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
 bool operator==(const Toroidal& lhs, const Toroidal& rhs) {
   return lhs.pressure_exponent_ == rhs.pressure_exponent_ and
          lhs.cutoff_pressure_ == rhs.cutoff_pressure_ and
