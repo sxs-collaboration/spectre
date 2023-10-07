@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <algorithm>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iomanip>
@@ -11,12 +12,13 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
 #include <sstream>
 #include <string>
 #include <tuple>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -28,9 +30,8 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/ChangeSlabSize.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
@@ -38,21 +39,15 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-class TimeDelta;
 namespace Tags {
 struct DataBox;
-template <typename Tag>
-struct Next;
-struct TimeStep;
 struct TimeStepId;
 }  // namespace Tags
-// IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
 namespace ChangeSlabSize_detail {
@@ -210,40 +205,14 @@ struct ChangeSlabSize {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    const auto& current_step = db::get<::Tags::TimeStep>(box);
-    const auto& current_slab = current_step.slab();
+    const auto current_slab = time_step_id.step_time().slab();
 
-    const auto new_slab =
-        current_step.is_positive()
-            ? current_slab.with_duration_from_start(new_slab_size)
-            : current_slab.with_duration_to_end(new_slab_size);
+    const double new_slab_end =
+        time_step_id.time_runs_forward()
+            ? current_slab.start().value() + new_slab_size
+            : current_slab.end().value() - new_slab_size;
 
-    const auto new_step = current_step.with_slab(new_slab);
-
-    // We are at a slab boundary, so the substep is 0.
-    const auto new_time_step_id =
-        TimeStepId(time_step_id.time_runs_forward(), time_step_id.slab_number(),
-                   time_step_id.step_time().with_slab(new_slab));
-
-    const auto new_next_time_step_id =
-        time_stepper.next_time_id(new_time_step_id, new_step);
-
-    db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-               ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId,
-               ::Tags::AdaptiveSteppingDiagnostics>(
-        [&new_next_time_step_id, &new_step, &new_time_step_id](
-            const gsl::not_null<TimeStepId*> next_time_step_id,
-            const gsl::not_null<TimeDelta*> time_step,
-            const gsl::not_null<TimeDelta*> next_time_step,
-            const gsl::not_null<TimeStepId*> local_time_step_id,
-            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
-          *next_time_step_id = new_next_time_step_id;
-          *time_step = new_step;
-          *next_time_step = new_step;
-          *local_time_step_id = new_time_step_id;
-          ++diags->number_of_slab_size_changes;
-        },
-        make_not_null(&box));
+    change_slab_size(make_not_null(&box), new_slab_end);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

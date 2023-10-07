@@ -27,6 +27,7 @@ spectre_target_headers(
   AdaptiveSteppingDiagnostics.hpp
   ApproximateTime.hpp
   BoundaryHistory.hpp
+  ChangeSlabSize.hpp
   ChooseLtsStepSize.hpp
   EvolutionOrdering.hpp
   History.hpp
