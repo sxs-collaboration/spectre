@@ -1,0 +1,161 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveXcts
+
+---
+
+Background: &background
+  Binary:
+    XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]
+    ObjectLeft: &kerr_left
+      KerrSchild:
+        Mass: {{ MassLeft }}
+        Spin: [0., 0., 0.]
+        Center: [0., 0., 0.]
+    ObjectRight: &kerr_right
+      KerrSchild:
+        Mass: {{ MassRight }}
+        Spin: [0., 0., 0.]
+        Center: [0., 0., 0.]
+    AngularVelocity: {{ OrbitalAngularVelocity }}
+    Expansion: 0.
+    LinearVelocity: [0., 0., 0.]
+    FalloffWidths: [4.8, 4.8]
+
+InitialGuess: *background
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: {{ ExcisionRadiusRight }}
+      OuterRadius: 4.
+      XCoord: *x_right
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_right, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: *kerr_right
+            NegativeExpansion: *kerr_right
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: {{ ExcisionRadiusLeft }}
+      OuterRadius: 4.
+      XCoord: *x_left
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_left, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: *kerr_left
+            NegativeExpansion: *kerr_left
+      UseLogarithmicMap: True
+    Envelope:
+      Radius: &outer_shell_inner_radius 60.
+      RadialDistribution: Projective
+    OuterShell:
+      Radius: &outer_radius 1e4
+      RadialDistribution: &outer_shell_distribution Inverse
+      OpeningAngle: 120.0
+      BoundaryCondition: Flatness
+    UseEquiangularMap: True
+    InitialRefinement:
+      ObjectAShell:     [{{ L }}, {{ L }}, {{ L }}]
+      ObjectBShell:     [{{ L }}, {{ L }}, {{ L }}]
+      ObjectACube:      [{{ L }}, {{ L }}, {{ L }}]
+      ObjectBCube:      [{{ L }}, {{ L }}, {{ L }}]
+      Envelope:         [{{ L }}, {{ L }}, {{ L }}]
+      OuterShell:       [{{ L }}, {{ L }}, {{ L + 2}}]
+    # This p-refinement represents a crude manual optimization of the domain. We
+    # will need AMR to optimize the domain further.
+    InitialGridPoints:
+      ObjectAShell:   [{{ P + 1}}, {{ P + 1}}, {{ P + 5}}]
+      ObjectBShell:   [{{ P + 1}}, {{ P + 1}}, {{ P + 5}}]
+      ObjectACube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
+      ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
+      Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
+      OuterShell:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+
+Observers:
+  VolumeFileName: "BbhVolume"
+  ReductionFileName: "BbhReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 1.e-10
+      AbsoluteResidual: 1.e-10
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Verbose
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 100
+      RelativeResidual: 1.e-11
+      AbsoluteResidual: 1.e-11
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    MaxOverlap: 2
+    Iterations: 3
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-10
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+
+RadiallyCompressedCoordinates:
+  InnerRadius: *outer_shell_inner_radius
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
+
+EventsAndTriggers:
+  - Trigger: HasConverged
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - ShiftExcess
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - RadiallyCompressedCoordinates
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
