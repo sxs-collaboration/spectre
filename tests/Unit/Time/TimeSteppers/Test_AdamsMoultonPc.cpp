@@ -10,6 +10,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"

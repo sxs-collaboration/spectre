@@ -25,7 +25,6 @@
 #include "Utilities/Numeric.hpp"
 
 /// \cond
-class LtsTimeStepper;
 class TimeStepper;
 /// \endcond
 
@@ -82,10 +81,6 @@ void initialize_history(
 /// steppers this is \f$\pi\f$.
 void stability_test(const TimeStepper& stepper, double phase = M_PI);
 
-void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
-                         size_t number_of_past_steps, double epsilon,
-                         bool forward);
-
 /// Check that integration converges as expected.
 ///
 /// The \p step_range argument specifies the range of the number of
@@ -99,8 +94,6 @@ void check_convergence_order(const TimeStepper& stepper,
 
 void check_dense_output(const TimeStepper& stepper,
                         const size_t history_integration_order);
-
-void check_boundary_dense_output(const LtsTimeStepper& stepper);
 
 void check_strong_stability_preservation(const TimeStepper& stepper,
                                          double step_size);

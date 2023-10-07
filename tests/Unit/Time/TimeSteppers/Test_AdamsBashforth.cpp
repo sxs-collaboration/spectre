@@ -14,6 +14,7 @@
 #include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
@@ -351,10 +352,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
     for (size_t start_points = 0; start_points < order; ++start_points) {
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
-      TimeStepperTestUtils::equal_rate_boundary(stepper, start_points + 1,
-                                                start_points, epsilon, true);
-      TimeStepperTestUtils::equal_rate_boundary(stepper, start_points + 1,
-                                                start_points, epsilon, false);
+      TimeStepperTestUtils::lts::test_equal_rate(stepper, start_points + 1,
+                                                 start_points, epsilon, true);
+      TimeStepperTestUtils::lts::test_equal_rate(stepper, start_points + 1,
+                                                 start_points, epsilon, false);
     }
   }
 
@@ -384,7 +385,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
   // Dense output
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
-    TimeStepperTestUtils::check_boundary_dense_output(
+    TimeStepperTestUtils::lts::test_dense_output(
         TimeSteppers::AdamsBashforth(order));
   }
 }
