@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Poloidal.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -43,14 +44,20 @@ struct PoloidalProxy : Poloidal {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.InitialMagneticFields.Poloidal",
     "[Unit][PointwiseFunctions]") {
+  register_derived_classes_with_charm<InitialMagneticField>();
   // test creation
-  const auto solution = TestHelpers::test_creation<Poloidal>(
-      "  PressureExponent: 2\n"
-      "  CutoffPressure: 1.0e-5\n"
-      "  VectorPotentialAmplitude: 2500.0\n"
-      "  Center: [0.0, 0.0, 0.0]\n"
-      "  MaxDistanceFromCenter: 100.0\n");
-  CHECK(solution == Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0));
+  const auto factory_solution = serialize_and_deserialize(
+      TestHelpers::test_factory_creation<InitialMagneticField, Poloidal>(
+          "Poloidal:\n"
+          "  PressureExponent: 2\n"
+          "  CutoffPressure: 1.0e-5\n"
+          "  VectorPotentialAmplitude: 2500.0\n"
+          "  Center: [0.0, 0.0, 0.0]\n"
+          "  MaxDistanceFromCenter: 100.0\n"));
+  CHECK(factory_solution->is_equal(
+      Poloidal(2, 1.0e-5, 2500.0, {{0.0, 0.0, 0.0}}, 100.0)));
+
+  const auto& solution = dynamic_cast<const Poloidal&>(*factory_solution);
 
   // test serialize
   test_serialization(solution);

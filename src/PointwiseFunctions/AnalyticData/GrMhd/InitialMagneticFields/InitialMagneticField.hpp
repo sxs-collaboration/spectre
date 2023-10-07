@@ -8,9 +8,15 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
+namespace grmhd::AnalyticData::InitialMagneticFields {
+class Poloidal;
+class Toroidal;
+}  // namespace grmhd::AnalyticData::InitialMagneticFields
+
 namespace gsl {
 template <typename T>
 class not_null;
@@ -62,6 +68,8 @@ class InitialMagneticField : public PUP::able {
   InitialMagneticField() = default;
 
  public:
+  using creatable_classes = tmpl::list<Poloidal, Toroidal>;
+
   ~InitialMagneticField() override = default;
 
   virtual auto get_clone() const -> std::unique_ptr<InitialMagneticField> = 0;
