@@ -48,6 +48,11 @@ namespace grmhd::AnalyticData::InitialMagneticFields {
  * field can be centered about any arbitrary point. The field is also zero
  * outside of `MaxDistanceFromCenter`, so that compact support can be imposed if
  * necessary.
+ *
+ * \warning This assumes the magnetic field is initialized, both in size and
+ * value, before being passed into the `variables` function. This is so that
+ * multiple magnetic fields can be superposed. Each magnetic field
+ * configuration does a `+=` to make this possible.
  */
 class Toroidal : public InitialMagneticField {
  public:
@@ -115,16 +120,29 @@ class Toroidal : public InitialMagneticField {
   void pup(PUP::er& p) override;
 
   /// Retrieve magnetic fields at `(x)`
+    void variables(gsl::not_null<tnsr::I<DataVector, 3>*> result,
+                 const tnsr::I<DataVector, 3>& coords,
+                 const Scalar<DataVector>& pressure,
+                 const Scalar<DataVector>& sqrt_det_spatial_metric,
+                 const tnsr::i<DataVector, 3>& deriv_pressure) const override;
+
+  /// Retrieve magnetic fields at `(x)`
+  void variables(gsl::not_null<tnsr::I<double, 3>*> result,
+                 const tnsr::I<double, 3>& coords,
+                 const Scalar<double>& pressure,
+                 const Scalar<double>& sqrt_det_spatial_metric,
+                 const tnsr::i<double, 3>& deriv_pressure) const override;
+
   bool is_equal(const InitialMagneticField& rhs) const override;
 
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& coords,
-                 const Scalar<DataType>& pressure,
-                 const Scalar<DataType>& sqrt_det_spatial_metric,
-                 const tnsr::i<DataType, 3>& deriv_pressure) const
-      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
-
  private:
+  template <typename DataType>
+  void variables_impl(gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+                      const tnsr::I<DataType, 3>& coords,
+                      const Scalar<DataType>& pressure,
+                      const Scalar<DataType>& sqrt_det_spatial_metric,
+                      const tnsr::i<DataType, 3>& deriv_pressure) const;
+
   size_t pressure_exponent_ = std::numeric_limits<size_t>::max();
   double cutoff_pressure_ = std::numeric_limits<double>::signaling_NaN();
   double vector_potential_amplitude_ =

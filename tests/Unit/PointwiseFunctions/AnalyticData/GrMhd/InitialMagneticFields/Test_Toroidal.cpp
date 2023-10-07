@@ -33,8 +33,10 @@ struct ToroidalProxy : Toroidal {
       const tnsr::I<DataType, 3>& x, const Scalar<DataType>& pressure,
       const Scalar<DataType>& sqrt_det_spatial_metric,
       const tnsr::i<DataType, 3>& deriv_pressure) const {
-    return this->variables(x, pressure, sqrt_det_spatial_metric,
-                           deriv_pressure);
+    auto mag_field = make_with_value<tnsr::I<DataType, 3>>(pressure, 0.0);
+    this->variables(make_not_null(&mag_field), x, pressure,
+                    sqrt_det_spatial_metric, deriv_pressure);
+    return {mag_field};
   }
 };
 
@@ -145,9 +147,9 @@ SPECTRE_TEST_CASE(
         d_pressure.get(1) = 2.0 * y;
         d_pressure.get(2) = 1.0;
 
-        const auto b_field =
-            get<hydro::Tags::MagneticField<DataVector, 3>>(solution.variables(
-                in_coords, pressure, sqrt_det_spatial_metric, d_pressure));
+        tnsr::I<DataVector, 3> b_field{num_grid_pts, 0.0};
+        solution.variables(&b_field, in_coords, pressure,
+                           sqrt_det_spatial_metric, d_pressure);
 
         Scalar<DataVector> mag_b_field{num_grid_pts, 0.0};
         for (size_t i = 0; i < 3; ++i) {

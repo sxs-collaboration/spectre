@@ -42,13 +42,33 @@ Toroidal::Toroidal(const size_t pressure_exponent, const double cutoff_pressure,
       center_(center),
       max_distance_from_center_(max_distance_from_center) {}
 
+void Toroidal::variables(const gsl::not_null<tnsr::I<DataVector, 3>*> result,
+                         const tnsr::I<DataVector, 3>& coords,
+                         const Scalar<DataVector>& pressure,
+                         const Scalar<DataVector>& sqrt_det_spatial_metric,
+                         const tnsr::i<DataVector, 3>& deriv_pressure) const {
+  ASSERT(result->get(0).size() == get(pressure).size(),
+         "Result must be of size " << get(pressure).size() << " but got "
+                                   << result->get(0).size());
+  variables_impl(result, coords, pressure, sqrt_det_spatial_metric,
+                 deriv_pressure);
+}
+
+void Toroidal::variables(const gsl::not_null<tnsr::I<double, 3>*> result,
+                         const tnsr::I<double, 3>& coords,
+                         const Scalar<double>& pressure,
+                         const Scalar<double>& sqrt_det_spatial_metric,
+                         const tnsr::i<double, 3>& deriv_pressure) const {
+  variables_impl(result, coords, pressure, sqrt_det_spatial_metric,
+                 deriv_pressure);
+}
+
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
-Toroidal::variables(const tnsr::I<DataType, 3>& coords,
-                    const Scalar<DataType>& pressure,
-                    const Scalar<DataType>& sqrt_det_spatial_metric,
-                    const tnsr::i<DataType, 3>& deriv_pressure) const {
-  auto magnetic_field = make_with_value<tnsr::I<DataType, 3>>(coords, 0.0);
+void Toroidal::variables_impl(
+    const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+    const tnsr::I<DataType, 3>& coords, const Scalar<DataType>& pressure,
+    const Scalar<DataType>& sqrt_det_spatial_metric,
+    const tnsr::i<DataType, 3>& deriv_pressure) const {
   const size_t num_pts = get_size(get(pressure));
 
   for (size_t i = 0; i < num_pts; ++i) {
@@ -58,9 +78,6 @@ Toroidal::variables(const tnsr::I<DataType, 3>& coords,
     const double z = get_element(coords.get(2), i) - center_[2];
     const double radius = sqrt(x * x + y * y + z * z);
     if (pressure_i < cutoff_pressure_ or radius > max_distance_from_center_) {
-      get_element(magnetic_field.get(0), i) = 0.0;
-      get_element(magnetic_field.get(1), i) = 0.0;
-      get_element(magnetic_field.get(2), i) = 0.0;
       continue;
     }
 
@@ -80,20 +97,17 @@ Toroidal::variables(const tnsr::I<DataType, 3>& coords,
     const auto& dp_dy = get_element(deriv_pressure.get(1), i);
 
     // Assign Bx, By
-    get_element(magnetic_field.get(0), i) =
-        y * pressure_term +
-        varpi_squared * n_times_pressure_to_n_minus_1 * dp_dy;
-    get_element(magnetic_field.get(1), i) =
-        -(x * pressure_term +
-          varpi_squared * n_times_pressure_to_n_minus_1 * dp_dx);
+    get_element(magnetic_field->get(0), i) +=
+        vector_potential_amplitude_ *
+        (y * pressure_term +
+         varpi_squared * n_times_pressure_to_n_minus_1 * dp_dy) /
+        get_element(get(sqrt_det_spatial_metric), i);
+    get_element(magnetic_field->get(1), i) +=
+        vector_potential_amplitude_ *
+        (-(x * pressure_term +
+           varpi_squared * n_times_pressure_to_n_minus_1 * dp_dx)) /
+        get_element(get(sqrt_det_spatial_metric), i);
   }
-
-  magnetic_field.get(0) *=
-      vector_potential_amplitude_ / get(sqrt_det_spatial_metric);
-  magnetic_field.get(1) *=
-      vector_potential_amplitude_ / get(sqrt_det_spatial_metric);
-
-  return {std::move(magnetic_field)};
 }
 
 bool Toroidal::is_equal(const InitialMagneticField& rhs) const {
@@ -115,12 +129,12 @@ bool operator!=(const Toroidal& lhs, const Toroidal& rhs) {
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>> \
-  Toroidal::variables<DTYPE(data)>(                                        \
-      const tnsr::I<DTYPE(data), 3>& coords,                               \
-      const Scalar<DTYPE(data)>& pressure,                                 \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric,                  \
+#define INSTANTIATE(_, data)                                  \
+  template void Toroidal::variables_impl<DTYPE(data)>(        \
+      gsl::not_null<tnsr::I<DTYPE(data), 3>*> magnetic_field, \
+      const tnsr::I<DTYPE(data), 3>& coords,                  \
+      const Scalar<DTYPE(data)>& pressure,                    \
+      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric,     \
       const tnsr::i<DTYPE(data), 3>& deriv_pressure) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
