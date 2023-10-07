@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -35,10 +36,11 @@ double compute_r_bar_squared(const double mu, const double x,
 }
 
 // Equations (33) and (32)
-double compute_v_0_squared(const double r_squared, const double h_0) {
+double compute_v_0_squared(const double r_squared, const double h_0,
+                           const double lorentz_max) {
   const double z_0_squared = r_squared / square(h_0);
-  static constexpr double velocity_squared_upper_bound =
-      1.0 - 4.0 * std::numeric_limits<double>::epsilon();
+  const double velocity_squared_upper_bound =
+      1.0 - 1.0 / (lorentz_max * lorentz_max);
   return std::min(z_0_squared / (1.0 + z_0_squared),
                   velocity_squared_upper_bound);
 }
@@ -106,7 +108,7 @@ class AuxiliaryFunction {
 };
 
 // Master function, see Equation (44) in Sec. II.E
-template <size_t ThermodynamicDim>
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
 class FunctionOfMu {
  public:
   FunctionOfMu(const double tau, const double momentum_density_squared,
@@ -115,8 +117,14 @@ class FunctionOfMu {
                const double rest_mass_density_times_lorentz_factor,
                const double electron_fraction,
                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                   equation_of_state)
-      : q_(tau / rest_mass_density_times_lorentz_factor),
+                   equation_of_state,
+               const double lorentz_max)
+      : q_(EnforcePhysicality
+               ? std::max(
+                     tau / rest_mass_density_times_lorentz_factor,
+                     equation_of_state.specific_internal_energy_lower_bound(
+                         rest_mass_density_times_lorentz_factor / lorentz_max))
+               : (tau / rest_mass_density_times_lorentz_factor)),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
         b_squared_(magnetic_field_squared /
@@ -128,7 +136,23 @@ class FunctionOfMu {
         electron_fraction_(electron_fraction),
         equation_of_state_(equation_of_state),
         h_0_(equation_of_state_.specific_enthalpy_lower_bound()),
-        v_0_squared_(compute_v_0_squared(r_squared_, h_0_)) {}
+        v_0_squared_(compute_v_0_squared(r_squared_, h_0_, lorentz_max)) {
+    const double r_squared_bound =
+        4.0 * v_0_squared_ * square(q_ + 1.0) / square(1.0 + v_0_squared_);
+    if constexpr (EnforcePhysicality) {
+      if (r_squared_bound < r_squared_) {
+        r_squared_ = r_squared_bound;
+        r_dot_b_squared_ *= r_squared_bound / r_squared_;
+      }
+    } else {
+      const double eps_min =
+          equation_of_state_.specific_internal_energy_lower_bound(
+              rest_mass_density_times_lorentz_factor_ / lorentz_max);
+      if (q_ < eps_min or r_squared_ > r_squared_bound) {
+        state_is_unphysical_ = true;
+      }
+    }
+  }
 
   std::pair<double, double> root_bracket(
       double rest_mass_density_times_lorentz_factor, double absolute_tolerance,
@@ -136,23 +160,27 @@ class FunctionOfMu {
 
   Primitives primitives(double mu) const;
 
-  double operator()(const double mu) const;
+  double operator()(double mu) const;
+
+  bool state_is_unphysical() const { return state_is_unphysical_; }
 
  private:
   const double q_;
-  const double r_squared_;
+  double r_squared_;
   const double b_squared_;
-  const double r_dot_b_squared_;
+  double r_dot_b_squared_;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
       equation_of_state_;
   const double h_0_;
   const double v_0_squared_;
+  bool state_is_unphysical_ = false;
 };
 
-template <size_t ThermodynamicDim>
-std::pair<double, double> FunctionOfMu<ThermodynamicDim>::root_bracket(
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
+std::pair<double, double>
+FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::root_bracket(
     const double rest_mass_density_times_lorentz_factor,
     const double absolute_tolerance, const double relative_tolerance,
     const size_t max_iterations) const {
@@ -228,8 +256,9 @@ std::pair<double, double> FunctionOfMu<ThermodynamicDim>::root_bracket(
   return {lower_bound, upper_bound};
 }
 
-template <size_t ThermodynamicDim>
-Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
+Primitives FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::primitives(
+    const double mu) const {
   // Equation (26)
   const double x = compute_x(mu, b_squared_);
   // Equations(38)
@@ -273,8 +302,9 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared};
 }
 
-template <size_t ThermodynamicDim>
-double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const {
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
+double FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::operator()(
+    const double mu) const {
   const auto[rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
       primitives(mu);
   // Equation (43)
@@ -288,7 +318,7 @@ double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const {
 }
 }  // namespace
 
-template <size_t ThermodynamicDim>
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
 std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
@@ -297,16 +327,22 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     const double rest_mass_density_times_lorentz_factor,
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) {
+        equation_of_state,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   // Master function see Equation (44)
-  const auto f_of_mu =
-      FunctionOfMu<ThermodynamicDim>{tau,
-                                     momentum_density_squared,
-                                     momentum_density_dot_magnetic_field,
-                                     magnetic_field_squared,
-                                     rest_mass_density_times_lorentz_factor,
-                                     electron_fraction,
-                                     equation_of_state};
+  const auto f_of_mu = FunctionOfMu<EnforcePhysicality, ThermodynamicDim>{
+      tau,
+      momentum_density_squared,
+      momentum_density_dot_magnetic_field,
+      magnetic_field_squared,
+      rest_mass_density_times_lorentz_factor,
+      electron_fraction,
+      equation_of_state,
+      primitive_from_conservative_options.kastaun_max_lorentz_factor()};
+  if (f_of_mu.state_is_unphysical()) {
+    return std::nullopt;
+  }
 
   // mu is 1 / (h W) see Equation (26)
   double one_over_specific_enthalpy_times_lorentz_factor =
@@ -346,11 +382,12 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATION(_, data)                                               \
   template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
                              PrimitiveRecoveryData>                          \
   grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl::apply<     \
-      THERMODIM(data)>(                                                      \
+      PHYSICALITY(data), THERMODIM(data)>(                                   \
       const double initial_guess_pressure, const double tau,                 \
       const double momentum_density_squared,                                 \
       const double momentum_density_dot_magnetic_field,                      \
@@ -358,9 +395,11 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const double rest_mass_density_times_lorentz_factor,                   \
       const double electron_fraction,                                        \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state);
+          equation_of_state,                                                 \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
+          primitive_from_conservative_options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM

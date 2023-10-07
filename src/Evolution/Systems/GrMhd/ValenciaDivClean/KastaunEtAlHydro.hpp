@@ -14,6 +14,9 @@ namespace EquationsOfState {
 template <bool, size_t>
 class EquationOfState;
 }  // namespace EquationsOfState
+namespace grmhd::ValenciaDivClean {
+class PrimitiveFromConservativeOptions;
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
@@ -44,17 +47,18 @@ struct PrimitiveRecoveryData;
  *
  * \note This scheme does not use the initial guess for the pressure.
  */
-template <bool EnforcePhysicality = true>
 class KastaunEtAlHydro {
  public:
-  template <size_t ThermodynamicDim>
+  template <bool EnforcePhysicality, size_t ThermodynamicDim>
   static std::optional<PrimitiveRecoveryData> apply(
       double initial_guess_pressure, double tau,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state);
+          equation_of_state,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+          primitive_from_conservative_options);
 
   static const std::string name() { return "KastaunEtAlHydro"; }
 

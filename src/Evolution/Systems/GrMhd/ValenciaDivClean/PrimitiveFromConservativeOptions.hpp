@@ -42,22 +42,34 @@ class PrimitiveFromConservativeOptions {
     static type lower_bound() { return 0.0; }
   };
 
-  using options = tmpl::list<CutoffDForInversion, DensityWhenSkippingInversion>;
+  struct KastaunMaxLorentzFactor {
+    static constexpr Options::String help{
+        "The maximum Lorentz allowed during primitive recovery when using the "
+        "Kastaun schemes."};
+    using type = double;
+    static type lower_bound() { return 1.0; }
+  };
+
+  using options = tmpl::list<CutoffDForInversion, DensityWhenSkippingInversion,
+                             KastaunMaxLorentzFactor>;
 
   static constexpr Options::String help{
       "Options given to conservative to primitive inversion."};
 
   PrimitiveFromConservativeOptions() = default;
 
-  PrimitiveFromConservativeOptions(
-      const double cutoff_d_for_inversion,
-      const double density_when_skipping_inversion);
+  PrimitiveFromConservativeOptions(double cutoff_d_for_inversion,
+                                   double density_when_skipping_inversion,
+                                   double kastaun_max_lorentz_factor);
 
   void pup(PUP::er& p);
 
   double cutoff_d_for_inversion() const { return cutoff_d_for_inversion_; }
   double density_when_skipping_inversion() const {
     return density_when_skipping_inversion_;
+  }
+  double kastaun_max_lorentz_factor() const {
+    return kastaun_max_lorentz_factor_;
   }
 
  private:
@@ -66,6 +78,8 @@ class PrimitiveFromConservativeOptions {
 
   double cutoff_d_for_inversion_ = std::numeric_limits<double>::signaling_NaN();
   double density_when_skipping_inversion_ =
+      std::numeric_limits<double>::signaling_NaN();
+  double kastaun_max_lorentz_factor_ =
       std::numeric_limits<double>::signaling_NaN();
 };
 

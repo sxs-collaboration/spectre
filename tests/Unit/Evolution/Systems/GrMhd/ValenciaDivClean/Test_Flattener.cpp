@@ -78,9 +78,11 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = 1.0e4;
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
-    primitive_from_conservative_options(cutoff_d_for_inversion,
-                                        density_when_skipping_inversion);
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
 
   {
     INFO("Case: NoOp");

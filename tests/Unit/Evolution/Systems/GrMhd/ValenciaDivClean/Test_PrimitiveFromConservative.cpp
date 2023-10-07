@@ -125,9 +125,11 @@ void test_primitive_from_conservative_random(
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = 1.0e4;
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
-    primitive_from_conservative_options(cutoff_d_for_inversion,
-                                        density_when_skipping_inversion);
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
 
   Scalar<DataVector> rest_mass_density(number_of_points);
   Scalar<DataVector> electron_fraction(number_of_points);
@@ -233,9 +235,11 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = 1.0e4;
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
-    primitive_from_conservative_options(cutoff_d_for_inversion,
-                                        density_when_skipping_inversion);
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
 
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_ye),
@@ -320,8 +324,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(dv);
   test_primitive_from_conservative_known<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       false>(dv);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
@@ -351,11 +355,11 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       2>(&generator, ideal_fluid, dv);
 
   test_primitive_from_conservative_random<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       1, false>(&generator, polytropic_fluid, dv);
   test_primitive_from_conservative_random<
-      tmpl::list<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::
-                     KastaunEtAlHydro<true>>,
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       2, false>(&generator, ideal_fluid, dv);
 }

@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -36,7 +37,8 @@ class FunctionOfZ {
               const double rest_mass_density_times_lorentz_factor,
               const double electron_fraction,
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                  equation_of_state)
+                  equation_of_state,
+              const double lorentz_max)
       : q_(tau / rest_mass_density_times_lorentz_factor),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
@@ -48,16 +50,18 @@ class FunctionOfZ {
     // Internal consistency check
     //
     const double rho_min =
-        rest_mass_density_times_lorentz_factor_ / lorentz_max_;
+        rest_mass_density_times_lorentz_factor_ / lorentz_max;
     const double eps_min =
         equation_of_state_.specific_internal_energy_lower_bound(rho_min);
+    const double v_0_squared = 1. - 1. / (lorentz_max * lorentz_max);
+    const double kmax = 2. * std::sqrt(v_0_squared) / (1. + v_0_squared);
 
     if constexpr (EnforcePhysicality) {
       q_ = std::max(q_, eps_min);
-      r_ = std::min(r_, kmax_ * (q_ + 1.));
+      r_ = std::min(r_, kmax * (q_ + 1.));
     } else {
-      if ((q_ < eps_min) or (r_ > kmax_ * (q_ + 1.))) {
-        state_is_unphysical = true;
+      if ((q_ < eps_min) or (r_ > kmax * (q_ + 1.))) {
+        state_is_unphysical_ = true;
       }
     }
   }
@@ -68,20 +72,17 @@ class FunctionOfZ {
 
   double operator()(double z) const;
 
-  bool has_no_root() { return state_is_unphysical; };
+  bool has_no_root() { return state_is_unphysical_; };
 
  private:
   double q_;
   double r_squared_;
   double r_;
-  bool state_is_unphysical = false;
+  bool state_is_unphysical_ = false;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
       equation_of_state_;
-  const double lorentz_max_ = 1000.;
-  const double v_0_squared_ = 1. - 1. / (lorentz_max_ * lorentz_max_);
-  const double kmax_ = 2. * std::sqrt(v_0_squared_) / (1. + v_0_squared_);
 };
 
 template <size_t ThermodynamicDim, bool EnforcePhysicality>
@@ -156,10 +157,8 @@ double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
 }
 }  // namespace
 
-template <bool EnforcePhysicality>
-template <size_t ThermodynamicDim>
-std::optional<PrimitiveRecoveryData>
-KastaunEtAlHydro<EnforcePhysicality>::apply(
+template <bool EnforcePhysicality, size_t ThermodynamicDim>
+std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
@@ -167,7 +166,9 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
     const double rest_mass_density_times_lorentz_factor,
     const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) {
+        equation_of_state,
+    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+        primitive_from_conservative_options) {
   // Master function see Equation (44)
   auto f_of_z = FunctionOfZ<ThermodynamicDim, EnforcePhysicality>{
       tau,
@@ -176,7 +177,8 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
       magnetic_field_squared,
       rest_mass_density_times_lorentz_factor,
       electron_fraction,
-      equation_of_state};
+      equation_of_state,
+      primitive_from_conservative_options.kastaun_max_lorentz_factor()};
 
   if (f_of_z.has_no_root()) {
     return std::nullopt;
@@ -214,19 +216,21 @@ KastaunEtAlHydro<EnforcePhysicality>::apply(
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(_, data)                                               \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                             PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::                        \
-      KastaunEtAlHydro<PHYSICALITY(data)>::apply<THERMODIM(data)>(           \
-          const double initial_guess_pressure, const double tau,             \
-          const double momentum_density_squared,                             \
-          const double momentum_density_dot_magnetic_field,                  \
-          const double magnetic_field_squared,                               \
-          const double rest_mass_density_times_lorentz_factor,               \
-          const double electron_fraction,                                    \
-          const EquationsOfState::EquationOfState<true, THERMODIM(data)>&    \
-              equation_of_state);
+#define INSTANTIATION(_, data)                                                \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
+                             PrimitiveRecoveryData>                           \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro::apply< \
+      PHYSICALITY(data), THERMODIM(data)>(                                    \
+      const double initial_guess_pressure, const double tau,                  \
+      const double momentum_density_squared,                                  \
+      const double momentum_density_dot_magnetic_field,                       \
+      const double magnetic_field_squared,                                    \
+      const double rest_mass_density_times_lorentz_factor,                    \
+      const double electron_fraction,                                         \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
+          equation_of_state,                                                  \
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&        \
+          primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
 

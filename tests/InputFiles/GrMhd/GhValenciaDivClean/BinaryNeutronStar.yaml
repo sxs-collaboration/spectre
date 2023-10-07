@@ -85,6 +85,7 @@ VariableFixing:
 PrimitiveFromConservative:
   CutoffDForInversion: *CutoffD
   DensityWhenSkippingInversion: *MinimumD
+  KastaunMaxLorentzFactor: 10.0
 
 EvolutionSystem:
   ValenciaDivClean:
