@@ -20,6 +20,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/ForceFree/Subcell/TciOnFdGrid.hpp"
+#include "Evolution/Systems/ForceFree/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -34,9 +35,10 @@ enum class TestThis {
   PerssonMagTildeE,
   PerssonMagTildeB,
   PerssonTildeQ,
+  PerssonTildeQBelowCutoff,
+  PerssonTildeQDoNotCheck,
   RdmpMagTildeE,
-  RdmpMagTildeB,
-  RdmpTildeQ
+  RdmpMagTildeB
 };
 
 void test(const TestThis test_this, const int expected_tci_status) {
@@ -76,12 +78,15 @@ void test(const TestThis test_this, const int expected_tci_status) {
       std::nullopt,
       fd::DerivativeOrder::Two};
 
+  const ForceFree::subcell::TciOptions tci_options{1.0e-10};
+
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<VarsForTciTest::tags_list>, ::domain::Tags::Mesh<3>,
       ::evolution::dg::subcell::Tags::Mesh<3>,
+      ForceFree::subcell::Tags::TciOptions,
       evolution::dg::subcell::Tags::SubcellOptions<3>,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(
-      subcell_vars, dg_mesh, subcell_mesh, subcell_options,
+      subcell_vars, dg_mesh, subcell_mesh, tci_options, subcell_options,
       evolution::dg::subcell::RdmpTciData{});
 
   const size_t point_to_change = subcell_mesh.number_of_grid_points() / 2;
@@ -108,6 +113,20 @@ void test(const TestThis test_this, const int expected_tci_status) {
           get(*tilde_q_ptr)[point_to_change] *= 10.0;
         },
         make_not_null(&box));
+  } else if (test_this == TestThis::PerssonTildeQBelowCutoff) {
+    db::mutate<TildeQ>(
+        [point_to_change](const auto tilde_q_ptr) {
+          get(*tilde_q_ptr)[point_to_change] *= 10.0;
+          get(*tilde_q_ptr) *= 1e-20;
+        },
+        make_not_null(&box));
+  } else if (test_this == TestThis::PerssonTildeQDoNotCheck) {
+    db::mutate<TildeQ, ForceFree::subcell::Tags::TciOptions>(
+        [point_to_change](const auto tilde_q_ptr, const auto tci_options_ptr) {
+          get(*tilde_q_ptr)[point_to_change] *= 10.0;
+          tci_options_ptr->tilde_q_cutoff = std::nullopt;
+        },
+        make_not_null(&box));
   }
 
   // Set the RDMP TCI past data.
@@ -123,26 +142,22 @@ void test(const TestThis test_this, const int expected_tci_status) {
       subcell_mag_tilde_e, dg_mesh, subcell_mesh.extents(), DimByDim);
   const auto dg_mag_tilde_b = evolution::dg::subcell::fd::reconstruct(
       subcell_mag_tilde_b, dg_mesh, subcell_mesh.extents(), DimByDim);
-  const auto dg_tilde_q = evolution::dg::subcell::fd::reconstruct(
-      subcell_tilde_q, dg_mesh, subcell_mesh.extents(), DimByDim);
 
   evolution::dg::subcell::RdmpTciData past_rdmp_tci_data{};
   past_rdmp_tci_data.max_variables_values =
       DataVector{max(max(dg_mag_tilde_e), max(subcell_mag_tilde_e)),
-                 max(max(dg_mag_tilde_b), max(subcell_mag_tilde_b)),
-                 max(max(dg_tilde_q), max(subcell_tilde_q))};
+                 max(max(dg_mag_tilde_b), max(subcell_mag_tilde_b))};
   past_rdmp_tci_data.min_variables_values =
       DataVector{min(min(dg_mag_tilde_e), min(subcell_mag_tilde_e)),
-                 min(min(dg_mag_tilde_b), min(subcell_mag_tilde_b)),
-                 min(min(dg_tilde_q), min(subcell_tilde_q))};
+                 min(min(dg_mag_tilde_b), min(subcell_mag_tilde_b))};
 
   // Note : RDMP TCI data consists of max and min of subcell variables only when
   // using FD grid
   evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data{};
-  expected_rdmp_tci_data.max_variables_values = DataVector{
-      max(subcell_mag_tilde_e), max(subcell_mag_tilde_b), max(subcell_tilde_q)};
-  expected_rdmp_tci_data.min_variables_values = DataVector{
-      min(subcell_mag_tilde_e), min(subcell_mag_tilde_b), min(subcell_tilde_q)};
+  expected_rdmp_tci_data.max_variables_values =
+      DataVector{max(subcell_mag_tilde_e), max(subcell_mag_tilde_b)};
+  expected_rdmp_tci_data.min_variables_values =
+      DataVector{min(subcell_mag_tilde_e), min(subcell_mag_tilde_b)};
 
   // Modify past data if we are expecting an RDMP TCI failure.
   db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
@@ -153,8 +168,6 @@ void test(const TestThis test_this, const int expected_tci_status) {
           rdmp_tci_data_ptr->min_variables_values[0] *= 1.01;
         } else if (test_this == TestThis::RdmpMagTildeB) {
           rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
-        } else if (test_this == TestThis::RdmpTildeQ) {
-          rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
         }
       },
       make_not_null(&box));
@@ -173,13 +186,14 @@ void test(const TestThis test_this, const int expected_tci_status) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.ForceFree.Subcell.TciOnFdGrid",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   test(TestThis::AllGood, 0);
   test(TestThis::PerssonMagTildeE, 1);
   test(TestThis::PerssonMagTildeB, 2);
   test(TestThis::PerssonTildeQ, 3);
+  test(TestThis::PerssonTildeQBelowCutoff, 0);
+  test(TestThis::PerssonTildeQDoNotCheck, 0);
   test(TestThis::RdmpMagTildeE, 4);
   test(TestThis::RdmpMagTildeB, 5);
-  test(TestThis::RdmpTildeQ, 6);
 }

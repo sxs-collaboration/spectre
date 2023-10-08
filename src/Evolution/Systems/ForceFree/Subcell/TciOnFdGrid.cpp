@@ -23,6 +23,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const Scalar<DataVector>& subcell_tilde_q, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+    const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
     const double persson_exponent, const bool need_rdmp_data_only) {
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
@@ -51,11 +52,9 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   rdmp_tci_data.max_variables_values =
-      DataVector{max(get(subcell_mag_tilde_e)), max(get(subcell_mag_tilde_b)),
-                 max(get(subcell_tilde_q))};
+      DataVector{max(get(subcell_mag_tilde_e)), max(get(subcell_mag_tilde_b))};
   rdmp_tci_data.min_variables_values =
-      DataVector{min(get(subcell_mag_tilde_e)), min(get(subcell_mag_tilde_b)),
-                 min(get(subcell_tilde_q))};
+      DataVector{min(get(subcell_mag_tilde_e)), min(get(subcell_mag_tilde_b))};
 
   if (need_rdmp_data_only) {
     return {false, rdmp_tci_data};
@@ -90,11 +89,15 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
                                           persson_exponent)) {
     return {+1, rdmp_tci_data};
   }
+
   if (evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
                                           persson_exponent)) {
     return {+2, rdmp_tci_data};
   }
-  if (evolution::dg::subcell::persson_tci(dg_tilde_q, dg_mesh,
+
+  if (tci_options.tilde_q_cutoff.has_value() and
+      max(abs(get(dg_tilde_q))) > tci_options.tilde_q_cutoff.value() and
+      evolution::dg::subcell::persson_tci(dg_tilde_q, dg_mesh,
                                           persson_exponent)) {
     return {+3, rdmp_tci_data};
   }
@@ -104,12 +107,10 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
   evolution::dg::subcell::RdmpTciData rdmp_tci_data_for_check{};
   rdmp_tci_data_for_check.max_variables_values = DataVector{
       max(max(get(dg_mag_tilde_e)), rdmp_tci_data.max_variables_values[0]),
-      max(max(get(dg_mag_tilde_b)), rdmp_tci_data.max_variables_values[1]),
-      max(max(get(dg_tilde_q)), rdmp_tci_data.max_variables_values[2])};
+      max(max(get(dg_mag_tilde_b)), rdmp_tci_data.max_variables_values[1])};
   rdmp_tci_data_for_check.min_variables_values = DataVector{
       min(min(get(dg_mag_tilde_e)), rdmp_tci_data.min_variables_values[0]),
-      min(min(get(dg_mag_tilde_b)), rdmp_tci_data.min_variables_values[1]),
-      min(min(get(dg_tilde_q)), rdmp_tci_data.min_variables_values[2])};
+      min(min(get(dg_mag_tilde_b)), rdmp_tci_data.min_variables_values[1])};
 
   if (const int rdmp_tci_status = evolution::dg::subcell::rdmp_tci(
           rdmp_tci_data_for_check.max_variables_values,

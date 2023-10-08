@@ -14,6 +14,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/Systems/ForceFree/Subcell/TciOptions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -25,6 +26,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnDgGrid::apply(
     const Scalar<DataVector>& tilde_q, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+    const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
     const double persson_exponent, bool /*element_stays_on_dg*/) {
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
@@ -32,7 +34,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnDgGrid::apply(
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
   const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
 
-  DataVector temp_buffer{2 * num_dg_pts + 3 * num_subcell_pts};
+  DataVector temp_buffer{2 * num_dg_pts + 2 * num_subcell_pts};
   size_t offset_into_temp_buffer = 0;
   const auto assign_data =
       [&temp_buffer, &offset_into_temp_buffer](
@@ -67,35 +69,31 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnDgGrid::apply(
                                       get(dg_mag_tilde_b), dg_mesh,
                                       subcell_mesh.extents());
 
-  Scalar<DataVector> subcell_tilde_q{};
-  assign_data(make_not_null(&subcell_tilde_q), num_subcell_pts);
-  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_q)),
-                                      get(tilde_q), dg_mesh,
-                                      subcell_mesh.extents());
-
   using std::max;
   using std::min;
   rdmp_tci_data.max_variables_values =
       DataVector{max(max(get(subcell_mag_tilde_e)), max(get(dg_mag_tilde_e))),
-                 max(max(get(subcell_mag_tilde_b)), max(get(dg_mag_tilde_b))),
-                 max(max(get(subcell_tilde_q)), max(get(tilde_q)))};
+                 max(max(get(subcell_mag_tilde_b)), max(get(dg_mag_tilde_b)))};
   rdmp_tci_data.min_variables_values =
       DataVector{min(min(get(subcell_mag_tilde_e)), min(get(dg_mag_tilde_e))),
-                 min(min(get(subcell_mag_tilde_b)), min(get(dg_mag_tilde_b))),
-                 min(min(get(subcell_tilde_q)), min(get(tilde_q)))};
+                 min(min(get(subcell_mag_tilde_b)), min(get(dg_mag_tilde_b)))};
 
-  // Perform the TCI checks
   if (evolution::dg::subcell::persson_tci(dg_mag_tilde_e, dg_mesh,
                                           persson_exponent)) {
     return {-1, std::move(rdmp_tci_data)};
   }
+
   if (evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
                                           persson_exponent)) {
     return {-2, std::move(rdmp_tci_data)};
   }
-  if (evolution::dg::subcell::persson_tci(tilde_q, dg_mesh, persson_exponent)) {
+
+  if (tci_options.tilde_q_cutoff.has_value() and
+      max(abs(get(tilde_q))) > tci_options.tilde_q_cutoff.value() and
+      evolution::dg::subcell::persson_tci(tilde_q, dg_mesh, persson_exponent)) {
     return {-3, std::move(rdmp_tci_data)};
   }
+
   if (const int rdmp_tci_status = evolution::dg::subcell::rdmp_tci(
           rdmp_tci_data.max_variables_values,
           rdmp_tci_data.min_variables_values,
