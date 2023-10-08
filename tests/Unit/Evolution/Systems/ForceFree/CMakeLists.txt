@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_SetInitialRdmpData.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
+  Subcell/Test_TciOptions.cpp
   Test_Characteristics.cpp
   Test_ElectricCurrentDensity.cpp
   Test_ElectromagneticVariables.cpp
