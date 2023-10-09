@@ -424,6 +424,12 @@ jobs:
           - compiler: gcc-11
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python3.8
+          # Disable building executable for this build for now because it
+          # exceeds the available memory. See issue:
+          # https://github.com/sxs-collaboration/spectre/issues/5472
+          - compiler: gcc-11
+            build_type: Release
+            test_executables: OFF
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -647,7 +653,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
-        if: matrix.COVERAGE != 'ON'
+        if: matrix.COVERAGE != 'ON' && matrix.test_executables != 'OFF'
         working-directory: build
         run: |
           make test-executables
@@ -676,7 +682,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           ccache -s
       - name: Run non-unit tests
-        if: matrix.COVERAGE != 'ON'
+        if: matrix.COVERAGE != 'ON' && matrix.test_executables != 'OFF'
         working-directory: build
         run: |
           # We get occasional random timeouts, repeat tests to see if
