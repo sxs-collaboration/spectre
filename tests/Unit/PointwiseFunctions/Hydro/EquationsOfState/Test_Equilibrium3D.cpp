@@ -86,9 +86,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
     const DataVector enthalpy_density =
         get(rest_mass_density) * (1.0 + get(specific_internal_energy)) +
         get(pressure);
-    CHECK(
+    CHECK_ITERABLE_APPROX(
         get(eos.sound_speed_squared_from_density_and_temperature(
-            rest_mass_density, temperature, electron_fraction)) ==
+            rest_mass_density, temperature, electron_fraction)),
         get(rest_mass_density) *
                 get(underlying_eos.chi_from_density_and_energy(
                     rest_mass_density, specific_internal_energy)) /
@@ -127,14 +127,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
     CHECK(
         get(eos.sound_speed_squared_from_density_and_temperature(
             rest_mass_density, temperature, electron_fraction)) ==
-        get(rest_mass_density) *
+        approx(
+            get(rest_mass_density) *
                 get(underlying_eos.chi_from_density_and_energy(
                     rest_mass_density, specific_internal_energy)) /
                 enthalpy_density +
             get(rest_mass_density) / get(pressure) *
                 get(underlying_eos
                         .kappa_times_p_over_rho_squared_from_density_and_energy(
-                            rest_mass_density, specific_internal_energy)));
+                            rest_mass_density, specific_internal_energy))));
     // Check that the sound speed calculation works at zero temperature
     CHECK_ITERABLE_APPROX(
         get(eos.sound_speed_squared_from_density_and_temperature(

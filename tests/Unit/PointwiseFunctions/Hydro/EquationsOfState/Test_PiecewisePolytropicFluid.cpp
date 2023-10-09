@@ -13,6 +13,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PiecewisePolytropicFluid.hpp"
@@ -89,7 +90,7 @@ void check_exact() {
         polytropic_constant_hi / (polytropic_exponent_hi - 1.0) *
                 pow(2.0 * transition_density, polytropic_exponent_hi - 1.0) +
             eint_hi_constant}};
-    CHECK(eint == eint_expected);
+    CHECK_ITERABLE_APPROX(eint, eint_expected);
 
     // chi
     // Note the sound speeds at the transition density are different depending
@@ -159,7 +160,7 @@ void check_exact() {
         polytropic_constant_hi / (polytropic_exponent_hi - 1.0) *
             pow(get(rho), polytropic_exponent_hi - 1.0) +
         eint_hi_constant;
-    CHECK(get(eint) == eint_expected);
+    CHECK(get(eint) == approx(eint_expected));
 
     // chi
     const auto chi = eos.chi_from_density(rho);
@@ -338,6 +339,9 @@ SPECTRE_TEST_CASE(
   CHECK(eos != other_eos);
   // Different eos types should NOT match
   CHECK(eos != other_type_eos);
+  // Check the correct 3D EoS is got
+  CHECK(*eos.promote_to_3d_eos() ==
+        EoS::Barotropic3D<EoS::PiecewisePolytropicFluid<true>>(eos));
   // Check baryon density
   CHECK(eos.baryon_mass() ==
         approx(hydro::units::geometric::default_baryon_mass));

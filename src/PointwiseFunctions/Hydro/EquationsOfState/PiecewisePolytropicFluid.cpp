@@ -8,6 +8,8 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -88,6 +90,14 @@ PiecewisePolytropicFluid<IsRelativistic>::get_clone() const {
   auto clone =
       std::make_unique<PiecewisePolytropicFluid<IsRelativistic>>(*this);
   return std::unique_ptr<EquationOfState<IsRelativistic, 1>>(std::move(clone));
+}
+
+template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 3>>
+PiecewisePolytropicFluid<IsRelativistic>::promote_to_3d_eos() const {
+  return std::make_unique<
+      Barotropic3D<PiecewisePolytropicFluid<IsRelativistic>>>(
+      Barotropic3D(*this));
 }
 
 template <bool IsRelativistic>

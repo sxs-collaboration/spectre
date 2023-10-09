@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
@@ -40,6 +41,8 @@ void check_exact() {
   CHECK(eos == eos);
   CHECK(eos != other_eos);
   CHECK(eos != other_type_eos);
+  CHECK(*eos.promote_to_3d_eos() ==
+        EquationsOfState::Barotropic3D<EquationsOfState::Spectral>(eos));
   // Test DataVector functions
   {
     const Scalar<DataVector> rho{DataVector{

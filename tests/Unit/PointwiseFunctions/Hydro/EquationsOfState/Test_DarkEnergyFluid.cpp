@@ -13,6 +13,7 @@
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -45,6 +46,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
   CHECK(eos == eos);
   CHECK(eos != other_eos);
   CHECK(eos != other_type_eos);
+  CHECK(*eos.promote_to_3d_eos() ==
+        EoS::Equilibrium3D<EoS::DarkEnergyFluid<true>>(eos));
   TestHelpers::EquationsOfState::test_get_clone(
       EoS::DarkEnergyFluid<true>(1.0));
 

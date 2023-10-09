@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
@@ -78,6 +79,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.IdealFluid",
   CHECK(eos == eos);
   CHECK(eos != other_eos);
   CHECK(eos != other_type_eos);
+  CHECK(*eos.promote_to_3d_eos() ==
+        EoS::Equilibrium3D<EoS::IdealFluid<true>>(eos));
 
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<true>{5.0 / 3.0},
                                        "IdealFluid", "ideal_fluid", d_for_size,

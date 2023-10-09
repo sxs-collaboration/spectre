@@ -99,6 +99,9 @@ class HybridEos
   std::unique_ptr<EquationOfState<is_relativistic, 2>> get_clone()
       const override;
 
+  std::unique_ptr<EquationOfState<is_relativistic, 3>> promote_to_3d_eos()
+      const override;
+
   bool operator==(const HybridEos<ColdEquationOfState>& rhs) const;
 
   bool operator!=(const HybridEos<ColdEquationOfState>& rhs) const;
