@@ -19,6 +19,7 @@ namespace grmhd::GhValenciaDivClean::fd {
 /// \cond
 class MonotonisedCentralPrim;
 class PositivityPreservingAdaptiveOrderPrim;
+class Wcns5zPrim;
 /// \endcond
 
 /*!
@@ -38,8 +39,9 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<MonotonisedCentralPrim,
-                                       PositivityPreservingAdaptiveOrderPrim>;
+  using creatable_classes =
+      tmpl::list<MonotonisedCentralPrim, PositivityPreservingAdaptiveOrderPrim,
+                 Wcns5zPrim>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 

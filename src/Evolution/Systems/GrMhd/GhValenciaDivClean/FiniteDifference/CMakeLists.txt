@@ -11,6 +11,7 @@ spectre_target_sources(
   PositivityPreservingAdaptiveOrder.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
+  Wcns5z.cpp
   )
 
 spectre_target_headers(
@@ -30,4 +31,5 @@ spectre_target_headers(
   Reconstructor.hpp
   RegisterDerivedWithCharm.hpp
   Tag.hpp
+  Wcns5z.hpp
   )

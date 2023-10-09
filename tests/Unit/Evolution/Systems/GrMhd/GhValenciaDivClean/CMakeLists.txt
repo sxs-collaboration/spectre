@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_FilterOptions.cpp
   FiniteDifference/Test_Filters.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
+  FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_NeighborPackagedData.cpp
   Subcell/Test_PrimitiveGhostData.cpp
