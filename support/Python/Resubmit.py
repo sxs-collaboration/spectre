@@ -13,7 +13,9 @@ from spectre.support.Schedule import schedule
 
 
 def resubmit(
-    segments_dir: Path, context_file_name: str = "SubmitContext.yaml", **kwargs
+    segments_dir: Path,
+    context_file_name: str = "SchedulerContext.yaml",
+    **kwargs,
 ) -> Optional[subprocess.CompletedProcess]:
     """Create the next segment in the SEGMENTS_DIR and schedule it
 
@@ -23,7 +25,7 @@ def resubmit(
         in the segments directory. The next segment will be created here.
       context_file_name: Optional. Name of the file that stores the context
         for resubmissions in the 'run_dir'. This file gets created by
-        'spectre.support.schedule'. (Default: "SubmitContext.yaml")
+        'spectre.support.schedule'. (Default: "SchedulerContext.yaml")
 
     Returns: The 'subprocess.CompletedProcess' representing the process
       that scheduled the run. Returns 'None' if no run was scheduled.
@@ -94,7 +96,7 @@ def resubmit(
 )
 @click.option(
     "--context-file-name",
-    default="SubmitContext.yaml",
+    default="SchedulerContext.yaml",
     show_default=True,
     help="Name of the context file that supports resubmissions.",
 )
