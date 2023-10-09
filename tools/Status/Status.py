@@ -290,6 +290,8 @@ def render_status(
     if not show_deleted:
         deleted_jobs = job_data[~job_data["WorkDir"].map(os.path.exists)]
         job_data.drop(deleted_jobs.index, inplace=True)
+        if len(job_data) == 0:
+            return
 
     # Keep only latest in a series of segments
     job_data[["SegmentsDir", "SegmentId"]] = [
@@ -313,6 +315,8 @@ def render_status(
                 & (job_data["SegmentId"] != latest_segment_id)
             ]
             job_data.drop(drop_segment_jobs.index, inplace=True)
+        if len(job_data) == 0:
+            return
 
     # Rename columns from SLURM name to user name
     job_data.rename(columns=AVAILABLE_COLUMNS, inplace=True)
