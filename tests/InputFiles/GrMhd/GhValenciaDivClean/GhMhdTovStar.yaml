@@ -73,6 +73,7 @@ VariableFixing:
     TransitionDensityCutoff: 1.0e-11
     MaxVelocityMagnitude: 1.0e-4
   LimitLorentzFactor:
+    Enable: false # Only needed when not using Kastaun for recovery
     MaxDensityCutoff: 1.0e-12
     LorentzFactorCap: 1.0
 
