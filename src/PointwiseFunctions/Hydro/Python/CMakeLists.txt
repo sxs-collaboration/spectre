@@ -1,58 +1,51 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Hydro)
+set(LIBRARY "PyHydro")
 
-add_spectre_library(${LIBRARY})
-
-spectre_target_sources(
-  ${LIBRARY}
-  PRIVATE
+spectre_python_add_module(
+  Hydro
+  LIBRARY_NAME ${LIBRARY}
+  SOURCES
+  Bindings.cpp
   ComovingMagneticField.cpp
-  InversePlasmaBeta.cpp
   LorentzFactor.cpp
   LowerSpatialFourVelocity.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
-  QuadrupoleFormula.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   StressEnergy.cpp
-  TransportVelocity.cpp
+  PYTHON_FILES
+  __init__.py
+  MODULE_PATH "PointwiseFunctions"
   )
 
-spectre_target_headers(
+spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ComovingMagneticField.hpp
-  InversePlasmaBeta.hpp
   LorentzFactor.hpp
   LowerSpatialFourVelocity.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
-  QuadrupoleFormula.hpp
   SoundSpeedSquared.hpp
   SpecificEnthalpy.hpp
   StressEnergy.hpp
-  Tags.hpp
-  TagsDeclarations.hpp
-  Temperature.hpp
-  TransportVelocity.hpp
-  Units.hpp
   )
 
-target_link_libraries(
+spectre_python_link_libraries(
   ${LIBRARY}
-  PUBLIC
-  Boost::boost
+  PRIVATE
   DataStructures
-  ErrorHandling
-  GeneralRelativity
-  H5
-  Options
-  Serialization
+  Hydro
+  pybind11::module
+  Utilities
   )
 
-add_subdirectory(EquationsOfState)
-add_subdirectory(Python)
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDataStructures
+  PyTensor
+  )

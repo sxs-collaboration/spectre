@@ -74,6 +74,15 @@ struct MassWeightedCoords : db::SimpleTag {
 };
 }  // namespace Tags
 
+
+template <typename DataType, size_t Dim, typename Frame>
+void u_lower_t(const gsl::not_null<Scalar<DataType>*> result,
+               const Scalar<DataType>& lorentz_factor,
+               const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+               const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
+               const Scalar<DataType>& lapse,
+               const tnsr::I<DataType, Dim, Frame>& shift);
+
 /// Compute tilde_d * specific_internal_energy
 /// Result of the calculation stored in result.
 template <typename DataType>
