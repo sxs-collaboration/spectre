@@ -139,7 +139,8 @@ RUN apt-get update -y \
     && apt-get install -y cmake clang lld wget
 # Install build dependencies for the target architecture
 RUN xx-apt-get update -y \
-    && xx-apt-get install -y libc6-dev libstdc++-10-dev bison flex
+    && xx-apt-get install -y --no-install-recommends \
+        libc6-dev libstdc++-10-dev bison flex
 # - Ccache
 RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
     && tar -xzf ccache.tar.gz \
