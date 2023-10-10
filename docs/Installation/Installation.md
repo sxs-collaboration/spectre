@@ -130,7 +130,8 @@ apt), or AppleClang 13.0.0 or later
   by default on many systems, so you may not have to install it at all. The
   CMake configuration will tell you if you have libbacktrace installed.
 * [ParaView](https://www.paraview.org/) - for visualization \cite Paraview1
-  \cite Paraview2
+  \cite Paraview2 . Make sure your ParaView installation uses the same (major
+  and minor) version of Python as the rest of the build.
 * [SpEC](https://www.black-holes.org/code/SpEC.html) - to load SpEC data.
   Compile the exporter in SpEC's `Support/ApplyObservers/Exporter/` directory
   (see the `Makefile` in that directory). Also make sure to compile SpEC with
