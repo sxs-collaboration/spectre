@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -33,6 +34,7 @@
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -84,8 +86,8 @@ struct ArrayComponent {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -126,20 +128,20 @@ struct Metavariables {
 void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
                const ElementId<1>& element_id,
                const Element<1>& expected_element, const Mesh<1>& expected_mesh,
-               const std::array<amr::Flag, 1>& expected_flags,
-               const std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>&
-                   expected_neighbor_flags) {
+               const amr::Info<1>& expected_info,
+               const std::unordered_map<ElementId<1>, amr::Info<1>>&
+                   expected_neighbor_info) {
   using array_component = ArrayComponent<Metavariables>;
   CHECK(
       ActionTesting::get_databox_tag<array_component, domain::Tags::Element<1>>(
           runner, element_id) == expected_element);
   CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<1>>(
             runner, element_id) == expected_mesh);
-  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Flags<1>>(
-            runner, element_id) == expected_flags);
+  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<1>>(
+            runner, element_id) == expected_info);
   CHECK(ActionTesting::get_databox_tag<array_component,
-                                       amr::Tags::NeighborFlags<1>>(
-            runner, element_id) == expected_neighbor_flags);
+                                       amr::Tags::NeighborInfo<1>>(
+            runner, element_id) == expected_neighbor_info);
 }
 
 void test() {
@@ -186,36 +188,38 @@ void test() {
                                Spectral::Quadrature::GaussLobatto};
   const Mesh<1> element_4_mesh{std::array{7_st}, Spectral::Basis::Legendre,
                                Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> element_3_mesh_post_refinement{
+      std::array{6_st}, Spectral::Basis::Legendre,
+      Spectral::Quadrature::GaussLobatto};
 
-  std::array element_1_flags{amr::Flag::Join};
-  std::array element_2_flags{amr::Flag::Join};
-  std::array element_3_flags{amr::Flag::IncreaseResolution};
-  std::array element_4_flags{amr::Flag::Split};
+  amr::Info<1> element_1_info{{amr::Flag::Join}, element_2_mesh};
+  amr::Info<1> element_2_info{{amr::Flag::Join}, element_2_mesh};
+  amr::Info<1> element_3_info{{amr::Flag::IncreaseResolution},
+                              element_3_mesh_post_refinement};
+  amr::Info<1> element_4_info{{amr::Flag::Split}, element_4_mesh};
 
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      element_1_neighbor_flags{{element_2_id, element_2_flags}};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      element_2_neighbor_flags{{element_1_id, element_1_flags},
-                               {element_3_id, element_3_flags}};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      element_3_neighbor_flags{{element_2_id, element_2_flags},
-                               {element_4_id, element_4_flags}};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      element_4_neighbor_flags{{element_3_id, element_3_flags}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> element_1_neighbor_info{
+      {element_2_id, element_2_info}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> element_2_neighbor_info{
+      {element_1_id, element_1_info}, {element_3_id, element_3_info}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> element_3_neighbor_info{
+      {element_2_id, element_2_info}, {element_4_id, element_4_info}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> element_4_neighbor_info{
+      {element_3_id, element_3_info}};
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_1_id,
-      {element_1, element_1_mesh, element_1_flags, element_1_neighbor_flags});
+      {element_1, element_1_mesh, element_1_info, element_1_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_2_id,
-      {element_2, element_2_mesh, element_2_flags, element_2_neighbor_flags});
+      {element_2, element_2_mesh, element_2_info, element_2_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_3_id,
-      {element_3, element_3_mesh, element_3_flags, element_3_neighbor_flags});
+      {element_3, element_3_mesh, element_3_info, element_3_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_4_id,
-      {element_4, element_4_mesh, element_4_flags, element_4_neighbor_flags});
+      {element_4, element_4_mesh, element_4_info, element_4_neighbor_info});
   ActionTesting::emplace_component<singleton_component>(&runner, 0);
 
   const auto check_for_empty_queues_on_elements =
@@ -271,12 +275,12 @@ void test() {
   CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
             runner, 0) == 0);
 
-  check_box(runner, element_1_id, element_1, element_1_mesh, element_1_flags,
-            element_1_neighbor_flags);
-  check_box(runner, element_2_id, element_2, element_2_mesh, element_2_flags,
-            element_2_neighbor_flags);
-  check_box(runner, element_4_id, element_4, element_4_mesh, element_4_flags,
-            element_4_neighbor_flags);
+  check_box(runner, element_1_id, element_1, element_1_mesh, element_1_info,
+            element_1_neighbor_info);
+  check_box(runner, element_2_id, element_2, element_2_mesh, element_2_info,
+            element_2_neighbor_info);
+  check_box(runner, element_4_id, element_4, element_4_mesh, element_4_info,
+            element_4_neighbor_info);
   const ElementId<1> new_parent_id{
       ElementId<1>{0, std::array{SegmentId{2, 0}}}};
   const ElementId<1> new_lower_child_id{
@@ -288,11 +292,9 @@ void test() {
            Neighbors<1>{std::unordered_set{new_parent_id}, aligned}},
           {Direction<1>::upper_xi(),
            Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
-  const Mesh<1> element_3_mesh_post_refinement{
-      std::array{6_st}, Spectral::Basis::Legendre,
-      Spectral::Quadrature::GaussLobatto};
   check_box(runner, element_3_id, element_3_post_refinement,
-            element_3_mesh_post_refinement, std::array{amr::Flag::Undefined},
+            element_3_mesh_post_refinement,
+            {std::array{amr::Flag::Undefined}, element_3_mesh_post_refinement},
             {});
 }
 }  // namespace

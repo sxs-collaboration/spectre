@@ -10,7 +10,9 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -40,9 +42,8 @@ template <size_t VolumeDim>
 std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
     const ElementId<VolumeDim>& my_id, const Direction<VolumeDim>& direction,
     const Neighbors<VolumeDim>& previous_neighbors_in_direction,
-    const std::unordered_map<ElementId<VolumeDim>,
-                             std::array<amr::Flag, VolumeDim>>&
-        previous_neighbors_amr_flags) {
+    const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&
+        previous_neighbors_amr_info) {
   std::unordered_set<ElementId<VolumeDim>> new_neighbors_in_direction;
 
   const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
@@ -55,7 +56,7 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
     const ElementId<1>& previous_neighbor_id =
         *(previous_neighbors_in_direction.ids().begin());
     const amr::Flag neighbor_flag =
-        previous_neighbors_amr_flags.at(previous_neighbor_id)[0];
+        previous_neighbors_amr_info.at(previous_neighbor_id).flags[0];
     SegmentId previous_segment_id = previous_neighbor_id.segment_ids()[0];
     SegmentId new_segment_id =
         (amr::Flag::Join == neighbor_flag
@@ -88,7 +89,7 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
     const auto neighbor_segment_ids = previous_neighbor_id.segment_ids();
     for (size_t d = 0; d < VolumeDim; ++d) {
       const amr::Flag neighbor_flag =
-          previous_neighbors_amr_flags.at(previous_neighbor_id)[d];
+          previous_neighbors_amr_info.at(previous_neighbor_id).flags.at(d);
       const SegmentId neighbor_segment_id = gsl::at(neighbor_segment_ids, d);
       if (dim_of_direction_to_me_in_neighbor_frame == d) {
         // This is the normal direction.  I know my previous neighbor touched
@@ -176,14 +177,13 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                          \
-  template std::unordered_set<ElementId<DIM(data)>> new_neighbor_ids( \
-      const ElementId<DIM(data)>& my_id,                              \
-      const Direction<DIM(data)>& direction,                          \
-      const Neighbors<DIM(data)>& previous_neighbors_in_direction,    \
-      const std::unordered_map<ElementId<DIM(data)>,                  \
-                               std::array<amr::Flag, DIM(data)>>&     \
-          previous_neighbors_amr_flags);
+#define INSTANTIATE(_, data)                                           \
+  template std::unordered_set<ElementId<DIM(data)>> new_neighbor_ids(  \
+      const ElementId<DIM(data)>& my_id,                               \
+      const Direction<DIM(data)>& direction,                           \
+      const Neighbors<DIM(data)>& previous_neighbors_in_direction,     \
+      const std::unordered_map<ElementId<DIM(data)>, Info<DIM(data)>>& \
+          previous_neighbors_amr_info);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

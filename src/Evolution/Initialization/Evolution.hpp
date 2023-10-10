@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -204,7 +205,8 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
     // step quantities to belong to the first child
     const auto& parent_diagnostics =
         get<::Tags::AdaptiveSteppingDiagnostics>(parent_items);
-    const auto& parent_amr_flags = get<amr::Tags::Flags<Dim>>(parent_items);
+    const auto& parent_amr_flags =
+        get<amr::Tags::Info<Dim>>(parent_items).flags;
     const auto& parent_id =
         get<Parallel::Tags::ArrayIndexImpl<ElementId<Dim>>>(parent_items);
     auto children_ids = amr::ids_of_children(parent_id, parent_amr_flags);

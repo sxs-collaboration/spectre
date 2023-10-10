@@ -12,6 +12,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/NeighborsOfChild.hpp"
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -121,22 +122,22 @@ std::vector<std::array<amr::Flag, 3>> valid_parent_flags<3>() {
 }
 
 template <size_t Dim>
-TestHelpers::amr::valid_flags_t<Dim> valid_parent_neighbor_flags(
+TestHelpers::amr::valid_info_t<Dim> valid_parent_neighbor_info(
     const Element<Dim>& element,
     const std::array<::amr::Flag, Dim>& element_flags) {
-  TestHelpers::amr::valid_flags_t<Dim> result{};
-  const auto valid_lower_xi_neighbor_flags =
-      TestHelpers::amr::valid_neighbor_flags(
+  TestHelpers::amr::valid_info_t<Dim> result{};
+  const auto valid_lower_xi_neighbor_info =
+      TestHelpers::amr::valid_neighbor_info(
           element.id(), element_flags,
           element.neighbors().at(Direction<Dim>::lower_xi()));
-  const auto valid_upper_xi_neighbor_flags =
-      TestHelpers::amr::valid_neighbor_flags(
+  const auto valid_upper_xi_neighbor_info =
+      TestHelpers::amr::valid_neighbor_info(
           element.id(), element_flags,
           element.neighbors().at(Direction<Dim>::upper_xi()));
-  for (const auto& lower_xi_neighbor_flags : valid_lower_xi_neighbor_flags) {
-    for (const auto& upper_xi_neighbor_flags : valid_upper_xi_neighbor_flags) {
-      auto joined_flags = lower_xi_neighbor_flags;
-      for (const auto& flags : upper_xi_neighbor_flags) {
+  for (const auto& lower_xi_neighbor_info : valid_lower_xi_neighbor_info) {
+    for (const auto& upper_xi_neighbor_info : valid_upper_xi_neighbor_info) {
+      auto joined_flags = lower_xi_neighbor_info;
+      for (const auto& flags : upper_xi_neighbor_info) {
         joined_flags.emplace(flags);
       }
       result.emplace_back(joined_flags);
@@ -155,15 +156,15 @@ void test(const gsl::not_null<std::mt19937*> generator) {
       CAPTURE(parent);
       for (const auto& parent_flags : valid_parent_flags<Dim>()) {
         CAPTURE(parent_flags);
-        for (const auto& parent_neighbor_flags :
-             random_sample(3, valid_parent_neighbor_flags(parent, parent_flags),
+        for (const auto& parent_neighbor_info :
+             random_sample(3, valid_parent_neighbor_info(parent, parent_flags),
                            generator)) {
-          CAPTURE(parent_neighbor_flags);
+          CAPTURE(parent_neighbor_info);
           for (const auto& child_id :
                amr::ids_of_children(parent_id, parent_flags)) {
             CAPTURE(child_id);
             const auto new_neighbors = amr::neighbors_of_child(
-                parent, parent_flags, parent_neighbor_flags, child_id);
+                parent, parent_flags, parent_neighbor_info, child_id);
             for (const auto& direction : std::vector{
                      Direction<Dim>::lower_xi(), Direction<Dim>::upper_xi()}) {
               TestHelpers::domain::check_neighbors(new_neighbors.at(direction),

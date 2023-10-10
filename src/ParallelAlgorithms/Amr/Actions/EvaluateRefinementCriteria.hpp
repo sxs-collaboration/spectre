@@ -24,6 +24,7 @@
 #include "ParallelAlgorithms/Amr/Actions/UpdateAmrDecision.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -46,18 +47,17 @@ struct get_tags {
 }  // namespace detail
 
 namespace amr::Actions {
-/// \brief Evaluates the refinement criteria in order to set the
-/// amr::Flag%s of an Element and sends this information to the
-/// neighbors of the Element.
+/// \brief Evaluates the refinement criteria in order to set the amr::Info of an
+/// Element and sends this information to the neighbors of the Element.
 ///
 /// DataBox:
 /// - Uses:
 ///   * domain::Tags::Element<volume_dim>
-///   * amr::Tags::NeighborFlags<volume_dim>
+///   * amr::Tags::NeighborInfo<volume_dim>
 ///   * amr::Criteria::Tags::Criteria (from GlobalCache)
 ///   * any tags requested by the refinement criteria
 /// - Modifies:
-///   * amr::Tags::Flags<volume_dim>
+///   * amr::Tags::Info<volume_dim>
 ///
 /// Invokes:
 /// - UpdateAmrDecision on all neighboring Element%s
@@ -110,33 +110,38 @@ struct EvaluateRefinementCriteria {
     // flags.  If yes, then possible update our flags (e.g. sibling doesn't want
     // to join, maintain 2:1 balance, etc.)
     const auto& my_element = get<::domain::Tags::Element<volume_dim>>(box);
-    const auto& my_neighbors_amr_flags =
-        get<amr::Tags::NeighborFlags<volume_dim>>(box);
-    if (not my_neighbors_amr_flags.empty()) {
-      for (const auto& [neighbor_id, neighbor_amr_flags] :
-           my_neighbors_amr_flags) {
+    const auto& my_neighbors_amr_info =
+        get<amr::Tags::NeighborInfo<volume_dim>>(box);
+    if (not my_neighbors_amr_info.empty()) {
+      for (const auto& [neighbor_id, neighbor_amr_info] :
+           my_neighbors_amr_info) {
         amr::update_amr_decision(make_not_null(&overall_decision), my_element,
-                                 neighbor_id, neighbor_amr_flags);
+                                 neighbor_id, neighbor_amr_info.flags);
       }
     }
 
-    db::mutate<amr::Tags::Flags<Metavariables::volume_dim>>(
-        [&overall_decision](
-            const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags) {
-          *amr_flags = overall_decision;
+    const auto new_mesh = amr::projectors::new_mesh(
+        get<::domain::Tags::Mesh<volume_dim>>(box), overall_decision,
+        my_element, my_neighbors_amr_info);
+
+    db::mutate<amr::Tags::Info<Metavariables::volume_dim>>(
+        [&overall_decision,
+         &new_mesh](const gsl::not_null<amr::Info<volume_dim>*> amr_info) {
+          amr_info->flags = overall_decision;
+          amr_info->new_mesh = new_mesh;
         },
         make_not_null(&box));
 
     auto& amr_element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
-    const std::array<amr::Flag, Metavariables::volume_dim>& my_flags =
-        get<amr::Tags::Flags<volume_dim>>(box);
+    const amr::Info<Metavariables::volume_dim>& my_info =
+        get<amr::Tags::Info<volume_dim>>(box);
     for (const auto& [direction, neighbors] : my_element.neighbors()) {
       (void)direction;
       for (const auto& neighbor_id : neighbors.ids()) {
         Parallel::simple_action<UpdateAmrDecision>(
-            amr_element_array[neighbor_id], element_id, my_flags);
+            amr_element_array[neighbor_id], element_id, my_info);
       }
     }
   }

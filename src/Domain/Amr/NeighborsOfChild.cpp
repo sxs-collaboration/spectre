@@ -10,6 +10,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -26,8 +27,8 @@ template <size_t VolumeDim>
 DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_child(
     const Element<VolumeDim>& parent,
     const std::array<Flag, VolumeDim>& parent_flags,
-    const std::unordered_map<ElementId<VolumeDim>, std::array<Flag, VolumeDim>>&
-        parent_neighbor_flags,
+    const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&
+        parent_neighbor_info,
     const ElementId<VolumeDim>& child_id) {
   DirectionMap<VolumeDim, Neighbors<VolumeDim>> result;
 
@@ -48,7 +49,7 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_child(
       result.emplace(direction,
                      Neighbors<VolumeDim>{
                          new_neighbor_ids(child_id, direction, old_neighbors,
-                                          parent_neighbor_flags),
+                                          parent_neighbor_info),
                          old_neighbors.orientation()});
     }
   }
@@ -70,9 +71,8 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_child(
   template DirectionMap<DIM(data), Neighbors<DIM(data)>> neighbors_of_child( \
       const Element<DIM(data)>& parent,                                      \
       const std::array<Flag, DIM(data)>& parent_flags,                       \
-      const std::unordered_map<ElementId<DIM(data)>,                         \
-                               std::array<Flag, DIM(data)>>&                 \
-          parent_neighbor_flags,                                             \
+      const std::unordered_map<ElementId<DIM(data)>, Info<DIM(data)>>&       \
+          parent_neighbor_info,                                              \
       const ElementId<DIM(data)>& child_id);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

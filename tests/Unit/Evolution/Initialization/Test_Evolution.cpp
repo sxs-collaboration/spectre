@@ -155,7 +155,7 @@ using parent_items_type =
                         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
                         ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>,
                         ::Tags::Time, ::Tags::AdaptiveSteppingDiagnostics,
-                        ::amr::Tags::Flags<1>>;
+                        ::amr::Tags::Info<1>>;
 
 template <typename DbTagList>
 void check(const db::DataBox<DbTagList>& box,
@@ -221,10 +221,14 @@ void test_split() {
   const AdaptiveSteppingDiagnostics diagnostics{7, 2, 13, 4, 5};
 
   const parent_items_type parent_items{
-      parent_id,         time_step_id,
-      next_time_step_id, time_step,
-      next_time_step,    time,
-      diagnostics,       std::array{::amr::Flag::Split}};
+      parent_id,
+      time_step_id,
+      next_time_step_id,
+      time_step,
+      next_time_step,
+      time,
+      diagnostics,
+      ::amr::Info<1>{std::array{::amr::Flag::Split}, Mesh<1>{}}};
 
   auto child_1_box = db::create<
       db::AddSimpleTags<Parallel::Tags::ArrayIndexImpl<ElementId<1>>,

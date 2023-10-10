@@ -9,7 +9,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -52,8 +54,8 @@ struct ArrayComponent {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -100,19 +102,24 @@ void test() {
   Element<1> parent{parent_id, std::move(parent_neighbors)};
   Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto};
-  std::array<amr::Flag, 1> parent_flags{amr::Flag::Split};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      parent_neighbor_flags;
-  parent_neighbor_flags.emplace(parent_lower_neighbor_id,
-                                std::array{amr::Flag::DoNothing});
-  parent_neighbor_flags.emplace(parent_upper_neighbor_id,
-                                std::array{amr::Flag::DoNothing});
-  const auto children_ids = amr::ids_of_children(parent_id, parent_flags);
+  Mesh<1> lower_neighbor_mesh{2, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+  Mesh<1> upper_neighbor_mesh{4, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+  amr::Info<1> parent_info{{amr::Flag::Split}, parent_mesh};
+  std::unordered_map<ElementId<1>, amr::Info<1>> parent_neighbor_info{};
+  parent_neighbor_info.emplace(
+      parent_lower_neighbor_id,
+      amr::Info<1>{std::array{amr::Flag::DoNothing}, lower_neighbor_mesh});
+  parent_neighbor_info.emplace(
+      parent_upper_neighbor_id,
+      amr::Info<1>{std::array{amr::Flag::DoNothing}, upper_neighbor_mesh});
+  const auto children_ids = amr::ids_of_children(parent_id, parent_info.flags);
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, parent_id,
-      {parent, parent_mesh, parent_flags, parent_neighbor_flags});
+      {parent, parent_mesh, parent_info, parent_neighbor_info});
   ActionTesting::emplace_component<singleton_component>(&runner, 0);
   for (const auto& child_id : children_ids) {
     ActionTesting::emplace_component<array_component>(&runner, child_id);

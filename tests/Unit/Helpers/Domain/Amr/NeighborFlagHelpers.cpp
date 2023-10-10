@@ -6,10 +6,13 @@
 #include <array>
 #include <vector>
 
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -134,23 +137,24 @@ bool are_valid_neighbor_flags(
 namespace TestHelpers::amr {
 
 template <size_t Dim>
-valid_flags_t<Dim> valid_neighbor_flags(
+valid_info_t<Dim> valid_neighbor_info(
     const ElementId<Dim>& element_id,
     const std::array<::amr::Flag, Dim>& element_flags,
     const Neighbors<Dim>& neighbors) {
-  valid_flags_t<Dim> result{};
+  valid_info_t<Dim> result{};
+  Mesh<Dim> unused_mesh{};
   const auto& orientation_of_neighbors = neighbors.orientation();
   const auto& first_neighbor_id = *(neighbors.begin());
   for (const auto& neighbor_flags : amr_flags<Dim>()) {
     if (are_valid_neighbor_flags(element_id, element_flags, first_neighbor_id,
                                  neighbor_flags, orientation_of_neighbors)) {
-      result.emplace_back(
-          neighbor_flags_t<Dim>{{first_neighbor_id, neighbor_flags}});
+      result.emplace_back(neighbor_info_t<Dim>{
+          {first_neighbor_id, ::amr::Info<Dim>{neighbor_flags, unused_mesh}}});
     }
   }
 
   for (auto it = std::next(neighbors.begin()); it != neighbors.end(); ++it) {
-    valid_flags_t<Dim> prev_result{};
+    valid_info_t<Dim> prev_result{};
     std::swap(result, prev_result);
     const auto& neighbor_id = *it;
     for (const auto& neighbor_flags : amr_flags<Dim>()) {
@@ -162,11 +166,10 @@ valid_flags_t<Dim> valid_neighbor_flags(
       }
       for (const auto& valid_flags : prev_result) {
         bool can_add_flag = true;
-        for (const auto& [prev_neighbor_id, prev_neighbor_flags] :
-             valid_flags) {
+        for (const auto& [prev_neighbor_id, prev_neighbor_info] : valid_flags) {
           if (not are_valid_neighbor_flags(prev_neighbor_id,
-                                           prev_neighbor_flags, neighbor_id,
-                                           neighbor_flags)) {
+                                           prev_neighbor_info.flags,
+                                           neighbor_id, neighbor_flags)) {
             // neighbor_flags conflicts with previous neighbor
             can_add_flag = false;
             break;
@@ -174,7 +177,8 @@ valid_flags_t<Dim> valid_neighbor_flags(
         }
         if (can_add_flag) {
           auto new_flags = valid_flags;
-          new_flags.emplace(neighbor_id, neighbor_flags);
+          new_flags.emplace(neighbor_id,
+                            ::amr::Info<Dim>{neighbor_flags, unused_mesh});
           result.emplace_back(std::move(new_flags));
         }
       }
@@ -186,7 +190,7 @@ valid_flags_t<Dim> valid_neighbor_flags(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                   \
-  template valid_flags_t<DIM(data)> valid_neighbor_flags(      \
+  template valid_info_t<DIM(data)> valid_neighbor_info(        \
       const ElementId<DIM(data)>& element_id,                  \
       const std::array<::amr::Flag, DIM(data)>& element_flags, \
       const Neighbors<DIM(data)>& neighbors);

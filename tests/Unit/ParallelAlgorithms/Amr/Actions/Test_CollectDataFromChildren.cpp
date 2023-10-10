@@ -10,7 +10,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -34,14 +36,17 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-ElementId<2> parent_id{0, std::array{SegmentId{0, 0}, SegmentId{0, 0}}};
-ElementId<2> child_1_id{0, std::array{SegmentId{1, 0}, SegmentId{1, 0}}};
-ElementId<2> child_2_id{0, std::array{SegmentId{1, 1}, SegmentId{1, 0}}};
-ElementId<2> child_3_id{0, std::array{SegmentId{1, 0}, SegmentId{1, 1}}};
-ElementId<2> child_4_id{0, std::array{SegmentId{1, 1}, SegmentId{1, 1}}};
-ElementId<2> neighbor_1_id{1, std::array{SegmentId{1, 1}, SegmentId{0, 0}}};
-ElementId<2> neighbor_2_id{2, std::array{SegmentId{1, 0}, SegmentId{0, 0}}};
-ElementId<2> neighbor_3_id{2, std::array{SegmentId{1, 1}, SegmentId{1, 1}}};
+const ElementId<2> parent_id{0, std::array{SegmentId{0, 0}, SegmentId{0, 0}}};
+const ElementId<2> child_1_id{0, std::array{SegmentId{1, 0}, SegmentId{1, 0}}};
+const ElementId<2> child_2_id{0, std::array{SegmentId{1, 1}, SegmentId{1, 0}}};
+const ElementId<2> child_3_id{0, std::array{SegmentId{1, 0}, SegmentId{1, 1}}};
+const ElementId<2> child_4_id{0, std::array{SegmentId{1, 1}, SegmentId{1, 1}}};
+const ElementId<2> neighbor_1_id{1,
+                                 std::array{SegmentId{1, 1}, SegmentId{0, 0}}};
+const ElementId<2> neighbor_2_id{2,
+                                 std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+const ElementId<2> neighbor_3_id{2,
+                                 std::array{SegmentId{1, 0}, SegmentId{1, 1}}};
 
 auto child_1_mesh() {
   return Mesh<2>{std::array{3_st, 3_st}, Spectral::Basis::Legendre,
@@ -60,9 +65,39 @@ auto child_4_mesh() {
                  Spectral::Quadrature::GaussLobatto};
 }
 
-auto child_flags() { return std::array{amr::Flag::Join, amr::Flag::Join}; }
-auto neighbor_1_flags() {
-  return std::array{amr::Flag::Join, amr::Flag::DoNothing};
+auto neighbor_1_mesh() {
+  return Mesh<2>{std::array{5_st, 4_st}, Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto};
+}
+
+auto neighbor_2_mesh() {
+  return Mesh<2>{std::array{2_st, 3_st}, Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto};
+}
+
+auto neighbor_3_mesh() {
+  return Mesh<2>{std::array{3_st, 5_st}, Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto};
+}
+
+auto child_info() {
+  return amr::Info<2>{std::array{amr::Flag::Join, amr::Flag::Join},
+                      child_4_mesh()};
+}
+
+auto neighbor_1_info() {
+  return amr::Info<2>{std::array{amr::Flag::Join, amr::Flag::DoNothing},
+                      neighbor_1_mesh()};
+}
+
+auto neighbor_2_info() {
+  return amr::Info<2>{std::array{amr::Flag::Split, amr::Flag::DoNothing},
+                      neighbor_2_mesh()};
+}
+
+auto neighbor_3_info() {
+  return amr::Info<2>{std::array{amr::Flag::Join, amr::Flag::DoNothing},
+                      neighbor_3_mesh()};
 }
 
 Element<2> child_1() {
@@ -133,31 +168,31 @@ Element<2> child_4() {
   return result;
 }
 
-auto child_1_neighbor_flags() {
-  return std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>{
-      {neighbor_1_id, neighbor_1_flags()},
-      {child_2_id, child_flags()},
-      {child_3_id, child_flags()}};
+auto child_1_neighbor_info() {
+  return std::unordered_map<ElementId<2>, amr::Info<2>>{
+      {neighbor_1_id, neighbor_1_info()},
+      {child_2_id, child_info()},
+      {child_3_id, child_info()}};
 }
 
-auto child_2_neighbor_flags() {
-  return std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>{
-      {child_1_id, child_flags()},
-      {child_4_id, child_flags()},
-      {neighbor_2_id, std::array{amr::Flag::DoNothing, amr::Flag::Split}}};
+auto child_2_neighbor_info() {
+  return std::unordered_map<ElementId<2>, amr::Info<2>>{
+      {child_1_id, child_info()},
+      {child_4_id, child_info()},
+      {neighbor_2_id, neighbor_2_info()}};
 }
 
-auto child_3_neighbor_flags() {
-  return std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>{
-      {neighbor_1_id, neighbor_1_flags()},
-      {child_1_id, child_flags()},
-      {child_4_id, child_flags()}};
+auto child_3_neighbor_info() {
+  return std::unordered_map<ElementId<2>, amr::Info<2>>{
+      {neighbor_1_id, neighbor_1_info()},
+      {child_1_id, child_info()},
+      {child_4_id, child_info()}};
 }
-auto child_4_neighbor_flags() {
-  return std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>{
-      {child_2_id, child_flags()},
-      {child_3_id, child_flags()},
-      {neighbor_3_id, std::array{amr::Flag::DoNothing, amr::Flag::Join}}};
+auto child_4_neighbor_info() {
+  return std::unordered_map<ElementId<2>, amr::Info<2>>{
+      {child_2_id, child_info()},
+      {child_3_id, child_info()},
+      {neighbor_3_id, neighbor_3_info()}};
 }
 
 struct MockInitializeParent {
@@ -172,30 +207,30 @@ struct MockInitializeParent {
     const auto& child_1_items = children_items.at(child_1_id);
     CHECK(get<domain::Tags::Element<2>>(child_1_items) == child_1());
     CHECK(get<domain::Tags::Mesh<2>>(child_1_items) == child_1_mesh());
-    CHECK(get<amr::Tags::Flags<2>>(child_1_items) == child_flags());
-    CHECK(get<amr::Tags::NeighborFlags<2>>(child_1_items) ==
-          child_1_neighbor_flags());
+    CHECK(get<amr::Tags::Info<2>>(child_1_items) == child_info());
+    CHECK(get<amr::Tags::NeighborInfo<2>>(child_1_items) ==
+          child_1_neighbor_info());
 
     const auto& child_2_items = children_items.at(child_2_id);
     CHECK(get<domain::Tags::Element<2>>(child_2_items) == child_2());
     CHECK(get<domain::Tags::Mesh<2>>(child_2_items) == child_2_mesh());
-    CHECK(get<amr::Tags::Flags<2>>(child_2_items) == child_flags());
-    CHECK(get<amr::Tags::NeighborFlags<2>>(child_2_items) ==
-          child_2_neighbor_flags());
+    CHECK(get<amr::Tags::Info<2>>(child_2_items) == child_info());
+    CHECK(get<amr::Tags::NeighborInfo<2>>(child_2_items) ==
+          child_2_neighbor_info());
 
     const auto& child_3_items = children_items.at(child_3_id);
     CHECK(get<domain::Tags::Element<2>>(child_3_items) == child_3());
     CHECK(get<domain::Tags::Mesh<2>>(child_3_items) == child_3_mesh());
-    CHECK(get<amr::Tags::Flags<2>>(child_3_items) == child_flags());
-    CHECK(get<amr::Tags::NeighborFlags<2>>(child_3_items) ==
-          child_3_neighbor_flags());
+    CHECK(get<amr::Tags::Info<2>>(child_3_items) == child_info());
+    CHECK(get<amr::Tags::NeighborInfo<2>>(child_3_items) ==
+          child_3_neighbor_info());
 
     const auto& child_4_items = children_items.at(child_4_id);
     CHECK(get<domain::Tags::Element<2>>(child_4_items) == child_4());
     CHECK(get<domain::Tags::Mesh<2>>(child_4_items) == child_4_mesh());
-    CHECK(get<amr::Tags::Flags<2>>(child_4_items) == child_flags());
-    CHECK(get<amr::Tags::NeighborFlags<2>>(child_4_items) ==
-          child_4_neighbor_flags());
+    CHECK(get<amr::Tags::Info<2>>(child_4_items) == child_info());
+    CHECK(get<amr::Tags::NeighborInfo<2>>(child_4_items) ==
+          child_4_neighbor_info());
   }
 };
 
@@ -208,8 +243,8 @@ struct Component {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -240,16 +275,16 @@ void test() {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_1_id,
-      {child_1(), child_1_mesh(), child_flags(), child_1_neighbor_flags()});
+      {child_1(), child_1_mesh(), child_info(), child_1_neighbor_info()});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_2_id,
-      {child_2(), child_2_mesh(), child_flags(), child_2_neighbor_flags()});
+      {child_2(), child_2_mesh(), child_info(), child_2_neighbor_info()});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_3_id,
-      {child_3(), child_3_mesh(), child_flags(), child_3_neighbor_flags()});
+      {child_3(), child_3_mesh(), child_info(), child_3_neighbor_info()});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, child_4_id,
-      {child_4(), child_4_mesh(), child_flags(), child_4_neighbor_flags()});
+      {child_4(), child_4_mesh(), child_info(), child_4_neighbor_info()});
   ActionTesting::emplace_component<array_component>(&runner, parent_id);
   ActionTesting::emplace_group_component_and_initialize<registrar>(
       &runner,

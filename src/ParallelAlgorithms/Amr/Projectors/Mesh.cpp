@@ -6,11 +6,17 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <deque>
 #include <numeric>
+#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -60,15 +66,43 @@ Mesh<Dim> parent_mesh(const std::vector<Mesh<Dim>>& children_meshes) {
   return {parent_extents, parent_basis, parent_quadrature};
 }
 
+template <size_t Dim>
+Mesh<Dim> new_mesh(
+    const Mesh<Dim>& current_mesh, const std::array<Flag, Dim>& flags,
+    const Element<Dim>& element,
+    const std::unordered_map<ElementId<Dim>, Info<Dim>>& neighbors_info) {
+  // If we are joining, the extents of the new mesh in each dimension will be
+  // the maximum of that of the element and the joining neighbors
+  if (alg::count(flags, Flag::Join) > 0 and not neighbors_info.empty()) {
+    const auto joining_neighbors = ids_of_joining_neighbors(element, flags);
+    std::vector<Mesh<Dim>> children_meshes;
+    children_meshes.reserve(8);
+    children_meshes.push_back(mesh(current_mesh, flags));
+    for (const auto& [neighbor_id, neighbor_info] : neighbors_info) {
+      if (alg::count(joining_neighbors, neighbor_id) > 0) {
+        children_meshes.push_back(neighbor_info.new_mesh);
+      }
+    }
+    return parent_mesh(children_meshes);
+  }
+
+  return mesh(current_mesh, flags);
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                          \
-  template Mesh<DIM(data)> mesh(                      \
-      const Mesh<DIM(data)>& old_mesh,                \
-      const std::array<amr::Flag, DIM(data)>& flags); \
-  template Mesh<DIM(data)> parent_mesh(               \
-      const std::vector<Mesh<DIM(data)>>& children_meshes);
-
+#define INSTANTIATE(_, data)                                           \
+  template Mesh<DIM(data)> mesh(                                       \
+      const Mesh<DIM(data)>& old_mesh,                                 \
+      const std::array<amr::Flag, DIM(data)>& flags);                  \
+  template Mesh<DIM(data)> parent_mesh(                                \
+      const std::vector<Mesh<DIM(data)>>& children_meshes);            \
+  template Mesh<DIM(data)> new_mesh(                                   \
+      const Mesh<DIM(data)>& current_mesh,                             \
+      const std::array<Flag, DIM(data)>& flags,                        \
+      const Element<DIM(data)>& element,                               \
+      const std::unordered_map<ElementId<DIM(data)>, Info<DIM(data)>>& \
+          neighbors_info);
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM

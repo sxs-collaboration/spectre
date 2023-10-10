@@ -57,20 +57,20 @@ struct InitializeParent {
           ElementId<Metavariables::volume_dim>,
           tuples::tagged_tuple_from_typelist<
               typename db::DataBox<DbTagList>::mutable_item_creation_tags>>
+
           children_items) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
-    std::vector<
-        std::tuple<const Element<volume_dim>&,
-                   const std::unordered_map<ElementId<volume_dim>,
-                                            std::array<Flag, volume_dim>>&>>
-        children_elements_and_neighbor_flags;
+    std::vector<std::tuple<
+        const Element<volume_dim>&,
+        const std::unordered_map<ElementId<volume_dim>, Info<volume_dim>>&>>
+        children_elements_and_neighbor_info;
     for (const auto& [_, child_items] : children_items) {
-      children_elements_and_neighbor_flags.emplace_back(std::forward_as_tuple(
+      children_elements_and_neighbor_info.emplace_back(std::forward_as_tuple(
           tuples::get<::domain::Tags::Element<volume_dim>>(child_items),
-          tuples::get<amr::Tags::NeighborFlags<volume_dim>>(child_items)));
+          tuples::get<amr::Tags::NeighborInfo<volume_dim>>(child_items)));
     }
     auto parent_neighbors = amr::neighbors_of_parent(
-        parent_id, children_elements_and_neighbor_flags);
+        parent_id, children_elements_and_neighbor_info);
     Element<volume_dim> parent(parent_id, std::move(parent_neighbors));
 
     std::vector<Mesh<volume_dim>> projected_children_meshes{};
@@ -79,14 +79,14 @@ struct InitializeParent {
       const auto& child_mesh =
           tuples::get<::domain::Tags::Mesh<volume_dim>>(child_items);
       const auto& child_flags =
-          tuples::get<amr::Tags::Flags<volume_dim>>(child_items);
+          tuples::get<amr::Tags::Info<volume_dim>>(child_items).flags;
       projected_children_meshes.emplace_back(
           amr::projectors::mesh(child_mesh, child_flags));
     }
     Mesh<volume_dim> parent_mesh =
         amr::projectors::parent_mesh(projected_children_meshes);
 
-    // Default initialization of amr::Tags::Flags and amr::Tags::NeighborFlags
+    // Default initialization of amr::Tags::Info and amr::Tags::NeighborInfo
     // is okay
     ::Initialization::mutate_assign<tmpl::list<
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(

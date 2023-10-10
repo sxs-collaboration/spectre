@@ -68,7 +68,7 @@ namespace amr::Actions {
 ///   mutates the Mesh
 /// - Updates the Neighbors of the Element
 /// - Resets amr::Tags::Flag%s to amr::Flag::Undefined
-/// - Resets amr::Tags::NeighborFlags to an empty map
+/// - Resets amr::Tags::NeighborInfo to an empty map
 /// - Mutates all return_tags of Metavariables::amr::projectors
 struct AdjustDomain {
   template <typename ParallelComponent, typename DbTagList,
@@ -94,7 +94,7 @@ struct AdjustDomain {
             Metavariables, ElementId<volume_dim>>;
     using tags_mutated_by_this_action = tmpl::list<
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
-        amr::Tags::Flags<volume_dim>, amr::Tags::NeighborFlags<volume_dim>>;
+        amr::Tags::Info<volume_dim>, amr::Tags::NeighborInfo<volume_dim>>;
     using mutated_tags =
         tmpl::append<distributed_object_tags, tags_mutated_by_this_action,
                      typename detail::GetMutatedTags<amr_projectors>::type>;
@@ -107,7 +107,8 @@ struct AdjustDomain {
                   "by an amr::projector.  Default initialized objects can use "
                   "amr::projector::DefaultInitialize.");
 
-    const auto& my_amr_flags = db::get<amr::Tags::Flags<volume_dim>>(box);
+    const auto& my_amr_info = db::get<amr::Tags::Info<volume_dim>>(box);
+    const auto& my_amr_flags = my_amr_info.flags;
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
@@ -151,7 +152,7 @@ struct AdjustDomain {
       // Determine new neighbors and update the Element
       {  // avoid shadowing when mutating flags below
         const auto& amr_flags_of_neighbors =
-            db::get<amr::Tags::NeighborFlags<volume_dim>>(box);
+            db::get<amr::Tags::NeighborInfo<volume_dim>>(box);
         db::mutate<::domain::Tags::Element<volume_dim>>(
             [&element_id, &amr_flags_of_neighbors](
                 const gsl::not_null<Element<volume_dim>*> element) {
@@ -189,15 +190,15 @@ struct AdjustDomain {
           });
 
       // Reset the AMR flags
-      db::mutate<amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>(
-          [](const gsl::not_null<std::array<amr::Flag, volume_dim>*> amr_flags,
-             const gsl::not_null<std::unordered_map<
-                 ElementId<volume_dim>, std::array<amr::Flag, volume_dim>>*>
-                 amr_flags_of_neighbors) {
-            amr_flags_of_neighbors->clear();
+      db::mutate<amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>(
+          [](const gsl::not_null<amr::Info<volume_dim>*> amr_info,
+             const gsl::not_null<std::unordered_map<ElementId<volume_dim>,
+                                                    amr::Info<volume_dim>>*>
+                 amr_info_of_neighbors) {
+            amr_info_of_neighbors->clear();
             for (size_t d = 0; d < volume_dim; ++d) {
-              (*amr_flags)[d] = amr::Flag::Undefined;
+              amr_info->flags[d] = amr::Flag::Undefined;
             }
           },
           make_not_null(&box));

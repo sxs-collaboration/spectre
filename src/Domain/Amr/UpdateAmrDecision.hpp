@@ -6,9 +6,10 @@
 #include <array>
 #include <cstddef>
 
-#include "Domain/Amr/Flag.hpp"
-
 /// \cond
+namespace amr {
+enum class Flag;
+}  // namespace amr
 namespace gsl {
 template <typename T>
 class not_null;

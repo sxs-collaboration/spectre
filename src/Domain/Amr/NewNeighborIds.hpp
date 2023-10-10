@@ -8,9 +8,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Domain/Amr/Flag.hpp"
-
 /// \cond
+namespace amr {
+template <size_t VolumeDim>
+struct Info;
+}  // namespace amr
 template <size_t VolumeDim>
 class Direction;
 template <size_t VolumeDim>
@@ -29,13 +31,12 @@ namespace amr {
 /// child) of the Element with `my_id` if `my_id` corresponds to a newly created
 /// child (or parent) Element.
 ///
-/// \note `previous_neighbors_amr_flags` may contain flags from neighbors in
+/// \note `previous_neighbors_amr_info` may contain info from neighbors in
 /// directions other than `direction`
 template <size_t VolumeDim>
 std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
     const ElementId<VolumeDim>& my_id, const Direction<VolumeDim>& direction,
     const Neighbors<VolumeDim>& previous_neighbors_in_direction,
-    const std::unordered_map<ElementId<VolumeDim>,
-                             std::array<amr::Flag, VolumeDim>>&
-        previous_neighbors_amr_flags);
+    const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&
+        previous_neighbors_amr_info);
 }  // namespace amr

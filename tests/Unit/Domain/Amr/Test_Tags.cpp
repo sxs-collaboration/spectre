@@ -10,9 +10,9 @@
 namespace {
 template <size_t Dim>
 void test() {
-  TestHelpers::db::test_simple_tag<amr::Tags::Flags<Dim>>("Flags");
-  TestHelpers::db::test_simple_tag<amr::Tags::NeighborFlags<Dim>>(
-      "NeighborFlags");
+  TestHelpers::db::test_simple_tag<amr::Tags::Info<Dim>>("Info");
+  TestHelpers::db::test_simple_tag<amr::Tags::NeighborInfo<Dim>>(
+      "NeighborInfo");
 }
 }  // namespace
 

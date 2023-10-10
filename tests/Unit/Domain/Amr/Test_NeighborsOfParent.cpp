@@ -13,6 +13,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/NeighborsOfParent.hpp"
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -23,6 +24,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace {
 SegmentId s_00{0, 0};
@@ -43,8 +45,8 @@ void test_periodic_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
   Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      child_1_neighbor_flags{{child_2_id, {{amr::Flag::Join}}}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
+      {child_2_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
 
   DirectionMap<1, Neighbors<1>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -54,20 +56,19 @@ void test_periodic_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_1_id}, aligned});
   Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      child_2_neighbor_flags{{child_1_id, {{amr::Flag::Join}}}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
+      {child_1_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
 
-  std::vector<std::tuple<
-      const Element<1>&,
-      const std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>&>>
-      children_elements_and_neighbor_flags;
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_1, child_1_neighbor_flags));
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_2, child_2_neighbor_flags));
+  std::vector<std::tuple<const Element<1>&,
+                         const std::unordered_map<ElementId<1>, amr::Info<1>>&>>
+      children_elements_and_neighbor_info;
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_1, child_1_neighbor_info));
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_2, child_2_neighbor_info));
 
   const auto parent_neighbors =
-      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_flags);
+      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<1, Neighbors<1>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
       Direction<1>::lower_xi(),
@@ -95,9 +96,9 @@ void test_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
   Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      child_1_neighbor_flags{{lower_neighbor_id, {{amr::Flag::DoNothing}}},
-                             {child_2_id, {{amr::Flag::Join}}}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
+      {lower_neighbor_id, {{{amr::Flag::DoNothing}}, Mesh<1>{}}},
+      {child_2_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
 
   DirectionMap<1, Neighbors<1>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -107,21 +108,20 @@ void test_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{upper_neighbor_id}, flipped});
   Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-      child_2_neighbor_flags{{child_1_id, {{amr::Flag::Join}}},
-                             {upper_neighbor_id, {{amr::Flag::Split}}}};
+  std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
+      {child_1_id, {{{amr::Flag::Join}}, Mesh<1>{}}},
+      {upper_neighbor_id, {{{amr::Flag::Split}}, Mesh<1>{}}}};
 
-  std::vector<std::tuple<
-      const Element<1>&,
-      const std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>&>>
-      children_elements_and_neighbor_flags;
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_1, child_1_neighbor_flags));
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_2, child_2_neighbor_flags));
+  std::vector<std::tuple<const Element<1>&,
+                         const std::unordered_map<ElementId<1>, amr::Info<1>>&>>
+      children_elements_and_neighbor_info;
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_1, child_1_neighbor_info));
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_2, child_2_neighbor_info));
 
   const auto parent_neighbors =
-      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_flags);
+      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<1, Neighbors<1>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
       Direction<1>::lower_xi(),
@@ -137,7 +137,7 @@ void test_rectangle() {
   OrientationMap<2> aligned{};
   OrientationMap<2> rotated{
       std::array{Direction<2>::lower_eta(), Direction<2>::upper_xi()}};
-
+  const Mesh<2> mesh;
   ElementId<2> parent_id{0, std::array{s_00, s_00}};
   ElementId<2> child_1_id{0, std::array{s_10, s_10}};
   ElementId<2> child_2_id{0, std::array{s_11, s_10}};
@@ -170,10 +170,10 @@ void test_rectangle() {
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_3_id}, aligned});
   Element<2> child_1{child_1_id, std::move(child_1_neighbors)};
-  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      child_1_neighbor_flags{{neighbor_1_id, neighbor_1_flags},
-                             {child_2_id, join_join},
-                             {child_3_id, join_join}};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_1_neighbor_info{
+      {neighbor_1_id, amr::Info<2>{neighbor_1_flags, mesh}},
+      {child_2_id, amr::Info<2>{join_join, mesh}},
+      {child_3_id, amr::Info<2>{join_join, mesh}}};
 
   DirectionMap<2, Neighbors<2>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -189,10 +189,10 @@ void test_rectangle() {
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_4_id}, aligned});
   Element<2> child_2{child_2_id, std::move(child_2_neighbors)};
-  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      child_2_neighbor_flags{{child_1_id, join_join},
-                             {child_4_id, join_join},
-                             {neighbor_2_id, neighbor_2_flags}};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_2_neighbor_info{
+      {child_1_id, amr::Info<2>{join_join, mesh}},
+      {child_4_id, amr::Info<2>{join_join, mesh}},
+      {neighbor_2_id, amr::Info<2>{neighbor_2_flags, mesh}}};
 
   DirectionMap<2, Neighbors<2>> child_3_neighbors{};
   child_3_neighbors.emplace(
@@ -208,10 +208,10 @@ void test_rectangle() {
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_1_id}, aligned});
   Element<2> child_3{child_3_id, std::move(child_3_neighbors)};
-  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      child_3_neighbor_flags{{neighbor_1_id, neighbor_1_flags},
-                             {child_1_id, join_join},
-                             {child_4_id, join_join}};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_3_neighbor_info{
+      {neighbor_1_id, amr::Info<2>{neighbor_1_flags, mesh}},
+      {child_1_id, amr::Info<2>{join_join, mesh}},
+      {child_4_id, amr::Info<2>{join_join, mesh}}};
 
   DirectionMap<2, Neighbors<2>> child_4_neighbors{};
   child_4_neighbors.emplace(
@@ -227,26 +227,25 @@ void test_rectangle() {
       Direction<2>::upper_eta(),
       Neighbors<2>{std::unordered_set{child_2_id}, aligned});
   Element<2> child_4{child_4_id, std::move(child_4_neighbors)};
-  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      child_4_neighbor_flags{{child_2_id, join_join},
-                             {child_3_id, join_join},
-                             {neighbor_3_id, neighbor_3_flags}};
+  std::unordered_map<ElementId<2>, amr::Info<2>> child_4_neighbor_info{
+      {child_2_id, amr::Info<2>{join_join, mesh}},
+      {child_3_id, amr::Info<2>{join_join, mesh}},
+      {neighbor_3_id, amr::Info<2>{neighbor_3_flags, mesh}}};
 
-  std::vector<std::tuple<
-      const Element<2>&,
-      const std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>&>>
-      children_elements_and_neighbor_flags;
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_1, child_1_neighbor_flags));
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_2, child_2_neighbor_flags));
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_3, child_3_neighbor_flags));
-  children_elements_and_neighbor_flags.emplace_back(
-      std::forward_as_tuple(child_4, child_4_neighbor_flags));
+  std::vector<std::tuple<const Element<2>&,
+                         const std::unordered_map<ElementId<2>, amr::Info<2>>&>>
+      children_elements_and_neighbor_info;
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_1, child_1_neighbor_info));
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_2, child_2_neighbor_info));
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_3, child_3_neighbor_info));
+  children_elements_and_neighbor_info.emplace_back(
+      std::forward_as_tuple(child_4, child_4_neighbor_info));
 
   const auto parent_neighbors =
-      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_flags);
+      amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<2, Neighbors<2>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
       Direction<2>::lower_xi(),

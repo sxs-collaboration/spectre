@@ -9,7 +9,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -51,17 +53,22 @@ Mesh<1> create_parent_mesh() {
                  Spectral::Quadrature::GaussLobatto};
 }
 
-std::array<amr::Flag, 1> create_parent_flags() {
-  return std::array{amr::Flag::Split};
+amr::Info<1> create_parent_info() {
+  return amr::Info<1>{std::array{amr::Flag::Split},
+                      Mesh<1>{4, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto}};
 }
 
-std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>>
-create_parent_neighbor_flags() {
+std::unordered_map<ElementId<1>, amr::Info<1>> create_parent_neighbor_info() {
   const ElementId<1> parent_lower_neighbor_id{0, std::array{SegmentId{2, 0}}};
   const ElementId<1> parent_upper_neighbor_id{0, std::array{SegmentId{2, 2}}};
-  std::unordered_map<ElementId<1>, std::array<amr::Flag, 1>> result{};
-  result.emplace(parent_lower_neighbor_id, std::array{amr::Flag::DoNothing});
-  result.emplace(parent_upper_neighbor_id, std::array{amr::Flag::DoNothing});
+  const Mesh<1> neighbor_mesh{5, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+  std::unordered_map<ElementId<1>, amr::Info<1>> result{};
+  result.emplace(parent_lower_neighbor_id,
+                 amr::Info<1>{std::array{amr::Flag::DoNothing}, neighbor_mesh});
+  result.emplace(parent_upper_neighbor_id,
+                 amr::Info<1>{std::array{amr::Flag::DoNothing}, neighbor_mesh});
   return result;
 }
 
@@ -74,9 +81,9 @@ struct MockInitializeChild {
                     const tuples::TaggedTuple<Tags...>& parent_items) {
     CHECK(get<domain::Tags::Element<1>>(parent_items) == create_parent());
     CHECK(get<domain::Tags::Mesh<1>>(parent_items) == create_parent_mesh());
-    CHECK(get<amr::Tags::Flags<1>>(parent_items) == create_parent_flags());
-    CHECK(get<amr::Tags::NeighborFlags<1>>(parent_items) ==
-          create_parent_neighbor_flags());
+    CHECK(get<amr::Tags::Info<1>>(parent_items) == create_parent_info());
+    CHECK(get<amr::Tags::NeighborInfo<1>>(parent_items) ==
+          create_parent_neighbor_info());
   }
 };
 
@@ -89,8 +96,8 @@ struct Component {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -118,9 +125,9 @@ void test() {
   const auto parent = create_parent();
   const ElementId<1>& parent_id = parent.id();
   const auto parent_mesh = create_parent_mesh();
-  const auto parent_flags = create_parent_flags();
-  const auto parent_neighbor_flags = create_parent_neighbor_flags();
-  const auto children_ids = amr::ids_of_children(parent_id, parent_flags);
+  const auto parent_info = create_parent_info();
+  const auto parent_neighbor_info = create_parent_neighbor_info();
+  const auto children_ids = amr::ids_of_children(parent_id, parent_info.flags);
 
   using array_component = Component<Metavariables>;
   using registrar = TestHelpers::amr::Registrar<Metavariables>;
@@ -128,7 +135,7 @@ void test() {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, parent_id,
-      {parent, parent_mesh, parent_flags, parent_neighbor_flags});
+      {parent, parent_mesh, parent_info, parent_neighbor_info});
   for (const auto& child_id : children_ids) {
     ActionTesting::emplace_component<array_component>(&runner, child_id);
     CHECK(ActionTesting::number_of_queued_simple_actions<array_component>(

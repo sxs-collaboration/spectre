@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -77,17 +78,17 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                                  generator, element_id, direction, face_type),
                              generator)) {
             CAPTURE(neighbors);
-            for (const auto& neighbor_flags : random_sample(
+            for (const auto& neighbor_info : random_sample(
                      5,
-                     TestHelpers::amr::valid_neighbor_flags(
+                     TestHelpers::amr::valid_neighbor_info(
                          element_id,
                          make_array<Dim>(::amr::Flag::IncreaseResolution),
                          neighbors),
                      generator)) {
-              CAPTURE(neighbor_flags);
+              CAPTURE(neighbor_info);
               const auto new_neighbors =
                   Neighbors<Dim>{new_neighbor_ids(element_id, direction,
-                                                  neighbors, neighbor_flags),
+                                                  neighbors, neighbor_info),
                                  neighbors.orientation()};
               CAPTURE(new_neighbors);
               TestHelpers::domain::check_neighbors(new_neighbors, element_id,
@@ -102,17 +103,17 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                                generator, element_id, direction),
                            generator)) {
           CAPTURE(neighbors);
-          for (const auto& neighbor_flags : random_sample(
+          for (const auto& neighbor_info : random_sample(
                    5,
-                   TestHelpers::amr::valid_neighbor_flags(
+                   TestHelpers::amr::valid_neighbor_info(
                        element_id,
                        make_array<Dim>(::amr::Flag::IncreaseResolution),
                        neighbors),
                    generator)) {
-            CAPTURE(neighbor_flags);
+            CAPTURE(neighbor_info);
             const auto new_neighbors =
                 Neighbors<Dim>{new_neighbor_ids(element_id, direction,
-                                                neighbors, neighbor_flags),
+                                                neighbors, neighbor_info),
                                neighbors.orientation()};
             CAPTURE(new_neighbors);
             TestHelpers::domain::check_neighbors(new_neighbors, element_id,

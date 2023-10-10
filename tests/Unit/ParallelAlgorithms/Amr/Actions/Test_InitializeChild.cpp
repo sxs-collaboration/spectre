@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -45,8 +47,8 @@ struct Component {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -85,20 +87,27 @@ void test() {
   Element<2> parent{parent_id, std::move(parent_neighbors)};
   Mesh<2> parent_mesh{3, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto};
-  std::array<amr::Flag, 2> parent_flags{amr::Flag::Split,
-                                        amr::Flag::IncreaseResolution};
-  std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      parent_neighbor_flags;
-  parent_neighbor_flags.emplace(
+  const Mesh<2> expected_child_mesh{std::array{3_st, 4_st},
+                                    Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto};
+  amr::Info<2> parent_info{
+      std::array{amr::Flag::Split, amr::Flag::IncreaseResolution},
+      expected_child_mesh};
+  const Mesh<2> neighbor_mesh{std::array{4_st, 5_st}, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+  std::unordered_map<ElementId<2>, amr::Info<2>> parent_neighbor_info;
+  parent_neighbor_info.emplace(
       parent_lower_neighbor_id,
-      std::array{amr::Flag::DoNothing, amr::Flag::DoNothing});
-  parent_neighbor_flags.emplace(
+      amr::Info<2>{std::array{amr::Flag::DoNothing, amr::Flag::DoNothing},
+                   neighbor_mesh});
+  parent_neighbor_info.emplace(
       parent_upper_neighbor_id,
-      std::array{amr::Flag::DoNothing, amr::Flag::Split});
+      amr::Info<2>{std::array{amr::Flag::DoNothing, amr::Flag::Split},
+                   neighbor_mesh});
   const tuples::TaggedTuple<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
-                            amr::Tags::Flags<2>, amr::Tags::NeighborFlags<2>>
+                            amr::Tags::Info<2>, amr::Tags::NeighborInfo<2>>
       parent_items{std::move(parent), std::move(parent_mesh),
-                   std::move(parent_flags), std::move(parent_neighbor_flags)};
+                   std::move(parent_info), std::move(parent_neighbor_info)};
 
   const ElementId<2> child_id{0, std::array{SegmentId{3, 3}, SegmentId{0, 0}}};
   const ElementId<2> expected_child_upper_neighbor_id_0{
@@ -119,13 +128,10 @@ void test() {
   const Element<2> expected_child{child_id,
                                   std::move(expected_child_neighbors)};
 
-  const Mesh<2> expected_child_mesh{std::array{3_st, 4_st},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto};
-  const std::array<amr::Flag, 2> expected_child_flags{amr::Flag::Undefined,
-                                                      amr::Flag::Undefined};
-  const std::unordered_map<ElementId<2>, std::array<amr::Flag, 2>>
-      expected_child_neighbor_flags{};
+  const amr::Info<2> expected_child_info{
+      std::array{amr::Flag::Undefined, amr::Flag::Undefined}, Mesh<2>{}};
+  const std::unordered_map<ElementId<2>, amr::Info<2>>
+      expected_child_neighbor_info{};
 
   using array_component = Component<Metavariables>;
   using registrar = TestHelpers::amr::Registrar<Metavariables>;
@@ -144,11 +150,11 @@ void test() {
           runner, child_id) == expected_child);
   CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<2>>(
             runner, child_id) == expected_child_mesh);
-  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Flags<2>>(
-            runner, child_id) == expected_child_flags);
+  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<2>>(
+            runner, child_id) == expected_child_info);
   CHECK(ActionTesting::get_databox_tag<array_component,
-                                       amr::Tags::NeighborFlags<2>>(
-            runner, child_id) == expected_child_neighbor_flags);
+                                       amr::Tags::NeighborInfo<2>>(
+            runner, child_id) == expected_child_neighbor_info);
   CHECK(ActionTesting::get_databox_tag<registrar,
                                        TestHelpers::amr::RegisteredElements<2>>(
             runner, 0)
