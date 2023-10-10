@@ -3,8 +3,9 @@
 
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 
-#include <limits>
 #include <pup.h>  // IWYU pragma: keep
+
+#include <limits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -105,9 +106,21 @@ void FixToAtmosphere<Dim>::operator()(
 
       // We probably need a better maximum temperature as well, but this is not
       // as well defined. To be discussed once implementation needs improvement.
-      if (const double max_temperature =
-              equation_of_state.temperature_upper_bound();
-          get(*temperature)[i] > max_temperature) {
+      const double max_specific_energy =
+          get(equation_of_state
+                  .specific_internal_energy_from_density_and_temperature(
+                      Scalar<double>{rest_mass_density->get()[i]},
+                      Scalar<double>{0.0})) +
+          max_thermal_specific_energy_;
+      double max_temperature =
+          get(equation_of_state.temperature_from_density_and_energy(
+              Scalar<double>{rest_mass_density->get()[i]},
+              Scalar<double>{max_specific_energy}));
+      max_temperature =
+          equation_of_state.temperature_upper_bound() > max_temperature
+              ? equation_of_state.temperature_upper_bound()
+              : max_temperature;
+      if (get(*temperature)[i] > max_temperature) {
         get(*temperature)[i] = max_temperature;
         changed_temperature = true;
       }

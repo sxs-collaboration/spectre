@@ -106,7 +106,7 @@ class FixToAtmosphere {
   };
 
   /// \brief The maximum value of the thermal specific energy
-  /// Used for 2D equations of state
+  /// Used for 2D/3D equations of state
   ///
   /// Reasonable values still under study. Current recommended default:
   /// BNS: 1.0e4
@@ -128,7 +128,7 @@ class FixToAtmosphere {
       "equation of state, the specific internal energy is set to zero.\n"
       "In addition, the spatial velocity is set to zero, and the Lorentz\n"
       "factor is set to one. We also apply an upper bound on the thermal\n"
-      "specific energy for 2D equations of state.\n"};
+      "specific energy for 2D/3D equations of state.\n"};
 
   FixToAtmosphere(double density_of_atmosphere, double density_cutoff,
                   double transition_density_cutoff,
