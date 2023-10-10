@@ -123,8 +123,6 @@ void test_reconstructor(const size_t points_per_dimension,
   using TildeJ = ::ForceFree::Tags::TildeJ;
 
   using cons_tags = tmpl::list<TildeE, TildeB, TildePsi, TildePhi, TildeQ>;
-  using flux_tags = db::wrap_tags_in<::Tags::Flux, cons_tags, tmpl::size_t<3>,
-                                     Frame::Inertial>;
 
   const Mesh<3> subcell_mesh{points_per_dimension,
                              Spectral::Basis::FiniteDifference,
@@ -183,43 +181,12 @@ void test_reconstructor(const size_t points_per_dimension,
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *
       subcell_mesh.extents().slice_away(0).product();
-  using face_vars_tags = tmpl::append<
-      tmpl::list<TildeJ>, cons_tags, flux_tags,
-      tmpl::remove_duplicates<tmpl::push_back<tmpl::list<
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<DataVector, 3, Frame::Inertial>,
-          gr::Tags::SpatialMetric<DataVector, 3>,
-          gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>,
-          evolution::dg::Actions::detail::NormalVector<3>>>>>;
-  tnsr::ii<DataVector, 3, Frame::Inertial> lower_face_spatial_metric{
-      reconstructed_num_pts, 0.0};
-  tnsr::ii<DataVector, 3, Frame::Inertial> upper_face_spatial_metric{
-      reconstructed_num_pts, 0.0};
-  for (size_t i = 0; i < 3; ++i) {
-    lower_face_spatial_metric.get(i, i) = 1.0 + 0.01 * i;
-    upper_face_spatial_metric.get(i, i) = 1.0 - 0.01 * i;
-  }
-  const Scalar<DataVector> lower_face_sqrt_det_spatial_metric{
-      sqrt(get(determinant(lower_face_spatial_metric)))};
-  const Scalar<DataVector> upper_face_sqrt_det_spatial_metric{
-      sqrt(get(determinant(upper_face_spatial_metric)))};
+  using recons_tags = ::ForceFree::fd::tags_list_for_reconstruction;
 
-  std::array<Variables<face_vars_tags>, 3> vars_on_lower_face =
-      make_array<3>(Variables<face_vars_tags>(reconstructed_num_pts));
-  std::array<Variables<face_vars_tags>, 3> vars_on_upper_face =
-      make_array<3>(Variables<face_vars_tags>(reconstructed_num_pts));
-  for (size_t i = 0; i < 3; ++i) {
-    get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
-        gsl::at(vars_on_lower_face, i)) = lower_face_sqrt_det_spatial_metric;
-    get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
-        gsl::at(vars_on_upper_face, i)) = upper_face_sqrt_det_spatial_metric;
-
-    get<gr::Tags::SpatialMetric<DataVector, 3>>(
-        gsl::at(vars_on_lower_face, i)) = lower_face_spatial_metric;
-    get<gr::Tags::SpatialMetric<DataVector, 3>>(
-        gsl::at(vars_on_upper_face, i)) = upper_face_spatial_metric;
-  }
+  std::array<Variables<recons_tags>, 3> vars_on_lower_face =
+      make_array<3>(Variables<recons_tags>(reconstructed_num_pts));
+  std::array<Variables<recons_tags>, 3> vars_on_upper_face =
+      make_array<3>(Variables<recons_tags>(reconstructed_num_pts));
 
   // Now we have everything to call the reconstruction
   dynamic_cast<const Reconstructor&>(reconstructor)
@@ -244,7 +211,7 @@ void test_reconstructor(const size_t points_per_dimension,
     }
 
     // check reconstructed values for reconstruct() function
-    Variables<face_vars_tags> expected_face_values{
+    Variables<recons_tags> expected_face_values{
         face_centered_mesh.number_of_grid_points()};
     expected_face_values.assign_subset(
         compute_solution(logical_coords_face_centered));
@@ -266,18 +233,7 @@ void test_reconstructor(const size_t points_per_dimension,
     const size_t num_pts_on_mortar =
         face_centered_mesh.slice_away(dim).number_of_grid_points();
 
-    Variables<face_vars_tags> upper_side_vars_on_mortar{num_pts_on_mortar};
-    // Slice GR variables onto the mortar
-    data_on_slice(
-        make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
-            upper_side_vars_on_mortar)),
-        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(expected_face_values),
-        face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
-    data_on_slice(
-        make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(
-            upper_side_vars_on_mortar)),
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_face_values),
-        face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
+    Variables<recons_tags> upper_side_vars_on_mortar{num_pts_on_mortar};
 
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&upper_side_vars_on_mortar),
@@ -285,18 +241,7 @@ void test_reconstructor(const size_t points_per_dimension,
                                  ghost_data, subcell_mesh,
                                  Direction<3>{dim, Side::Upper});
 
-    Variables<face_vars_tags> lower_side_vars_on_mortar{num_pts_on_mortar};
-    // Slice GR variables onto the mortar
-    data_on_slice(
-        make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
-            lower_side_vars_on_mortar)),
-        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(expected_face_values),
-        face_centered_mesh.extents(), dim, 0);
-    data_on_slice(
-        make_not_null(&get<gr::Tags::SpatialMetric<DataVector, 3>>(
-            lower_side_vars_on_mortar)),
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(expected_face_values),
-        face_centered_mesh.extents(), dim, 0);
+    Variables<recons_tags> lower_side_vars_on_mortar{num_pts_on_mortar};
 
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),
