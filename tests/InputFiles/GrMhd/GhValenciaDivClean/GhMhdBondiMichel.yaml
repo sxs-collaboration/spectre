@@ -66,6 +66,7 @@ DomainCreator:
 
 VariableFixing:
   FixConservatives:
+    Enable: false # Only needed when not using Kastaun for recovery
     CutoffD: &CutoffD 1.0e-12
     MinimumValueOfD: &MinimumD 1.0e-12
     CutoffYe: 0.0
