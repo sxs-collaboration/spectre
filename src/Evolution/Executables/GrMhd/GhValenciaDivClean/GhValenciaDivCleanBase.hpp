@@ -273,7 +273,7 @@ struct get_thermodynamic_dim;
 template <typename InitialData>
 struct get_thermodynamic_dim<InitialData, true> {
   // Controls the thermodynamic dim used for numeric initial data.
-  static constexpr size_t value = 1;
+  static constexpr size_t value = 2;
 };
 
 template <typename InitialData>

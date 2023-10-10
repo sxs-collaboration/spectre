@@ -25,9 +25,11 @@ PhaseChangeAndTriggers:
 
 # Values taken from the Xcts/HeadOnBns.yaml input file
 EquationOfState: &eos
-  PolytropicFluid:
-      PolytropicConstant: 123.6489
+  HybridEos(PolytropicFluid):
+    PolytropicFluid:
+      PolytropicConstant: 123.6
       PolytropicExponent: 2.
+    ThermalAdiabaticIndex: 2.0
 
 DomainCreator:
   BinaryCompactObject:
