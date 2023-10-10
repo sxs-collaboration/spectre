@@ -244,7 +244,7 @@ jobs:
           cmake
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
-          -D CMAKE_Fortran_COMPILER=gfortran-9
+          -D CMAKE_Fortran_COMPILER=gfortran
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D OVERRIDE_ARCH=x86-64
@@ -339,7 +339,6 @@ jobs:
           -D USE_XSIMD=ON
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=ON
-          -D Python_EXECUTABLE=/usr/bin/python3
           -D BUILD_SHARED_LIBS=ON
           -D MEMORY_ALLOCATOR=SYSTEM
           -D BUILD_DOCS=ON
@@ -418,17 +417,19 @@ jobs:
           - compiler: gcc-10
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
+          # Don't modify the gcc-11 Debug build so its cache can be reused for
+          # the documentation build
+          # - compiler: gcc-11
+          #   build_type: Debug
           # Test with Python 3.8 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
           - compiler: gcc-11
-            build_type: Debug
-            PYTHON_EXECUTABLE: /usr/bin/python3.8
-          # Disable building executable for this build for now because it
-          # exceeds the available memory. See issue:
-          # https://github.com/sxs-collaboration/spectre/issues/5472
-          - compiler: gcc-11
             build_type: Release
+            PYTHON_VERSION: "3.8"
+            # Disable building executable for this build for now because it
+            # exceeds the available memory. See issue:
+            # https://github.com/sxs-collaboration/spectre/issues/5472
             test_executables: OFF
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
@@ -464,7 +465,7 @@ jobs:
           - compiler: clang-14
             build_type: Release
             # Test compatibility with oldest supported CMake version
-            CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
+            CMAKE_VERSION: "3.18.2"
             # Use an MPI version of Charm
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
@@ -518,6 +519,39 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/parse-compiler
+        with:
+          compiler: ${{ matrix.compiler }}
+      # Install the selected compiler. We don't bundle all of them in the
+      # container because they take up a lot of space.
+      - name: Install compiler
+        run: |
+          apt-get update -y
+          if [[ $COMPILER_ID = gcc ]]; then
+            apt-get install -y $CC $CXX $FC
+          else
+            apt-get install -y $CC $FC
+          fi
+      # Install specific CMake version if requested
+      - name: Install CMake version
+        if: matrix.CMAKE_VERSION
+        working-directory: /work
+        run: |
+          CMAKE_VERSION=${{ matrix.CMAKE_VERSION }}
+          wget -O cmake-install.sh "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh"
+          sh cmake-install.sh --prefix=/usr --skip-license
+          rm cmake-install.sh
+      - name: Install Python version
+        if: matrix.PYTHON_VERSION
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+      - name: Install Python dependencies
+        if: matrix.PYTHON_VERSION
+        run: |
+          python3 -m pip install pybind11~=2.6.1
+          python3 -m pip install -r support/Python/requirements.txt \
+            -r support/Python/dev_requirements.txt
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
@@ -553,21 +587,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: >
           mkdir build && cd build
 
-          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-              CXX=g++-${BASH_REMATCH[2]};
-              FC=gfortran-${BASH_REMATCH[2]};
-            else
-              CXX=clang++-${BASH_REMATCH[2]};
-              FC=gfortran-9;
-            fi
-          fi
-
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
-          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
-          CMAKE_EXECUTABLE=${{ matrix.CMAKE_EXECUTABLE }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
@@ -579,7 +600,9 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
           INPUT_FILE_MIN_PRIO=${{ matrix.input_file_tests_min_priority }}
 
-          ${CMAKE_EXECUTABLE:-'cmake'}
+          cmake --version
+
+          cmake
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
@@ -600,7 +623,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_CCACHE=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
-          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
@@ -736,19 +758,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           mkdir build;
           cd build
 
-          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-              CXX=g++-${BASH_REMATCH[2]};
-              FC=gfortran-${BASH_REMATCH[2]};
-            else
-              CXX=clang++-${BASH_REMATCH[2]};
-              FC=gfortran-9;
-            fi
-          fi
-
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
-          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
           USE_PCH=${{ matrix.use_pch }};
@@ -772,7 +782,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
-          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
           ..
@@ -1133,6 +1142,24 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/parse-compiler
+        with:
+          compiler: ${{ matrix.compiler }}
+      - name: Install compiler
+        run: |
+          apt-get update -y
+          if [[ $COMPILER_ID = gcc ]]; then
+            apt-get install -y $CC $CXX $FC
+          else
+            apt-get install -y $CC $FC
+          fi
+      - name: Install Intel SDE
+        working-directory: /work
+        run: |
+          wget -O sde-external.tar.xz https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
+          tar -xJf sde-external.tar.xz
+          mv sde-external-* sde
+          rm sde-*
       - name: Configure, build, and run tests
         working-directory: /work
         # Notes on the build configuration:
@@ -1149,16 +1176,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             cd /work
             BUILD_DIR=build$OVERRIDE_ARCH
             mkdir $BUILD_DIR && cd $BUILD_DIR
-            if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
-              CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
-              if [[ ${BASH_REMATCH[1]} = gcc ]]; then
-                CXX=g++-${BASH_REMATCH[2]};
-                FC=gfortran-${BASH_REMATCH[2]};
-              else
-                CXX=clang++-${BASH_REMATCH[2]};
-                FC=gfortran-9;
-              fi
-            fi
 
             cmake\
             -D CMAKE_C_COMPILER=${CC}\
