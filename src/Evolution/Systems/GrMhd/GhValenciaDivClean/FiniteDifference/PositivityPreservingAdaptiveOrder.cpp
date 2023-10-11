@@ -66,9 +66,11 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
   }
   if (alpha_7.has_value()) {
+    PARSE_ERROR(context, "Alpha7 hasn't been tested.");
     six_to_the_alpha_7_ = pow(6.0, alpha_7.value());
   }
   if (alpha_9.has_value()) {
+    PARSE_ERROR(context, "Alpha9 hasn't been tested.");
     eight_to_the_alpha_9_ = pow(8.0, alpha_9.value());
   }
   set_function_pointers();

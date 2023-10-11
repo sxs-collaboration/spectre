@@ -298,10 +298,44 @@ void test_prim_reconstructor_impl(
   }
 
   // Now we have everything to call the reconstruction
-  dynamic_cast<const Reconstructor&>(reconstructor)
-      .reconstruct(make_not_null(&vars_on_lower_face),
-                   make_not_null(&vars_on_upper_face), volume_prims,
-                   volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+  if constexpr (Reconstructor::use_adaptive_order) {
+    std::array<std::vector<std::uint8_t>, 3> reconstruction_order_storage{};
+    std::optional<std::array<gsl::span<std::uint8_t>, 3>>
+        reconstruction_order{};
+    reconstruction_order.emplace();
+    for (size_t i = 0; i < 3; ++i) {
+      auto order_extents = subcell_mesh.extents();
+      order_extents[i] += 2;
+      gsl::at(reconstruction_order_storage, i).resize(order_extents.product());
+      // Ensure we have reset the values to max so the min calls are fine.
+      std::fill_n(gsl::at(reconstruction_order_storage, i).begin(),
+                  order_extents.product(),
+                  std::numeric_limits<std::uint8_t>::max());
+      gsl::at(reconstruction_order.value(), i) = gsl::span<std::uint8_t>{
+          gsl::at(reconstruction_order_storage, i).data(),
+          gsl::at(reconstruction_order_storage, i).size()};
+    }
+
+    dynamic_cast<const Reconstructor&>(reconstructor)
+        .reconstruct(make_not_null(&vars_on_lower_face),
+                     make_not_null(&vars_on_upper_face),
+                     make_not_null(&reconstruction_order), volume_prims,
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+    for (size_t d = 0; d < 3; ++d) {
+      CAPTURE(d);
+      for (size_t i = 0; i < gsl::at(reconstruction_order_storage, d).size();
+           ++i) {
+        CAPTURE(i);
+        CHECK(gsl::at(reconstruction_order_storage, d)[i] >= 1);
+        CHECK(gsl::at(reconstruction_order_storage, d)[i] <= 9);
+      }
+    }
+  } else {
+    dynamic_cast<const Reconstructor&>(reconstructor)
+        .reconstruct(make_not_null(&vars_on_lower_face),
+                     make_not_null(&vars_on_upper_face), volume_prims,
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+  }
 
   for (size_t dim = 0; dim < 3; ++dim) {
     CAPTURE(dim);
