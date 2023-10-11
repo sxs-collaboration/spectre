@@ -7,6 +7,11 @@ name: Post release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name of the release'
+        required: true
 
 jobs:
   add_spack_version:
@@ -16,6 +21,8 @@ jobs:
     # - This job requires a repository secret named `GH_TOKEN_SXSBOT_SPACK` that
     #   has write access to the `sxs-bot/spack` repository.
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
     steps:
       - name: Download Spack
         uses: actions/checkout@v3
@@ -49,7 +56,7 @@ jobs:
           import os
 
           # The tag name includes the 'v' prefix
-          release_name = '${{ github.event.release.tag_name }}'[1:]
+          release_name = '${{ env.RELEASE_TAG_NAME }}'[1:]
 
           # Get the URL for the release tarball. The
           # 'github.event.release.tarball_url' points to a slightly different
@@ -94,12 +101,12 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GH_TOKEN_SXSBOT_SPACK }}
-          commit-message: "spectre: add ${{ github.event.release.tag_name }}"
+          commit-message: "spectre: add ${{ env.RELEASE_TAG_NAME }}"
           committer: "sxs-bot <sxs-bot@black-holes.org>"
-          branch: "spectre-${{ github.event.release.tag_name }}"
+          branch: "spectre-${{ env.RELEASE_TAG_NAME }}"
           delete-branch: true
           push-to-fork: sxs-bot/spack
-          title: "spectre: add ${{ github.event.release.tag_name }}"
+          title: "spectre: add ${{ env.RELEASE_TAG_NAME }}"
           body: ""
   # Build and push the `demo` container to DockerHub on releases. This is
   # because the `demo` container has pre-built executables that we want to keep
