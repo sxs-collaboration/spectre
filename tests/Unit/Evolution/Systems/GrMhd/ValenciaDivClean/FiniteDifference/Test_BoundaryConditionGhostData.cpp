@@ -88,11 +88,16 @@ void test(const BoundaryConditionType& boundary_condition,
   const std::array<size_t, 3> refinement_levels{0, 0, 0};
   const std::array<size_t, 3> number_of_grid_points{num_dg_pts, num_dg_pts,
                                                     num_dg_pts};
+  using VariantType = std::variant<
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+      domain::creators::Brick::LowerUpperBoundaryCondition<
+          domain::BoundaryConditions::BoundaryCondition>>;
   const auto brick = domain::creators::Brick(
       lower_bounds, upper_bounds, refinement_levels, number_of_grid_points,
-      std::make_unique<BoundaryConditionType>(boundary_condition),
-      std::make_unique<BoundaryConditionType>(boundary_condition),
-      std::make_unique<BoundaryConditionType>(boundary_condition), nullptr);
+      VariantType{std::make_unique<BoundaryConditionType>(boundary_condition)},
+      VariantType{std::make_unique<BoundaryConditionType>(boundary_condition)},
+      VariantType{std::make_unique<BoundaryConditionType>(boundary_condition)},
+      nullptr);
   auto domain = brick.create_domain();
   auto boundary_conditions = brick.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(

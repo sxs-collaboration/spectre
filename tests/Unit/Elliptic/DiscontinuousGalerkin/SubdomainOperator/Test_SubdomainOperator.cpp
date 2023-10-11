@@ -679,6 +679,12 @@ struct InitializeConstitutiveRelation {
 // handles all of these geometries correctly.
 // [[TimeOut, 25]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
+  // Needed for Brick
+  using VariantType = std::variant<
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+      domain::creators::Brick::LowerUpperBoundaryCondition<
+          domain::BoundaryConditions::BoundaryCondition>>;
+
   domain::creators::register_derived_with_charm();
   {
     INFO("Rectilinear and aligned");
@@ -725,12 +731,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{2., 1., 1.}},
           {{1, 0, 1}},
           {{3, 3, 3}},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet),
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet),
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet),
+          VariantType{make_boundary_condition<system>(
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{make_boundary_condition<system>(
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{make_boundary_condition<system>(
+              elliptic::BoundaryConditionType::Dirichlet)},
           nullptr};
       test_subdomain_operator<system>(domain_creator);
     }
@@ -910,12 +916,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
         {{2., 1., 1.}},
         {{1, 1, 1}},
         {{3, 3, 3}},
-        make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet),
-        make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet),
-        make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet),
+        VariantType{make_boundary_condition<system>(
+            elliptic::BoundaryConditionType::Dirichlet)},
+        VariantType{make_boundary_condition<system>(
+            elliptic::BoundaryConditionType::Dirichlet)},
+        VariantType{make_boundary_condition<system>(
+            elliptic::BoundaryConditionType::Dirichlet)},
         nullptr};
     test_subdomain_operator<
         system, tmpl::list<InitializeConstitutiveRelation<3>>,
