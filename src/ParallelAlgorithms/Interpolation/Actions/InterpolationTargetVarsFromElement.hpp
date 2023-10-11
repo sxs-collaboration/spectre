@@ -9,12 +9,16 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain::Tags {
+struct FunctionsOfTime;
+}  // namespace domain::Tags
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
@@ -28,6 +32,9 @@ namespace Actions {
 ///  of the target points.
 ///
 /// If interpolated variables for all target points have been received, then
+/// - Checks if functions of time are ready (if there are any). If they are not
+///   ready, register a simple action callback with the GlobalCache to this
+///   action.
 /// - Calls `InterpolationTargetTag::post_interpolation_callback`
 /// - Removes the finished `temporal_id` from `Tags::TemporalIds<TemporalId>`
 ///   and adds it to `Tags::CompletedTemporalIds<TemporalId>`
@@ -67,7 +74,7 @@ struct InterpolationTargetVarsFromElement {
             typename ArrayIndex, typename TemporalId>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
+      const ArrayIndex& array_index,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
@@ -76,7 +83,8 @@ struct InterpolationTargetVarsFromElement {
                                           typename ::Frame::BlockLogical>>>>&
           block_logical_coords,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& temporal_id) {
+      const TemporalId& temporal_id,
+      const bool vars_have_already_been_received = false) {
     static_assert(
         not InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Use InterpolationTargetGetVarsFromElement only with non-sequential"
@@ -135,11 +143,29 @@ struct InterpolationTargetVarsFromElement {
           make_not_null(&box), temporal_id, block_logical_coords);
     }
 
-    InterpolationTarget_detail::add_received_variables<InterpolationTargetTag>(
-        make_not_null(&box), vars_src, global_offsets, temporal_id);
+    if (not vars_have_already_been_received) {
+      InterpolationTarget_detail::add_received_variables<
+          InterpolationTargetTag>(make_not_null(&box), vars_src, global_offsets,
+                                  temporal_id);
+    }
 
     if (InterpolationTarget_detail::have_data_at_all_points<
             InterpolationTargetTag>(box, temporal_id)) {
+      // Check if functions of time are ready on this component. Since this
+      // simple action has already been called, we don't need to resend the
+      // data, so we just pass empty vectors for vars_src and
+      // block_logical_coords
+      if (not domain::functions_of_time_are_ready_simple_action_callback<
+              domain::Tags::FunctionsOfTime,
+              InterpolationTargetVarsFromElement>(
+              cache, array_index,
+              std::add_pointer_t<ParallelComponent>{nullptr},
+              InterpolationTarget_detail::get_temporal_id_value(temporal_id),
+              std::nullopt, std::decay_t<decltype(vars_src)>{},
+              std::decay_t<decltype(block_logical_coords)>{}, global_offsets,
+              temporal_id, true)) {
+        return;
+      }
       // All the valid points have been interpolated.
       // We throw away the return value of call_callback in this case
       // (it is known to be always true; it can be false only for

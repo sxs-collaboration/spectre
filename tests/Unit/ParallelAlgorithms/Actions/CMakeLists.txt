@@ -21,5 +21,8 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DomainCreators
   DomainStructure
+  FunctionsOfTime
+  Parallel
   )

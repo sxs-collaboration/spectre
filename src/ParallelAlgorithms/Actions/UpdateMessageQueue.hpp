@@ -8,10 +8,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+namespace domain::Tags {
+struct FunctionsOfTime;
+}  // namespace domain::Tags
 namespace Parallel {
 template <typename Metavariables>
 struct GlobalCache;
@@ -40,6 +44,12 @@ struct UpdateMessageQueue {
       const LinkedMessageId<typename LinkedMessageQueueTag::type::IdType>&
           id_and_previous,
       typename QueueTag::type message) {
+    if (not domain::functions_of_time_are_ready_simple_action_callback<
+            domain::Tags::FunctionsOfTime, UpdateMessageQueue>(
+            cache, array_index, std::add_pointer_t<ParallelComponent>{nullptr},
+            id_and_previous.id, std::nullopt, id_and_previous, message)) {
+      return;
+    }
     auto& queue =
         db::get_mutable_reference<LinkedMessageQueueTag>(make_not_null(&box));
     queue.template insert<QueueTag>(id_and_previous, std::move(message));
