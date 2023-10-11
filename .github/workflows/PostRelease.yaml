@@ -98,7 +98,7 @@ jobs:
         run: |
           git diff
       - name: Send pull request to Spack
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GH_TOKEN_SXSBOT_SPACK }}
           commit-message: "spectre: add ${{ env.RELEASE_TAG_NAME }}"
