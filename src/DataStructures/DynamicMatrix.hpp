@@ -75,3 +75,20 @@ struct Options::create_from_yaml<blaze::DynamicMatrix<Type, SO, Alloc, Tag>> {
     return result;
   }
 };
+
+/// Write a `blaze::DynamicMatrix` to a CSV file.
+template <typename Type, bool SO, typename Alloc, typename Tag>
+std::ostream& write_csv(
+    std::ostream& os, const blaze::DynamicMatrix<Type, SO, Alloc, Tag>& matrix,
+    const std::string& delimiter = ",") {
+  for (size_t i = 0; i < matrix.rows(); ++i) {
+    for (size_t j = 0; j < matrix.columns(); ++j) {
+      os << matrix(i, j);
+      if (j + 1 != matrix.columns()) {
+        os << delimiter;
+      }
+    }
+    os << '\n';
+  }
+  return os;
+}
