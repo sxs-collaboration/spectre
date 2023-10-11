@@ -27,16 +27,6 @@ authors:
   orcid: https://orcid.org/0000-0002-5767-3949
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
-  family-names: Hébert
-  given-names: François
-  orcid: https://orcid.org/0000-0001-9009-6955
-- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
-    California Institute of Technology, Pasadena, CA 91125, USA
-  family-names: Moxon
-  given-names: Jordan
-  orcid: https://orcid.org/0000-0001-9891-8677
-- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
-    California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Nelli
   given-names: Kyle C.
   orcid: https://orcid.org/0000-0003-2426-8768
@@ -51,6 +41,11 @@ authors:
   family-names: Bonilla
   given-names: Marceline S.
   orcid: https://orcid.org/0000-0003-4502-528X
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Hébert
+  given-names: François
+  orcid: https://orcid.org/0000-0001-9009-6955
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Kim
@@ -73,6 +68,11 @@ authors:
   family-names: Macedo
   given-names: Alexandra
   orcid: https://orcid.org/0000-0001-5139-9013
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Moxon
+  given-names: Jordan
+  orcid: https://orcid.org/0000-0001-9891-8677
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: O'Shea
@@ -104,6 +104,11 @@ authors:
   family-names: Anantpurkar
   given-names: Isha
   orcid: https://orcid.org/0000-0002-5814-4109
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Anderson
+  given-names: Carter
+  orcid: https://orcid.org/0009-0009-0359-6763
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Boyle
@@ -282,8 +287,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2023-09-07
-doi: 10.5281/zenodo.8325309
+date-released: 2023-10-11
+doi: 10.5281/zenodo.8431874
 keywords:
 - Software
 - Astrophysics
@@ -1001,4 +1006,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2023.09.07
+version: 2023.10.11

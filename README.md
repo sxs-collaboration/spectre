@@ -6,8 +6,8 @@
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2023.09.07-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2023.09.07)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.8325309.svg)](https://doi.org/10.5281/zenodo.8325309)
+[![release](https://img.shields.io/badge/release-v2023.10.11-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2023.10.11)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.8431874.svg)](https://doi.org/10.5281/zenodo.8431874)
 
 ## What is SpECTRE?
 
@@ -29,7 +29,7 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.8325309](https://doi.org/10.5281/zenodo.8325309)
+- DOI: [10.5281/zenodo.8431874](https://doi.org/10.5281/zenodo.8431874)
 
 You can cite this BibTeX entry in your publication:
 
@@ -38,21 +38,21 @@ You can cite this BibTeX entry in your publication:
 ```bib
 @software{spectrecode,
     author = "Deppe, Nils and Throwe, William and Kidder, Lawrence E. and Vu,
-Nils L. and H\'ebert, Fran\c{c}ois and Moxon, Jordan and Nelli, Kyle C. and
-Armaza, Crist\'obal and Bonilla, Marceline S. and Kim, Yoonsoo and Kumar,
-Prayush and Lovelace, Geoffrey and Macedo, Alexandra and O'Shea, Eamonn and
+Nils L. and Nelli, Kyle C. and Armaza, Crist\'obal and Bonilla, Marceline S. and
+H\'ebert, Fran\c{c}ois and Kim, Yoonsoo and Kumar, Prayush and Lovelace,
+Geoffrey and Macedo, Alexandra and Moxon, Jordan and O'Shea, Eamonn and
 Pfeiffer, Harald P. and Scheel, Mark A. and Teukolsky, Saul A. and Wittek,
 Nikolas A. and others",
-    title = "\texttt{SpECTRE v2023.09.07}",
-    version = "2023.09.07",
+    title = "\texttt{SpECTRE v2023.10.11}",
+    version = "2023.10.11",
     publisher = "Zenodo",
-    doi = "10.5281/zenodo.8325309",
+    doi = "10.5281/zenodo.8431874",
     url = "https://spectre-code.org",
     howpublished =
-"\href{https://doi.org/10.5281/zenodo.8325309}{10.5281/zenodo.8325309}",
+"\href{https://doi.org/10.5281/zenodo.8431874}{10.5281/zenodo.8431874}",
     license = "MIT",
     year = "2023",
-    month = "9"
+    month = "10"
 }
 ```
 <!-- BIBTEX ENTRY -->
