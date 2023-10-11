@@ -71,8 +71,8 @@ jobs:
               release_name: release_url,
           }
           version_hashes = spack.stage.get_checksums_for_versions(
-              url_dict=url_dict,
-              name=pkg.name,
+              url_dict,
+              pkg.name,
               batch=True,
               fetch_options=pkg.fetch_options,
           )
