@@ -150,7 +150,9 @@ LinearSolver:
         Restart: None
         Preconditioner:
           MinusLaplacian:
-            Solver: ExplicitInverse
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
             BoundaryConditions: Auto
     SkipResets: True
     ObservePerCoreReductions: False

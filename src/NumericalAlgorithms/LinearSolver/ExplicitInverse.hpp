@@ -5,19 +5,26 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <fstream>
+#include <string>
 #include <tuple>
 #include <vector>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "Parallel/Tags/ArrayIndex.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Serial {
@@ -73,18 +80,31 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   using Base = LinearSolver<LinearSolverRegistrars>;
 
  public:
-  using options = tmpl::list<>;
+  struct WriteMatrixToFile {
+    using type = Options::Auto<std::string, Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        "Write the matrix representation of the linear operator to a "
+        "space-delimited CSV file with this name. A '.txt' extension will be "
+        "added. Also a suffix with the element ID will be added if this linear "
+        "solver runs on an array element, so one file per element will be "
+        "written.";
+  };
+
+  using options = tmpl::list<WriteMatrixToFile>;
   static constexpr Options::String help =
       "Build a matrix representation of the linear operator and invert it "
       "directly. This means that the first solve has a large initialization "
       "cost, but all subsequent solves converge immediately.";
 
-  ExplicitInverse() = default;
   ExplicitInverse(const ExplicitInverse& /*rhs*/) = default;
   ExplicitInverse& operator=(const ExplicitInverse& /*rhs*/) = default;
   ExplicitInverse(ExplicitInverse&& /*rhs*/) = default;
   ExplicitInverse& operator=(ExplicitInverse&& /*rhs*/) = default;
   ~ExplicitInverse() = default;
+
+  explicit ExplicitInverse(
+      std::optional<std::string> matrix_filename = std::nullopt)
+      : matrix_filename_(std::move(matrix_filename)) {}
 
   /// \cond
   explicit ExplicitInverse(CkMigrateMessage* m) : Base(m) {}
@@ -130,6 +150,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
+    p | matrix_filename_;
     p | size_;
     p | inverse_;
     if (p.isUnpacking() and size_ != std::numeric_limits<size_t>::max()) {
@@ -143,6 +164,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   }
 
  private:
+  std::optional<std::string> matrix_filename_{};
   // Caches for successive solves of the same operator
   // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t size_ = std::numeric_limits<size_t>::max();
@@ -177,6 +199,30 @@ Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
     auto result_buffer = make_with_value<SourceType>(used_for_size, 0.);
     build_matrix(make_not_null(&inverse_), make_not_null(&operand_buffer),
                  make_not_null(&result_buffer), linear_operator, operator_args);
+    // Write to file before inverting
+    if (UNLIKELY(matrix_filename_.has_value())) {
+      const auto filename_suffix =
+          [&operator_args]() -> std::optional<std::string> {
+        using DataBoxType =
+            std::decay_t<tmpl::front<tmpl::list<OperatorArgs..., NoSuchType>>>;
+        if constexpr (tt::is_a_v<db::DataBox, DataBoxType>) {
+          if constexpr (db::tag_is_retrievable_v<Parallel::Tags::ArrayIndex,
+                                                 DataBoxType>) {
+            const auto& box = std::get<0>(operator_args);
+            return "_" + get_output(db::get<Parallel::Tags::ArrayIndex>(box));
+          } else {
+            (void)operator_args;
+            return std::nullopt;
+          }
+        } else {
+          (void)operator_args;
+          return std::nullopt;
+        }
+      }();
+      std::ofstream matrix_file(matrix_filename_.value() +
+                                filename_suffix.value_or("") + ".txt");
+      write_csv(matrix_file, inverse_, " ");
+    }
     // Directly invert the matrix
     try {
       blaze::invert(inverse_);

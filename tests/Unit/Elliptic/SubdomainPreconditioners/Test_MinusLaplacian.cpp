@@ -422,7 +422,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     const auto created =
         TestHelpers::test_creation<std::unique_ptr<LinearSolverType>>(
             "MinusLaplacian:\n"
-            "  Solver: ExplicitInverse\n"
+            "  Solver:\n"
+            "    ExplicitInverse:\n"
+            "      WriteMatrixToFile: None\n"
             "  BoundaryConditions: Auto");
     const auto serialized = serialize_and_deserialize(created);
     const auto cloned = serialized->get_clone();

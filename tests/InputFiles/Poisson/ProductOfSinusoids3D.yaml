@@ -76,7 +76,9 @@ LinearSolver:
     Iterations: 3
     MaxOverlap: 2
     Verbosity: Quiet
-    SubdomainSolver: ExplicitInverse
+    SubdomainSolver:
+      ExplicitInverse:
+        WriteMatrixToFile: None
     ObservePerCoreReductions: False
 
 RadiallyCompressedCoordinates: None
