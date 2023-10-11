@@ -95,3 +95,12 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+
+PhaseChangeAndTriggers:
+  - Trigger: Always
+    PhaseChanges:
+      - VisitAndReturn(BuildMatrix)
+
+BuildMatrix:
+  MatrixSubfileName: Matrix
+  Verbosity: Verbose

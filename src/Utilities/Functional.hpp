@@ -328,6 +328,19 @@ struct ElementWise : Functional<C::arity> {
   }
 };
 
+/// Function that merges two containers using the `merge` method of the first
+/// container. Can be used to collect data in a `std::map` in a reduction.
+template <typename C0 = Identity, typename C1 = C0>
+struct Merge : Functional<2> {
+  template <typename T>
+  T operator()(const T& t0, const T& t1) {
+    auto result = C0{}(t0);
+    auto to_merge = C1{}(t1);
+    result.merge(to_merge);
+    return result;
+  }
+};
+
 #undef MAKE_BINARY_FUNCTIONAL
 #undef MAKE_BINARY_INPLACE_OPERATOR
 #undef MAKE_BINARY_OPERATOR

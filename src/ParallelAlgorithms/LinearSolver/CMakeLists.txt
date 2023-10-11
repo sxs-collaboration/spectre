@@ -3,7 +3,7 @@
 
 set(LIBRARY ParallelLinearSolver)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
 
 spectre_target_headers(
   ${LIBRARY}
@@ -17,14 +17,17 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Convergence
-  DataStructures
   Initialization
   LinearSolver
+  Serialization
+  SystemUtilities
+  PUBLIC
+  DataStructures
+  DomainStructure
+  H5
   Logging
   Observer
   Parallel
-  Serialization
-  SystemUtilities
   Utilities
   )
 

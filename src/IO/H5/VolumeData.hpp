@@ -110,6 +110,8 @@ class VolumeData : public h5::Object {
   /// Insert tensor components at `observation_id` with floating point value
   /// `observation_value`. Optionally write a serialized representation of the
   /// domain and the functions of time into the subfile as well.
+  ///
+  /// All `elements` must contain the same tensor components in the same order.
   void write_volume_data(
       size_t observation_id, double observation_value,
       const std::vector<ElementVolumeData>& elements,
@@ -179,10 +181,12 @@ class VolumeData : public h5::Object {
   /// 2. the observation value (time in evolutions)
   /// 3. a vector of `ElementVolumeData` sorted by the elements' name string.
   ///
-  /// - If `start_observation_value` is not `std::nullopt` then return
+  /// - If `start_observation_value` is `std::nullopt` then return
   ///   everything from the beginning of the data to `end_observation_value`. If
   ///   `end_observation_value` is `std::nullopt` then return everything from
   ///   `start_observation_value` to the end of the data.
+  /// - If `components_to_retrieve` is `std::nullopt` then return all
+  ///   components.
   auto get_data_by_element(std::optional<double> start_observation_value,
                            std::optional<double> end_observation_value,
                            const std::optional<std::vector<std::string>>&

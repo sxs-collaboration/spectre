@@ -44,6 +44,8 @@ enum class Phase {
 
   ///  phase in which AMR adjusts the domain
   AdjustDomain,
+  ///  phase in which elliptic problems construct a matrix representation
+  BuildMatrix,
   ///  phase in which sanity checks are done after AMR
   CheckDomain,
   ///  a cleanup phase

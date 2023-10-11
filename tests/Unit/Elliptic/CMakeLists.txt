@@ -4,6 +4,7 @@
 add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(DiscontinuousGalerkin)
+add_subdirectory(Python)
 add_subdirectory(SubdomainPreconditioners)
 add_subdirectory(Systems)
 add_subdirectory(Triggers)

@@ -1,0 +1,57 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Description: |
+  The test problem being solved here is a DG-discretized 1D Poisson equation
+  -u''(x) = f(x) on the interval [0, pi] with source f(x)=sin(x) and homogeneous
+  Dirichlet boundary conditions such that the solution is u(x)=sin(x) as well.
+
+  Details:
+  - Domain decomposition: 2 elements with 3 LGL grid-points each
+  - "Primal" DG formulation (no auxiliary variable)
+  - Not multiplied by mass matrix so the operator is not symmetric
+  - Mass-lumping: inverse mass matrix is approximated by diagonal
+  - Internal penalty flux with sigma = 1.5 * (N_points - 1)^2 / h
+
+---
+
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    Distribution: Linear
+    Singularity: None
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
+    TimeDependence: None
+
+LinearOperator:
+  - [[20.26423672846756 ,  3.242277876554809, -2.836993141985458],
+      [ 0.810569469138702,  3.24227787655481 , -0.405284734569351],
+      [-2.836993141985458, -1.621138938277405, 12.969111506219237],
+      [ 1.215854203708053, -4.863416814832214, -7.295125222248322],
+      [ 0.               ,  0.               , -1.215854203708054],
+      [ 0.               ,  0.               ,  1.215854203708053]]
+  - [[ 1.215854203708053,  0.               ,  0.               ],
+      [-1.215854203708054,  0.               ,  0.               ],
+      [-7.295125222248322, -4.863416814832214,  1.215854203708053],
+      [12.969111506219237, -1.621138938277405, -2.836993141985458],
+      [-0.405284734569351,  3.24227787655481 ,  0.810569469138702],
+      [-2.836993141985458,  3.242277876554809, 20.26423672846756 ]]
+
+Source:  # Unused
+  - [0., 0.7071067811865475, 1.]
+  - [1., 0.7071067811865476, 0.]
+
+BuildMatrix:
+  Verbosity: Debug
+  MatrixSubfileName: Matrix
+
+Observers:
+  VolumeFileName: "Test_BuildMatrix_Volume"
+  ReductionFileName: "Test_BuildMatrix_Reductions"
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

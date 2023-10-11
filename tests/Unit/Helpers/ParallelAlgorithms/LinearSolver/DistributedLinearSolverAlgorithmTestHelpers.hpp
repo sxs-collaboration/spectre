@@ -141,7 +141,13 @@ struct CollectOperatorAction;
 
 template <typename OperandTag>
 struct ComputeOperatorAction {
+ private:
+  using local_operator_applied_to_operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, OperandTag>;
+
+ public:
   using const_global_cache_tags = tmpl::list<LinearOperator>;
+  using simple_tags = tmpl::list<local_operator_applied_to_operand_tag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>

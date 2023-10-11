@@ -768,6 +768,8 @@ cmakelists_hardcoded_libraries() {
                   "tests/Unit/Executables/CMakeLists.txt$" \
                   "tests/Unit/Parallel/CMakeLists.txt$" \
                   "tests/Unit/ParallelAlgorithms/LinearSolver/\
+Actions/CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/\
 ConjugateGradient/CMakeLists.txt$" \
                   "tests/Unit/ParallelAlgorithms/LinearSolver/Gmres/\
 CMakeLists.txt$" \

@@ -33,6 +33,8 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
@@ -42,6 +44,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/BuildMatrix.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
@@ -187,7 +190,9 @@ struct Metavariables {
                            volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
-                                typename linear_solver::options_group>>>;
+                                typename linear_solver::options_group>>,
+        tmpl::pair<PhaseChange, tmpl::list<PhaseControl::VisitAndReturn<
+                                    Parallel::Phase::BuildMatrix>>>>;
   };
 
   // Collect all reduction tags for observers
@@ -233,6 +238,8 @@ struct Metavariables {
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
                  typename schwarz_smoother::register_element,
                  typename multigrid::register_element,
+                 LinearSolver::Actions::build_matrix_register<
+                     LinearSolver::multigrid::Tags::IsFinestGrid>,
                  Parallel::Actions::TerminatePhase>;
 
   template <typename Label>
@@ -241,6 +248,7 @@ struct Metavariables {
                                                 Label>;
 
   using solve_actions = tmpl::list<
+      PhaseControl::Actions::ExecutePhaseChange,
       typename linear_solver::template solve<
           tmpl::list<
               typename multigrid::template solve<
@@ -252,13 +260,23 @@ struct Metavariables {
           elliptic::Actions::RunEventsAndTriggers<linear_solver_iteration_id>>,
       Parallel::Actions::TerminatePhase>;
 
+  using build_matrix_actions = tmpl::list<
+      LinearSolver::Actions::build_matrix_actions<
+          linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
+          build_linear_operator_actions,
+          domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+          LinearSolver::multigrid::Tags::IsFinestGrid>,
+      Parallel::Actions::TerminatePhase>;
+
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
       tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
+          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
+          Parallel::PhaseActions<Parallel::Phase::BuildMatrix,
+                                 build_matrix_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename multigrid::options_group>>;
 
