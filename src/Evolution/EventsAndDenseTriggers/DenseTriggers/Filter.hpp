@@ -11,6 +11,7 @@
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -62,29 +63,31 @@ class Filter : public DenseTrigger {
   explicit Filter(std::unique_ptr<DenseTrigger> trigger,
                   std::unique_ptr<Trigger> filter);
 
-  using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
+  using is_triggered_return_tags = tmpl::list<Tags::DataBox>;
+  using is_triggered_argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
-  std::optional<bool> is_triggered(Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index,
-                                   const Component* component,
-                                   const db::DataBox<DbTags>& box) const {
+  std::optional<bool> is_triggered(
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component,
+      const gsl::not_null<db::DataBox<DbTags>*> box) const {
     auto result = trigger_->is_triggered(box, cache, array_index, component);
     if (result == std::optional{true}) {
-      return filter_->is_triggered(box);
+      return filter_->is_triggered(*box);
     }
     return result;
   }
 
-  using next_check_time_argument_tags = tmpl::list<Tags::DataBox>;
+  using next_check_time_return_tags = tmpl::list<Tags::DataBox>;
+  using next_check_time_argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
   std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component,
-      const db::DataBox<DbTags>& box) const {
+      const gsl::not_null<db::DataBox<DbTags>*> box) const {
     return trigger_->next_check_time(box, cache, array_index, component);
   }
 

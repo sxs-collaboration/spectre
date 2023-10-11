@@ -64,6 +64,7 @@ class TestTrigger : public DenseTrigger {
               const std::optional<double>& next_check)
       : is_triggered_(is_triggered), next_check_(next_check) {}
 
+  using is_triggered_return_tags = tmpl::list<>;
   using is_triggered_argument_tags = tmpl::list<>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<bool> is_triggered(
@@ -72,6 +73,7 @@ class TestTrigger : public DenseTrigger {
     return is_triggered_;
   }
 
+  using next_check_time_return_tags = tmpl::list<>;
   using next_check_time_argument_tags = tmpl::list<>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<double> next_check_time(
@@ -117,6 +119,7 @@ class BoxTrigger : public DenseTrigger {
     using type = std::optional<double>;
   };
 
+  using is_triggered_return_tags = tmpl::list<>;
   using is_triggered_argument_tags = tmpl::list<IsTriggered>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<bool> is_triggered(
@@ -126,6 +129,7 @@ class BoxTrigger : public DenseTrigger {
     return is_triggered;
   }
 
+  using next_check_time_return_tags = tmpl::list<>;
   using next_check_time_argument_tags = tmpl::list<NextCheck>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<double> next_check_time(

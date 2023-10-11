@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
@@ -61,29 +62,30 @@ class DenseTrigger : public PUP::able {
   /// such as the availability of FunctionOfTime data.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component>
-  std::optional<bool> is_triggered(const db::DataBox<DbTags>& box,
-                                   Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index,
-                                   const Component* const component) {
+  std::optional<bool> is_triggered(
+      const gsl::not_null<db::DataBox<DbTags>*> box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* const component) {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            box))>::factory_creation::factory_classes;
+            *box))>::factory_creation::factory_classes;
     previous_trigger_time_ = next_previous_trigger_time_;
     return call_with_dynamic_type<std::optional<bool>,
                                   tmpl::at<factory_classes, DenseTrigger>>(
         this,
         [this, &array_index, &box, &cache, &component](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
-          const auto result =
-              db::apply<typename TriggerType::is_triggered_argument_tags>(
-                  [&array_index, &cache, &component,
-                   &trigger](const auto&... args) {
-                    return trigger->is_triggered(cache, array_index, component,
-                                                 args...);
-                  },
-                  box);
+          const auto result = db::mutate_apply<
+              typename TriggerType::is_triggered_return_tags,
+              typename TriggerType::is_triggered_argument_tags>(
+              [&array_index, &cache, &component,
+               &trigger](const auto&... args) {
+                return trigger->is_triggered(cache, array_index, component,
+                                             args...);
+              },
+              box);
           if (result == std::optional{true}) {
-            next_previous_trigger_time_ = db::get<::Tags::Time>(box);
+            next_previous_trigger_time_ = db::get<::Tags::Time>(*box);
           }
           return result;
         });
@@ -94,17 +96,19 @@ class DenseTrigger : public PUP::able {
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component>
   std::optional<double> next_check_time(
-      const db::DataBox<DbTags>& box,
+      const gsl::not_null<db::DataBox<DbTags>*> box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component) {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            box))>::factory_creation::factory_classes;
+            *box))>::factory_creation::factory_classes;
     return call_with_dynamic_type<std::optional<double>,
                                   tmpl::at<factory_classes, DenseTrigger>>(
         this, [&array_index, &box, &cache, &component](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
-          return db::apply<typename TriggerType::next_check_time_argument_tags>(
+          return db::mutate_apply<
+              typename TriggerType::next_check_time_return_tags,
+              typename TriggerType::next_check_time_argument_tags>(
               [&array_index, &cache, &component,
                &trigger](const auto&... args) {
                 return trigger->next_check_time(cache, array_index, component,

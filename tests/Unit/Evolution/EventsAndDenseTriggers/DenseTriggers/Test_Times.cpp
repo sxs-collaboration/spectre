@@ -21,6 +21,7 @@
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,17 +71,18 @@ void check_one_direction(const std::vector<double>& trigger_times,
   const void* component = nullptr;
 
   CHECK_FALSE(trigger->previous_trigger_time().has_value());
-  CHECK(trigger->is_triggered(box, cache, array_index, component) ==
-        expected_is_triggered);
-  CHECK(trigger->next_check_time(box, cache, array_index, component) ==
+  CHECK(trigger->is_triggered(make_not_null(&box), cache, array_index,
+                              component) == expected_is_triggered);
+  CHECK(trigger->next_check_time(make_not_null(&box), cache, array_index,
+                                 component) ==
         std::optional{expected_next_check});
   if (expected_is_triggered == std::optional{true}) {
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
     db::mutate<::Tags::Time>(
         [](const gsl::not_null<double*> time) { *time += 0.01; },
         make_not_null(&box));
-    CHECK(trigger->is_triggered(box, cache, array_index, component) ==
-          std::optional{false});
+    CHECK(trigger->is_triggered(make_not_null(&box), cache, array_index,
+                                component) == std::optional{false});
     REQUIRE(trigger->previous_trigger_time().has_value());
     CHECK(trigger->previous_trigger_time().value() == current_time);
   } else {
@@ -88,8 +90,8 @@ void check_one_direction(const std::vector<double>& trigger_times,
     db::mutate<::Tags::Time>(
         [](const gsl::not_null<double*> time) { *time += 0.01; },
         make_not_null(&box));
-    CHECK(trigger->is_triggered(box, cache, array_index, component) ==
-          std::optional{false});
+    CHECK(trigger->is_triggered(make_not_null(&box), cache, array_index,
+                                component) == std::optional{false});
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
   }
 }

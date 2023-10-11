@@ -111,27 +111,27 @@ void test_trigger_no_replace() {
 
   // At the initial time, the trigger should be triggered and we should know
   // the next check time
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{true});
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{0.5});
 
   set_time(0.25);
 
   // Set the time to sometime before the next check time. Shouldn't be
   // triggered, but should still have the same check time as before
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{false});
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{0.5});
 
   set_time(0.5);
 
   // Now at the previous next check time, we should trigger. We also know the
   // new check time
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{true});
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{1.0});
 
   set_time(0.75);
@@ -139,9 +139,10 @@ void test_trigger_no_replace() {
   // Another intermediate time where we shouldn't trigger. At this point, the
   // measurement timescale has expired and has not been updated yet, so we
   // cannot calculate the next check time. It should be nullopt
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{false});
-  CHECK(not trigger.next_check_time(box, cache, 0, component_p).has_value());
+  CHECK(not trigger.next_check_time(make_not_null(&box), cache, 0, component_p)
+                .has_value());
 
   // Update the measurement timescales
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
@@ -150,25 +151,25 @@ void test_trigger_no_replace() {
 
   // Now we should be able to calculate the next check time once again and it
   // should be the same as it was before, since the current time hasn't changed.
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{1.0});
 
   set_time(1.0);
 
   // Now the time is at the next trigger time and all measurement timescales
   // are valid so we should be able to determine the next check time
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{true});
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{2.0});
 
   set_time(2.0);
 
   // At the next trigger time and timescales are valid so we can calculate
   // the next check time.
-  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+  CHECK(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
         std::optional{true});
-  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+  CHECK(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
         std::optional{3.0});
 }
 
@@ -194,9 +195,11 @@ void test_trigger_with_replace() {
   MeasureTrigger typed_trigger = serialize_and_deserialize(MeasureTrigger{});
   DenseTrigger& trigger = typed_trigger;
 
-  const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
+  const auto is_triggered =
+      trigger.is_triggered(make_not_null(&box), cache, 0, component_p);
   CHECK(is_triggered == std::optional{false});
-  const auto next_check = trigger.next_check_time(box, cache, 0, component_p);
+  const auto next_check =
+      trigger.next_check_time(make_not_null(&box), cache, 0, component_p);
   CHECK(next_check == std::optional{std::numeric_limits<double>::infinity()});
 }
 
@@ -225,10 +228,11 @@ void test_errors() {
   MeasureTrigger typed_trigger = serialize_and_deserialize(MeasureTrigger{});
   DenseTrigger& trigger = typed_trigger;
 
-  CHECK_THROWS_WITH(trigger.next_check_time(box, cache, 0, component_p),
-                    Catch::Matchers::ContainsSubstring(
-                        "Control system trigger assumes measurement timescale "
-                        "size is 1, but it is 3 instead."));
+  CHECK_THROWS_WITH(
+      trigger.next_check_time(make_not_null(&box), cache, 0, component_p),
+      Catch::Matchers::ContainsSubstring(
+          "Control system trigger assumes measurement timescale size is 1, but "
+          "it is 3 instead."));
 #endif
 }
 }  // namespace

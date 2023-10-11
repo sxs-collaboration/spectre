@@ -25,6 +25,7 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -45,7 +46,7 @@ void check(const bool time_runs_forward,
            const std::optional<double>& expected_next_check_time,
            const std::string& creation_string) {
   CAPTURE(creation_string);
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::TimeStepId, Tags::Time>>(
       Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
@@ -57,10 +58,10 @@ void check(const bool time_runs_forward,
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
 
-  CHECK(trigger->is_triggered(box, cache, array_index, component) ==
-        expected_is_triggered);
-  CHECK(trigger->next_check_time(box, cache, array_index, component) ==
-        expected_next_check_time);
+  CHECK(trigger->is_triggered(make_not_null(&box), cache, array_index,
+                              component) == expected_is_triggered);
+  CHECK(trigger->next_check_time(make_not_null(&box), cache, array_index,
+                                 component) == expected_next_check_time);
 }
 
 void check_permutations(const std::optional<bool>& expected_is_triggered,
