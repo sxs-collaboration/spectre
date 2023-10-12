@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/ForceFree/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
@@ -44,7 +45,9 @@ namespace ForceFree::subcell {
  * <tr><td> apply the Persson TCI to magnitude of `TildeB`
  * <td> `+2`
  *
- * <tr><td> apply the Persson TCI to `TildeQ`
+ * <tr><td> apply the Persson TCI to `TildeQ` if \f$\max(|\tilde{q}|)\f$ is
+ * larger than `tci_options.cutoff_tilde_q`.
+ * Check is skipped if `tci_options.tilde_q_cutoff == DoNotCheckTildeQ`.
  * <td> `+3`
  *
  * <tr><td> apply the RDMP TCI to magnitude of `TildeE`
@@ -52,9 +55,6 @@ namespace ForceFree::subcell {
  *
  * <tr><td> apply the RDMP TCI to magnitude of `TildeB`
  * <td> `+5`
- *
- * <tr><td> apply the RDMP TCI to `TildeQ`
- * <td> `+6`
  *
  * </table>
  *
@@ -81,9 +81,10 @@ class TciOnFdGrid {
  public:
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<Tags::TildeE, Tags::TildeB, Tags::TildeQ,
-                 domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci,
+      tmpl::list<ForceFree::Tags::TildeE, ForceFree::Tags::TildeB,
+                 ForceFree::Tags::TildeQ, domain::Tags::Mesh<3>,
+                 evolution::dg::subcell::Tags::Mesh<3>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
                  evolution::dg::subcell::Tags::SubcellOptions<3>>;
 
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
@@ -92,6 +93,7 @@ class TciOnFdGrid {
       const Scalar<DataVector>& subcell_tilde_q, const Mesh<3>& dg_mesh,
       const Mesh<3>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+      const TciOptions& tci_options,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
       double persson_exponent, bool need_rdmp_data_only);
 };

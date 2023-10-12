@@ -42,14 +42,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
   ForceFree::subcell::SetInitialRdmpData::apply(
       make_not_null(&rdmp_data), get<ForceFree::Tags::TildeE>(dg_vars),
       get<ForceFree::Tags::TildeB>(dg_vars),
-      get<ForceFree::Tags::TildeQ>(dg_vars),
       evolution::dg::subcell::ActiveGrid::Dg, dg_mesh, subcell_mesh);
 
   const auto& dg_tilde_e_magnitude =
       magnitude(get<ForceFree::Tags::TildeE>(dg_vars));
   const auto dg_tilde_b_magnitude =
       magnitude(get<ForceFree::Tags::TildeB>(dg_vars));
-  const auto& dg_tilde_q = get<ForceFree::Tags::TildeQ>(dg_vars);
 
   const auto projected_subcell_tilde_e_magnitude =
       Scalar<DataVector>(evolution::dg::subcell::fd::project(
@@ -57,7 +55,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
   const auto projected_subcell_tilde_b_magnitude =
       Scalar<DataVector>(evolution::dg::subcell::fd::project(
           get(dg_tilde_b_magnitude), dg_mesh, subcell_mesh.extents()));
-  const auto& subcell_tilde_q = get<ForceFree::Tags::TildeQ>(subcell_vars);
 
   evolution::dg::subcell::RdmpTciData expected_dg_rdmp_data{};
   using std::max;
@@ -66,21 +63,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
       DataVector{max(max(get(dg_tilde_e_magnitude)),
                      max(get(projected_subcell_tilde_e_magnitude))),
                  max(max(get(dg_tilde_b_magnitude)),
-                     max(get(projected_subcell_tilde_b_magnitude))),
-                 max(max(get(dg_tilde_q)), max(get(subcell_tilde_q)))};
+                     max(get(projected_subcell_tilde_b_magnitude)))};
   expected_dg_rdmp_data.min_variables_values =
       DataVector{min(min(get(dg_tilde_e_magnitude)),
                      min(get(projected_subcell_tilde_e_magnitude))),
                  min(min(get(dg_tilde_b_magnitude)),
-                     min(get(projected_subcell_tilde_b_magnitude))),
-                 min(min(get(dg_tilde_q)), min(get(subcell_tilde_q)))};
+                     min(get(projected_subcell_tilde_b_magnitude)))};
 
   CHECK(rdmp_data == expected_dg_rdmp_data);
 
   ForceFree::subcell::SetInitialRdmpData::apply(
       make_not_null(&rdmp_data), get<ForceFree::Tags::TildeE>(subcell_vars),
       get<ForceFree::Tags::TildeB>(subcell_vars),
-      get<ForceFree::Tags::TildeQ>(subcell_vars),
       evolution::dg::subcell::ActiveGrid::Subcell, dg_mesh, subcell_mesh);
 
   const auto subcell_tilde_e_magnitude =
@@ -90,11 +84,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ForceFree.Subcell.SetInitialRdmpData",
 
   evolution::dg::subcell::RdmpTciData expected_subcell_rdmp_data{};
   expected_subcell_rdmp_data.max_variables_values = DataVector{
-      max(get(subcell_tilde_e_magnitude)), max(get(subcell_tilde_b_magnitude)),
-      max(get(subcell_tilde_q))};
+      max(get(subcell_tilde_e_magnitude)), max(get(subcell_tilde_b_magnitude))};
   expected_subcell_rdmp_data.min_variables_values = DataVector{
-      min(get(subcell_tilde_e_magnitude)), min(get(subcell_tilde_b_magnitude)),
-      min(get(subcell_tilde_q))};
+      min(get(subcell_tilde_e_magnitude)), min(get(subcell_tilde_b_magnitude))};
 
   CHECK(rdmp_data == expected_subcell_rdmp_data);
 }
