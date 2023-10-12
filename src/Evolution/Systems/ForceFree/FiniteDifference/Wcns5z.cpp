@@ -59,9 +59,9 @@ void Wcns5z::pup(PUP::er& p) {
 PUP::able::PUP_ID Wcns5z::my_PUP_ID = 0;
 
 void Wcns5z::reconstruct(
-    const gsl::not_null<std::array<Variables<face_vars_tags>, dim>*>
+    const gsl::not_null<std::array<Variables<recons_tags>, dim>*>
         vars_on_lower_face,
-    const gsl::not_null<std::array<Variables<face_vars_tags>, dim>*>
+    const gsl::not_null<std::array<Variables<recons_tags>, dim>*>
         vars_on_upper_face,
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
@@ -95,7 +95,7 @@ void Wcns5z::reconstruct(
 }
 
 void Wcns5z::reconstruct_fd_neighbor(
-    const gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
+    const gsl::not_null<Variables<recons_tags>*> vars_on_face,
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
