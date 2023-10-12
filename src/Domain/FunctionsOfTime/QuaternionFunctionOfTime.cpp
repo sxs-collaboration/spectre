@@ -84,6 +84,12 @@ std::array<double, 2> QuaternionFunctionOfTime<MaxDeriv>::time_bounds() const {
 }
 
 template <size_t MaxDeriv>
+double QuaternionFunctionOfTime<MaxDeriv>::expiration_after(
+    const double time) const {
+  return stored_quaternions_and_times_.expiration_after(time);
+}
+
+template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   size_t version = 4;

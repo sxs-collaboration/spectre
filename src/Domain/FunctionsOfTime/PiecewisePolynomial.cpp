@@ -150,6 +150,12 @@ std::array<double, 2> PiecewisePolynomial<MaxDeriv>::time_bounds() const {
 }
 
 template <size_t MaxDeriv>
+double PiecewisePolynomial<MaxDeriv>::expiration_after(
+    const double time) const {
+  return deriv_info_at_update_times_.expiration_after(time);
+}
+
+template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   size_t version = 3;

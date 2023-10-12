@@ -51,12 +51,16 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
 
     t += dt;
     f_of_t_derived->update(t, {6.0, 0.0}, t + dt);
+    CHECK(f_of_t->expiration_after(t) == t + dt);
+    CHECK(f_of_t->expiration_after(t + 0.5 * dt) == t + dt);
+    CHECK(f_of_t->expiration_after(t - 0.5 * dt) == t);
     CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == 0.0);
   CHECK(t_bounds[1] == 4.8);
+  CHECK(f_of_t->expiration_after(0.0) == dt);
 }
 
 template <size_t DerivOrder>

@@ -70,6 +70,10 @@ class FixedSpeedCubic : public FunctionOfTime {
     return {{initial_time_, std::numeric_limits<double>::infinity()}};
   }
 
+  double expiration_after(const double /*time*/) const override {
+    return std::numeric_limits<double>::infinity();
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

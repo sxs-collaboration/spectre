@@ -42,6 +42,8 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
     return {lower_bound_, upper_bound_};
   }
 
+  double expiration_after(const double /*time*/) const override { ERROR(""); }
+
   std::array<DataVector, 1> func(const double /*t*/) const override {
     ERROR("");
   }
