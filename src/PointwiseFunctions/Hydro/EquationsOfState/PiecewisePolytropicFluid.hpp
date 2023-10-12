@@ -124,6 +124,9 @@ class PiecewisePolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   std::unique_ptr<EquationOfState<IsRelativistic, 1>> get_clone()
       const override;
 
+  std::unique_ptr<EquationOfState<IsRelativistic, 3>> promote_to_3d_eos()
+      const override;
+
   bool is_equal(const EquationOfState<IsRelativistic, 1>& rhs) const override;
 
   bool operator==(const PiecewisePolytropicFluid<IsRelativistic>& rhs) const;

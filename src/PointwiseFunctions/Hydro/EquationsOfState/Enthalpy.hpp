@@ -227,6 +227,8 @@ class Enthalpy : public EquationOfState<true, 1> {
 
   std::unique_ptr<EquationOfState<true, 1>> get_clone() const override;
 
+  std::unique_ptr<EquationOfState<true, 3>> promote_to_3d_eos() const override;
+
   bool is_equal(const EquationOfState<true, 1>& rhs) const override;
 
   bool operator==(const Enthalpy<LowDensityEoS>& rhs) const;

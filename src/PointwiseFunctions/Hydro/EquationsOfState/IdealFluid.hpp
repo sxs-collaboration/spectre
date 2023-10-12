@@ -79,6 +79,9 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
   std::unique_ptr<EquationOfState<IsRelativistic, 2>> get_clone()
       const override;
 
+  std::unique_ptr<EquationOfState<IsRelativistic, 3>> promote_to_3d_eos()
+      const override;
+
   bool operator==(const IdealFluid<IsRelativistic>& rhs) const;
 
   bool operator!=(const IdealFluid<IsRelativistic>& rhs) const;

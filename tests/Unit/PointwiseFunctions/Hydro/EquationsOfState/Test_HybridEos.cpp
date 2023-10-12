@@ -12,7 +12,10 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -71,6 +74,9 @@ void check_exact_polytrope() {
   CHECK(eos == eos);
   CHECK(eos != other_eos);
   CHECK(eos != other_type_eos);
+  CHECK(*eos.promote_to_3d_eos() ==
+        EquationsOfState::Equilibrium3D<EquationsOfState::HybridEos<
+            EquationsOfState::PolytropicFluid<IsRelativistic>>>(eos));
   const Scalar<double> eps{5.0};
   const auto p = eos.pressure_from_density_and_energy(rho, eps);
   CHECK(get(p) == 34.0);

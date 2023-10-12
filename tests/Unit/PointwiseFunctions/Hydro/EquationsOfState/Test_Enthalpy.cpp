@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
@@ -85,6 +86,7 @@ void check_exact() {
     CHECK(eos != other_eos);
     CHECK(eos != other_type_eos);
     CHECK(other_low_eos != other_type_eos);
+    CHECK(*eos.promote_to_3d_eos() == Barotropic3D<Enthalpy<Spectral>>(eos));
     CHECK(eos.baryon_mass() ==
           approx(hydro::units::geometric::default_baryon_mass));
   }

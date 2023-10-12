@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -54,6 +55,9 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
                 "relativistic setting.");
 
   std::unique_ptr<EquationOfState<IsRelativistic, 2>> get_clone()
+      const override;
+
+  std::unique_ptr<EquationOfState<IsRelativistic, 3>> promote_to_3d_eos()
       const override;
 
   bool is_equal(const EquationOfState<IsRelativistic, 2>& rhs) const override;

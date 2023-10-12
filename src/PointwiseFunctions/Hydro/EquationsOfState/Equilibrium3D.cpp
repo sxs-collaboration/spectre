@@ -8,8 +8,11 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -127,6 +130,11 @@ Equilibrium3D<EquilEos>::sound_speed_squared_from_density_and_temperature_impl(
 }
 
 template class Equilibrium3D<HybridEos<PolytropicFluid<true>>>;
+template class Equilibrium3D<HybridEos<PolytropicFluid<false>>>;
 template class Equilibrium3D<HybridEos<Spectral>>;
 template class Equilibrium3D<HybridEos<Enthalpy<Spectral>>>;
+template class Equilibrium3D<DarkEnergyFluid<true>>;
+template class Equilibrium3D<IdealFluid<true>>;
+template class Equilibrium3D<IdealFluid<false>>;
+
 }  // namespace EquationsOfState
