@@ -45,6 +45,10 @@ struct Info {
       IdPair<domain::BlockId,
              tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>
       block_coord_holders;
+  /// If a target needs to send points in a specific order, it should also send
+  /// along which iteration the `block_coord_holders` are for. That way they can
+  /// be properly ordered in the Interpolator.
+  size_t iteration{0_st};
   /// `vars` holds the interpolated `Variables` on some subset of the
   /// points in `block_coord_holders`.  The grid points inside vars
   /// are indexed according to `global_offsets` below.  The size of
