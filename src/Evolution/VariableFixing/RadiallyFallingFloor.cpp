@@ -3,18 +3,14 @@
 
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
 
-#include <algorithm>  // IWYU pragma: keep
-#include <pup.h>      // IWYU pragma: keep
+#include <algorithm>
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace VariableFixing {
 
@@ -40,10 +36,17 @@ void RadiallyFallingFloor<Dim>::pup(PUP::er& p) {  // NOLINT
 }
 
 template <size_t Dim>
+template <size_t ThermodynamicDim>
 void RadiallyFallingFloor<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> density,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const {
+    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> temperature,
+    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) const {
   const auto radii = magnitude(coords);
 
   for (size_t i = 0; i < density->get().size(); i++) {
@@ -57,6 +60,63 @@ void RadiallyFallingFloor<Dim>::operator()(
     density->get()[i] =
         std::max(density->get()[i], rest_mass_density_scale_ *
                                         pow(radius, rest_mass_density_power_));
+    if constexpr (ThermodynamicDim == 1) {
+      // For the 1D EoS, density will be used to calculate the remaining
+      // primitives, even overwriting pressure.  This decision prioritizes
+      // thermodynamic consistency over the user defined pressure profile.
+      pressure->get()[i] = get(equation_of_state.pressure_from_density(
+          Scalar<double>{density->get()[i]}));
+
+      specific_internal_energy->get()[i] =
+          get(equation_of_state.specific_internal_energy_from_density(
+              Scalar<double>{density->get()[i]}));
+
+      temperature->get()[i] = get(equation_of_state.temperature_from_density(
+          Scalar<double>{density->get()[i]}));
+
+    } else if constexpr (ThermodynamicDim == 2) {
+      specific_internal_energy->get()[i] = get(
+          equation_of_state.specific_internal_energy_from_density_and_pressure(
+              Scalar<double>{density->get()[i]},
+              Scalar<double>{pressure->get()[i]}));
+
+      temperature->get()[i] =
+          get(equation_of_state.temperature_from_density_and_energy(
+              Scalar<double>{density->get()[i]},
+              Scalar<double>{specific_internal_energy->get()[i]}));
+
+    } else if constexpr (ThermodynamicDim == 3) {
+      ERROR("RadiallyFallingFloor: 3D EoS currently not supported");
+      // For posterity: 3D EoS
+      // // We need to assume either specific internal energy or temperature
+      // remain
+      // // unchanged.  We choose temperature remaining the same.  A choice
+      // needs
+      // // to be made b/c no energy/temperature_from_density_and_pressure()
+      // call
+      // // exists, yet.
+      // specific_internal_energy->get()[i] =
+      //     get(equation_of_state
+      //             .specific_internal_energy_from_density_and_temperature(
+      //                 Scalar<double>{density->get()[i]},
+      //                 Scalar<double>{temperature->get()[i]},
+      //                 Scalar<double>{electron_fraction->get()[i]}));
+
+      // // B/c temperature is assumed to be constant, we need to call pressure
+      // EoS
+      // // one more time
+      // pressure->get()[i] =
+      //     get(equation_of_state.pressure_from_density_and_energy(
+      //         Scalar<double>{density->get()[i]},
+      //         Scalar<double>{specific_internal_energy->get()[i]},
+      //         Scalar<double>{electron_fraction->get()[i]}));
+
+    } else {
+      ERROR("RadiallyFallingFloor: Must specify 1D, 2D, or 3D EoS");
+    }
+    // Assumed relativistic EoS
+    specific_enthalpy->get()[i] = 1.0 + specific_internal_energy->get()[i] +
+                                  pressure->get()[i] / density->get()[i];
   }
 }
 
@@ -85,10 +145,26 @@ bool operator!=(const RadiallyFallingFloor<Dim>& lhs,
                            const RadiallyFallingFloor<GET_DIM(data)>& rhs); \
   template bool operator!=(const RadiallyFallingFloor<GET_DIM(data)>& lhs,  \
                            const RadiallyFallingFloor<GET_DIM(data)>& rhs);
-
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
-#undef GET_DIM
 #undef INSTANTIATION
+
+#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define INSTANTIATION(r, data)                                           \
+  template void RadiallyFallingFloor<GET_DIM(data)>::operator()(         \
+      gsl::not_null<Scalar<DataVector>*> density,                        \
+      gsl::not_null<Scalar<DataVector>*> pressure,                       \
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,       \
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,              \
+      gsl::not_null<Scalar<DataVector>*> temperature,                    \
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,              \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>& coords, \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&   \
+          equation_of_state) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2, 3))
+#undef INSTANTIATION
+#undef THERMO_DIM
+#undef GET_DIM
 
 }  // namespace VariableFixing

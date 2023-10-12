@@ -8,8 +8,12 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -30,6 +34,14 @@ template <typename DataType>
 struct Pressure;
 template <typename DataType>
 struct RestMassDensity;
+template <typename DataType>
+struct SpecificInternalEnergy;
+template <typename DataType>
+struct Temperature;
+template <typename DataType>
+struct SpecificEnthalpy;
+template <typename DataType>
+struct ElectronFraction;
 }  // namespace Tags
 }  // namespace hydro
 /// \endcond
@@ -118,15 +130,28 @@ class RadiallyFallingFloor {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  using return_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                                 hydro::Tags::Pressure<DataVector>>;
+  using return_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>>;
   using argument_tags =
-      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 hydro::Tags::EquationOfStateBase>;
 
+  template <size_t ThermodynamicDim>
   void operator()(
       gsl::not_null<Scalar<DataVector>*> density,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const;
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      gsl::not_null<Scalar<DataVector>*> temperature,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) const;
 
  private:
   template <size_t LocalDim>

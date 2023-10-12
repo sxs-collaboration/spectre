@@ -18,7 +18,10 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -29,14 +32,24 @@
 
 namespace {
 
+struct EquationOfStateTag : db::SimpleTag, hydro::Tags::EquationOfStateBase {
+  using type = EquationsOfState::PolytropicFluid<true>;
+};
+
 template <typename Metavariables>
 struct mock_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using simple_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                                 hydro::Tags::Pressure<DataVector>,
-                                 domain::Tags::Coordinates<3, Frame::Inertial>>;
+  using simple_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 domain::Tags::Coordinates<3, Frame::Inertial>,
+                 EquationOfStateTag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -66,25 +79,39 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       VariableFixing::RadiallyFallingFloor<3>(1.e-4, 1.e-5, -1.5, 1.e-7 / 3.0,
                                               -2.5)};
+
+  EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
+
+  const double root_three = sqrt(3.0);
+
+  const DataVector fixed_density{
+      2.3, 1.e-5 * pow(3, -0.75),
+      1.e-10,  // quantities at a radius below
+               // `radius_at_which_to_begin_applying_floor`
+               // do not get fixed.
+      1.e-5 * pow(3, -0.75), 1.e-5 * pow(2.0 * root_three, -1.5)};
+
+  auto fixed_pressure =
+      get(polytrope.pressure_from_density(Scalar<DataVector>{fixed_density}));
+
+  // This pressure term will remain the same b/c the radial coordinate is at the
+  // origin
+  fixed_pressure[2] = 2.0;
+
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
        Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
-       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
+       Scalar<DataVector>{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}},
+       Scalar<DataVector>{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}},
+       Scalar<DataVector>{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}},
+       Scalar<DataVector>{DataVector{1.0, 1.0, 1.0, 1.0, 1.0}},
+       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}},
+       std::move(polytrope)});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<component>(runner, 0);
   runner.next_action<component>(0);
-  const double root_three = sqrt(3.0);
-  constexpr double one_third = 1.0 / 3.0;
-  const DataVector fixed_pressure{
-      1.e-7 * pow(2.0 * root_three, -2.5) * one_third, 1.e-8, 2.0,
-      1.e-7 * pow(3, -1.25) * one_third, 3.2};
-  const DataVector fixed_density{
-      2.3, 1.e-5 * pow(3, -0.75),
-      1.e-10,  // quantities at a radius below
-               // `radius_at_which_to_begin_applying_floor` do not get fixed.
-      1.e-5 * pow(3, -0.75), 1.e-5 * pow(2.0 * root_three, -1.5)};
 
   CHECK_ITERABLE_APPROX(db::get<hydro::Tags::Pressure<DataVector>>(box).get(),
                         fixed_pressure);
