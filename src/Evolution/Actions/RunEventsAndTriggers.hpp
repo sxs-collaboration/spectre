@@ -13,6 +13,7 @@
 #include "Time/SelfStart.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Triggers/OnSubsteps.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -58,7 +59,7 @@ struct RunEventsAndTriggers {
 
     if (time_step_id.substep() == 0) {
       Parallel::get<::Tags::EventsAndTriggers>(cache).run_events(
-          box, cache, array_index, component,
+          make_not_null(&box), cache, array_index, component,
           {db::tag_name<::Tags::Time>(), db::get<::Tags::Time>(box)});
     } else {
       const double substep_offset = 1.0e6;
@@ -66,7 +67,7 @@ struct RunEventsAndTriggers {
                                        substep_offset * time_step_id.substep();
 
       Parallel::get<::Tags::EventsAndTriggers>(cache).run_events(
-          box, cache, array_index, component,
+          make_not_null(&box), cache, array_index, component,
           {db::tag_name<::Tags::Time>(), observation_value},
           [&box](const Trigger& trigger) {
             const auto* substep_trigger =

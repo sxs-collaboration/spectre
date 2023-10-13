@@ -22,6 +22,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -108,7 +109,7 @@ struct Metavariables {
 
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
                              const int expected) {
-  const auto box = db::create<db::AddSimpleTags<
+  auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
       Metavariables{}, 2);
   Event::ObservationValue observation_value{"Name", 1234.5};
@@ -117,13 +118,14 @@ void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
   Component* const component_ptr = nullptr;
 
   TestEvent::run_count = 0;
-  events_and_triggers.run_events(box, cache, 0, component_ptr,
+  events_and_triggers.run_events(make_not_null(&box), cache, 0, component_ptr,
                                  observation_value);
   CHECK(TestEvent::run_count == expected);
 
   TestEvent::run_count = 0;
   serialize_and_deserialize(events_and_triggers)
-      .run_events(box, cache, 0, component_ptr, observation_value);
+      .run_events(make_not_null(&box), cache, 0, component_ptr,
+                  observation_value);
   CHECK(TestEvent::run_count == expected);
 }
 
@@ -217,7 +219,7 @@ void test_factory() {
 }
 
 void test_custom_check_trigger() {
-  const auto box = db::create<db::AddSimpleTags<
+  auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
       Metavariables{}, 2);
   Event::ObservationValue observation_value{"Name", 1234.5};
@@ -243,30 +245,36 @@ void test_custom_check_trigger() {
   }();
 
   TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value);
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value);
   CHECK(TestEvent::run_count == 1);
 
   TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value);
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value);
   CHECK(TestEvent::run_count == 0);
 
   TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value,
                         [](const Trigger& /*trigger*/) { return false; });
   CHECK(TestEvent::run_count == 0);
 
   TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value,
                        [](const Trigger& /*trigger*/) { return false; });
   CHECK(TestEvent::run_count == 0);
 
   TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value,
                         [](const Trigger& /*trigger*/) { return true; });
   CHECK(TestEvent::run_count == 1);
 
   TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value,
                        [](const Trigger& /*trigger*/) { return true; });
   CHECK(TestEvent::run_count == 1);
 }

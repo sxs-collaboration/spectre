@@ -5,7 +5,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Item.hpp"
+#include "DataStructures/DataBox/TagTraits.hpp"
+#include "Utilities/CleanupRoutine.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -58,11 +61,17 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
 
   /// Create an `ObservationBox` that can also retrieve things out of the
   /// `databox` passed in.
-  ObservationBox(const DataBoxType& databox);
+  explicit ObservationBox(gsl::not_null<DataBoxType*> databox);
 
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag>
   const auto& get() const;
+
+  /// Retrieve the underlying DataBox.
+  DataBoxType& databox() { return *databox_; }
+
+  /// Reset all the compute items, forcing reevaluation.
+  void reset();
 
  private:
   template <typename Tag>
@@ -76,7 +85,7 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
   template <typename ReferenceTag, typename... ArgumentTags>
   const auto& get_reference_item(tmpl::list<ArgumentTags...> /*meta*/) const;
 
-  const DataBoxType* databox_ = nullptr;
+  gsl::not_null<DataBoxType*> databox_;
 };
 
 /*!
@@ -89,14 +98,16 @@ const auto& get(
   return box.template get<Tag>();
 }
 
+/// \cond
 template <typename DataBoxType, typename... ComputeTags>
 ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::ObservationBox(
-    const DataBoxType& databox)
-    : databox_(&databox) {
+    const gsl::not_null<DataBoxType*> databox)
+    : databox_(databox) {
   DEBUG_STATIC_ASSERT(
       (db::is_immutable_item_tag_v<ComputeTags> and ...),
       "All tags passed to ObservationBox must be compute tags.");
 }
+/// \endcond
 
 template <typename DataBoxType, typename... ComputeTags>
 template <typename Tag>
@@ -140,6 +151,16 @@ const auto& ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get()
 }
 
 template <typename DataBoxType, typename... ComputeTags>
+void ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::reset() {
+  tmpl::for_each<
+      tmpl::filter<tmpl::list<ComputeTags...>, db::is_compute_tag<tmpl::_1>>>(
+      [this](auto tag) {
+        static_cast<db::detail::Item<tmpl::type_from<decltype(tag)>>&>(*this)
+            .reset();
+      });
+}
+
+template <typename DataBoxType, typename... ComputeTags>
 template <typename ComputeTag, typename... ArgumentTags>
 void ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::
     evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const {
@@ -155,7 +176,7 @@ ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get_reference_item(
 }
 
 template <typename ComputeTagsList, typename DataBoxType>
-auto make_observation_box(const DataBoxType& databox) {
+auto make_observation_box(const gsl::not_null<DataBoxType*> databox) {
   return ObservationBox<db::detail::expand_subitems<ComputeTagsList>,
                         DataBoxType>{databox};
 }
@@ -185,6 +206,26 @@ auto apply(F&& f, tmpl::list<ArgumentTags...> /*meta*/,
         Args...>();
   }
 }
+
+template <typename DataBoxType, typename ComputeTagsList, typename... Args,
+          typename F, typename... ReturnTags, typename... ArgumentTags>
+decltype(auto) mutate_apply(
+    F&& f, tmpl::list<ReturnTags...> /*meta*/,
+    tmpl::list<ArgumentTags...> /*meta*/,
+    const gsl::not_null<ObservationBox<ComputeTagsList, DataBoxType>*>
+        observation_box,
+    Args&&... args) {
+  const CleanupRoutine reset_items = [&]() {
+    if constexpr (sizeof...(ReturnTags) != 0) {
+      // Not ideal, but doing a more granular reset is not worth the
+      // trouble.
+      observation_box->reset();
+    }
+  };
+  return db::mutate_apply<tmpl::list<ReturnTags...>, tmpl::list<>>(
+      f, make_not_null(&observation_box->databox()),
+      get<ArgumentTags>(*observation_box)..., std::forward<Args>(args)...);
+}
 }  // namespace observation_box_detail
 
 /*!
@@ -201,3 +242,36 @@ auto apply(F&& f,
       std::forward<F>(f), typename std::decay_t<F>::argument_tags{},
       observation_box, std::forward<Args>(args)...);
 }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Apply the function object `f` using its nested `return_tags`
+ * and `argument_tags` list of tags.  Modifications are made to the
+ * underlying DataBox.
+ */
+/// @{
+template <typename DataBoxType, typename ComputeTagsList, typename... Args,
+          typename F>
+auto mutate_apply(
+    F&& f,
+    const gsl::not_null<ObservationBox<ComputeTagsList, DataBoxType>*>
+        observation_box,
+    Args&&... args) {
+  return observation_box_detail::mutate_apply(
+      std::forward<F>(f), typename std::decay_t<F>::return_tags{},
+      typename std::decay_t<F>::argument_tags{}, observation_box,
+      std::forward<Args>(args)...);
+}
+
+template <typename ReturnTags, typename ArgumentTags, typename DataBoxType,
+          typename ComputeTagsList, typename... Args, typename F>
+auto mutate_apply(
+    F&& f,
+    const gsl::not_null<ObservationBox<ComputeTagsList, DataBoxType>*>
+        observation_box,
+    Args&&... args) {
+  return observation_box_detail::mutate_apply(std::forward<F>(f), ReturnTags{},
+                                              ArgumentTags{}, observation_box,
+                                              std::forward<Args>(args)...);
+}
+/// @}

@@ -32,6 +32,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -196,7 +197,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
                                                       array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
                         ::Events::Tags::ObserverMesh<3>,
                         ::Events::Tags::ObserverDetInvJacobian<
@@ -228,7 +229,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
       make_observation_box<
           tmpl::filter<typename ObserveNormsEvent<
                            ArraySectionIdTag>::compute_tags_for_observation_box,
-                       db::is_compute_tag<tmpl::_1>>>(box),
+                       db::is_compute_tag<tmpl::_1>>>(make_not_null(&box)),
       ActionTesting::cache<element_component>(runner, array_index), array_index,
       std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
 

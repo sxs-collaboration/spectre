@@ -16,6 +16,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -149,13 +150,14 @@ void test_criterion(const amr::Criterion& criterion, const double field_one,
                     const double field_two, const amr::Flag expected_flag) {
   Parallel::GlobalCache<Metavariables> empty_cache{};
   using simple_tags = tmpl::list<FieldOne, FieldTwo>;
-  const auto databox = db::create<simple_tags>(field_one, field_two);
+  auto databox = db::create<simple_tags>(field_one, field_two);
   // This list is the union of all compute_tags_for_observation_box for all
   // criteria listed in Metavariables::factory_creation::factory_classes
   // It can be constructed with a metafunction, but for this simple test
   // we just explicitly list them
   using compute_tags = tmpl::list<ConstraintCompute>;
-  ObservationBox<compute_tags, db::DataBox<simple_tags>> box{databox};
+  ObservationBox<compute_tags, db::DataBox<simple_tags>> box{
+      make_not_null(&databox)};
   ElementId<1> element_id{0};
   auto flags = criterion.evaluate(box, empty_cache, element_id);
   CHECK(flags == std::array{expected_flag});

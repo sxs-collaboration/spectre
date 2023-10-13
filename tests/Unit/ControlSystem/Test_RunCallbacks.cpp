@@ -91,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   auto& cache = ActionTesting::cache<element_component>(runner, 0);
   // Making our own DataBox is easier than using the one in the mock
   // element.
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::Time, evolution::Tags::PreviousTriggerTime,
                         control_system::TestHelpers::SomeTagOnElement>>(
@@ -99,10 +99,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
 
   const MeasureEvent event{};
   CHECK(event.needs_evolved_variables());
-  event.run(
-      make_observation_box<db::AddComputeTags<
-          control_system::TestHelpers::SomeOtherTagOnElementCompute>>(box),
-      cache, 0, element_component_p, {});
+  event.run(make_observation_box<db::AddComputeTags<
+                control_system::TestHelpers::SomeOtherTagOnElementCompute>>(
+                make_not_null(&box)),
+            cache, 0, element_component_p, {});
 
   ActionTesting::invoke_queued_simple_action<control_system_component>(
       make_not_null(&runner), 0);

@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -238,9 +239,9 @@ void check_split_while_join_is_avoided() {
       std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
 
   Parallel::GlobalCache<Metavariables<2>> empty_cache{};
-  const auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
+  auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
   ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<::domain::Tags::Mesh<2>>>>
-      box{databox};
+      box{make_not_null(&databox)};
   auto flags_from_criterion =
       criteria.front()->evaluate(box, empty_cache, self_id);
   CHECK(flags_from_criterion == std::array{amr::Flag::Split, amr::Flag::Join});

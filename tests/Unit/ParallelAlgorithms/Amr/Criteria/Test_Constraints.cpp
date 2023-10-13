@@ -28,6 +28,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Constraints.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -92,7 +93,7 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.Constraints",
   get<1, 2>(test_data) = 1.e-3;
 
   Parallel::GlobalCache<Metavariables<Dim>> empty_cache{};
-  const auto databox =
+  auto databox =
       db::create<tmpl::list<Events::Tags::ObserverJacobian<
                                 Dim, Frame::ElementLogical, Frame::Inertial>,
                             TestVector<Dim>>>(std::move(jacobian),
@@ -102,7 +103,7 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.Constraints",
       db::DataBox<tmpl::list<Events::Tags::ObserverJacobian<
                                  Dim, Frame::ElementLogical, Frame::Inertial>,
                              TestVector<Dim>>>>
-      box{databox};
+      box{make_not_null(&databox)};
 
   const auto flags = criterion->evaluate(box, empty_cache, ElementId<Dim>{0});
   CHECK(flags[0] == amr::Flag::IncreaseResolution);

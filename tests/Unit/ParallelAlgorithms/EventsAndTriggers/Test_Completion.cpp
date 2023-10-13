@@ -15,6 +15,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -49,10 +50,12 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers.Completion",
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
 
-  const ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> box{};
+  auto databox = db::create<db::AddSimpleTags<>>();
+  const auto obs_box =
+      make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
   auto& cache = ActionTesting::cache<my_component>(runner, 0);
   my_component* const component_ptr = nullptr;
-  completion->run(box, cache, 0, component_ptr, {"Unused", -1.0});
+  completion->run(obs_box, cache, 0, component_ptr, {"Unused", -1.0});
 
   CHECK(ActionTesting::get_terminate<my_component>(runner, 0));
 }

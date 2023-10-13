@@ -13,6 +13,7 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -71,7 +72,7 @@ class EventsAndTriggers {
   /// `bool`.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component, typename CheckTrigger = std::nullptr_t>
-  void run_events(const db::DataBox<DbTags>& box,
+  void run_events(const gsl::not_null<db::DataBox<DbTags>*> box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index, const Component* component,
                   const Event::ObservationValue& observation_value,
@@ -90,7 +91,7 @@ class EventsAndTriggers {
       const bool is_triggered = [&]() {
         if constexpr (std::is_same_v<std::decay_t<CheckTrigger>,
                                      std::nullptr_t>) {
-          return trigger->is_triggered(box);
+          return trigger->is_triggered(*box);
         } else {
           return check_trigger(std::as_const(*trigger));
         }

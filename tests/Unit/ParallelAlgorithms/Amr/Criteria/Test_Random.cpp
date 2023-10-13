@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -40,7 +41,9 @@ struct TestComponent {};
 template <size_t VolumeDim>
 void test_criterion(const amr::Criterion& criterion) {
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
-  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> empty_box{};
+  auto databox = db::create<db::AddSimpleTags<>>();
+  auto empty_box =
+      make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
 
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
@@ -66,7 +69,9 @@ template <size_t VolumeDim>
 void test_always_change_refinement() {
   const amr::Criteria::Random criterion(1.0, 5);
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
-  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> empty_box{};
+  auto databox = db::create<db::AddSimpleTags<>>();
+  auto empty_box =
+      make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
 
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
@@ -92,7 +97,9 @@ void test_always_do_nothing() {
   const amr::Criteria::Random criterion(0.0, 5);
 
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
-  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> empty_box{};
+  auto databox = db::create<db::AddSimpleTags<>>();
+  auto empty_box =
+      make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
 
   for (size_t level = 0; level <= 5; ++level) {
     ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 0))};
