@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -45,8 +47,8 @@ struct Component {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Flags<volume_dim>,
-                 amr::Tags::NeighborFlags<volume_dim>>;
+                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -142,6 +144,9 @@ void test() {
   const ElementId<3> neighbor_8_id{3, std::array{s_20, s_23, s_00}};
   const ElementId<3> neighbor_12_id{3, std::array{s_10, s_11, s_00}};
 
+  const Mesh<3> expected_parent_mesh{4, Spectral::Basis::Legendre,
+                                     Spectral::Quadrature::GaussLobatto};
+
   DirectionMap<3, Neighbors<3>> child_1_neighbors{};
   child_1_neighbors.emplace(
       Direction<3>::lower_xi(),
@@ -160,8 +165,9 @@ void test() {
   Element<3> child_1{child_1_id, std::move(child_1_neighbors)};
   Mesh<3> child_1_mesh{std::array{3_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
-  std::array child_1_flags{amr::Flag::Join, amr::Flag::Join,
-                           amr::Flag::IncreaseResolution};
+  amr::Info<3> child_1_info{std::array{amr::Flag::Join, amr::Flag::Join,
+                                       amr::Flag::IncreaseResolution},
+                            expected_parent_mesh};
 
   DirectionMap<3, Neighbors<3>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -179,8 +185,9 @@ void test() {
   Element<3> child_2{child_2_id, std::move(child_2_neighbors)};
   Mesh<3> child_2_mesh{std::array{4_st, 3_st, 4_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
-  std::array child_2_flags{amr::Flag::Join, amr::Flag::Join,
-                           amr::Flag::DecreaseResolution};
+  amr::Info<3> child_2_info{std::array{amr::Flag::Join, amr::Flag::Join,
+                                       amr::Flag::DecreaseResolution},
+                            expected_parent_mesh};
 
   DirectionMap<3, Neighbors<3>> child_3_neighbors{};
   child_3_neighbors.emplace(
@@ -198,65 +205,82 @@ void test() {
   Element<3> child_3{child_3_id, std::move(child_3_neighbors)};
   Mesh<3> child_3_mesh{std::array{4_st, 4_st, 3_st}, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
-  std::array child_3_flags{amr::Flag::DecreaseResolution, amr::Flag::Join,
-                           amr::Flag::IncreaseResolution};
+  amr::Info<3> child_3_info{
+      std::array{amr::Flag::DecreaseResolution, amr::Flag::Join,
+                 amr::Flag::IncreaseResolution},
+      expected_parent_mesh};
 
-  std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>
-      child_1_neighbor_flags{
-          {neighbor_1_id,
-           {{amr::Flag::DoNothing, amr::Flag::Join, amr::Flag::DoNothing}}},
-          {neighbor_2_id,
-           {{amr::Flag::DoNothing, amr::Flag::Join, amr::Flag::DoNothing}}},
-          {child_2_id, child_2_flags},
-          {child_3_id, child_3_flags},
-          {neighbor_7_id,
-           {{amr::Flag::Join, amr::Flag::Join, amr::Flag::DoNothing}}},
-          {neighbor_8_id,
-           {{amr::Flag::Join, amr::Flag::Join, amr::Flag::DoNothing}}}};
-  std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>
-      child_2_neighbor_flags{
-          {neighbor_3_id,
-           {{amr::Flag::DoNothing, amr::Flag::DoNothing,
-             amr::Flag::DoNothing}}},
-          {neighbor_4_id,
-           {{amr::Flag::DoNothing, amr::Flag::Split, amr::Flag::DoNothing}}},
-          {child_2_id, child_2_flags},
-          {child_1_id, child_1_flags}};
-  std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>
-      child_3_neighbor_flags{
-          {child_1_id, child_1_flags},
-          {child_2_id, child_2_flags},
-          {neighbor_4_id,
-           {{amr::Flag::DoNothing, amr::Flag::Split, amr::Flag::DoNothing}}},
-          {neighbor_5_id,
-           {{amr::Flag::DoNothing, amr::Flag::DoNothing,
-             amr::Flag::DoNothing}}},
-          {neighbor_6_id,
-           {{amr::Flag::DoNothing, amr::Flag::DoNothing,
-             amr::Flag::DoNothing}}}};
+  Mesh<3> neighbor_mesh{std::array{5_st, 5_st, 5_st}, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+
+  std::unordered_map<ElementId<3>, amr::Info<3>> child_1_neighbor_info{
+      {neighbor_1_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::Join,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {neighbor_2_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::Join,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {child_2_id, child_2_info},
+      {child_3_id, child_3_info},
+      {neighbor_7_id, amr::Info<3>{std::array{amr::Flag::Join, amr::Flag::Join,
+                                              amr::Flag::DoNothing},
+                                   neighbor_mesh}},
+      {neighbor_8_id, amr::Info<3>{std::array{amr::Flag::Join, amr::Flag::Join,
+                                              amr::Flag::DoNothing},
+                                   neighbor_mesh}}};
+
+  std::unordered_map<ElementId<3>, amr::Info<3>> child_2_neighbor_info{
+      {neighbor_3_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::DoNothing,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {neighbor_4_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::Split,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {child_2_id, child_2_info},
+      {child_1_id, child_1_info}};
+
+  std::unordered_map<ElementId<3>, amr::Info<3>> child_3_neighbor_info{
+      {child_1_id, child_1_info},
+      {child_2_id, child_2_info},
+      {neighbor_4_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::Split,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {neighbor_5_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::DoNothing,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}},
+      {neighbor_6_id,
+       amr::Info<3>{std::array{amr::Flag::DoNothing, amr::Flag::DoNothing,
+                               amr::Flag::DoNothing},
+                    neighbor_mesh}}};
 
   using TaggedTupleType =
       tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables>,
                           Parallel::Tags::ArrayIndexImpl<ElementId<3>>,
                           Parallel::Tags::GlobalCacheImpl<Metavariables>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                          amr::Tags::Flags<3>, amr::Tags::NeighborFlags<3>>;
+                          amr::Tags::Info<3>, amr::Tags::NeighborInfo<3>>;
   std::unordered_map<ElementId<3>, TaggedTupleType> children_items;
   children_items.emplace(
       child_1_id,
       TaggedTupleType{Metavariables{}, child_1_id, nullptr, std::move(child_1),
-                      std::move(child_1_mesh), std::move(child_1_flags),
-                      std::move(child_1_neighbor_flags)});
+                      std::move(child_1_mesh), std::move(child_1_info),
+                      std::move(child_1_neighbor_info)});
   children_items.emplace(
       child_2_id,
       TaggedTupleType{Metavariables{}, child_2_id, nullptr, std::move(child_2),
-                      std::move(child_2_mesh), std::move(child_2_flags),
-                      std::move(child_2_neighbor_flags)});
+                      std::move(child_2_mesh), std::move(child_2_info),
+                      std::move(child_2_neighbor_info)});
   children_items.emplace(
       child_3_id,
       TaggedTupleType{Metavariables{}, child_3_id, nullptr, std::move(child_3),
-                      std::move(child_3_mesh), std::move(child_3_flags),
-                      std::move(child_3_neighbor_flags)});
+                      std::move(child_3_mesh), std::move(child_3_info),
+                      std::move(child_3_neighbor_info)});
 
   DirectionMap<3, Neighbors<3>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
@@ -276,12 +300,12 @@ void test() {
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
   Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors)};
 
-  const Mesh<3> expected_parent_mesh{4, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto};
-  const std::array expected_parent_flags{
-      amr::Flag::Undefined, amr::Flag::Undefined, amr::Flag::Undefined};
-  const std::unordered_map<ElementId<3>, std::array<amr::Flag, 3>>
-      expected_parent_neighbor_flags{};
+  const amr::Info<3> expected_parent_info{
+      std::array{amr::Flag::Undefined, amr::Flag::Undefined,
+                 amr::Flag::Undefined},
+      Mesh<3>{}};
+  const std::unordered_map<ElementId<3>, amr::Info<3>>
+      expected_parent_neighbor_info{};
 
   using array_component = Component<Metavariables>;
   using registrar = TestHelpers::amr::Registrar<Metavariables>;
@@ -300,11 +324,11 @@ void test() {
           runner, parent_id) == expected_parent);
   CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<3>>(
             runner, parent_id) == expected_parent_mesh);
-  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Flags<3>>(
-            runner, parent_id) == expected_parent_flags);
+  CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<3>>(
+            runner, parent_id) == expected_parent_info);
   CHECK(ActionTesting::get_databox_tag<array_component,
-                                       amr::Tags::NeighborFlags<3>>(
-            runner, parent_id) == expected_parent_neighbor_flags);
+                                       amr::Tags::NeighborInfo<3>>(
+            runner, parent_id) == expected_parent_neighbor_info);
   CHECK(ActionTesting::get_databox_tag<registrar,
                                        TestHelpers::amr::RegisteredElements<3>>(
             runner, 0)

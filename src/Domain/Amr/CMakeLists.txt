@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Flag.cpp
   Helpers.cpp
+  Info.cpp
   NeighborsOfChild.cpp
   NeighborsOfParent.cpp
   NewNeighborIds.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   Amr.hpp
   Flag.hpp
   Helpers.hpp
+  Info.hpp
   NeighborsOfChild.hpp
   NeighborsOfParent.hpp
   NewNeighborIds.hpp

@@ -26,5 +26,6 @@ target_link_libraries(
   PRIVATE
   Amr
   DataStructures
+  DomainStructure
   Spectral
   )

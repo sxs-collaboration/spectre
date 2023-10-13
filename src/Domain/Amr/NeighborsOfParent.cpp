@@ -13,6 +13,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -27,25 +28,24 @@ namespace amr {
 template <size_t VolumeDim>
 DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
     const ElementId<VolumeDim>& parent_id,
-    const std::vector<
-        std::tuple<const Element<VolumeDim>&,
-                   const std::unordered_map<ElementId<VolumeDim>,
-                                            std::array<Flag, VolumeDim>>&>>&
-        children_elements_and_neighbor_flags) {
+    const std::vector<std::tuple<
+        const Element<VolumeDim>&,
+        const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&>>&
+        children_elements_and_neighbor_info) {
   DirectionMap<VolumeDim, Neighbors<VolumeDim>> result;
 
   std::vector<ElementId<VolumeDim>> children_ids;
-  children_ids.reserve(children_elements_and_neighbor_flags.size());
+  children_ids.reserve(children_elements_and_neighbor_info.size());
   alg::transform(
-      children_elements_and_neighbor_flags, std::back_inserter(children_ids),
+      children_elements_and_neighbor_info, std::back_inserter(children_ids),
       [](const auto& child_items) { return std::get<0>(child_items).id(); });
 
   const auto is_child = [&children_ids](const ElementId<VolumeDim>& id) {
     return alg::find(children_ids, id) != children_ids.end();
   };
 
-  for (const auto& [child, child_neighbor_flags] :
-       children_elements_and_neighbor_flags) {
+  for (const auto& [child, child_neighbor_info] :
+       children_elements_and_neighbor_info) {
     for (const auto& [direction, child_neighbors] : child.neighbors()) {
       if (has_potential_sibling(child.id(), direction) and
           is_child(*(child_neighbors.ids().begin()))) {
@@ -55,11 +55,11 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
         result.emplace(direction, Neighbors<VolumeDim>{
                                       amr::new_neighbor_ids(
                                           parent_id, direction, child_neighbors,
-                                          child_neighbor_flags),
+                                          child_neighbor_info),
                                       child_neighbors.orientation()});
       } else {
         result.at(direction).add_ids(amr::new_neighbor_ids(
-            parent_id, direction, child_neighbors, child_neighbor_flags));
+            parent_id, direction, child_neighbors, child_neighbor_info));
       }
     }
   }
@@ -68,14 +68,13 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template DirectionMap<DIM(data), Neighbors<DIM(data)>> neighbors_of_parent(  \
-      const ElementId<DIM(data)>& parent_id,                                   \
-      const std::vector<                                                       \
-          std::tuple<const Element<DIM(data)>&,                                \
-                     const std::unordered_map<ElementId<DIM(data)>,            \
-                                              std::array<Flag, DIM(data)>>&>>& \
-          children_elements_and_neighbor_flags);
+#define INSTANTIATE(_, data)                                                  \
+  template DirectionMap<DIM(data), Neighbors<DIM(data)>> neighbors_of_parent( \
+      const ElementId<DIM(data)>& parent_id,                                  \
+      const std::vector<std::tuple<                                           \
+          const Element<DIM(data)>&,                                          \
+          const std::unordered_map<ElementId<DIM(data)>, Info<DIM(data)>>&>>& \
+          children_elements_and_neighbor_info);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

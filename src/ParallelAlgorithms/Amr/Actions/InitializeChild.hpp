@@ -56,18 +56,18 @@ struct InitializeChild {
     const auto& parent =
         tuples::get<::domain::Tags::Element<volume_dim>>(parent_items);
     const auto& parent_flags =
-        tuples::get<amr::Tags::Flags<volume_dim>>(parent_items);
-    const auto& parent_neighbor_flags =
-        tuples::get<amr::Tags::NeighborFlags<volume_dim>>(parent_items);
+        tuples::get<amr::Tags::Info<volume_dim>>(parent_items).flags;
+    const auto& parent_neighbor_info =
+        tuples::get<amr::Tags::NeighborInfo<volume_dim>>(parent_items);
     const auto& parent_mesh =
         tuples::get<::domain::Tags::Mesh<volume_dim>>(parent_items);
     auto neighbors = amr::neighbors_of_child(parent, parent_flags,
-                                             parent_neighbor_flags, child_id);
+                                             parent_neighbor_info, child_id);
     Element<volume_dim> child(child_id, std::move(neighbors));
     Mesh<volume_dim> child_mesh =
         amr::projectors::mesh(parent_mesh, parent_flags);
 
-    // Default initialization of amr::Tags::Flags and amr::Tags::NeighborFlags
+    // Default initialization of amr::Tags::Info and amr::Tags::NeighborInfo
     // is okay
     ::Initialization::mutate_assign<tmpl::list<
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(

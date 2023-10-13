@@ -2,14 +2,15 @@
 // See LICENSE.txt for details.
 
 #include "Domain/Amr/Flag.hpp"
+
+#include <ostream>
+#include <vector>
+
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"
-
-#include <ostream>
-#include <vector>
 
 namespace {
 std::vector<amr::Flag> known_amr_flags() {

@@ -92,7 +92,7 @@ struct CollectDataFromChildren {
     // This is necessary because AMR flags are only communicated to face
     // neighbors.
     const auto& element = db::get<::domain::Tags::Element<volume_dim>>(box);
-    const auto& my_amr_flags = db::get<amr::Tags::Flags<volume_dim>>(box);
+    const auto& my_amr_flags = db::get<amr::Tags::Info<volume_dim>>(box).flags;
     auto ids_to_join = amr::ids_of_joining_neighbors(element, my_amr_flags);
     for (const auto& id_to_check : ids_to_join) {
       if (alg::count(sibling_ids_to_collect, id_to_check) == 0 and

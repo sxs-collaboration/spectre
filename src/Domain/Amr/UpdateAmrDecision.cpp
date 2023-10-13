@@ -3,6 +3,7 @@
 
 #include "Domain/Amr/UpdateAmrDecision.hpp"
 
+#include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
