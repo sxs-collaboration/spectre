@@ -161,6 +161,7 @@ class ObserveTimeStep : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
+  using return_tags = tmpl::list<>;
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
   using argument_tags =

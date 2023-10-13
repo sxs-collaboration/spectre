@@ -101,8 +101,8 @@ class EventsAndTriggers {
           observation_box = make_observation_box<compute_tags>(box);
         }
         for (const auto& event : events) {
-          event->run(observation_box.value(), cache, array_index, component,
-                     observation_value);
+          event->run(make_not_null(&observation_box.value()), cache,
+                     array_index, component, observation_value);
         }
       }
     }

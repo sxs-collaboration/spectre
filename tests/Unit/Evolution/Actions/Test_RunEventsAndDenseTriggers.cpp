@@ -178,6 +178,7 @@ struct TestEvent : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
+  using return_tags = tmpl::list<>;
   // Because of a poor choice in the argument order, operator() cannot
   // take a parameter pack of arguments, so we pull out the objects
   // ourselves.

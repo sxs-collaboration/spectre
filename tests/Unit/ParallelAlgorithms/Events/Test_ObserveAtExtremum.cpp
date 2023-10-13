@@ -208,13 +208,14 @@ void test(const std::unique_ptr<ObserveEvent> observe,
       box, ActionTesting::cache<element_component>(runner, array_index),
       array_index, std::add_pointer_t<element_component>{}));
 
-  observe->run(
-      make_observation_box<
-          tmpl::filter<typename ObserveAtExtremumEvent<
-                           ArraySectionIdTag>::compute_tags_for_observation_box,
-                       db::is_compute_tag<tmpl::_1>>>(make_not_null(&box)),
-      ActionTesting::cache<element_component>(runner, array_index), array_index,
-      std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
+  auto obs_box = make_observation_box<
+      tmpl::filter<typename ObserveAtExtremumEvent<
+                       ArraySectionIdTag>::compute_tags_for_observation_box,
+                   db::is_compute_tag<tmpl::_1>>>(make_not_null(&box));
+  observe->run(make_not_null(&obs_box),
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{},
+               {"TimeName", observation_time});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);

@@ -95,9 +95,10 @@ struct initialize_elements_and_queue_simple_actions {
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
-      event.run(make_observation_box<
-                    typename metavars::event::compute_tags_for_observation_box>(
-                    make_not_null(&box)),
+      auto obs_box = make_observation_box<
+          typename metavars::event::compute_tags_for_observation_box>(
+          make_not_null(&box));
+      event.run(make_not_null(&obs_box),
                 ActionTesting::cache<elem_component>(runner, element_id),
                 element_id, std::add_pointer_t<elem_component>{}, {});
     }

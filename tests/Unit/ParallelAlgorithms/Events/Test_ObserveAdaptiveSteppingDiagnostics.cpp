@@ -180,8 +180,9 @@ void test_observe(const Observer& observer) {
         ActionTesting::cache<element_component>(runner, index),
         static_cast<element_component::array_index>(index),
         std::add_pointer_t<element_component>{}));
-    observer.run(make_observation_box<db::AddComputeTags<>>(
-                     make_not_null(&element_boxes[index])),
+    auto obs_box = make_observation_box<db::AddComputeTags<>>(
+        make_not_null(&element_boxes[index]));
+    observer.run(make_not_null(&obs_box),
                  ActionTesting::cache<element_component>(runner, index),
                  static_cast<element_component::array_index>(index),
                  std::add_pointer_t<element_component>{},

@@ -73,8 +73,8 @@ struct RunEventsOnFailure {
         make_observation_box<compute_tags>(make_not_null(&box))};
 
     for (const auto& event : db::get<::Tags::EventsRunAtCleanup>(box)) {
-      event->run(observation_box.value(), cache, array_index, component,
-                 observation_value);
+      event->run(make_not_null(&observation_box.value()), cache, array_index,
+                 component, observation_value);
     }
 
     // Do not re-enable FPEs because other parts of the pipeline might rely on

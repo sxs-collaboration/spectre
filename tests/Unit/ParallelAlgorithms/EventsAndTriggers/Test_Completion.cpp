@@ -51,11 +51,12 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers.Completion",
   ActionTesting::emplace_component<my_component>(&runner, 0);
 
   auto databox = db::create<db::AddSimpleTags<>>();
-  const auto obs_box =
+  auto obs_box =
       make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
   auto& cache = ActionTesting::cache<my_component>(runner, 0);
   my_component* const component_ptr = nullptr;
-  completion->run(obs_box, cache, 0, component_ptr, {"Unused", -1.0});
+  completion->run(make_not_null(&obs_box), cache, 0, component_ptr,
+                  {"Unused", -1.0});
 
   CHECK(ActionTesting::get_terminate<my_component>(runner, 0));
 }

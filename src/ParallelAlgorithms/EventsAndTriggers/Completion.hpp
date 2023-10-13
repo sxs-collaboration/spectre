@@ -28,6 +28,7 @@ class Completion : public Event {
 
   Completion() = default;
 
+  using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>

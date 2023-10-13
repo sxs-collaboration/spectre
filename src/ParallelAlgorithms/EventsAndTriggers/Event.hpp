@@ -50,16 +50,17 @@ class Event : public PUP::able {
   template <typename ComputeTagsList, typename DataBoxType,
             typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
-  void run(const ObservationBox<ComputeTagsList, DataBoxType>& box,
-           Parallel::GlobalCache<Metavariables>& cache,
-           const ArrayIndex& array_index, const ComponentPointer /*meta*/,
-           const ObservationValue& observation_value) const {
+  void run(
+      const gsl::not_null<ObservationBox<ComputeTagsList, DataBoxType>*> box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ComponentPointer /*meta*/,
+      const ObservationValue& observation_value) const {
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
     call_with_dynamic_type<void, tmpl::at<factory_classes, Event>>(
         this, [&](auto* const event) {
-          apply(*event, box, cache, array_index, ComponentPointer{},
-                observation_value);
+          mutate_apply(*event, box, cache, array_index, ComponentPointer{},
+                       observation_value);
         });
   }
 

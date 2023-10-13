@@ -99,10 +99,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
 
   const MeasureEvent event{};
   CHECK(event.needs_evolved_variables());
-  event.run(make_observation_box<db::AddComputeTags<
-                control_system::TestHelpers::SomeOtherTagOnElementCompute>>(
-                make_not_null(&box)),
-            cache, 0, element_component_p, {});
+  auto obs_box = make_observation_box<db::AddComputeTags<
+      control_system::TestHelpers::SomeOtherTagOnElementCompute>>(
+      make_not_null(&box));
+  event.run(make_not_null(&obs_box), cache, 0, element_component_p, {});
 
   ActionTesting::invoke_queued_simple_action<control_system_component>(
       make_not_null(&runner), 0);
