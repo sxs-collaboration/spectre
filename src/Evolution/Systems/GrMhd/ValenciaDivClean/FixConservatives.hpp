@@ -154,21 +154,28 @@ class FixConservatives {
         "Slope of safety factor for momentum density bound below "
         "SafetyFactorForSCutoffD, express as a function of log10(rho*W)."};
   };
+  /// Whether or not the limiting is enabled
+  struct Enable {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If true then the limiting is applied."};
+  };
 
-  using options = tmpl::list<MinimumValueOfD, CutoffD, MinimumValueOfYe,
-                             CutoffYe, SafetyFactorForB, SafetyFactorForS,
-                             SafetyFactorForSCutoffD, SafetyFactorForSSlope>;
+  using options =
+      tmpl::list<MinimumValueOfD, CutoffD, MinimumValueOfYe, CutoffYe,
+                 SafetyFactorForB, SafetyFactorForS, SafetyFactorForSCutoffD,
+                 SafetyFactorForSSlope, Enable>;
   static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
-  FixConservatives(const double minimum_rest_mass_density_times_lorentz_factor,
-                   const double rest_mass_density_times_lorentz_factor_cutoff,
-                   const double minimum_electron_fraction,
-                   const double electron_fraction_cutoff,
-                   const double safety_factor_for_magnetic_field,
-                   const double safety_factor_for_momentum_density,
-                   const double safety_factor_for_momentum_density_cutoff_d,
-                   const double safety_factor_for_momentum_density_slope,
+  FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
+                   double rest_mass_density_times_lorentz_factor_cutoff,
+                   double minimum_electron_fraction,
+                   double electron_fraction_cutoff,
+                   double safety_factor_for_magnetic_field,
+                   double safety_factor_for_momentum_density,
+                   double safety_factor_for_momentum_density_cutoff_d,
+                   double safety_factor_for_momentum_density_slope, bool enable,
                    const Options::Context& context = {});
 
   FixConservatives() = default;
@@ -222,6 +229,7 @@ class FixConservatives {
       std::numeric_limits<double>::signaling_NaN()};
   double safety_factor_for_momentum_density_slope_{
       std::numeric_limits<double>::signaling_NaN()};
+  bool enable_{true};
 };
 
 bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs);

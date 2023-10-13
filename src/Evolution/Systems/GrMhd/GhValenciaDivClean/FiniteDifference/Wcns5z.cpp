@@ -1,21 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
-
-#include <pup.h>
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Wcns5z.hpp"
 
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
+#include <pup.h>
 #include <tuple>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
-#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -25,99 +23,73 @@
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
-#include "NumericalAlgorithms/FiniteDifference/MonotonicityPreserving5.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
-#include "NumericalAlgorithms/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
+#include "NumericalAlgorithms/FiniteDifference/Wcns5z.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
 
-PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    const double alpha_5, const std::optional<double> alpha_7,
-    const std::optional<double> alpha_9,
-    const ::fd::reconstruction::FallbackReconstructorType
-        low_order_reconstructor,
-    const Options::Context& context)
-    : four_to_the_alpha_5_(pow(4.0, alpha_5)),
-      low_order_reconstructor_(low_order_reconstructor) {
-  if (low_order_reconstructor_ ==
-      ::fd::reconstruction::FallbackReconstructorType::None) {
-    PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
-  }
-  if (alpha_7.has_value()) {
-    PARSE_ERROR(context, "Alpha7 hasn't been tested.");
-    six_to_the_alpha_7_ = pow(6.0, alpha_7.value());
-  }
-  if (alpha_9.has_value()) {
-    PARSE_ERROR(context, "Alpha9 hasn't been tested.");
-    eight_to_the_alpha_9_ = pow(8.0, alpha_9.value());
-  }
-  set_function_pointers();
-}
-
-void PositivityPreservingAdaptiveOrderPrim::set_function_pointers() {
+Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
+                       const double epsilon,
+                       const ::fd::reconstruction::FallbackReconstructorType
+                           fallback_reconstructor,
+                       const size_t max_number_of_extrema)
+    : nonlinear_weight_exponent_(nonlinear_weight_exponent),
+      epsilon_(epsilon),
+      fallback_reconstructor_(fallback_reconstructor),
+      max_number_of_extrema_(max_number_of_extrema) {
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
-           reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<3, false>(
-          false, eight_to_the_alpha_9_.has_value(),
-          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
-  std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
-           pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
-      positivity_preserving_adaptive_order_function_pointers<3, true>(
-          true, eight_to_the_alpha_9_.has_value(),
-          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
+           reconstruct_upper_neighbor_) =
+      ::fd::reconstruction::wcns5z_function_pointers<3>(
+          nonlinear_weight_exponent_, fallback_reconstructor_);
 }
 
-std::unique_ptr<Reconstructor>
-PositivityPreservingAdaptiveOrderPrim::get_clone() const {
-  return std::make_unique<PositivityPreservingAdaptiveOrderPrim>(*this);
+Wcns5zPrim::Wcns5zPrim(CkMigrateMessage* const msg) : Reconstructor(msg) {}
+
+std::unique_ptr<Reconstructor> Wcns5zPrim::get_clone() const {
+  return std::make_unique<Wcns5zPrim>(*this);
 }
 
-void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
+void Wcns5zPrim::pup(PUP::er& p) {
   Reconstructor::pup(p);
-  p | four_to_the_alpha_5_;
-  p | six_to_the_alpha_7_;
-  p | eight_to_the_alpha_9_;
-  p | low_order_reconstructor_;
+  p | nonlinear_weight_exponent_;
+  p | epsilon_;
+  p | fallback_reconstructor_;
+  p | max_number_of_extrema_;
   if (p.isUnpacking()) {
-    set_function_pointers();
+    std::tie(reconstruct_, reconstruct_lower_neighbor_,
+             reconstruct_upper_neighbor_) =
+        ::fd::reconstruction::wcns5z_function_pointers<3>(
+            nonlinear_weight_exponent_, fallback_reconstructor_);
   }
 }
 
 // NOLINTNEXTLINE
-PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim::my_PUP_ID = 0;
+PUP::able::PUP_ID Wcns5zPrim::my_PUP_ID = 0;
 
 template <size_t ThermodynamicDim, typename TagsList>
-void PositivityPreservingAdaptiveOrderPrim::reconstruct(
+void Wcns5zPrim::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_upper_face,
-    const gsl::not_null<std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>
-        reconstruction_order,
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
-    const Variables<typename System::variables_tag::type::tags_list>&
+    const Variables<
+        typename GhValenciaDivClean::System::variables_tag::type::tags_list>&
         volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
@@ -140,69 +112,14 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
                                         subcell_mesh);
 
   reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-                         positivity_preserving_tags>(
+                         prims_to_reconstruct_tags>(
       vars_on_lower_face, vars_on_upper_face,
-      [this, &reconstruction_order](
-          auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-          const auto& volume_vars, const auto& ghost_cell_vars,
-          const auto& subcell_extents, const size_t number_of_variables) {
-        pp_reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr,
-                        reconstruction_order, volume_vars, ghost_cell_vars,
-                        subcell_extents, number_of_variables,
-                        four_to_the_alpha_5_,
-                        six_to_the_alpha_7_.value_or(
-                            std::numeric_limits<double>::signaling_NaN()),
-                        eight_to_the_alpha_9_.value_or(
-                            std::numeric_limits<double>::signaling_NaN()));
-      },
-      [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-         const auto& volume_vars, const auto& ghost_cell_vars,
-         const auto& subcell_extents, const size_t number_of_variables) {
-        ::fd::reconstruction::unlimited<4>(
-            upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
-            ghost_cell_vars, subcell_extents, number_of_variables);
-      },
-      [](const auto vars_on_face_ptr) {
-        const auto& spacetime_metric =
-            get<gr::Tags::SpacetimeMetric<DataVector, 3>>(*vars_on_face_ptr);
-        auto& spatial_metric =
-            get<gr::Tags::SpatialMetric<DataVector, 3>>(*vars_on_face_ptr);
-        gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
-        auto& inverse_spatial_metric =
-            get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
-                *vars_on_face_ptr);
-        auto& sqrt_det_spatial_metric =
-            get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face_ptr);
-
-        determinant_and_inverse(make_not_null(&sqrt_det_spatial_metric),
-                                make_not_null(&inverse_spatial_metric),
-                                spatial_metric);
-        get(sqrt_det_spatial_metric) = sqrt(get(sqrt_det_spatial_metric));
-
-        auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*vars_on_face_ptr);
-        gr::shift(make_not_null(&shift), spacetime_metric,
-                  inverse_spatial_metric);
-        gr::lapse(
-            make_not_null(&get<gr::Tags::Lapse<DataVector>>(*vars_on_face_ptr)),
-            shift, spacetime_metric);
-      },
-      volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), false);
-
-  reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-                         non_positive_tags>(
-      vars_on_lower_face, vars_on_upper_face,
-      [this](
-          auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-          const auto& volume_vars, const auto& ghost_cell_vars,
-          const auto& subcell_extents, const size_t number_of_variables) {
+      [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
+             const auto& volume_vars, const auto& ghost_cell_vars,
+             const auto& subcell_extents, const size_t number_of_variables) {
         reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
                      ghost_cell_vars, subcell_extents, number_of_variables,
-                     four_to_the_alpha_5_,
-                     six_to_the_alpha_7_.value_or(
-                         std::numeric_limits<double>::signaling_NaN()),
-                     eight_to_the_alpha_9_.value_or(
-                         std::numeric_limits<double>::signaling_NaN()));
+                     epsilon_, max_number_of_extrema_);
       },
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
          const auto& volume_vars, const auto& ghost_cell_vars,
@@ -239,30 +156,26 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
       neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
 }
 
-// The current implementation does not use positivity-preserving
-// reconstruction at Dg/Subcell boundary. PP should only be required
-// at shocks / surfaces, which should be within the subcell region
-// if the Dg/Subcell code is performing as expected.
 template <size_t ThermodynamicDim, typename TagsList>
-void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
+void Wcns5zPrim::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const Variables<
         grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
         subcell_volume_spacetime_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
-    const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
-    const Mesh<dim>& subcell_mesh,
-    const Direction<dim> direction_to_reconstruct) const {
+    const Element<3>& element,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        evolution::dg::subcell::GhostData,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& ghost_data,
+    const Mesh<3>& subcell_mesh,
+    const Direction<3>& direction_to_reconstruct) const {
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
+
   reconstruct_fd_neighbor_work<Tags::spacetime_reconstruction_tags,
                                prim_tags_for_reconstruction,
                                all_tags_for_reconstruction>(
@@ -276,11 +189,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         reconstruct_lower_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_,
-            six_to_the_alpha_7_.value_or(
-                std::numeric_limits<double>::signaling_NaN()),
-            eight_to_the_alpha_9_.value_or(
-                std::numeric_limits<double>::signaling_NaN()));
+            local_direction_to_reconstruct, epsilon_, max_number_of_extrema_);
       },
       [](const auto tensor_component_on_face_ptr,
          const auto& tensor_component_volume,
@@ -304,11 +213,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         reconstruct_upper_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_,
-            six_to_the_alpha_7_.value_or(
-                std::numeric_limits<double>::signaling_NaN()),
-            eight_to_the_alpha_9_.value_or(
-                std::numeric_limits<double>::signaling_NaN()));
+            local_direction_to_reconstruct, epsilon_, max_number_of_extrema_);
       },
       [](const auto tensor_component_on_face_ptr,
          const auto& tensor_component_volume,
@@ -352,18 +257,16 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
       true);
 }
 
-bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                const PositivityPreservingAdaptiveOrderPrim& rhs) {
+bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
   // Don't check function pointers since they are set from
-  // low_order_reconstructor_
-  return lhs.four_to_the_alpha_5_ == rhs.four_to_the_alpha_5_ and
-         lhs.six_to_the_alpha_7_ == rhs.six_to_the_alpha_7_ and
-         lhs.eight_to_the_alpha_9_ == rhs.eight_to_the_alpha_9_ and
-         lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_;
+  // nonlinear_weight_exponent_ and fallback_reconstructor_
+  return lhs.nonlinear_weight_exponent_ == rhs.nonlinear_weight_exponent_ and
+         lhs.epsilon_ == rhs.epsilon_ and
+         lhs.fallback_reconstructor_ == rhs.fallback_reconstructor_ and
+         lhs.max_number_of_extrema_ == rhs.max_number_of_extrema_;
 }
 
-bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                const PositivityPreservingAdaptiveOrderPrim& rhs) {
+bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
   return not(lhs == rhs);
 }
 
@@ -445,14 +348,11 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
              evolution::dg::Actions::detail::NormalVector<3>>
 
 #define INSTANTIATION(r, data)                                                 \
-  template void PositivityPreservingAdaptiveOrderPrim::reconstruct(            \
+  template void Wcns5zPrim::reconstruct(                                       \
       gsl::not_null<std::array<Variables<TAGS_LIST_FD(data)>, 3>*>             \
           vars_on_lower_face,                                                  \
       gsl::not_null<std::array<Variables<TAGS_LIST_FD(data)>, 3>*>             \
           vars_on_upper_face,                                                  \
-      const gsl::not_null<                                                     \
-          std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>              \
-          reconstruction_order,                                                \
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,            \
       const Variables<typename System::variables_tag::type::tags_list>&        \
           volume_spacetime_and_cons_vars,                                      \
@@ -464,8 +364,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
                          boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
           ghost_data,                                                          \
       const Mesh<3>& subcell_mesh) const;                                      \
-  template void                                                                \
-  PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(              \
+  template void Wcns5zPrim::reconstruct_fd_neighbor(                           \
       gsl::not_null<Variables<TAGS_LIST_DG_FD_INTERFACE(data)>*> vars_on_face, \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,    \
       const Variables<                                                         \
@@ -479,11 +378,12 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
                          boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
           ghost_data,                                                          \
       const Mesh<3>& subcell_mesh,                                             \
-      const Direction<3> direction_to_reconstruct) const;
+      const Direction<3>& direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 #undef INSTANTIATION
 #undef TAGS_LIST
 #undef THERMO_DIM
+
 }  // namespace grmhd::GhValenciaDivClean::fd

@@ -21,7 +21,8 @@
 
 namespace VariableFixing {
 namespace {
-void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
+void test_variable_fixer(const LimitLorentzFactor& variable_fixer,
+                         const bool enable) {
   const Scalar<DataVector> density{DataVector{1.0, 2.0, 1.0e-5, 1.0e-6}};
   auto spatial_metric =
       make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(density, 1.0);
@@ -39,12 +40,13 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
 
   auto lorentz_factor = hydro::lorentz_factor(
       dot_product(spatial_velocity, spatial_velocity, spatial_metric));
-  const Scalar<DataVector> expected_lorentz_factor{
-      DataVector{get(lorentz_factor)[0], get(lorentz_factor)[1], 50.0,
-                 get(lorentz_factor)[3]}};
+  const Scalar<DataVector> expected_lorentz_factor{DataVector{
+      get(lorentz_factor)[0], get(lorentz_factor)[1],
+      enable ? 50.0 : get(lorentz_factor)[2], get(lorentz_factor)[3]}};
   const double rescale_velocity_factor =
-      sqrt((1.0 - 1.0 / square(get(expected_lorentz_factor)[2])) /
-           (1.0 - 1.0 / square(get(lorentz_factor)[2])));
+      enable ? sqrt((1.0 - 1.0 / square(get(expected_lorentz_factor)[2])) /
+                    (1.0 - 1.0 / square(get(lorentz_factor)[2])))
+             : 1.0;
   const tnsr::I<DataVector, 3, Frame::Inertial> expected_spatial_velocity{
       {{DataVector{0.4999, 0.4999, 0.4999 * rescale_velocity_factor, 0.4999},
         DataVector{1.3567, 1.3566, 1.3567 * rescale_velocity_factor, 1.3566},
@@ -66,25 +68,35 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.LimitLorentzFactor",
                   "[VariableFixing][Unit]") {
   SECTION("operator== and operator!=") {
-    CHECK(LimitLorentzFactor{1.0, 8.0} == LimitLorentzFactor{1.0, 8.0});
-    CHECK_FALSE(LimitLorentzFactor{2., 8.0} == LimitLorentzFactor{1.0, 8.0});
-    CHECK_FALSE(LimitLorentzFactor{1.0, 9.0} == LimitLorentzFactor{1.0, 8.0});
-    CHECK_FALSE(LimitLorentzFactor{1.0, 8.0} != LimitLorentzFactor{1.0, 8.0});
-    CHECK(LimitLorentzFactor{2.0, 8.0} != LimitLorentzFactor{1.0, 8.0});
-    CHECK(LimitLorentzFactor{1.0, 9.0} != LimitLorentzFactor{1.0, 8.0});
+    CHECK(LimitLorentzFactor{1.0, 8.0, true} ==
+          LimitLorentzFactor{1.0, 8.0, true});
+    CHECK_FALSE(LimitLorentzFactor{2., 8.0, true} ==
+                LimitLorentzFactor{1.0, 8.0, true});
+    CHECK_FALSE(LimitLorentzFactor{1.0, 9.0, true} ==
+                LimitLorentzFactor{1.0, 8.0, true});
+    CHECK_FALSE(LimitLorentzFactor{1.0, 8.0, true} !=
+                LimitLorentzFactor{1.0, 8.0, true});
+    CHECK_FALSE(LimitLorentzFactor{1.0, 8.0, true} ==
+                LimitLorentzFactor{1.0, 8.0, false});
+    CHECK(LimitLorentzFactor{2.0, 8.0, true} !=
+          LimitLorentzFactor{1.0, 8.0, true});
+    CHECK(LimitLorentzFactor{1.0, 9.0, true} !=
+          LimitLorentzFactor{1.0, 8.0, true});
   }
 
   SECTION("variable fixing") {
-    LimitLorentzFactor variable_fixer{1.0e-4, 50.0};
-    test_variable_fixer(variable_fixer);
-    test_serialization(variable_fixer);
-    test_variable_fixer(serialize_and_deserialize(variable_fixer));
-
+    for (const bool enable : {true, false}) {
+      CAPTURE(enable);
+      LimitLorentzFactor variable_fixer{1.0e-4, 50.0, enable};
+      test_serialization(variable_fixer);
+      test_variable_fixer(serialize_and_deserialize(variable_fixer), enable);
+    }
     const auto fixer_from_options =
         TestHelpers::test_creation<LimitLorentzFactor>(
             "MaxDensityCutoff: 1.0e-4\n"
-            "LorentzFactorCap: 50.0\n");
-    test_variable_fixer(fixer_from_options);
+            "LorentzFactorCap: 50.0\n"
+            "Enable: true\n");
+    test_variable_fixer(fixer_from_options, true);
   }
 }
 }  // namespace

@@ -22,7 +22,8 @@
 namespace {
 
 void test_variable_fixer(
-    const grmhd::ValenciaDivClean::FixConservatives& variable_fixer) {
+    const grmhd::ValenciaDivClean::FixConservatives& variable_fixer,
+    const bool enable) {
   // Call variable fixer at five points
   // [0]:  tilde_d is too small, should be raised to limit
   // [1]:  tilde_ye is too small, should be raised to limit
@@ -45,17 +46,25 @@ void test_variable_fixer(
   }
 
   auto expected_tilde_d = tilde_d;
-  get(expected_tilde_d)[0] = 1.e-12;
+  if (enable) {
+    get(expected_tilde_d)[0] = 1.e-12;
+  }
 
   auto expected_tilde_ye = tilde_ye;
-  get(expected_tilde_ye)[0] = 1.e-13; // since Y_e = 0.1
-  get(expected_tilde_ye)[1] = 1.e-10;
+  if (enable) {
+    get(expected_tilde_ye)[0] = 1.e-13;  // since Y_e = 0.1
+    get(expected_tilde_ye)[1] = 1.e-10;
+  }
 
   auto expected_tilde_tau = tilde_tau;
-  get(expected_tilde_tau)[2] = 2.0;
+  if (enable) {
+    get(expected_tilde_tau)[2] = 2.0;
+  }
 
   auto expected_tilde_s = tilde_s;
-  expected_tilde_s.get(0)[3] = sqrt(27.0);
+  if (enable) {
+    expected_tilde_s.get(0)[3] = sqrt(27.0);
+  }
 
   auto spatial_metric =
       make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
@@ -68,9 +77,9 @@ void test_variable_fixer(
     inv_spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
   }
 
-  CHECK(variable_fixer(&tilde_d, &tilde_ye, &tilde_tau, &tilde_s, tilde_b,
-                       spatial_metric, inv_spatial_metric,
-                       sqrt_det_spatial_metric));
+  CHECK(enable == variable_fixer(&tilde_d, &tilde_ye, &tilde_tau, &tilde_s,
+                                 tilde_b, spatial_metric, inv_spatial_metric,
+                                 sqrt_det_spatial_metric));
 
   CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
   CHECK_ITERABLE_APPROX(tilde_ye, expected_tilde_ye);
@@ -81,10 +90,12 @@ void test_variable_fixer(
 
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
-  grmhd::ValenciaDivClean::FixConservatives variable_fixer{
-      1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.e-12, 0.0};
-  test_variable_fixer(variable_fixer);
-  test_serialization(variable_fixer);
+  for (const bool enable : {true, false}) {
+    grmhd::ValenciaDivClean::FixConservatives variable_fixer{
+        1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.e-12, 0.0, enable};
+    test_variable_fixer(serialize_and_deserialize(variable_fixer), enable);
+    test_serialization(variable_fixer);
+  }
 
   const auto fixer_from_options =
       TestHelpers::test_creation<grmhd::ValenciaDivClean::FixConservatives>(
@@ -95,6 +106,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
           "SafetyFactorForB: 0.0\n"
           "SafetyFactorForS: 0.0\n"
           "SafetyFactorForSCutoffD: 1.0e-12\n"
-          "SafetyFactorForSSlope: 0.0\n");
-  test_variable_fixer(fixer_from_options);
+          "SafetyFactorForSSlope: 0.0\n"
+          "Enable: true\n");
+  test_variable_fixer(fixer_from_options, true);
 }

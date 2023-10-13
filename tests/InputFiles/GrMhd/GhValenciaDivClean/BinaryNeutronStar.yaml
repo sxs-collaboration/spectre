@@ -25,9 +25,11 @@ PhaseChangeAndTriggers:
 
 # Values taken from the Xcts/HeadOnBns.yaml input file
 EquationOfState: &eos
-  PolytropicFluid:
-      PolytropicConstant: 123.6489
+  HybridEos(PolytropicFluid):
+    PolytropicFluid:
+      PolytropicConstant: 123.6
       PolytropicExponent: 2.
+    ThermalAdiabaticIndex: 2.0
 
 DomainCreator:
   BinaryCompactObject:
@@ -65,6 +67,7 @@ DomainCreator:
 
 VariableFixing:
   FixConservatives:
+    Enable: false # Only needed when not using Kastaun for recovery
     CutoffD: &CutoffD 1.1e-15
     MinimumValueOfD: &MinimumD 1.0e-15
     CutoffYe: 0.0
@@ -79,6 +82,7 @@ VariableFixing:
     TransitionDensityCutoff: 9.0e-15
     MaxVelocityMagnitude: 1.0e-4
   LimitLorentzFactor:
+    Enable: false # Only needed when not using Kastaun for recovery
     MaxDensityCutoff: 1.0e-08
     LorentzFactorCap: 10.0
 

@@ -16,13 +16,16 @@
 
 namespace VariableFixing {
 LimitLorentzFactor::LimitLorentzFactor(const double max_density_cutoff,
-                                       const double lorentz_factor_cap)
+                                       const double lorentz_factor_cap,
+                                       const bool enable)
     : max_density_cuttoff_(max_density_cutoff),
-      lorentz_factor_cap_(lorentz_factor_cap) {}
+      lorentz_factor_cap_(lorentz_factor_cap),
+      enable_(enable) {}
 
 void LimitLorentzFactor::pup(PUP::er& p) {
   p | max_density_cuttoff_;
   p | lorentz_factor_cap_;
+  p | enable_;
 }
 
 void LimitLorentzFactor::operator()(
@@ -30,6 +33,10 @@ void LimitLorentzFactor::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         spatial_velocity,
     const Scalar<DataVector>& rest_mass_density) const {
+  if (not enable_) {
+    return;
+  }
+
   constexpr size_t dim = 3;
   const size_t number_of_grid_points = get(rest_mass_density).size();
   for (size_t s = 0; s < number_of_grid_points; ++s) {
@@ -49,7 +56,8 @@ void LimitLorentzFactor::operator()(
 
 bool operator==(const LimitLorentzFactor& lhs, const LimitLorentzFactor& rhs) {
   return lhs.max_density_cuttoff_ == rhs.max_density_cuttoff_ and
-         lhs.lorentz_factor_cap_ == rhs.lorentz_factor_cap_;
+         lhs.lorentz_factor_cap_ == rhs.lorentz_factor_cap_ and
+         lhs.enable_ == rhs.enable_;
 }
 
 bool operator!=(const LimitLorentzFactor& lhs, const LimitLorentzFactor& rhs) {

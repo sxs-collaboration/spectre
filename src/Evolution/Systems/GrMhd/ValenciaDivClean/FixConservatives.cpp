@@ -104,7 +104,7 @@ FixConservatives::FixConservatives(
     const double safety_factor_for_magnetic_field,
     const double safety_factor_for_momentum_density,
     const double safety_factor_for_momentum_density_cutoff_d,
-    const double safety_factor_for_momentum_density_slope,
+    const double safety_factor_for_momentum_density_slope, const bool enable,
     const Options::Context& context)
     : minimum_rest_mass_density_times_lorentz_factor_(
           minimum_rest_mass_density_times_lorentz_factor),
@@ -119,7 +119,8 @@ FixConservatives::FixConservatives(
       safety_factor_for_momentum_density_cutoff_d_(
           safety_factor_for_momentum_density_cutoff_d),
       safety_factor_for_momentum_density_slope_(
-          safety_factor_for_momentum_density_slope) {
+          safety_factor_for_momentum_density_slope),
+      enable_(enable) {
   if (minimum_rest_mass_density_times_lorentz_factor_ >
       rest_mass_density_times_lorentz_factor_cutoff_) {
     PARSE_ERROR(context,
@@ -161,6 +162,7 @@ void FixConservatives::pup(PUP::er& p) {
   p | one_minus_safety_factor_for_momentum_density_;
   p | safety_factor_for_momentum_density_cutoff_d_;
   p | safety_factor_for_momentum_density_slope_;
+  p | enable_;
 }
 
 // WARNING!
@@ -182,6 +184,9 @@ bool FixConservatives::operator()(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric) const {
   bool needed_fixing = false;
+  if (not enable_) {
+    return needed_fixing;
+  }
   const size_t size = get<0>(tilde_b).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
@@ -395,7 +400,8 @@ bool operator==(const FixConservatives& lhs, const FixConservatives& rhs) {
          lhs.safety_factor_for_momentum_density_cutoff_d_ ==
              rhs.safety_factor_for_momentum_density_cutoff_d_ and
          lhs.safety_factor_for_momentum_density_slope_ ==
-             rhs.safety_factor_for_momentum_density_slope_;
+             rhs.safety_factor_for_momentum_density_slope_ and
+         lhs.enable_ == rhs.enable_;
 }
 
 bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs) {
