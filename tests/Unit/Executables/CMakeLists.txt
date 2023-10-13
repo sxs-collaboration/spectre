@@ -30,3 +30,9 @@ add_dependencies(
   test-executables
   ConvertComposeTable
   )
+
+add_standalone_test(
+  "Unit.Executables.TimeStepperSummary"
+  EXECUTABLE "TimeStepperSummary"
+  REGEX_TO_MATCH "AdamsBashforth\\[2\\][^\\n]*N *Y"
+  )

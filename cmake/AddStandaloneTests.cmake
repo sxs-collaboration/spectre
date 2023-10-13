@@ -73,11 +73,6 @@ function(add_standalone_test TEST_NAME)
     ${ARGN})
 
   if(DEFINED ARG_EXECUTABLE)
-    if(NOT ARG_EXECUTABLE MATCHES "^Test_")
-      message(
-        FATAL_ERROR
-        "Test executable name '${ARG_EXECUTABLE}' must begin with 'Test_'")
-    endif()
     set(EXECUTABLE_NAME "${ARG_EXECUTABLE}")
   else()
     # Extract last component of test name as executable name
