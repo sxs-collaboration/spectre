@@ -362,6 +362,7 @@ WORKDIR /work
 # FROM dev AS demo
 # Either way works, we just chose to build from remote instead.
 FROM sxscollaboration/spectre:dev AS demo
+ARG BUILDARCH
 ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
@@ -405,10 +406,15 @@ RUN mkdir spectre/build && cd spectre/build \
         -D DEBUG_SYMBOLS=OFF \
         -D BUILD_PYTHON_BINDINGS=ON \
         -D MEMORY_ALLOCATOR=SYSTEM \
-        .. \
-    && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
-    && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
-    && make ${PARALLEL_MAKE_ARG} all-pybindings
+        ..
+# Skip compiling the executables if we are emulating the target architecture
+# because that takes a long time. They can be compiled on-demand.
+RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
+        cd spectre/build \
+        && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
+        && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
+        && make ${PARALLEL_MAKE_ARG} all-pybindings; \
+    fi
 
 RUN pip3 --no-cache-dir install jupyterlab
 

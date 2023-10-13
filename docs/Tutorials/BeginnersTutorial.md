@@ -90,32 +90,49 @@ identical to the one if you hadn't used VSCode.
 container. If you'd like your changes to persist, get rid of the `--rm` flag in
 the `docker create` command.
 
-## Running ExportTimeDependentCoordinates3D
-
-One of the pre-built executables inside the container is the
-`ExportTimeDependentCoordinates3D` executable. All executables are located in
-the `/work/spectre/build/bin` directory.
+## Compiling the code
 
 \note From here on out, all paths are assumed to be inside the container unless
 specified otherwise.
 
-Make a directory where you will run everything.
+The container already has a SpECTRE build pre-configured. Go to the build
+directory and compile the executables that we will use in this tutorial:
+
+```sh
+cd /work/spectre/build
+make -j2 ExportTimeDependentCoordinates3D EvolveScalarAdvection2D all-pybindings
+```
+
+This will compile the code on two cores. If you'd like to use more cores, use
+the `-j N` option where `N` is the number of cores.
+
+Once the executables are compiled they will be available in the
+`/work/spectre/build/bin` directory. The container already has this directory
+added to the `PATH` environment variable, so you can run executables from the
+command line right away:
+
+```sh
+spectre --help
+```
+
+## Running ExportTimeDependentCoordinates3D
+
+First we will run the `ExportTimeDependentCoordinates3D` executable to visualize
+the coordinates of a binary black hole domain.
+Make a directory where you will run everything:
 
 ```
 mkdir /work/runs
+cd /work/runs
 ```
 
 Copy over the input file
 `/work/spectre/tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml`
-into your `/work/runs` directory. We will be visualizing the coordinates of a
-binary black hole domain. To run the executable, do
+into your `/work/runs` directory. To run the executable, do
 
 ```
 spectre run InputTimeDependent3D.yaml
 ```
-
-\note The container already has the `/work/spectre/build/bin` directory added to
-the PATH environment variable, so no need to copy/link executables.
 
 This will run it on one core. If you'd like to use more cores, add the `-j N`
 option where `N` is the number of cores. After this finishes you should
