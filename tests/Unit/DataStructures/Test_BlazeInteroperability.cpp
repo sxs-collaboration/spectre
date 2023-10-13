@@ -100,6 +100,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.BlazeInteroperability",
               "[[0., 1., 2.], [3., 0., 4.]]") ==
           blaze::DynamicMatrix<double, blaze::rowMajor>{{0., 1., 2.},
                                                         {3., 0., 4.}});
+    // Test `write_csv`
+    std::stringstream ss{};
+    blaze::DynamicMatrix<double, blaze::columnMajor> matrix{{0., 1., 2.},
+                                                            {3., 0., 4.}};
+    write_csv(ss, matrix);
+    CHECK(ss.str() == "0,1,2\n3,0,4\n");
   }
   {
     INFO("CompressedMatrix");

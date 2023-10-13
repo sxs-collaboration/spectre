@@ -8,6 +8,8 @@ Testing:
 ExpectedOutput:
   - PoissonProductOfSinusoids1DReductions.h5
   - PoissonProductOfSinusoids1DVolume0.h5
+  - SubdomainMatrix_[B0,(L1I0)].txt
+  - SubdomainMatrix_[B0,(L1I1)].txt
 OutputFileChecks:
   - Label: Discretization error
     Subfile: /ErrorNorms.dat
@@ -75,7 +77,9 @@ LinearSolver:
     Iterations: 3
     MaxOverlap: 2
     Verbosity: Quiet
-    SubdomainSolver: ExplicitInverse
+    SubdomainSolver:
+      ExplicitInverse:
+        WriteMatrixToFile: "SubdomainMatrix"
     ObservePerCoreReductions: False
 
 RadiallyCompressedCoordinates: None

@@ -42,12 +42,16 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     const blaze::DynamicVector<double> source{1., 2.};
     const blaze::DynamicVector<double> expected_solution{-1., 5.};
     blaze::DynamicVector<double> solution(2);
-    const ExplicitInverse<> solver{};
+    const ExplicitInverse<> solver{"Matrix"};
     const auto has_converged =
         solver.solve(make_not_null(&solution), linear_operator, source);
     REQUIRE(has_converged);
     CHECK_MATRIX_APPROX(solver.matrix_representation(), blaze::inv(matrix));
     CHECK_ITERABLE_APPROX(solution, expected_solution);
+    std::ifstream matrix_file("Matrix.txt");
+    std::string matrix_csv((std::istreambuf_iterator<char>(matrix_file)),
+                           std::istreambuf_iterator<char>());
+    CHECK(matrix_csv == "4 1\n3 1\n");
     {
       INFO("Resetting");
       ExplicitInverse<> resetting_solver{};
