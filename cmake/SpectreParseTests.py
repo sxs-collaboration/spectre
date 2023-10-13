@@ -130,11 +130,7 @@ def parse_source_file(file_name):
                 test_timeout = timeout
 
         # Parse the test attributes
-        should_have_output_regex = (
-            "ERROR_TEST()" in test_body_first_line
-            or "ASSERTION_TEST()" in test_body_first_line
-            or "OUTPUT_TEST()" in test_body_first_line
-        )
+        should_have_output_regex = "OUTPUT_TEST()" in test_body_first_line
         output_regex = ""
 
         all_attributes_by_name = re.findall(
@@ -157,8 +153,7 @@ def parse_source_file(file_name):
                     print(
                         "\nERROR: The test '%s' in the file '%s' has the "
                         "attribute OutputRegEx, but does not contain the "
-                        "macro ERROR_TEST(), ASSERTION_TEST(), or "
-                        "OUTPUT_TEST() as its first line.\n"
+                        "macro OUTPUT_TEST() as its first line.\n"
                         % (test_name, file_name)
                     )
                     exit(1)
@@ -167,7 +162,7 @@ def parse_source_file(file_name):
         if should_have_output_regex and output_regex == "":
             print(
                 "\nERROR: The test '%s' in the file '%s' was marked as an "
-                "ERROR_TEST(), ASSERTION_TEST(), or OUTPUT_TEST(), but "
+                "OUTPUT_TEST(), but "
                 "failed to produce a parsable OutputRegex attribute! "
                 "The syntax is // [[OutputRegex, <regular_expression>]] as "
                 "a comment before the SPECTRE_TEST_CASE.\n"

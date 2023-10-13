@@ -848,13 +848,15 @@ extern "C" void CkRegisterMainModule() {
 }
 // [charm_main_example]
 
-// [[OutputRegex, DistributedObject has been constructed with a nullptr]]
 SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.NullptrConstructError",
                   "[Parallel][Unit]") {
-  ERROR_TEST();
-  Parallel::DistributedObject<NoOpsComponent<TestMetavariables>,
-                              tmpl::list<Parallel::PhaseActions<
-                                  Parallel::Phase::Initialization,
-                                  tmpl::list<add_remove_test::initialize>>>>{
-      nullptr};
+  CHECK_THROWS_WITH(
+      (Parallel::DistributedObject<
+          NoOpsComponent<TestMetavariables>,
+          tmpl::list<
+              Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                     tmpl::list<add_remove_test::initialize>>>>{
+          nullptr}),
+      Catch::Matchers::ContainsSubstring(
+          "DistributedObject has been constructed with a nullptr"));
 }

@@ -293,56 +293,6 @@ struct check_matrix_approx {
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Mark a test as checking a call to ERROR
- *
- * \details
- * In order to properly handle aborting with Catch versions newer than 1.6.1
- * we must install a signal handler after Catch does, which means inside the
- * SPECTRE_TEST_CASE itself. The ERROR_TEST() macro should be the first line in
- * the SPECTRE_TEST_CASE.
- *
- * \warning This macro is deprecated.  See \ref testing_failure_cases
- * "the DevGuide" for the modern way to do this.
- */
-#define ERROR_TEST()                                      \
-  do {                                                    \
-    std::signal(SIGABRT, spectre_testing_signal_handler); \
-  } while (false)
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Mark a test to be checking an ASSERT
- *
- * \details
- * Testing error handling is just as important as testing functionality. Tests
- * that are supposed to exit with an error must be annotated with the attribute
- * \code
- * // [[OutputRegex, The regex that should be found in the output]]
- * \endcode
- * Note that the regex only needs to be a sub-expression of the error message,
- * that is, there are implicit wildcards before and after the string.
- *
- * In order to test ASSERT's properly the test must also fail for release
- * builds. This is done by adding this macro at the beginning for the test.
- *
- * \warning This macro is deprecated.  See \ref testing_failure_cases
- * "the DevGuide" for the modern way to do this.
- */
-#ifdef SPECTRE_DEBUG
-#define ASSERTION_TEST() \
-  do {                   \
-    ERROR_TEST();        \
-  } while (false)
-#else
-#define ASSERTION_TEST()                                   \
-  do {                                                     \
-    ERROR_TEST();                                          \
-    sys::abort("### No ASSERT tests in release mode ###"); \
-  } while (false)
-#endif
-
-/*!
- * \ingroup TestingFrameworkGroup
  * \brief Mark a test as checking the output with a regular expression
  *
  * \details

@@ -228,38 +228,26 @@ tolerance.
 
 #### Testing Failure Cases {#testing_failure_cases}
 
-Adding the "attribute" `// [[OutputRegex, Regular expression to
-match]]` before the `SPECTRE_TEST_CASE` macro will force ctest to only
-pass the particular test if the regular expression is found in the
-output of the test. This can be used to test error handling. When
-testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as
-`[[noreturn]]`, add the macro `ASSERTION_TEST();` to the beginning of
-the test, and also have the test call `ERROR("Failed to trigger ASSERT
-in an assertion test");` at the end of the test body.  The test body
-should be enclosed between `#%ifdef SPECTRE_DEBUG` and an `#%endif`
+`ASSERT`s and `ERROR`s can be tested with the `CHECK_THROWS_WITH`
+macro.  This macro takes two arguments: the first is either an
+expression or a lambda that is expected to trigger an exception (which
+now are thrown by `ASSERT` and `ERROR` (Note: You may need to add `()`
+wrapping the lambda in order for it to compile.); the second is a
+Catch Matcher (see [Catch2](https://github.com/catchorg/Catch2) for
+complete documentation), usually a
+`Catch::Matchers::ContainsSubstring()` macro that matches a substring
+of the error message of the thrown exception.
 
+When testing `ASSERT`s the `CHECK_THROWS_WITH`
+should be enclosed between `#%ifdef SPECTRE_DEBUG` and an `#%endif`
 If the `#%ifdef SPECTRE_DEBUG` block is omitted then compilers will
 correctly flag the code as being unreachable which results in
 warnings.
 
-You can also test `ERROR`s inside your code. These tests need to have
-the `OutputRegex`, and also call `ERROR_TEST();` at the
-beginning. They do not need the `#%ifdef SPECTRE_DEBUG` block, they
-can just call have the code that triggers an `ERROR`.
-
-We are currently transforming these failure cases to use the
-`CHECK_THROWS_WITH` macro. This macro takes two arguments: the first
-is either an expression or a lambda that is expected to trigger an
-exception (which now are thrown by `ASSERT` and `ERROR` (Note: You may
-need to add `()` wrapping the lambda in order for it to compile.); the
-second is a Catch Matcher (see
-[Catch2](https://github.com/catchorg/Catch2) for complete
-documentation), usually a `Catch::Matchers::ContainsSubstring()` macro
-that matches a substring of the error message of the thrown exception.
-
-Note that a `OutputRegex` can also be specified in a test that is
-supposed to succeed with output that matches the regular expression.
-In this case, the first line of the test should call the macro
+Adding the "attribute" `// [[OutputRegex, Regular expression to match]]`
+before the `SPECTRE_TEST_CASE` macro will force ctest to only pass the
+particular test if the regular expression is found in the output of the
+test.  In this case, the first line of the test should call the macro
 `OUTPUT_TEST();`.
 
 ### Testing Actions
