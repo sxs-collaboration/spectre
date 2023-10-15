@@ -6,6 +6,10 @@ option(USE_XSIMD "Use xsimd if it is available" OFF)
 if(USE_XSIMD)
   find_package(xsimd REQUIRED)
 
+  if(xsimd_VERSION VERSION_LESS 11.0.1)
+    message(FATAL_ERROR "xsimd must be at least 11.0.1, got ${xsimd_VERSION}")
+  endif()
+
   message(STATUS "xsimd incld: ${xsimd_INCLUDE_DIRS}")
   message(STATUS "xsimd vers: ${xsimd_VERSION}")
 

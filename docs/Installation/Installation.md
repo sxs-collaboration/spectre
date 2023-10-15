@@ -126,7 +126,8 @@ apt), or AppleClang 13.0.0 or later
   graph partition based load balancer in charm++.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with
   matplotlib
-* [xsimd](https://github.com/xtensor-stack/xsimd) - for manual vectorization
+* [xsimd](https://github.com/xtensor-stack/xsimd) 11.0.1 or newer - for manual
+  vectorization
 * [libbacktrace](https://github.com/ianlancetaylor/libbacktrace) - to show
   source files and line numbers in backtraces of errors and asserts. Available
   by default on many systems, so you may not have to install it at all. The
