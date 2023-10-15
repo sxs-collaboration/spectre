@@ -15,8 +15,10 @@ set(LIBRARY_SOURCES
   Test_MagnetizedFmDisk.cpp
   Test_MagnetizedTovStar.cpp
   Test_OrszagTangVortex.cpp
+  Test_PolarMagnetizedFmDisk.cpp
   Test_RiemannProblem.cpp
   Test_SlabJet.cpp
+  Test_SphericalTorus.cpp
   )
 
 if (TARGET FUKA::Exporter)

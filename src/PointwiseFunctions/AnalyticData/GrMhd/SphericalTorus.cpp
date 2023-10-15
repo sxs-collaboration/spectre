@@ -1,18 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/CoordinateMaps/SphericalTorus.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/SphericalTorus.hpp"
 
 #include <pup.h>
 
 #include "Options/ParseError.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace domain::CoordinateMaps {
+namespace grmhd::AnalyticData {
 
 SphericalTorus::SphericalTorus(const double r_min, const double r_max,
                                const double min_polar_angle,
@@ -55,34 +54,40 @@ SphericalTorus::SphericalTorus(const std::array<double, 2>& radial_range,
 //  * phi     : azimuthal angle
 //
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> SphericalTorus::operator()(
-    const std::array<T, 3>& source_coords) const {
-  const auto r = radius(source_coords[0]);
-  const auto theta = M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
-  const auto phi = M_PI * fraction_of_torus_ * source_coords[2];
-
-  return {
-      {r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)}};
+tnsr::I<T, 3> SphericalTorus::operator()(
+    const tnsr::I<T, 3>& source_coords) const {
+  tnsr::I<T, 3> result;
+  const auto r = radius(get<0>(source_coords));
+  const auto theta =
+      M_PI_2 - (pi_over_2_minus_theta_min_ * get<1>(source_coords));
+  const auto phi = M_PI * fraction_of_torus_ * get<2>(source_coords);
+  get<0>(result) = r * sin(theta) * cos(phi);
+  get<1>(result) = r * sin(theta) * sin(phi);
+  get<2>(result) = r * cos(theta);
+  return result;
 }
 
-std::optional<std::array<double, 3>> SphericalTorus::inverse(
-    const std::array<double, 3>& target_coords) const {
-  const double r =
-      std::hypot(target_coords[0], target_coords[1], target_coords[2]);
-  const double theta = std::atan2(
-      std::hypot(target_coords[0], target_coords[1]), target_coords[2]);
-  const double phi = std::atan2(target_coords[1], target_coords[0]);
-
-  return {{radius_inverse(r), (M_PI_2 - theta) / pi_over_2_minus_theta_min_,
-           phi / (M_PI * fraction_of_torus_)}};
+tnsr::I<double, 3> SphericalTorus::inverse(
+    const tnsr::I<double, 3>& target_coords) const {
+  tnsr::I<double, 3> result;
+  const double r = std::hypot(get<0>(target_coords), get<1>(target_coords),
+                              get<2>(target_coords));
+  const double theta =
+      std::atan2(std::hypot(get<0>(target_coords), get<1>(target_coords)),
+                 get<2>(target_coords));
+  const double phi = std::atan2(get<1>(target_coords), get<0>(target_coords));
+  get<0>(result) = radius_inverse(r);
+  get<1>(result) = (M_PI_2 - theta) / pi_over_2_minus_theta_min_;
+  get<2>(result) = phi / (M_PI * fraction_of_torus_);
+  return result;
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalTorus::jacobian(const std::array<T, 3>& source_coords) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  auto jacobian = make_with_value<tnsr::Ij<UnwrappedT, 3, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+Jacobian<T, 3, Frame::BlockLogical, Frame::Inertial> SphericalTorus::jacobian(
+    const tnsr::I<T, 3>& source_coords) const {
+  auto jacobian =
+      make_with_value<Jacobian<T, 3, Frame::BlockLogical, Frame::Inertial>>(
+          get<0>(source_coords), 0.0);
 
   // In order to reduce number of memory allocations we use some slots of
   // jacobian for storing temp variables as below.
@@ -90,18 +95,18 @@ SphericalTorus::jacobian(const std::array<T, 3>& source_coords) const {
   auto& sin_theta = get<2, 1>(jacobian);
   auto& cos_theta = get<2, 0>(jacobian);
   get<2, 2>(jacobian) =
-      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
+      M_PI_2 - (pi_over_2_minus_theta_min_ * get<1>(source_coords));
   sin_theta = sin(get<2, 2>(jacobian));
   cos_theta = cos(get<2, 2>(jacobian));
 
   auto& sin_phi = get<1, 1>(jacobian);
   auto& cos_phi = get<1, 2>(jacobian);
-  get<2, 2>(jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
+  get<2, 2>(jacobian) = M_PI * fraction_of_torus_ * get<2>(source_coords);
   sin_phi = sin(get<2, 2>(jacobian));
   cos_phi = cos(get<2, 2>(jacobian));
 
   auto& r = get<2, 2>(jacobian);
-  radius(make_not_null(&r), source_coords[0]);
+  radius(make_not_null(&r), get<0>(source_coords));
 
   // Note : execution order matters here since we are overwriting each temp
   // variables with jacobian values corresponding to the slot.
@@ -119,11 +124,11 @@ SphericalTorus::jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalTorus::inv_jacobian(const std::array<T, 3>& source_coords) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  auto inv_jacobian = make_with_value<tnsr::Ij<UnwrappedT, 3, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+InverseJacobian<T, 3, Frame::BlockLogical, Frame::Inertial>
+SphericalTorus::inv_jacobian(const tnsr::I<T, 3>& source_coords) const {
+  auto inv_jacobian = make_with_value<
+      InverseJacobian<T, 3, Frame::BlockLogical, Frame::Inertial>>(
+      get<0>(source_coords), 0.0);
 
   // In order to reduce number of memory allocations we use some slots of
   // jacobian for storing temp variables as below.
@@ -131,18 +136,18 @@ SphericalTorus::inv_jacobian(const std::array<T, 3>& source_coords) const {
   auto& sin_theta = get<1, 2>(inv_jacobian);
   auto& cos_theta = get<0, 2>(inv_jacobian);
   get<2, 2>(inv_jacobian) =
-      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
+      M_PI_2 - (pi_over_2_minus_theta_min_ * get<1>(source_coords));
   cos_theta = cos(get<2, 2>(inv_jacobian));
   sin_theta = sin(get<2, 2>(inv_jacobian));
 
   auto& sin_phi = get<1, 1>(inv_jacobian);
   auto& cos_phi = get<2, 1>(inv_jacobian);
-  get<2, 2>(inv_jacobian) = M_PI * fraction_of_torus_ * source_coords[2];
+  get<2, 2>(inv_jacobian) = M_PI * fraction_of_torus_ * get<2>(source_coords);
   cos_phi = cos(get<2, 2>(inv_jacobian));
   sin_phi = sin(get<2, 2>(inv_jacobian));
 
   auto& r = get<2, 2>(inv_jacobian);
-  radius(make_not_null(&r), source_coords[0]);
+  radius(make_not_null(&r), get<0>(source_coords));
 
   // Note : execution order matters here since we are overwriting each temp
   // variables with jacobian values corresponding to the slot.
@@ -164,11 +169,10 @@ SphericalTorus::inv_jacobian(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-tnsr::Ijj<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  auto hessian = make_with_value<tnsr::Ijj<UnwrappedT, 3, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+tnsr::Ijj<T, 3, Frame::NoFrame> SphericalTorus::hessian(
+    const tnsr::I<T, 3>& source_coords) const {
+  auto hessian = make_with_value<tnsr::Ijj<T, 3, Frame::NoFrame>>(
+      get<0>(source_coords), 0.0);
 
   // In order to reduce number of memory allocations we use some slots of
   // hessian for storing temp variables as below.
@@ -182,14 +186,14 @@ SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
   // these two slots are zeros (not used)
   auto& cos_theta = get<2, 1, 2>(hessian);
   auto& sin_theta = get<2, 2, 2>(hessian);
-  get<0, 0, 0>(hessian) = M_PI_2 - (theta_factor * source_coords[1]);
+  get<0, 0, 0>(hessian) = M_PI_2 - (theta_factor * get<1>(source_coords));
   cos_theta = cos(get<0, 0, 0>(hessian));
   sin_theta = sin(get<0, 0, 0>(hessian));
 
   // these two slots are NOT zeros, but will be overwritten with hessian later
   auto& cos_phi = get<2, 0, 1>(hessian);
   auto& sin_phi = get<2, 1, 1>(hessian);
-  get<0, 0, 0>(hessian) = phi_factor * source_coords[2];
+  get<0, 0, 0>(hessian) = phi_factor * get<2>(source_coords);
   cos_phi = cos(get<0, 0, 0>(hessian));
   sin_phi = sin(get<0, 0, 0>(hessian));
 
@@ -197,7 +201,7 @@ SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
   auto& r_factor = get<0, 0, 0>(hessian);
   auto& r = get<1, 0, 0>(hessian);
   r_factor = 0.5 * (r_max_ - r_min_);
-  radius(make_not_null(&r), source_coords[0]);
+  radius(make_not_null(&r), get<0>(source_coords));
 
   // Note : execution order matters here
   get<0, 0, 1>(hessian) = -r_factor * theta_factor * cos_theta * cos_phi;
@@ -225,26 +229,24 @@ SphericalTorus::hessian(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-tnsr::Ijk<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SphericalTorus::derivative_of_inv_jacobian(
-    const std::array<T, 3>& source_coords) const {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  auto result = make_with_value<tnsr::Ijk<UnwrappedT, 3, Frame::NoFrame>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+tnsr::Ijk<T, 3, Frame::NoFrame> SphericalTorus::derivative_of_inv_jacobian(
+    const tnsr::I<T, 3>& source_coords) const {
+  auto result = make_with_value<tnsr::Ijk<T, 3, Frame::NoFrame>>(
+      get<0>(source_coords), 0.0);
 
   // In order to reduce number of memory allocations we use some slots of
   // `result` for storing temp variables as below.
 
   auto& cos_phi = get<1, 2, 2>(result);
   auto& sin_phi = get<2, 2, 0>(result);
-  get<0, 0, 0>(result) = M_PI * fraction_of_torus_ * source_coords[2];
+  get<0, 0, 0>(result) = M_PI * fraction_of_torus_ * get<2>(source_coords);
   cos_phi = cos(get<0, 0, 0>(result));
   sin_phi = sin(get<0, 0, 0>(result));
 
   auto& cos_theta = get<2, 2, 1>(result);
   auto& sin_theta = get<2, 2, 2>(result);
   get<0, 0, 0>(result) =
-      M_PI_2 - (pi_over_2_minus_theta_min_ * source_coords[1]);
+      M_PI_2 - (pi_over_2_minus_theta_min_ * get<1>(source_coords));
   cos_theta = cos(get<0, 0, 0>(result));
   sin_theta = sin(get<0, 0, 0>(result));
 
@@ -255,7 +257,7 @@ SphericalTorus::derivative_of_inv_jacobian(
 
   auto& r = get<0, 0, 0>(result);
   auto& r_factor = get<0, 1, 0>(result);
-  radius(make_not_null(&r), source_coords[0]);
+  radius(make_not_null(&r), get<0>(source_coords));
   r_factor = 0.5 * (r_max_ - r_min_);
 
   get<0, 0, 1>(result) = -theta_factor / r_factor * cos_theta * cos_phi;
@@ -313,18 +315,17 @@ void SphericalTorus::pup(PUP::er& p) {
 }
 
 template <typename T>
-tt::remove_cvref_wrap_t<T> SphericalTorus::radius(const T& x) const {
+T SphericalTorus::radius(const T& x) const {
   return 0.5 * r_min_ * (1.0 - x) + 0.5 * r_max_ * (1.0 + x);
 }
 
 template <typename T>
-void SphericalTorus::radius(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> r,
-                            const T& x) const {
+void SphericalTorus::radius(const gsl::not_null<T*> r, const T& x) const {
   *r = 0.5 * r_min_ * (1.0 - x) + 0.5 * r_max_ * (1.0 + x);
 }
 
 template <typename T>
-tt::remove_cvref_wrap_t<T> SphericalTorus::radius_inverse(const T& r) const {
+T SphericalTorus::radius_inverse(const T& r) const {
   return ((r - r_min_) - (r_max_ - r)) / (r_max_ - r_min_);
 }
 
@@ -341,26 +342,24 @@ bool operator!=(const SphericalTorus& lhs, const SphericalTorus& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  SphericalTorus::operator()(const std::array<DTYPE(data), 3>& source_coords) \
+  template tnsr::I<DTYPE(data), 3> SphericalTorus::operator()(                \
+      const tnsr::I<DTYPE(data), 3>& source_coords) const;                    \
+  template Jacobian<DTYPE(data), 3, Frame::BlockLogical, Frame::Inertial>     \
+  SphericalTorus::jacobian(const tnsr::I<DTYPE(data), 3>& source_coords)      \
       const;                                                                  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  SphericalTorus::jacobian(const std::array<DTYPE(data), 3>& source_coords)   \
+  template InverseJacobian<DTYPE(data), 3, Frame::BlockLogical,               \
+                           Frame::Inertial>                                   \
+  SphericalTorus::inv_jacobian(const tnsr::I<DTYPE(data), 3>& source_coords)  \
       const;                                                                  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  SphericalTorus::inv_jacobian(                                               \
-      const std::array<DTYPE(data), 3>& source_coords) const;                 \
-  template tnsr::Ijj<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
-  SphericalTorus::hessian(const std::array<DTYPE(data), 3>& source_coords)    \
-      const;                                                                  \
-  template tnsr::Ijk<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
+  template tnsr::Ijj<DTYPE(data), 3, Frame::NoFrame> SphericalTorus::hessian( \
+      const tnsr::I<DTYPE(data), 3>& source_coords) const;                    \
+  template tnsr::Ijk<DTYPE(data), 3, Frame::NoFrame>                          \
   SphericalTorus::derivative_of_inv_jacobian(                                 \
-      const std::array<DTYPE(data), 3>& source_coords) const;
+      const tnsr::I<DTYPE(data), 3>& source_coords) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
-                                      std::reference_wrapper<const double>,
-                                      std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+
 #undef INSTANTIATE
 #undef DTYPE
 
-}  // namespace domain::CoordinateMaps
+}  // namespace grmhd::AnalyticData
