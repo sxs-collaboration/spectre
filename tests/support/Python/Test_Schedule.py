@@ -24,7 +24,7 @@ from spectre.support.Schedule import (
 
 class TestSchedule(unittest.TestCase):
     def setUp(self):
-        self.test_dir = Path(unit_test_build_path(), "Schedule")
+        self.test_dir = Path(unit_test_build_path(), "Schedule").resolve()
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.spectre_cli = (
             Path(unit_test_build_path()).parent.parent / "bin/spectre"

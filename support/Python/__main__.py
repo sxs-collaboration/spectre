@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
+            "bbh",
             "clean-output",
             "combine-h5",
             "delete-subfiles",
@@ -41,6 +42,10 @@ class Cli(click.MultiCommand):
         ]
 
     def get_command(self, ctx, name):
+        if name == "bbh":
+            from spectre.Pipelines.Bbh import bbh_pipeline
+
+            return bbh_pipeline
         if name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
 

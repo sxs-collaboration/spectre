@@ -1,0 +1,241 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveGhSingleBlackHole
+
+---
+
+# Note: most of the parameters in this file are just made up. They should be
+# replaced with values that make sense once we have a better idea of the
+# transition to ringdown.
+
+InitialData:
+  NumericInitialData:
+    FileGlob: "{{ IdFileGlob }}"
+    Subgroup: "VolumeData"
+    ObservationValue: Last
+    Interpolate: True
+    Variables:
+      SpacetimeMetric: SpacetimeMetric
+      Pi: Pi
+
+DomainCreator:
+  Sphere:
+    InnerRadius: &InnerRadius 2.0
+    OuterRadius: 1000.0
+    Interior:
+      ExciseWithBoundaryCondition:
+        DemandOutgoingCharSpeeds:
+    InitialRefinement:
+      Shell0: [{{ L }}, {{ L }}, {{ L }}]
+      Shell1: [{{ L }}, {{ L }}, {{ L + 2 }}]
+    InitialGridPoints: {{ P + 1 }}
+    UseEquiangularMap: True
+    EquatorialCompression: None
+    RadialPartitioning: [30.0]
+    RadialDistribution: [Logarithmic, Linear]
+    WhichWedges: All
+    TimeDependentMaps: None
+    OuterBoundaryCondition:
+      ConstraintPreservingBjorhus:
+        Type: ConstraintPreservingPhysical
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforth:
+      Order: 1
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      DampedHarmonic:
+        SpatialDecayWidth: 17.0152695482514
+        Amplitudes: [1.0, 1.0, 1.0]
+        Exponents: [2, 2, 2]
+    # The parameter choices here come from our experience with the Spectral
+    # Einstein Code (SpEC). They should be suitable for evolutions of a
+    # perturbation of a Kerr-Schild black hole.
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 3.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 1.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 24
+    Enable: false
+    BlocksToFilter: All
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Observers:
+  VolumeFileName: "BbhVolume"
+  ReductionFileName: "BbhReductions"
+  SurfaceFileName: "BbhSurfaces"
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+       EvenlySpaced:
+         # Current implementation checks wallclock at these global syncs
+         Interval: 100
+         Offset: 0
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 23.5
+
+EventsAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - ObserveTimeStep:
+          SubfileName: TimeSteps
+          PrintTimeToTerminal: True
+          ObservePerCore: False
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(FourIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+            - Lapse
+            - Shift
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - PointwiseL2Norm(FourIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+      - ApparentHorizon
+      - ExcisionBoundary
+  # Never terminate... run until something fails!
+
+EventsAndDenseTriggers:
+
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
+ApparentHorizons:
+  ApparentHorizon: &Ah
+    InitialGuess:
+      LMax: &LMax 4
+      Radius: 2.2
+      Center: [0., 0., 0.]
+    FastFlow:
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+  ControlSystemSingleAh: *Ah
+  ControlSystemCharSpeedAh: *Ah
+
+InterpolationTargets:
+  ExcisionBoundary: &ExBdry
+    LMax: *LMax
+    Center: [0., 0., 0.]
+    Radius: *InnerRadius
+    AngularOrdering: "Strahlkorper"
+  ControlSystemCharSpeedExcision: *ExBdry
+
+ControlSystems:
+  WriteDataToDisk: false
+  MeasurementsPerUpdate: 4
+  Verbosity: Silent
+  Shape:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+  Size:
+    IsActive: false
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: true
+    Controller:
+      UpdateFraction: 0.06
+    TimescaleTuner:
+      InitialTimescales: 0.2
+      MinTimescale: 1.0e-4
+      MaxTimescale: 20.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 1.0
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      DeltaRDriftOutwardOptions: None
+      SmootherTuner:
+        InitialTimescales: [0.2]
+        MinTimescale: 1.0e-4
+        MaxTimescale: 20.0
+        IncreaseThreshold: 2.5e-4
+        DecreaseThreshold: 1.0e-3
+        IncreaseFactor: 1.01
+        DecreaseFactor: 0.9
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

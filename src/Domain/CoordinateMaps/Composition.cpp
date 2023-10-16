@@ -388,7 +388,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 
-#if defined(__clang__) && __clang_major__ >= 16
+#if defined(__clang__) && __clang_major__ >= 15
 #define INSTANTIATE2(_, data)                                                  \
   template domain::CoordinateMaps::Composition<                                \
       brigand::list<Frame::ElementLogical, Frame::BlockLogical,                \
