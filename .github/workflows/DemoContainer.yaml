@@ -17,6 +17,7 @@ jobs:
   docker:
     name: Build and push 'demo' image to DockerHub
     runs-on: ubuntu-latest
+    environment: deploy-containers
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
