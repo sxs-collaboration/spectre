@@ -77,3 +77,5 @@ spectre_add_python_bindings_test(
   Test_TransformVolumeData.py
   "unit;visualization;python"
   None)
+
+add_subdirectory(Render3D)

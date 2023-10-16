@@ -18,3 +18,5 @@ spectre_python_add_module(
   Render1D.py
   TransformVolumeData.py
 )
+
+add_subdirectory(Render3D)

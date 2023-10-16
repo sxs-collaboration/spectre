@@ -33,6 +33,7 @@ class Cli(click.MultiCommand):
             "plot-dat",
             "plot-power-monitors",
             "render-1d",
+            "render-3d",
             "resubmit",
             "schedule",
             "simplify-traces",
@@ -104,6 +105,10 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.Render1D import render_1d_command
 
             return render_1d_command
+        elif name == "render-3d":
+            from spectre.Visualization.Render3D import render_3d_command
+
+            return render_3d_command
         elif name == "resubmit":
             from spectre.support.Resubmit import resubmit_command
 
