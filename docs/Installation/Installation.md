@@ -72,7 +72,7 @@ apt), or AppleClang 13.0.0 or later
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand) at commit
   1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
-* [Catch2](https://github.com/catchorg/Catch2) 3.0.1 or later. Install from your
+* [Catch2](https://github.com/catchorg/Catch2) 3.4.0 or later. Install from your
   package manager or do a standard CMake build and installation (as detailed
   in the [Catch2 docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
   Compile with `CMAKE_POSITION_INDEPENDENT_CODE=ON`.
