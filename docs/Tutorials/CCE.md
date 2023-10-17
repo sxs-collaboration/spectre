@@ -196,7 +196,15 @@ provided as spherical harmonic modes with the following datasets:
 - `DtLapse.dat`
 
 In this format, each row must start with the time stamp, and the remaining
-values are the complex modes in m-varies-fastest format.
+values are the complex modes in m-varies-fastest format. That is,
+```
+"time", "Lapse_Re(0,0)", "Lapse_Im(0,0)",
+"Lapse_Re(1,1)", "Lapse_Im(1,1)", "Lapse_Re(1,0)", "Lapse_Im(1,0)",
+"Lapse_Re(1,-1)", "Lapse_Im(1,-1)",
+"Lapse_Re(2,2)", "Lapse_Im(2,2)", "Lapse_Re(2,1)", "Lapse_Im(2,1)",
+"Lapse_Re(2,0)", "Lapse_Im(2,0)", "Lapse_Re(2,-1)", "Lapse_Im(2,-1)",
+"Lapse_Re(2,-2)", "Lapse_Im(2,-2)"
+```
 
 The second format is Bondi-Sachs metric component data.
 This format is far more space-efficient (by around a factor of 4), and SpECTRE
