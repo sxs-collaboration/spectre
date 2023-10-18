@@ -35,7 +35,7 @@ namespace Actions {
 /// - Checks if functions of time are ready (if there are any). If they are not
 ///   ready, register a simple action callback with the GlobalCache to this
 ///   action.
-/// - Calls `InterpolationTargetTag::post_interpolation_callback`
+/// - Calls `InterpolationTargetTag::post_interpolation_callbacks`
 /// - Removes the finished `temporal_id` from `Tags::TemporalIds<TemporalId>`
 ///   and adds it to `Tags::CompletedTemporalIds<TemporalId>`
 /// - Removes `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`,
@@ -167,10 +167,10 @@ struct InterpolationTargetVarsFromElement {
         return;
       }
       // All the valid points have been interpolated.
-      // We throw away the return value of call_callback in this case
+      // We throw away the return value of call_callbacks in this case
       // (it is known to be always true; it can be false only for
       //  sequential interpolations, which is static-asserted against above).
-      InterpolationTarget_detail::call_callback<InterpolationTargetTag>(
+      InterpolationTarget_detail::call_callbacks<InterpolationTargetTag>(
           make_not_null(&box), make_not_null(&cache), temporal_id);
       InterpolationTarget_detail::clean_up_interpolation_target<
           InterpolationTargetTag>(make_not_null(&box), temporal_id);

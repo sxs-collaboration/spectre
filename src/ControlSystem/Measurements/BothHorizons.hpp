@@ -78,9 +78,9 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Distorted>;
-      using post_interpolation_callback =
-          intrp::callbacks::FindApparentHorizon<InterpolationTarget,
-                                                ::Frame::Distorted>;
+      using post_interpolation_callbacks =
+          tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
+                                                           ::Frame::Distorted>>;
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
       using post_horizon_find_callbacks =

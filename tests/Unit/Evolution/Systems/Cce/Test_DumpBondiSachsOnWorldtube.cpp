@@ -58,8 +58,8 @@ struct test_metavariables {
                    gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<Target, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::DumpBondiSachsOnWorldtube<Target>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<Target>>;
     using compute_items_on_target = tmpl::list<>;
   };
 
@@ -108,10 +108,9 @@ void test(const std::string& filename_prefix,
   using target = typename metavars::Target;
   using writer = MockObserverWriter<metavars>;
   using spacetime_tags = typename target::vars_to_interpolate_to_target;
-  using cce_tags =
-      typename target::post_interpolation_callback::cce_boundary_tags;
-  using written_cce_tags =
-      typename target::post_interpolation_callback::cce_tags_to_dump;
+  using callback = tmpl::front<typename target::post_interpolation_callbacks>;
+  using cce_tags = typename callback::cce_boundary_tags;
+  using written_cce_tags = typename callback::cce_tags_to_dump;
 
   // Choose only l_max = 2 for two reasons:
   //   1. Speed
@@ -165,7 +164,7 @@ void test(const std::string& filename_prefix,
         Parallel::GlobalCache<metavars> local_cache{
             {std::move(local_sphere_opts), filename_prefix}};
 
-        target::post_interpolation_callback::apply(box, local_cache, 0.1);
+        callback::apply(box, local_cache, 0.1);
       })(),
       Catch::Matchers::ContainsSubstring(
           "To use the DumpBondiSachsOnWorldtube post interpolation callback, "
@@ -174,7 +173,7 @@ void test(const std::string& filename_prefix,
   const std::vector<double> times{0.9, 1.3};
 
   for (const double time : times) {
-    target::post_interpolation_callback::apply(box, cache, time);
+    callback::apply(box, cache, time);
   }
 
   Variables<spacetime_tags> single_spacetime_variables =

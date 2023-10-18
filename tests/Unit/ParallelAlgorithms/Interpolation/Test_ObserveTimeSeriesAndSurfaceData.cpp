@@ -362,9 +362,10 @@ struct MockInterpolationTarget {
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
-      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
-          typename InterpolationTargetTag::compute_target_points,
-          typename InterpolationTargetTag::post_interpolation_callback>>,
+      Parallel::get_const_global_cache_tags_from_actions<
+          tmpl::flatten<tmpl::list<
+              typename InterpolationTargetTag::compute_target_points,
+              typename InterpolationTargetTag::post_interpolation_callbacks>>>,
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -407,11 +408,11 @@ struct MockMetavariables {
                        Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
                                                            ::Frame::Inertial>>,
-            SurfaceA>;
+            SurfaceA>>;
   };
   struct SurfaceB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
@@ -426,13 +427,13 @@ struct MockMetavariables {
                                                               Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
                                                            ::Frame::Inertial>,
                        gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
                                                            ::Frame::Inertial>>,
-            SurfaceB>;
+            SurfaceB>>;
   };
   struct SurfaceC : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
@@ -445,11 +446,11 @@ struct MockMetavariables {
                        Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
                                                            ::Frame::Inertial>>,
-            SurfaceC>;
+            SurfaceC>>;
   };
 
   struct SurfaceD : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -463,9 +464,9 @@ struct MockMetavariables {
                        Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceData<tmpl::list<Tags::Square>, SurfaceD,
-                                             ::Frame::Inertial>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tmpl::list<Tags::Square>, SurfaceD, ::Frame::Inertial>>;
   };
 
   struct SurfaceE : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -479,9 +480,9 @@ struct MockMetavariables {
                        Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceE, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceData<tmpl::list<Tags::Square>, SurfaceE,
-                                             ::Frame::Inertial>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tmpl::list<Tags::Square>, SurfaceE, ::Frame::Inertial>>;
   };
 
   using observed_reduction_data_tags = tmpl::list<>;
@@ -521,16 +522,16 @@ SPECTRE_TEST_CASE(
   }
 
   // Test That ObserveTimeSeriesOnSurface indeed does conform to its protocol
-  using callback_A =
-      typename MockMetavariables::SurfaceA::post_interpolation_callback;
-  using callback_B =
-      typename MockMetavariables::SurfaceB::post_interpolation_callback;
-  using callback_C =
-      typename MockMetavariables::SurfaceC::post_interpolation_callback;
-  using callback_D =
-      typename MockMetavariables::SurfaceD::post_interpolation_callback;
-  using callback_E =
-      typename MockMetavariables::SurfaceE::post_interpolation_callback;
+  using callback_A = tmpl::front<
+      typename MockMetavariables::SurfaceA::post_interpolation_callbacks>;
+  using callback_B = tmpl::front<
+      typename MockMetavariables::SurfaceB::post_interpolation_callbacks>;
+  using callback_C = tmpl::front<
+      typename MockMetavariables::SurfaceC::post_interpolation_callbacks>;
+  using callback_D = tmpl::front<
+      typename MockMetavariables::SurfaceD::post_interpolation_callbacks>;
+  using callback_E = tmpl::front<
+      typename MockMetavariables::SurfaceE::post_interpolation_callbacks>;
   using protocol = intrp::protocols::PostInterpolationCallback;
   static_assert(tt::assert_conforms_to_v<callback_A, protocol>);
   static_assert(tt::assert_conforms_to_v<callback_B, protocol>);

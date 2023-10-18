@@ -79,7 +79,7 @@ struct has_signature_3<
 }  // namespace detail
 
 /*!
- * \brief A protocol for the type alias `post_interpolation_callback` found in
+ * \brief A protocol for the type alias `post_interpolation_callbacks` found in
  * an InterpolationTargetTag.
  *
  * \details A struct conforming to the `PostInterpolationCallback` protocol must

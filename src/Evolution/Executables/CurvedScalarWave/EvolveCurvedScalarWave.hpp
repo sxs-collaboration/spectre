@@ -170,11 +170,11 @@ struct EvolutionMetavars {
                        CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<SphericalSurface, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegralCompute<
                 CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>,
-            SphericalSurface>;
+            SphericalSurface>>;
     template <typename metavariables>
     using interpolating_component = typename metavariables::dg_element_array;
   };

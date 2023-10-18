@@ -975,8 +975,8 @@ struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       typename gh::System<3>::variables_tag::tags_list;
   using compute_target_points =
       intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
-  using post_interpolation_callback =
-      intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>;
+  using post_interpolation_callbacks =
+      tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
   using compute_items_on_target = tmpl::list<>;
   template <typename Metavariables>
   using interpolating_component =

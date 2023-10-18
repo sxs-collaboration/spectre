@@ -645,9 +645,9 @@ struct CenterOfStar : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       tmpl::list<MaxOfScalarCompute<hydro::Tags::RestMassDensity<DataVector>>>;
   using vars_to_interpolate_to_target =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>>;
-  using post_interpolation_callback =
-      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                   CenterOfStar>;
+  using post_interpolation_callbacks =
+      tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                              CenterOfStar>>;
   using compute_target_points =
       intrp::TargetPoints::SpecifiedPoints<CenterOfStar, 3>;
   using compute_items_on_target = tags_to_observe;
@@ -674,9 +674,9 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
   using compute_target_points =
       intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
-  using post_interpolation_callback =
-      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                   KerrHorizon>;
+  using post_interpolation_callbacks =
+      tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                              KerrHorizon>>;
 
   template <typename Metavariables>
   using interpolating_component =

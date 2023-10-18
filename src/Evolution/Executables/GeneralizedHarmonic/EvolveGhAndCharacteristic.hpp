@@ -196,9 +196,10 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3>,
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<CceWorldtubeTarget, ::Frame::Inertial>;
-    using post_interpolation_callback = intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<EvolutionMetavars>, CceWorldtubeTarget,
-        DuringSelfStart, local_time_stepping>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::SendGhWorldtubeData<
+            Cce::CharacteristicEvolution<EvolutionMetavars>, CceWorldtubeTarget,
+            DuringSelfStart, local_time_stepping>>;
     using vars_to_interpolate_to_target = interpolator_source_vars;
     template <typename Metavariables>
     using interpolating_component = gh_dg_element_array;

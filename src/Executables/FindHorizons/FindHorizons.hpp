@@ -201,8 +201,8 @@ struct ApparentHorizon
   using temporal_id = ::Tags::Time;
   using compute_target_points =
       intrp::TargetPoints::ApparentHorizon<ApparentHorizon, Frame::Inertial>;
-  using post_interpolation_callback =
-      intrp::callbacks::FindApparentHorizon<ApparentHorizon, Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<
+      intrp::callbacks::FindApparentHorizon<ApparentHorizon, Frame::Inertial>>;
   using horizon_find_failure_callback =
       intrp::callbacks::ErrorOnFailedApparentHorizon;
   using post_horizon_find_callbacks = tmpl::list<

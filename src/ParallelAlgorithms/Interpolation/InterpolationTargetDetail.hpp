@@ -95,38 +95,77 @@ double get_temporal_id_value(const T& id) {
 }
 
 CREATE_IS_CALLABLE(apply)
-CREATE_IS_CALLABLE_V(apply)
 
-// apply_callback accomplishes the overload for the
-// two signatures of callback functions.
 template <typename T, typename DbTags, typename Metavariables,
           typename TemporalId>
-bool apply_callback(
+bool apply_callbacks(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const TemporalId& temporal_id) {
-  if constexpr (is_apply_callable_v<typename T::post_interpolation_callback,
-                                    decltype(*box), decltype(*cache),
-                                    decltype(temporal_id)>) {
-    T::post_interpolation_callback::apply(*box, *cache, temporal_id);
+  using callbacks = typename T::post_interpolation_callbacks;
+  constexpr bool all_simple_callbacks =
+      tmpl::all<callbacks,
+                is_apply_callable<tmpl::_1, tmpl::pin<decltype(*box)>,
+                                  tmpl::pin<decltype(*cache)>,
+                                  tmpl::pin<decltype(temporal_id)>>>::value;
+  if constexpr (all_simple_callbacks) {
+    tmpl::for_each<callbacks>([&](const auto callback_v) {
+      using callback = tmpl::type_from<decltype(callback_v)>;
+      callback::apply(*box, *cache, temporal_id);
+    });
 
     // For the simpler callback function, we will always clean up volume data,
     // so we return true here.
     return true;
   } else {
-    return T::post_interpolation_callback::apply(box, cache, temporal_id);
+    static_assert(tmpl::size<callbacks>::value == 1,
+                  "Can only have 1 post_interpolation_callbacks that mutates "
+                  "the target box.");
+    return tmpl::front<callbacks>::apply(box, cache, temporal_id);
   }
 }
 
 CREATE_HAS_STATIC_MEMBER_VARIABLE(fill_invalid_points_with)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(fill_invalid_points_with)
 
+template <typename T, bool B>
+struct fill_value_or_no_such_type;
+
+template <typename T>
+struct fill_value_or_no_such_type<T, false> {
+  using type = NoSuchType;
+};
+
+template <typename T>
+struct DoubleWrapper {
+  static constexpr double value = T::fill_invalid_points_with;
+};
+
+template <typename T>
+struct fill_value_or_no_such_type<T, true> {
+  using type = DoubleWrapper<T>;
+};
+
+template <typename Callback>
+struct get_fill_value {
+  using type = typename fill_value_or_no_such_type<
+      Callback, has_fill_invalid_points_with_v<Callback>>::type;
+};
+
+template <typename Callbacks>
+struct get_invalid_fill {
+  using type =
+      tmpl::filter<tmpl::transform<Callbacks, get_fill_value<tmpl::_1>>,
+                   tt::is_a<DoubleWrapper, tmpl::_1>>;
+};
+
 template <typename InterpolationTargetTag, typename TemporalId, typename DbTags>
 void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
                          const TemporalId& temporal_id) {
-  if constexpr (has_fill_invalid_points_with_v<
-                    typename InterpolationTargetTag::
-                        post_interpolation_callback>) {
+  using callbacks =
+      typename InterpolationTargetTag::post_interpolation_callbacks;
+  using invalid_fill = typename get_invalid_fill<callbacks>::type;
+  if constexpr (tmpl::size<invalid_fill>::value > 0) {
     const auto& invalid_indices =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
     if (invalid_indices.find(temporal_id) != invalid_indices.end() and
@@ -148,8 +187,7 @@ void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
               for (size_t v = 0; v < nvars; ++v) {
                 // clang-tidy: no pointer arithmetic
                 vars_dest.data()[index + v * npts_dest] =  // NOLINT
-                    InterpolationTargetTag::post_interpolation_callback::
-                        fill_invalid_points_with;
+                    tmpl::front<invalid_fill>::value;
               }
             }
             // Further functions may test if there are invalid points.
@@ -158,6 +196,9 @@ void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
           },
           box);
     }
+  } else {
+    (void)box;
+    (void)temporal_id;
   }
 }
 
@@ -168,14 +209,14 @@ void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
 /// false if the callback is not done (e.g. if the callback is an
 /// apparent horizon search and it needs another iteration).
 ///
-/// call_callback is called by an Action of InterpolationTarget.
+/// call_callbacks is called by an Action of InterpolationTarget.
 ///
-/// Currently two Actions call call_callback:
+/// Currently two Actions call call_callbacks:
 /// - InterpolationTargetReceiveVars (called by Interpolator ParallelComponent)
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
-bool call_callback(
+bool call_callbacks(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const TemporalId& temporal_id) {
@@ -200,11 +241,11 @@ bool call_callback(
               vars_at_all_times) { *vars = vars_at_all_times.at(temporal_id); },
       box);
 
-  // apply_callback should return true if we are done with this
+  // apply_callbacks should return true if we are done with this
   // temporal_id.  It should return false only if the callback
   // calls another `intrp::Action` that needs the volume data at this
   // same temporal_id.
-  return apply_callback<InterpolationTargetTag>(box, cache, temporal_id);
+  return apply_callbacks<InterpolationTargetTag>(box, cache, temporal_id);
 }
 
 /// Frees InterpolationTarget's memory associated with the supplied

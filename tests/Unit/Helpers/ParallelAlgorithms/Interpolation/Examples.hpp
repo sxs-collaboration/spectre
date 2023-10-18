@@ -183,7 +183,8 @@ struct ExampleInterpolationTargetTag
 
   using compute_target_points = ExampleComputeTargetPoints;
 
-  using post_interpolation_callback = ExamplePostInterpolationCallback;
+  using post_interpolation_callbacks =
+      tmpl::list<ExamplePostInterpolationCallback>;
 };
 /// [InterpolationTargetTag]
 }  // namespace intrp::TestHelpers

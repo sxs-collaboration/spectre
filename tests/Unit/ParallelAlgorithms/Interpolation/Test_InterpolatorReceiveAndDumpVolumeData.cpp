@@ -321,9 +321,9 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
                                            Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolationTargetA>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetA>>;
   };
   // Want the same temporal id. Other type alias are arbitrary for this test
   struct InterpolationTargetB : public InterpolationTargetA {

@@ -229,9 +229,10 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
   using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
-          typename InterpolationTargetTag::compute_target_points,
-          typename InterpolationTargetTag::post_interpolation_callback>>;
+      Parallel::get_const_global_cache_tags_from_actions<
+          tmpl::flatten<tmpl::list<
+              typename InterpolationTargetTag::compute_target_points,
+              typename InterpolationTargetTag::post_interpolation_callbacks>>>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -271,8 +272,8 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
-    using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>>;
     using post_horizon_find_callbacks = PostHorizonFindCallbacks;
     using horizon_find_failure_callback = TestHorizonFindFailureCallback;
   };
@@ -303,9 +304,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       mock_interpolation_target<metavars, typename metavars::AhA>;
 
   // Assert that the FindApparentHorizon callback conforms to the protocol
-  static_assert(tt::assert_conforms_to_v<
-                typename metavars::AhA::post_interpolation_callback,
-                intrp::protocols::PostInterpolationCallback>);
+  static_assert(
+      tt::assert_conforms_to_v<
+          tmpl::front<typename metavars::AhA::post_interpolation_callbacks>,
+          intrp::protocols::PostInterpolationCallback>);
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.

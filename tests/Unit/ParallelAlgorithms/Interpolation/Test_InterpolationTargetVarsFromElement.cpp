@@ -117,6 +117,9 @@ struct MockComputeTargetPoints
   }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+size_t num_callback_calls = 0;
+
 struct MockPostInterpolationCallback
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables, typename TemporalId>
@@ -142,7 +145,14 @@ struct MockPostInterpolationCallback
       // Should never get here.
       CHECK(false);
     }
+
+    ++num_callback_calls;
   }
+};
+
+struct MockPostInterpolationCallbackWithInvalidPoints
+    : public MockPostInterpolationCallback {
+  static constexpr double fill_invalid_points_with = 0.0;
 };
 
 template <typename Metavariables, typename InterpolationTargetTag>
@@ -174,7 +184,9 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points = MockComputeTargetPoints;
-    using post_interpolation_callback = MockPostInterpolationCallback;
+    using post_interpolation_callbacks =
+        tmpl::list<MockPostInterpolationCallback,
+                   MockPostInterpolationCallbackWithInvalidPoints>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
@@ -190,6 +202,7 @@ struct MockMetavariables {
 template <bool UseTimeDepMaps>
 void test() {
   domain::creators::register_derived_with_charm();
+  num_callback_calls = 0_st;
 
   if constexpr (UseTimeDepMaps) {
     domain::creators::time_dependence::register_derived_with_charm();
@@ -324,6 +337,7 @@ void test() {
           intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
           .at(first_temporal_id)
           .size() == 4);
+  CHECK(num_callback_calls == 0_st);
 
   // Add some more points at first_temporal_id
   vars_src.clear();
@@ -376,6 +390,7 @@ void test() {
           intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
           .at(first_temporal_id)
           .size() == 8);
+  CHECK(num_callback_calls == 0_st);
 
   // Add more points at second_temporal_id
   vars_src.clear();
@@ -452,6 +467,7 @@ void test() {
               runner, 0)
               .at(first_temporal_id)
               .size() == 8);
+    CHECK(num_callback_calls == 0_st);
 
     // Change the expiration back to the original value, which will cause a
     // simple action to run on the target.
@@ -492,6 +508,8 @@ void test() {
             target_component,
             intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
             .front() == second_temporal_id);
+  // There are two callbacks
+  CHECK(num_callback_calls == 2_st);
 
   // Now add enough points at first_temporal_id so it triggers the
   // callback.
@@ -529,6 +547,8 @@ void test() {
             target_component,
             intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
             .at(1) == first_temporal_id);
+  // There are two more callbacks
+  CHECK(num_callback_calls == 4_st);
 
   // Should be no queued simple action.
   CHECK(
