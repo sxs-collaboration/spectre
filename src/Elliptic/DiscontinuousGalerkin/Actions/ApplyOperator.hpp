@@ -17,6 +17,7 @@
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -117,7 +118,8 @@ struct InitializeFacesMortarsAndBackground {
       db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
                        typename InitializeFacesAndMortars::argument_tags>(
           InitializeFacesAndMortars{}, make_not_null(&box),
-          db::get<domain::Tags::InitialExtents<Dim>>(box), background,
+          db::get<domain::Tags::InitialExtents<Dim>>(box),
+          db::get<domain::Tags::FunctionsOfTime>(box), background,
           background_classes{});
       // Initialize background fields
       db::mutate_apply<typename InitializeBackground::return_tags,
@@ -129,7 +131,8 @@ struct InitializeFacesMortarsAndBackground {
       db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
                        typename InitializeFacesAndMortars::argument_tags>(
           InitializeFacesAndMortars{}, make_not_null(&box),
-          db::get<domain::Tags::InitialExtents<Dim>>(box));
+          db::get<domain::Tags::InitialExtents<Dim>>(box),
+          db::get<domain::Tags::FunctionsOfTime>(box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

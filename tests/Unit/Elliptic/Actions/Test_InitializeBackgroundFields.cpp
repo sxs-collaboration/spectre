@@ -88,7 +88,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeBackgroundFields",
 
   using element_array = ElementArray<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<Background>(), domain_creator.create_domain()}};
+      {std::make_unique<Background>(), domain_creator.create_domain(),
+       domain_creator.functions_of_time()}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),

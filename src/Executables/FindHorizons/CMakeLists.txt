@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
   CoordinateMaps
   DomainCreators
   EllipticDg
+  FunctionsOfTime
   GeneralRelativity
   GrSurfaces
   Informer

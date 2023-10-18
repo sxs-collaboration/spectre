@@ -32,6 +32,7 @@
 #include "Domain/Creators/RotatedRectangles.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -486,12 +487,13 @@ void test_subdomain_operator(
     CAPTURE(element_ids.size());
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{tuples::TaggedTuple<
-        domain::Tags::Domain<Dim>,
+        domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
         domain::Tags::ExternalBoundaryConditions<Dim>,
         elliptic::Tags::Background<elliptic::analytic_data::Background>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
         elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>{
-        std::move(domain), std::move(boundary_conditions),
+        std::move(domain), domain_creator.functions_of_time(),
+        std::move(boundary_conditions),
         std::make_unique<RandomBackground<Dim>>(), overlap, penalty_parameter,
         use_massive_dg_operator}};
 

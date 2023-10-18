@@ -21,6 +21,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -57,9 +59,10 @@ struct InitializeGeometry {
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>;
-  using argument_tags = tmpl::list<domain::Tags::InitialExtents<Dim>,
-                                   domain::Tags::InitialRefinementLevels<Dim>,
-                                   domain::Tags::Domain<Dim>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::InitialExtents<Dim>,
+                 domain::Tags::InitialRefinementLevels<Dim>,
+                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
   void operator()(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
       gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
@@ -72,7 +75,9 @@ struct InitializeGeometry {
       gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
-      const Domain<Dim>& domain, const ElementId<Dim>& element_id) const;
+      const Domain<Dim>& domain,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const ElementId<Dim>& element_id) const;
 };
 
 namespace detail {
@@ -157,6 +162,7 @@ struct InitializeFacesAndMortars {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
+      const domain::FunctionsOfTimeMap& functions_of_time,
       const Background& background = std::nullptr_t{},
       tmpl::list<BackgroundClasses...> /*meta*/ = tmpl::list<>{}) const {
     static_assert(std::is_same_v<InvMetricTag, void> or
@@ -191,10 +197,14 @@ struct InitializeFacesAndMortars {
       const auto face_logical_coords =
           interface_logical_coordinates(face_mesh, direction);
       auto& face_inertial_coords = (*faces_inertial_coords)[direction];
-      face_inertial_coords = element_map.operator()(face_logical_coords);
+      face_inertial_coords =
+          element_map(face_logical_coords, 0., functions_of_time);
       auto& face_normal = (*face_normals)[direction];
       auto& face_normal_magnitude = (*face_normal_magnitudes)[direction];
-      face_normal = unnormalized_face_normal(face_mesh, element_map, direction);
+      unnormalized_face_normal(
+          make_not_null(&face_normal), face_mesh,
+          element_map.inv_jacobian(face_logical_coords, 0., functions_of_time),
+          direction);
       if constexpr (std::is_same_v<InvMetricTag, void>) {
         magnitude(make_not_null(&face_normal_magnitude), face_normal);
       } else {
@@ -206,7 +216,8 @@ struct InitializeFacesAndMortars {
         face_normal.get(d) /= get(face_normal_magnitude);
       }
       get((*face_jacobians)[direction]) =
-          get(determinant(element_map.jacobian(face_logical_coords))) *
+          get(determinant(element_map.jacobian(face_logical_coords, 0.,
+                                               functions_of_time))) *
           get(face_normal_magnitude);
     }
     // Compute the Jacobian derivative numerically, because our coordinate maps
@@ -237,16 +248,16 @@ struct InitializeFacesAndMortars {
           const auto mortar_logical_coords = detail::mortar_logical_coordinates(
               mortar_mesh, mortar_size, direction);
           auto& mortar_jacobian = (*mortar_jacobians)[mortar_id];
-          mortar_jacobian =
-              determinant(element_map.jacobian(mortar_logical_coords));
+          mortar_jacobian = determinant(element_map.jacobian(
+              mortar_logical_coords, 0., functions_of_time));
           // These factors of two account for the mortar size
           for (const auto& mortar_size_i : mortar_size) {
             if (mortar_size_i != Spectral::MortarSize::Full) {
               get(mortar_jacobian) *= 0.5;
             }
           }
-          const auto inv_jacobian_on_mortar =
-              element_map.inv_jacobian(mortar_logical_coords);
+          const auto inv_jacobian_on_mortar = element_map.inv_jacobian(
+              mortar_logical_coords, 0., functions_of_time);
           const auto unnormalized_mortar_normal = unnormalized_face_normal(
               mortar_mesh, inv_jacobian_on_mortar, direction);
           Scalar<DataVector> mortar_normal_magnitude{};
@@ -255,7 +266,7 @@ struct InitializeFacesAndMortars {
                       unnormalized_mortar_normal);
           } else {
             const auto mortar_inertial_coords =
-                element_map(mortar_logical_coords);
+                element_map(mortar_logical_coords, 0., functions_of_time);
             const auto inv_metric_on_mortar =
                 get_inv_metric(mortar_inertial_coords);
             magnitude(make_not_null(&mortar_normal_magnitude),

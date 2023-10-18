@@ -31,6 +31,7 @@ target_link_libraries(
   Domain
   DomainStructure
   ErrorHandling
+  FunctionsOfTime
   LinearOperators
   Spectral
   Utilities
