@@ -533,8 +533,8 @@ auto block_logical_coords(
   }
 
   if (domain.is_time_dependent()) {
-    if constexpr (Parallel::is_in_mutable_global_cache<
-                      Metavariables, domain::Tags::FunctionsOfTime>) {
+    if constexpr (Parallel::is_in_global_cache<Metavariables,
+                                               domain::Tags::FunctionsOfTime>) {
       // Whoever calls block_logical_coords when the maps are
       // time-dependent is responsible for ensuring
       // that functions_of_time are up to date at temporal_id.
