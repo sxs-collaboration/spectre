@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -63,17 +64,23 @@ class ElementMap {
 
   template <typename T>
   tnsr::I<T, Dim, TargetFrame> operator()(
-      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point) const {
+      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const domain::FunctionsOfTimeMap& functions_of_time = {}) const {
     auto block_source_point =
         apply_affine_transformation_to_point(source_point);
-    return block_map_->operator()(std::move(block_source_point));
+    return block_map_->operator()(std::move(block_source_point), time,
+                                  functions_of_time);
   }
 
   template <typename T>
   tnsr::I<T, Dim, Frame::ElementLogical> inverse(
-      tnsr::I<T, Dim, TargetFrame> target_point) const {
+      tnsr::I<T, Dim, TargetFrame> target_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const domain::FunctionsOfTimeMap& functions_of_time = {}) const {
     auto block_source_point{
-        block_map_->inverse(std::move(target_point)).value()};
+        block_map_->inverse(std::move(target_point), time, functions_of_time)
+            .value()};
     // Apply the affine map to the points
     tnsr::I<T, Dim, Frame::ElementLogical> source_point;
     for (size_t d = 0; d < Dim; ++d) {
@@ -86,11 +93,13 @@ class ElementMap {
 
   template <typename T>
   InverseJacobian<T, Dim, Frame::ElementLogical, TargetFrame> inv_jacobian(
-      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point) const {
+      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const domain::FunctionsOfTimeMap& functions_of_time = {}) const {
     auto block_source_point =
         apply_affine_transformation_to_point(source_point);
-    auto block_inv_jac =
-        block_map_->inv_jacobian(std::move(block_source_point));
+    auto block_inv_jac = block_map_->inv_jacobian(std::move(block_source_point),
+                                                  time, functions_of_time);
     InverseJacobian<T, Dim, Frame::ElementLogical, TargetFrame> inv_jac;
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
@@ -103,10 +112,13 @@ class ElementMap {
 
   template <typename T>
   Jacobian<T, Dim, Frame::ElementLogical, TargetFrame> jacobian(
-      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point) const {
+      const tnsr::I<T, Dim, Frame::ElementLogical>& source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const domain::FunctionsOfTimeMap& functions_of_time = {}) const {
     auto block_source_point =
         apply_affine_transformation_to_point(source_point);
-    auto block_jac = block_map_->jacobian(std::move(block_source_point));
+    auto block_jac = block_map_->jacobian(std::move(block_source_point), time,
+                                          functions_of_time);
     Jacobian<T, Dim, Frame::ElementLogical, TargetFrame> jac;
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {

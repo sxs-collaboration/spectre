@@ -18,8 +18,11 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -222,7 +225,8 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementMap", "[Unit][Domain]") {
     }
     {
       INFO("Time-dependent");
-      const Affine grid_to_inertial_map{2.0, 8.0, 0.0, 1.0};
+      const domain::CoordinateMaps::TimeDependent::Translation<1>
+          grid_to_inertial_map{"Translation"};
       block.inject_time_dependent_map(
           make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
               grid_to_inertial_map));
@@ -242,7 +246,15 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementMap", "[Unit][Domain]") {
             element_id,
             make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
                 block_map, grid_to_inertial_map)};
-        CHECK(element_map(xi) == expected_element_map(xi));
+        const double time = 1.;
+        domain::FunctionsOfTimeMap functions_of_time{};
+        functions_of_time["Translation"] =
+            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<1>>(
+                time, std::array<DataVector, 2>{{{1, 2.}, {1, 0.}}},
+                std::numeric_limits<double>::infinity());
+        CHECK(element_map(xi, time, functions_of_time) ==
+              expected_element_map(xi, time, functions_of_time));
+        CHECK(get<0>(element_map(xi, time, functions_of_time)) == 10.);
       }
     }
   }
