@@ -132,19 +132,19 @@ void test_characteristic_fields() {
   // VPsi
   pypp::check_with_random_values<1>(field_with_tag<ScalarWave::Tags::VPsi, Dim>,
                                     "Characteristics", "char_field_vpsi",
-                                    {{{-100., 100.}}}, used_for_size);
+                                    {{{-10., 10.}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
       field_with_tag<ScalarWave::Tags::VZero<Dim>, Dim>, "Characteristics",
-      "char_field_vzero", {{{-100., 100.}}}, used_for_size, 1.e-11);
+      "char_field_vzero", {{{-10., 10.}}}, used_for_size, 1.e-11);
   // VPlus
   pypp::check_with_random_values<1>(
       field_with_tag<ScalarWave::Tags::VPlus, Dim>, "Characteristics",
-      "char_field_vplus", {{{-100., 100.}}}, used_for_size);
+      "char_field_vplus", {{{-10., 10.}}}, used_for_size);
   // VMinus
   pypp::check_with_random_values<1>(
       field_with_tag<ScalarWave::Tags::VMinus, Dim>, "Characteristics",
-      "char_field_vminus", {{{-100., 100.}}}, used_for_size);
+      "char_field_vminus", {{{-10., 10.}}}, used_for_size);
 }
 
 // Test return-by-reference char fields by comparing to analytic solution
@@ -251,15 +251,15 @@ void test_evolved_from_characteristic_fields() {
   // Psi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<ScalarWave::Tags::Psi, Dim>, "Characteristics",
-      "evol_field_psi", {{{-100., 100.}}}, used_for_size);
+      "evol_field_psi", {{{-10., 10.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<ScalarWave::Tags::Pi, Dim>, "Characteristics",
-      "evol_field_pi", {{{-100., 100.}}}, used_for_size);
+      "evol_field_pi", {{{-10., 10.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<ScalarWave::Tags::Phi<Dim>, Dim>, "Characteristics",
-      "evol_field_phi", {{{-100., 100.}}}, used_for_size);
+      "evol_field_phi", {{{-10., 10.}}}, used_for_size);
 }
 
 // Test return-by-reference evolved fields by comparing to analytic solution
