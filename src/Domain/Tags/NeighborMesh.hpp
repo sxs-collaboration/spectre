@@ -15,9 +15,11 @@ namespace domain::Tags {
 /*!
  * \brief Holds the mesh of each neighboring element.
  *
- * This is ultimately necessary to determine what numerical method the neighbor
- * is using. This knowledge can be used for optimizing code when using a DG-FD
- * hybrid method, but might also be useful more generally..
+ * This knowledge can be used to determine the geometry of mortars between
+ * elements. It is kept up to date by AMR.
+ *
+ * For DG-FD hybrid methods this is necessary to determine what numerical method
+ * the neighbor is using. This knowledge can be used for optimizing code.
  */
 template <size_t Dim>
 struct NeighborMesh : db::SimpleTag {
