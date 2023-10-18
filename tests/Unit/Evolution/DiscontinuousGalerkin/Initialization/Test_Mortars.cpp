@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -361,6 +362,7 @@ void test_p_refine(
     mortar_data_history_type<Dim>& mortar_data_history,
     const Mesh<Dim>& old_mesh, Mesh<Dim>& new_mesh,
     const Element<Dim>& old_element, Element<Dim>& new_element,
+    std::unordered_map<ElementId<Dim>, amr::Info<Dim>>& neighbor_info,
     const ::dg::MortarMap<
         Dim, evolution::dg::MortarData<Dim>>& /*expected_mortar_data*/,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
@@ -374,12 +376,13 @@ void test_p_refine(
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
+      amr::Tags::NeighborInfo<Dim>, Tags::MortarData<Dim>,
+      Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
       Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
-      std::move(new_mesh), std::move(new_element), std::move(mortar_data),
-      std::move(mortar_mesh), std::move(mortar_size),
+      std::move(new_mesh), std::move(new_element), std::move(neighbor_info),
+      std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_size),
       std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
@@ -452,6 +455,8 @@ void test_p_refine_gts() {
                            Spectral::Quadrature::GaussLobatto};
   Mesh<Dim> new_mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
+  Mesh<Dim> neighbor_mesh{5, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
 
   const auto old_element = make_element<Dim>();
   auto new_element = make_element<Dim>();
@@ -469,10 +474,14 @@ void test_p_refine_gts() {
   mortar_data_history_type<Dim> mortar_data_history{};
 
   ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
+  std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
   for (const auto& [direction, neighbors] : old_element.neighbors()) {
     for (const auto& neighbor : neighbors) {
       const auto mortar_id = std::make_pair(direction, neighbor);
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
+      neighbor_info.emplace(
+          neighbor,
+          amr::Info<Dim>{std::array<amr::Flag, Dim>{}, neighbor_mesh});
     }
   }
 
@@ -491,7 +500,11 @@ void test_p_refine_gts() {
     for (const auto& neighbor : neighbors) {
       const auto mortar_id = std::make_pair(direction, neighbor);
       expected_mortar_data.emplace(mortar_id, MortarData<Dim>{1});
-      expected_mortar_mesh.emplace(mortar_id, Mesh<Dim - 1>{});
+      expected_mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
+                            neighbor_info.at(neighbor).new_mesh.slice_away(
+                                direction.dimension())));
       expected_mortar_size.emplace(
           mortar_id,
           ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
@@ -506,9 +519,10 @@ void test_p_refine_gts() {
   test_p_refine<Dim, false>(
       mortar_data, mortar_mesh, mortar_size, mortar_next_temporal_ids,
       normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
-      old_element, new_element, expected_mortar_data, expected_mortar_mesh,
-      expected_mortar_size, expected_mortar_next_temporal_ids,
-      expected_normal_covector_and_magnitude, expected_mortar_data_history);
+      old_element, new_element, neighbor_info, expected_mortar_data,
+      expected_mortar_mesh, expected_mortar_size,
+      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
+      expected_mortar_data_history);
 }
 
 }  // namespace
