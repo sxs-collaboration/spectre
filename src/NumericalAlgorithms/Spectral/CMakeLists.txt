@@ -62,6 +62,7 @@ target_link_libraries(
   BLAS::BLAS
   Boost::boost
   LAPACK::LAPACK
+  RootFinding
   )
 
 add_subdirectory(Python)

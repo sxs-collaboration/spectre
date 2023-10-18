@@ -90,6 +90,7 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   GSL::gsl
+  Logging
   MathFunctions
   RootFinding
   Serialization
