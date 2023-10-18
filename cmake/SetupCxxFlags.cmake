@@ -103,6 +103,16 @@ set_property(TARGET SpectreFlags
   INTERFACE_COMPILE_OPTIONS
   $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
 
+# Increase bracket depth for fold expressions
+# (see also https://github.com/llvm/llvm-project/issues/48973)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0)
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY
+    INTERFACE_COMPILE_OPTIONS
+    $<$<COMPILE_LANGUAGE:CXX>:-fbracket-depth=1024>)
+endif()
+
 # Disable cmath setting the error flag. This allows the compiler to more
 # aggressively vectorize code since it doesn't need to respect some global
 # state.
