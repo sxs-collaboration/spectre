@@ -26,11 +26,13 @@ if(USE_XSIMD)
 
   # As long as we want xsimd support to be optional we need to be
   # able to figure out if we have it available.
+  #
+  # To enable use with Blaze, add:
+  #   -DBLAZE_USE_XSIMD=1
   set_property(TARGET xsimd
     APPEND PROPERTY
     INTERFACE_COMPILE_OPTIONS
     -DSPECTRE_USE_XSIMD
-    -DBLAZE_USE_XSIMD=1
     )
 
   set_property(
@@ -38,9 +40,12 @@ if(USE_XSIMD)
     xsimd
     )
 
-  target_link_libraries(
-    Blaze
-    INTERFACE
-    xsimd
-    )
+  # Currently we still have some compatibility bugs to sort out between Blaze
+  # and xsimd. Once that's done we will enable combining the two.
+  #
+  # target_link_libraries(
+  #   Blaze
+  #   INTERFACE
+  #   xsimd
+  #   )
 endif()
