@@ -224,7 +224,8 @@ auto ThreadsafeList<T>::find_interval(const double time,
     ERROR("Attempt to access an empty function of time.");
   }
   if (time > interval->expiration or
-      (interval_after_boundary and time == interval->expiration)) {
+      (interval_after_boundary and time == interval->expiration and
+       interval->expiration < std::numeric_limits<double>::infinity())) {
     ERROR("Attempt to evaluate at time "
           << time << ", which is after the expiration time "
           << interval->expiration);

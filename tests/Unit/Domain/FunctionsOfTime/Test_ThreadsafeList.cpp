@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <limits>
 #include <utility>
 
 #include "Domain/FunctionsOfTime/ThreadsafeList.hpp"
@@ -129,6 +130,16 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ThreadsafeList",
     ++it;
     CHECK(it == list.end());
     CHECK_FALSE(it != list.end());
+  }
+
+  {
+    ThreadsafeList<int> infinite_list(0.0);
+    infinite_list.insert(0.0, 1, std::numeric_limits<double>::infinity());
+    CHECK(infinite_list.expiration_after(
+              std::numeric_limits<double>::infinity()) ==
+          std::numeric_limits<double>::infinity());
+    CHECK(infinite_list.expiration_after(1.0) ==
+          std::numeric_limits<double>::infinity());
   }
 
   CHECK_THROWS_WITH(
