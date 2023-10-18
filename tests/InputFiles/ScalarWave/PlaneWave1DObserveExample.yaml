@@ -13,6 +13,7 @@ ExpectedOutput:
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 InitialData:
   PlaneWave:
@@ -24,22 +25,32 @@ InitialData:
         Wavenumber: 1.0
         Phase: 0.0
 
+Amr:
+  Criteria:
+    - TruncationError:
+        VariablesToMonitor: [Psi]
+        AbsoluteTarget: 1.e-6
+        RelativeTarget: 1.0
+  Verbosity: Verbose
+
 PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
 
 Evolution:
   InitialTime: &InitialTime
     0.0
   InitialTimeStep: 0.001
-  InitialSlabSize: 0.01
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  StepChoosers:
-    - Constant: 0.05
-    - Increase:
-        Factor: 2
-    - Cfl:
-        SafetyFactor: 0.2
 
 DomainCreator:
   Interval:

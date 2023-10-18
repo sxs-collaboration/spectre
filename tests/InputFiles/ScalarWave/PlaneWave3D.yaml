@@ -9,6 +9,7 @@ Testing:
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 InitialData:
   PlaneWave:
@@ -20,22 +21,19 @@ InitialData:
         Wavenumber: 1.0
         Phase: 0.0
 
+Amr:
+  Criteria:
+  Verbosity: Verbose
+
 PhaseChangeAndTriggers:
 
 Evolution:
   InitialTime: 0.0
   # Test backwards evolution in an integration test
   InitialTimeStep: -0.001
-  InitialSlabSize: 0.01
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  StepChoosers:
-    - Constant: 0.05
-    - Increase:
-        Factor: 2
-    - Cfl:
-        SafetyFactor: 0.2
 
 DomainCreator:
   Brick:

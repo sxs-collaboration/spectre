@@ -10,6 +10,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/RegisterDerived.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Chosen in CMakeLists.txt
@@ -22,6 +23,8 @@ extern "C" void CkRegisterMainModule() {
        &domain::creators::time_dependence::register_derived_with_charm,
        &domain::FunctionsOfTime::register_derived_with_charm,
        &ScalarWave::BoundaryCorrections::register_derived_with_charm,
-       &register_factory_classes_with_charm<metavariables>},
+       &register_factory_classes_with_charm<metavariables>,
+       &amr::register_callbacks<metavariables,
+                                typename metavariables::dg_element_array>},
       {});
 }
