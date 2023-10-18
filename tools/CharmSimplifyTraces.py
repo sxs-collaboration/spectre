@@ -55,6 +55,11 @@ def generic_replacements(text):
             matches = re.findall(
                 ", std::integral_constant<unsigned long, [0-9]+>", text[i]
             )
+            if len(matches) == 0:
+                matches = re.findall(
+                    ", std::integral_constant<long unsigned int, [0-9]+>",
+                    text[i],
+                )
             text[i] = text[i].replace("invoke_iterable_action<", "")
             text[i] = text[i].replace(str(matches[-1]), "")
             text[i] = text[i].replace(str(matches[-2]), "")
