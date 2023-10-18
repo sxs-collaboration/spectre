@@ -27,15 +27,10 @@
 
 namespace domain::creators::sphere {
 TimeDependentMapOptions::TimeDependentMapOptions(
-    const double initial_time,
-    const std::optional<std::array<double, 3>>& initial_size_values,
-    const size_t initial_l_max,
-    const typename ShapeMapInitialValues::type::value_type&
-        initial_shape_values)
+    const double initial_time, const ShapeMapOptions& shape_map_options)
     : initial_time_(initial_time),
-      initial_size_values_(initial_size_values),
-      initial_l_max_(initial_l_max),
-      initial_shape_values_(initial_shape_values) {}
+      initial_l_max_(shape_map_options.l_max),
+      initial_shape_values_(shape_map_options.initial_values) {}
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -62,7 +57,7 @@ TimeDependentMapOptions::create_functions_of_time(
   DataVector shape_zeros{
       ylm::Spherepack::spectral_size(initial_l_max_, initial_l_max_), 0.0};
   DataVector shape_func{};
-  double size_func_from_shape = std::numeric_limits<double>::signaling_NaN();
+  DataVector size_func{1, 0.0};
 
   if (initial_shape_values_.has_value()) {
     if (std::holds_alternative<KerrSchildFromBoyerLindquist>(
@@ -77,17 +72,14 @@ TimeDependentMapOptions::create_functions_of_time(
                     inner_radius;
       shape_func = ylm.phys_to_spec(radial_distortion);
       // Transform from SPHEREPACK to actual Ylm for size func
-      size_func_from_shape = shape_func[0] * sqrt(0.5 * M_PI);
+      size_func[0] = shape_func[0] * sqrt(0.5 * M_PI);
       // Set l=0 for shape map to 0 because size is going to be used
       shape_func[0] = 0.0;
     }
   } else {
     shape_func = shape_zeros;
-    size_func_from_shape = 0.0;
+    size_func[0] = 0.0;
   }
-
-  ASSERT(not std::isnan(size_func_from_shape),
-         "Size func value from shape coefficients is NaN.");
 
   // ShapeMap FunctionOfTime
   result[shape_name] =
@@ -97,15 +89,8 @@ TimeDependentMapOptions::create_functions_of_time(
               {std::move(shape_func), shape_zeros, shape_zeros}},
           expiration_times.at(shape_name));
 
-  DataVector size_func{1, size_func_from_shape};
   DataVector size_deriv{1, 0.0};
   DataVector size_2nd_deriv{1, 0.0};
-
-  if (initial_size_values_.has_value()) {
-    size_func[0] = gsl::at(initial_size_values_.value(), 0);
-    size_deriv[0] = gsl::at(initial_size_values_.value(), 1);
-    size_2nd_deriv[0] = gsl::at(initial_size_values_.value(), 2);
-  }
 
   // Size FunctionOfTime (used in ShapeMap)
   result[size_name] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
