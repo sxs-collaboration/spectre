@@ -63,10 +63,7 @@ double get_num_points_and_grid_spacing_cost(
       initial_extents, element_id, quadrature);
   Element<Dim> element = ::domain::Initialization::create_initial_element(
       element_id, block, initial_refinement_levels);
-  ElementMap<Dim, Frame::Grid> element_map{
-      element_id, block.is_time_dependent()
-                      ? block.moving_mesh_logical_to_grid_map().get_clone()
-                      : block.stationary_map().get_to_grid_frame()};
+  ElementMap<Dim, Frame::Grid> element_map{element_id, block};
   const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords =
       logical_coordinates(mesh);
   const tnsr::I<DataVector, Dim, Frame::Grid> grid_coords =

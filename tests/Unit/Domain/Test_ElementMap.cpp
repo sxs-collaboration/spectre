@@ -30,6 +30,7 @@
 namespace domain {
 namespace {
 using DV = DataVector;
+using Affine = CoordinateMaps::Affine;
 
 template <size_t Dim, typename S, typename T, typename U>
 void test_element_impl(
@@ -98,8 +99,6 @@ void test_element_map();
 
 template <>
 void test_element_map<1>() {
-  using Affine = CoordinateMaps::Affine;
-
   auto segment_ids = std::array<SegmentId, 1>({{SegmentId(2, 3)}});
   ElementId<1> element_id(0, segment_ids);
   const tnsr::I<double, 1, Frame::ElementLogical> logical_point_double{0.0};
@@ -124,7 +123,6 @@ template <>
 void test_element_map<2>() {
   using Rotate = CoordinateMaps::Rotation<2>;
   using Wedge2D = CoordinateMaps::Wedge<2>;
-  using Affine = CoordinateMaps::Affine;
 
   auto segment_ids =
       std::array<SegmentId, 2>({{SegmentId(2, 3), SegmentId(1, 0)}});
@@ -157,7 +155,6 @@ void test_element_map<2>() {
 template <>
 void test_element_map<3>() {
   using Rotate = CoordinateMaps::Rotation<3>;
-  using Affine = CoordinateMaps::Affine;
 
   auto segment_ids = std::array<SegmentId, 3>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(2, 1)}});
@@ -191,5 +188,63 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementMap", "[Unit][Domain]") {
   test_element_map<1>();
   test_element_map<2>();
   test_element_map<3>();
+
+  {
+    INFO("Test with Block");
+    const ElementId<1> element_id{0, {{{2, 3}}}};
+    const Affine block_map{-1.0, 1.0, 2.0, 8.0};
+    const tnsr::I<double, 1, Frame::ElementLogical> xi{{{1.}}};
+    Block<1> block{
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            block_map),
+        0,
+        {}};
+    {
+      INFO("Time-independent");
+      {
+        INFO("Grid frame");
+        ElementMap<1, Frame::Grid> element_map{element_id, block};
+        ElementMap<1, Frame::Grid> expected_element_map{
+            element_id,
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                block_map)};
+        CHECK(element_map(xi) == expected_element_map(xi));
+      }
+      {
+        INFO("Inertial frame");
+        ElementMap<1, Frame::Inertial> element_map{element_id, block};
+        ElementMap<1, Frame::Inertial> expected_element_map{
+            element_id,
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                block_map)};
+        CHECK(element_map(xi) == expected_element_map(xi));
+      }
+    }
+    {
+      INFO("Time-dependent");
+      const Affine grid_to_inertial_map{2.0, 8.0, 0.0, 1.0};
+      block.inject_time_dependent_map(
+          make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+              grid_to_inertial_map));
+      {
+        INFO("Grid frame");
+        ElementMap<1, Frame::Grid> element_map{element_id, block};
+        ElementMap<1, Frame::Grid> expected_element_map{
+            element_id,
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                block_map)};
+        CHECK(element_map(xi) == expected_element_map(xi));
+      }
+      {
+        INFO("Inertial frame");
+        ElementMap<1, Frame::Inertial> element_map{element_id, block};
+        ElementMap<1, Frame::Inertial> expected_element_map{
+            element_id,
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                block_map, grid_to_inertial_map)};
+        CHECK(element_map(xi) == expected_element_map(xi));
+      }
+    }
+  }
 }
 }  // namespace domain

@@ -151,10 +151,7 @@ struct Domain {
         initial_extents, element_id, quadrature);
     *element = ::domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinement);
-    *element_map = ElementMap<Dim, Frame::Grid>{
-        element_id, my_block.is_time_dependent()
-                        ? my_block.moving_mesh_logical_to_grid_map().get_clone()
-                        : my_block.stationary_map().get_to_grid_frame()};
+    *element_map = ElementMap<Dim, Frame::Grid>{element_id, my_block};
 
     if (my_block.is_time_dependent()) {
       *grid_to_inertial_map =
@@ -197,10 +194,7 @@ struct ProjectDomain : tt::ConformsTo<amr::protocols::Projector> {
       const ParentOrChildrenItemsType& /*parent_or_children_items*/) {
     const ElementId<Dim>& element_id = element.id();
     const auto& my_block = domain.blocks()[element_id.block_id()];
-    *element_map = ElementMap<Dim, Frame::Grid>{
-        element_id, my_block.is_time_dependent()
-                        ? my_block.moving_mesh_logical_to_grid_map().get_clone()
-                        : my_block.stationary_map().get_to_grid_frame()};
+    *element_map = ElementMap<Dim, Frame::Grid>{element_id, my_block};
     if (my_block.is_time_dependent()) {
       *grid_to_inertial_map =
           my_block.moving_mesh_grid_to_inertial_map().get_clone();

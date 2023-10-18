@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,6 +45,14 @@ class ElementMap {
              std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
                                                        TargetFrame, Dim>>
                  block_map);
+
+  /// Construct from an `element_id` within the `block`. The (affine)
+  /// ElementLogical to BlockLogical map is determined by the `element_id`. The
+  /// BlockLogical to TargetFrame map is determined by the `block`:
+  /// - If the block is time-independent: the `block.stationary_map()` is used.
+  /// - If the block is time-dependent: The `block.moving_mesh_*_map()` maps
+  ///   are used. Which maps are used depends on the TargetFrame.
+  ElementMap(ElementId<Dim> element_id, const Block<Dim>& block);
 
   const domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>&
   block_map() const {
