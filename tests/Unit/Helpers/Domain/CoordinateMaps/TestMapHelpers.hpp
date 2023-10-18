@@ -31,6 +31,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -497,8 +498,17 @@ void test_coordinate_map_argument_types(
     }
     {
       INFO("Test inverse Jacobian");
-      Approx custom_approx = Approx::custom().epsilon(1.e-11);
       const auto expected = the_map.inv_jacobian(point, time_args...);
+      // Set the scale according to the largest element of the inverse
+      // Jacobian. We can't resolve anything smaller than that in general
+      // since if we were to invert the Jacobian to get the inverse Jacobian,
+      // it's roughly the largest elements that set the limit.
+      Approx custom_approx = Approx::custom().epsilon(1.e-11).scale(
+          alg::accumulate(expected, std::numeric_limits<double>::lowest(),
+                          [](auto state, const double& element) {
+                            using std::max;
+                            return max(state, abs(element));
+                          }));
       CHECK_ITERABLE_APPROX(
           the_map.inv_jacobian(add_ref_wrap(point), time_args...), expected);
       CHECK_ITERABLE_CUSTOM_APPROX(
