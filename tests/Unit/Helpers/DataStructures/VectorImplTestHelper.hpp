@@ -643,10 +643,10 @@ enum RefSizeErrorTestKind { Copy, ExpressionAssign, Move };
 /// \brief Test that assigning to a non-owning `VectorType` of the wrong size
 /// appropriately generates an error.
 ///
-/// \details a calling function should be an `ASSERTION_TEST()` and check for
-/// the string "Must copy/move/assign into same size".
-/// Three types of tests are provided and one must be provided as the first
-/// function argument:
+/// \details a calling function should be in a `CHECK_THROWS_WITH()` inside a
+/// `#ifdef SPECTRE_DEBUG` block, and check for the string "Must
+/// copy/move/assign into same size". Three types of tests are provided and one
+/// must be provided as the first function argument:
 /// - `RefSizeErrorTestKind::Copy`: Checks that copy-assigning to a non-owning
 /// `VectorType` from a `VectorType` with the wrong size generates an error.
 /// - `RefSizeErrorTestKind::ExpressionAssign`: Checks that assigning to a

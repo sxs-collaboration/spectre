@@ -36,6 +36,6 @@ SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
 
 // [[OutputRegex, I failed]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.TestingFramework.Abort", "[Unit]") {
-  ERROR_TEST();
+  OUTPUT_TEST();
   sys::abort("I failed");
 }
