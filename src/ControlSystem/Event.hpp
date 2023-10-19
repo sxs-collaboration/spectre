@@ -87,6 +87,7 @@ class Event : public ::Event {
   using compute_tags_for_observation_box =
       metafunctions::compute_tags_for_observation_box_t<measurement>;
 
+  using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime,
                  ::Tags::ObservationBox>;

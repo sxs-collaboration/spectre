@@ -21,6 +21,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "PointwiseFunctions/AnalyticData/Punctures/MultiplePunctures.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -71,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
                             1.,
                             {{0.1, 0.2, 0.3}},
                             {{0.4, 0.5, 0.6}}};
-    const auto databox =
+    auto databox =
         db::create<tmpl::list<background_tag, domain::Tags::Domain<3>>>(
             std::unique_ptr<elliptic::analytic_data::Background>(
                 std::make_unique<MultiplePunctures>(
@@ -80,7 +81,7 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
     ObservationBox<
         tmpl::list<>,
         db::DataBox<tmpl::list<background_tag, domain::Tags::Domain<3>>>>
-        box{databox};
+        box{make_not_null(&databox)};
     Parallel::GlobalCache<Metavariables> empty_cache{};
 
     {

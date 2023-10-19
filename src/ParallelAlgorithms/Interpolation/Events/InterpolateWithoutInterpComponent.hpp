@@ -109,6 +109,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       detail::get_compute_items_on_source_or_default_t<InterpolationTargetTag,
                                                        tmpl::list<>>;
 
+  using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<typename InterpolationTargetTag::temporal_id,
                  Tags::InterpPointInfoBase,

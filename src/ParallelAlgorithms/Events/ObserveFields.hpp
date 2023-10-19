@@ -179,6 +179,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
+  using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox,
                                    ::Events::Tags::ObserverMesh<VolumeDim>>;
 

@@ -33,6 +33,7 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -179,12 +180,13 @@ void test_observe(const Observer& observer) {
         ActionTesting::cache<element_component>(runner, index),
         static_cast<element_component::array_index>(index),
         std::add_pointer_t<element_component>{}));
-    observer.run(
-        make_observation_box<db::AddComputeTags<>>(element_boxes[index]),
-        ActionTesting::cache<element_component>(runner, index),
-        static_cast<element_component::array_index>(index),
-        std::add_pointer_t<element_component>{},
-        {"TimeName", observation_time});
+    auto obs_box = make_observation_box<db::AddComputeTags<>>(
+        make_not_null(&element_boxes[index]));
+    observer.run(make_not_null(&obs_box),
+                 ActionTesting::cache<element_component>(runner, index),
+                 static_cast<element_component::array_index>(index),
+                 std::add_pointer_t<element_component>{},
+                 {"TimeName", observation_time});
   }
 
   // Process the data

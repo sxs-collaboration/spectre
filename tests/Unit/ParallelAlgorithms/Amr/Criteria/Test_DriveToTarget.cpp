@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -44,12 +45,12 @@ void test_criterion(
     const std::array<size_t, VolumeDim>& element_refinement_levels,
     const std::array<amr::Flag, VolumeDim>& expected_flags) {
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
-  const auto databox = db::create<tmpl::list<::domain::Tags::Mesh<VolumeDim>>>(
+  auto databox = db::create<tmpl::list<::domain::Tags::Mesh<VolumeDim>>>(
       Mesh<VolumeDim>{mesh_extents, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto});
   ObservationBox<tmpl::list<>,
                  db::DataBox<tmpl::list<::domain::Tags::Mesh<VolumeDim>>>>
-      box{databox};
+      box{make_not_null(&databox)};
 
   std::array<SegmentId, VolumeDim> segment_ids;
   alg::transform(element_refinement_levels, segment_ids.begin(),

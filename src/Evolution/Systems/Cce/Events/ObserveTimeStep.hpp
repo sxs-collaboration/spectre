@@ -80,6 +80,7 @@ class ObserveTimeStep : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
+  using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::TimeStep>;
 
   template <typename ArrayIndex, typename ParallelComponent,

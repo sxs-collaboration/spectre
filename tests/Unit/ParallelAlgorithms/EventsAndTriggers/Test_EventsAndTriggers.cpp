@@ -22,6 +22,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -45,6 +46,10 @@ struct ObservationCompute : Observation, db::ComputeTag {
     *observation = data + 1;
   }
 };
+
+struct RunCount : db::SimpleTag {
+  using type = int;
+};
 }  // namespace Tags
 
 struct TestEvent : public Event {
@@ -62,10 +67,12 @@ struct TestEvent : public Event {
 
   TestEvent() = default;
 
+  using return_tags = tmpl::list<Tags::RunCount>;
   using argument_tags = tmpl::list<Tags::Data, Tags::Observation>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  void operator()(const int data, const int observation,
+  void operator()(const gsl::not_null<int*> run_count, const int data,
+                  const int observation,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
                   const Component* const /*meta*/,
@@ -74,7 +81,7 @@ struct TestEvent : public Event {
     CHECK(observation == 3);
     CHECK(observation_value.name == "Name");
     CHECK(observation_value.value == 1234.5);
-    ++run_count;
+    ++*run_count;
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -87,11 +94,8 @@ struct TestEvent : public Event {
   }
 
   bool needs_evolved_variables() const override { return false; }
-
-  static int run_count;
 };
 
-int TestEvent::run_count = 0;
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
 
 struct Component {};
@@ -108,23 +112,25 @@ struct Metavariables {
 
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
                              const int expected) {
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
-      Metavariables{}, 2);
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::Data, Tags::RunCount>>(Metavariables{}, 2, 0);
   Event::ObservationValue observation_value{"Name", 1234.5};
 
   Parallel::GlobalCache<Metavariables> cache{};
   Component* const component_ptr = nullptr;
 
-  TestEvent::run_count = 0;
-  events_and_triggers.run_events(box, cache, 0, component_ptr,
+  events_and_triggers.run_events(make_not_null(&box), cache, 0, component_ptr,
                                  observation_value);
-  CHECK(TestEvent::run_count == expected);
+  CHECK(db::get<Tags::RunCount>(box) == expected);
 
-  TestEvent::run_count = 0;
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
   serialize_and_deserialize(events_and_triggers)
-      .run_events(box, cache, 0, component_ptr, observation_value);
-  CHECK(TestEvent::run_count == expected);
+      .run_events(make_not_null(&box), cache, 0, component_ptr,
+                  observation_value);
+  CHECK(db::get<Tags::RunCount>(box) == expected);
 }
 
 void check_trigger(const int expected, const std::string& trigger_string) {
@@ -217,15 +223,13 @@ void test_factory() {
 }
 
 void test_custom_check_trigger() {
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Data>>(
-      Metavariables{}, 2);
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::Data, Tags::RunCount>>(Metavariables{}, 2, 0);
   Event::ObservationValue observation_value{"Name", 1234.5};
 
   Parallel::GlobalCache<Metavariables> cache{};
   Component* const component_ptr = nullptr;
-
-  TestEvent::run_count = 0;
 
   const EventsAndTriggers always_eat = []() {
     EventsAndTriggers::Storage events_and_triggers_input;
@@ -242,33 +246,51 @@ void test_custom_check_trigger() {
     return EventsAndTriggers(std::move(events_and_triggers_input));
   }();
 
-  TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value);
-  CHECK(TestEvent::run_count == 1);
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value);
+  CHECK(db::get<Tags::RunCount>(box) == 1);
 
-  TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value);
-  CHECK(TestEvent::run_count == 0);
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value);
+  CHECK(db::get<Tags::RunCount>(box) == 0);
 
-  TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value,
                         [](const Trigger& /*trigger*/) { return false; });
-  CHECK(TestEvent::run_count == 0);
+  CHECK(db::get<Tags::RunCount>(box) == 0);
 
-  TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value,
                        [](const Trigger& /*trigger*/) { return false; });
-  CHECK(TestEvent::run_count == 0);
+  CHECK(db::get<Tags::RunCount>(box) == 0);
 
-  TestEvent::run_count = 0;
-  always_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  always_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                        observation_value,
                         [](const Trigger& /*trigger*/) { return true; });
-  CHECK(TestEvent::run_count == 1);
+  CHECK(db::get<Tags::RunCount>(box) == 1);
 
-  TestEvent::run_count = 0;
-  never_eat.run_events(box, cache, 0, component_ptr, observation_value,
+  db::mutate<Tags::RunCount>(
+      [](const gsl::not_null<int*> run_count) { *run_count = 0; },
+      make_not_null(&box));
+  never_eat.run_events(make_not_null(&box), cache, 0, component_ptr,
+                       observation_value,
                        [](const Trigger& /*trigger*/) { return true; });
-  CHECK(TestEvent::run_count == 1);
+  CHECK(db::get<Tags::RunCount>(box) == 1);
 }
 }  // namespace
 

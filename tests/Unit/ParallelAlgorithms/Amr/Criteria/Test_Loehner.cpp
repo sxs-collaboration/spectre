@@ -20,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Loehner.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -86,13 +87,13 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.Loehner", "[Unit][ParallelAlgorithms]") {
       exp(-square(get<0>(logical_coords))) + 2. * get<1>(logical_coords);
 
   Parallel::GlobalCache<Metavariables<Dim>> empty_cache{};
-  const auto databox =
+  auto databox =
       db::create<tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<Dim>>>(
           mesh, std::move(test_data));
   ObservationBox<
       tmpl::list<>,
       db::DataBox<tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<Dim>>>>
-      box{databox};
+      box{make_not_null(&databox)};
 
   const auto flags = criterion->evaluate(box, empty_cache, ElementId<Dim>{0});
   CHECK(flags[0] == amr::Flag::Split);

@@ -214,6 +214,7 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
   using compute_tags_for_observation_box =
       tmpl::list<ObservableTensorTags..., NonTensorComputeTags...>;
 
+  using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
 
   template <typename ComputeTagsList, typename DataBoxType,

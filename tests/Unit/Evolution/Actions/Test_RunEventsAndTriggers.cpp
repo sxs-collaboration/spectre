@@ -50,6 +50,7 @@ struct TestEvent : public Event {
 
   TestEvent() = default;
 
+  using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>

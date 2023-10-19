@@ -310,10 +310,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       box, cache, array_index, std::add_pointer_t<elem_component>{}));
   CHECK(event.needs_evolved_variables());
 
-  event.run(
-      make_observation_box<
-          typename metavars::event::compute_tags_for_observation_box>(box),
-      cache, array_index, std::add_pointer_t<elem_component>{}, {});
+  auto obs_box = make_observation_box<
+      typename metavars::event::compute_tags_for_observation_box>(
+      make_not_null(&box));
+  event.run(make_not_null(&obs_box), cache, array_index,
+            std::add_pointer_t<elem_component>{}, {});
 
   check_results();
 }

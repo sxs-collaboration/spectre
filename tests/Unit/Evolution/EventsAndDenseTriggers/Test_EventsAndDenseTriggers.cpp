@@ -48,6 +48,10 @@ struct AddTwoToTimeCompute : db::ComputeTag, AddTwoToTime {
   }
 };
 
+struct EventCount : db::SimpleTag {
+  using type = int;
+};
+
 template <typename Label>
 class TestEvent : public Event {
  public:
@@ -66,18 +70,20 @@ class TestEvent : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<AddTwoToTimeCompute>;
 
+  using return_tags = tmpl::list<EventCount>;
   using argument_tags =
       tmpl::list<Tags::Time, evolution::Tags::PreviousTriggerTime,
                  AddTwoToTime>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  void operator()(const double time,
+  void operator()(const gsl::not_null<int*> event_count, const double time,
                   const std::optional<double>& previous_trigger_time,
                   const double time_plus_two,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
                   const Component* const /*meta*/,
                   const ObservationValue& observation_value) const {
+    ++*event_count;
     event_ran = true;
     time_during_event = time;
     CHECK(time_plus_two == time + 2.0);
@@ -181,11 +187,11 @@ void do_test(const bool time_runs_forward, const bool add_event) {
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
       Tags::Time, evolution::Tags::PreviousTriggerTime, TriggerA::IsTriggered,
       TriggerA::NextCheck, TriggerB::IsTriggered, TriggerB::NextCheck,
-      EventA::IsReady, EventB::IsReady, EventC::IsReady>>(
+      EventA::IsReady, EventB::IsReady, EventC::IsReady, EventCount>>(
       Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
       -1.0 * time_sign, std::optional<double>{}, std::optional<bool>{},
       std::optional<double>{}, std::optional<bool>{}, std::optional<double>{},
-      false, false, false);
+      false, false, false, 0);
 
   const auto set_tag = [&box](auto tag_v, const auto value) {
     using Tag = decltype(tag_v);
@@ -196,14 +202,16 @@ void do_test(const bool time_runs_forward, const bool add_event) {
         make_not_null(&box));
   };
 
-  const auto check_events = [](const bool expected_a, const bool expected_b,
-                               const bool expected_c) {
+  const auto check_events = [&](const bool expected_a, const bool expected_b,
+                                const bool expected_c) {
     CHECK(EventA::event_ran == expected_a);
     CHECK(EventB::event_ran == expected_b);
     CHECK(EventC::event_ran == expected_c);
     EventA::event_ran = false;
     EventB::event_ran = false;
     EventC::event_ran = false;
+    CHECK(db::get<EventCount>(box) == expected_a + expected_b + expected_c);
+    set_tag(EventCount{}, 0);
   };
 
   using TriggeringState = evolution::EventsAndDenseTriggers::TriggeringState;

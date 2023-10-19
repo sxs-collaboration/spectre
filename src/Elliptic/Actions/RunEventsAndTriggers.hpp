@@ -8,6 +8,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -38,7 +39,7 @@ struct RunEventsAndTriggers {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
     Parallel::get<Tags::EventsAndTriggers>(cache).run_events(
-        box, cache, array_index, component,
+        make_not_null(&box), cache, array_index, component,
         {db::tag_name<ObservationId>(),
          static_cast<double>(db::get<ObservationId>(box))});
 

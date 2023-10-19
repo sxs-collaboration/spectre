@@ -88,7 +88,8 @@ struct EvaluateRefinementCriteria {
                      Criterion>,
             detail::get_tags<tmpl::_1>>>,
         db::is_compute_tag<tmpl::_1>>>;
-    auto observation_box = make_observation_box<compute_tags>(box);
+    auto observation_box =
+        make_observation_box<compute_tags>(make_not_null(&box));
 
     const auto& refinement_criteria =
         db::get<amr::Criteria::Tags::Criteria>(box);

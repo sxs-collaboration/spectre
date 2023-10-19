@@ -242,7 +242,8 @@ void EventsAndDenseTriggers::run_events(
       db::is_compute_tag<tmpl::_1>>>;
   const Event::ObservationValue observation_value{db::tag_name<::Tags::Time>(),
                                                   db::get<::Tags::Time>(box)};
-  const auto observation_box = make_observation_box<compute_tags>(box);
+  auto observation_box =
+      make_observation_box<compute_tags>(make_not_null(&box));
 
   for (auto& trigger_entry : events_and_triggers_) {
     if (trigger_entry.is_triggered == std::optional{true}) {
@@ -254,8 +255,8 @@ void EventsAndDenseTriggers::run_events(
           },
           make_not_null(&box));
       for (const auto& event : trigger_entry.events) {
-        event->run(observation_box, cache, array_index, component,
-                   observation_value);
+        event->run(make_not_null(&observation_box), cache, array_index,
+                   component, observation_value);
       }
       db::mutate<::evolution::Tags::PreviousTriggerTime>(
           [](const gsl::not_null<std::optional<double>*>

@@ -34,6 +34,7 @@
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Tags/TimeStepId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -81,7 +82,7 @@ struct initialize_elements_and_queue_simple_actions {
               domain_creator, runner, domain, element_id, temporal_id);
 
       // 2. Make a box
-      const auto box = db::create<db::AddSimpleTags<
+      auto box = db::create<db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<metavars>,
           typename metavars::InterpolationTargetA::temporal_id,
           intrp::Tags::InterpPointInfo<metavars>,
@@ -94,11 +95,12 @@ struct initialize_elements_and_queue_simple_actions {
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
-      event.run(
-          make_observation_box<
-              typename metavars::event::compute_tags_for_observation_box>(box),
-          ActionTesting::cache<elem_component>(runner, element_id), element_id,
-          std::add_pointer_t<elem_component>{}, {});
+      auto obs_box = make_observation_box<
+          typename metavars::event::compute_tags_for_observation_box>(
+          make_not_null(&box));
+      event.run(make_not_null(&obs_box),
+                ActionTesting::cache<elem_component>(runner, element_id),
+                element_id, std::add_pointer_t<elem_component>{}, {});
     }
   }
 };

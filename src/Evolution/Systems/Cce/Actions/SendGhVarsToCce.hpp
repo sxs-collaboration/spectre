@@ -15,6 +15,7 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -50,11 +51,11 @@ struct SendGhVarsToCce {
     auto interpolate_event = intrp::Events::InterpolateWithoutInterpComponent<
         Metavariables::volume_dim, CceWorltubeTargetTag,
         typename CceWorltubeTargetTag::vars_to_interpolate_to_target>{};
-    ::apply(
-        interpolate_event,
-        make_observation_box<db::AddComputeTags<
-            Events::Tags::ObserverMeshCompute<Metavariables::volume_dim>>>(box),
-        cache, array_index, component, observation_value);
+    ::apply(interpolate_event,
+            make_observation_box<db::AddComputeTags<
+                Events::Tags::ObserverMeshCompute<Metavariables::volume_dim>>>(
+                make_not_null(&box)),
+            cache, array_index, component, observation_value);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -159,7 +159,7 @@ void test_observe(
                                                       element_id);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  const auto box = db::create<db::AddSimpleTags<
+  auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       domain::Tags::Mesh<volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>,
@@ -189,14 +189,15 @@ void test_observe(
     CHECK_FALSE(ids_to_register.has_value());
   }
 
-  observe->run(
-      make_observation_box<tmpl::push_back<
-          tmpl::filter<
-              typename System::ObserveEvent::compute_tags_for_observation_box,
-              db::is_compute_tag<tmpl::_1>>,
-          ::Events::Tags::ObserverMeshCompute<volume_dim>>>(box),
-      ActionTesting::cache<element_component>(runner, array_index), array_index,
-      std::add_pointer_t<element_component>{}, {"TimeName", observation_time});
+  auto obs_box = make_observation_box<tmpl::push_back<
+      tmpl::filter<
+          typename System::ObserveEvent::compute_tags_for_observation_box,
+          db::is_compute_tag<tmpl::_1>>,
+      ::Events::Tags::ObserverMeshCompute<volume_dim>>>(make_not_null(&box));
+  observe->run(make_not_null(&obs_box),
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{},
+               {"TimeName", observation_time});
 
   if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));

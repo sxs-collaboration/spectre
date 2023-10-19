@@ -15,6 +15,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -68,12 +69,12 @@ struct RunEventsOnFailure {
                      Event>,
             get_tags<tmpl::_1>>>,
         db::is_compute_tag<tmpl::_1>>>;
-    std::optional<decltype(make_observation_box<compute_tags>(box))>
-        observation_box{make_observation_box<compute_tags>(box)};
+    std::optional observation_box{
+        make_observation_box<compute_tags>(make_not_null(&box))};
 
     for (const auto& event : db::get<::Tags::EventsRunAtCleanup>(box)) {
-      event->run(observation_box.value(), cache, array_index, component,
-                 observation_value);
+      event->run(make_not_null(&observation_box.value()), cache, array_index,
+                 component, observation_value);
     }
 
     // Do not re-enable FPEs because other parts of the pipeline might rely on
