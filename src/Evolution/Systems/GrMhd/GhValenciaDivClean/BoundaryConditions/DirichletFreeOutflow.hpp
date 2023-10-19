@@ -221,6 +221,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
   using fd_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
@@ -241,7 +242,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-      const gsl::not_null<Scalar<DataVector>*> pressure,
+      const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -255,6 +256,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       // interior prim vars tags
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
+      const Scalar<DataVector>& interior_temperature,
       const Scalar<DataVector>& interior_pressure,
       const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
@@ -312,6 +314,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
         Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>
         cell_centered_ghost_fluxes{std::nullopt};
     // Set to zero since it shouldn't be used
+    Scalar<DataVector> pressure{};
     Scalar<DataVector> specific_internal_energy{};
     tnsr::I<DataVector, 3> spatial_velocity{};
     Scalar<DataVector> lorentz_factor{};
@@ -326,8 +329,8 @@ class DirichletFreeOutflow final : public BoundaryCondition {
 
     grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow::
         fd_ghost_impl(
-            rest_mass_density, electron_fraction, pressure,
-            make_not_null(&specific_internal_energy),
+            rest_mass_density, electron_fraction, temperature,
+            make_not_null(&pressure), make_not_null(&specific_internal_energy),
             lorentz_factor_times_spatial_velocity,
             make_not_null(&spatial_velocity), make_not_null(&lorentz_factor),
             magnetic_field, divergence_cleaning_field,
@@ -343,9 +346,9 @@ class DirichletFreeOutflow final : public BoundaryCondition {
 
             // fd_interior_primitive_variables_tags
             interior_rest_mass_density, interior_electron_fraction,
-            interior_pressure, interior_specific_internal_energy,
-            interior_lorentz_factor, interior_spatial_velocity,
-            interior_magnetic_field,
+            interior_temperature, interior_pressure,
+            interior_specific_internal_energy, interior_lorentz_factor,
+            interior_spatial_velocity, interior_magnetic_field,
             // Note: metric vars are empty because they shouldn't be used
             interior_spatial_metric, interior_lapse, interior_shift,
 

@@ -171,7 +171,7 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
 void HydroFreeOutflow::fd_ghost(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-    const gsl::not_null<Scalar<DataVector>*> pressure,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         lorentz_factor_times_spatial_velocity,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -193,6 +193,7 @@ void HydroFreeOutflow::fd_ghost(
     // fd_interior_primitive_variables_tags
     const Scalar<DataVector>& interior_rest_mass_density,
     const Scalar<DataVector>& interior_electron_fraction,
+    const Scalar<DataVector>& interior_temperature,
     const Scalar<DataVector>& interior_pressure,
     const Scalar<DataVector>& interior_specific_internal_energy,
     const Scalar<DataVector>& interior_lorentz_factor,
@@ -202,36 +203,38 @@ void HydroFreeOutflow::fd_ghost(
     // fd_gridless_tags
     const fd::Reconstructor& reconstructor) {
   Variables<tmpl::push_back<typename System::variables_tag::tags_list,
-                            SpatialVelocity, LorentzFactor,
+                            SpatialVelocity, LorentzFactor, Pressure,
                             SpecificInternalEnergy, SqrtDetSpatialMetric,
                             SpatialMetric, InvSpatialMetric, Lapse, Shift>>
       temp_vars{get(*rest_mass_density).size()};
-  fd_ghost_impl(
-      rest_mass_density, electron_fraction, pressure,
-      make_not_null(&get<SpecificInternalEnergy>(temp_vars)),
-      lorentz_factor_times_spatial_velocity,
-      make_not_null(&get<SpatialVelocity>(temp_vars)),
-      make_not_null(&get<LorentzFactor>(temp_vars)), magnetic_field,
-      divergence_cleaning_field, make_not_null(&get<SpatialMetric>(temp_vars)),
-      make_not_null(&get<InvSpatialMetric>(temp_vars)),
-      make_not_null(&get<SqrtDetSpatialMetric>(temp_vars)),
-      make_not_null(&get<Lapse>(temp_vars)),
-      make_not_null(&get<Shift>(temp_vars)),
+  fd_ghost_impl(rest_mass_density, electron_fraction, temperature,
+                make_not_null(&get<Pressure>(temp_vars)),
+                make_not_null(&get<SpecificInternalEnergy>(temp_vars)),
+                lorentz_factor_times_spatial_velocity,
+                make_not_null(&get<SpatialVelocity>(temp_vars)),
+                make_not_null(&get<LorentzFactor>(temp_vars)), magnetic_field,
+                divergence_cleaning_field,
+                make_not_null(&get<SpatialMetric>(temp_vars)),
+                make_not_null(&get<InvSpatialMetric>(temp_vars)),
+                make_not_null(&get<SqrtDetSpatialMetric>(temp_vars)),
+                make_not_null(&get<Lapse>(temp_vars)),
+                make_not_null(&get<Shift>(temp_vars)),
 
-      direction,
+                direction,
 
-      // fd_interior_temporary_tags
-      subcell_mesh,
+                // fd_interior_temporary_tags
+                subcell_mesh,
 
-      // fd_interior_primitive_variables_tags
-      interior_rest_mass_density, interior_electron_fraction, interior_pressure,
-      interior_specific_internal_energy, interior_lorentz_factor,
-      interior_spatial_velocity, interior_magnetic_field,
-      interior_spatial_metric, interior_lapse, interior_shift,
+                // fd_interior_primitive_variables_tags
+                interior_rest_mass_density, interior_electron_fraction,
+                interior_temperature, interior_pressure,
+                interior_specific_internal_energy, interior_lorentz_factor,
+                interior_spatial_velocity, interior_magnetic_field,
+                interior_spatial_metric, interior_lapse, interior_shift,
 
-      reconstructor.ghost_zone_size(),
+                reconstructor.ghost_zone_size(),
 
-      cell_centered_ghost_fluxes->has_value());
+                cell_centered_ghost_fluxes->has_value());
   if (cell_centered_ghost_fluxes->has_value()) {
     ConservativeFromPrimitive::apply(
         make_not_null(&get<Tags::TildeD>(temp_vars)),
@@ -243,7 +246,7 @@ void HydroFreeOutflow::fd_ghost(
 
         // Note: Only the spatial velocity changes.
         *rest_mass_density, *electron_fraction,
-        get<SpecificInternalEnergy>(temp_vars), *pressure,
+        get<SpecificInternalEnergy>(temp_vars), get<Pressure>(temp_vars),
         get<SpatialVelocity>(temp_vars), get<LorentzFactor>(temp_vars),
         *magnetic_field,
 
@@ -270,7 +273,7 @@ void HydroFreeOutflow::fd_ghost(
 
         get<Lapse>(temp_vars), get<Shift>(temp_vars),
         get<SqrtDetSpatialMetric>(temp_vars), get<SpatialMetric>(temp_vars),
-        get<InvSpatialMetric>(temp_vars), *pressure,
+        get<InvSpatialMetric>(temp_vars), get<Pressure>(temp_vars),
         get<SpatialVelocity>(temp_vars), get<LorentzFactor>(temp_vars),
         *magnetic_field);
   }
@@ -279,6 +282,7 @@ void HydroFreeOutflow::fd_ghost(
 void HydroFreeOutflow::fd_ghost_impl(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -305,6 +309,7 @@ void HydroFreeOutflow::fd_ghost_impl(
     // fd_interior_primitive_variables_tags
     const Scalar<DataVector>& interior_rest_mass_density,
     const Scalar<DataVector>& interior_electron_fraction,
+    const Scalar<DataVector>& interior_temperature,
     const Scalar<DataVector>& interior_pressure,
     const Scalar<DataVector>& interior_specific_internal_energy,
     const Scalar<DataVector>& interior_lorentz_factor,
@@ -322,12 +327,12 @@ void HydroFreeOutflow::fd_ghost_impl(
       subcell_extents.slice_away(dim_direction).product()};
 
   using prim_tags_without_cleaning_field =
-      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+      tmpl::list<RestMassDensity, ElectronFraction, Temperature,
                  LorentzFactorTimesSpatialVelocity, MagneticField>;
 
   // Create a single large DV to reduce the number of Variables allocations
   using fluxes_tags =
-      tmpl::list<SpecificInternalEnergy, SpatialMetric, Lapse, Shift>;
+      tmpl::list<Pressure, SpecificInternalEnergy, SpatialMetric, Lapse, Shift>;
   const size_t buffer_size_for_fluxes =
       need_tags_for_fluxes
           ? Variables<fluxes_tags>::number_of_independent_components
@@ -357,7 +362,8 @@ void HydroFreeOutflow::fd_ghost_impl(
       get_boundary_val(interior_rest_mass_density);
   get<ElectronFraction>(outermost_prim_vars) =
       get_boundary_val(interior_electron_fraction);
-  get<Pressure>(outermost_prim_vars) = get_boundary_val(interior_pressure);
+  get<Temperature>(outermost_prim_vars) =
+      get_boundary_val(interior_temperature);
 
   {
     // Kill ingoing components of spatial velocity and compute Wv^i
@@ -401,7 +407,7 @@ void HydroFreeOutflow::fd_ghost_impl(
 
   *rest_mass_density = get<RestMassDensity>(ghost_prim_vars);
   *electron_fraction = get<ElectronFraction>(ghost_prim_vars);
-  *pressure = get<Pressure>(ghost_prim_vars);
+  *temperature = get<Temperature>(ghost_prim_vars);
   *lorentz_factor_times_spatial_velocity =
       get<LorentzFactorTimesSpatialVelocity>(ghost_prim_vars);
   *magnetic_field = get<MagneticField>(ghost_prim_vars);
@@ -419,6 +425,7 @@ void HydroFreeOutflow::fd_ghost_impl(
                   static_cast<std::ptrdiff_t>(outermost_fluxes_vars.size())),
         num_face_pts * buffer_size_for_fluxes * ghost_zone_size};
 
+    get<Pressure>(outermost_fluxes_vars) = get_boundary_val(interior_pressure);
     get<SpecificInternalEnergy>(outermost_fluxes_vars) =
         get_boundary_val(interior_specific_internal_energy);
     get<SpatialMetric>(outermost_fluxes_vars) =
@@ -431,7 +438,8 @@ void HydroFreeOutflow::fd_ghost_impl(
                         outermost_fluxes_vars, ghost_data_extents,
                         dim_direction, i_ghost);
     }
-
+    // Need pressure for high-order finite difference
+    *pressure = get<Pressure>(ghost_fluxes_vars);
     *specific_internal_energy = get<SpecificInternalEnergy>(ghost_fluxes_vars);
     *spatial_metric = get<SpatialMetric>(ghost_fluxes_vars);
     *lapse = get<Lapse>(ghost_fluxes_vars);
