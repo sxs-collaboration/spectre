@@ -18,6 +18,7 @@ target_link_libraries(
   Amr
   DataStructures
   Initialization
+  Logging
   Serialization
   Utilities
   )

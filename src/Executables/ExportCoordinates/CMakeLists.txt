@@ -14,6 +14,7 @@ set(LIBS_TO_LINK
   Evolution
   Informer
   LinearOperators
+  Logging
   Observer
   Options
   Parallel
