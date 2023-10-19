@@ -108,11 +108,18 @@ void test() {
   domain::FunctionsOfTime::register_derived_with_charm();
 
   using TDMO = domain::creators::sphere::TimeDependentMapOptions;
-  TDMO time_dep_opts{0.0, TDMO::ShapeMapOptions{2, std::nullopt}};
+  TDMO time_dep_opts{
+      0.0, TDMO::ShapeMapOptions{2, std::nullopt},
+      TDMO::TranslationMapOptions{std::array<double, 3>{0.0, 0.0, 0.0},
+                                  std::array<double, 3>{0.0, 0.0, 0.0}}};
 
   const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false, {}, {},
-      {}, {}, time_dep_opts);
+      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false, {},
+      std::vector<double>{2.0},
+      std::vector<domain::CoordinateMaps::Distribution>{
+          {domain::CoordinateMaps::Distribution::Linear,
+           domain::CoordinateMaps::Distribution::Linear}},
+      {}, time_dep_opts);
   const Domain<3> domain = domain_creator.create_domain();
 
   Parallel::GlobalCache<Metavars> cache{{domain_creator.functions_of_time()}};

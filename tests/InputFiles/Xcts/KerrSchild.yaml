@@ -26,7 +26,7 @@ Background: &solution
   KerrSchild:
     Mass: &KerrMass 1.
     Spin: &KerrSpin [0., 0., 0.6]
-    Center: [0., 0., 0.]
+    Center: &Center [0., 0., 0.]
 
 InitialGuess: Flatness
 
@@ -44,12 +44,12 @@ DomainCreator:
           LapseTimesConformalFactor: Dirichlet
           ShiftExcess: Dirichlet
     InitialRefinement: 0
-    InitialGridPoints: 4
+    InitialGridPoints: 3
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All
-    RadialPartitioning: []
-    RadialDistribution: [Logarithmic]
+    RadialPartitioning: [3.0]
+    RadialDistribution: [Linear, Logarithmic]
     TimeDependentMaps:
       InitialTime: 0.
       ShapeMap:
@@ -57,6 +57,8 @@ DomainCreator:
         InitialValues:
           Mass: *KerrMass
           Spin: *KerrSpin
+      TranslationMap:
+        InitialValues: [*Center, [0., 0., 0.]]
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution

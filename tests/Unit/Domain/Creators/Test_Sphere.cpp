@@ -139,6 +139,9 @@ std::string option_string(
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"
+                              "    TranslationMap:\n"
+                              "      InitialValues: [[0.0, 0.0, 0.0],"
+                              " [0.001, -0.003, 0.005]]\n"
                             : "  TimeDependentMaps:\n"
                               "    UniformTranslation:\n"
                               "      InitialTime: 1.0\n"
@@ -235,7 +238,8 @@ void test_sphere_construction(
     const bool expect_boundary_conditions = true,
     const std::vector<double>& times = {0.},
     const std::array<double, 3>& velocity = {{0., 0., 0.}},
-    const std::array<double, 3>& size_values = {{0., 0., 0.}}) {
+    const std::array<double, 3>& size_values = {{0., 0., 0.}},
+    const bool use_hard_coded_maps = true) {
   // check consistency of domain
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       sphere, expect_boundary_conditions, false, times);
@@ -306,8 +310,8 @@ void test_sphere_construction(
         const double corner_distance_from_origin =
             [&block, &coords_on_spherical_partition, &current_time, &block_id,
              &num_blocks_per_shell, &inner_radius, &outer_radius,
-             &radial_partitioning, &size_values, &functions_of_time,
-             &velocity]() -> double {
+             &radial_partitioning, &size_values, &functions_of_time, &velocity,
+             &is_inner_cube, &num_blocks, &use_hard_coded_maps]() -> double {
           // use stationary map if independent of time
           if (not block.is_time_dependent()) {
             return get(magnitude(
@@ -324,32 +328,76 @@ void test_sphere_construction(
                 get(magnitude(inertial_location_time_dep));
             const double delta_t = current_time - 1.0;
 
-            // Only when using hard coded time dependent maps do we have
-            // distorted maps in the inner shell.
-            if (block.has_distorted_frame()) {
-              CHECK(block_id < num_blocks_per_shell);
-              // This is the calculation of the inverse of the
-              // SphericalCompression map since the shape map is the identity
-              // currently
-              const double min_radius = inner_radius;
-              const double max_radius = radial_partitioning.size() > 0
-                                            ? radial_partitioning[0]
-                                            : outer_radius;
-              const double func =
-                  gsl::at(size_values, 0) + gsl::at(size_values, 1) * delta_t +
-                  0.5 * gsl::at(size_values, 2) * square(delta_t);
-              const double func_Y00 = func / sqrt(4.0 * M_PI);
-              const double max_minus_min = max_radius - min_radius;
-              const double scale =
-                  (max_minus_min + func_Y00 * max_radius / target_radius) /
-                  (max_minus_min + func_Y00);
+            double temp_radius = target_radius;
+            if (use_hard_coded_maps) {
+              // Undo the translation
+              if (block_id + num_blocks_per_shell < num_blocks and
+                  not is_inner_cube) {
+                // For inner shells we are using a translation time dependence.
+                // origin in inertial frame (need to shift inertial
+                // coord by velocity * (final_time - initial_time))
 
-              return target_radius * scale;
-            } else if (block.moving_mesh_grid_to_inertial_map().is_identity()) {
-              // This happens in our test if we have hard coded time dependent
-              // maps, but we aren't in the first shell. Then it's just the
-              // identity map
-              return target_radius;
+                temp_radius = sqrt(square(get<0>(inertial_location_time_dep) -
+                                          velocity[0] * (delta_t)) +
+                                   square(get<1>(inertial_location_time_dep) -
+                                          velocity[1] * (delta_t)) +
+                                   square(get<2>(inertial_location_time_dep) -
+                                          velocity[2] * (delta_t)));
+              } else {
+                // For the outer shell there is a linear transition that leaves
+                // the outer boundary fixed
+                const double min_radius = radial_partitioning.back();
+                const double max_radius = outer_radius;
+                // The radial falloff factor is determined with respect to the
+                // grid frame
+                const auto grid_location_time_dep =
+                    block.moving_mesh_logical_to_grid_map()(
+                        coords_on_spherical_partition, current_time,
+                        functions_of_time);
+                const double grid_target_radius =
+                    get(magnitude(grid_location_time_dep));
+                const double radial_falloff_factor =
+                    (max_radius - grid_target_radius) /
+                    (max_radius - min_radius);
+
+                temp_radius = sqrt(
+                    square(get<0>(inertial_location_time_dep) -
+                           radial_falloff_factor * velocity[0] * (delta_t)) +
+                    square(get<1>(inertial_location_time_dep) -
+                           radial_falloff_factor * velocity[1] * (delta_t)) +
+                    square(get<2>(inertial_location_time_dep) -
+                           radial_falloff_factor * velocity[2] * (delta_t)));
+              }
+
+              // Only when using hard coded time dependent maps do we have
+              // distorted maps in the inner shell.
+              if (block.has_distorted_frame()) {
+                CHECK(block_id < num_blocks_per_shell);
+                // This is the calculation of the inverse of the
+                // SphericalCompression map since the shape map is the identity
+                // currently
+                const double min_radius = inner_radius;
+                const double max_radius = not radial_partitioning.empty()
+                                              ? radial_partitioning[0]
+                                              : outer_radius;
+                const double func =
+                    gsl::at(size_values, 0) +
+                    gsl::at(size_values, 1) * delta_t +
+                    0.5 * gsl::at(size_values, 2) * square(delta_t);
+                const double func_Y00 = func / sqrt(4.0 * M_PI);
+                const double max_minus_min = max_radius - min_radius;
+                const double scale =
+                    (max_minus_min + func_Y00 * max_radius / target_radius) /
+                    (max_minus_min + func_Y00);
+
+                return temp_radius * scale;
+              } else {
+                // This happens in our test if we have hard coded time dependent
+                // maps, but we aren't in the first shell. Then it's just the
+                // identity map
+                return temp_radius;
+              }
+
             } else {
               // This means we are using a translation time dependence.
               // origin in inertial frame (need to shift inertial
@@ -535,11 +583,15 @@ void test_parse_errors() {
           "an outflow-type boundary condition, you must use that."));
   using TDMO = domain::creators::sphere::TimeDependentMapOptions;
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
-          use_equiangular_map, equatorial_compression, radial_partitioning,
-          radial_distribution, which_wedges,
-          TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt}}, nullptr),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution, which_wedges,
+                       TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt},
+                            TDMO::TranslationMapOptions{
+                                std::array<double, 3>{0.0, 0.0, 0.0},
+                                std::array<double, 3>{0.001, -0.003, 0.005}}},
+                       nullptr),
       Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
           "cube. Use a TimeDependence instead."));
@@ -580,7 +632,7 @@ void test_sphere() {
   const size_t l_max = 10;
   const std::vector<double> times{1., 10.};
 
-  for (auto [interior_index, equiangular, equatorial_compression, array_index,
+  for (auto [interior_index, equiangular, equatorial_compression, index,
              which_wedges, time_dependent, use_hard_coded_time_dep_options,
              with_boundary_conditions] :
        random_sample<5>(
@@ -601,8 +653,6 @@ void test_sphere() {
     CAPTURE(fill_interior);
     CAPTURE(equiangular);
     CAPTURE(equatorial_compression.has_value());  // Whether map is present.
-    CAPTURE(radial_partitioning[array_index]);
-    CAPTURE(radial_distribution[array_index]);
     CAPTURE(which_wedges);
     CAPTURE(time_dependent);
     CAPTURE(with_boundary_conditions);
@@ -614,28 +664,46 @@ void test_sphere() {
     }
     CAPTURE(use_hard_coded_time_dep_options);
 
+    // If we are using hard coded maps, we need at least two shells (or one
+    // radial partition) for the translation map.
+    const auto array_index =
+        (use_hard_coded_time_dep_options and
+                 gsl::at(radial_partitioning, index).empty()
+             ? index + 1
+             : index);
+    CAPTURE(gsl::at(radial_partitioning, array_index));
+    CAPTURE(gsl::at(radial_distribution, array_index));
+
     if (which_wedges != ShellWedges::All and with_boundary_conditions) {
       continue;
     }
 
     creators::Sphere::RadialDistribution::type radial_distribution_variant;
-    if (radial_distribution[array_index].size() == 1) {
-      radial_distribution_variant = radial_distribution[array_index][0];
+    if (gsl::at(radial_distribution, array_index).size() == 1) {
+      radial_distribution_variant =
+          gsl::at(radial_distribution, array_index)[0];
     } else {
-      radial_distribution_variant = radial_distribution[array_index];
+      radial_distribution_variant = gsl::at(radial_distribution, array_index);
     }
 
     std::optional<creators::Sphere::TimeDepOptionType> time_dependent_options{};
 
+    auto translation_velocity = std::array<double, 3>{{0., 0., 0.}};
+
     if (time_dependent) {
       if (use_hard_coded_time_dep_options) {
+        translation_velocity = std::array<double, 3>{{0.001, -0.003, 0.005}};
         time_dependent_options = creators::sphere::TimeDependentMapOptions(
-            1.0, creators::sphere::TimeDependentMapOptions::ShapeMapOptions{
-                     l_max, std::nullopt});
+            1.0,
+            creators::sphere::TimeDependentMapOptions::ShapeMapOptions{
+                l_max, std::nullopt},
+            creators::sphere::TimeDependentMapOptions::TranslationMapOptions{
+                std::array<double, 3>{0.0, 0.0, 0.0}, translation_velocity});
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(
             1.0, velocity);
+        translation_velocity = velocity;
       }
     }
 
@@ -647,23 +715,22 @@ void test_sphere() {
         initial_extents,
         equiangular,
         equatorial_compression,
-        radial_partitioning[array_index],
+        gsl::at(radial_partitioning, array_index),
         radial_distribution_variant,
         which_wedges,
         std::move(time_dependent_options),
         with_boundary_conditions ? create_boundary_condition(true) : nullptr};
-    test_sphere_construction(
-        sphere, inner_radius, outer_radius, fill_interior,
-        radial_partitioning[array_index], which_wedges,
-        with_boundary_conditions,
-        time_dependent ? times : std::vector<double>{0.},
-        time_dependent ? velocity : std::array<double, 3>{{0., 0., 0.}},
-        size_values);
+    test_sphere_construction(sphere, inner_radius, outer_radius, fill_interior,
+                             gsl::at(radial_partitioning, array_index),
+                             which_wedges, with_boundary_conditions,
+                             time_dependent ? times : std::vector<double>{0.},
+                             translation_velocity, size_values,
+                             use_hard_coded_time_dep_options);
     TestHelpers::domain::creators::test_creation(
         option_string(inner_radius, outer_radius, interior, initial_refinement,
                       initial_extents, equiangular, equatorial_compression,
-                      radial_partitioning[array_index],
-                      radial_distribution[array_index], which_wedges,
+                      gsl::at(radial_partitioning, array_index),
+                      gsl::at(radial_distribution, array_index), which_wedges,
                       time_dependent, use_hard_coded_time_dep_options,
                       with_boundary_conditions),
         sphere, with_boundary_conditions);
