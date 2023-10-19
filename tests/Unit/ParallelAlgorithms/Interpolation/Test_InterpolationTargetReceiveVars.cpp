@@ -311,7 +311,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
-    using post_interpolation_callback = MockCallBackType;
+    using post_interpolation_callbacks = tmpl::list<MockCallBackType>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -492,7 +492,7 @@ void test_interpolation_target_receive_vars() {
         first_time / 2.0);
   }
 
-  // This will try to call InterpolationTargetA::post_interpolation_callback
+  // This will try to call InterpolationTargetA::post_interpolation_callbacks
   // where we check that the points are correct.
   ActionTesting::simple_action<target_component,
                                intrp::Actions::InterpolationTargetReceiveVars<

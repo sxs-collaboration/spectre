@@ -95,7 +95,7 @@ namespace callbacks {
 ///   - `::ah::Tags::FastFlow`
 ///   - `ylm::Tags::Strahlkorper<Frame>`
 ///
-/// This is an InterpolationTargetTag::post_interpolation_callback;
+/// This can be used in InterpolationTargetTag::post_interpolation_callbacks;
 /// see intrp::protocols::InterpolationTargetTag for details on
 /// InterpolationTargetTag.
 ///

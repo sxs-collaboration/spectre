@@ -248,8 +248,8 @@ struct EvolutionMetavars {
         ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
-    using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<Ah, Frame>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
@@ -288,8 +288,9 @@ struct EvolutionMetavars {
         gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundary<Excision>, ::Frame::Grid>;
-    using post_interpolation_callback = intrp::callbacks::ObserveSurfaceData<
-        tags_to_observe, ExcisionBoundary<Excision>, ::Frame::Grid>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tags_to_observe, ExcisionBoundary<Excision>, ::Frame::Grid>>;
     // run_callbacks
     template <typename metavariables>
     using interpolating_component = typename metavariables::gh_dg_element_array;
@@ -578,8 +579,8 @@ struct EvolutionMetavars {
     using vars_to_interpolate_to_target = source_vars_no_deriv;
     using compute_target_points =
         intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
     using compute_items_on_target = tmpl::list<>;
     template <typename Metavariables>
     using interpolating_component = gh_dg_element_array;

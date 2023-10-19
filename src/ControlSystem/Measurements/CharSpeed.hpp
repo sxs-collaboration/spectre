@@ -92,8 +92,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
               DataVector, 3, Frame::Distorted>>;
       using compute_target_points =
           intrp::TargetPoints::Sphere<InterpolationTarget, ::Frame::Grid>;
-      using post_interpolation_callback =
-          control_system::RunCallbacks<Excision, ControlSystems>;
+      using post_interpolation_callbacks =
+          tmpl::list<control_system::RunCallbacks<Excision, ControlSystems>>;
 
       template <typename Metavariables>
       using interpolating_component =
@@ -169,9 +169,9 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Distorted>;
-      using post_interpolation_callback =
-          intrp::callbacks::FindApparentHorizon<InterpolationTarget,
-                                                ::Frame::Distorted>;
+      using post_interpolation_callbacks =
+          tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
+                                                           ::Frame::Distorted>>;
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
       using post_horizon_find_callbacks =

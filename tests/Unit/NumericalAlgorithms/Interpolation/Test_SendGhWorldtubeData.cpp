@@ -112,9 +112,10 @@ struct test_metavariables {
                                            Target>::simple_tags;
     using compute_target_points =
         intrp::TargetPoints::Sphere<Target, ::Frame::Inertial>;
-    using post_interpolation_callback = intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<test_metavariables>, Target, false,
-        LocalTimeStepping>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::SendGhWorldtubeData<
+            Cce::CharacteristicEvolution<test_metavariables>, Target, false,
+            LocalTimeStepping>>;
     using compute_items_on_target = tmpl::list<>;
   };
 

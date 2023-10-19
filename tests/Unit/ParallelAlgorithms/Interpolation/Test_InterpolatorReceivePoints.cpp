@@ -211,9 +211,9 @@ struct Metavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         SequentialLineSegment<InterpolationTargetA, Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolationTargetA>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetA>>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

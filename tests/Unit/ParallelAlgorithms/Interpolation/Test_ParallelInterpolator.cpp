@@ -243,8 +243,8 @@ struct MockMetavariables {
     using compute_target_points =
         intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
                                          Frame::Inertial>;
-    using post_interpolation_callback =
-        TestFunction<InterpolationTargetA, Tags::Square>;
+    using post_interpolation_callbacks =
+        tmpl::list<TestFunction<InterpolationTargetA, Tags::Square>>;
   };
   struct InterpolationTargetB
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -255,8 +255,8 @@ struct MockMetavariables {
     using compute_target_points =
         intrp::TargetPoints::LineSegment<InterpolationTargetB, 3,
                                          Frame::Inertial>;
-    using post_interpolation_callback =
-        TestFunction<InterpolationTargetB, Tags::Negate>;
+    using post_interpolation_callbacks =
+        tmpl::list<TestFunction<InterpolationTargetB, Tags::Negate>>;
   };
   struct InterpolationTargetC
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -266,7 +266,7 @@ struct MockMetavariables {
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<InterpolationTargetC,
                                          ::Frame::Inertial>;
-    using post_interpolation_callback = TestKerrHorizonIntegral;
+    using post_interpolation_callbacks = tmpl::list<TestKerrHorizonIntegral>;
   };
 
   using interpolator_source_vars = tmpl::list<Tags::TestSolution>;

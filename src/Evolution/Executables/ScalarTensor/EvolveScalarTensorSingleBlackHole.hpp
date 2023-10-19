@@ -80,8 +80,8 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         ::ah::compute_items_on_target<volume_dim, Frame::Inertial>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>;
+    using post_interpolation_callbacks = tmpl::list<
+        intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
@@ -115,9 +115,9 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                                                                  Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceData<tags_to_observe, ExcisionBoundaryA,
-                                             ::Frame::Grid>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tags_to_observe, ExcisionBoundaryA, ::Frame::Grid>>;
     // run_callbacks
     template <typename metavariables>
     using interpolating_component = typename metavariables::st_dg_element_array;
@@ -133,10 +133,10 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         detail::ObserverTags::scalar_charge_compute_items_on_target;
     using compute_target_points =
         intrp::TargetPoints::Sphere<SphericalSurface, ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             detail::ObserverTags::scalar_charge_surface_obs_tags,
-            SphericalSurface>;
+            SphericalSurface>>;
     template <typename metavariables>
     using interpolating_component = typename metavariables::st_dg_element_array;
   };

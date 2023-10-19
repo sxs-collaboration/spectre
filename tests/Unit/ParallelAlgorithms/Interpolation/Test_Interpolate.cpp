@@ -187,9 +187,9 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolatorTargetA, 3,
                                            Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolatorTargetA>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolatorTargetA>>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<Tags::Lapse>;

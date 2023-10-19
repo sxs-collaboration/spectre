@@ -61,8 +61,13 @@ constexpr bool if_alias_exists_assert_conforms_to_v =
  *   intrp::protocols::ComputeTargetPoints protocol. This will compute the
  *   points on the surface that we are interpolating onto.
  *
- * - a type alias `post_interpolation_callback` that conforms to the
- *   intrp::protocols::PostInterpolationCallback protocol. After the
+ * - a type alias `post_interpolation_callbacks` which is a `tmpl::list` where
+ *   every element of that list conforms to the
+ *   intrp::protocols::PostInterpolationCallback protocol. Only one callback
+ *   with the signature with `gsl::not_null` for both the DataBox and
+ *   GlobalCache (see `intrp::protocols::PostInterpolationCallback`) is allowed
+ *   in this list. Furthermore, if a callback with this signature is in the
+ *   list, it must also be the *only* callback in the list. After the
  *   interpolation is complete, call this struct's `apply` function.
  *
  * A struct conforming to this protocol can also optionally have
@@ -104,10 +109,11 @@ struct InterpolationTargetTag {
     static_assert(
         tt::assert_conforms_to_v<compute_target_points, ComputeTargetPoints>);
 
-    using post_interpolation_callback =
-        typename ConformingType::post_interpolation_callback;
-    static_assert(tt::assert_conforms_to_v<post_interpolation_callback,
-                                           PostInterpolationCallback>);
+    using post_interpolation_callbacks =
+        typename ConformingType::post_interpolation_callbacks;
+    static_assert(tmpl::all<post_interpolation_callbacks,
+                            tt::assert_conforms_to<
+                                tmpl::_1, PostInterpolationCallback>>::value);
   };
 };
 }  // namespace intrp::protocols

@@ -112,7 +112,8 @@ struct InterpolationTargetAImpl
   using vars_to_interpolate_to_target =
       tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>;
   using compute_target_points = MockComputeTargetPoints;
-  using post_interpolation_callback = MockPostInterpolationCallback;
+  using post_interpolation_callbacks =
+      tmpl::list<MockPostInterpolationCallback>;
   using compute_items_on_target = tmpl::list<>;
 };
 

@@ -125,9 +125,9 @@ struct MockMetavariables {
     // conform to the protocol.
     using compute_target_points = ::intrp::TargetPoints::LineSegment<
         InterpolationTargetAWithComputeVarsToInterpolate, 3, Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetAWithComputeVarsToInterpolate>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetAWithComputeVarsToInterpolate>>;
   };
   struct InterpolationTargetAWithoutComputeVarsToInterpolate
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -139,9 +139,9 @@ struct MockMetavariables {
     // conform to the protocol.
     using compute_target_points = ::intrp::TargetPoints::Sphere<
         InterpolationTargetAWithoutComputeVarsToInterpolate, Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetAWithoutComputeVarsToInterpolate>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetAWithoutComputeVarsToInterpolate>>;
   };
   using InterpolationTargetA =
       tmpl::conditional_t<HaveComputeVarsToInterpolate,

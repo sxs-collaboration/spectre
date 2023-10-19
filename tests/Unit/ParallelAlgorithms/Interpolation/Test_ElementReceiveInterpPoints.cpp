@@ -88,9 +88,9 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
                                            Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolationTargetA>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetA>>;
     template <typename Metavariables>
     using interpolating_component = mock_element<Metavariables>;
   };
@@ -102,9 +102,9 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetB, 3,
                                            Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolationTargetA>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetA>>;
     template <typename Metavariables>
     using interpolating_component = mock_element<Metavariables>;
   };

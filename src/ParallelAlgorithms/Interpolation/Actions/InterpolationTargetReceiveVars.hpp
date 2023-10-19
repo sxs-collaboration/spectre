@@ -53,7 +53,7 @@ namespace Actions {
 /// - Checks if functions of time are ready (if there are any). If they are not
 ///   ready, register a simple action callback with the GlobalCache to this
 ///   action.
-/// - Calls `InterpolationTargetTag::post_interpolation_callback`
+/// - Calls `InterpolationTargetTag::post_interpolation_callbacks`
 /// - Tells `Interpolator`s that the interpolation is complete
 ///  (by calling
 ///  `Actions::CleanUpInterpolator<InterpolationTargetTag>`)
@@ -154,7 +154,7 @@ struct InterpolationTargetReceiveVars {
         return;
       }
 
-      if (InterpolationTarget_detail::call_callback<InterpolationTargetTag>(
+      if (InterpolationTarget_detail::call_callbacks<InterpolationTargetTag>(
               make_not_null(&box), make_not_null(&cache), temporal_id)) {
         InterpolationTarget_detail::clean_up_interpolation_target<
             InterpolationTargetTag>(make_not_null(&box), temporal_id);

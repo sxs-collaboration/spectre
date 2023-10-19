@@ -83,9 +83,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<ApparentHorizon,
                                              ::Frame::Inertial>;
-    using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<ApparentHorizon,
-                                              ::Frame::Inertial>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::FindApparentHorizon<ApparentHorizon,
+                                                         ::Frame::Inertial>>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
@@ -117,9 +117,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
         gh::CharacteristicSpeedsOnStrahlkorperCompute<3, Frame::Grid>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundary, ::Frame::Grid>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceData<tags_to_observe, ExcisionBoundary,
-                                             ::Frame::Grid>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tags_to_observe, ExcisionBoundary, ::Frame::Grid>>;
     // run_callbacks
     template <typename metavariables>
     using interpolating_component = typename metavariables::gh_dg_element_array;
@@ -167,7 +167,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>,
           typename ApparentHorizon::post_horizon_find_callbacks,
-          typename ExcisionBoundary::post_interpolation_callback>>;
+          typename ExcisionBoundary::post_interpolation_callbacks>>;
 
   using dg_registration_list =
       tmpl::push_back<typename gh_base::dg_registration_list,

@@ -180,9 +180,9 @@ struct EvolutionMetavars {
     using compute_target_points =
         intrp::TargetPoints::LineSegment<PsiAlongAxis<Number>, volume_dim,
                                          Frame::Grid>;
-    using post_interpolation_callback =
-        intrp::callbacks::ObserveLineSegment<vars_to_interpolate_to_target,
-                                             PsiAlongAxis<Number>>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::ObserveLineSegment<
+            vars_to_interpolate_to_target, PsiAlongAxis<Number>>>;
     template <typename metavariables>
     using interpolating_component = typename metavariables::dg_element_array;
   };
