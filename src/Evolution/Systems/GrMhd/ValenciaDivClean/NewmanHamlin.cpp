@@ -126,7 +126,11 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                         Scalar<double>(current_rest_mass_density),
                         Scalar<double>(current_pressure)));
       } else if constexpr (ThermodynamicDim == 3) {
-        ERROR("3d EOS not implemented");
+        current_specific_internal_energy =
+            (rho_h_w_squared / square(current_lorentz_factor) -
+             current_pressure) /
+                current_rest_mass_density -
+            1.0;
       }
       return PrimitiveRecoveryData{
           current_rest_mass_density, current_lorentz_factor,
@@ -134,17 +138,16 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
           rho_h_w_squared,           electron_fraction};
     }
 
-    const double current_specific_enthalpy = [rho_h_w_squared,
-                                              current_rest_mass_density,
-                                              current_lorentz_factor]() {
-      const double specific_enthalpy =
-          rho_h_w_squared /
-          (current_rest_mass_density * square(current_lorentz_factor));
-      if (UNLIKELY(1.0 - 1.0e-12 > specific_enthalpy)) {
-        return specific_enthalpy;  // will fail returning std::nullopt
-      }
-      return std::max(1.0, specific_enthalpy);
-    }();
+    const double current_specific_enthalpy =
+        [rho_h_w_squared, current_rest_mass_density, current_lorentz_factor]() {
+          const double specific_enthalpy =
+              rho_h_w_squared /
+              (current_rest_mass_density * square(current_lorentz_factor));
+          if (UNLIKELY(1.0 - 1.0e-12 > specific_enthalpy)) {
+            return specific_enthalpy;  // will fail returning std::nullopt
+          }
+          return std::max(1.0, specific_enthalpy);
+        }();
     if (UNLIKELY(1.0 > current_specific_enthalpy)) {
       return std::nullopt;
     }
@@ -161,7 +164,12 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         return std::nullopt;
       }
     } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("3d EOS not implemented");
+      const Scalar<double> local_internal_energy(
+          current_specific_enthalpy -
+          current_pressure / current_rest_mass_density - 1.0);
+      current_pressure = get(equation_of_state.pressure_from_density_and_energy(
+          Scalar<double>(current_rest_mass_density), local_internal_energy,
+          Scalar<double>(electron_fraction)));
     }
 
     gsl::at(aitken_pressure, valid_entries_in_aitken_pressure++) =
@@ -210,7 +218,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
           primitive_from_conservative_options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM

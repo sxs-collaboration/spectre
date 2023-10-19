@@ -76,7 +76,11 @@ class FunctionOfX {
               Scalar<double>(current_rest_mass_density),
               Scalar<double>(current_specific_internal_energy)));
     } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("3d EOS not implemented");
+      current_pressure =
+          get(equation_of_state_.pressure_from_density_and_energy(
+              Scalar<double>(current_rest_mass_density),
+              Scalar<double>(current_specific_internal_energy),
+              Scalar<double>(electron_fraction_)));
     }
 
     return x - (1.0 + current_specific_internal_energy +
@@ -151,7 +155,10 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
         Scalar<double>(rest_mass_density),
         Scalar<double>(specific_internal_energy)));
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    pressure = get(equation_of_state.pressure_from_density_and_energy(
+        Scalar<double>(rest_mass_density),
+        Scalar<double>(specific_internal_energy),
+        Scalar<double>(electron_fraction)));
   }
 
   return PrimitiveRecoveryData{rest_mass_density,
@@ -182,7 +189,7 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
           primitive_from_conservative_options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM

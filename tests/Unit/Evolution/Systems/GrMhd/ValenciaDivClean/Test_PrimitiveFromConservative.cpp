@@ -21,7 +21,10 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
@@ -41,6 +44,122 @@ class PalenzuelaEtAl;
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 namespace {
+
+// In certain cases the evolved variables may go out of
+// bounds (for EoS evaluation) check that primitive
+// recovery correctly fixes these (currently only
+// used for electron fraction)
+template <typename OrderedListOfPrimitiveRecoverySchemes,
+          bool UseMagneticField = false>
+void test_potentially_eos_dependent_primitive_corrections(
+    const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
+    const Scalar<DataVector>& input_rest_mass_density,
+    const Scalar<DataVector>& input_temperature,
+    const Scalar<DataVector>& input_electron_fraction,
+    const gsl::not_null<std::mt19937*> generator) {
+  const DataVector& used_for_size = get(input_rest_mass_density);
+  // Taken as references for now, but make copies if in the future
+  // they are corrected as well.
+  const auto& expected_rest_mass_density = input_rest_mass_density;
+  const auto& expected_temperature = input_temperature;
+  // The electron fraction may evolve out of bounds
+  const auto expected_electron_fraction =
+      Scalar<DataVector>(min(0.5, max(get(input_electron_fraction), 0.)));
+  const auto expected_lorentz_factor =
+      TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<3>(generator, used_for_size);
+  const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
+      generator, expected_lorentz_factor, spatial_metric);
+  Scalar<DataVector> expected_specific_internal_energy =
+      equation_of_state.specific_internal_energy_from_density_and_temperature(
+          expected_rest_mass_density, expected_temperature,
+          expected_electron_fraction);
+
+  Scalar<DataVector> expected_pressure =
+      equation_of_state.pressure_from_density_and_temperature(
+          expected_rest_mass_density, expected_temperature,
+          expected_electron_fraction);
+
+  const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      expected_rest_mass_density, expected_specific_internal_energy,
+      expected_pressure);
+  auto expected_magnetic_field = TestHelpers::hydro::random_magnetic_field(
+      generator, expected_pressure, spatial_metric);
+  if constexpr (!UseMagneticField) {
+    get<0>(expected_magnetic_field) = 0.;
+    get<1>(expected_magnetic_field) = 0.;
+    get<2>(expected_magnetic_field) = 0.;
+  }
+
+  const auto expected_divergence_cleaning_field =
+      TestHelpers::hydro::random_divergence_cleaning_field(generator,
+                                                           used_for_size);
+
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& inv_spatial_metric = det_and_inv.second;
+  const Scalar<DataVector> sqrt_det_spatial_metric =
+      Scalar<DataVector>{sqrt(get(det_and_inv.first))};
+
+  const size_t number_of_points = used_for_size.size();
+  Scalar<DataVector> tilde_d(number_of_points);
+  Scalar<DataVector> tilde_ye(number_of_points);
+  Scalar<DataVector> tilde_tau(number_of_points);
+  tnsr::i<DataVector, 3> tilde_s(number_of_points);
+  tnsr::I<DataVector, 3> tilde_b(number_of_points);
+  Scalar<DataVector> tilde_phi(number_of_points);
+
+  grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
+      make_not_null(&tilde_d), make_not_null(&tilde_ye),
+      make_not_null(&tilde_tau), make_not_null(&tilde_s),
+      make_not_null(&tilde_b), make_not_null(&tilde_phi),
+      expected_rest_mass_density, expected_electron_fraction,
+      expected_specific_internal_energy, expected_pressure,
+      expected_spatial_velocity, expected_lorentz_factor,
+      expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+      expected_divergence_cleaning_field);
+
+  const double cutoff_d_for_inversion = 0.0;
+  const double density_when_skipping_inversion = 0.0;
+  const double kastaun_max_lorentz = std::numeric_limits<double>::max();
+  const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
+      primitive_from_conservative_options(cutoff_d_for_inversion,
+                                          density_when_skipping_inversion,
+                                          kastaun_max_lorentz);
+
+  Scalar<DataVector> rest_mass_density(number_of_points);
+  Scalar<DataVector> electron_fraction(number_of_points);
+  Scalar<DataVector> specific_internal_energy(number_of_points);
+  tnsr::I<DataVector, 3> spatial_velocity(number_of_points);
+  tnsr::I<DataVector, 3> magnetic_field(number_of_points);
+  Scalar<DataVector> divergence_cleaning_field(number_of_points);
+  Scalar<DataVector> lorentz_factor(number_of_points);
+  // need to zero-initialize pressure because the recovery schemes assume it is
+  // not nan
+  Scalar<DataVector> pressure(number_of_points, 0.0);
+  Scalar<DataVector> specific_enthalpy(number_of_points);
+  Scalar<DataVector> temperature(number_of_points);
+  grmhd::ValenciaDivClean::
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
+          make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
+          make_not_null(&specific_internal_energy),
+          make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
+          make_not_null(&divergence_cleaning_field),
+          make_not_null(&lorentz_factor), make_not_null(&pressure),
+          make_not_null(&specific_enthalpy), make_not_null(&temperature),
+          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
+          equation_of_state, primitive_from_conservative_options);
+
+  Approx larger_approx =
+      Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_rest_mass_density, rest_mass_density,
+                               larger_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_electron_fraction, electron_fraction,
+                               larger_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_temperature, temperature,
+                               larger_approx);
+}
 
 template <typename OrderedListOfPrimitiveRecoverySchemes,
           size_t ThermodynamicDim, bool UseMagneticField = true>
@@ -82,7 +201,16 @@ void test_primitive_from_conservative_random(
         equation_of_state.temperature_from_density_and_energy(
             expected_rest_mass_density, expected_specific_internal_energy);
   } else if constexpr (ThermodynamicDim == 3) {
-    static_assert("3D EoS call not implemented");
+    expected_specific_internal_energy =
+        TestHelpers::hydro::random_specific_internal_energy(generator,
+                                                            used_for_size);
+    expected_temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            expected_rest_mass_density, expected_specific_internal_energy,
+            expected_electron_fraction);
+    expected_pressure = equation_of_state.pressure_from_density_and_temperature(
+        expected_rest_mass_density, expected_temperature,
+        expected_electron_fraction);
   }
 
   const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
@@ -125,12 +253,11 @@ void test_primitive_from_conservative_random(
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
-  const double kastaun_max_lorentz = 1.0e4;
+  const double kastaun_max_lorentz = std::numeric_limits<double>::max();
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
       primitive_from_conservative_options(cutoff_d_for_inversion,
                                           density_when_skipping_inversion,
                                           kastaun_max_lorentz);
-
   Scalar<DataVector> rest_mass_density(number_of_points);
   Scalar<DataVector> electron_fraction(number_of_points);
   Scalar<DataVector> specific_internal_energy(number_of_points);
@@ -153,9 +280,8 @@ void test_primitive_from_conservative_random(
           make_not_null(&specific_enthalpy), make_not_null(&temperature),
           tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
           spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-          equation_of_state,
-          primitive_from_conservative_options);
-
+          equation_of_state, primitive_from_conservative_options);
+  INFO("Checking random-value primitive recovery.");
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_rest_mass_density, rest_mass_density,
@@ -213,6 +339,7 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   get<2>(expected_magnetic_field) = 3.0 / 13.0;
 
   if constexpr (!UseMagneticField) {
+    INFO("Not using Magnetic Field");
     get<0>(expected_magnetic_field) = 0.;
     get<1>(expected_magnetic_field) = 0.;
     get<2>(expected_magnetic_field) = 0.;
@@ -275,7 +402,7 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
           tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
           spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
           ideal_fluid, primitive_from_conservative_options);
-
+  INFO("test primitive from conservative with known values");
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_electron_fraction, electron_fraction);
   CHECK_ITERABLE_APPROX(expected_specific_internal_energy,
@@ -318,6 +445,13 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
 
   EquationsOfState::PolytropicFluid<true> polytropic_fluid(100.0, 2.0);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
+  EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
+      wrapped_3d_polytrope(EquationsOfState::PolytropicFluid<true>(100.0, 2.0));
+  EquationsOfState::Equilibrium3D<
+      EquationsOfState::HybridEos<EquationsOfState::PolytropicFluid<true>>>
+      wrapped_3d_polytrope_hot(
+          EquationsOfState::HybridEos<EquationsOfState::PolytropicFluid<true>>(
+              EquationsOfState::PolytropicFluid<true>(100.0, 2.0), 5.0 / 3.0));
   const DataVector dv(5);
   test_primitive_from_conservative_known<tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(dv);
@@ -362,4 +496,77 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
       tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
       2, false>(&generator, ideal_fluid, dv);
+  INFO("3D EoS Kastaun");
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+      3, true>(&generator, wrapped_3d_polytrope, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
+      3, false>(&generator, wrapped_3d_polytrope, dv);
+  INFO("3D EoS Kastaun Hydro");
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>,
+      3, false>(&generator, wrapped_3d_polytrope, dv);
+  INFO("3D EoS Newman-Hamlin");
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+      3, true>(&generator, wrapped_3d_polytrope, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+      3, false>(&generator, wrapped_3d_polytrope, dv);
+  INFO("3D EoS Palenzuela");
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+      3, true>(&generator, wrapped_3d_polytrope, dv);
+  test_primitive_from_conservative_random<
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+      3, false>(&generator, wrapped_3d_polytrope, dv);
+
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, -.1), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, 1.0), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, -.1), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, 1.0), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, -.1), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, 1.0), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, -.1), &generator);
+  test_potentially_eos_dependent_primitive_corrections<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(
+      wrapped_3d_polytrope_hot, make_with_value<Scalar<DataVector>>(dv, 1e-4),
+      make_with_value<Scalar<DataVector>>(dv, 1e-1),
+      make_with_value<Scalar<DataVector>>(dv, 1.0), &generator);
 }

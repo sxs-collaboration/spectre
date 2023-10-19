@@ -481,7 +481,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
       const Mesh<3>& subcell_mesh,                                             \
       const Direction<3> direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef TAGS_LIST

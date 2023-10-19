@@ -119,13 +119,7 @@ class FunctionOfMu {
                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                    equation_of_state,
                const double lorentz_max)
-      : q_(EnforcePhysicality
-               ? std::max(
-                     tau / rest_mass_density_times_lorentz_factor,
-                     equation_of_state.specific_internal_energy_lower_bound(
-                         rest_mass_density_times_lorentz_factor / lorentz_max))
-               : (tau / rest_mass_density_times_lorentz_factor)),
-        r_squared_(momentum_density_squared /
+      : r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
         b_squared_(magnetic_field_squared /
                    rest_mass_density_times_lorentz_factor),
@@ -137,17 +131,28 @@ class FunctionOfMu {
         equation_of_state_(equation_of_state),
         h_0_(equation_of_state_.specific_enthalpy_lower_bound()),
         v_0_squared_(compute_v_0_squared(r_squared_, h_0_, lorentz_max)) {
-    const double r_squared_bound =
-        4.0 * v_0_squared_ * square(q_ + 1.0) / square(1.0 + v_0_squared_);
+    double eps_min{};
+    if constexpr (ThermodynamicDim == 3) {
+      eps_min = equation_of_state_.specific_internal_energy_lower_bound(
+          rest_mass_density_times_lorentz_factor_ / lorentz_max,
+          electron_fraction_);
+    } else {
+      eps_min = equation_of_state_.specific_internal_energy_lower_bound(
+          rest_mass_density_times_lorentz_factor_ / lorentz_max);
+    }
+    q_ = tau / rest_mass_density_times_lorentz_factor;
     if constexpr (EnforcePhysicality) {
+      q_ = std::max(q_, eps_min);
+      const double r_squared_bound =
+          4.0 * v_0_squared_ * square(q_ + 1.0) / square(1.0 + v_0_squared_);
       if (r_squared_bound < r_squared_) {
         r_squared_ = r_squared_bound;
         r_dot_b_squared_ *= r_squared_bound / r_squared_;
       }
+
     } else {
-      const double eps_min =
-          equation_of_state_.specific_internal_energy_lower_bound(
-              rest_mass_density_times_lorentz_factor_ / lorentz_max);
+      const double r_squared_bound =
+          4.0 * v_0_squared_ * square(q_ + 1.0) / square(1.0 + v_0_squared_);
       if (q_ < eps_min or r_squared_ > r_squared_bound) {
         state_is_unphysical_ = true;
       }
@@ -165,7 +170,7 @@ class FunctionOfMu {
   bool state_is_unphysical() const { return state_is_unphysical_; }
 
  private:
-  const double q_;
+  double q_;
   double r_squared_;
   const double b_squared_;
   double r_dot_b_squared_;
@@ -278,11 +283,21 @@ Primitives FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::primitives(
       q_ - 0.5 * b_squared_ -
       0.5 * square(mu * x) * (r_squared_ * b_squared_ - r_dot_b_squared_);
   // Equation (42) with bounds from Equation (6)
-  const double epsilon_hat = std::clamp(
-      w_hat * (q_bar - mu * r_bar_squared) +
-          v_hat_squared * square(w_hat) / (1.0 + w_hat),
-      equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
-      equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  double epsilon_hat = w_hat * (q_bar - mu * r_bar_squared) +
+                       v_hat_squared * square(w_hat) / (1.0 + w_hat);
+  if constexpr (ThermodynamicDim == 3) {
+    epsilon_hat =
+        std::clamp(epsilon_hat,
+                   equation_of_state_.specific_internal_energy_lower_bound(
+                       rho_hat, electron_fraction_),
+                   equation_of_state_.specific_internal_energy_upper_bound(
+                       rho_hat, electron_fraction_));
+  } else {
+    epsilon_hat = std::clamp(
+        epsilon_hat,
+        equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
+        equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  }
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();
   if constexpr (ThermodynamicDim == 1) {
@@ -297,7 +312,9 @@ Primitives FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::primitives(
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    p_hat = get(equation_of_state_.pressure_from_density_and_energy(
+        Scalar<double>(rho_hat), Scalar<double>(epsilon_hat),
+        Scalar<double>(electron_fraction_)));
   }
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared};
 }
@@ -305,7 +322,7 @@ Primitives FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::primitives(
 template <bool EnforcePhysicality, size_t ThermodynamicDim>
 double FunctionOfMu<EnforcePhysicality, ThermodynamicDim>::operator()(
     const double mu) const {
-  const auto[rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
+  const auto [rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
       primitives(mu);
   // Equation (43)
   const double a_hat = p_hat / (rho_hat * (1.0 + epsilon_hat));
@@ -349,7 +366,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       std::numeric_limits<double>::signaling_NaN();
   try {
     // Bracket for master function, see Sec. II.F
-    const auto[lower_bound, upper_bound] = f_of_mu.root_bracket(
+    const auto [lower_bound, upper_bound] = f_of_mu.root_bracket(
         rest_mass_density_times_lorentz_factor, absolute_tolerance_,
         relative_tolerance_, max_iterations_);
 
@@ -363,8 +380,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     return std::nullopt;
   }
 
-  const auto[rest_mass_density, lorentz_factor, pressure,
-             specific_internal_energy, q_bar, r_bar_squared] =
+  const auto [rest_mass_density, lorentz_factor, pressure,
+              specific_internal_energy, q_bar, r_bar_squared] =
       f_of_mu.primitives(one_over_specific_enthalpy_times_lorentz_factor);
 
   (void)(q_bar);
@@ -399,7 +416,6 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
           primitive_from_conservative_options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2), (true, false))
-
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 #undef INSTANTIATION
 #undef THERMODIM
