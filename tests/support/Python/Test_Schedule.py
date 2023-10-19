@@ -108,21 +108,27 @@ NUM_NODES={{ num_nodes | default(1) }}
         )
 
         # Create first of a series of segments
-        schedule(
-            input_file_template=self.input_file_template,
-            scheduler=None,
-            executable=self.executable,
-            segments_dir=self.test_dir,
-            extra_option="TestOpt",
-        )
-        self.assertEqual(
-            sorted(self.test_dir.glob("Segment*")),
-            [self.test_dir / "Segment_0000"],
-        )
-        self.assertEqual(
-            sorted(self.test_dir.glob("Segment*/InputFile.yaml")),
-            [self.test_dir / "Segment_0000/InputFile.yaml"],
-        )
+        segments_dir = self.test_dir / "Skywalker"
+
+        def create_first(force: bool):
+            schedule(
+                input_file_template=self.input_file_template,
+                scheduler=None,
+                executable=self.executable,
+                segments_dir=segments_dir,
+                force=force,
+                extra_option="TestOpt",
+            )
+            self.assertEqual(
+                sorted(segments_dir.glob("Segment*")),
+                [segments_dir / "Segment_0000"],
+            )
+            self.assertEqual(
+                sorted(segments_dir.glob("Segment*/InputFile.yaml")),
+                [segments_dir / "Segment_0000/InputFile.yaml"],
+            )
+
+        create_first(force=False)
 
         # Create next segment
         # - Can't continue without a previous checkpoint
@@ -131,16 +137,19 @@ NUM_NODES={{ num_nodes | default(1) }}
                 input_file_template=self.input_file_template,
                 scheduler=None,
                 executable=self.executable,
-                segments_dir=self.test_dir,
+                segments_dir=segments_dir,
                 extra_option="TestOpt",
             )
+        # Force this to be created
+        create_first(force=True)
+
         # - Can't continue from an earlier checkpoint than the last
         earlier_checkpoint = Checkpoint.match(
-            self.test_dir / "Segment_0000/Checkpoints/Checkpoint_0000"
+            segments_dir / "Segment_0000/Checkpoints/Checkpoint_0000"
         )
         earlier_checkpoint.path.mkdir(parents=True)
         last_checkpoint = Checkpoint.match(
-            self.test_dir / "Segment_0000/Checkpoints/Checkpoint_0001"
+            segments_dir / "Segment_0000/Checkpoints/Checkpoint_0001"
         )
         last_checkpoint.path.mkdir(parents=True)
         with self.assertRaisesRegex(AssertionError, "continue from the last"):
@@ -148,7 +157,7 @@ NUM_NODES={{ num_nodes | default(1) }}
                 input_file_template=self.input_file_template,
                 scheduler=None,
                 executable=self.executable,
-                segments_dir=self.test_dir,
+                segments_dir=segments_dir,
                 from_checkpoint=earlier_checkpoint,
                 extra_option="TestOpt",
             )
@@ -157,7 +166,7 @@ NUM_NODES={{ num_nodes | default(1) }}
             input_file_template=self.input_file_template,
             scheduler=None,
             executable=self.executable,
-            segments_dir=self.test_dir,
+            segments_dir=segments_dir,
             from_checkpoint=last_checkpoint,
             extra_option="TestOpt",
         )
