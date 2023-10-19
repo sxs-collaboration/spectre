@@ -29,10 +29,10 @@ if(USE_XSIMD)
   #
   # To enable use with Blaze, add:
   #   -DBLAZE_USE_XSIMD=1
-  set_property(TARGET xsimd
-    APPEND PROPERTY
-    INTERFACE_COMPILE_OPTIONS
-    -DSPECTRE_USE_XSIMD
+  target_compile_definitions(
+    xsimd
+    INTERFACE
+    $<$<COMPILE_LANGUAGE:CXX>:SPECTRE_USE_XSIMD>
     )
 
   set_property(
