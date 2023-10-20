@@ -158,6 +158,17 @@ def gh_dt_spacetime_metric(lapse, shift, pi, phi):
     return -lapse * pi + np.einsum("k,kab", shift, phi)
 
 
+def gh_d2t2_spacetime_metric(
+    lapse, dt_lapse, shift, dt_shift, phi, dt_phi, pi, dt_pi
+):
+    return (
+        -dt_lapse * pi
+        - lapse * dt_pi
+        + np.einsum("k,kab", dt_shift, phi)
+        + np.einsum("k,kab", shift, dt_phi)
+    )
+
+
 def spacetime_deriv_detg(
     sqrt_det_spatial_metric, inverse_spatial_metric, dt_spatial_metric, phi
 ):

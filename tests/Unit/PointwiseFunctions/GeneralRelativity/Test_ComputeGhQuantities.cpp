@@ -24,6 +24,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -49,6 +50,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SecondTimeDerivOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfDetSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfNormOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
@@ -278,6 +280,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) {
 
 template <typename DataType, size_t SpatialDim, typename Frame>
 void test_spacetime_metric_deriv_functions(const DataVector& used_for_size) {
+  // time_derivative_of_spacetime_metric
   pypp::check_with_random_values<1>(
       static_cast<tnsr::aa<DataType, SpatialDim, Frame> (*)(
           const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
@@ -287,6 +290,82 @@ void test_spacetime_metric_deriv_functions(const DataVector& used_for_size) {
                                                      Frame>),
       "GeneralRelativity.ComputeGhQuantities", "gh_dt_spacetime_metric",
       {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
+  // second_time_deriv_of_spacetime_metric
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::aa<DataType, SpatialDim, Frame> (*)(
+          const Scalar<DataVector>&, const Scalar<DataVector>&,
+          const tnsr::I<DataVector, SpatialDim, Frame>&,
+          const tnsr::I<DataVector, SpatialDim, Frame>&,
+          const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+          const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+          const tnsr::aa<DataVector, SpatialDim, Frame>&,
+          const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
+          &::gh::second_time_deriv_of_spacetime_metric<DataType, SpatialDim,
+                                                       Frame>),
+      "GeneralRelativity.ComputeGhQuantities", "gh_d2t2_spacetime_metric",
+      {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
+}
+
+// Test computation of derivs of spacetime metric by comparing to Kerr-Schild
+template <typename Solution>
+void test_gab_deriv_functions_analytic(
+    const Solution& solution, const size_t grid_size_each_dimension,
+    const std::array<double, 3>& lower_bound,
+    const std::array<double, 3>& upper_bound) {
+  // Setup grid
+  const size_t SpatialDim = 3;
+  Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+
+  const auto coord_map =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
+
+  // Setup coordinates
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = coord_map(x_logical);
+  // Arbitrary time for time-independent solution.
+  const double t = std::numeric_limits<double>::signaling_NaN();
+
+  // Evaluate analytic solution
+  const auto vars =
+      solution.variables(x, t, typename Solution::template tags<DataVector>{});
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
+  const auto& d_lapse =
+      get<typename Solution::template DerivLapse<DataVector>>(vars);
+  const auto& shift = get<gr::Tags::Shift<DataVector, SpatialDim>>(vars);
+  const auto& dt_shift =
+      get<Tags::dt<gr::Tags::Shift<DataVector, SpatialDim>>>(vars);
+  const auto& d_shift =
+      get<typename Solution::template DerivShift<DataVector>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, SpatialDim>>(vars);
+  const auto& dt_spatial_metric =
+      get<Tags::dt<gr::Tags::SpatialMetric<DataVector, SpatialDim>>>(vars);
+  const auto& d_spatial_metric =
+      get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
+
+  const auto phi =
+      gh::phi(lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
+  const auto pi = gh::pi(lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                         dt_spatial_metric, phi);
+  const auto dt_phi = make_with_value<decltype(phi)>(phi, 0.);
+  const auto dt_pi = make_with_value<decltype(pi)>(pi, 0.);
+
+  const auto d2t2_spacetime_metric = gh::second_time_deriv_of_spacetime_metric(
+      lapse, dt_lapse, shift, dt_shift, phi, dt_phi, pi, dt_pi);
+
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    for (size_t b = a; b < SpatialDim + 1; ++b) {
+      CHECK(d2t2_spacetime_metric.get(a, b) == approx(0.0));
+    };
+  };
+  // CHECK_ITERABLE_APPROX(d2t2_spacetime_metric, 0.);
 }
 
 // Test computation of derivs of lapse by comparing to Kerr-Schild
@@ -866,6 +945,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
 
   test_lapse_deriv_functions_analytic(solution, grid_size, lower_bound,
                                       upper_bound);
+  test_gab_deriv_functions_analytic(solution, grid_size, lower_bound,
+                                    upper_bound);
   test_gij_deriv_functions_analytic(solution, grid_size, lower_bound,
                                     upper_bound);
   test_shift_deriv_functions_analytic(solution, grid_size, lower_bound,
@@ -874,6 +955,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
+  TestHelpers::db::test_compute_tag<
+      gh::Tags::SecondTimeDerivOfSpacetimeMetricCompute<3, Frame::Inertial>>(
+      "dt(dt(SpacetimeMetric))");
   TestHelpers::db::test_compute_tag<
       gh::Tags::TimeDerivSpatialMetricCompute<3, Frame::Inertial>>(
       "dt(SpatialMetric)");
