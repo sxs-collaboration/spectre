@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <numeric>
 #include <optional>
@@ -115,7 +116,7 @@ void test_slice_data(
         disable_floating_point_exceptions();
         for (const auto& [_, data_in_direction] : sliced_data) {
           for (const double& at_point : data_in_direction) {
-            CHECK(isnan(at_point));
+            CHECK(std::isnan(at_point));
           }
         }
         enable_floating_point_exceptions();

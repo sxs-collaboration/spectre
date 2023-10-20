@@ -11,20 +11,17 @@
 #include <blaze/math/typetraits/IsColumnMajorMatrix.h>
 #include <blaze/math/typetraits/IsDenseMatrix.h>
 #include <catch2/catch_all.hpp>
-#include <csignal>
+#include <complex>
 #include <cstddef>
-#include <iomanip>
 #include <limits>
-#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
-#include "Utilities/System/Abort.hpp"
-#include "Utilities/System/Exit.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"

@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <pup_stl.h>
 #include <string>
 
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"

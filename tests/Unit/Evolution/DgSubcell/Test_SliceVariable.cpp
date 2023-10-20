@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <numeric>
 
@@ -56,7 +57,7 @@ void test_slice(
     disable_floating_point_exceptions();
     CHECK(sliced_vars.size() == expected_sliced_vars.size());
     for (size_t i = 0; i < sliced_vars.size(); ++i) {
-      CHECK(isnan(
+      CHECK(std::isnan(
           *std::next(sliced_vars.data(), static_cast<std::ptrdiff_t>(i))));
     }
     CHECK(sliced_vars != expected_sliced_vars);
