@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Abort.cpp
+  Exit.cpp
   ParallelInfo.cpp
   Prefetch.cpp
   )
