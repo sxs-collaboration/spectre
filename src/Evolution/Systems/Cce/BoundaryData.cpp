@@ -15,6 +15,7 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
@@ -484,6 +485,10 @@ void null_vector_l_and_derivatives(
     const tnsr::I<DataVector, 3>& shift,
     const tnsr::I<DataVector, 3>& worldtube_normal) {
   const size_t size = get(lapse).size();
+  CAPTURE_FOR_ERROR(lapse);
+  CAPTURE_FOR_ERROR(dt_lapse);
+  CAPTURE_FOR_ERROR(shift);
+  CAPTURE_FOR_ERROR(dt_shift);
 
   // Allocation
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -507,6 +512,7 @@ void null_vector_l_and_derivatives(
     denominator -= spacetime_metric.get(i + 1, i + 1) * shift.get(i) *
                    worldtube_normal.get(i);
   }
+  CAPTURE_FOR_ERROR(denominator);
   // buffer re-use because we won't need the uninverted denominator after this.
   DataVector& one_divided_by_denominator =
       get(get<::Tags::TempScalar<0>>(aggregated_buffer));
