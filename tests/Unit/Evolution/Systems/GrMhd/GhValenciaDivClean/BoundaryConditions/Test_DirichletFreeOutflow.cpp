@@ -44,6 +44,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -532,9 +533,12 @@ SPECTRE_TEST_CASE(
             std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0,
                                                                       2.0),
             RelativisticEuler::Solutions::TovCoordinates::Schwarzschild,
-            2,
-            0.04,
-            2500.0};
+            make_vector<
+                std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                    InitialMagneticField>>(
+                std::make_unique<
+                    grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                    2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))};
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
             *dynamic_cast<grmhd::GhValenciaDivClean::BoundaryConditions::

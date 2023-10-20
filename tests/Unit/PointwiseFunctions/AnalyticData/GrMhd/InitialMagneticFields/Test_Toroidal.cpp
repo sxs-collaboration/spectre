@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Toroidal.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -33,28 +34,38 @@ struct ToroidalProxy : Toroidal {
       const tnsr::I<DataType, 3>& x, const Scalar<DataType>& pressure,
       const Scalar<DataType>& sqrt_det_spatial_metric,
       const tnsr::i<DataType, 3>& deriv_pressure) const {
-    return this->variables(x, pressure, sqrt_det_spatial_metric,
-                           deriv_pressure);
+    auto mag_field = make_with_value<tnsr::I<DataType, 3>>(pressure, 0.0);
+    this->variables(make_not_null(&mag_field), x, pressure,
+                    sqrt_det_spatial_metric, deriv_pressure);
+    return {mag_field};
   }
 };
 
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.InitialMagneticFields.Toroidal",
     "[Unit][PointwiseFunctions]") {
+  register_derived_classes_with_charm<InitialMagneticField>();
   // test creation
-  const auto solution = TestHelpers::test_creation<Toroidal>(
-      "  PressureExponent: 2\n"
-      "  CutoffPressure: 1.0e-5\n"
-      "  VectorPotentialAmplitude: 1000.0\n");
-  CHECK(solution == Toroidal(2, 1.0e-5, 1000.0));
+  const auto factory_solution = serialize_and_deserialize(
+      TestHelpers::test_factory_creation<InitialMagneticField, Toroidal>(
+          "Toroidal:\n"
+          "  PressureExponent: 2\n"
+          "  CutoffPressure: 1.0e-5\n"
+          "  VectorPotentialAmplitude: 1000.0\n"
+          "  Center: [0.0, 0.0, 0.0]\n"
+          "  MaxDistanceFromCenter: 100.0\n"));
+  CHECK(factory_solution->is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+
+  const auto& solution = dynamic_cast<const Toroidal&>(*factory_solution);
 
   // test serialize
   test_serialization(solution);
 
   // test move
   {
-    Toroidal toroidal_field{2, 1.0e-5, 1000.0};
-    Toroidal toroidal_field_copy{2, 1.0e-5, 1000.0};
+    Toroidal toroidal_field{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
+    Toroidal toroidal_field_copy{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
     test_move_semantics(std::move(toroidal_field), toroidal_field_copy);
   }
 
@@ -67,12 +78,20 @@ SPECTRE_TEST_CASE(
   CHECK(dynamic_cast<Toroidal*>(deserialized_base_ptr.get()) != nullptr);
 
   // test equality
-  const Toroidal field_original{2, 1.0e-5, 1000.0};
+  const Toroidal field_original{2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0};
   const auto field = serialize_and_deserialize(field_original);
-  CHECK(field == Toroidal(2, 1.0e-5, 1000.0));
-  CHECK(field != Toroidal(3, 1.0e-5, 1000.0));
-  CHECK(field != Toroidal(2, 2.0e-5, 1000.0));
-  CHECK(field != Toroidal(2, 1.0e-5, 2000.0));
+  CHECK(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(3, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 2.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 2000.0, {{0.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{1.0, 0.0, 0.0}}, 100.0)));
+  CHECK_FALSE(static_cast<const InitialMagneticField&>(field).is_equal(
+      Toroidal(2, 1.0e-5, 1000.0, {{0.0, 0.0, 0.0}}, 10.0)));
 
   // test solution implementation
   pypp::SetupLocalPythonEnvironment local_python_env{
@@ -86,7 +105,7 @@ SPECTRE_TEST_CASE(
   pypp::check_with_random_values<1>(
       &ToroidalProxy::return_variables<double>,
       ToroidalProxy(pressure_exponent, cutoff_pressure,
-                    vector_potential_amplitude),
+                    vector_potential_amplitude, {{0.0, 0.0, 0.0}}, 10000.0),
       "Toroidal", {"magnetic_field"}, {{{-10.0, 10.0}}},
       std::make_tuple(pressure_exponent, cutoff_pressure,
                       vector_potential_amplitude),
@@ -96,7 +115,8 @@ SPECTRE_TEST_CASE(
   // branch for p < p_cutoff
   pypp::check_with_random_values<1>(
       &ToroidalProxy::return_variables<double>,
-      ToroidalProxy(pressure_exponent, 1e5, vector_potential_amplitude),
+      ToroidalProxy(pressure_exponent, 1e5, vector_potential_amplitude,
+                    {{0.0, 0.0, 0.0}}, 10000.0),
       "Toroidal", {"magnetic_field"}, {{{-1.0, 1.0}}},
       std::make_tuple(pressure_exponent, 1e5, vector_potential_amplitude),
       used_for_size);
@@ -134,9 +154,9 @@ SPECTRE_TEST_CASE(
         d_pressure.get(1) = 2.0 * y;
         d_pressure.get(2) = 1.0;
 
-        const auto b_field =
-            get<hydro::Tags::MagneticField<DataVector, 3>>(solution.variables(
-                in_coords, pressure, sqrt_det_spatial_metric, d_pressure));
+        tnsr::I<DataVector, 3> b_field{num_grid_pts, 0.0};
+        solution.variables(&b_field, in_coords, pressure,
+                           sqrt_det_spatial_metric, d_pressure);
 
         Scalar<DataVector> mag_b_field{num_grid_pts, 0.0};
         for (size_t i = 0; i < 3; ++i) {

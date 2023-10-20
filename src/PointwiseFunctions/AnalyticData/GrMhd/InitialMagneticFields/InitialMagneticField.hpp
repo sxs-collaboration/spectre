@@ -6,7 +6,22 @@
 #include <memory>
 #include <pup.h>
 
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+class DataVector;
+namespace grmhd::AnalyticData::InitialMagneticFields {
+class Poloidal;
+class Toroidal;
+}  // namespace grmhd::AnalyticData::InitialMagneticFields
+
+namespace gsl {
+template <typename T>
+class not_null;
+}  // namespace gsl
+/// \endcond
 
 namespace grmhd::AnalyticData {
 
@@ -32,20 +47,46 @@ namespace grmhd::AnalyticData {
  *   B^z & = \frac{1}{\sqrt{\gamma}} (\partial_x A_y - \partial_y A_x).
  * \f}
  *
+ *
+ * \warning The magnetic field classes assume the magnetic field is initialized,
+ * both in size and value, before being passed into the `variables` function.
+ * This is so that multiple magnetic fields can be superposed. Each magnetic
+ * field configuration does a `+=` to make this possible.
  */
 namespace InitialMagneticFields {
 
 /*!
  * \brief The abstract base class for initial magnetic field configurations.
+ *
+ * \warning This assumes the magnetic field is initialized, both in size and
+ * value, before being passed into the `variables` function. This is so that
+ * multiple magnetic fields can be superposed. Each magnetic field
+ * configuration does a `+=` to make this possible.
  */
 class InitialMagneticField : public PUP::able {
  protected:
   InitialMagneticField() = default;
 
  public:
+  using creatable_classes = tmpl::list<Poloidal, Toroidal>;
+
   ~InitialMagneticField() override = default;
 
   virtual auto get_clone() const -> std::unique_ptr<InitialMagneticField> = 0;
+
+  virtual void variables(
+      gsl::not_null<tnsr::I<DataVector, 3>*> result,
+      const tnsr::I<DataVector, 3>& coords, const Scalar<DataVector>& pressure,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::i<DataVector, 3>& deriv_pressure) const = 0;
+
+  virtual void variables(gsl::not_null<tnsr::I<double, 3>*> result,
+                         const tnsr::I<double, 3>& coords,
+                         const Scalar<double>& pressure,
+                         const Scalar<double>& sqrt_det_spatial_metric,
+                         const tnsr::i<double, 3>& deriv_pressure) const = 0;
+
+  virtual bool is_equal(const InitialMagneticField& rhs) const = 0;
 
   /// \cond
   explicit InitialMagneticField(CkMigrateMessage* msg) : PUP::able(msg) {}

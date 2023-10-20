@@ -5,12 +5,15 @@
 
 #include <memory>
 
+#include "DataStructures/DataVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Poloidal.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
@@ -19,6 +22,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::AnalyticData {
@@ -40,49 +44,145 @@ void test_equality() {
       1.28e-3,
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
       TovCoordinates::Schwarzschild,
-      2,
-      0.04,
-      2500.0};
+      {}};
   const auto mag_tov = serialize_and_deserialize(mag_tov_original);
   CHECK(
       mag_tov ==
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild, {}));
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           2.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild, {}));
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Isotropic, 2, 0.04, 2500.0));
+          TovCoordinates::Isotropic, {}));
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 3, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))));
   CHECK(
-      mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.05, 2500.0));
-  CHECK(
-      mag_tov !=
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))) ==
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 3500.0));
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))));
+  CHECK(
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Toroidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))) !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))));
+  CHECK(
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))) !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild,
+          make_vector<
+              std::unique_ptr<grmhd::AnalyticData::InitialMagneticFields::
+                                  InitialMagneticField>>(
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0),
+              std::make_unique<
+                  grmhd::AnalyticData::InitialMagneticFields::Toroidal>(
+                  2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))));
+  // Check order of magnetic fields doesn't matter.
+  const MagnetizedTovStar toroidal_plus_poloidal(
+      1.28e-3,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+      TovCoordinates::Schwarzschild,
+      make_vector<std::unique_ptr<
+          grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>(
+          std::make_unique<
+              grmhd::AnalyticData::InitialMagneticFields::Toroidal>(
+              2, 1.0e-6, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0),
+          std::make_unique<
+              grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+              2, 1.0e-6, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0)));
+  const MagnetizedTovStar poloidal_plus_toroidal(
+      1.28e-3,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+      TovCoordinates::Schwarzschild,
+      make_vector<std::unique_ptr<
+          grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>>(
+          std::make_unique<
+              grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
+              2, 1.0e-6, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0),
+          std::make_unique<
+              grmhd::AnalyticData::InitialMagneticFields::Toroidal>(
+              2, 1.0e-6, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0)));
+  const DataVector coord{2.0};
+  const tnsr::I<DataVector, 3, Frame::Inertial> coords{{coord, coord, coord}};
+  CHECK_ITERABLE_APPROX(
+      (get<hydro::Tags::MagneticField<DataVector, 3>>(
+          poloidal_plus_toroidal.variables(
+              coords,
+              tmpl::list<hydro::Tags::MagneticField<DataVector, 3>>{}))),
+      (get<hydro::Tags::MagneticField<DataVector, 3>>(
+          toroidal_plus_poloidal.variables(
+              coords,
+              tmpl::list<hydro::Tags::MagneticField<DataVector, 3>>{}))));
 }
 
 void test_magnetized_tov_star(const TovCoordinates coord_system) {
+  register_derived_classes_with_charm<
+      grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>();
   register_classes_with_charm<grmhd::AnalyticData::MagnetizedTovStar>();
   register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
@@ -98,9 +198,13 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
           "  Coordinates: " +
           get_output(coord_system) +
           "\n"
-          "  PressureExponent: 2\n"
-          "  VectorPotentialAmplitude: 2500\n"
-          "  CutoffPressureFraction: 0.04\n")
+          "  MagneticFields:\n"
+          "    - Poloidal:\n"
+          "        PressureExponent: 2\n"
+          "        VectorPotentialAmplitude: 2500\n"
+          "        CutoffPressure: 6.5536e-06\n"  // 0.04 * 100 * (1.28e-3)**2
+          "        Center: [0.0, 0.0, 0.0]\n"
+          "        MaxDistanceFromCenter: 100.0\n")
           ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
