@@ -117,7 +117,7 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
     // factor of 6 or so.
     Approx custom_approx = Approx::custom().epsilon(1.e-13).scale(1.0);
     for (const auto p : result - expected) {
-      CHECK_COMPLEX_CUSTOM_APPROX(p, 0.0, custom_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(p, 0.0, custom_approx);
     }
     const auto ref_matrices =
         make_array<std::reference_wrapper<const Matrix>, Dim>(matrices);
@@ -126,7 +126,7 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
     const auto vector_result = apply_matrices(
         matrices, get(get<LocalScalarTag>(source_data)), source_mesh.extents());
     for (const auto p : vector_result - get(get<LocalScalarTag>(expected))) {
-      CHECK_COMPLEX_APPROX(p, 0.0);
+      CHECK_ITERABLE_APPROX(p, 0.0);
     }
     CHECK(apply_matrices(ref_matrices, get(get<LocalScalarTag>(source_data)),
                          source_mesh.extents()) == vector_result);

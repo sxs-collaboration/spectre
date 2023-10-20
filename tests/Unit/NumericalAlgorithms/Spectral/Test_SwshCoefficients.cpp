@@ -207,23 +207,24 @@ void check_goldberg_mode_conversion() {
               l_max, coefficient_info.l, -static_cast<int>(coefficient_info.m),
               i)];
 
-      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m, alternative_mode_plus_m,
-                                  swsh_approx);
-      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m,
-                                  goldberg_mode_plus_m_from_full_set,
-                                  swsh_approx);
-      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m,
-                                  expected_goldberg_modes[goldberg_mode_index(
-                                      l_max, coefficient_info.l,
-                                      static_cast<int>(coefficient_info.m), i)],
-                                  swsh_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(goldberg_mode_plus_m,
+                                   alternative_mode_plus_m, swsh_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(goldberg_mode_plus_m,
+                                   goldberg_mode_plus_m_from_full_set,
+                                   swsh_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(
+          goldberg_mode_plus_m,
+          expected_goldberg_modes[goldberg_mode_index(
+              l_max, coefficient_info.l, static_cast<int>(coefficient_info.m),
+              i)],
+          swsh_approx);
 
-      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_minus_m,
-                                  alternative_mode_minus_m, swsh_approx);
-      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_minus_m,
-                                  goldberg_mode_minus_m_from_full_set,
-                                  swsh_approx);
-      CHECK_COMPLEX_CUSTOM_APPROX(
+      CHECK_ITERABLE_CUSTOM_APPROX(goldberg_mode_minus_m,
+                                   alternative_mode_minus_m, swsh_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(goldberg_mode_minus_m,
+                                   goldberg_mode_minus_m_from_full_set,
+                                   swsh_approx);
+      CHECK_ITERABLE_CUSTOM_APPROX(
           goldberg_mode_minus_m,
           expected_goldberg_modes[goldberg_mode_index(
               l_max, coefficient_info.l, -static_cast<int>(coefficient_info.m),

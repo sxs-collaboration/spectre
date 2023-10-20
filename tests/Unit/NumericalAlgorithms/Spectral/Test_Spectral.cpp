@@ -529,7 +529,7 @@ void test_double_instantiation() {
       Spectral::interpolation_matrix(mesh1d, interpolation_target);
   const auto vector_matrix = Spectral::interpolation_matrix(
       mesh1d, std::vector<double>{interpolation_target});
-  CHECK_MATRIX_APPROX(double_matrix, vector_matrix);
+  CHECK_ITERABLE_APPROX(double_matrix, vector_matrix);
 }
 }  // namespace
 

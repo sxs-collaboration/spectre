@@ -46,7 +46,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     const auto has_converged =
         solver.solve(make_not_null(&solution), linear_operator, source);
     REQUIRE(has_converged);
-    CHECK_MATRIX_APPROX(solver.matrix_representation(), blaze::inv(matrix));
+    CHECK_ITERABLE_APPROX(solver.matrix_representation(), blaze::inv(matrix));
     CHECK_ITERABLE_APPROX(solution, expected_solution);
     std::ifstream matrix_file("Matrix.txt");
     std::string matrix_csv((std::istreambuf_iterator<char>(matrix_file)),
@@ -64,14 +64,14 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
                                                             0.6363636363636364};
       resetting_solver.solve(make_not_null(&solution), linear_operator2,
                              source);
-      CHECK_MATRIX_APPROX(resetting_solver.matrix_representation(),
-                          blaze::inv(matrix2));
+      CHECK_ITERABLE_APPROX(resetting_solver.matrix_representation(),
+                            blaze::inv(matrix2));
       CHECK_ITERABLE_APPROX(solution, expected_solution2);
       // Without resetting, the solver should keep applying the cached
       // inverse even when solving a different operator
       solver.solve(make_not_null(&solution), linear_operator2, source);
       // Still the inverse of the operator we solved first
-      CHECK_MATRIX_APPROX(solver.matrix_representation(), blaze::inv(matrix));
+      CHECK_ITERABLE_APPROX(solver.matrix_representation(), blaze::inv(matrix));
       CHECK_ITERABLE_APPROX(solution, expected_solution);
     }
   }
@@ -119,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     blaze::submatrix(expected_matrix, 0, 0, 3, 3) = matrix_element;
     blaze::submatrix(expected_matrix, 3, 3, 2, 2) = matrix_overlap;
     blaze::invert(expected_matrix);
-    CHECK_MATRIX_APPROX(solver.matrix_representation(), expected_matrix);
+    CHECK_ITERABLE_APPROX(solver.matrix_representation(), expected_matrix);
     CHECK_VARIABLES_APPROX(solution.element_data,
                            expected_solution.element_data);
     CHECK_VARIABLES_APPROX(solution.overlap_data.at(overlap_id),

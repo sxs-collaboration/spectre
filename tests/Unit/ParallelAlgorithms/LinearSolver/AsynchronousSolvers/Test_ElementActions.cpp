@@ -205,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
       CHECK(written_legend ==
             std::vector<std::string>{"Iteration", "Residual"});
       const Matrix expected_reductions{{0., sqrt(27.)}, {1., sqrt(243.)}};
-      CHECK_MATRIX_APPROX(written_reductions, expected_reductions);
+      CHECK_ITERABLE_APPROX(written_reductions, expected_reductions);
     }
     file_system::rm(reduction_file_name + ".h5", true);
   }

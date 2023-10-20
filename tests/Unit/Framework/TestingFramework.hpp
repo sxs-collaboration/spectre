@@ -87,31 +87,6 @@ static Approx approx =                                          // NOLINT
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A wrapper around Catch's CHECK macro that checks approximate
- * equality of the two entries in a std::complex. For efficiency, no function
- * forwarding is performed, just a pair of `CHECK`s inline
- */
-#define CHECK_COMPLEX_APPROX(a, b)                                     \
-  do {                                                                 \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
-    CHECK(approx(real(a)) == real(b));                                 \
-    CHECK(approx(imag(a)) == imag(b));                                 \
-  } while (false)
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Same as `CHECK_COMPLEX_APPROX` with user-defined Approx.
- *  The third argument should be of type `Approx`.
- */
-#define CHECK_COMPLEX_CUSTOM_APPROX(a, b, appx)                        \
-  do {                                                                 \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
-    CHECK(appx(real(a)) == real(b));                                   \
-    CHECK(appx(imag(a)) == imag(b));                                   \
-  } while (false)
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief A wrapper around Catch's CHECK macro that checks approximate
  * equality of entries in iterable containers.  For maplike
  * containers, keys are checked for strict equality and values are
  * checked for approximate equality.
@@ -228,32 +203,16 @@ struct check_iterable_approx<
   }
 };
 
-#define CHECK_MATRIX_APPROX(a, b)                                            \
-  do {                                                                       \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
-    check_matrix_approx<std::common_type_t<                                  \
-        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
-  } while (false)
-
-#define CHECK_MATRIX_CUSTOM_APPROX(a, b, appx)                               \
-  do {                                                                       \
-    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
-    check_matrix_approx<std::common_type_t<                                  \
-        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
-                                                                      appx); \
-  } while (false)
-
+// This implementation is for a column-major matrix. It does not trivially
+// generalize to a row-major matrix because the iterator
+// `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
+// column, and takes its index as argument.
 template <typename M>
-struct check_matrix_approx {
+struct check_iterable_approx<M, Requires<blaze::IsColumnMajorMatrix_v<M> and
+                                         blaze::IsDenseMatrix_v<M>>> {
   // clang-tidy: non-const reference
   static void apply(const M& a, const M& b,
                     Approx& appx = approx) {  // NOLINT
-    // This implementation is for a column-major matrix. It does not trivially
-    // generalize to a row-major matrix because the iterator
-    // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
-    // column, and takes its index as argument.
-    static_assert(blaze::IsColumnMajorMatrix_v<M> and
-                  blaze::IsDenseMatrix_v<M>);
     CHECK(a.columns() == b.columns());
     for (size_t j = 0; j < a.columns(); j++) {
       CAPTURE(a);
@@ -283,12 +242,6 @@ struct check_matrix_approx {
     }
   }
 };
-/// \endcond
-
-/// \cond HIDDEN_SYMBOLS
-[[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
-  sys::exit();
-}
 /// \endcond
 
 /*!

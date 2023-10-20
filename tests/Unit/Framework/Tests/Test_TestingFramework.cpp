@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/System/Abort.hpp"
 
 SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
@@ -32,6 +33,23 @@ SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
   CHECK(1.0 == my_approx(1.0 + 5e-13));
   CHECK(1.0 != my_approx(1.0 + 5e-12));
   // [approx_new_custom]
+
+  Approx custom_approx = Approx::custom().epsilon(5.e-12).scale(1.0);
+
+  CHECK_ITERABLE_APPROX(1.0, 1.0 + 1.e-15);
+  CHECK_ITERABLE_CUSTOM_APPROX(1.0, 1.0 + 1.e-13, custom_approx);
+
+  const std::complex c0{1.0, -1.0};
+  const std::complex c1{1.0 + 1.e-15, -1.0 + 1.e-15};
+  const std::complex c2{1.0 + 1.e-13, -1.0 + 1.e-13};
+  CHECK_ITERABLE_APPROX(c0, c1);
+  CHECK_ITERABLE_CUSTOM_APPROX(c0, c2, custom_approx);
+
+  DataVector dv0{1.0, 1.0, 1.0};
+  DataVector dv1{1.0 + 1.e-15, 1.0 - 1.e-15, 1.0};
+  DataVector dv2{1.0 + 1.e-15, 1.0 - 1.e-15, 1.0 - 1.e-13};
+  CHECK_ITERABLE_APPROX(dv0, dv1);
+  CHECK_ITERABLE_CUSTOM_APPROX(dv0, dv2, custom_approx);
 }
 
 // [[OutputRegex, I failed]]

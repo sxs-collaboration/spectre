@@ -74,7 +74,7 @@ void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
   const auto& diff_matrix =
       Spectral::differentiation_matrix<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::Gauss>(num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, diff_matrix);
+  CHECK_ITERABLE_APPROX(expected_matrix, diff_matrix);
 }
 
 }  // namespace
@@ -135,7 +135,7 @@ void test_modal_to_nodal_matrix(const size_t num_points,
   const auto& matrix =
       Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::Gauss>(num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, matrix);
+  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
@@ -183,7 +183,7 @@ void test_nodal_to_modal_matrix(const size_t num_points,
   const auto& matrix =
       Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::Gauss>(num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, matrix);
+  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
