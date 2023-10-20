@@ -104,17 +104,19 @@ double test(const size_t num_dg_pts) {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  Block<3> block{
-      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-          Affine3D{affine_map, affine_map, affine_map}),
-      0,
-      {}};
+  std::vector<Block<3>> blocks{};
+  blocks.push_back(
+      {domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+           Affine3D{affine_map, affine_map, affine_map}),
+       0,
+       {}});
+  const auto& block = blocks[0];
   ElementMap<3, Frame::Grid> element_map{
       element_id, block.is_time_dependent()
                       ? block.moving_mesh_logical_to_grid_map().get_clone()
                       : block.stationary_map().get_to_grid_frame()};
   const auto element = domain::Initialization::create_initial_element(
-      element_id, block,
+      element_id, blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 
   const auto moving_mesh_map =

@@ -105,8 +105,7 @@ void test(const BoundaryConditionType& boundary_condition,
   auto boundary_conditions = brick.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(
       ElementId<3>{0, {SegmentId{0, 0}, SegmentId{0, 0}, SegmentId{0, 0}}},
-      domain.blocks().at(0),
-      std::vector<std::array<size_t, 3>>{{refinement_levels}});
+      domain.blocks(), std::vector<std::array<size_t, 3>>{{refinement_levels}});
 
   // Mesh and coordinates
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,

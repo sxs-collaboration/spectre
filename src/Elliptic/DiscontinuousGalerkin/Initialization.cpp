@@ -106,9 +106,8 @@ void InitializeGeometry<Dim>::apply(
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
                                                       element_id, quadrature);
   // Element
-  const auto& block = domain.blocks()[element_id.block_id()];
-  *element = domain::Initialization::create_initial_element(element_id, block,
-                                                            initial_refinement);
+  *element = domain::Initialization::create_initial_element(
+      element_id, domain.blocks(), initial_refinement);
   // Neighbor meshes
   for (const auto& [direction, neighbors] : element->neighbors()) {
     for (const auto& neighbor_id : neighbors) {
@@ -118,6 +117,7 @@ void InitializeGeometry<Dim>::apply(
     }
   }
   // Element map
+  const auto& block = domain.blocks()[element_id.block_id()];
   *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
   // Coordinates and Jacobians
   detail::initialize_coords_and_jacobians(

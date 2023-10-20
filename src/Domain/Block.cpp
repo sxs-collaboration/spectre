@@ -27,6 +27,31 @@ Block<VolumeDim>::Block(
     std::string name)
     : stationary_map_(std::move(stationary_map)),
       id_(id),
+      geometry_(domain::BlockGeometry::Cube),
+      name_(std::move(name)) {
+  for (auto& [direction, neighbor] : neighbors) {
+    neighbors_[direction].insert(std::move(neighbor));
+  }
+  // Loop over Directions to search which Directions were not set to neighbors_,
+  // set these Directions to external_boundaries_.
+  for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+    if (neighbors_.find(direction) == neighbors_.end()) {
+      external_boundaries_.emplace(direction);
+    }
+  }
+}
+
+template <size_t VolumeDim>
+Block<VolumeDim>::Block(
+    std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
+    const size_t id,
+    DirectionMap<VolumeDim, std::unordered_set<BlockNeighbor<VolumeDim>>>
+        neighbors,
+    std::string name)
+    : stationary_map_(std::move(stationary_map)),
+      id_(id),
+      geometry_(domain::BlockGeometry::SphericalShell),
       neighbors_(std::move(neighbors)),
       name_(std::move(name)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
@@ -118,7 +143,7 @@ void Block<VolumeDim>::inject_time_dependent_map(
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
-  size_t version = 1;
+  size_t version = 2;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -130,7 +155,18 @@ void Block<VolumeDim>::pup(PUP::er& p) {
     p | moving_mesh_grid_to_distorted_map_;
     p | moving_mesh_distorted_to_inertial_map_;
     p | id_;
-    p | neighbors_;
+    if (version < 2) {
+      geometry_ = domain::BlockGeometry::Cube;
+      DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors;
+      p | neighbors;
+      neighbors_.clear();
+      for (auto& [direction, neighbor] : neighbors) {
+        neighbors_[direction].insert(std::move(neighbor));
+      }
+    } else {
+      p | geometry_;
+      p | neighbors_;
+    }
     p | external_boundaries_;
   }
   if (version >= 1) {
@@ -141,6 +177,7 @@ void Block<VolumeDim>::pup(PUP::er& p) {
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block) {
   os << "Block " << block.id() << " (" << block.name() << "):\n";
+  os << "Geometry: " << block.geometry() << '\n';
   os << "Neighbors: " << block.neighbors() << '\n';
   os << "External boundaries: " << block.external_boundaries() << '\n';
   os << "Is time dependent: " << std::boolalpha << block.is_time_dependent();
@@ -150,7 +187,8 @@ std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block) {
 template <size_t VolumeDim>
 bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   bool blocks_are_equal =
-      (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
+      (lhs.id() == rhs.id() and lhs.geometry() == rhs.geometry() and
+       lhs.neighbors() == rhs.neighbors() and
        lhs.external_boundaries() == rhs.external_boundaries() and
        lhs.name() == rhs.name() and
        lhs.is_time_dependent() == rhs.is_time_dependent() and

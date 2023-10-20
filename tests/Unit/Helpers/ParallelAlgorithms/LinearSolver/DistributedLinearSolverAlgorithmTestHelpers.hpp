@@ -288,9 +288,8 @@ struct InitializeElement {
     auto mesh = domain::Initialization::create_initial_mesh(
         initial_extents, element_id,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
-    const auto& block = domain.blocks()[element_id.block_id()];
     auto element = domain::Initialization::create_initial_element(
-        element_id, block, initial_refinement);
+        element_id, domain.blocks(), initial_refinement);
     auto logical_coords = logical_coordinates(mesh);
     // Element data
     const size_t element_index = get_index(element_id);

@@ -57,14 +57,15 @@ namespace {
 // local time stepping.
 template <size_t Dim>
 double get_num_points_and_grid_spacing_cost(
-    const ElementId<Dim>& element_id, const Block<Dim>& block,
+    const ElementId<Dim>& element_id, const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Spectral::Quadrature quadrature) {
+  const auto& block = blocks[element_id.block_id()];
   Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
       initial_extents, element_id, quadrature);
   Element<Dim> element = ::domain::Initialization::create_initial_element(
-      element_id, block, initial_refinement_levels);
+      element_id, blocks, initial_refinement_levels);
   ElementMap<Dim, Frame::Grid> element_map{element_id, block};
   const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords =
       logical_coordinates(mesh);
@@ -122,7 +123,7 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
 
         element_costs.insert(
             {element_id, get_num_points_and_grid_spacing_cost(
-                             element_id, block, initial_refinement_levels,
+                             element_id, blocks, initial_refinement_levels,
                              initial_extents, quadrature.value())});
       }
     }
@@ -323,7 +324,7 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
   template class BlockZCurveProcDistribution<GET_DIM(data)>;                 \
   double get_num_points_and_grid_spacing_cost(                               \
       const ElementId<GET_DIM(data)>& element_id,                            \
-      const Block<GET_DIM(data)>& block,                                     \
+      const std::vector<Block<GET_DIM(data)>>& blocks,                       \
       const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \

@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Structure/BlockGeometry.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -33,7 +34,10 @@ class er;
 /// Elements that cover a region of the computational domain.
 ///
 /// Each codimension 1 boundary of a Block<VolumeDim> is either an external
-/// boundary or identical to a boundary of one other Block.
+/// boundary or an internal boundary to one or more neighboring blocks. The only
+/// currently supported case where blocks can have more than one neighbor are
+/// interfaces between a spherical shell and wedges. In all other cases the
+/// internal boundaries between neighboring blocks must be identical.
 ///
 /// A Block has logical coordinates that go from -1 to +1 in each
 /// dimension.  The global coordinates are obtained from the logical
@@ -44,6 +48,8 @@ class er;
 template <size_t VolumeDim>
 class Block {
  public:
+  /// Block with one neighbor per direction. Currently always a deformed cube.
+  ///
   /// \param stationary_map the CoordinateMap.
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
@@ -54,12 +60,23 @@ class Block {
         size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
         std::string name = "");
 
+  /// Block with multiple neighbors per direction. Currently only supports
+  /// spherical shells.
+  Block(std::unique_ptr<domain::CoordinateMapBase<
+            Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
+        size_t id,
+        DirectionMap<VolumeDim, std::unordered_set<BlockNeighbor<VolumeDim>>>
+            neighbors,
+        std::string name = "");
+
   Block() = default;
   ~Block() = default;
   Block(const Block&) = delete;
   Block(Block&&) = default;
   Block& operator=(const Block&) = delete;
   Block& operator=(Block&&) = default;
+
+  domain::BlockGeometry geometry() const { return geometry_; }
 
   /// \brief The map used when the coordinate map is time-independent.
   ///
@@ -148,7 +165,8 @@ class Block {
   size_t id() const { return id_; }
 
   /// Information about the neighboring Blocks.
-  const DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>& neighbors() const {
+  const DirectionMap<VolumeDim, std::unordered_set<BlockNeighbor<VolumeDim>>>&
+  neighbors() const {
     return neighbors_;
   }
 
@@ -186,7 +204,9 @@ class Block {
       moving_mesh_distorted_to_inertial_map_{nullptr};
 
   size_t id_{0};
-  DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
+  domain::BlockGeometry geometry_{domain::BlockGeometry::Cube};
+  DirectionMap<VolumeDim, std::unordered_set<BlockNeighbor<VolumeDim>>>
+      neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
   std::string name_;
 };
