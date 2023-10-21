@@ -701,6 +701,11 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: build
         run: |
           make test-executables
+      - name: Build Benchmark executable
+        if: matrix.build_type == 'Release'
+        working-directory: build
+        run: |
+          make -j2 Benchmark
       # Delete unused cache entries before uploading the cache
       - name: Clean up ccache
         if: github.ref == 'refs/heads/develop'

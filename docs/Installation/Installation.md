@@ -113,6 +113,8 @@ apt), or AppleClang 13.0.0 or later
   <details>
   \include support/Python/dev_requirements.txt
   </details>
+* [Google Benchmark](https://github.com/google/benchmark) - to do
+  microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
   [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
   coverage
