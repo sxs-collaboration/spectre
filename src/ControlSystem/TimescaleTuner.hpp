@@ -46,8 +46,12 @@ class er;
  * AND \n
  * - the expected change in \f$Q\f$ is less than the threshold:
  * \f$|\dot{Q}|\tau < \f$ `increase_timescale_threshold`
+ *
+ * If the template bool \p AllowDecrease is false, then the check for decreasing
+ * the timescale will be ignored. This can be used if something else will be
+ * controlling the decrease of the timescale.
  */
-
+template <bool AllowDecrease>
 class TimescaleTuner {
  public:
   static constexpr Options::String help{
@@ -91,15 +95,19 @@ class TimescaleTuner {
     static constexpr Options::String help = {"Factor to decrease timescale"};
   };
 
-  using options = tmpl::list<InitialTimescales, MaxTimescale, MinTimescale,
-                             DecreaseThreshold, IncreaseThreshold,
-                             IncreaseFactor, DecreaseFactor>;
+  using options = tmpl::append<
+      tmpl::list<InitialTimescales, MaxTimescale, MinTimescale,
+                 IncreaseThreshold, IncreaseFactor>,
+      tmpl::conditional_t<AllowDecrease,
+                          tmpl::list<DecreaseThreshold, DecreaseFactor>,
+                          tmpl::list<>>>;
 
-  TimescaleTuner(const typename InitialTimescales::type& initial_timescale,
-                 double max_timescale, double min_timescale,
-                 double decrease_timescale_threshold,
-                 double increase_timescale_threshold, double increase_factor,
-                 double decrease_factor);
+  TimescaleTuner(
+      const typename InitialTimescales::type& initial_timescale,
+      double max_timescale, double min_timescale,
+      double increase_timescale_threshold, double increase_factor,
+      double decrease_timescale_threshold = std::numeric_limits<double>::max(),
+      double decrease_factor = 1.0);
 
   TimescaleTuner() = default;
   TimescaleTuner(TimescaleTuner&&) = default;
@@ -134,7 +142,9 @@ class TimescaleTuner {
 
   void pup(PUP::er& p);
 
-  friend bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs);
+  template <bool LocalAllowDecrease>
+  friend bool operator==(const TimescaleTuner<LocalAllowDecrease>& lhs,
+                         const TimescaleTuner<LocalAllowDecrease>& rhs);
 
  private:
   void check_if_timescales_have_been_set() const;
@@ -150,4 +160,6 @@ class TimescaleTuner {
   double decrease_factor_;
 };
 
-bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs);
+template <bool AllowDecrease>
+bool operator!=(const TimescaleTuner<AllowDecrease>& lhs,
+                const TimescaleTuner<AllowDecrease>& rhs);

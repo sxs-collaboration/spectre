@@ -83,7 +83,7 @@ void update_averager(
  */
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon,
           typename Metavariables>
-void update_tuner(const gsl::not_null<TimescaleTuner*> tuner,
+void update_tuner(const gsl::not_null<TimescaleTuner<false>*> tuner,
                   const gsl::not_null<ControlErrors::Size<DerivOrder, Horizon>*>
                       control_error,
                   const Parallel::GlobalCache<Metavariables>& cache,

@@ -216,8 +216,8 @@ void test_size_error_one_step(
     CHECK_FALSE(error_class.get_suggested_timescale().has_value());
     CHECK_FALSE(error_class.discontinuous_change_has_occurred());
 
-    TimescaleTuner tuner{
-        std::vector<double>{0.1}, 1.0, 0.01, 1.0e-3, 1.0e-4, 1.01, 0.98};
+    TimescaleTuner<false> tuner{std::vector<double>{0.1}, 1.0, 0.01, 1.0e-4,
+                                1.01};
     std::unordered_map<std::string,
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         functions_of_time{};

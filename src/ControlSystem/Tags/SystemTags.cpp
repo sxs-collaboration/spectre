@@ -7,9 +7,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace control_system::Tags::detail {
-template <size_t Dim>
+template <bool AllowDecrease, size_t Dim>
 void initialize_tuner(
-    const gsl::not_null<::TimescaleTuner*> tuner,
+    const gsl::not_null<::TimescaleTuner<AllowDecrease>*> tuner,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const double initial_time, const std::string& name) {
   // We get the functions of time in order to get the number of components
@@ -51,17 +51,19 @@ void initialize_tuner(
   }
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define ALLOWDECREASE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                             \
   template void initialize_tuner(                                        \
-      const gsl::not_null<::TimescaleTuner*> tuner,                      \
+      const gsl::not_null<::TimescaleTuner<ALLOWDECREASE(data)>*> tuner, \
       const std::unique_ptr<::DomainCreator<DIM(data)>>& domain_creator, \
       const double initial_time, const std::string& name);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false), (1, 2, 3))
 
 #undef INSTANTIATE
+#undef ALLOWDECREASE
 #undef DIM
 
 }  // namespace control_system::Tags::detail

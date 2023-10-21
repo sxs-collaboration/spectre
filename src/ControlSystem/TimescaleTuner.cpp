@@ -14,6 +14,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -33,12 +34,12 @@ struct TimescaleCreator {
 };
 }  // namespace
 
-TimescaleTuner::TimescaleTuner(
+template <bool AllowDecrease>
+TimescaleTuner<AllowDecrease>::TimescaleTuner(
     const typename InitialTimescales::type& initial_timescale,
     const double max_timescale, const double min_timescale,
-    const double decrease_timescale_threshold,
     const double increase_timescale_threshold, const double increase_factor,
-    const double decrease_factor)
+    const double decrease_timescale_threshold, const double decrease_factor)
     : max_timescale_{max_timescale},
       min_timescale_{min_timescale},
       decrease_timescale_threshold_{decrease_timescale_threshold},
@@ -59,6 +60,12 @@ TimescaleTuner::TimescaleTuner(
     if (t_scale <= 0.0) {
       ERROR("Initial timescale must be > 0");
     }
+  }
+
+  if (not AllowDecrease and decrease_factor_ != 1.0) {
+    ERROR(
+        "If 'AllowDecrease' is false, then the specified decrease_factor must "
+        "be 1.0");
   }
 
   if (decrease_factor_ > 1.0 or decrease_factor <= 0.0) {
@@ -91,12 +98,14 @@ TimescaleTuner::TimescaleTuner(
   }
 }
 
-const DataVector& TimescaleTuner::current_timescale() const {
+template <bool AllowDecrease>
+const DataVector& TimescaleTuner<AllowDecrease>::current_timescale() const {
   check_if_timescales_have_been_set();
   return timescale_;
 }
 
-void TimescaleTuner::resize_timescales(
+template <bool AllowDecrease>
+void TimescaleTuner<AllowDecrease>::resize_timescales(
     const size_t num_timescales, const std::optional<double>& fill_value) {
   ASSERT(num_timescales > 0,
          "Damping timescales must have a non-zero number of components.");
@@ -105,7 +114,8 @@ void TimescaleTuner::resize_timescales(
   set_timescale_if_in_allowable_range(fill_value.value_or(initial_timescale_));
 }
 
-void TimescaleTuner::set_timescale_if_in_allowable_range(
+template <bool AllowDecrease>
+void TimescaleTuner<AllowDecrease>::set_timescale_if_in_allowable_range(
     const double suggested_timescale) {
   for (auto& t_scale : timescale_) {
     t_scale = std::clamp(suggested_timescale, min_timescale_, max_timescale_);
@@ -114,7 +124,8 @@ void TimescaleTuner::set_timescale_if_in_allowable_range(
   timescales_have_been_set_ = true;
 }
 
-void TimescaleTuner::update_timescale(
+template <bool AllowDecrease>
+void TimescaleTuner<AllowDecrease>::update_timescale(
     const std::array<DataVector, 2>& q_and_dtq) {
   check_if_timescales_have_been_set();
   ASSERT(q_and_dtq[0].size() == timescale_.size() and
@@ -129,7 +140,8 @@ void TimescaleTuner::update_timescale(
 
   for (size_t i = 0; i < q.size(); i++) {
     // check whether we need to decrease the timescale:
-    if ((fabs(q[i]) > decrease_timescale_threshold_ or
+    if (AllowDecrease and
+        (fabs(q[i]) > decrease_timescale_threshold_ or
          fabs(dtq[i] * timescale_[i]) > decrease_timescale_threshold_) and
         (dtq[i] * q[i] > 0.0 or
          fabs(dtq[i]) * timescale_[i] < 0.5 * fabs(q[i]))) {
@@ -153,12 +165,14 @@ void TimescaleTuner::update_timescale(
   }
 }
 
-void TimescaleTuner::check_if_timescales_have_been_set() const {
+template <bool AllowDecrease>
+void TimescaleTuner<AllowDecrease>::check_if_timescales_have_been_set() const {
   ASSERT(timescales_have_been_set_,
          "Damping timescales in the TimescaleTuner have not been set yet.");
 }
 
-void TimescaleTuner::pup(PUP::er& p) {
+template <bool AllowDecrease>
+void TimescaleTuner<AllowDecrease>::pup(PUP::er& p) {
   p | timescale_;
   p | timescales_have_been_set_;
   p | initial_timescale_;
@@ -170,7 +184,9 @@ void TimescaleTuner::pup(PUP::er& p) {
   p | decrease_factor_;
 }
 
-bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
+template <bool AllowDecrease>
+bool operator==(const TimescaleTuner<AllowDecrease>& lhs,
+                const TimescaleTuner<AllowDecrease>& rhs) {
   return (lhs.timescale_ == rhs.timescale_) and
          (lhs.max_timescale_ == rhs.max_timescale_) and
          (lhs.min_timescale_ == rhs.min_timescale_) and
@@ -184,6 +200,22 @@ bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
          (lhs.decrease_factor_ == rhs.decrease_factor_);
 }
 
-bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
+template <bool AllowDecrease>
+bool operator!=(const TimescaleTuner<AllowDecrease>& lhs,
+                const TimescaleTuner<AllowDecrease>& rhs) {
   return not(lhs == rhs);
 }
+
+#define ALLOWDECREASE(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                \
+  template class TimescaleTuner<ALLOWDECREASE(data)>;                       \
+  template bool operator==(const TimescaleTuner<ALLOWDECREASE(data)>& lhs,  \
+                           const TimescaleTuner<ALLOWDECREASE(data)>& rhs); \
+  template bool operator!=(const TimescaleTuner<ALLOWDECREASE(data)>& lhs,  \
+                           const TimescaleTuner<ALLOWDECREASE(data)>& rhs);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false))
+
+#undef INSTANTIATE
+#undef ALLOWDECREASE

@@ -29,10 +29,10 @@ void test_controller() {
   const double min_timescale = 1.0e-3;
   const double initial_timescale = 1.0e-2;
 
-  TimescaleTuner tst(std::vector<double>{initial_timescale}, max_timescale,
-                     min_timescale, decrease_timescale_threshold,
-                     increase_timescale_threshold, increase_factor,
-                     decrease_factor);
+  TimescaleTuner<true> tst(std::vector<double>{initial_timescale},
+                           max_timescale, min_timescale,
+                           increase_timescale_threshold, increase_factor,
+                           decrease_timescale_threshold, decrease_factor);
 
   // test following a sinusoidal target function
   double t = 0.1;
@@ -101,10 +101,10 @@ void test_timeoffsets() {
   const double min_timescale = 1.0e-3;
   const double initial_timescale = 1.0e-2;
 
-  TimescaleTuner tst(std::vector<double>{initial_timescale}, max_timescale,
-                     min_timescale, decrease_timescale_threshold,
-                     increase_timescale_threshold, increase_factor,
-                     decrease_factor);
+  TimescaleTuner<true> tst(std::vector<double>{initial_timescale},
+                           max_timescale, min_timescale,
+                           increase_timescale_threshold, increase_factor,
+                           decrease_timescale_threshold, decrease_factor);
 
   // test following a sinusoidal target function
   double t = 0.1;
@@ -193,10 +193,10 @@ void test_timeoffsets_noaverageq() {
   const double min_timescale = 1.0e-3;
   const double initial_timescale = 1.0e-2;
 
-  TimescaleTuner tst(std::vector<double>{initial_timescale}, max_timescale,
-                     min_timescale, decrease_timescale_threshold,
-                     increase_timescale_threshold, increase_factor,
-                     decrease_factor);
+  TimescaleTuner<true> tst(std::vector<double>{initial_timescale},
+                           max_timescale, min_timescale,
+                           increase_timescale_threshold, increase_factor,
+                           decrease_timescale_threshold, decrease_factor);
 
   // test following a sinusoidal target function
   double t = 0.1;

@@ -126,8 +126,9 @@ struct MeasurementTimescales : db::SimpleTag {
           const std::string& combined_name = map_of_names[control_system_name];
 
           auto tuner = option_holder.tuner;
-          Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
-                                         initial_time, control_system_name);
+          ::control_system::Tags::detail::initialize_tuner(
+              make_not_null(&tuner), domain_creator, initial_time,
+              control_system_name);
 
           const auto& controller = option_holder.controller;
           DataVector measurement_timescales = calculate_measurement_timescales(

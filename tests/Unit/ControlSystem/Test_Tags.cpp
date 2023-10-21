@@ -94,10 +94,10 @@ void test_control_sys_inputs() {
   const double decrease_factor = 0.99;
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
-  const TimescaleTuner expected_tuner(
+  const TimescaleTuner<true> expected_tuner(
       std::vector<double>{1.}, max_timescale, min_timescale,
-      decrease_timescale_threshold, increase_timescale_threshold,
-      increase_factor, decrease_factor);
+      increase_timescale_threshold, increase_factor,
+      decrease_timescale_threshold, decrease_factor);
   const Averager<1> expected_averager(0.25, true);
   const Controller<2> expected_controller(0.3);
   const std::string expected_name{"LabelA"};
@@ -143,13 +143,13 @@ void test_individual_tags() {
     const double decrease_factor = 0.99;
     const double max_timescale = 10.0;
     const double min_timescale = 1.0e-3;
-    return TimescaleTuner{std::vector<double>(num_components, 1.0),
-                          max_timescale,
-                          min_timescale,
-                          decrease_timescale_threshold,
-                          increase_timescale_threshold,
-                          increase_factor,
-                          decrease_factor};
+    return TimescaleTuner<true>{std::vector<double>(num_components, 1.0),
+                                max_timescale,
+                                min_timescale,
+                                increase_timescale_threshold,
+                                increase_factor,
+                                decrease_timescale_threshold,
+                                decrease_factor};
   };
 
   const auto tuner_str = [](const bool is_active) -> std::string {
@@ -195,12 +195,12 @@ void test_individual_tags() {
       std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
                                     1);
 
-  const TimescaleTuner created_tuner =
+  const TimescaleTuner<true> created_tuner =
       tuner_tag::create_from_options<MetavarsEmpty>(holder, creator, 0.0);
-  const TimescaleTuner quat_created_tuner =
+  const TimescaleTuner<true> quat_created_tuner =
       quat_tuner_tag::create_from_options<MetavarsEmpty>(quat_holder, creator,
                                                          0.0);
-  const TimescaleTuner inactive_created_tuner =
+  const TimescaleTuner<true> inactive_created_tuner =
       tuner_tag::create_from_options<MetavarsEmpty>(inactive_holder,
                                                     creator_empty, 0.0);
 

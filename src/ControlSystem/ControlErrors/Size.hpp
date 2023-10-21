@@ -185,7 +185,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   };
 
   struct SmootherTuner {
-    using type = TimescaleTuner;
+    using type = TimescaleTuner<true>;
     static constexpr Options::String help{
         "TimescaleTuner for smoothing horizon measurements."};
   };
@@ -250,7 +250,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
    * is moved inside this class.
    */
   Size(const int max_times, const double smooth_avg_timescale_frac,
-       TimescaleTuner smoother_tuner,
+       TimescaleTuner<true> smoother_tuner,
        std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options);
 
   /// Returns the internal `control_system::size::Info::suggested_time_scale`. A
@@ -299,7 +299,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
    * \return DataVector should be of size 1
    */
   template <typename Metavariables, typename... TupleTags>
-  DataVector operator()(const ::TimescaleTuner& tuner,
+  DataVector operator()(const ::TimescaleTuner<false>& tuner,
                         const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& function_of_time_name,
@@ -471,7 +471,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   }
 
  private:
-  TimescaleTuner smoother_tuner_{};
+  TimescaleTuner<true> smoother_tuner_{};
   Averager<DerivOrder> horizon_coef_averager_{};
   size::Info info_{};
   intrp::ZeroCrossingPredictor char_speed_predictor_{};

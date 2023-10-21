@@ -14,6 +14,7 @@
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/CombinedName.hpp"
 #include "ControlSystem/Controller.hpp"
+#include "ControlSystem/IsSize.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
@@ -95,9 +96,9 @@ struct Averager : db::SimpleTag {
 };
 
 namespace detail {
-template <size_t Dim>
+template <bool AllowDecrease, size_t Dim>
 void initialize_tuner(
-    const gsl::not_null<::TimescaleTuner*> tuner,
+    gsl::not_null<::TimescaleTuner<AllowDecrease>*> tuner,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const double initial_time, const std::string& name);
 }  // namespace detail
@@ -107,7 +108,12 @@ void initialize_tuner(
 /// DataBox tag for the timescale tuner
 template <typename ControlSystem>
 struct TimescaleTuner : db::SimpleTag {
-  using type = ::TimescaleTuner;
+ private:
+  static constexpr bool is_size =
+      control_system::size::is_size_v<ControlSystem>;
+
+ public:
+  using type = ::TimescaleTuner<not is_size>;
 
   template <typename Metavariables>
   using option_tags =
@@ -150,7 +156,7 @@ struct Controller : db::SimpleTag {
           domain_creator,
       const double initial_time) {
     type controller = option_holder.controller;
-    ::TimescaleTuner tuner = option_holder.tuner;
+    auto tuner = option_holder.tuner;
     detail::initialize_tuner(make_not_null(&tuner), domain_creator,
                              initial_time, ControlSystem::name());
 
