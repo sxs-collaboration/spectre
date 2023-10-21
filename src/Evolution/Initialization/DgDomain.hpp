@@ -145,7 +145,7 @@ struct Domain {
       const ElementId<Dim>& element_id) {
     const auto& my_block = domain.blocks()[element_id.block_id()];
     *mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, quadrature);
+        initial_extents, element_id, my_block.geometry(), quadrature);
     *element = ::domain::Initialization::create_initial_element(
         element_id, domain.blocks(), initial_refinement);
     *element_map = ElementMap<Dim, Frame::Grid>{element_id, my_block};

@@ -56,8 +56,8 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
           mortar_id,
           ::dg::mortar_mesh(volume_mesh.slice_away(direction.dimension()),
                             ::domain::Initialization::create_initial_mesh(
-                                initial_extents, neighbor, quadrature,
-                                neighbors.orientation())
+                                initial_extents, neighbor, neighbors.geometry(),
+                                quadrature, neighbors.orientation())
                                 .slice_away(direction.dimension())));
       mortar_sizes.emplace(
           mortar_id,

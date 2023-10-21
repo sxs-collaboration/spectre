@@ -63,7 +63,7 @@ double get_num_points_and_grid_spacing_cost(
     const Spectral::Quadrature quadrature) {
   const auto& block = blocks[element_id.block_id()];
   Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
-      initial_extents, element_id, quadrature);
+      initial_extents, element_id, block.geometry(), quadrature);
   Element<Dim> element = ::domain::Initialization::create_initial_element(
       element_id, blocks, initial_refinement_levels);
   ElementMap<Dim, Frame::Grid> element_map{element_id, block};
