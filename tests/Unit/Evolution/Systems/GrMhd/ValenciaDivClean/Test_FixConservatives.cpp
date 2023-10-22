@@ -86,6 +86,58 @@ void test_variable_fixer(
   CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);
   CHECK_ITERABLE_APPROX(tilde_s, expected_tilde_s);
 }
+
+void run_benchmark(const bool enable) {
+  if (not enable) {
+    return;
+  }
+  const size_t num_points = 512;
+  Scalar<DataVector> tilde_d{DataVector(num_points)};
+  Scalar<DataVector> tilde_ye{DataVector(num_points)};
+  Scalar<DataVector> tilde_tau{DataVector(num_points)};
+  auto tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto tilde_b =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  for (size_t i = 0; i < num_points; ++i) {
+    if (i % 2 == 0) {
+      // tilde_d is too small, should be raised to limit
+      get(tilde_d)[i] = 2.e-12;
+      get(tilde_ye)[i] = 2.e-13;
+      get(tilde_tau)[i] = 4.5;
+      tilde_s.get(0)[i] = 3.0;
+      tilde_b.get(0)[i] = 2.0e-6;
+    } else {
+      // tilde_tau is too small, raise to level of needed, which also
+      // causes tilde_s to be zeroed
+      get(tilde_d)[i] = 1.0;
+      get(tilde_ye)[i] = 1.0;
+      get(tilde_tau)[i] = 1.5;
+      tilde_s.get(0)[i] = 0.0;
+      tilde_b.get(0)[i] = 2.0;
+    }
+  }
+  auto spatial_metric =
+      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto inv_spatial_metric =
+      make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto sqrt_det_spatial_metric =
+      make_with_value<Scalar<DataVector>>(tilde_d, 1.0);
+  for (size_t d = 0; d < 3; ++d) {
+    spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
+    inv_spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
+  }
+
+  const grmhd::ValenciaDivClean::FixConservatives variable_fixer{
+      1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.0e-8, 0.0001, true};
+
+  BENCHMARK("FixConservatives") {
+    // Note: Benchmarking and perf indicates that software prefetching is likely
+    // the next big gain for conservative variable fixing.
+    variable_fixer(&tilde_d, &tilde_ye, &tilde_tau, &tilde_s, tilde_b,
+                   spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric);
+  };
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
@@ -109,4 +161,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
           "SafetyFactorForSSlope: 0.0\n"
           "Enable: true\n");
   test_variable_fixer(fixer_from_options, true);
+
+  run_benchmark(false);
 }
