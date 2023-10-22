@@ -188,15 +188,9 @@ bool FixConservatives::operator()(
     return needed_fixing;
   }
   const size_t size = get<0>(tilde_b).size();
-  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
-                       ::Tags::TempScalar<4>>>
+  Variables<tmpl::list<::Tags::TempScalar<1>, ::Tags::TempScalar<2>,
+                       ::Tags::TempScalar<3>>>
       temp_buffer(size);
-
-  DataVector& rest_mass_density_times_lorentz_factor =
-      get(get<::Tags::TempScalar<0>>(temp_buffer));
-  rest_mass_density_times_lorentz_factor =
-      get(*tilde_d) / get(sqrt_det_spatial_metric);
 
   Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
   dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
@@ -210,28 +204,34 @@ bool FixConservatives::operator()(
       get<::Tags::TempScalar<3>>(temp_buffer);
   dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
 
-  DataVector& local_ye = get(get<::Tags::TempScalar<4>>(temp_buffer));
-  local_ye = get(*tilde_ye) / get(*tilde_d);
+  const double one_over_one_minus_safety_factor_for_magnetic_field =
+      1.0 / one_minus_safety_factor_for_magnetic_field_;
+  const double one_over_safety_factor_for_momentum_density_cutoff_d =
+      1.0 / safety_factor_for_momentum_density_cutoff_d_;
 
   for (size_t s = 0; s < size; s++) {
     double& d_tilde = get(*tilde_d)[s];
+    const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
+    const auto one_over_sqrt_det_g = 1.0 / sqrt_det_g;
+    auto one_over_d_tilde = 1.0 / d_tilde;
+    auto rest_mass_density_times_lorentz_factor = d_tilde * one_over_sqrt_det_g;
 
     // Increase electron fraction if necessary
     double& ye_tilde = get(*tilde_ye)[s];
-    if (local_ye[s] < electron_fraction_cutoff_) {
+    if (ye_tilde < electron_fraction_cutoff_ * d_tilde) {
       needed_fixing = true;
-      local_ye[s] = minimum_electron_fraction_;
-      ye_tilde = local_ye[s] * d_tilde;
+      ye_tilde = minimum_electron_fraction_ * d_tilde;
     }
 
     // Increase mass density if necessary
-    const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
-    if (rest_mass_density_times_lorentz_factor[s] <
+    if (rest_mass_density_times_lorentz_factor <
         rest_mass_density_times_lorentz_factor_cutoff_) {
       needed_fixing = true;
       d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
-      ye_tilde = d_tilde * local_ye[s];
-      rest_mass_density_times_lorentz_factor[s] =
+      ye_tilde = d_tilde * one_over_d_tilde *
+                 ye_tilde;
+      one_over_d_tilde = 1.0 / d_tilde;
+      rest_mass_density_times_lorentz_factor =
           minimum_rest_mass_density_times_lorentz_factor_;
     }
 
@@ -242,16 +242,18 @@ bool FixConservatives::operator()(
     if (b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ * 2. *
                               tau_tilde * sqrt_det_g) {
       needed_fixing = true;
-      tau_tilde = 0.5 * b_tilde_squared /
-                  one_minus_safety_factor_for_magnetic_field_ / sqrt_det_g;
+      tau_tilde = 0.5 * b_tilde_squared *
+                  one_over_one_minus_safety_factor_for_magnetic_field *
+                  one_over_sqrt_det_g;
     }
 
     // Decrease momentum density if necessary
     const double s_tilde_squared = get(tilde_s_squared)[s];
     // Equation B.24 of Foucart
-    const double tau_over_d = tau_tilde / d_tilde;
+    const double tau_over_d = tau_tilde * one_over_d_tilde;
     // Equation B.23 of Foucart
-    const double b_squared_over_d = b_tilde_squared / sqrt_det_g / d_tilde;
+    const double b_squared_over_d =
+        b_tilde_squared * one_over_sqrt_det_g * one_over_d_tilde;
     // Equation B.27 of Foucart
     const double normalized_s_dot_b =
         (b_tilde_squared > 1.e-16 * d_tilde and
@@ -286,13 +288,14 @@ bool FixConservatives::operator()(
     // If s_tilde_squared is small enough, no fix is needed. Otherwise, we need
     // to do some real work.
     const double one_minus_safety_factor_for_momentum_density_at_density =
-        rest_mass_density_times_lorentz_factor[s] >
+        rest_mass_density_times_lorentz_factor >
                 safety_factor_for_momentum_density_cutoff_d_
             ? one_minus_safety_factor_for_momentum_density_
             : one_minus_safety_factor_for_momentum_density_ +
                   safety_factor_for_momentum_density_slope_ *
-                      log10(rest_mass_density_times_lorentz_factor[s] /
-                            safety_factor_for_momentum_density_cutoff_d_);
+                      log10(
+                          rest_mass_density_times_lorentz_factor *
+                          one_over_safety_factor_for_momentum_density_cutoff_d);
     if (s_tilde_squared >
         one_minus_safety_factor_for_momentum_density_at_density *
             simple_upper_bound_for_s_tilde_squared) {
