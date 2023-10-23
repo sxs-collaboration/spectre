@@ -198,32 +198,40 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
 
 #undef INSTANTIATION
 
-#define INSTANTIATION(_, data)                                              \
-  template void unnormalized_face_normal(                                   \
-      const gsl::not_null<                                                  \
-          tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>*>             \
-          result,                                                           \
-      const Mesh<GET_DIM(data) - 1>& interface_mesh,                        \
-      const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,    \
-      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,         \
-                                      GET_DIM(data)>& grid_to_inertial_map, \
-      const double time,                                                    \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time,                                                \
-      const Direction<GET_DIM(data)>& direction);                           \
-  template tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>              \
-  unnormalized_face_normal(                                                 \
-      const Mesh<GET_DIM(data) - 1>& interface_mesh,                        \
-      const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,    \
-      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,         \
-                                      GET_DIM(data)>& grid_to_inertial_map, \
-      const double time,                                                    \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time,                                                \
+#define INSTANTIATION(_, data)                                                \
+  template void unnormalized_face_normal(                                     \
+      const gsl::not_null<                                                    \
+          tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>*>               \
+          result,                                                             \
+      const Mesh<GET_DIM(data) - 1>& interface_mesh,                          \
+      const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,      \
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,           \
+                                      GET_DIM(data)>& grid_to_inertial_map,   \
+      const double time,                                                      \
+      const std::unordered_map<                                               \
+          std::string,                                                        \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&          \
+          functions_of_time,                                                  \
+      const Direction<GET_DIM(data)>& direction);                             \
+  template void unnormalized_face_normal(                                     \
+      const gsl::not_null<                                                    \
+          tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>*>               \
+          result,                                                             \
+      const Mesh<GET_DIM(data) - 1>& interface_mesh,                          \
+      const InverseJacobian<DataVector, GET_DIM(data), Frame::ElementLogical, \
+                            Frame::Inertial>& inv_jacobian_on_interface,      \
+      const Direction<GET_DIM(data)>& direction);                             \
+  template tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>                \
+  unnormalized_face_normal(                                                   \
+      const Mesh<GET_DIM(data) - 1>& interface_mesh,                          \
+      const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,      \
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,           \
+                                      GET_DIM(data)>& grid_to_inertial_map,   \
+      const double time,                                                      \
+      const std::unordered_map<                                               \
+          std::string,                                                        \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&          \
+          functions_of_time,                                                  \
       const Direction<GET_DIM(data)>& direction);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
