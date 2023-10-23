@@ -248,8 +248,8 @@ void test(const Spectral::Quadrature quadrature) {
   ActionTesting::next_action<component>(make_not_null(&runner), self_id);
 
   CHECK(ActionTesting::get_databox_tag<component,
-                                       evolution::dg::Tags::NeighborMesh<Dim>>(
-            runner, self_id)
+                                       domain::Tags::NeighborMesh<Dim>>(runner,
+                                                                        self_id)
             .empty());
 
   // Set up data to be used for checking correctness

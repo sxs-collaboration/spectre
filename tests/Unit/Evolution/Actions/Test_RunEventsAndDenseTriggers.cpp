@@ -29,8 +29,8 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
@@ -273,8 +273,7 @@ struct Component {
                        evolution::Tags::PreviousTriggerTime, variables_tag,
                        Tags::HistoryEvolvedVariables<variables_tag>,
                        evolution::Tags::EventsAndDenseTriggers,
-                       evolution::dg::Tags::NeighborMesh<1>,
-                       domain::Tags::Element<1>>;
+                       domain::Tags::NeighborMesh<1>, domain::Tags::Element<1>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Testing,
@@ -375,7 +374,7 @@ void test(const bool time_runs_forward) {
               std::optional<double>{}, stored_vars, std::move(history),
               evolution::EventsAndDenseTriggers(
                   std::move(events_and_dense_triggers)),
-              typename evolution::dg::Tags::NeighborMesh<1>::type{},
+              typename domain::Tags::NeighborMesh<1>::type{},
               Element<1>{ElementId<1>{0}, {}},
               get<tmpl::type_from<decltype(tags_v)>>(initial_extra_data)...);
         });

@@ -19,6 +19,7 @@
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
@@ -325,7 +326,7 @@ struct Metavariables {
             ::domain::Tags::InitialExtents<Dim>,
             ::domain::Tags::InitialRefinementLevels<Dim>,
             evolution::dg::Tags::Quadrature,
-            evolution::dg::Tags::NeighborMesh<Dim>>>;
+            ::domain::Tags::NeighborMesh<Dim>>>;
   };
 
   using dg_element_array = DgElementArray<

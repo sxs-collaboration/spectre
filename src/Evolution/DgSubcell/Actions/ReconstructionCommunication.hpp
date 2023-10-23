@@ -29,6 +29,7 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
@@ -47,7 +48,6 @@
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -346,7 +346,7 @@ struct ReceiveDataForReconstruction {
     db::mutate<Tags::GhostDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
-               evolution::dg::Tags::NeighborMesh<Dim>,
+               domain::Tags::NeighborMesh<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         [&current_time_step_id, &element,
          ghost_zone_size =

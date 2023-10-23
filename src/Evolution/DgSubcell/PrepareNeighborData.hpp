@@ -18,6 +18,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -28,7 +29,6 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -75,8 +75,7 @@ void prepare_neighbor_data(
   const std::unordered_set<Direction<Dim>>& directions_to_slice =
       element.internal_boundaries();
 
-  const auto& neighbor_meshes =
-      db::get<evolution::dg::Tags::NeighborMesh<Dim>>(*box);
+  const auto& neighbor_meshes = db::get<domain::Tags::NeighborMesh<Dim>>(*box);
   const subcell::RdmpTciData& rdmp_data =
       db::get<subcell::Tags::DataForRdmpTci>(*box);
   const ::fd::DerivativeOrder fd_derivative_order =

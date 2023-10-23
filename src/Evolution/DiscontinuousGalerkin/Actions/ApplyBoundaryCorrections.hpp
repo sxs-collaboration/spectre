@@ -21,12 +21,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -136,7 +136,7 @@ bool receive_boundary_data_global_time_stepping(
 
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
-             evolution::dg::Tags::NeighborMesh<volume_dim>>(
+             domain::Tags::NeighborMesh<volume_dim>>(
       [&received_temporal_id_and_data](
           const gsl::not_null<std::unordered_map<
               Key, evolution::dg::MortarData<volume_dim>, boost::hash<Key>>*>
@@ -230,7 +230,7 @@ bool receive_boundary_data_local_time_stepping(
       evolution::dg::Tags::MortarDataHistory<volume_dim,
                                              typename dt_variables_tag::type>,
       evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
-      evolution::dg::Tags::NeighborMesh<volume_dim>>(
+      domain::Tags::NeighborMesh<volume_dim>>(
       [&inbox, &needed_time](
           const gsl::not_null<
               std::unordered_map<Key,

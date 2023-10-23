@@ -8,5 +8,6 @@ spectre_target_headers(
   ElementDistribution.hpp
   FaceNormal.hpp
   Faces.hpp
+  NeighborMesh.hpp
   SurfaceJacobian.hpp
   )
