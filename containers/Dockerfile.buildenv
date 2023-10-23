@@ -100,7 +100,8 @@ RUN apt-get update -y \
         libboost-thread-dev libboost-tools-dev libssl-dev \
         libhdf5-dev hdf5-tools \
         libarpack2-dev \
-        libyaml-cpp-dev
+        libyaml-cpp-dev \
+        libbenchmark-dev
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
