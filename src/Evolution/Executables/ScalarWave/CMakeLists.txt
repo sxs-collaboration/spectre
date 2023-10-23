@@ -3,6 +3,9 @@
 
 set(LIBS_TO_LINK
   Charmxx::main
+  Amr
+  AmrCriteria
+  AmrProjectors
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators

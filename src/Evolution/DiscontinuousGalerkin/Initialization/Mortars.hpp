@@ -16,6 +16,8 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Amr/Info.hpp"
+#include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -32,6 +34,7 @@
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -183,7 +186,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                  evolution::dg::Tags::NormalCovectorAndMagnitude<dim>,
                  Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>;
   using argument_tags =
-      tmpl::list<domain::Tags::Mesh<dim>, domain::Tags::Element<dim>>;
+      tmpl::list<domain::Tags::Mesh<dim>, domain::Tags::Element<dim>,
+                 amr::Tags::NeighborInfo<dim>>;
 
   static void apply(
       const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
@@ -201,7 +205,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           normal_covector_and_magnitude,
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
-      const Mesh<dim>& /*new_mesh*/, const Element<dim>& new_element,
+      const Mesh<dim>& new_mesh, const Element<dim>& new_element,
+      const std::unordered_map<ElementId<dim>, amr::Info<dim>>& neighbor_info,
       const std::pair<Mesh<dim>, Element<dim>>& /*old_mesh_and_element*/) {
     static_assert(not Metavariables::local_time_stepping,
                   "AMR with local time-stepping is not yet supported");
@@ -216,7 +221,13 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       for (const auto& neighbor : neighbors) {
         const auto mortar_id = std::make_pair(direction, neighbor);
         mortar_data->emplace(mortar_id, MortarData<dim>{1});
-        mortar_mesh->emplace(mortar_id, Mesh<dim - 1>{});
+        const auto new_neighbor_mesh = neighbors.orientation().inverse_map()(
+            neighbor_info.at(neighbor).new_mesh);
+        mortar_mesh->emplace(
+            mortar_id,
+            ::dg::mortar_mesh(
+                new_mesh.slice_away(direction.dimension()),
+                new_neighbor_mesh.slice_away(direction.dimension())));
         mortar_size->emplace(
             mortar_id,
             ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
@@ -246,6 +257,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
       const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
+      const std::unordered_map<ElementId<dim>,
+                               amr::Info<dim>>& /*neighbor_info*/,
       const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
     ERROR("h-refinement not implemented yet");
   }
@@ -268,6 +281,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
       const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
+      const std::unordered_map<ElementId<dim>,
+                               amr::Info<dim>>& /*neighbor_info*/,
       const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
       /*children_items*/) {
     ERROR("h-refinement not implemented yet");

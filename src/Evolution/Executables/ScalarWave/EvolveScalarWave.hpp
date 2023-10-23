@@ -17,7 +17,7 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
-#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
@@ -35,12 +35,12 @@
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Tags/Filter.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
-#include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
-#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Local.hpp"
@@ -56,26 +56,40 @@
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/Factory.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -115,7 +129,7 @@ struct EvolutionMetavars {
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = true;
+  static constexpr bool local_time_stepping = false;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -152,6 +166,11 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<amr::Criterion,
+                   tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+                              amr::Criteria::TruncationError<
+                                  volume_dim,
+                                  typename system::variables_tag::tags_list>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event,
@@ -197,6 +216,32 @@ struct EvolutionMetavars {
   // wave system, the user should determine whether this filter can be removed.
   static constexpr bool use_filtering = (2 == volume_dim);
 
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
+        ::amr::projectors::ProjectVariables<volume_dim,
+                                            typename system::variables_tag>,
+        ::amr::projectors::ProjectTensors<volume_dim,
+                                          ::ScalarWave::Tags::ConstraintGamma2>,
+        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<volume_dim>,
+            ::domain::Tags::InitialRefinementLevels<volume_dim>,
+            evolution::dg::Tags::Quadrature,
+            evolution::dg::Tags::NeighborMesh<volume_dim>,
+            Tags::StepperError<typename system::variables_tag>,
+            Tags::PreviousStepperError<typename system::variables_tag>,
+            Tags::StepperErrorUpdated,
+            SelfStart::Tags::InitialValue<typename system::variables_tag>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
+  };
+
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
@@ -222,7 +267,8 @@ struct EvolutionMetavars {
           tmpl::list<>>>>;
 
   using const_global_cache_tags =
-      tmpl::list<evolution::initial_data::Tags::InitialData>;
+      tmpl::list<evolution::initial_data::Tags::InitialData,
+                 ::amr::Criteria::Tags::Criteria>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -231,6 +277,7 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
           evolution::dg::Initialization::Domain<volume_dim>,
+          ::amr::Initialization::Initialize<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
@@ -257,6 +304,10 @@ struct EvolutionMetavars {
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
 
+          Parallel::PhaseActions<Parallel::Phase::CheckDomain,
+                                 tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                                            Parallel::Actions::TerminatePhase>>,
+
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<evolution::Actions::RunEventsAndTriggers,
@@ -271,7 +322,8 @@ struct EvolutionMetavars {
   };
 
   using component_list =
-      tmpl::list<observers::Observer<EvolutionMetavars>,
+      tmpl::list<::amr::Component<EvolutionMetavars>,
+                 observers::Observer<EvolutionMetavars>,
                  observers::ObserverWriter<EvolutionMetavars>,
                  dg_element_array>;
 
@@ -279,10 +331,13 @@ struct EvolutionMetavars {
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
-      {Parallel::Phase::Initialization,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+  static constexpr auto default_phase_order =
+      std::array{Parallel::Phase::Initialization,
+                 Parallel::Phase::InitializeTimeStepperHistory,
+                 Parallel::Phase::Register,
+                 Parallel::Phase::CheckDomain,
+                 Parallel::Phase::Evolve,
+                 Parallel::Phase::Exit};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
