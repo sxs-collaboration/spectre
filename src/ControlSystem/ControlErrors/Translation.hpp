@@ -9,7 +9,6 @@
 
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
-#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"

@@ -11,7 +11,6 @@ spectre_target_sources(
   Averager.cpp
   CalculateMeasurementTimescales.cpp
   Controller.cpp
-  DataVectorHelpers.cpp
   ExpirationTimes.cpp
   TimescaleTuner.cpp
   UpdateFunctionOfTime.cpp
@@ -26,7 +25,6 @@ spectre_target_headers(
   CombinedName.hpp
   Component.hpp
   Controller.hpp
-  DataVectorHelpers.hpp
   Event.hpp
   ExpirationTimes.hpp
   IsSize.hpp
