@@ -98,8 +98,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   int current_measurement{};
 
   const double damping_time = 1.0;
-  TimescaleTuner tuner{
-      std::vector<double>{damping_time}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
+  TimescaleTuner<true> tuner{
+      std::vector<double>{damping_time}, 10.0, 0.1, 0.1, 1.01, 2.0, 0.99};
   Controller<order> controller{0.3};
 
   std::unordered_map<std::string,

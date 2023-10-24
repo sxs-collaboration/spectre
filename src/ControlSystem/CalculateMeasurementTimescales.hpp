@@ -9,6 +9,7 @@
 template <size_t DerivOrder>
 class Controller;
 class DataVector;
+template <bool AllowDecrease>
 class TimescaleTuner;
 /// \endcond
 
@@ -29,8 +30,9 @@ namespace control_system {
  * we calculate the measurement timescales as \f$\tau_\mathrm{m} =
  * \tau_\mathrm{update} / N\f$ where \f$N\f$ is `measurements_per_update`.
  */
-template <size_t DerivOrder>
+template <size_t DerivOrder, bool AllowDecrease>
 DataVector calculate_measurement_timescales(
-    const ::Controller<DerivOrder>& controller, const ::TimescaleTuner& tuner,
+    const ::Controller<DerivOrder>& controller,
+    const ::TimescaleTuner<AllowDecrease>& tuner,
     const int measurements_per_update);
 }  // namespace control_system

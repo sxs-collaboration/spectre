@@ -12,19 +12,22 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
+template <bool AllowDecrease>
 void test_increase_or_decrease() {
-  const double decrease_timescale_threshold = 1.0e-2;
+  const double decrease_timescale_threshold =
+      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::max();
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst(1.0, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
+  TimescaleTuner<AllowDecrease> tst(
+      1.0, max_timescale, min_timescale, increase_timescale_threshold,
+      increase_factor, decrease_timescale_threshold, decrease_factor);
 
   const DataVector timescale{1.0};
 
@@ -66,103 +69,112 @@ void test_increase_or_decrease() {
     // in timescale are numbered, while the nested conditional choices for each
     // associated outer case are suffixed with letters
 
-    // (1) |Q| > decrease_timescale_threshold
-    //     |\dot{Q}| <= decrease_timescale_threshold/timescale
-    DataVector q{sign_of_q * greater_than_one * decrease_timescale_threshold};
-    DataVector qdot{sign_of_q * less_than_one * decrease_timescale_threshold /
-                    tscale};
+    DataVector q{1, 0.0};
+    DataVector qdot{1, 0.0};
 
-    // (1a) Q\dot{Q} > 0
-    //      |\dot{Q}| >= 0.5*|Q|/timescale
-    // the error is large and growing: decrease timescale
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+    if constexpr (AllowDecrease) {
+      // (1) |Q| > decrease_timescale_threshold
+      //     |\dot{Q}| <= decrease_timescale_threshold/timescale
+      q = sign_of_q * greater_than_one * decrease_timescale_threshold;
+      qdot = sign_of_q * less_than_one * decrease_timescale_threshold / tscale;
 
-    // (1b) Q\dot{Q} <= 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // the error is not decreasing quickly enough: decrease timescale
-    qdot = -less_than_one * 0.5 * q / tscale;
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (1a) Q\dot{Q} > 0
+      //      |\dot{Q}| >= 0.5*|Q|/timescale
+      // the error is large and growing: decrease timescale
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (1c) Q\dot{Q} > 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // the error is large and growing quickly: decrease timescale
-    qdot *= -1.0;
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (1b) Q\dot{Q} <= 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // the error is not decreasing quickly enough: decrease timescale
+      qdot = -less_than_one * 0.5 * q / tscale;
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (2) |Q| <= decrease_timescale_threshold
-    //     |\dot{Q}| > decrease_timescale_threshold/timescale
-    q = sign_of_q * less_than_one * decrease_timescale_threshold;
-    qdot = sign_of_q * greater_than_one * decrease_timescale_threshold / tscale;
+      // (1c) Q\dot{Q} > 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // the error is large and growing quickly: decrease timescale
+      qdot *= -1.0;
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (2a) Q\dot{Q} > 0
-    //      |\dot{Q}| >= 0.5*|Q|/timescale
-    // the error is growing quickly: decrease timescale
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (2) |Q| <= decrease_timescale_threshold
+      //     |\dot{Q}| > decrease_timescale_threshold/timescale
+      q = sign_of_q * less_than_one * decrease_timescale_threshold;
+      qdot =
+          sign_of_q * greater_than_one * decrease_timescale_threshold / tscale;
 
-    // (2b) Q\dot{Q} <= 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // NOTE: the second piece is unachievable, given the conditions of (2).
-    // This check is included in the do nothing test.
+      // (2a) Q\dot{Q} > 0
+      //      |\dot{Q}| >= 0.5*|Q|/timescale
+      // the error is growing quickly: decrease timescale
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (2c) Q\dot{Q} > 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // NOTE: the second piece is unachievable, given the conditions of (2),
-    // however, Q\dot{Q} > 0 is sufficient to trigger a decrease.
-    // the error is growing quickly: decrease timescale
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (2b) Q\dot{Q} <= 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // NOTE: the second piece is unachievable, given the conditions of (2).
+      // This check is included in the do nothing test.
 
-    // (3) |Q| > decrease_timescale_threshold
-    //     |\dot{Q}| > decrease_timescale_threshold/timescale
-    q = sign_of_q * greater_than_one * decrease_timescale_threshold;
-    qdot = sign_of_q * greater_than_one * decrease_timescale_threshold / tscale;
+      // (2c) Q\dot{Q} > 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // NOTE: the second piece is unachievable, given the conditions of (2),
+      // however, Q\dot{Q} > 0 is sufficient to trigger a decrease.
+      // the error is growing quickly: decrease timescale
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (3a) Q\dot{Q} > 0
-    //      |\dot{Q}| >= 0.5*|Q|/timescale
-    // the error is large and growing quickly: decrease timescale
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (3) |Q| > decrease_timescale_threshold
+      //     |\dot{Q}| > decrease_timescale_threshold/timescale
+      q = sign_of_q * greater_than_one * decrease_timescale_threshold;
+      qdot =
+          sign_of_q * greater_than_one * decrease_timescale_threshold / tscale;
 
-    // (3b) Q\dot{Q} <= 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // the error is large and not decreasing quickly enough: decrease timescale
-    qdot *= -1.0;
-    q = sign_of_q * greater_than_one * 2.0 * greater_than_one *
-        decrease_timescale_threshold;
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (3a) Q\dot{Q} > 0
+      //      |\dot{Q}| >= 0.5*|Q|/timescale
+      // the error is large and growing quickly: decrease timescale
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
 
-    // (3c) Q\dot{Q} > 0
-    //      |\dot{Q}| < 0.5*|Q|/timescale
-    // the error is large and growing quickly: decrease timescale
-    qdot *= -1.0;
-    tscale *= decrease_factor;
-    tst.update_timescale({{q, qdot}});
-    CHECK(tst.current_timescale() ==
-          make_with_value<DataVector>(timescale, tscale));
+      // (3b) Q\dot{Q} <= 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // the error is large and not decreasing quickly enough: decrease
+      // timescale
+      qdot *= -1.0;
+      q = sign_of_q * greater_than_one * 2.0 * greater_than_one *
+          decrease_timescale_threshold;
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
+
+      // (3c) Q\dot{Q} > 0
+      //      |\dot{Q}| < 0.5*|Q|/timescale
+      // the error is large and growing quickly: decrease timescale
+      qdot *= -1.0;
+      tscale *= decrease_factor;
+      tst.update_timescale({{q, qdot}});
+      CHECK(tst.current_timescale() ==
+            make_with_value<DataVector>(timescale, tscale));
+    }
 
     // There is only one case which triggers an increase in the timescale
     // (4) |Q| < increase_timescale_threshold
     //     |\dot{Q}| < increase_timescale_threshold/timescale
     // the error and time derivative are sufficiently small: increase timescale
+    tscale *= 0.5;
+    tst.set_timescale_if_in_allowable_range(tscale);
     q = sign_of_q * less_than_one * increase_timescale_threshold;
     qdot = sign_of_q * less_than_one * increase_timescale_threshold / tscale;
     tscale *= increase_factor;
@@ -175,17 +187,20 @@ void test_increase_or_decrease() {
   run_tests(-1.0);
 }
 
+template <bool AllowDecrease>
 void test_no_change_to_timescale() {
-  const double decrease_timescale_threshold = 1.0e-2;
+  const double decrease_timescale_threshold =
+      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::max();
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst(std::vector<double>{1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
+  TimescaleTuner<AllowDecrease> tst(
+      std::vector<double>{1.0}, max_timescale, min_timescale,
+      increase_timescale_threshold, increase_factor,
+      decrease_timescale_threshold, decrease_factor);
 
   const DataVector timescale{1.0};
   CHECK(tst.current_timescale() == timescale);
@@ -284,63 +299,66 @@ void test_no_change_to_timescale() {
   run_tests(-1.0);  // test negative Q
 }
 
+template <bool AllowDecrease>
 void test_create_from_options() {
-  const double decrease_timescale_threshold = 1.0e-2;
+  const double decrease_timescale_threshold =
+      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::max();
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  const TimescaleTuner expected{std::vector<double>{1.},
-                                max_timescale,
-                                min_timescale,
-                                decrease_timescale_threshold,
-                                increase_timescale_threshold,
-                                increase_factor,
-                                decrease_factor};
+  const TimescaleTuner<AllowDecrease> expected{
+      std::vector<double>{1.}, max_timescale,
+      min_timescale,           increase_timescale_threshold,
+      increase_factor,         decrease_timescale_threshold,
+      decrease_factor};
 
-  const auto tst = TestHelpers::test_creation<TimescaleTuner>(
+  const auto tst = TestHelpers::test_creation<TimescaleTuner<AllowDecrease>>(
       "InitialTimescales: [1.]\n"
       "MinTimescale: 1e-3\n"
       "MaxTimescale: 10.\n"
-      "DecreaseThreshold: 1e-2\n"
       "IncreaseThreshold: 1e-4\n"
-      "IncreaseFactor: 1.01\n"
-      "DecreaseFactor: 0.99\n");
+      "IncreaseFactor: 1.01\n" +
+      (AllowDecrease ? "DecreaseThreshold: 1e-2\n"
+                       "DecreaseFactor: 0.99\n"s
+                     : ""s));
   CHECK(tst == expected);
 
-  TimescaleTuner tst2 = TestHelpers::test_creation<TimescaleTuner>(
+  auto tst2 = TestHelpers::test_creation<TimescaleTuner<AllowDecrease>>(
       "InitialTimescales: 1.\n"
       "MinTimescale: 1e-3\n"
       "MaxTimescale: 10.\n"
-      "DecreaseThreshold: 1e-2\n"
       "IncreaseThreshold: 1e-4\n"
-      "IncreaseFactor: 1.01\n"
-      "DecreaseFactor: 0.99\n");
+      "IncreaseFactor: 1.01\n" +
+      (AllowDecrease ? "DecreaseThreshold: 1e-2\n"
+                       "DecreaseFactor: 0.99\n"s
+                     : ""s));
 
   CHECK_FALSE(tst2 == expected);
   tst2.resize_timescales(1);
   CHECK(tst2 == expected);
 }
 
+template <bool AllowDecrease>
 void test_equality_and_serialization() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst1(std::vector<double>{0.3}, max_timescale, min_timescale,
-                      decrease_timescale_threshold,
-                      increase_timescale_threshold, increase_factor,
-                      decrease_factor);
+  TimescaleTuner<AllowDecrease> tst1(
+      std::vector<double>{0.3}, max_timescale, min_timescale,
+      increase_timescale_threshold, increase_factor,
+      decrease_timescale_threshold, decrease_factor);
 
-  TimescaleTuner tst2(std::vector<double>{0.4}, max_timescale, min_timescale,
-                      decrease_timescale_threshold,
-                      increase_timescale_threshold, increase_factor,
-                      decrease_factor);
+  TimescaleTuner<AllowDecrease> tst2(
+      std::vector<double>{0.4}, max_timescale, min_timescale,
+      increase_timescale_threshold, increase_factor,
+      decrease_timescale_threshold, decrease_factor);
 
   CHECK(tst1 == tst1);
   CHECK(tst1 != tst2);
@@ -348,23 +366,38 @@ void test_equality_and_serialization() {
 }
 
 void test_errors() {
-  CHECK_THROWS_WITH(([]() {
-                      const double decrease_timescale_threshold = 1.0e-2;
-                      const double increase_timescale_threshold = 1.0e-4;
-                      const double increase_factor = 1.01;
-                      const double decrease_factor = 0.99;
-                      const double max_timescale = 10.0;
-                      const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
 
-                      const std::vector<double> init_timescale{0.0};
-                      TimescaleTuner tst(init_timescale, max_timescale,
-                                         min_timescale,
-                                         decrease_timescale_threshold,
-                                         increase_timescale_threshold,
-                                         increase_factor, decrease_factor);
-                    }()),
-                    Catch::Matchers::ContainsSubstring(
-                        "Initial timescale must be > 0"));
+        const std::vector<double> init_timescale{0.0};
+        TimescaleTuner<true> tst(init_timescale, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
+      }()),
+      Catch::Matchers::ContainsSubstring("Initial timescale must be > 0"));
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
+
+        TimescaleTuner<false> tst(
+            {0.1}, max_timescale, min_timescale, increase_timescale_threshold,
+            increase_factor, decrease_timescale_threshold, decrease_factor);
+      }()),
+      Catch::Matchers::ContainsSubstring("If 'AllowDecrease' is false, then "
+                                         "the specified decrease_factor must "
+                                         "be 1.0"));
 
   CHECK_THROWS_WITH(([]() {
                       const double decrease_timescale_threshold = 1.0e-2;
@@ -375,10 +408,10 @@ void test_errors() {
                       const double increase_factor = 1.1;
                       const double decrease_factor = -0.99;
 
-                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                                         decrease_timescale_threshold,
-                                         increase_timescale_threshold,
-                                         increase_factor, decrease_factor);
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
                     }()),
                     Catch::Matchers::ContainsSubstring(
                         "must satisfy 0 < decrease_factor <= 1"));
@@ -392,10 +425,10 @@ void test_errors() {
                       const double increase_factor = 1.1;
                       const double decrease_factor = 1.01;
 
-                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                                         decrease_timescale_threshold,
-                                         increase_timescale_threshold,
-                                         increase_factor, decrease_factor);
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
                     }()),
                     Catch::Matchers::ContainsSubstring(
                         "must satisfy 0 < decrease_factor <= 1"));
@@ -409,10 +442,10 @@ void test_errors() {
                       const double increase_factor = 0.99;
                       const double decrease_factor = 0.8;
 
-                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                                         decrease_timescale_threshold,
-                                         increase_timescale_threshold,
-                                         increase_factor, decrease_factor);
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
                     }()),
                     Catch::Matchers::ContainsSubstring("must be >= 1"));
 
@@ -425,46 +458,46 @@ void test_errors() {
                       const double max_timescale = 10.0;
                       const double min_timescale = 0.0;
 
-                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                                         decrease_timescale_threshold,
-                                         increase_timescale_threshold,
-                                         increase_factor, decrease_factor);
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
                     }()),
                     Catch::Matchers::ContainsSubstring("must be > 0"));
 
-  CHECK_THROWS_WITH(
-      ([]() {
-        const double decrease_timescale_threshold = 1.0e-2;
-        const double increase_timescale_threshold = 1.0e-4;
-        const double increase_factor = 1.01;
-        const double decrease_factor = 0.99;
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double increase_factor = 1.01;
+                      const double decrease_factor = 0.99;
 
-        const double max_timescale = 1.0e-4;
-        const double min_timescale = 1.0e-3;
+                      const double max_timescale = 1.0e-4;
+                      const double min_timescale = 1.0e-3;
 
-        TimescaleTuner tst(
-            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
-            increase_timescale_threshold, increase_factor, decrease_factor);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "must be > than the specified minimum timescale"));
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "must be > than the specified minimum timescale"));
 
-  CHECK_THROWS_WITH(
-      ([]() {
-        const double increase_factor = 1.01;
-        const double decrease_factor = 0.99;
-        const double max_timescale = 10.0;
-        const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(([]() {
+                      const double increase_factor = 1.01;
+                      const double decrease_factor = 0.99;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 1.0e-3;
 
-        const double decrease_timescale_threshold = 1.0e-2;
-        const double increase_timescale_threshold = 0.0;
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 0.0;
 
-        TimescaleTuner tst(
-            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
-            increase_timescale_threshold, increase_factor, decrease_factor);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "The specified increase-timescale threshold"));
+                      TimescaleTuner<true> tst(
+                          {1.0}, max_timescale, min_timescale,
+                          increase_timescale_threshold, increase_factor,
+                          decrease_timescale_threshold, decrease_factor);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "The specified increase-timescale threshold"));
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -476,9 +509,9 @@ void test_errors() {
         const double decrease_timescale_threshold = 1.0e-4;
         const double increase_timescale_threshold = 1.0e-3;
 
-        TimescaleTuner tst(
-            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
-            increase_timescale_threshold, increase_factor, decrease_factor);
+        TimescaleTuner<true> tst({1.0}, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
       }()),
       Catch::Matchers::ContainsSubstring(
           "must be > than the specified increase-timescale threshold"));
@@ -494,10 +527,9 @@ void test_errors() {
         const double min_timescale = 1.0e-3;
 
         const std::vector<double> init_timescale{{1.0, 2.0}};
-        TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
-                           decrease_timescale_threshold,
-                           increase_timescale_threshold, increase_factor,
-                           decrease_factor);
+        TimescaleTuner<true> tst(init_timescale, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
 
         const std::array<DataVector, 2> qs{{{2.0}, {3.0}}};
         tst.update_timescale(qs);
@@ -513,9 +545,9 @@ void test_errors() {
         const double max_timescale = 10.0;
         const double min_timescale = 1.0e-3;
 
-        TimescaleTuner tst(
-            1.0, max_timescale, min_timescale, decrease_timescale_threshold,
-            increase_timescale_threshold, increase_factor, decrease_factor);
+        TimescaleTuner<true> tst(1.0, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
 
         const std::array<DataVector, 2> qs{{{2.0}}};
         tst.update_timescale(qs);
@@ -531,9 +563,9 @@ void test_errors() {
         const double max_timescale = 10.0;
         const double min_timescale = 1.0e-3;
 
-        TimescaleTuner tst(
-            1.0, max_timescale, min_timescale, decrease_timescale_threshold,
-            increase_timescale_threshold, increase_factor, decrease_factor);
+        TimescaleTuner<true> tst(1.0, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
 
         tst.current_timescale();
       }()),
@@ -549,10 +581,9 @@ void test_errors() {
         const double min_timescale = 1.0e-3;
 
         const std::vector<double> init_timescale{{1.0, 2.0}};
-        TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
-                           decrease_timescale_threshold,
-                           increase_timescale_threshold, increase_factor,
-                           decrease_factor);
+        TimescaleTuner<true> tst(init_timescale, max_timescale, min_timescale,
+                                 increase_timescale_threshold, increase_factor,
+                                 decrease_timescale_threshold, decrease_factor);
 
         tst.resize_timescales(0);
       }()),
@@ -564,9 +595,15 @@ void test_errors() {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner",
                   "[ControlSystem][Unit]") {
-  test_increase_or_decrease();
-  test_no_change_to_timescale();
-  test_create_from_options();
-  test_equality_and_serialization();
+  tmpl::for_each<tmpl::list<std::true_type, std::false_type>>(
+      [](const auto bool_v) {
+        constexpr bool allow_decrease =
+            tmpl::type_from<decltype(bool_v)>::value;
+        CAPTURE(allow_decrease);
+        test_increase_or_decrease<allow_decrease>();
+        test_no_change_to_timescale<allow_decrease>();
+        test_create_from_options<allow_decrease>();
+        test_equality_and_serialization<allow_decrease>();
+      });
   test_errors();
 }

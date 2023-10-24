@@ -3,8 +3,16 @@
 
 #pragma once
 
-#include "ControlSystem/Systems/Size.hpp"
+#include <cstddef>
+
 #include "Domain/Structure/ObjectLabel.hpp"
+
+/// \cond
+namespace control_system::Systems {
+template <::domain::ObjectLabel Horizon, size_t DerivOrder>
+struct Size;
+}  // namespace control_system::Systems
+/// \endcond
 
 namespace control_system::size {
 // tt::is_a doesn't work because of domain::ObjectLabel and size_t

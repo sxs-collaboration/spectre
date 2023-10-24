@@ -117,8 +117,8 @@ void test_translation_control_error() {
   // This is before the first expiration time
   const double check_time = 0.1;
   const DataVector control_error =
-      ControlError{}(::TimescaleTuner{}, cache, check_time, translation_name,
-                     fake_measurement_tuple);
+      ControlError{}(::TimescaleTuner<true>{}, cache, check_time,
+                     translation_name, fake_measurement_tuple);
 
   // Calculated errors from other basic control systems
   const DataVector rotation_control_error =

@@ -248,9 +248,7 @@ ControlSystems:
       MinTimescale: 1.0e-4
       MaxTimescale: 20.0
       IncreaseThreshold: 2.5e-4
-      DecreaseThreshold: 1.0e-3
       IncreaseFactor: 1.01
-      DecreaseFactor: 1.0
     ControlError:
       MaxNumTimesForZeroCrossingPredictor: 4
       SmoothAvgTimescaleFraction: 0.25

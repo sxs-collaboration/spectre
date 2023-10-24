@@ -71,8 +71,8 @@ template <size_t DerivOrder>
 void test_calculate_measurement_timescales() {
   INFO("Test calculate measurement timescales");
   const double timescale = 20.0;
-  const TimescaleTuner tuner(std::vector<double>{timescale}, 10.0, 1.0e-3,
-                             1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner<true> tuner(std::vector<double>{timescale}, 10.0, 1.0e-3,
+                                   1.0e-4, 1.01, 1.0e-2, 0.99);
   const double update_fraction = 0.25;
   const Controller<DerivOrder> controller(update_fraction);
 
@@ -108,16 +108,16 @@ void test_measurement_tag() {
     const control_system::TestHelpers::ControlError<1> control_error{};
 
     const double timescale_long = 27.0;
-    const TimescaleTuner tuner1(
+    const TimescaleTuner<true> tuner1(
         std::vector<double>{timescale_long, timescale_long * 2.0}, 10.0, 1.0e-3,
-        1.0e-2, 1.0e-4, 1.01, 0.99);
+        1.0e-4, 1.01, 1.0e-2, 0.99);
     const double timescale_short = 0.5;
-    TimescaleTuner tuner2(timescale_short, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                          0.99);
+    TimescaleTuner<true> tuner2(timescale_short, 10.0, 1.0e-3, 1.0e-4, 1.01,
+                                1.0e-2, 0.99);
     tuner2.resize_timescales(2);
-    const TimescaleTuner tuner4 = tuner2;
-    const TimescaleTuner& tuner5 = tuner1;
-    const TimescaleTuner& tuner6 = tuner1;
+    const TimescaleTuner<true> tuner4 = tuner2;
+    const TimescaleTuner<true>& tuner5 = tuner1;
+    const TimescaleTuner<true>& tuner6 = tuner1;
 
     OptionHolder<1> option_holder1(true, averager, controller, tuner1,
                                    control_error);
@@ -201,10 +201,10 @@ void test_measurement_tag() {
 
   CHECK_THROWS_WITH(
       ([]() {
-        const TimescaleTuner tuner1(std::vector<double>{27.0}, 10.0, 1.0e-3,
-                                    1.0e-2, 1.0e-4, 1.01, 0.99);
-        const TimescaleTuner tuner2(std::vector<double>{0.1}, 10.0, 1.0e-3,
-                                    1.0e-2, 1.0e-4, 1.01, 0.99);
+        const TimescaleTuner<true> tuner1(std::vector<double>{27.0}, 10.0,
+                                          1.0e-3, 1.0e-4, 1.01, 1.0e-2, 0.99);
+        const TimescaleTuner<true> tuner2(std::vector<double>{0.1}, 10.0,
+                                          1.0e-3, 1.0e-4, 1.01, 1.0e-2, 0.99);
         const Averager<1> averager(0.25, true);
         const Controller<2> controller(0.3);
         const control_system::TestHelpers::ControlError<1> control_error{};

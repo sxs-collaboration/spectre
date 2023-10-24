@@ -65,9 +65,9 @@ void test_expiration_time_construction() {
   constexpr int measurements_per_update = 4;
 
   const double timescale = 2.0;
-  const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
-                              1.0e-2, 1.0e-4, 1.01, 0.99);
-  TimescaleTuner tuner2(0.1, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner<true> tuner1(std::vector<double>{timescale}, 10.0,
+                                    1.0e-3, 1.0e-4, 1.01, 1.0e-2, 0.99);
+  TimescaleTuner<true> tuner2(0.1, 10.0, 1.0e-3, 1.0e-4, 1.01, 1.0e-2, 0.99);
   tuner2.resize_timescales(2);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;

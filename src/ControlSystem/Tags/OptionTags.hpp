@@ -8,6 +8,7 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
+#include "ControlSystem/IsSize.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "IO/Logging/Verbosity.hpp"
@@ -24,6 +25,11 @@ namespace control_system {
 /// their public member names and assigned to their corresponding DataBox tags.
 template <typename ControlSystem>
 struct OptionHolder {
+ private:
+  static constexpr bool is_size =
+      ::control_system::size::is_size_v<ControlSystem>;
+
+ public:
   static_assert(tt::assert_conforms_to_v<
                 ControlSystem, control_system::protocols::ControlSystem>);
   using control_system = ControlSystem;
@@ -51,7 +57,7 @@ struct OptionHolder {
   };
 
   struct TimescaleTuner {
-    using type = ::TimescaleTuner;
+    using type = ::TimescaleTuner<not is_size>;
     static constexpr Options::String help = {
         "Keeps track of the damping timescales for the control system upon "
         "which other timescales are based of off."};
@@ -71,7 +77,7 @@ struct OptionHolder {
   OptionHolder(const bool input_is_active,
                ::Averager<deriv_order - 1> input_averager,
                ::Controller<deriv_order> input_controller,
-               ::TimescaleTuner input_tuner,
+               ::TimescaleTuner<not is_size> input_tuner,
                typename ControlSystem::control_error input_control_error)
       : is_active(input_is_active),
         averager(std::move(input_averager)),
@@ -100,7 +106,7 @@ struct OptionHolder {
   bool is_active{true};
   ::Averager<deriv_order - 1> averager{};
   ::Controller<deriv_order> controller{};
-  ::TimescaleTuner tuner{};
+  ::TimescaleTuner<not is_size> tuner{};
   typename ControlSystem::control_error control_error{};
 };
 

@@ -122,7 +122,7 @@ struct ExampleControlError
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... QueueTags>
-  DataVector operator()(const ::TimescaleTuner& tuner,
+  DataVector operator()(const ::TimescaleTuner<true>& tuner,
                         const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& function_of_time_name,

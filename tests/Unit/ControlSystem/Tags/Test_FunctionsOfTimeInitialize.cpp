@@ -207,10 +207,10 @@ void test_functions_of_time_tag() {
   // time between the two expiration times used above in the TestCreator
   const double timescale = 27.0;
   const double timescale2 = 0.1;
-  const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
-                              1.0e-2, 1.0e-4, 1.01, 0.99);
-  const TimescaleTuner tuner2(timescale2, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                              0.99);
+  const TimescaleTuner<true> tuner1(std::vector<double>{timescale}, 10.0,
+                                    1.0e-3, 1.0e-4, 1.01, 1.0e-2, 0.99);
+  const TimescaleTuner<true> tuner2(timescale2, 10.0, 1.0e-3, 1.0e-4, 1.01,
+                                    1.0e-2, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
@@ -280,8 +280,8 @@ using Creator = std::unique_ptr<::DomainCreator<1>>;
 void not_controlling(const bool is_active) {
   const Creator creator = std::make_unique<TestCreator>(true);
 
-  const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3, 1.0e-2,
-                             1.0e-4, 1.01, 0.99);
+  const TimescaleTuner<true> tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
+                                   1.0e-4, 1.01, 1.0e-2, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
@@ -305,8 +305,8 @@ void not_controlling(const bool is_active) {
 void incompatible(const bool is_active) {
   const Creator creator = std::make_unique<BadCreator>();
 
-  const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3, 1.0e-2,
-                             1.0e-4, 1.01, 0.99);
+  const TimescaleTuner<true> tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
+                                   1.0e-4, 1.01, 1.0e-2, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);

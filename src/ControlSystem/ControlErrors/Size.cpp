@@ -36,7 +36,7 @@ namespace ControlErrors {
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 Size<DerivOrder, Horizon>::Size(
     const int max_times, const double smooth_avg_timescale_frac,
-    TimescaleTuner smoother_tuner,
+    TimescaleTuner<true> smoother_tuner,
     std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options)
     : smoother_tuner_(std::move(smoother_tuner)),
       delta_r_drift_outward_options_(delta_r_drift_outward_options) {

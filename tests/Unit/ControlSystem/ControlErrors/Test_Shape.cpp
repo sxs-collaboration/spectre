@@ -176,7 +176,7 @@ void test_shape_control_error() {
   QueueTuple fake_measurement_tuple{fake_ah};
 
   const DataVector control_error =
-      ControlError{}(::TimescaleTuner{}, cache, check_time, shape_name,
+      ControlError{}(::TimescaleTuner<true>{}, cache, check_time, shape_name,
                      fake_measurement_tuple);
 
   const auto lambda_00_coef =
