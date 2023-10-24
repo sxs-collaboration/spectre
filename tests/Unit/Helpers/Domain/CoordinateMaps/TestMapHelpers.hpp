@@ -531,7 +531,9 @@ void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) {
   INFO("Test inverse map");
   CAPTURE(test_point);
-  const auto expected_test_point = map.inverse(map(test_point));
+  const auto mapped_point = map(test_point);
+  CAPTURE(mapped_point);
+  const auto expected_test_point = map.inverse(mapped_point);
   REQUIRE(expected_test_point.has_value());
   CHECK_ITERABLE_APPROX(test_point, expected_test_point.value());
 }
