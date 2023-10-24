@@ -132,7 +132,8 @@ void test_construct_from_options() {
       TestHelpers::test_creation<gh::Solutions::WrappedGr<SolutionType>>(
           "Mass: 0.5\n"
           "Spin: [0.1,0.2,0.3]\n"
-          "Center: [1.0,3.0,2.0]");
+          "Center: [1.0,3.0,2.0]\n"
+          "Velocity: [0,0,0]");
   const double mass = 0.5;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 3.0, 2.0}};
@@ -179,6 +180,4 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.WrappedGr",
       mass, spin, center, mass2, spin2, center2);
 
   test_construct_from_options<gr::Solutions::KerrSchild>();
-
-  test_construct_from_options<gr::Solutions::SphericalKerrSchild>();
 }
