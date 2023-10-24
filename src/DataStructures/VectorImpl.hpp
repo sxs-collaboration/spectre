@@ -33,6 +33,7 @@
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
+#include "Utilities/TypeTraits/IsStdArray.hpp"
 
 class ComplexDataVector;
 class ComplexModalVector;
@@ -197,6 +198,23 @@ class VectorImpl
       : owned_data_(heap_alloc_if_necessary(set_size)) {
     reset_pointer_vector(set_size);
     std::fill(data(), data() + set_size, value);
+  }
+
+  /// Create from a copy of the given container
+  ///
+  /// \param container A container with a `value_type` that is the same as `T`.
+  /// Currently restricted to `std::vector<T>` and `std::array<T>`.
+  template <
+      typename Container,
+      Requires<std::is_same_v<typename Container::value_type, T>> = nullptr>
+  explicit VectorImpl(const Container& container)
+      : owned_data_(heap_alloc_if_necessary(container.size())) {
+    static_assert(std::is_same_v<Container, std::vector<T>> or
+                      tt::is_std_array_v<Container>,
+                  "This constructor is currently restricted to std::vector and "
+                  "std::array out of caution.");
+    reset_pointer_vector(container.size());
+    std::copy(container.begin(), container.end(), data());
   }
 
   /// Create a non-owning VectorImpl that points to `start`

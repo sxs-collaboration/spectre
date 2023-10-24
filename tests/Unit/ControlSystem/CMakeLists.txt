@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_Averager.cpp
   Test_CombinedName.cpp
   Test_Controller.cpp
-  Test_DataVectorHelpers.cpp
   Test_EventTriggerMetafunctions.cpp
   Test_ExpirationTimes.cpp
   Test_FutureMeasurements.cpp
