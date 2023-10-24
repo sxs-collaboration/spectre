@@ -3,26 +3,20 @@
 
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include "ControlSystem/CombinedName.hpp"
+#include "ControlSystem/FutureMeasurements.hpp"
 #include "ControlSystem/Metafunctions.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "IO/Logging/Verbosity.hpp"
-#include "Utilities/Algorithm.hpp"
+#include "Parallel/ArrayComponentId.hpp"
+#include "Parallel/Callback.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -31,14 +25,12 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 namespace Tags {
 struct Time;
 }  // namespace Tags
 namespace control_system::Tags {
+template <typename ControlSystems>
+struct FutureMeasurements;
 struct MeasurementTimescales;
 struct Verbosity;
 }  // namespace control_system::Tags
@@ -83,33 +75,19 @@ class Trigger : public DenseTrigger {
 
   using is_triggered_return_tags = tmpl::list<>;
   using is_triggered_argument_tags =
-      tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
+      tmpl::list<::Tags::Time,
+                 control_system::Tags::FutureMeasurements<ControlSystems>>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<bool> is_triggered(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* /*component*/,
       const double time,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          measurement_timescales) {
-    if (UNLIKELY(not next_trigger_.has_value())) {
-      // First call
-
-      // This will happen if an executable has control systems, but
-      // all functions of time were overriden by ones read in from a
-      // file. So there is no need to trigger control systems.  Since
-      // we only enter this branch on the first call to the trigger,
-      // this is the initial time so we can assume the
-      // measurement_timescales are ready.
-      if (next_measurement(time, measurement_timescales) ==
-          std::numeric_limits<double>::infinity()) {
-        next_trigger_ = std::numeric_limits<double>::infinity();
-      } else {
-        next_trigger_ = time;
-      }
-    }
+      const control_system::FutureMeasurements& measurement_times) {
+    const auto next_measurement = measurement_times.next_measurement();
+    ASSERT(next_measurement.has_value(),
+           "Checking trigger without knowing next time.");
+    const bool triggered = time == *next_measurement;
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
       Parallel::printf(
@@ -117,91 +95,72 @@ class Trigger : public DenseTrigger {
           "triggered.\n",
           get_output(array_index), time,
           pretty_type::list_of_names<ControlSystems>(),
-          (time == *next_trigger_ ? "" : " not"));
+          (triggered ? "" : " not"));
     }
 
-    return time == *next_trigger_;
+    return triggered;
   }
 
-  using next_check_time_return_tags = tmpl::list<>;
-  using next_check_time_argument_tags =
-      tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
+  using next_check_time_return_tags =
+      tmpl::list<control_system::Tags::FutureMeasurements<ControlSystems>>;
+  using next_check_time_argument_tags = tmpl::list<::Tags::Time>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const Component* component,
-      const double time,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          measurement_timescales) {
-    // At least one control system is active
-    const bool is_ready =
-        domain::functions_of_time_are_ready_algorithm_callback<
-            control_system::Tags::MeasurementTimescales>(
-            cache, array_index, component, time,
-            std::unordered_set{
-                control_system::combined_name<ControlSystems>()});
-    if (not is_ready) {
-      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
-        Parallel::printf(
-            "%s, time = %.16f: Trigger - Cannot calculate next_check_time\n",
-            get_output(array_index), time);
-      }
-      return std::nullopt;
+      const ArrayIndex& array_index, const Component* /*component*/,
+      const gsl::not_null<control_system::FutureMeasurements*>
+          measurement_times,
+      const double time) {
+    if (measurement_times->next_measurement() == std::optional(time)) {
+      measurement_times->pop_front();
     }
 
-    const bool triggered = time == *next_trigger_;
-    if (triggered) {
-      *next_trigger_ = next_measurement(time, measurement_timescales);
+    if (not measurement_times->next_measurement().has_value()) {
+      const auto& proxy =
+          ::Parallel::get_parallel_component<Component>(cache)[array_index];
+      const bool is_ready = Parallel::mutable_cache_item_is_ready<
+          control_system::Tags::MeasurementTimescales>(
+          cache, Parallel::make_array_component_id<Component>(array_index),
+          [&](const auto& measurement_timescales) {
+            const std::string& measurement_name =
+                control_system::combined_name<ControlSystems>();
+            ASSERT(measurement_timescales.count(measurement_name) == 1,
+                   "Control system trigger expects a measurement timescale "
+                   "with the name '"
+                       << measurement_name
+                       << "' but could not find one. Available names are: "
+                       << keys_of(measurement_timescales));
+            measurement_times->update(
+                *measurement_timescales.at(measurement_name));
+            if (not measurement_times->next_measurement().has_value()) {
+              return std::unique_ptr<Parallel::Callback>(
+                  new Parallel::PerformAlgorithmCallback(proxy));
+            }
+            return std::unique_ptr<Parallel::Callback>{};
+          });
+
+      if (not is_ready) {
+        if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+          Parallel::printf(
+              "%s, time = %.16f: Trigger - Cannot calculate next_check_time\n",
+              get_output(array_index), time);
+        }
+        return std::nullopt;
+      }
     }
+
+    const double next_trigger = *measurement_times->next_measurement();
+    ASSERT(next_trigger > time,
+           "Next trigger is in the past: " << next_trigger << " > " << time);
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
       Parallel::printf("%s, time = %.16f: Trigger - next check time is %.16f\n",
-                       get_output(array_index), time, *next_trigger_);
-    }
-    return *next_trigger_;
-  }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override {
-    DenseTrigger::pup(p);
-    p | next_trigger_;
-  }
-
- private:
-  double next_measurement(
-      const double time,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          measurement_timescales) {
-    const std::string& measurement_name =
-        control_system::combined_name<ControlSystems>();
-    ASSERT(
-        measurement_timescales.count(measurement_name) == 1,
-        "Control system trigger expects a measurement timescale with the name '"
-            << measurement_name
-            << "' but could not find one. Available names are: "
-            << keys_of(measurement_timescales));
-    const DataVector timescale =
-        measurement_timescales.at(measurement_name)->func(time)[0];
-    ASSERT(timescale.size() == 1,
-           "Control system trigger assumes measurement timescale size is 1, "
-           "but it is "
-               << timescale.size() << " instead.");
-
-    const double min_measure_time = timescale[0];
-
-    if (min_measure_time == std::numeric_limits<double>::infinity()) {
-      return min_measure_time;
+                       get_output(array_index), time, next_trigger);
     }
 
-    return time + min_measure_time;
+    return {next_trigger};
   }
-
-  std::optional<double> next_trigger_{};
 };
 
 /// \cond

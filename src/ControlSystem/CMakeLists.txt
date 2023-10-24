@@ -13,6 +13,7 @@ spectre_target_sources(
   Controller.cpp
   DataVectorHelpers.cpp
   ExpirationTimes.cpp
+  FutureMeasurements.cpp
   TimescaleTuner.cpp
   UpdateFunctionOfTime.cpp
   )
@@ -29,6 +30,7 @@ spectre_target_headers(
   DataVectorHelpers.hpp
   Event.hpp
   ExpirationTimes.hpp
+  FutureMeasurements.hpp
   IsSize.hpp
   Metafunctions.hpp
   NamespaceDocs.hpp

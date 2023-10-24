@@ -3,14 +3,20 @@
 
 #pragma once
 
+#include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <tuple>
 #include <utility>
 
+#include "ControlSystem/CombinedName.hpp"
 #include "ControlSystem/Event.hpp"
+#include "ControlSystem/FutureMeasurements.hpp"
 #include "ControlSystem/Metafunctions.hpp"
+#include "ControlSystem/Tags/FutureMeasurements.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
+#include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
@@ -45,9 +51,15 @@ namespace control_system::Actions {
 /// - Modifies: nothing
 template <typename ControlSystems>
 struct InitializeMeasurements {
-  using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
-      ::control_system::Tags::MeasurementTimescales>>;
+  using control_system_groups =
+      tmpl::transform<metafunctions::measurements_t<ControlSystems>,
+                      metafunctions::control_systems_with_measurement<
+                          tmpl::pin<ControlSystems>, tmpl::_1>>;
+
+  using simple_tags =
+      tmpl::transform<control_system_groups,
+                      tmpl::bind<Tags::FutureMeasurements, tmpl::_1>>;
+  using const_global_cache_tags = tmpl::list<Tags::MeasurementsPerUpdate>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
 
@@ -57,9 +69,31 @@ struct InitializeMeasurements {
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    const double initial_time = db::get<::Tags::Time>(box);
+    const int measurements_per_update =
+        db::get<Tags::MeasurementsPerUpdate>(box);
+    const auto& timescales = Parallel::get<Tags::MeasurementTimescales>(cache);
+    tmpl::for_each<control_system_groups>([&](auto group_v) {
+      using group = tmpl::type_from<decltype(group_v)>;
+      const bool active =
+          timescales.at(combined_name<group>())->func(initial_time)[0][0] !=
+          std::numeric_limits<double>::infinity();
+      db::mutate<Tags::FutureMeasurements<group>>(
+          [&](const gsl::not_null<FutureMeasurements*> measurements) {
+            if (active) {
+              *measurements = FutureMeasurements(
+                  static_cast<size_t>(measurements_per_update), initial_time);
+            } else {
+              *measurements = FutureMeasurements(
+                  1, std::numeric_limits<double>::infinity());
+            }
+          },
+          make_not_null(&box));
+    });
+
     db::mutate<evolution::Tags::EventsAndDenseTriggers>(
         [](const gsl::not_null<evolution::EventsAndDenseTriggers*>
                events_and_dense_triggers) {
