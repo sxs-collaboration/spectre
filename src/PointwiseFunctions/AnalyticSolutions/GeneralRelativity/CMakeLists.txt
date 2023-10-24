@@ -42,4 +42,5 @@ target_link_libraries(
   GeneralRelativity
   Interpolation
   Serialization
+  SpecialRelativity
   )
