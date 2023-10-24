@@ -139,6 +139,8 @@ std::string option_string(
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"
+                              "    TranslationMap:\n"
+                              "      InitialVelocity: [-0.3, 0.5, -0.7]\n"
                             : "  TimeDependentMaps:\n"
                               "    UniformTranslation:\n"
                               "      InitialTime: 1.0\n"
@@ -535,11 +537,14 @@ void test_parse_errors() {
           "an outflow-type boundary condition, you must use that."));
   using TDMO = domain::creators::sphere::TimeDependentMapOptions;
   CHECK_THROWS_WITH(
-      creators::Sphere(
-          inner_radius, outer_radius, inner_cube, refinement, initial_extents,
-          use_equiangular_map, equatorial_compression, radial_partitioning,
-          radial_distribution, which_wedges,
-          TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt}}, nullptr),
+      creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
+                       initial_extents, use_equiangular_map,
+                       equatorial_compression, radial_partitioning,
+                       radial_distribution, which_wedges,
+                       TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt},
+                            // Translation options: InitialVelocity
+                            std::array<double, 3>{-0.3, 0.5, -0.7}},
+                       nullptr),
       Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
           "cube. Use a TimeDependence instead."));
@@ -630,8 +635,11 @@ void test_sphere() {
     if (time_dependent) {
       if (use_hard_coded_time_dep_options) {
         time_dependent_options = creators::sphere::TimeDependentMapOptions(
-            1.0, creators::sphere::TimeDependentMapOptions::ShapeMapOptions{
-                     l_max, std::nullopt});
+            1.0,
+            creators::sphere::TimeDependentMapOptions::ShapeMapOptions{
+                l_max, std::nullopt},
+            // Translation options: InitialVelocity
+            std::array<double, 3>{-0.3, 0.5, -0.7});
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(

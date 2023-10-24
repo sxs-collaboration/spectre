@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
@@ -81,6 +82,7 @@ struct TimeDependentMapOptions {
   using IdentityMap = domain::CoordinateMaps::Identity<3>;
   // Time-dependent maps
   using ShapeMap = domain::CoordinateMaps::TimeDependent::Shape;
+  using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
 
   template <typename SourceFrame, typename TargetFrame>
   using IdentityForComposition =
@@ -88,20 +90,33 @@ struct TimeDependentMapOptions {
   using GridToDistortedComposition =
       domain::CoordinateMap<Frame::Grid, Frame::Distorted, ShapeMap>;
   using GridToInertialComposition =
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap>;
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, ShapeMap,
+                            TranslationMap>;
+  using GridToInertialSimple =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>;
+  using DistortedToInertialComposition =
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, TranslationMap>;
 
  public:
   using maps_list =
       tmpl::list<IdentityForComposition<Frame::Grid, Frame::Inertial>,
                  IdentityForComposition<Frame::Grid, Frame::Distorted>,
                  IdentityForComposition<Frame::Distorted, Frame::Inertial>,
-                 GridToDistortedComposition, GridToInertialComposition>;
+                 GridToDistortedComposition, GridToInertialSimple,
+                 GridToInertialComposition, DistortedToInertialComposition>;
 
   /// \brief The initial time of the functions of time.
   struct InitialTime {
     using type = double;
     static constexpr Options::String help = {
         "The initial time of the functions of time"};
+  };
+
+  struct TranslationMapOptions {
+    static std::string name() { return "TranslationMap"; }
+    static constexpr Options::String help = {
+        "Options for a time-dependent translation map in the inner-most shell "
+        "of the domain."};
   };
 
   struct ShapeMapOptions {
@@ -131,15 +146,24 @@ struct TimeDependentMapOptions {
     std::optional<std::variant<KerrSchildFromBoyerLindquist>> initial_values{};
   };
 
-  using options = tmpl::list<InitialTime, ShapeMapOptions>;
+  struct InitialVelocity {
+    static std::string name() { return "InitialVelocity"; }
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "Velocity of the translation map."};
+    using group = TranslationMapOptions;
+  };
+
+  using options = tmpl::list<InitialTime, ShapeMapOptions, InitialVelocity>;
   static constexpr Options::String help{
       "The options for all the hard-coded time dependent maps in the Sphere "
       "domain."};
 
   TimeDependentMapOptions() = default;
 
-  TimeDependentMapOptions(double initial_time,
-                          const ShapeMapOptions& shape_map_options);
+  TimeDependentMapOptions(
+      double initial_time, const ShapeMapOptions& shape_map_options,
+      const std::array<double, 3>& initial_translation_velocity);
 
   /*!
    * \brief Create the function of time map using the options that were
@@ -149,6 +173,7 @@ struct TimeDependentMapOptions {
    *
    * - Size: `PiecewisePolynomial<3>`
    * - Shape: `PiecewisePolynomial<2>`
+   * - Translation: `PiecewisePolynomial<2>`
    */
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -162,19 +187,22 @@ struct TimeDependentMapOptions {
    * Currently, this constructs a:
    *
    * - Shape: `Shape` (with a size function of time)
+   * - Translation: `Translation`
    */
-  void build_maps(const std::array<double, 3>& center, double inner_radius,
-                  double outer_radius);
+  void build_maps(
+      const std::array<double, 3>& center, double inner_radius,
+      double outer_radius,
+      std::optional<std::pair<double, double>> translation_transition_radii);
 
   /*!
    * \brief This will construct the map from `Frame::Distorted` to
    * `Frame::Inertial`.
    *
-   * If the argument `include_distorted_map` is true, then this will be an
-   * identity map. If it is false, then this returns `nullptr`.
+   * If the argument `include_distorted_map` is true, then this will be a
+   * translation map. If it is false, then this returns `nullptr`.
    */
-  static MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
-      bool include_distorted_map);
+  MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
+      bool include_distorted_map) const;
 
   /*!
    * \brief This will construct the map from `Frame::Grid` to
@@ -195,16 +223,21 @@ struct TimeDependentMapOptions {
    * only be an identity map.
    */
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      bool include_distorted_map) const;
+      bool include_distorted_map, bool use_rigid_translation) const;
 
   inline static const std::string size_name{"Size"};
   inline static const std::string shape_name{"Shape"};
+  inline static const std::string translation_name{"Translation"};
 
  private:
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   size_t initial_l_max_{};
   ShapeMap shape_map_{};
+  TranslationMap rigid_translation_map_{};
+  TranslationMap translation_map_{};
   std::optional<std::variant<KerrSchildFromBoyerLindquist>>
       initial_shape_values_{};
+  std::array<double, 3> initial_translation_velocity_{
+      std::numeric_limits<std::array<double, 3>>::signaling_NaN()};
 };
 }  // namespace domain::creators::sphere

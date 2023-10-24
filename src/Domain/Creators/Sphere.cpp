@@ -267,11 +267,20 @@ Sphere::Sphere(
       // Build the maps. We only apply the maps in the inner-most shell. The
       // inner radius is what's passed in, but the outer radius is the outer
       // radius of the inner-most shell so we have to see how many shells we
-      // have
+      // have.
+      // The translation map linear transition occurs only in the outer-most
+      // shell, such that the outer boundary is not translated. If there
+      // is no radial partition, a uniform translation is applied instead, as
+      // the transition requires spherical shape.
       std::get<sphere::TimeDependentMapOptions>(time_dependent_options_.value())
           .build_maps(std::array{0.0, 0.0, 0.0}, inner_radius_,
                       radial_partitioning_.empty() ? outer_radius_
-                                                   : radial_partitioning_[0]);
+                                                   : radial_partitioning_[0],
+                      // Translation inner radius
+                      radial_partitioning_.empty()
+                          ? std::nullopt
+                          : std::optional<std::pair<double, double>>{
+                                {radial_partitioning_.back(), outer_radius_}});
     }
   }
 }
@@ -374,9 +383,13 @@ Domain<3> Sphere::create_domain() const {
               time_dependent_options_.value());
 
       // First shell gets the distorted maps.
+      // Last shell gets translation with transition region
       for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
         const bool include_distorted_map_in_first_shell =
             block_id < num_blocks_per_shell_;
+        // False if block_id is in the last shell
+        const bool use_rigid_translation =
+            block_id + num_blocks_per_shell_ < num_blocks_;
         block_maps_grid_to_distorted[block_id] =
             hard_coded_options.grid_to_distorted_map(
                 include_distorted_map_in_first_shell);
@@ -385,7 +398,7 @@ Domain<3> Sphere::create_domain() const {
                 include_distorted_map_in_first_shell);
         block_maps_grid_to_inertial[block_id] =
             hard_coded_options.grid_to_inertial_map(
-                include_distorted_map_in_first_shell);
+                include_distorted_map_in_first_shell, use_rigid_translation);
       }
     } else {
       const auto& time_dependence = std::get<std::unique_ptr<
