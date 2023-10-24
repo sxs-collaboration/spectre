@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -1325,6 +1326,60 @@ void constraint_energy(
     }
   }
 }
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+Scalar<DataType> constraint_energy_normalization(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& sqrt_spatial_metric_determinant,
+    const double dimensional_constant) {
+  Scalar<DataType> energy_norm{get_size(get(sqrt_spatial_metric_determinant))};
+  constraint_energy_normalization<DataType, SpatialDim, Frame>(
+      make_not_null(&energy_norm), d_spacetime_metric, d_pi, d_phi,
+      inverse_spatial_metric, sqrt_spatial_metric_determinant,
+      dimensional_constant);
+  return energy_norm;
+}
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void constraint_energy_normalization(
+    const gsl::not_null<Scalar<DataType>*> energy_norm,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& sqrt_spatial_metric_determinant,
+    const double dimensional_constant) {
+  const double square_dimensional_constant = square(dimensional_constant);
+  get(*energy_norm) = 0.0;
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    for (size_t c = 0; c < SpatialDim + 1; ++c) {
+      for (size_t i = 0; i < SpatialDim; ++i) {
+        for (size_t j = 0; j < SpatialDim; ++j) {
+          get(*energy_norm) += inverse_spatial_metric.get(i, j) *
+                                   square_dimensional_constant *
+                                   d_spacetime_metric.get(i, a, c) *
+                                   d_spacetime_metric.get(j, a, c) +
+                               inverse_spatial_metric.get(i, j) *
+                                   d_pi.get(i, a, c) * d_pi.get(j, a, c);
+
+          for (size_t k = 0; k < SpatialDim; ++k) {
+            for (size_t l = 0; l < SpatialDim; ++l) {
+              get(*energy_norm) += inverse_spatial_metric.get(i, j) *
+                                   inverse_spatial_metric.get(k, l) *
+                                   d_phi.get(i, k, a, c) *
+                                   d_phi.get(j, l, a, c);
+            }
+          }
+        }
+      }
+    }
+  }
+  get(*energy_norm) *= get(sqrt_spatial_metric_determinant);
+}
+
 }  // namespace gh
 
 // Explicit Instantiations
@@ -1525,7 +1580,26 @@ void constraint_energy(
       double gauge_constraint_multiplier,                                     \
       double two_index_constraint_multiplier,                                 \
       double three_index_constraint_multiplier,                               \
-      double four_index_constraint_multiplier);
+      double four_index_constraint_multiplier);                               \
+  template Scalar<DTYPE(data)> gh::constraint_energy_normalization(           \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          d_spacetime_metric,                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const Scalar<DTYPE(data)>& sqrt_spatial_metric_determinant,             \
+      double dimensional_constant);                                           \
+  template void gh::constraint_energy_normalization(                          \
+      const gsl::not_null<Scalar<DTYPE(data)>*> energy_norm,                  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          d_spacetime_metric,                                                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,           \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          inverse_spatial_metric,                                             \
+      const Scalar<DTYPE(data)>& sqrt_spatial_metric_determinant,             \
+      double dimensional_constant);
 
 #define INSTANTIATE_ONLY_3D(_, data)                                       \
   template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                  \
