@@ -190,7 +190,8 @@ void test(const BoundaryConditionType& boundary_condition,
   get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
   get(get<Pressure>(volume_prim_vars)) = 1.0;
   get(get<LorentzFactor>(volume_prim_vars)) = 2.0;
-  get(get<SpecificInternalEnergy>(volume_prim_vars)) = 0.3;
+  // This quantity is fixed by the equation of state given P and rho
+  get(get<SpecificInternalEnergy>(volume_prim_vars)) = 1.0 / (1.4 - 1.0);
   get<Temperature>(volume_prim_vars) =
       solution.equation_of_state().temperature_from_density_and_energy(
           get<RestMassDensity>(volume_prim_vars),

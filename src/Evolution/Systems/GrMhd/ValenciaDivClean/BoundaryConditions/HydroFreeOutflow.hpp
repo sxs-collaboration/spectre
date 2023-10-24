@@ -20,6 +20,7 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -62,6 +63,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
  private:
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
+  using Temperature = hydro::Tags::Temperature<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using LorentzFactorTimesSpatialVelocity =
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
@@ -79,7 +81,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
   using Shift = gr::Tags::Shift<DataVector, 3>;
 
   using prim_tags_for_reconstruction =
-      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+      tmpl::list<RestMassDensity, ElectronFraction, Temperature,
                  LorentzFactorTimesSpatialVelocity, MagneticField,
                  DivergenceCleaningField>;
 
@@ -175,16 +177,18 @@ class HydroFreeOutflow final : public BoundaryCondition {
       tmpl::list<evolution::dg::subcell::Tags::Mesh<3>, Shift, Lapse,
                  SpatialMetric>;
   using fd_interior_primitive_variables_tags =
-      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+      tmpl::list<RestMassDensity, ElectronFraction, Temperature,
+                 hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>, MagneticField>;
+
   using fd_gridless_tags = tmpl::list<fd::Tags::Reconstructor>;
 
   static void fd_ghost(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
-      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
@@ -205,6 +209,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
       // interior prim vars tags
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
+      const Scalar<DataVector>& interior_temperature,
       const Scalar<DataVector>& interior_pressure,
       const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,
@@ -218,6 +223,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
   static void fd_ghost_impl(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -241,6 +247,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
       // fd_interior_primitive_variables_tags
       const Scalar<DataVector>& interior_rest_mass_density,
       const Scalar<DataVector>& interior_electron_fraction,
+      const Scalar<DataVector>& interior_temperature,
       const Scalar<DataVector>& interior_pressure,
       const Scalar<DataVector>& interior_specific_internal_energy,
       const Scalar<DataVector>& interior_lorentz_factor,

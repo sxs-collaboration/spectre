@@ -99,6 +99,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   using PrimVars =
       Variables<tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                            hydro::Tags::ElectronFraction<DataVector>,
+                           hydro::Tags::Pressure<DataVector>,
                            hydro::Tags::SpecificInternalEnergy<DataVector>,
                            hydro::Tags::SpecificEnthalpy<DataVector>,
                            hydro::Tags::Temperature<DataVector>,
@@ -123,23 +124,22 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
 
     PrimVars local_prim_vars{num_points};
 
-    using tags =
-        tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                   hydro::Tags::ElectronFraction<DataVector>,
-                   hydro::Tags::SpecificInternalEnergy<DataVector>,
-                   hydro::Tags::SpecificEnthalpy<DataVector>,
-                   hydro::Tags::Temperature<DataVector>,
-                   hydro::Tags::SpatialVelocity<DataVector, 3>,
-                   hydro::Tags::LorentzFactor<DataVector>,
-                   hydro::Tags::MagneticField<DataVector, 3>,
-                   hydro::Tags::DivergenceCleaningField<DataVector>,
-                   gr::Tags::SpatialMetric<DataVector, 3>,
-                   gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                   gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                   gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                   gr::Tags::SpacetimeMetric<DataVector, 3>,
-                   ::gh::Tags::Pi<DataVector, 3>,
-                   ::gh::Tags::Phi<DataVector, 3>>;
+    using tags = tmpl::list<
+        hydro::Tags::RestMassDensity<DataVector>,
+        hydro::Tags::ElectronFraction<DataVector>,
+        hydro::Tags::SpecificInternalEnergy<DataVector>,
+        hydro::Tags::SpecificEnthalpy<DataVector>,
+        hydro::Tags::Temperature<DataVector>, hydro::Tags::Pressure<DataVector>,
+        hydro::Tags::SpatialVelocity<DataVector, 3>,
+        hydro::Tags::LorentzFactor<DataVector>,
+        hydro::Tags::MagneticField<DataVector, 3>,
+        hydro::Tags::DivergenceCleaningField<DataVector>,
+        gr::Tags::SpatialMetric<DataVector, 3>,
+        gr::Tags::InverseSpatialMetric<DataVector, 3>,
+        gr::Tags::SqrtDetSpatialMetric<DataVector>, gr::Tags::Lapse<DataVector>,
+        gr::Tags::Shift<DataVector, 3>,
+        gr::Tags::SpacetimeMetric<DataVector, 3>, ::gh::Tags::Pi<DataVector, 3>,
+        ::gh::Tags::Phi<DataVector, 3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -166,7 +166,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         get<hydro::Tags::RestMassDensity<DataVector>>(analytic_vars),
         get<hydro::Tags::ElectronFraction<DataVector>>(analytic_vars),
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(analytic_vars),
-        get<hydro::Tags::Temperature<DataVector>>(analytic_vars),
+        get<hydro::Tags::Pressure<DataVector>>(analytic_vars),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::LorentzFactor<DataVector>>(analytic_vars),
         get<hydro::Tags::MagneticField<DataVector, 3>>(analytic_vars),
@@ -182,7 +182,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
         get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(analytic_vars),
         get<gr::Tags::SpatialMetric<DataVector, 3>>(analytic_vars),
         get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(analytic_vars),
-        get<hydro::Tags::Temperature<DataVector>>(analytic_vars),
+        get<hydro::Tags::Pressure<DataVector>>(analytic_vars),
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(analytic_vars),
         get<hydro::Tags::LorentzFactor<DataVector>>(analytic_vars),
         get<hydro::Tags::MagneticField<DataVector, 3>>(analytic_vars));
@@ -322,6 +322,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   using PrimVars =
       Variables<tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                            hydro::Tags::ElectronFraction<DataVector>,
+                           hydro::Tags::Pressure<DataVector>,
                            hydro::Tags::SpecificInternalEnergy<DataVector>,
                            hydro::Tags::SpecificEnthalpy<DataVector>,
                            hydro::Tags::Temperature<DataVector>,
@@ -356,16 +357,16 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
     const auto ghost_inertial_coords = grid_to_inertial_map(
         logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
 
-    using tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                            hydro::Tags::ElectronFraction<DataVector>,
-                            hydro::Tags::Temperature<DataVector>,
-                            hydro::Tags::SpatialVelocity<DataVector, 3>,
-                            hydro::Tags::LorentzFactor<DataVector>,
-                            hydro::Tags::MagneticField<DataVector, 3>,
-                            hydro::Tags::DivergenceCleaningField<DataVector>,
-                            gr::Tags::SpacetimeMetric<DataVector, 3>,
-                            ::gh::Tags::Pi<DataVector, 3>,
-                            ::gh::Tags::Phi<DataVector, 3>>;
+    using tags = tmpl::list<
+        hydro::Tags::RestMassDensity<DataVector>,
+        hydro::Tags::ElectronFraction<DataVector>,
+        hydro::Tags::Temperature<DataVector>, hydro::Tags::Pressure<DataVector>,
+        hydro::Tags::SpatialVelocity<DataVector, 3>,
+        hydro::Tags::LorentzFactor<DataVector>,
+        hydro::Tags::MagneticField<DataVector, 3>,
+        hydro::Tags::DivergenceCleaningField<DataVector>,
+        gr::Tags::SpacetimeMetric<DataVector, 3>, ::gh::Tags::Pi<DataVector, 3>,
+        ::gh::Tags::Phi<DataVector, 3>>;
 
     tuples::tagged_tuple_from_typelist<tags> analytic_vars{};
 
@@ -421,6 +422,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   // Set to zero since it shouldn't be used
   Scalar<DataVector> interior_specific_internal_energy{};
   Scalar<DataVector> specific_internal_energy{};
+  Scalar<DataVector> pressure{};
   tnsr::I<DataVector, 3> spatial_velocity{};
   Scalar<DataVector> lorentz_factor{};
   const tnsr::I<DataVector, 3> interior_shift{};
@@ -444,6 +446,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
       get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
       get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
       get<hydro::Tags::Temperature<DataVector>>(prim_vars),
+      get<hydro::Tags::Pressure<DataVector>>(prim_vars),
       interior_specific_internal_energy,
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(prim_vars),
@@ -463,7 +466,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   grmhd_free_outflow.fd_ghost_impl(
       make_not_null(&rest_mass_density_expected),
       make_not_null(&electron_fraction_expected),
-      make_not_null(&temperature_expected),
+      make_not_null(&temperature_expected), make_not_null(&pressure),
       make_not_null(&specific_internal_energy),
       make_not_null(&lorentz_factor_times_spatial_velocity_expected),
       make_not_null(&spatial_velocity), make_not_null(&lorentz_factor),
@@ -479,6 +482,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
       get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
       get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars),
       get<hydro::Tags::Temperature<DataVector>>(prim_vars),
+      get<hydro::Tags::Pressure<DataVector>>(prim_vars),
       interior_specific_internal_energy,
       get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars),
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(prim_vars),
