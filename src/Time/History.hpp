@@ -879,6 +879,22 @@ void History<Vars>::pup(PUP::er& p) {
   // Don't serialize the allocation cache.
 }
 
+template <typename Vars>
+std::ostream& History<Vars>::print(std::ostream& os) const {
+  using ::operator<<;
+  os << "Integration order: " << integration_order_ << "\n";
+  os << "Step values:\n";
+  for (auto& record : *this) {
+    record.print(os);
+  }
+  os << "Substep values:\n";
+  for (auto& record : substep_values_) {
+    record.print(os);
+  }
+  os << "Latest value if discarded: " << latest_value_if_discarded_ << "\n";
+  return os;
+}
+
 // Doxygen is confused by this function for some reason.
 /// \cond
 template <typename Vars>
@@ -986,22 +1002,6 @@ bool operator==(const History<Vars>& a, const History<Vars>& b) {
 template <typename Vars>
 bool operator!=(const History<Vars>& a, const History<Vars>& b) {
   return not(a == b);
-}
-
-template <typename Vars>
-std::ostream& History<Vars>::print(std::ostream& os) const {
-  using ::operator<<;
-  os << "Integration order: " << integration_order_ << "\n";
-  os << "Step values:\n";
-  for (auto& record : *this) {
-    record.print(os);
-  }
-  os << "Substep values:\n";
-  for (auto& record : substep_values_) {
-    record.print(os);
-  }
-  os << "Latest value if discarded: " << latest_value_if_discarded_ << "\n";
-  return os;
 }
 
 template <typename Vars>
