@@ -651,6 +651,9 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
   }
 }
 
+// This is probably wrong, since the time derivative of the spatial metric was
+// set to zero above. However, it is not zero as the boosted black hole solution
+// depends on both x and t.
 template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
@@ -659,6 +662,12 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
   std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
 }
 
+// This is probably wrong, since the time derivative of the spatial metric was
+// set to zero above. However, it is not zero as the boosted black hole solution
+// depends on both x and t.
+// In SpEC this the extrinsic curvature is computed from expressions given
+// in terms of l, H and their derivatives. If properly boosted, they should
+// give the right terms coming from the time derivative of the spatial metric.
 template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
