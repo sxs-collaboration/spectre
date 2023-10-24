@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpatialMetric.hpp"
 #include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -400,8 +401,6 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
   }
 }
 
-// Note: This is a special relativity approximation
-// To be checked if its good
 template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ab<DataType, 3, Frame>*> deriv_null_form_boosted,
@@ -659,7 +658,74 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
     const gsl::not_null<CachedBuffer*> /*cache*/,
     ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>> /*meta*/) const {
-  std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
+  // std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
+  const auto& ex_curvature = get(cache->get_var(
+      *this, gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>{}));
+  const auto& lapse = get(cache->get_var(*this, gr::Tags::Lapse<DataType>{}));
+  const auto& deriv_lapse =
+      get(cache->get_var(*this, DerivLapse<DataType, 3, Frame>{}));
+  const auto& shift =
+      get(cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{}));
+  const auto& deriv_shift =
+      get(cache->get_var(*this, DerivShift<DataType, 3, Frame>{}));
+  const auto& spatial_metric =
+      get(cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{}));
+  const auto& deriv_spatial_metric =
+      get(cache->get_var(*this, DerivSpatialMetric<DataType, 3, Frame>{}));
+  if (solution_.boost_velocity_() == std::array<double, 3>{0.0, 0.0, 0.0}) {
+    std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
+  } else {
+    // Reconstruct from the extrinsic curvature and shift
+    // std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
+    // for (size_t i = 0; i < SpatialDim; ++i) {
+    //   for (size_t j = i; j < SpatialDim; ++j) {  // Symmetry
+    //     dt_spatial_metric->get(i, j) =
+    //         -2.0 * get(lapse) * ex_curvature.get(i, j);
+    //     for (size_t k = 0; k < SpatialDim; ++k) {
+    //       dt_spatial_metric->get(i, j) +=
+    //           shift.get(k) * deriv_spatial_metric.get(k, i, j) +
+    //           spatial_metric.get(k, i) * deriv_shift.get(j, k) +
+    //           spatial_metric.get(k, j) * deriv_shift.get(i, k);
+    //     }
+    //   }
+    // }
+    time_derivative_of_spatial_metric(dt_spatial_metric, lapse, shift,
+                                      deriv_shift, spatial_metric,
+                                      deriv_spatial_metric, ex_curvature);
+  }
+}
+
+template <typename DataType, typename Frame>
+void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<Scalar<DataType>*> null_form_dot_deriv_H,
+    const gsl::not_null<CachedBuffer*> cache,
+    internal_tags::null_form_dot_deriv_H<DataType> /*meta*/) const {
+  const auto& deriv_H =
+      get(cache->get_var(*this, internal_tags::deriv_H<DataType>{}));
+  const auto& null_form =
+      cache->get_var(*this, internal_tags::null_form<DataType, Frame>{});
+  for (size_t i = 0; i < 3; ++i) {
+    get(*one_form_dot_deriv_H) = null_form.get(i + 1) * deriv_H.get(i + 1);
+  }
+}
+
+// Check which index corresponds to the derivative
+template <typename DataType, typename Frame>
+void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<tnsr::i<DataType>*> null_form_dot_deriv_null_form,
+    const gsl::not_null<CachedBuffer*> cache,
+    internal_tags::null_form_dot_deriv_null_form<DataType> /*meta*/) const {
+  const auto& deriv_null_form =
+      get(cache->get_var(*this, internal_tags::deriv_null_form<DataType>{}));
+  const auto& null_form =
+      cache->get_var(*this, internal_tags::null_form<DataType, Frame>{});
+  for (size_t j = 0; i < 3; ++i) {
+    null_form_dot_deriv_null_form->get(j) = 0.0;
+    for (size_t i = 0; i < 3; ++i) {
+      null_form_dot_deriv_null_form->get(j) +=
+          null_form.get(i + 1) * deriv_null_form.get(i + 1, j + 1);
+    }
+  }
 }
 
 // This is probably wrong, since the time derivative of the spatial metric was
@@ -673,14 +739,55 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
     const gsl::not_null<CachedBuffer*> cache,
     gr::Tags::ExtrinsicCurvature<DataType, 3, Frame> /*meta*/) const {
-  gr::extrinsic_curvature(
-      extrinsic_curvature, cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
-      cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{}),
-      cache->get_var(*this, DerivShift<DataType, Frame>{}),
-      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{}),
-      cache->get_var(*this,
-                     ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>{}),
-      cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{}));
+  const auto& lapse = get(cache->get_var(*this, gr::Tags::Lapse<DataType>{}));
+  const auto& H = get(cache->get_var(*this, internal_tags::H<DataType>{}));
+  const auto& deriv_H =
+      get(cache->get_var(*this, internal_tags::deriv_H<DataType>{}));
+  const auto& null_form =
+      cache->get_var(*this, internal_tags::null_form<DataType, Frame>{});
+  const auto& deriv_null_form =
+      get(cache->get_var(*this, internal_tags::deriv_null_form<DataType>{}));
+  if (solution_.boost_velocity() == std::array<double, 3>{0.0, 0.0, 0.0}) {
+    gr::extrinsic_curvature(
+        extrinsic_curvature, cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
+        cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{}),
+        cache->get_var(*this, DerivShift<DataType, Frame>{}),
+        cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{}),
+        cache->get_var(
+            *this, ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>{}),
+        cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{}));
+  } else {
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = i; j < 3; ++j) {  // Check symmetry
+        // Now implemented the SpEC formula, but still need to change the sign
+        // of all l^0 components, since we raise/lower with Minkowski and here
+        // we are using the first component of the null form with lower index
+        extrinsic_curvature->get(i, j) =
+            (-1.0 / get(lapse)) *
+                (null_form.get(i + 1) * null_form.get(j + 1) * get<0>(deriv_H) +
+                 get(H) *
+                     (null_form.get(i + 1) * deriv_null_form.get(0, j + 1) +
+                      null_form.get(j + 1) * deriv_null_form.get(0, i + 1))) -
+            get(lapse) *
+                (get(H) *
+                 (null_form.get(i + 1) * deriv_null_form.get(j + 1, 0) +
+                  null_form.get(j + 1) * deriv_null_form.get(i + 1, 0) +
+                  get<0>(null_form) *
+                      (deriv_null_form.get(i + 1, j + 1) +
+                       deriv_null_form.get(j + 1, i + 1) +
+                       2.0 * get(H) *
+                           (null_form.get(i + 1) *
+                                null_form_dot_deriv_null_form.get(j) +
+                            null_form.get(j + 1) *
+                                null_form_dot_deriv_null_form.get(i)) +
+                       2.0 * null_form.get(i + 1) * null_form.get(j + 1) *
+                           get(null_form_dot_deriv_H)) +
+                  get<0>(null_form) *
+                      (null_form.get(i + 1) * deriv_H.get(j + 1) +
+                       null_form.get(j + 1) * deriv_H.get(i + 1))));
+      }
+    }
+  }
 }
 
 template <typename DataType, typename Frame>
