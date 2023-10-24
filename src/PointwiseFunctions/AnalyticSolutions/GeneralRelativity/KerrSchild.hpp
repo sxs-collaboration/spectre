@@ -343,6 +343,10 @@ class KerrSchild : public AnalyticSolution<3_st>,
     using deriv_lapse_multiplier = ::Tags::TempScalar<19, DataType>;
     template <typename DataType>
     using shift_multiplier = ::Tags::TempScalar<20, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using null_form_dot_deriv_H = ::Tags::TempScalar<25, DataType>;
+    template <typename DataType, typename Frame = ::Frame::Inertial>
+    using null_form_dot_deriv_null_form = ::Tags::Tempi<26, 3, Frame, DataType>;
   };
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
@@ -369,6 +373,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
       internal_tags::lapse_squared<DataType>, gr::Tags::Lapse<DataType>,
       internal_tags::deriv_lapse_multiplier<DataType>,
       internal_tags::shift_multiplier<DataType>,
+      internal_tags::null_form_dot_deriv_H<DataType>,
+      internal_tags::null_form_dot_deriv_null_form<DataType, Frame>,
       gr::Tags::Shift<DataType, 3, Frame>, DerivShift<DataType, Frame>,
       gr::Tags::SpatialMetric<DataType, 3, Frame>,
       gr::Tags::InverseSpatialMetric<DataType, 3, Frame>,
@@ -542,9 +548,11 @@ class KerrSchild : public AnalyticSolution<3_st>,
         internal_tags::null_form_dot_deriv_H<DataType> /*meta*/) const;
 
     void operator()(
-        const gsl::not_null<tnsr::i<DataType>*> null_form_dot_deriv_null_form,
+        const gsl::not_null<tnsr::i<DataType, 3, Frame>*>
+            null_form_dot_deriv_null_form,
         const gsl::not_null<CachedBuffer*> cache,
-        internal_tags::null_form_dot_deriv_null_form<DataType> /*meta*/) const;
+        internal_tags::null_form_dot_deriv_null_form<DataType, Frame> /*meta*/)
+        const;
 
     void operator()(
         const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
