@@ -291,6 +291,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
     return boost_velocity_;
   }
   bool zero_spin() const { return zero_spin_; }
+  bool zero_velocity() const { return zero_velocity_; }
 
   struct internal_tags {
     template <typename DataType, typename Frame = ::Frame::Inertial>
@@ -634,6 +635,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
   std::array<double, volume_dim> boost_velocity_ =
       make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
   bool zero_spin_{};
+  bool zero_velocity_{};
 };
 
 SPECTRE_ALWAYS_INLINE bool operator==(const KerrSchild& lhs,

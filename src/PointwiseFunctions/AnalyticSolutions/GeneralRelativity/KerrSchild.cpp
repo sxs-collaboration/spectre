@@ -39,7 +39,8 @@ KerrSchild::KerrSchild(const double mass,
       dimensionless_spin_(dimensionless_spin),
       center_(center),
       boost_velocity_(boost_velocity),
-      zero_spin_(dimensionless_spin_ == std::array<double, 3>{{0., 0., 0.}}) {
+      zero_spin_(dimensionless_spin_ == std::array<double, 3>{{0., 0., 0.}}),
+      zero_velocity_(boost_velocity_ == std::array<double, 3>{{0., 0., 0.}}) {
   const double spin_magnitude = magnitude(dimensionless_spin_);
   if (spin_magnitude > 1.0) {
     PARSE_ERROR(context, "Spin magnitude must be < 1. Given spin: "
@@ -57,6 +58,7 @@ void KerrSchild::pup(PUP::er& p) {
   p | center_;
   p | boost_velocity_;
   p | zero_spin_;
+  p | zero_velocity_;
 }
 
 template <typename DataType, typename Frame>
@@ -672,23 +674,10 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
       cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
   const auto& deriv_spatial_metric =
       cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{});
-  if (solution_.boost_velocity() == std::array<double, 3>{0.0, 0.0, 0.0}) {
+  if (solution_.zero_velocity()) {
     std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
   } else {
     // Reconstruct from the extrinsic curvature and shift
-    // std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
-    // for (size_t i = 0; i < SpatialDim; ++i) {
-    //   for (size_t j = i; j < SpatialDim; ++j) {  // Symmetry
-    //     dt_spatial_metric->get(i, j) =
-    //         -2.0 * get(lapse) * ex_curvature.get(i, j);
-    //     for (size_t k = 0; k < SpatialDim; ++k) {
-    //       dt_spatial_metric->get(i, j) +=
-    //           shift.get(k) * deriv_spatial_metric.get(k, i, j) +
-    //           spatial_metric.get(k, i) * deriv_shift.get(j, k) +
-    //           spatial_metric.get(k, j) * deriv_shift.get(i, k);
-    //     }
-    //   }
-    // }
     gr::time_derivative_of_spatial_metric(dt_spatial_metric, lapse, shift,
                                           deriv_shift, spatial_metric,
                                           deriv_spatial_metric, ex_curvature);
@@ -753,7 +742,7 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
       cache->get_var(*this, internal_tags::null_form_dot_deriv_H<DataType>{});
   const auto& null_form_dot_deriv_null_form = cache->get_var(
       *this, internal_tags::null_form_dot_deriv_null_form<DataType, Frame>{});
-  if (solution_.boost_velocity() == std::array<double, 3>{0.0, 0.0, 0.0}) {
+  if (solution_.zero_velocity()) {
     gr::extrinsic_curvature(
         extrinsic_curvature, cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
         cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{}),
