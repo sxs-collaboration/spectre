@@ -86,6 +86,10 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<std::string>() {
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   CHECK_H5(H5Tset_size(datatype, H5T_VARIABLE),
            "Failed to set size of string.");
+  CHECK_H5(H5Tset_cset(datatype, H5T_CSET_ASCII),
+           "Failed to set string to ASCII encoding.");
+  CHECK_H5(H5Tset_strpad(datatype, H5T_STR_NULLTERM),
+           "Failed to set string to null terminate");
 #pragma GCC diagnostic pop
   return datatype;
 }

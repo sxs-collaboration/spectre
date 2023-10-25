@@ -10,6 +10,7 @@
 #include <ostream>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -473,8 +474,25 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   // Read the strings as arrays of characters
   std::vector<char*> temp(legend_dims[0]);
   const hid_t memtype = h5_type<std::string>();
-  CHECK_H5(H5Aread(attribute_id, memtype, static_cast<void*>(temp.data())),
-           "Failed to read attribute");
+  const hid_t type_in_file = H5Aget_type(attribute_id);
+  CHECK_H5(type_in_file,
+           "Failed to read attribute type from file. Attribute name is '"
+               << name << "'");
+  if (H5Tis_variable_str(type_in_file) < 0) {
+    char* type_name_ptr = H5Tget_tag(type_in_file);
+    const std::string type_name{type_name_ptr};
+    ERROR("The attribute type should be a variable string but got "
+          << type_name);
+    free(type_name_ptr);  // NOLINT
+  }
+  if (H5Tget_cset(type_in_file) != H5T_CSET_ASCII) {
+    ERROR("Expected ASCII-encoded string but got H5T_cset_t of value "
+          << H5Tget_cset(type_in_file)
+          << ". Likely the string is UTF8 encoded.");
+  }
+  CHECK_H5(
+      H5Aread(attribute_id, memtype, static_cast<void*>(temp.data())),
+      "Failed to read attribute: " << name << " with size " << legend_dims);
 
   std::vector<std::string> result(temp.size());
   std::transform(temp.begin(), temp.end(), result.begin(),

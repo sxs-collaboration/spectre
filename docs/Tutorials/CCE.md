@@ -205,6 +205,21 @@ values are the complex modes in m-varies-fastest format. That is,
 "Lapse_Re(2,0)", "Lapse_Im(2,0)", "Lapse_Re(2,-1)", "Lapse_Im(2,-1)",
 "Lapse_Re(2,-2)", "Lapse_Im(2,-2)"
 ```
+Each dataset in the file must also have an attribute named "Legend" which
+is an ASCII-encoded null-terminated variable-length string. That is, the HDF5
+type is:
+```
+DATATYPE  H5T_STRING {
+  STRSIZE H5T_VARIABLE;
+  STRPAD H5T_STR_NULLTERM;
+  CSET H5T_CSET_ASCII;
+  CTYPE H5T_C_S1;
+}
+```
+This can be checked for a dataset by running
+```
+h5dump -a DrLapse.dat/Legend CceR0150.h5
+```
 
 The second format is Bondi-Sachs metric component data.
 This format is far more space-efficient (by around a factor of 4), and SpECTRE
