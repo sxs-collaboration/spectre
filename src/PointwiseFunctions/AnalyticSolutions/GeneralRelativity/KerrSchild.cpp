@@ -691,8 +691,9 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
       cache->get_var(*this, internal_tags::deriv_H<DataType, Frame>{});
   const auto& null_form =
       cache->get_var(*this, internal_tags::null_form<DataType, Frame>{});
+  get(*null_form_dot_deriv_H) = 0.0;
   for (size_t i = 0; i < 3; ++i) {
-    get(*null_form_dot_deriv_H) = null_form.get(i + 1) * deriv_H.get(i + 1);
+    get(*null_form_dot_deriv_H) += null_form.get(i + 1) * deriv_H.get(i + 1);
   }
 }
 
