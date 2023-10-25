@@ -32,7 +32,7 @@ spectre_unload_modules() {
     module unload blaze-3.8-gcc-11.3.0-y7sgzzc
     module unload brigand-master-gcc-11.3.0-nsmmsxm
     module unload libsharp-1.0.0-gcc-11.3.0-w7e7n5z
-    module unload catch2-3.0.1-gcc-11.3.0-xu7unwl
+    module unload catch2/3.4.0
     module unload gsl-2.7.1-gcc-11.3.0-sey3z3o
     module unload jemalloc-5.2.1-gcc-11.3.0-r63hemp
     module unload yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
@@ -57,13 +57,14 @@ spectre_load_modules() {
     module load llvm/13.0.1
     module load cmake/3.24.1
     module load python/3.9.5
-    source /opt/ohpc/pub/apps/spack2022/share/spack/setup-env.sh
+    export MODULEPATH=$MODULEPATH:/opt/ohpc/pub/apps\
+/spack2022/share/spack/modules/linux-centos7-broadwell/
     module load openblas-0.3.20-gcc-11.3.0-tc4qxfv
     module load zlib-1.2.12-gcc-11.3.0-ge3ye5j
     module load blaze-3.8-gcc-11.3.0-y7sgzzc
     module load brigand-master-gcc-11.3.0-nsmmsxm
     module load libsharp-1.0.0-gcc-11.3.0-w7e7n5z
-    module load catch2-3.0.1-gcc-11.3.0-xu7unwl
+    module load catch2/3.4.0
     module load gsl-2.7.1-gcc-11.3.0-sey3z3o
     module load jemalloc-5.2.1-gcc-11.3.0-r63hemp
     module load yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
