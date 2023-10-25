@@ -754,8 +754,8 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
   } else {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {  // Check symmetry
-        // Now implemented the SpEC formula, but still need to change the sign
-        // of all l^0 components, since we raise/lower with Minkowski and here
+        // Now implemented the SpEC formula, but we changed sign
+        // of all l[0] components, since we raise/lower with Minkowski and here
         // we are using the first component of the null form with lower index
         extrinsic_curvature->get(i, j) =
             (-1.0 / get(lapse)) *
@@ -765,21 +765,23 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
                       null_form.get(j + 1) * deriv_null_form.get(0, i + 1))) -
             get(lapse) *
                 (get(H) *
-                 (null_form.get(i + 1) * deriv_null_form.get(j + 1, 0) +
-                  null_form.get(j + 1) * deriv_null_form.get(i + 1, 0) +
-                  get<0>(null_form) *
-                      (deriv_null_form.get(i + 1, j + 1) +
-                       deriv_null_form.get(j + 1, i + 1) +
-                       2.0 * get(H) *
-                           (null_form.get(i + 1) *
-                                null_form_dot_deriv_null_form.get(j) +
-                            null_form.get(j + 1) *
-                                null_form_dot_deriv_null_form.get(i)) +
-                       2.0 * null_form.get(i + 1) * null_form.get(j + 1) *
-                           get(null_form_dot_deriv_H)) +
-                  get<0>(null_form) *
-                      (null_form.get(i + 1) * deriv_H.get(j + 1) +
-                       null_form.get(j + 1) * deriv_H.get(i + 1))));
+                     ((-1.0) * null_form.get(i + 1) *
+                          deriv_null_form.get(j + 1, 0) +
+                      (-1.0) * null_form.get(j + 1) *
+                          deriv_null_form.get(i + 1, 0) +
+                      (-1.0) * get<0>(null_form) *
+                          (deriv_null_form.get(i + 1, j + 1) +
+                           deriv_null_form.get(j + 1, i + 1) +
+                           2.0 * get(H) *
+                               (null_form.get(i + 1) *
+                                    null_form_dot_deriv_null_form.get(j) +
+                                null_form.get(j + 1) *
+                                    null_form_dot_deriv_null_form.get(i)) +
+                           2.0 * null_form.get(i + 1) * null_form.get(j + 1) *
+                               get(null_form_dot_deriv_H))) +
+                 (-1.0) * get<0>(null_form) *
+                     (null_form.get(i + 1) * deriv_H.get(j + 1) +
+                      null_form.get(j + 1) * deriv_H.get(i + 1)));
       }
     }
   }
