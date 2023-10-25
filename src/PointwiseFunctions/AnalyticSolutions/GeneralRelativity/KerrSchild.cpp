@@ -664,8 +664,6 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
   const auto& ex_curvature =
       cache->get_var(*this, gr::Tags::ExtrinsicCurvature<DataType, 3, Frame>{});
   const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
-  // const auto& deriv_lapse =
-  //     cache->get_var(*this, DerivLapse<DataType, Frame>{});
   const auto& shift =
       cache->get_var(*this, gr::Tags::Shift<DataType, 3, Frame>{});
   const auto& deriv_shift =
