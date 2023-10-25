@@ -88,6 +88,8 @@ void deriv_unnormalized_face_normals_impl(
          "Slicing the Hessian to the boundary currently supports only "
          "Gauss-Lobatto grids. Add support to "
          "'elliptic::dg::InitializeFacesAndMortars'.");
+  // If the accuracy of this derivative is insufficient we could also compute
+  // it on a higher-order grid and then project it down.
   const auto deriv_inv_jac =
       partial_derivative(inv_jacobian, mesh, inv_jacobian);
   for (const auto& direction : element.external_boundaries()) {

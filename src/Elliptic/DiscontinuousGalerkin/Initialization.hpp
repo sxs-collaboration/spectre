@@ -48,7 +48,18 @@
 
 namespace elliptic::dg {
 
-/// Initialize the background-independent geometry for the elliptic DG operator
+/*!
+ * \brief Initialize the background-independent geometry for the elliptic DG
+ * operator
+ *
+ * ## Geometric aliasing
+ *
+ * The geometric quantities such as Jacobians are evaluated on the DG grid.
+ * Since we know them analytically, we could also evaluate them on a
+ * higher-order grid or with a stronger quadrature (Gauss instead of
+ * Gauss-Lobatto) to combat geometric aliasing. See discussions in
+ * \cite Vincent2019qpd and \cite Fischer2021voj .
+ */
 template <size_t Dim>
 struct InitializeGeometry {
   using return_tags = tmpl::list<
