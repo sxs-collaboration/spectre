@@ -97,7 +97,7 @@ MagnetizedFmDisk::MagnetizedFmDisk(
       get<gr::Tags::SpatialMetric<DataVector, 3>>(unmagnetized_vars);
 
   const tnsr::I<double, 3> x_max{
-      {{fm_disk_.max_pressure_radius_, fm_disk_.bh_spin_a_, 0.0}}};
+      {{fm_disk_.max_pressure_radius_, 0.0, 0.0}}};
 
   const double b_squared_max = max(
       get(dot_product(b_field, b_field, spatial_metric)) /
@@ -137,11 +137,13 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
   auto magnetic_field =
       make_with_value<tnsr::I<DataType, 3, Frame::NoFrame>>(x, 0.0);
 
+  auto x_ks = x;
+
   // The maximum pressure (and hence the maximum rest mass density) is located
-  // on the ring x^2 + y^2 = r_max^2 + a^2, z = 0.
+  // on the ring x^2 + y^2 = r_max^2, z = 0.
   // Note that `x` may or may not include points on this ring.
   const tnsr::I<double, 3> x_max{
-      {{fm_disk_.max_pressure_radius_, fm_disk_.bh_spin_a_, 0.0}}};
+      {{fm_disk_.max_pressure_radius_, 0.0, 0.0}}};
   const double threshold_rest_mass_density =
       threshold_density_ *
       get(get<hydro::Tags::RestMassDensity<double>>(variables(
@@ -174,13 +176,10 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
       // (r, theta, phi) coordinates. We need to get B^r, B^theta, B^phi first,
       // then we transform to Cartesian coordinates.
       const double z_squared = square(get_element(get<2>(x), s));
-      const double a_squared = fm_disk_.bh_spin_a_ * fm_disk_.bh_spin_a_;
-
       double sin_theta_squared =
           square(get_element(get<0>(x), s)) + square(get_element(get<1>(x), s));
-      double r_squared = 0.5 * (sin_theta_squared + z_squared - a_squared);
-      r_squared += sqrt(square(r_squared) + a_squared * z_squared);
-      sin_theta_squared /= (r_squared + a_squared);
+      double r_squared = sin_theta_squared + z_squared;
+      sin_theta_squared /= r_squared;
 
       // B^i is proportional to derivatives of the magnetic potential. One has
       //
@@ -216,20 +215,53 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
           prefactor * (mag_potential(radius - small, sin_theta_squared) -
                        mag_potential(radius + small, sin_theta_squared));
       // phi component of the field vanishes identically.
+
+      // Need x in KS coordinates instead of SKS coordinates
+      // to do transformation below. copy x into x_sks and alter at each
+      // element index s.
+      const double sks_to_ks_factor =
+          sqrt(r_squared + square(fm_disk_.bh_spin_a_)) / radius;
+      get_element(x_ks.get(0), s) = get_element(x.get(0), s) * sks_to_ks_factor;
+      get_element(x_ks.get(1), s) = get_element(x.get(1), s) * sks_to_ks_factor;
+      get_element(x_ks.get(2), s) = get_element(x.get(2), s);
     }
   }
-  return kerr_schild_coords_.cartesian_from_spherical_ks(
-      std::move(magnetic_field), x);
+  // magnetic field in KS_coords
+  // change back to SKS_coords
+  const auto magnetic_field_ks =
+      kerr_schild_coords_.cartesian_from_spherical_ks(std::move(magnetic_field),
+                                                      x_ks);
+
+  using inv_jacobian =
+      gr::Solutions::SphericalKerrSchild::internal_tags::inv_jacobian<
+          DataType, Frame::Inertial>;
+
+  FmDisk::IntermediateVariables<DataType> vars(x);
+
+  const auto inv_jacobians =
+      get<inv_jacobian>(fm_disk_.background_spacetime_.variables(
+          x, 0.0, tmpl::list<inv_jacobian>{},
+          make_not_null(&vars.sph_kerr_schild_cache)));
+
+  auto magnetic_field_sks =
+      make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
+
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t i = 0; i < 3; ++i) {
+      magnetic_field_sks.get(j) +=
+          inv_jacobians.get(j, i) * magnetic_field_ks.get(i);
+    }
+  }
+
+  return magnetic_field_sks;
 }
 
-template <typename DataType, bool NeedSpacetime>
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 MagnetizedFmDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-    const typename FmDisk::IntermediateVariables<DataType,
-                                                 NeedSpacetime>& /*vars*/,
-    const size_t /*index*/) const {
+    gsl::not_null<FmDisk::IntermediateVariables<DataType>*> /*vars*/) const {
   auto result = unnormalized_magnetic_field(x);
   for (size_t i = 0; i < 3; ++i) {
     result.get(i) *= b_field_normalization_;
@@ -252,20 +284,18 @@ bool operator!=(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define NEED_SPACETIME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>> \
-  MagnetizedFmDisk::variables(                                             \
-      const tnsr::I<DTYPE(data), 3>& x,                                    \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,     \
-      const typename FmDisk::FishboneMoncriefDisk::IntermediateVariables<  \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                        \
-      const size_t) const;
+#define INSTANTIATE(_, data)                                                 \
+  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>   \
+  MagnetizedFmDisk::variables(                                               \
+      const tnsr::I<DTYPE(data), 3>& x,                                      \
+      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,       \
+      gsl::not_null<                                                         \
+          FmDisk::FishboneMoncriefDisk::IntermediateVariables<DTYPE(data)>*> \
+          vars) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
-#undef NEED_SPACETIME
 #undef INSTANTIATE
 }  // namespace grmhd::AnalyticData

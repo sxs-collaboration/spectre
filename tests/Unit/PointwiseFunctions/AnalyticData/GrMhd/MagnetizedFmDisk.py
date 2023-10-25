@@ -153,7 +153,7 @@ def magnetic_field(
         polytropic_constant,
         polytropic_exponent,
     )
-    x_max = np.array([r_max, spin_a, 0.0])
+    x_max = np.array([r_max, 0.0, 0.0])
     threshold_rho = threshold_density * (
         fm_disk.rest_mass_density(
             x_max,
@@ -166,13 +166,14 @@ def magnetic_field(
             polytropic_exponent,
         )
     )
+    x_ks = [0.0, 0.0, 0.0]
+
     if rho > threshold_rho:
         small = 0.0001 * bh_mass
         a_squared = spin_a**2
         sin_theta_squared = x[0] ** 2 + x[1] ** 2
-        r_squared = 0.5 * (sin_theta_squared + x[2] ** 2 - a_squared)
-        r_squared += np.sqrt(r_squared**2 + a_squared * x[2] ** 2)
-        sin_theta_squared /= r_squared + a_squared
+        r_squared = sin_theta_squared + x[2] ** 2
+        sin_theta_squared /= r_squared
 
         r = np.sqrt(r_squared)
         sin_theta = np.sqrt(sin_theta_squared)
@@ -233,13 +234,21 @@ def magnetic_field(
                 threshold_rho,
             )
         ) * prefactor
-
-    # This normalization is specific for the default normalization resolution
-    # grid and for the specific member variables of the disk in test_variables
-    normalization = 1.7162625566578704
-    return normalization * ks_coords.cartesian_from_spherical_ks(
-        result, x, bh_mass, bh_dimless_spin
-    )
+        sks_to_ks_factor = np.sqrt(r_squared + a_squared) / np.sqrt(r_squared)
+        x_ks[0] = x[0] * sks_to_ks_factor
+        x_ks[1] = x[1] * sks_to_ks_factor
+        x_ks[2] = x[2]
+        # This normalization is specific for disk parameters used
+        # in test_variables function of Test_MagnetizedFmDisk.cpp.
+        # Note: we are using lower (than default)
+        # b_field_normalization for a faster testing time.
+        normalization = 2.077412435947072
+        result = normalization * ks_coords.cartesian_from_spherical_ks(
+            result, x_ks, bh_mass, bh_dimless_spin
+        )
+        inv_jac = fm_disk.inverse_jacobian_matrix(x, spin_a)
+        result = inv_jac @ result
+    return result
 
 
 def divergence_cleaning_field(

@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -51,10 +51,7 @@ namespace Solutions {
  * where \f$u^\mu\f$ is the 4-velocity. Then, all the fluid quantities are
  * assumed to share the same symmetries as those of the background spacetime,
  * namely they are stationary (independent of \f$t\f$), and axially symmetric
- * (independent of \f$\phi\f$). Note that \f$r\f$ and \f$\theta\f$ can also be
- * interpreted as Kerr (a.k.a. "spherical" Kerr-Schild) coordinates
- * (see gr::KerrSchildCoords), and that the symmetries of the equilibrium ensure
- * that \f$u^\mu\f$ as defined above is also the 4-velocity in Kerr coordinates.
+ * (independent of \f$\phi\f$).
  *
  * Self-gravity is neglected, so that the fluid
  * variables are determined as functions of the metric. Following the treatment
@@ -154,6 +151,17 @@ namespace Solutions {
  * \note Kozlowski et al. \cite Kozlowski1978aa denote
  * \f$l_* = u_\phi u^t\f$ in order to
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
+ *
+ * \note When using Kerr-Schild coordinates, the horizon that is at
+ * constant \f$r\f$ is not spherical, but instead spheroidal. This could make
+ * application of boundary condition and computing various fluxes
+ * across the horizon more complicated than they need to be.
+ * Thus, we use Spherical Kerr-Schild coordinates,
+ * see gr::Solutions::SphericalKerrSchild, in which constant \f$r\f$
+ * is spherical. Because we compute variables in Kerr-Schild coordinates,
+ * there is a necessary extra step of transforming them back to
+ * Spherical Kerr-Schild coordinates.
+ *
  */
 class FishboneMoncriefDisk
     : public virtual evolution::initial_data::InitialData,
@@ -161,7 +169,7 @@ class FishboneMoncriefDisk
       public AnalyticSolution<3>,
       public hydro::TemperatureInitialization<FishboneMoncriefDisk> {
  protected:
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   struct IntermediateVariables;
 
  public:
@@ -258,64 +266,32 @@ class FishboneMoncriefDisk
   DataType potential(const DataType& r_sqrd,
                      const DataType& sin_theta_sqrd) const;
 
-  SPECTRE_ALWAYS_INLINE static size_t index_helper(
-      tmpl::no_such_type_ /*meta*/) {
-    return std::numeric_limits<size_t>::max();
-  }
-  template <typename T>
-  SPECTRE_ALWAYS_INLINE static size_t index_helper(T /*meta*/) {
-    return T::value;
-  }
-
   template <typename DataType>
-  using tags = tmpl::append<hydro::grmhd_tags<DataType>,
-                            typename gr::Solutions::KerrSchild::tags<DataType>>;
+  using tags =
+      tmpl::append<hydro::grmhd_tags<DataType>,
+                   typename gr::Solutions::SphericalKerrSchild::tags<DataType>>;
 
   /// @{
-  /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`
-  ///
-  /// \note The functions are optimized for retrieving the hydro variables
-  /// before the metric variables.
+  /// The variables in Cartesian Spherical-Kerr-Schild coordinates at `(x, t)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3>& x,
-      const double t,  // NOLINT(readability-avoid-const-params-in-decls)
-      tmpl::list<Tags...> /*meta*/) const {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         const double /*t*/,
+                                         tmpl::list<Tags...> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
-    IntermediateVariables<
-        DataType,
-        tmpl2::flat_any_v<(
-            std::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            std::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
-        vars(bh_spin_a_, background_spacetime_, x, t,
-             index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::SpatialVelocity<DataType, 3>>{}),
-             index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::LorentzFactor<DataType>>{}));
-    return {std::move(get<Tags>(
-        variables(x, tmpl::list<Tags>{}, vars,
-                  tmpl::index_of<tmpl::list<Tags...>, Tags>::value)))...};
+    IntermediateVariables<DataType> vars(x);
+    return {std::move(
+        get<Tags>(variables(x, tmpl::list<Tags>{}, make_not_null(&vars))))...};
   }
 
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     const double t,  // NOLINT
+                                     const double /*t*/,
                                      tmpl::list<Tag> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
-    IntermediateVariables<
-        DataType,
-        std::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            std::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
-        intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
-                          std::numeric_limits<size_t>::max(),
-                          std::numeric_limits<size_t>::max());
-    return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
+    IntermediateVariables<DataType> vars(x);
+    return variables(x, tmpl::list<Tag>{}, make_not_null(&vars));
   }
   /// @}
 
@@ -327,124 +303,102 @@ class FishboneMoncriefDisk
   }
 
  protected:
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-      const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const
+      gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
-                 const IntermediateVariables<DataType, true>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType, true>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const
+                 gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
-  template <typename DataType, bool NeedSpacetime>
+  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
-      const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const
+      gsl::not_null<IntermediateVariables<DataType>*> vars) const
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   // Grab the metric variables
   template <typename DataType, typename Tag,
             Requires<not tmpl::list_contains_v<
                 tmpl::push_back<hydro::grmhd_tags<DataType>,
-                                hydro::Tags::SpecificEnthalpy<DataType>>,
+                                hydro::Tags::SpecificEnthalpy<DataType>,
+                                hydro::Tags::SpatialVelocity<DataType, 3>,
+                                hydro::Tags::LorentzFactor<DataType>>,
                 Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
-      const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
-      IntermediateVariables<DataType, true>& vars, const size_t index) const {
-    // The only hydro variables that use the GR solution are spatial velocity
-    // and Lorentz factor. If those have already been set (their index in the
-    // typelist is lower than our index) then we can safely std::move the GR
-    // solution out, assuming nobody gets the same variable twice (e.g. trying
-    // to retrieve the lapse twice from the solution in the same call to the
-    // function), but then TaggedTuple would explode horribly, so nothing to
-    // worry about.
-    // Analytic solutions are used in Dirichlet boundary conditions and thus are
-    // called quite frequently, making some optimization worthwhile.
-    if (index > vars.spatial_velocity_index and
-        index > vars.lorentz_factor_index) {
-      return {std::move(get<Tag>(vars.kerr_schild_soln))};
-    }
-    return {get<Tag>(vars.kerr_schild_soln)};
+      const tnsr::I<DataType, 3>& x, tmpl::list<Tag> /*meta*/,
+      gsl::not_null<IntermediateVariables<DataType>*> vars) const {
+    return {get<Tag>(background_spacetime_.variables(
+        x, 0.0, tmpl::list<Tag>{},
+        make_not_null(&vars->sph_kerr_schild_cache)))};
   }
 
-  template <typename DataType, bool NeedSpacetime, typename Func>
-  void variables_impl(
-      const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const;
+  template <typename DataType, typename Func>
+  void variables_impl(gsl::not_null<IntermediateVariables<DataType>*> vars,
+                      Func f) const;
 
   // Intermediate variables needed to set several of the Fishbone-Moncrief
   // solution's variables.
-  template <typename DataType, bool NeedSpacetime>
+
+  template <typename DataType>
   struct IntermediateVariables {
-    IntermediateVariables(double bh_spin_a,
-                          const gr::Solutions::KerrSchild& background_spacetime,
-                          const tnsr::I<DataType, 3>& x, double t,
-                          size_t in_spatial_velocity_index,
-                          size_t in_lorentz_factor_index);
+    explicit IntermediateVariables(const tnsr::I<DataType, 3>& x);
 
     DataType r_squared{};
     DataType sin_theta_squared{};
-    tuples::tagged_tuple_from_typelist<
-        typename gr::Solutions::KerrSchild::tags<DataType>>
-        kerr_schild_soln{};
-    size_t spatial_velocity_index;
-    size_t lorentz_factor_index;
+    gr::Solutions::SphericalKerrSchild::IntermediateVars<DataType,
+                                                         Frame::Inertial>
+        sph_kerr_schild_cache =
+            gr::Solutions::SphericalKerrSchild::IntermediateVars<
+                DataType, Frame::Inertial>(0);
   };
 
   friend bool operator==(const FishboneMoncriefDisk& lhs,
@@ -459,7 +413,7 @@ class FishboneMoncriefDisk
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   double angular_momentum_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
-  gr::Solutions::KerrSchild background_spacetime_{};
+  gr::Solutions::SphericalKerrSchild background_spacetime_{};
 };
 
 bool operator!=(const FishboneMoncriefDisk& lhs,

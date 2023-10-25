@@ -33,6 +33,8 @@ template <typename TagList>
 struct TempBuffer<TagList, true> : tuples::tagged_tuple_from_typelist<TagList> {
   explicit TempBuffer(const size_t /*size*/)
       : tuples::tagged_tuple_from_typelist<TagList>::TaggedTuple() {}
+
+  static size_t number_of_grid_points() { return 1; }
 };
 
 template <typename TagList>

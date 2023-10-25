@@ -50,6 +50,7 @@ class CachedTempBuffer {
     }
     return get<Tag>(data_);
   }
+  size_t number_of_grid_points() const { return data_.number_of_grid_points(); }
 
  private:
   template <typename Tag>

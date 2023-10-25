@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -429,20 +430,6 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
   SphericalKerrSchild& operator=(SphericalKerrSchild&& /*rhs*/) = default;
   ~SphericalKerrSchild() = default;
 
-  template <typename DataType, typename Frame, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
-      tmpl::list<Tags...> /*meta*/) const {
-    static_assert(
-        tmpl2::flat_all_v<
-            tmpl::list_contains_v<tags<DataType, Frame>, Tags>...>,
-        "At least one of the requested tags is not supported. The requested "
-        "tags are listed as template parameters of the `variables` function.");
-    IntermediateVars<DataType, Frame> cache(get_size(*x.begin()));
-    IntermediateComputer<DataType, Frame> computer(*this, x);
-    return {cache.get_var(computer, Tags{})...};
-  }
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -567,6 +554,46 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
       gr::Tags::InverseSpatialMetric<DataType, 3, Frame>,
       gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>,
       gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>>;
+
+  // forward-declaration needed.
+  template <typename DataType, typename Frame>
+  class IntermediateVars;
+
+  template <typename DataType, typename Frame = Frame::Inertial>
+  using allowed_tags =
+      tmpl::push_back<tags<DataType, Frame>,
+                      typename internal_tags::inv_jacobian<DataType, Frame>>;
+
+  template <typename DataType, typename Frame, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
+      tmpl::list<Tags...> /*meta*/) const {
+    static_assert(
+        tmpl2::flat_all_v<
+            tmpl::list_contains_v<allowed_tags<DataType, Frame>, Tags>...>,
+        "At least one of the requested tags is not supported. The requested "
+        "tags are listed as template parameters of the `variables` function.");
+    IntermediateVars<DataType, Frame> cache(get_size(*x.begin()));
+    IntermediateComputer<DataType, Frame> computer(*this, x);
+    return {cache.get_var(computer, Tags{})...};
+  }
+
+  template <typename DataType, typename Frame, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
+      tmpl::list<Tags...> /*meta*/,
+      gsl::not_null<IntermediateVars<DataType, Frame>*> cache) const {
+    static_assert(
+        tmpl2::flat_all_v<
+            tmpl::list_contains_v<allowed_tags<DataType, Frame>, Tags>...>,
+        "At least one of the requested tags is not supported. The requested "
+        "tags are listed as template parameters of the `variables` function.");
+    if (cache->number_of_grid_points() != get_size(*x.begin())) {
+      *cache = IntermediateVars<DataType, Frame>(get_size(*x.begin()));
+    }
+    IntermediateComputer<DataType, Frame> computer(*this, x);
+    return {cache->get_var(computer, Tags{})...};
+  }
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
   class IntermediateComputer {

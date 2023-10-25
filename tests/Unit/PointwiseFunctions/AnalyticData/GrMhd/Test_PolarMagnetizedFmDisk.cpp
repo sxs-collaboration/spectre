@@ -49,7 +49,7 @@ void test_create_from_options() {
           "    PolytropicExponent: 1.654\n"
           "    ThresholdDensity: 0.42\n"
           "    InversePlasmaBeta: 85.0\n"
-          "    BFieldNormGridRes: 6\n"
+          "    BFieldNormGridRes: 4\n"
           "  TorusParameters:\n"
           "    RadialRange: [2.5, 3.6]\n"
           "    MinPolarAngle: 0.9\n"
@@ -62,18 +62,18 @@ void test_create_from_options() {
           *deserialized_option_solution);
   CHECK(disk == grmhd::AnalyticData::PolarMagnetizedFmDisk(
                     grmhd::AnalyticData::MagnetizedFmDisk(
-                        1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 6),
+                        1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 4),
                     grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7)));
 }
 
 void test_move() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 6),
+                                            1.654, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk_copy(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 6),
+                                            1.654, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
   test_move_semantics(std::move(disk), disk_copy);
 }
@@ -81,7 +81,7 @@ void test_move() {
 void test_serialize() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 6),
+                                            1.654, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
   test_serialization(disk);
 }
@@ -105,12 +105,13 @@ void test_variables(const DataType& used_for_size) {
   const double polytropic_exponent = 1.65;
   const double threshold_density = 0.14;
   const double inverse_plasma_beta = 0.023;
+  const size_t b_field_normalization = 51;
 
   const grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(
           bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
           polytropic_constant, polytropic_exponent, threshold_density,
-          inverse_plasma_beta),
+          inverse_plasma_beta, b_field_normalization),
       grmhd::AnalyticData::SphericalTorus(3.0, 20.0, 1.0, 0.3));
 
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.5);
