@@ -343,7 +343,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
     using deriv_lapse_multiplier = ::Tags::TempScalar<19, DataType>;
     template <typename DataType>
     using shift_multiplier = ::Tags::TempScalar<20, DataType>;
-    template <typename DataType, typename Frame = ::Frame::Inertial>
+    template <typename DataType>
     using null_form_dot_deriv_H = ::Tags::TempScalar<25, DataType>;
     template <typename DataType, typename Frame = ::Frame::Inertial>
     using null_form_dot_deriv_null_form = ::Tags::Tempi<26, 3, Frame, DataType>;

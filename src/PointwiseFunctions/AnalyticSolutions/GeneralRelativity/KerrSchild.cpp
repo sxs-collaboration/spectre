@@ -701,7 +701,7 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<CachedBuffer*> cache,
     internal_tags::null_form_dot_deriv_H<DataType> /*meta*/) const {
   const auto& deriv_H =
-      get(cache->get_var(*this, internal_tags::deriv_H<DataType>{}));
+      get(cache->get_var(*this, internal_tags::deriv_H<DataType, Frame>{}));
   const auto& null_form =
       cache->get_var(*this, internal_tags::null_form<DataType, Frame>{});
   for (size_t i = 0; i < 3; ++i) {
