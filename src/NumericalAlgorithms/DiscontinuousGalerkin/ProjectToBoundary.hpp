@@ -224,6 +224,7 @@ void project_tensors_to_boundary(
   }
 }
 
+/// @{
 /*!
  * \brief Projects a tensor to the face
  *
@@ -266,4 +267,17 @@ void project_tensor_to_boundary(
     }
   }
 }
+
+template <typename Symm, typename IndexList, size_t Dim>
+Tensor<DataVector, Symm, IndexList> project_tensor_to_boundary(
+    const Tensor<DataVector, Symm, IndexList>& volume_field,
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
+  Tensor<DataVector, Symm, IndexList> face_field{
+      volume_mesh.slice_away(direction.dimension()).number_of_grid_points()};
+  project_tensor_to_boundary(make_not_null(&face_field), volume_field,
+                             volume_mesh, direction);
+  return face_field;
+}
+/// @}
+
 }  // namespace dg
