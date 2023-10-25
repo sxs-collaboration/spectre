@@ -36,9 +36,10 @@
 #include "Domain/Domain.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -2322,7 +2323,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                      mesh.extents());
       Scalar<DataVector> face_det_jacobian{1.0 / get(face_det_inv_jacobian)};
 
-      evolution::dg::lift_boundary_terms_gauss_points(
+      ::dg::lift_boundary_terms_gauss_points(
           make_not_null(&expected_dt_volume_correction),
           volume_det_inv_jacobian, mesh, ghost_direction, expected_on_boundary,
           magnitude_of_interior_face_normal, face_det_jacobian);
@@ -2482,7 +2483,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
             tmpl::list<::Tags::dt<Tags::Var1>, ::Tags::dt<Tags::Var2<Dim>>>>
             expected_dt_on_boundary{mesh.slice_away(ghost_direction.dimension())
                                         .number_of_grid_points()};
-        evolution::dg::project_contiguous_data_to_boundary(
+        ::dg::project_contiguous_data_to_boundary(
             make_not_null(&expected_dt_on_boundary), expected_dt_evolved_vars,
             mesh, ghost_direction.opposite());
 

@@ -10,6 +10,8 @@ spectre_target_sources(
   PRIVATE
   ApplyMassMatrix.cpp
   Formulation.cpp
+  InterpolateFromBoundary.cpp
+  LiftFromBoundary.cpp
   MetricIdentityJacobian.cpp
   MortarHelpers.cpp
   )
@@ -21,10 +23,13 @@ spectre_target_headers(
   ApplyMassMatrix.hpp
   Formulation.hpp
   HasReceivedFromAllMortars.hpp
+  InterpolateFromBoundary.hpp
   LiftFlux.hpp
+  LiftFromBoundary.hpp
   MetricIdentityJacobian.hpp
   MortarHelpers.hpp
   NormalDotFlux.hpp
+  ProjectToBoundary.hpp
   SimpleBoundaryData.hpp
   SimpleMortarData.hpp
   Tags.hpp

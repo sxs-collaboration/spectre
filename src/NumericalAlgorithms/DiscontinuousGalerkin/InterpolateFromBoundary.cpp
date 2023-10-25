@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
 
 #include <cstddef>
 #include <utility>
@@ -13,7 +13,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace evolution::dg::detail {
+namespace dg::detail {
 namespace {
 // We use a separate function in the  xi direction to avoid the expensive
 // SliceIterator
@@ -95,4 +95,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace evolution::dg::detail
+}  // namespace dg::detail
