@@ -142,14 +142,15 @@ valid_info_t<Dim> valid_neighbor_info(
     const std::array<::amr::Flag, Dim>& element_flags,
     const Neighbors<Dim>& neighbors) {
   valid_info_t<Dim> result{};
-  Mesh<Dim> unused_mesh{};
+  Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto};
   const auto& orientation_of_neighbors = neighbors.orientation();
   const auto& first_neighbor_id = *(neighbors.begin());
   for (const auto& neighbor_flags : amr_flags<Dim>()) {
     if (are_valid_neighbor_flags(element_id, element_flags, first_neighbor_id,
                                  neighbor_flags, orientation_of_neighbors)) {
       result.emplace_back(neighbor_info_t<Dim>{
-          {first_neighbor_id, ::amr::Info<Dim>{neighbor_flags, unused_mesh}}});
+          {first_neighbor_id, ::amr::Info<Dim>{neighbor_flags, mesh}}});
     }
   }
 
@@ -178,7 +179,7 @@ valid_info_t<Dim> valid_neighbor_info(
         if (can_add_flag) {
           auto new_flags = valid_flags;
           new_flags.emplace(neighbor_id,
-                            ::amr::Info<Dim>{neighbor_flags, unused_mesh});
+                            ::amr::Info<Dim>{neighbor_flags, mesh});
           result.emplace_back(std::move(new_flags));
         }
       }

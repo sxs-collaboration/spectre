@@ -12,7 +12,6 @@
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Tags.hpp"
-#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
@@ -234,7 +233,6 @@ struct EvolutionMetavars {
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,
-            ::domain::Tags::NeighborMesh<volume_dim>,
             Tags::StepperError<typename system::variables_tag>,
             Tags::PreviousStepperError<typename system::variables_tag>,
             Tags::StepperErrorUpdated,

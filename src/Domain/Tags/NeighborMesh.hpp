@@ -21,6 +21,6 @@ namespace domain::Tags {
  */
 template <size_t Dim>
 struct NeighborMesh : db::SimpleTag {
-  using type = DirectionalIdMap<Dim, Mesh<Dim>>;
+  using type = DirectionalIdMap<Dim, ::Mesh<Dim>>;
 };
 }  // namespace domain::Tags

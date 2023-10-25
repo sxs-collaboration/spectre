@@ -9,13 +9,18 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/InitialExtents.hpp"
+#include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Parallel/Tags/ArrayIndex.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -45,7 +50,8 @@ struct Domain {
   using return_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>>;
 
-  using simple_tags = return_tags;
+  using simple_tags =
+      tmpl::push_back<return_tags, ::domain::Tags::NeighborMesh<Dim>>;
   using compute_tags = tmpl::list<>;
 
   /// Given the items fetched from a DataBox by the argument_tags, mutate

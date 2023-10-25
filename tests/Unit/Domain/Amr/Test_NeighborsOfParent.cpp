@@ -18,13 +18,16 @@
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 
 namespace {
 SegmentId s_00{0, 0};
@@ -36,6 +39,12 @@ void test_periodic_interval() {
   ElementId<1> parent_id{0, std::array{s_00}};
   ElementId<1> child_1_id{0, std::array{s_10}};
   ElementId<1> child_2_id{0, std::array{s_11}};
+  Mesh<1> parent_mesh{4, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto};
+  Mesh<1> child_1_mesh{3, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  Mesh<1> child_2_mesh{4, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
 
   DirectionMap<1, Neighbors<1>> child_1_neighbors{};
   child_1_neighbors.emplace(
@@ -46,7 +55,7 @@ void test_periodic_interval() {
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
   Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
   std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
-      {child_2_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
+      {child_2_id, {{{amr::Flag::Join}}, parent_mesh}}};
 
   DirectionMap<1, Neighbors<1>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -57,7 +66,7 @@ void test_periodic_interval() {
       Neighbors<1>{std::unordered_set{child_1_id}, aligned});
   Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
   std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
-      {child_1_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
+      {child_1_id, {{{amr::Flag::Join}}, parent_mesh}}};
 
   std::vector<std::tuple<const Element<1>&,
                          const std::unordered_map<ElementId<1>, amr::Info<1>>&>>
@@ -67,7 +76,7 @@ void test_periodic_interval() {
   children_elements_and_neighbor_info.emplace_back(
       std::forward_as_tuple(child_2, child_2_neighbor_info));
 
-  const auto parent_neighbors =
+  const auto [parent_neighbors, parent_neighbors_mesh] =
       amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<1, Neighbors<1>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
@@ -77,6 +86,11 @@ void test_periodic_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{parent_id}, aligned});
   CHECK(parent_neighbors == expected_parent_neighbors);
+  DirectionalIdMap<1, Mesh<1>> expected_parent_neighbor_meshes{};
+  expected_parent_neighbor_meshes.insert(
+      {{Direction<1>::lower_xi(), parent_id}, parent_mesh});
+  expected_parent_neighbor_meshes.insert(
+      {{Direction<1>::upper_xi(), parent_id}, parent_mesh});
 }
 
 void test_interval() {
@@ -87,6 +101,16 @@ void test_interval() {
   ElementId<1> child_2_id{0, std::array{s_11}};
   ElementId<1> lower_neighbor_id{1, std::array{s_11}};
   ElementId<1> upper_neighbor_id{2, std::array{s_00}};
+  Mesh<1> parent_mesh{4, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto};
+  Mesh<1> child_1_mesh{3, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  Mesh<1> child_2_mesh{4, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  Mesh<1> lower_neighbor_mesh{5, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+  Mesh<1> upper_neighbor_mesh{6, Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
 
   DirectionMap<1, Neighbors<1>> child_1_neighbors{};
   child_1_neighbors.emplace(
@@ -97,8 +121,8 @@ void test_interval() {
       Neighbors<1>{std::unordered_set{child_2_id}, aligned});
   Element<1> child_1{child_1_id, std::move(child_1_neighbors)};
   std::unordered_map<ElementId<1>, amr::Info<1>> child_1_neighbor_info{
-      {lower_neighbor_id, {{{amr::Flag::DoNothing}}, Mesh<1>{}}},
-      {child_2_id, {{{amr::Flag::Join}}, Mesh<1>{}}}};
+      {lower_neighbor_id, {{{amr::Flag::DoNothing}}, lower_neighbor_mesh}},
+      {child_2_id, {{{amr::Flag::Join}}, parent_mesh}}};
 
   DirectionMap<1, Neighbors<1>> child_2_neighbors{};
   child_2_neighbors.emplace(
@@ -109,8 +133,8 @@ void test_interval() {
       Neighbors<1>{std::unordered_set{upper_neighbor_id}, flipped});
   Element<1> child_2{child_2_id, std::move(child_2_neighbors)};
   std::unordered_map<ElementId<1>, amr::Info<1>> child_2_neighbor_info{
-      {child_1_id, {{{amr::Flag::Join}}, Mesh<1>{}}},
-      {upper_neighbor_id, {{{amr::Flag::Split}}, Mesh<1>{}}}};
+      {child_1_id, {{{amr::Flag::Join}}, parent_mesh}},
+      {upper_neighbor_id, {{{amr::Flag::Split}}, upper_neighbor_mesh}}};
 
   std::vector<std::tuple<const Element<1>&,
                          const std::unordered_map<ElementId<1>, amr::Info<1>>&>>
@@ -120,7 +144,7 @@ void test_interval() {
   children_elements_and_neighbor_info.emplace_back(
       std::forward_as_tuple(child_2, child_2_neighbor_info));
 
-  const auto parent_neighbors =
+  const auto [parent_neighbors, parent_neighbors_mesh] =
       amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<1, Neighbors<1>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(
@@ -131,6 +155,11 @@ void test_interval() {
       Direction<1>::upper_xi(),
       Neighbors<1>{std::unordered_set{split_upper_neighbor_id}, flipped});
   CHECK(parent_neighbors == expected_parent_neighbors);
+  DirectionalIdMap<1, Mesh<1>> expected_parent_neighbor_meshes{};
+  expected_parent_neighbor_meshes.insert(
+      {{Direction<1>::lower_xi(), parent_id}, lower_neighbor_mesh});
+  expected_parent_neighbor_meshes.insert(
+      {{Direction<1>::upper_xi(), parent_id}, upper_neighbor_mesh});
 }
 
 void test_rectangle() {
@@ -244,7 +273,7 @@ void test_rectangle() {
   children_elements_and_neighbor_info.emplace_back(
       std::forward_as_tuple(child_4, child_4_neighbor_info));
 
-  const auto parent_neighbors =
+  const auto [parent_neighbors, parent_neighbors_mesh] =
       amr::neighbors_of_parent(parent_id, children_elements_and_neighbor_info);
   DirectionMap<2, Neighbors<2>> expected_parent_neighbors{};
   expected_parent_neighbors.emplace(

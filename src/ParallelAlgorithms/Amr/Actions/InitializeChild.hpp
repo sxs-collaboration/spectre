@@ -14,10 +14,12 @@
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
@@ -55,23 +57,25 @@ struct InitializeChild {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     const auto& parent =
         tuples::get<::domain::Tags::Element<volume_dim>>(parent_items);
-    const auto& parent_flags =
-        tuples::get<amr::Tags::Info<volume_dim>>(parent_items).flags;
+    const auto& parent_info =
+        tuples::get<amr::Tags::Info<volume_dim>>(parent_items);
     const auto& parent_neighbor_info =
         tuples::get<amr::Tags::NeighborInfo<volume_dim>>(parent_items);
     const auto& parent_mesh =
         tuples::get<::domain::Tags::Mesh<volume_dim>>(parent_items);
-    auto neighbors = amr::neighbors_of_child(parent, parent_flags,
+    auto neighbors = amr::neighbors_of_child(parent, parent_info,
                                              parent_neighbor_info, child_id);
-    Element<volume_dim> child(child_id, std::move(neighbors));
+    Element<volume_dim> child(child_id, std::move(neighbors.first));
     Mesh<volume_dim> child_mesh =
-        amr::projectors::mesh(parent_mesh, parent_flags);
+        amr::projectors::mesh(parent_mesh, parent_info.flags);
 
     // Default initialization of amr::Tags::Info and amr::Tags::NeighborInfo
     // is okay
     ::Initialization::mutate_assign<tmpl::list<
-        ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
-        make_not_null(&box), std::move(child), std::move(child_mesh));
+        ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
+        ::domain::Tags::NeighborMesh<volume_dim>>>(
+        make_not_null(&box), std::move(child), std::move(child_mesh),
+        std::move(neighbors.second));
 
     tmpl::for_each<typename Metavariables::amr::projectors>(
         [&box, &parent_items](auto projector_v) {
