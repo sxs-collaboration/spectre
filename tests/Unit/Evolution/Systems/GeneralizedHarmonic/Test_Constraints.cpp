@@ -748,6 +748,52 @@ void test_constraint_energy_analytic(const Solution& solution,
       numerical_approx);
 }
 
+// Test the return-by-value normalized constraint energy function using random
+// values
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_constraint_energy_normalization_random(
+    const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataType> (*)(
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&,
+          const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
+          double)>(
+          &gh::constraint_energy_normalization<DataType, SpatialDim, Frame>),
+      "TestFunctions", "constraint_energy_normalization", {{{-1.0, 1.0}}},
+      used_for_size);
+}
+
+// Test the return-by-value normalized constraint energy function for Minkowski
+void test_constraint_energy_normalization_minkowski(
+    const DataVector& used_for_size) {
+  const auto d_spacetime_metric =
+      make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(used_for_size,
+                                                                 0.0);
+  const auto d_pi = make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
+      used_for_size, 0.0);
+  const auto d_phi =
+      make_with_value<tnsr::ijaa<DataVector, 3, Frame::Inertial>>(used_for_size,
+                                                                  0.0);
+  auto inverse_spatial_metric =
+      make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(used_for_size,
+                                                                0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    inverse_spatial_metric.get(i, i) = 1.0;
+  }
+  const auto sqrt_spatial_metric_determinant =
+      make_with_value<Scalar<DataVector>>(used_for_size, 1.0);
+  const double dimensional_constant = 3.0;
+
+  // type result = func(args...);
+  const Scalar<DataVector> result = gh::constraint_energy_normalization(
+      d_spacetime_metric, d_pi, d_phi, inverse_spatial_metric,
+      sqrt_spatial_metric_determinant, dimensional_constant);
+
+  CHECK(get(result) == 0.0);
+}
+
 // Test compute items for various constraints via insertion and retrieval
 // in a databox
 template <typename Solution>
@@ -1287,6 +1333,36 @@ void constraint_energy() {
       std::numeric_limits<double>::signaling_NaN());
 }
 
+void constraint_energy_normalization() {
+  // Test the normalized constraint energy in minkowski
+  test_constraint_energy_normalization_minkowski(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+
+  // Test the normalized constraint energy with random numbers
+  test_constraint_energy_normalization_random<DataVector, 1, Frame::Grid>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization_random<DataVector, 1, Frame::Inertial>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization_random<double, 1, Frame::Grid>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization_random<double, 1, Frame::Inertial>(
+      std::numeric_limits<double>::signaling_NaN());
+
+  test_constraint_energy_normalization_random<DataVector, 2, Frame::Inertial>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization_random<double, 2, Frame::Grid>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization_random<double, 2, Frame::Inertial>(
+      std::numeric_limits<double>::signaling_NaN());
+
+  test_constraint_energy_normalization_random<DataVector, 3, Frame::Inertial>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization_random<double, 3, Frame::Grid>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization_random<double, 3, Frame::Inertial>(
+      std::numeric_limits<double>::signaling_NaN());
+}
+
 void test_compute_tags() {
   // Test the F constraint against Kerr Schild
   const double mass = 1.4;
@@ -1313,5 +1389,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Constraints",
   four_index_constraint();
   f_constraint();
   constraint_energy();
+  constraint_energy_normalization();
   test_compute_tags();
 }

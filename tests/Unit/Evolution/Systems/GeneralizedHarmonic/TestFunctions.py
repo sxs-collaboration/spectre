@@ -1095,3 +1095,29 @@ def constraint_energy(
 
 
 # End test functions for constraint energy
+
+# Begin test function for normalized constraint energy
+
+
+def constraint_energy_normalization(
+    d_spacetime_metric,
+    d_pi,
+    d_phi,
+    inverse_spatial_metric,
+    sqrt_spatial_metric_determinant,
+    dimensional_constant,
+):
+    energy_norm = (
+        dimensional_constant**2
+        * np.einsum("iac,jac", d_spacetime_metric, d_spacetime_metric)
+        + np.einsum("iac,jac", d_pi, d_pi)
+        + np.einsum("kl,ikac,jlac", inverse_spatial_metric, d_phi, d_phi)
+    )
+    energy_norm = (
+        np.einsum("ij,ij", inverse_spatial_metric, energy_norm)
+        * sqrt_spatial_metric_determinant
+    )
+    return energy_norm
+
+
+# End test functions for normalized constraint energy

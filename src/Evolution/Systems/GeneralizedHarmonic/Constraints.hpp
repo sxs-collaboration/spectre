@@ -551,6 +551,44 @@ void constraint_energy(
     double four_index_constraint_multiplier = 1.0);
 /// @}
 
+/// @{
+/*!
+ * \brief Computes the generalized-harmonic normalized constraint energy.
+ *
+ * \details Computes the generalized-harmonic normalized constraint energy
+ * integrand [Eq. (70) of \cite Lindblom2005qh with \f$m^{ab}=\delta^{ab}\f$],
+ * \f{eqnarray}{
+ * ||E||=\gamma^{ij}\delta^{ab}\delta^{cd}
+ * (\Lambda^{2}\partial_{i}g_{ac}\partial_{j}g_{bd}
+ * + \partial_{i}\Pi_{ac}\partial_{j}\Pi_{bd} +
+ * \gamma^{kl}\partial_{i}\Phi_{kac}\partial_{j}\Phi_{lbd})\gamma^{1/2}
+ * \f}
+ *
+ * Here \f$\gamma^{ij}\f$ is the inverse spatial metric, and \f$\Lambda^{2}\f$
+ * is the squared dimensional constant. Note
+ * that in this equation, spacetime indices \f$a,b\f$ are raised and lowered
+ * with the Kronecker delta.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+Scalar<DataType> constraint_energy_normalization(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& sqrt_spatial_metric_determinant,
+    double dimensional_constant);
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void constraint_energy_normalization(
+    gsl::not_null<Scalar<DataType>*> energy_norm,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& sqrt_spatial_metric_determinant,
+    double dimensional_constant);
+/// @}
+
 namespace Tags {
 /*!
  * \brief Compute item to get the gauge constraint for the
