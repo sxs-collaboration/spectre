@@ -70,30 +70,29 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
       "formulation,\n"
       "on a domain with a single horizon and corresponding excised region"};
 
-  struct ApparentHorizon
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  template <typename Frame>
+  struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using tags_to_observe = ::ah::tags_for_observing<Frame::Inertial>;
+    using tags_to_observe = ::ah::tags_for_observing<Frame>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>;
+        ::ah::vars_to_interpolate_to_target<volume_dim, Frame>;
     using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame::Inertial>;
+        ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<ApparentHorizon,
-                                             ::Frame::Inertial>;
+        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::FindApparentHorizon<ApparentHorizon,
-                                                         ::Frame::Inertial>>;
+        tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callback =
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                     ApparentHorizon>,
-        intrp::callbacks::ObserveSurfaceData<
-            surface_tags_to_observe, ApparentHorizon, ::Frame::Inertial>>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
+                                             Frame>>;
   };
+
+  using ApparentHorizon = Ah<::Frame::Grid>;
 
   struct ExcisionBoundary
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
