@@ -22,7 +22,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   HalfSpaceMirror:
     BeamWidth: 0.177
     Material: &fused_silica
@@ -54,12 +54,15 @@ DomainCreator:
     BoundaryConditions:
       LowerZ:
         AnalyticSolution:
+          Solution: *solution
           Displacement: Dirichlet
       UpperZ:
         AnalyticSolution:
+          Solution: *solution
           Displacement: Dirichlet
       Mantle:
         AnalyticSolution:
+          Solution: *solution
           Displacement: Dirichlet
 
 Discretization:

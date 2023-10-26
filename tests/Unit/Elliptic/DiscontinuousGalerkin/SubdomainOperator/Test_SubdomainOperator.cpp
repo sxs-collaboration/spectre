@@ -131,7 +131,7 @@ make_boundary_condition(
     const elliptic::BoundaryConditionType boundary_condition_type) {
   return std::make_unique<
       elliptic::BoundaryConditions::AnalyticSolution<System>>(
-      boundary_condition_type);
+      nullptr, boundary_condition_type);
 }
 
 // Generate some random element-centered subdomain data on each element

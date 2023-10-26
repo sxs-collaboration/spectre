@@ -23,7 +23,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   ProductOfSinusoids:
     WaveNumbers: [1]
 
@@ -44,9 +44,11 @@ DomainCreator:
     BoundaryConditions:
       LowerBoundary:
         AnalyticSolution:
+          Solution: *solution
           Field: Dirichlet
       UpperBoundary:
         AnalyticSolution:
+          Solution: *solution
           Field: Neumann
 
 Discretization:
