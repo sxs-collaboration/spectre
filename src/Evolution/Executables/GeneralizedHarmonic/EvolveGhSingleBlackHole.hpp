@@ -33,6 +33,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -89,7 +90,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>,
         intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
-                                             Frame>>;
+                                             Frame>,
+        // Needs to be Frame::Grid or Frame::Distorted
+        ::ah::callbacks::ObserveCenters<Ah, ::Frame::Grid>>;
   };
 
   using ApparentHorizon = Ah<::Frame::Grid>;
