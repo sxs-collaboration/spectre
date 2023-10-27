@@ -123,11 +123,9 @@ class AoWeno53 : public Reconstructor<Dim> {
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<Dim>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   template <typename TagsList>
@@ -135,11 +133,9 @@ class AoWeno53 : public Reconstructor<Dim> {
       gsl::not_null<Variables<TagsList>*> vars_on_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<Dim>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 

@@ -271,10 +271,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(disable_subcell_in_block);
 
   using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
+      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                    std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+                   boost::hash<DirectionId<Dim>>>;
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
@@ -310,18 +309,17 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   using GhostData = evolution::dg::subcell::GhostData;
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, GhostData,
+               boost::hash<DirectionId<Dim>>>
       ghost_data{};
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, Mesh<Dim>,
+               boost::hash<DirectionId<Dim>>>
       neighbor_meshes{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     REQUIRE(not neighbors.ids().empty());
-    const std::pair directional_element_id{direction, *neighbors.ids().begin()};
+    const DirectionId<Dim> directional_element_id{direction,
+                                                  *neighbors.ids().begin()};
     if ((direction.side() == Side::Upper and direction.dimension() % 2 == 0) or
         (direction.side() == Side::Lower and direction.dimension() % 2 != 0)) {
       neighbor_meshes[directional_element_id] = dg_mesh;
@@ -416,9 +414,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
-  neighbor_decisions.insert(
-      std::pair{std::pair{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
-                neighbor_is_troubled ? 10 : 0});
+  neighbor_decisions.insert(std::pair{
+      DirectionId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+      neighbor_is_troubled ? 10 : 0});
 
   if constexpr (HasPrims) {
     ActionTesting::emplace_array_component_and_initialize<comp>(

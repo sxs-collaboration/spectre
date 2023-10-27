@@ -36,10 +36,9 @@ template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
+      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                    std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+                   boost::hash<DirectionId<Dim>>>;
   // Have upper xi neighbor do DG and lower xi neighbor do FD. For eta do
   // reverse, and zeta do same as xi.
   const Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
@@ -49,22 +48,24 @@ void test() {
   const size_t number_of_rdmp_vars = 2;
   const size_t number_of_ghost_zones = 3;  // 5th order method
 
-  const std::pair upper_xi_id{Direction<Dim>::upper_xi(), ElementId<Dim>{1}};
-  const std::pair lower_xi_id{Direction<Dim>::lower_xi(), ElementId<Dim>{2}};
+  const DirectionId<Dim> upper_xi_id{Direction<Dim>::upper_xi(),
+                                     ElementId<Dim>{1}};
+  const DirectionId<Dim> lower_xi_id{Direction<Dim>::lower_xi(),
+                                     ElementId<Dim>{2}};
 
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   // aligned with neighbor so default construct
   neighbors.insert(std::pair{Direction<Dim>::upper_xi(),
-                             Neighbors<Dim>{{upper_xi_id.second}, {}}});
+                             Neighbors<Dim>{{upper_xi_id.id}, {}}});
   if constexpr (Dim == 1) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.second},
+        Neighbors<Dim>{{lower_xi_id.id},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi()}}}}});
   } else if constexpr (Dim == 2) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.second},
+        Neighbors<Dim>{{lower_xi_id.id},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta()}}}}});
     neighbors.insert(std::pair{Direction<Dim>::upper_eta(),
@@ -72,7 +73,7 @@ void test() {
   } else if constexpr (Dim == 3) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.second},
+        Neighbors<Dim>{{lower_xi_id.id},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta(),
                                              Direction<Dim>::upper_zeta()}}}}});
@@ -90,7 +91,8 @@ void test() {
   }
   Interps neighbor_dg_to_fd_interpolants{};
   {
-    const auto& orientation_map = neighbors.at(lower_xi_id.first).orientation();
+    const auto& orientation_map =
+        neighbors.at(lower_xi_id.direction).orientation();
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -98,15 +100,15 @@ void test() {
     }
     const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
         oriented_logical_coords, subcell_mesh.extents(), number_of_ghost_zones,
-        orientation_map(lower_xi_id.first), {});
+        orientation_map(lower_xi_id.direction), {});
     neighbor_dg_to_fd_interpolants[lower_xi_id] =
         intrp::Irregular<Dim>{dg_mesh, target_points};
   }
   if constexpr (Dim == 3) {
-    const std::pair lower_zeta_id{Direction<Dim>::lower_zeta(),
-                                  ElementId<Dim>{4}};
+    const DirectionId<Dim> lower_zeta_id{Direction<Dim>::lower_zeta(),
+                                         ElementId<Dim>{4}};
     const auto& orientation_map =
-        neighbors.at(lower_zeta_id.first).orientation();
+        neighbors.at(lower_zeta_id.direction).orientation();
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -114,7 +116,7 @@ void test() {
     }
     const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
         oriented_logical_coords, subcell_mesh.extents(), number_of_ghost_zones,
-        orientation_map(lower_zeta_id.first).opposite(), {});
+        orientation_map(lower_zeta_id.direction).opposite(), {});
     neighbor_dg_to_fd_interpolants[lower_zeta_id] =
         intrp::Irregular<Dim>{dg_mesh, target_points};
   }
@@ -165,10 +167,8 @@ void test() {
     return expected_data;
   }();
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>,
-               evolution::dg::subcell::GhostData,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+               evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
       neighbor_data{};
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{
       DataVector{std::numeric_limits<double>::min(),
@@ -233,8 +233,8 @@ void test() {
 
   if constexpr (Dim > 1) {
     // Do upper-eta neighbor. This is aligned DG.
-    const std::pair upper_eta_id{Direction<Dim>::upper_eta(),
-                                 ElementId<Dim>{3}};
+    const DirectionId<Dim> upper_eta_id{Direction<Dim>::upper_eta(),
+                                        ElementId<Dim>{3}};
 
     DataVector aligned_received_dg_data{dg_mesh.number_of_grid_points() +
                                         2 * number_of_rdmp_vars};
@@ -299,8 +299,8 @@ void test() {
     // not inserting.
 
     // Do upper-zeta neighbor. This is aligned DG.
-    const std::pair upper_zeta_id{Direction<Dim>::upper_zeta(),
-                                  ElementId<Dim>{5}};
+    const DirectionId<Dim> upper_zeta_id{Direction<Dim>::upper_zeta(),
+                                         ElementId<Dim>{5}};
     DataVector aligned_received_dg_data{dg_mesh.number_of_grid_points()};
     alg::iota(aligned_received_dg_data,
               *std::prev(received_dg_data.end()) + 1.0);
@@ -328,8 +328,8 @@ void test() {
     CHECK(get_neighbor_data(upper_zeta_id) == expected_data);
 
     // Do lower-zeta neighbor. This is unaligned DG.
-    const std::pair lower_zeta_id{Direction<Dim>::lower_zeta(),
-                                  ElementId<Dim>{4}};
+    const DirectionId<Dim> lower_zeta_id{Direction<Dim>::lower_zeta(),
+                                         ElementId<Dim>{4}};
     DataVector unaligned_received_dg_data{dg_mesh.number_of_grid_points()};
     alg::iota(unaligned_received_dg_data,
               *std::prev(aligned_received_dg_data.end()) + 1.0);
@@ -363,7 +363,7 @@ void test() {
       evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
           make_not_null(&rdmp_tci_data), make_not_null(&neighbor_data),
           DataVector{}, number_of_rdmp_vars,
-          std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+          DirectionId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones,
           neighbor_dg_to_fd_interpolants),
       Catch::Matchers::ContainsSubstring(
@@ -372,7 +372,7 @@ void test() {
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
           make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
-          std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+          DirectionId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones,
           neighbor_dg_to_fd_interpolants),
       Catch::Matchers::ContainsSubstring(
@@ -380,7 +380,7 @@ void test() {
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
-          std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+          DirectionId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones,
           neighbor_dg_to_fd_interpolants),
       Catch::Matchers::ContainsSubstring(
@@ -458,7 +458,7 @@ void test() {
         evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
             make_not_null(&neighbor_data), received_fd_data,
             number_of_rdmp_vars,
-            std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+            DirectionId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones,
             neighbor_dg_to_fd_interpolants),
         Catch::Matchers::ContainsSubstring(
@@ -467,7 +467,7 @@ void test() {
         evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
             make_not_null(&neighbor_data), received_fd_data,
             number_of_rdmp_vars,
-            std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
+            DirectionId<Dim>{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
             non_uniform_mesh, element, subcell_mesh, number_of_ghost_zones,
             neighbor_dg_to_fd_interpolants),
         Catch::Matchers::ContainsSubstring(

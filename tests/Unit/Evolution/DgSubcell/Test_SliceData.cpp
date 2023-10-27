@@ -99,13 +99,12 @@ void test_slice_data(
       }
 
       {
-        FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>,
+        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                      std::optional<intrp::Irregular<Dim>>,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+                     boost::hash<DirectionId<Dim>>>
             fd_to_neighbor_fd_interpolants{};
         for (const auto& direction : directions_to_slice) {
-          fd_to_neighbor_fd_interpolants[std::pair{
+          fd_to_neighbor_fd_interpolants[DirectionId<Dim>{
               direction, ElementId<Dim>{0}}] = std::nullopt;
         }
         const auto sliced_data = subcell::slice_data(

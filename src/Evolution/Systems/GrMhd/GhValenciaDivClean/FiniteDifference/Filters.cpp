@@ -31,10 +31,9 @@ void spacetime_kreiss_oliger_filter(
     const Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& all_ghost_data,
+    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
+                       evolution::dg::subcell::GhostData,
+                       boost::hash<DirectionId<3>>>& all_ghost_data,
     const Mesh<3>& volume_mesh, const size_t order, const double epsilon) {
   if (UNLIKELY(result->number_of_grid_points() !=
                volume_evolved_variables.number_of_grid_points())) {
@@ -73,7 +72,7 @@ void spacetime_kreiss_oliger_filter(
              neighbor_number_of_points *
                  NeighborVariables::number_of_independent_components};
     ghost_cell_vars.insert(std::pair{
-        directional_element_id.first,
+        directional_element_id.direction,
         gsl::make_span(get<first_gh_tag>(view)[0].data(),
                        number_of_gh_components * neighbor_number_of_points)});
   }

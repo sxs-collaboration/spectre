@@ -57,16 +57,13 @@ namespace Burgers::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(1),
-                      std::pair<Direction<1>, ElementId<1>>, DataVector,
-                      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+  static FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
+                      DataVector, boost::hash<DirectionId<1>>>
   apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<std::pair<Direction<1>, ElementId<1>>>&
-            mortars_to_reconstruct_to) {
+        const std::vector<DirectionId<1>>& mortars_to_reconstruct_to) {
     // The object to return
-    FixedHashMap<maximum_number_of_neighbors(1),
-                 std::pair<Direction<1>, ElementId<1>>, DataVector,
-                 boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+    FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>, DataVector,
+                 boost::hash<DirectionId<1>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
@@ -133,7 +130,7 @@ struct NeighborPackagedData {
                &vars_on_face, &volume_vars_subcell](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_vars_subcell, element,
-                    ghost_subcell_data, subcell_mesh, mortar_id.first);
+                    ghost_subcell_data, subcell_mesh, mortar_id.direction);
               });
 
           // Compute fluxes
@@ -143,7 +140,7 @@ struct NeighborPackagedData {
               get<evolution::dg::Tags::NormalCovector<1>>(
                   *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<1>>(
                        box)
-                       .at(mortar_id.first));
+                       .at(mortar_id.direction));
           for (auto& t : normal_covector) {
             t *= -1.0;
           }

@@ -165,7 +165,7 @@ struct InitializeRandomSubdomainData {
           for (const auto& [direction, neighbors] : element.neighbors()) {
             const auto& orientation = neighbors.orientation();
             for (const auto& neighbor_id : neighbors) {
-              const auto overlap_id = std::make_pair(direction, neighbor_id);
+              const auto overlap_id = DirectionId<Dim>{direction, neighbor_id};
               const size_t overlap_extent = all_overlap_extents.at(overlap_id);
               if (overlap_extent == 0) {
                 continue;

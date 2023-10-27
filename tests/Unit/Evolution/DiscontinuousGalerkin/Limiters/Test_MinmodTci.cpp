@@ -456,21 +456,21 @@ void test_tvb_minmod_tci_several_tensors() {
     std::array<double, 3> element_size =
         make_array<3>(std::numeric_limits<double>::signaling_NaN());
   };
-  std::unordered_map<std::pair<Direction<3>, ElementId<3>>, TestPackagedData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  std::unordered_map<DirectionId<3>, TestPackagedData,
+                     boost::hash<DirectionId<3>>>
       neighbor_data{};
   TestPackagedData& lower_xi_neighbor =
-      neighbor_data[std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1))];
+      neighbor_data[DirectionId<3>{Direction<3>::lower_xi(), ElementId<3>(1)}];
   TestPackagedData& upper_xi_neighbor =
-      neighbor_data[std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2))];
+      neighbor_data[DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(2)}];
   TestPackagedData& lower_eta_neighbor =
-      neighbor_data[std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3))];
+      neighbor_data[DirectionId<3>{Direction<3>::lower_eta(), ElementId<3>(3)}];
   TestPackagedData& upper_eta_neighbor =
-      neighbor_data[std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4))];
-  TestPackagedData& lower_zeta_neighbor = neighbor_data[std::make_pair(
-      Direction<3>::lower_zeta(), ElementId<3>(5))];
-  TestPackagedData& upper_zeta_neighbor = neighbor_data[std::make_pair(
-      Direction<3>::upper_zeta(), ElementId<3>(6))];
+      neighbor_data[DirectionId<3>{Direction<3>::upper_eta(), ElementId<3>(4)}];
+  TestPackagedData& lower_zeta_neighbor = neighbor_data[DirectionId<3>{
+      Direction<3>::lower_zeta(), ElementId<3>(5)}];
+  TestPackagedData& upper_zeta_neighbor = neighbor_data[DirectionId<3>{
+      Direction<3>::upper_zeta(), ElementId<3>(6)}];
   lower_xi_neighbor.element_size = element_size;
   upper_xi_neighbor.element_size = element_size;
   lower_eta_neighbor.element_size = element_size;

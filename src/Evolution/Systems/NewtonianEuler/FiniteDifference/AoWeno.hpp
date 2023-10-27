@@ -114,11 +114,9 @@ class AoWeno53Prim : public Reconstructor<Dim> {
       const Variables<prims_tags>& volume_prims,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<Dim>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
@@ -128,11 +126,9 @@ class AoWeno53Prim : public Reconstructor<Dim> {
       const Variables<prims_tags>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<Dim>>>& ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 

@@ -66,23 +66,17 @@ struct SetInterpolators {
 
   template <typename ReconstructorType>
   static void apply(
-      const gsl::not_null<
-          FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+      const gsl::not_null<FixedHashMap<
+          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
           interpolators_fd_to_neighbor_fd_ptr,
-      const gsl::not_null<
-          FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+      const gsl::not_null<FixedHashMap<
+          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
           interpolators_dg_to_neighbor_fd_ptr,
-      const gsl::not_null<
-          FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+      const gsl::not_null<FixedHashMap<
+          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
           interpolators_neighbor_dg_to_fd_ptr,
       const Element<Dim>& element, const Domain<Dim>& domain,
       const Mesh<Dim>& my_dg_mesh,
@@ -179,10 +173,10 @@ struct SetInterpolators {
 
         // Set up interpolators for our local element to our neighbor's
         // ghost zones.
-        (*interpolators_fd_to_neighbor_fd_ptr)[std::pair{
+        (*interpolators_fd_to_neighbor_fd_ptr)[DirectionId<Dim>{
             direction, neighbor_id}] = intrp::Irregular<Dim>{
             my_fd_mesh, neighbor_logical_ghost_zone_coords};
-        (*interpolators_dg_to_neighbor_fd_ptr)[std::pair{
+        (*interpolators_dg_to_neighbor_fd_ptr)[DirectionId<Dim>{
             direction, neighbor_id}] = intrp::Irregular<Dim>{
             my_dg_mesh, neighbor_logical_ghost_zone_coords};
 
@@ -217,7 +211,7 @@ struct SetInterpolators {
           const ElementMap neighbor_element_map(
               neighbor_id,
               neighbor_block.moving_mesh_logical_to_grid_map().get_clone());
-          (*interpolators_neighbor_dg_to_fd_ptr)[std::pair{
+          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
               neighbor_dg_mesh, get_logical_coords(neighbor_element_map,
                                                    my_grid_ghost_zone_coords)};
@@ -231,7 +225,7 @@ struct SetInterpolators {
                             my_grid_ghost_zone_coords[i], 0,
                             my_grid_ghost_zone_coords[i].size());
           }
-          (*interpolators_neighbor_dg_to_fd_ptr)[std::pair{
+          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
               neighbor_dg_mesh,
               get_logical_coords(neighbor_element_map,

@@ -6,11 +6,9 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <unordered_map>
-#include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 
 namespace elliptic::dg::subdomain_operator::Tags {
 
@@ -28,7 +26,7 @@ struct ExtrudingExtent : db::SimpleTag {
 template <typename Tag, size_t VolumeDim>
 struct NeighborMortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
+  using Key = DirectionId<VolumeDim>;
   using type = std::unordered_map<Key, typename Tag::type, boost::hash<Key>>;
 };
 

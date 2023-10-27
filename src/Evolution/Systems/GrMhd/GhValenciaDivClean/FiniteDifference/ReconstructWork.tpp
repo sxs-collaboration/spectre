@@ -17,6 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -57,9 +58,9 @@ void reconstruct_prims_work(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        maximum_number_of_neighbors(3), DirectionId<3>,
         Variables<PrimsTagsSentByNeighbor>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
+        boost::hash<DirectionId<3>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
     const bool compute_conservatives) {
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
@@ -133,7 +134,7 @@ void reconstruct_prims_work(
                    << neighbors_in_direction.size() << " in direction "
                    << direction);
         ghost_cell_vars[direction] =
-            gsl::make_span(get<tag>(neighbor_data.at(std::pair{
+            gsl::make_span(get<tag>(neighbor_data.at(DirectionId<3>{
                                direction, *neighbors_in_direction.begin()}))[0]
                                .data(),
                            number_of_variables * neighbor_num_pts);
@@ -144,8 +145,8 @@ void reconstruct_prims_work(
             "Element has neither neighbor nor external boundary to direction : "
                 << direction);
         ghost_cell_vars[direction] = gsl::make_span(
-            get<tag>(neighbor_data.at(
-                std::pair{direction, ElementId<3>::external_boundary_id()}))[0]
+            get<tag>(neighbor_data.at(DirectionId<3>{
+                direction, ElementId<3>::external_boundary_id()}))[0]
                 .data(),
             number_of_variables * neighbor_num_pts);
       }
@@ -192,8 +193,8 @@ void reconstruct_prims_work(
                        << neighbors_in_direction.size() << " in direction "
                        << direction);
             ghost_cell_vars[direction] = gsl::make_span(
-                get<tag>(neighbor_data.at(
-                    std::pair{direction, *neighbors_in_direction.begin()}))[0]
+                get<tag>(neighbor_data.at(DirectionId<3>{
+                    direction, *neighbors_in_direction.begin()}))[0]
                     .data(),
                 number_of_variables * neighbor_num_pts);
           } else {
@@ -203,7 +204,7 @@ void reconstruct_prims_work(
                    "direction : "
                        << direction);
             ghost_cell_vars[direction] = gsl::make_span(
-                get<tag>(neighbor_data.at(std::pair{
+                get<tag>(neighbor_data.at(DirectionId<3>{
                     direction, ElementId<3>::external_boundary_id()}))[0]
                     .data(),
                 number_of_variables * neighbor_num_pts);
@@ -255,12 +256,12 @@ void reconstruct_fd_neighbor_work(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        maximum_number_of_neighbors(3), DirectionId<3>,
         evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& ghost_data,
+        boost::hash<DirectionId<3>>>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {
-  const std::pair mortar_id{
+  const DirectionId<3> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<3> ghost_data_extents = subcell_mesh.extents();
@@ -269,8 +270,7 @@ void reconstruct_fd_neighbor_work(
       ghost_data_extents.product()};
   {
     ASSERT(ghost_data.contains(mortar_id),
-           "The neighbor data does not contain the mortar: ("
-               << mortar_id.first << ',' << mortar_id.second << ")");
+           "The neighbor data does not contain the mortar: " << mortar_id);
     const DataVector& neighbor_data_on_mortar =
         ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
     std::copy(neighbor_data_on_mortar.begin(),

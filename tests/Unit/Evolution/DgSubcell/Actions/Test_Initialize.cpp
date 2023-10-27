@@ -367,7 +367,7 @@ void test(const bool always_use_subcell, const bool interior_element,
     const auto& self_inbox_at_time = self_inbox.at(0);
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
-      const std::pair id{direction, *neighbors_in_direction.begin()};
+      const DirectionId<Dim> id{direction, *neighbors_in_direction.begin()};
       CAPTURE(id);
       REQUIRE(self_inbox_at_time.find(id) != self_inbox_at_time.end());
       CHECK_FALSE(self_inbox_at_time.at(id).tci_status.has_value());
@@ -435,7 +435,7 @@ void test(const bool always_use_subcell, const bool interior_element,
     const auto& self_inbox_at_time = self_inbox.at(1);
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
-      const std::pair id{direction, *neighbors_in_direction.begin()};
+      const DirectionId<Dim> id{direction, *neighbors_in_direction.begin()};
       CAPTURE(id);
       REQUIRE(self_inbox_at_time.find(id) != self_inbox_at_time.end());
       CHECK_FALSE(self_inbox_at_time.at(id).initial_rdmp_data.has_value());
@@ -557,7 +557,7 @@ void test(const bool always_use_subcell, const bool interior_element,
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
                 runner, self_id)
-                .contains(std::pair{direction, neighbor}));
+                .contains(DirectionId<Dim>{direction, neighbor}));
     }
   }
   const auto& subcell_inertial_coords = ActionTesting::get_databox_tag<

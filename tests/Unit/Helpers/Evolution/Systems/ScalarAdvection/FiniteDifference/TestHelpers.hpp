@@ -41,18 +41,16 @@ namespace TestHelpers {
 namespace ScalarAdvection::fd {
 using GhostData = evolution::dg::subcell::GhostData;
 template <size_t Dim, typename F>
-FixedHashMap<maximum_number_of_neighbors(Dim),
-             std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-             boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, GhostData,
+             boost::hash<DirectionId<Dim>>>
 compute_ghost_data(const Mesh<Dim>& subcell_mesh,
                    const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
                        volume_logical_coords,
                    const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
                    const size_t ghost_zone_size,
                    const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, GhostData,
+               boost::hash<DirectionId<Dim>>>
       ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() ==
@@ -72,8 +70,8 @@ compute_ghost_data(const Mesh<Dim>& subcell_mesh,
         std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};
-    ghost_data.at(std::pair{direction, neighbor_id})
+    ghost_data[DirectionId<Dim>{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(DirectionId<Dim>{direction, neighbor_id})
         .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
@@ -120,9 +118,8 @@ void test_reconstructor(const size_t points_per_dimension,
                                Spectral::Basis::FiniteDifference,
                                Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
-  const FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                     GhostData, boost::hash<DirectionId<Dim>>>
       ghost_data =
           compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
                              reconstructor.ghost_zone_size(), compute_solution);

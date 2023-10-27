@@ -46,11 +46,9 @@ void reconstruct_work(
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+                       boost::hash<DirectionId<Dim>>>& ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size);
 
 /*!
@@ -68,11 +66,9 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+                       boost::hash<DirectionId<Dim>>>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size);

@@ -283,17 +283,17 @@ Variables<tmpl::list<ScalarTag, VectorTag<3>>> make_local_vars(
 }
 
 template <size_t VolumeDim>
-using VariablesMap = std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-    Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
+using VariablesMap =
+    std::unordered_map<DirectionId<VolumeDim>,
+                       Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>,
+                       boost::hash<DirectionId<VolumeDim>>>;
 
 template <size_t VolumeDim>
 std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+    DirectionId<VolumeDim>,
     typename Limiters::Weno<
         VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    boost::hash<DirectionId<VolumeDim>>>
 make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
@@ -314,16 +314,16 @@ make_neighbor_data_from_neighbor_vars(
       };
 
   std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+      DirectionId<VolumeDim>,
       typename Limiters::Weno<
           VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+      boost::hash<DirectionId<VolumeDim>>>
       neighbor_data{};
 
   for (const auto& neighbor : element.neighbors()) {
     const auto dir = neighbor.first;
     const auto id = *(neighbor.second.cbegin());
-    const auto dir_and_id = std::make_pair(dir, id);
+    const auto dir_and_id = DirectionId<VolumeDim>{dir, id};
     neighbor_data[dir_and_id].volume_data = neighbor_vars.at(dir_and_id);
     neighbor_data[dir_and_id].means =
         make_tuple_of_means(neighbor_vars.at(dir_and_id));
@@ -336,19 +336,19 @@ make_neighbor_data_from_neighbor_vars(
 
 template <size_t VolumeDim>
 std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+    DirectionId<VolumeDim>,
     typename Limiters::Weno<
         VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    boost::hash<DirectionId<VolumeDim>>>
 make_neighbor_data(const Mesh<VolumeDim>& mesh,
                    const Element<VolumeDim>& element,
                    const std::array<double, VolumeDim>& element_size);
 
 template <>
-std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
+std::unordered_map<DirectionId<1>,
                    typename Limiters::Weno<
                        1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
-                   boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+                   boost::hash<DirectionId<1>>>
 make_neighbor_data(const Mesh<1>& mesh, const Element<1>& element,
                    const std::array<double, 1>& element_size) {
   const auto make_lower_xi_vars = [&mesh]() {
@@ -367,10 +367,8 @@ make_neighbor_data(const Mesh<1>& mesh, const Element<1>& element,
   };
 
   VariablesMap<1> neighbor_vars{};
-  const auto lower_xi =
-      std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1));
-  const auto upper_xi =
-      std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2));
+  const DirectionId<1> lower_xi{Direction<1>::lower_xi(), ElementId<1>(1)};
+  const DirectionId<1> upper_xi{Direction<1>::upper_xi(), ElementId<1>(2)};
   neighbor_vars[lower_xi] = make_lower_xi_vars();
   neighbor_vars[upper_xi] = make_upper_xi_vars();
 
@@ -379,10 +377,10 @@ make_neighbor_data(const Mesh<1>& mesh, const Element<1>& element,
 }
 
 template <>
-std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
+std::unordered_map<DirectionId<2>,
                    typename Limiters::Weno<
                        2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
-                   boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+                   boost::hash<DirectionId<2>>>
 make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
                    const std::array<double, 2>& element_size) {
   const auto make_lower_xi_vars = [&mesh]() {
@@ -419,14 +417,10 @@ make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
   };
 
   VariablesMap<2> neighbor_vars{};
-  const auto lower_xi =
-      std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1));
-  const auto upper_xi =
-      std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2));
-  const auto lower_eta =
-      std::make_pair(Direction<2>::lower_eta(), ElementId<2>(3));
-  const auto upper_eta =
-      std::make_pair(Direction<2>::upper_eta(), ElementId<2>(4));
+  const DirectionId<2> lower_xi{Direction<2>::lower_xi(), ElementId<2>(1)};
+  const DirectionId<2> upper_xi{Direction<2>::upper_xi(), ElementId<2>(2)};
+  const DirectionId<2> lower_eta{Direction<2>::lower_eta(), ElementId<2>(3)};
+  const DirectionId<2> upper_eta{Direction<2>::upper_eta(), ElementId<2>(4)};
   neighbor_vars[lower_xi] = make_lower_xi_vars();
   neighbor_vars[upper_xi] = make_upper_xi_vars();
   neighbor_vars[lower_eta] = make_lower_eta_vars();
@@ -437,10 +431,10 @@ make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
 }
 
 template <>
-std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
+std::unordered_map<DirectionId<3>,
                    typename Limiters::Weno<
                        3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
-                   boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+                   boost::hash<DirectionId<3>>>
 make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
                    const std::array<double, 3>& element_size) {
   const auto make_lower_xi_vars = [&mesh]() {
@@ -500,18 +494,12 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
   };
 
   VariablesMap<3> neighbor_vars{};
-  const auto lower_xi =
-      std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1));
-  const auto upper_xi =
-      std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2));
-  const auto lower_eta =
-      std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3));
-  const auto upper_eta =
-      std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4));
-  const auto lower_zeta =
-      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>(5));
-  const auto upper_zeta =
-      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>(6));
+  const DirectionId<3> lower_xi{Direction<3>::lower_xi(), ElementId<3>(1)};
+  const DirectionId<3> upper_xi{Direction<3>::upper_xi(), ElementId<3>(2)};
+  const DirectionId<3> lower_eta{Direction<3>::lower_eta(), ElementId<3>(3)};
+  const DirectionId<3> upper_eta{Direction<3>::upper_eta(), ElementId<3>(4)};
+  const DirectionId<3> lower_zeta{Direction<3>::lower_zeta(), ElementId<3>(5)};
+  const DirectionId<3> upper_zeta{Direction<3>::upper_zeta(), ElementId<3>(6)};
   neighbor_vars[lower_xi] = make_lower_xi_vars();
   neighbor_vars[upper_xi] = make_upper_xi_vars();
   neighbor_vars[lower_eta] = make_lower_eta_vars();
@@ -553,19 +541,16 @@ void test_simple_weno(const std::array<size_t, VolumeDim>& extents) {
   // vector x-component should be modified by the limiter
   const auto& expected_scalar = get<ScalarTag>(local_vars);
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      intrp::RegularGrid<VolumeDim>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+                     boost::hash<DirectionId<VolumeDim>>>
       interpolator_buffer{};
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                     boost::hash<DirectionId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
     modified_neighbor_solution_buffer.insert(
-        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+        std::make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
   }
   Limiters::Weno_detail::simple_weno_impl<VectorTag<VolumeDim>>(
       make_not_null(&interpolator_buffer),
@@ -627,14 +612,13 @@ void test_hweno(const std::array<size_t, VolumeDim>& extents) {
   // components should be modified by the limiter
   auto expected_scalar = get<ScalarTag>(local_vars);
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                     boost::hash<DirectionId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
     modified_neighbor_solution_buffer.insert(
-        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+        std::make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
   }
   Limiters::Weno_detail::hweno_impl<ScalarTag>(
       make_not_null(&modified_neighbor_solution_buffer),

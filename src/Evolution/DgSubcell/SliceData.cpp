@@ -85,10 +85,9 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                       boost::hash<DirectionId<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   const size_t num_pts = subcell_extents.product();
   const size_t number_of_components = volume_subcell_vars.size() / num_pts;
@@ -154,13 +153,14 @@ DirectionMap<Dim, DataVector> slice_data_impl(
          fd_to_neighbor_fd_interpolants) {
       if (LIKELY(not interpolant.has_value())) {
         // Just to keep track.
-        interpolated[directional_element_id.first] = false;
+        interpolated[directional_element_id.direction] = false;
         continue;
       }
-      interpolated[directional_element_id.first] = true;
-      auto result_span = gsl::make_span(
-          result.at(directional_element_id.first).data(),
-          result.at(directional_element_id.first).size() - additional_buffer);
+      interpolated[directional_element_id.direction] = true;
+      auto result_span =
+          gsl::make_span(result.at(directional_element_id.direction).data(),
+                         result.at(directional_element_id.direction).size() -
+                             additional_buffer);
       interpolant.value().interpolate(make_not_null(&result_span),
                                       volume_subcell_vars);
     }
@@ -201,22 +201,19 @@ DirectionMap<Dim, DataVector> slice_data_impl(
 template DirectionMap<1, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<1>&, const size_t,
     const std::unordered_set<Direction<1>>&, size_t,
-    const FixedHashMap<maximum_number_of_neighbors(1),
-                       std::pair<Direction<1>, ElementId<1>>,
+    const FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
                        std::optional<intrp::Irregular<1>>,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&);
+                       boost::hash<DirectionId<1>>>&);
 template DirectionMap<2, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<2>&, const size_t,
     const std::unordered_set<Direction<2>>&, size_t,
-    const FixedHashMap<maximum_number_of_neighbors(2),
-                       std::pair<Direction<2>, ElementId<2>>,
+    const FixedHashMap<maximum_number_of_neighbors(2), DirectionId<2>,
                        std::optional<intrp::Irregular<2>>,
-                       boost::hash<std::pair<Direction<2>, ElementId<2>>>>&);
+                       boost::hash<DirectionId<2>>>&);
 template DirectionMap<3, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<3>&, const size_t,
     const std::unordered_set<Direction<3>>&, size_t,
-    const FixedHashMap<maximum_number_of_neighbors(3),
-                       std::pair<Direction<3>, ElementId<3>>,
+    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
                        std::optional<intrp::Irregular<3>>,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&);
+                       boost::hash<DirectionId<3>>>&);
 }  // namespace evolution::dg::subcell::detail

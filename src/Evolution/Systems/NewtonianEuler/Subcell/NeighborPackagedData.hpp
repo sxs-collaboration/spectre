@@ -67,12 +67,10 @@ namespace NewtonianEuler::subcell {
  */
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(Dim),
-                      std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+  static FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                      DataVector, boost::hash<DirectionId<Dim>>>
   apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<std::pair<Direction<Dim>, ElementId<Dim>>>&
-            mortars_to_reconstruct_to) {
+        const std::vector<DirectionId<Dim>>& mortars_to_reconstruct_to) {
     using system = typename std::decay_t<decltype(
         db::get<Parallel::Tags::Metavariables>(box))>::system;
     using evolved_vars_tag = typename system::variables_tag;
@@ -87,9 +85,8 @@ struct NeighborPackagedData {
            "storing the mesh velocity on the faces instead of "
            "re-slicing/projecting.");
 
-    FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, DataVector,
+                 boost::hash<DirectionId<Dim>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
@@ -141,7 +138,7 @@ struct NeighborPackagedData {
         Variables<dg_package_data_argument_tags> vars_on_face;
         Variables<dg_package_field_tags> packaged_data;
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
-          const Direction<Dim>& direction = mortar_id.first;
+          const Direction<Dim>& direction = mortar_id.direction;
 
           Index<Dim> extents = subcell_mesh.extents();
           // Switch to face-centered instead of cell-centered points on the FD.
@@ -162,7 +159,7 @@ struct NeighborPackagedData {
                &vars_on_face, &volume_prims](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims, eos, element,
-                    ghost_subcell_data, subcell_mesh, mortar_id.first);
+                    ghost_subcell_data, subcell_mesh, mortar_id.direction);
               });
 
           NewtonianEuler::subcell::compute_fluxes<Dim>(
@@ -172,7 +169,7 @@ struct NeighborPackagedData {
               evolution::dg::Tags::NormalCovector<Dim>>(
               *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
                    box)
-                   .at(mortar_id.first));
+                   .at(mortar_id.direction));
           for (auto& t : normal_covector) {
             t *= -1.0;
           }
@@ -181,9 +178,9 @@ struct NeighborPackagedData {
             for (size_t i = 0; i < Dim; ++i) {
               normal_covector.get(i) = evolution::dg::subcell::fd::project(
                   dg_normal_covector.get(i),
-                  dg_mesh.slice_away(mortar_id.first.dimension()),
+                  dg_mesh.slice_away(mortar_id.direction.dimension()),
                   subcell_mesh.extents().slice_away(
-                      mortar_id.first.dimension()));
+                      mortar_id.direction.dimension()));
             }
           }
 
@@ -214,8 +211,10 @@ struct NeighborPackagedData {
             // then reconstructing, but away from a shock this doesn't
             // matter.
             auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
-                packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
-                subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+                packaged_data,
+                dg_mesh.slice_away(mortar_id.direction.dimension()),
+                subcell_mesh.extents().slice_away(
+                    mortar_id.direction.dimension()),
                 subcell_options.reconstruction_method());
             // Make a view so we can use iterators with std::copy
             DataVector dg_packaged_data_view{dg_packaged_data.data(),

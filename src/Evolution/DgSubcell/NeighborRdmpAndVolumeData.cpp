@@ -32,19 +32,17 @@ namespace evolution::dg::subcell {
 template <bool InsertIntoMap, size_t Dim>
 void insert_or_update_neighbor_volume_data(
     const gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                     GhostData, boost::hash<DirectionId<Dim>>>*>
         ghost_data_ptr,
     const DataVector& neighbor_subcell_data,
     const size_t number_of_rdmp_vars_in_buffer,
-    const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
+    const DirectionId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
     const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                       boost::hash<DirectionId<Dim>>>&
         neighbor_dg_to_fd_interpolants) {
   ASSERT(neighbor_mesh == Mesh<Dim>(neighbor_mesh.extents(0),
                                     neighbor_mesh.basis(0),
@@ -88,7 +86,7 @@ void insert_or_update_neighbor_volume_data(
            "Neighbor subcell mesh computed from the neighbor DG mesh ("
                << evolution::dg::subcell::fd::mesh(neighbor_mesh)
                << ") and my mesh (" << subcell_mesh << ") must be the same.");
-    const Direction<Dim>& direction = directional_element_id.first;
+    const Direction<Dim>& direction = directional_element_id.direction;
     const size_t total_number_of_ghost_zones =
         number_of_ghost_zones *
         subcell_mesh.extents().slice_away(direction.dimension()).product();
@@ -162,19 +160,17 @@ template <size_t Dim>
 void insert_neighbor_rdmp_and_volume_data(
     const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
     const gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                     GhostData, boost::hash<DirectionId<Dim>>>*>
         ghost_data_ptr,
     const DataVector& received_neighbor_subcell_data,
     const size_t number_of_rdmp_vars,
-    const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
+    const DirectionId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
     const Mesh<Dim>& subcell_mesh, const size_t number_of_ghost_zones,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                       boost::hash<DirectionId<Dim>>>&
         neighbor_dg_to_fd_interpolants) {
   ASSERT(received_neighbor_subcell_data.size() != 0,
          "received_neighbor_subcell_data must be non-empty");
@@ -207,25 +203,19 @@ void insert_neighbor_rdmp_and_volume_data(
 #define INSTANTIATION(r, data)                                               \
   template void insert_neighbor_rdmp_and_volume_data(                        \
       gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,                         \
-      gsl::not_null<FixedHashMap<                                            \
-          maximum_number_of_neighbors(GET_DIM(data)),                        \
-          std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>,     \
-          GhostData,                                                         \
-          boost::hash<std::pair<Direction<GET_DIM(data)>,                    \
-                                ElementId<GET_DIM(data)>>>>*>                \
+      gsl::not_null<FixedHashMap<maximum_number_of_neighbors(GET_DIM(data)), \
+                                 DirectionId<GET_DIM(data)>, GhostData,      \
+                                 boost::hash<DirectionId<GET_DIM(data)>>>*>  \
           ghost_data_ptr,                                                    \
       const DataVector& neighbor_subcell_data, size_t number_of_rdmp_vars,   \
-      const std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>&   \
-          directional_element_id,                                            \
+      const DirectionId<GET_DIM(data)>& directional_element_id,              \
       const Mesh<GET_DIM(data)>& neighbor_mesh,                              \
       const Element<GET_DIM(data)>& element,                                 \
       const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones, \
-      const FixedHashMap<                                                    \
-          maximum_number_of_neighbors(GET_DIM(data)),                        \
-          std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>,     \
-          std::optional<intrp::Irregular<GET_DIM(data)>>,                    \
-          boost::hash<std::pair<Direction<GET_DIM(data)>,                    \
-                                ElementId<GET_DIM(data)>>>>&);
+      const FixedHashMap<maximum_number_of_neighbors(GET_DIM(data)),         \
+                         DirectionId<GET_DIM(data)>,                         \
+                         std::optional<intrp::Irregular<GET_DIM(data)>>,     \
+                         boost::hash<DirectionId<GET_DIM(data)>>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
@@ -235,26 +225,20 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #define INSTANTIATION(r, data)                                               \
   template void insert_or_update_neighbor_volume_data<GET_INSERT(data)>(     \
-      gsl::not_null<FixedHashMap<                                            \
-          maximum_number_of_neighbors(GET_DIM(data)),                        \
-          std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>,     \
-          GhostData,                                                         \
-          boost::hash<std::pair<Direction<GET_DIM(data)>,                    \
-                                ElementId<GET_DIM(data)>>>>*>                \
+      gsl::not_null<FixedHashMap<maximum_number_of_neighbors(GET_DIM(data)), \
+                                 DirectionId<GET_DIM(data)>, GhostData,      \
+                                 boost::hash<DirectionId<GET_DIM(data)>>>*>  \
           ghost_data_ptr,                                                    \
       const DataVector& received_neighbor_subcell_data,                      \
       size_t number_of_rdmp_vars_in_buffer,                                  \
-      const std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>&   \
-          directional_element_id,                                            \
+      const DirectionId<GET_DIM(data)>& directional_element_id,              \
       const Mesh<GET_DIM(data)>& neighbor_mesh,                              \
       const Element<GET_DIM(data)>& element,                                 \
       const Mesh<GET_DIM(data)>& subcell_mesh, size_t number_of_ghost_zones, \
-      const FixedHashMap<                                                    \
-          maximum_number_of_neighbors(GET_DIM(data)),                        \
-          std::pair<Direction<GET_DIM(data)>, ElementId<GET_DIM(data)>>,     \
-          std::optional<intrp::Irregular<GET_DIM(data)>>,                    \
-          boost::hash<std::pair<Direction<GET_DIM(data)>,                    \
-                                ElementId<GET_DIM(data)>>>>&);
+      const FixedHashMap<maximum_number_of_neighbors(GET_DIM(data)),         \
+                         DirectionId<GET_DIM(data)>,                         \
+                         std::optional<intrp::Irregular<GET_DIM(data)>>,     \
+                         boost::hash<DirectionId<GET_DIM(data)>>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
 

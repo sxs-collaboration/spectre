@@ -42,20 +42,18 @@ namespace Limiters::Weno_detail {
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void simple_weno_impl(
     const gsl::not_null<std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        intrp::RegularGrid<VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
+        DirectionId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+        boost::hash<DirectionId<VolumeDim>>>*>
         interpolator_buffer,
-    const gsl::not_null<std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
+    const gsl::not_null<
+        std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                           boost::hash<DirectionId<VolumeDim>>>*>
         modified_neighbor_solution_buffer,
     const gsl::not_null<typename Tag::type*> tensor,
     const double neighbor_linear_weight, const size_t tensor_storage_index,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) {
   // Check that basis is LGL or LG
   // Note that the SimpleWeno implementation should generalize well to other
@@ -88,7 +86,7 @@ void simple_weno_impl(
 
     if (interpolator_buffer->find(neighbor) == interpolator_buffer->end()) {
       // No interpolator found => create one
-      const auto& direction = neighbor.first;
+      const auto& direction = neighbor.direction;
       const auto& source_mesh = data.mesh;
       const auto target_1d_logical_coords =
           Weno_detail::local_grid_points_in_neighbor_logical_coords(
@@ -127,20 +125,18 @@ void simple_weno_impl(
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void simple_weno_impl(
     const gsl::not_null<std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        intrp::RegularGrid<VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
+        DirectionId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+        boost::hash<DirectionId<VolumeDim>>>*>
         interpolator_buffer,
-    const gsl::not_null<std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
+    const gsl::not_null<
+        std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                           boost::hash<DirectionId<VolumeDim>>>*>
         modified_neighbor_solution_buffer,
     const gsl::not_null<typename Tag::type*> tensor,
     const double neighbor_linear_weight, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) {
   for (size_t tensor_storage_index = 0; tensor_storage_index < tensor->size();
        ++tensor_storage_index) {

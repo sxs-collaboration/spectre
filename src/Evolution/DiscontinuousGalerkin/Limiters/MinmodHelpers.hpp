@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tags.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -75,9 +76,8 @@ class BufferWrapper {
 template <size_t VolumeDim, typename PackagedData>
 DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
     const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
@@ -90,7 +90,8 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
         double size_accumulate = 0.;
         for (const auto& id : neighbor_ids) {
           size_accumulate += gsl::at(
-              neighbor_data.at(std::make_pair(dir, id)).element_size, dim);
+              neighbor_data.at(DirectionId<VolumeDim>{dir, id}).element_size,
+              dim);
         }
         return size_accumulate / neighbor_ids.size();
       }();
@@ -110,9 +111,8 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
     const size_t tensor_storage_index, const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
@@ -124,7 +124,7 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
             double mean_accumulate = 0.0;
             for (const auto& id : neighbor_ids) {
               mean_accumulate += tuples::get<::Tags::Mean<Tag>>(
-                  neighbor_data.at(std::make_pair(dir, id))
+                  neighbor_data.at(DirectionId<VolumeDim>{dir, id})
                       .means)[tensor_storage_index];
             }
             return mean_accumulate / neighbor_ids.size();

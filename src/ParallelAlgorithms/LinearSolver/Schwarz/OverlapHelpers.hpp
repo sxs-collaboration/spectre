@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -23,7 +24,7 @@ namespace LinearSolver::Schwarz {
 
 /// Identifies a subdomain region that overlaps with another element
 template <size_t Dim>
-using OverlapId = std::pair<Direction<Dim>, ElementId<Dim>>;
+using OverlapId = DirectionId<Dim>;
 
 /// Data structure that can store the `ValueType` on each possible overlap of an
 /// element-centered subdomain with its neighbors. Overlaps are identified by

@@ -80,15 +80,13 @@ void test_kxrcf_work(
   }
 
   // Create and fill neighbor data
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      TestPackagedData<VolumeDim>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, TestPackagedData<VolumeDim>,
+                     boost::hash<DirectionId<VolumeDim>>>
       neighbor_data{};
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     const auto& id = *(element.neighbors().at(dir).ids().begin());
     TestPackagedData<VolumeDim>& neighbor =
-        neighbor_data[std::make_pair(dir, id)];
+        neighbor_data[DirectionId<VolumeDim>{dir, id}];
     neighbor.mesh = mesh;
     neighbor.volume_data.initialize(mesh.number_of_grid_points(), 0.);
     get(get<NewtonianEuler::Tags::MassDensityCons>(neighbor.volume_data)) =

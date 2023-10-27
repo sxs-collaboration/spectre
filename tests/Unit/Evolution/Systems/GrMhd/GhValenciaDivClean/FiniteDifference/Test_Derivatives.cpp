@@ -50,10 +50,9 @@ SPECTRE_TEST_CASE(
   const Element<3> element =
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::set_element();
 
-  const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>,
+  const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
                      evolution::dg::subcell::GhostData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+                     boost::hash<DirectionId<3>>>
       all_ghost_data = TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
           compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
                              ghost_zone_size,
@@ -157,12 +156,10 @@ SPECTRE_TEST_CASE(
   // Test ASSERT triggers for incorrect neighbor size.
 #ifdef SPECTRE_DEBUG
   for (const auto& direction : Direction<3>::all_directions()) {
-    const std::pair directional_element_id{
+    const DirectionId<3> directional_element_id{
         direction, *element.neighbors().at(direction).begin()};
-    FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>,
-                 evolution::dg::subcell::GhostData,
-                 boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+    FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
+                 evolution::dg::subcell::GhostData, boost::hash<DirectionId<3>>>
         bad_ghost_data = all_ghost_data;
     DataVector& neighbor_data = bad_ghost_data.at(directional_element_id)
                                     .neighbor_ghost_data_for_reconstruction();

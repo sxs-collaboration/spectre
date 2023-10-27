@@ -18,6 +18,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -38,7 +39,7 @@ class OrientationMap;
 namespace dg {
 
 template <size_t VolumeDim>
-using MortarId = std::pair<::Direction<VolumeDim>, ElementId<VolumeDim>>;
+using MortarId = DirectionId<VolumeDim>;
 template <size_t MortarDim>
 using MortarSize = std::array<Spectral::MortarSize, MortarDim>;
 template <size_t VolumeDim, typename ValueType>

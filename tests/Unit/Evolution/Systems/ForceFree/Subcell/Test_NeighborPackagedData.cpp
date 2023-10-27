@@ -27,6 +27,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -303,10 +304,10 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
           std::nullopt, ::fd::DerivativeOrder::Two});
 
   // Compute the packaged data
-  std::vector<std::pair<Direction<3>, ElementId<3>>>
-      mortars_to_reconstruct_to{};
+  std::vector<DirectionId<3>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    mortars_to_reconstruct_to.emplace_back(direction, *neighbors.begin());
+    mortars_to_reconstruct_to.emplace_back(
+        DirectionId<3>{direction, *neighbors.begin()});
   }
   const auto packaged_data =
       subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);
@@ -331,7 +332,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
   Variables<dg_package_field_tags> expected_fd_packaged_data_on_mortar{0};
 
   for (const auto& mortar_id : mortars_to_reconstruct_to) {
-    const Direction<3>& direction = mortar_id.first;
+    const Direction<3>& direction = mortar_id.direction;
     const size_t dim = direction.dimension();
     Index<3> extents = subcell_mesh.extents();
 
@@ -370,7 +371,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     // revert normal vector and project to DG grid
     auto normal_covector = get<evolution::dg::Tags::NormalCovector<3>>(
         *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(box).at(
-            mortar_id.first));
+            mortar_id.direction));
     for (auto& t : normal_covector) {
       t *= -1.0;
     }
@@ -378,8 +379,8 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     for (size_t i = 0; i < 3; ++i) {
       normal_covector.get(i) = evolution::dg::subcell::fd::project(
           dg_normal_covector.get(i),
-          dg_mesh.slice_away(mortar_id.first.dimension()),
-          subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+          dg_mesh.slice_away(mortar_id.direction.dimension()),
+          subcell_mesh.extents().slice_away(mortar_id.direction.dimension()));
     }
 
     // Compute the expected packaged data
@@ -397,8 +398,8 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     // reconstruct from FD to DG grid for 2d
     auto expected_dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
         expected_fd_packaged_data_on_mortar,
-        dg_mesh.slice_away(mortar_id.first.dimension()),
-        subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+        dg_mesh.slice_away(mortar_id.direction.dimension()),
+        subcell_mesh.extents().slice_away(mortar_id.direction.dimension()),
         evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
     const DataVector vector_to_check{expected_dg_packaged_data.data(),

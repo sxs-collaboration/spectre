@@ -215,8 +215,8 @@ void test(const BoundaryConditionType& boundary_condition) {
     Burgers::fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                                    ReconstructorForTest{});
     const auto direction = Direction<1>::upper_xi();
-    const std::pair mortar_id = {direction,
-                                 ElementId<1>::external_boundary_id()};
+    const DirectionId<1> mortar_id = {direction,
+                                      ElementId<1>::external_boundary_id()};
     const DataVector& fd_ghost_data =
         get<evolution::dg::subcell::Tags::GhostDataForReconstruction<1>>(box)
             .at(mortar_id)

@@ -13,6 +13,7 @@
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/InitialTciData.hpp"
@@ -26,12 +27,11 @@ namespace evolution::dg::subcell::Tags {
 template <size_t Dim>
 struct InitialTciData {
   using temporal_id = int;
-  using type = std::map<
-      temporal_id,
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   evolution::dg::subcell::InitialTciData,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>;
+  using type =
+      std::map<temporal_id,
+               FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                            evolution::dg::subcell::InitialTciData,
+                            boost::hash<DirectionId<Dim>>>>;
 
   template <typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<type*> inbox,
@@ -43,8 +43,8 @@ struct InitialTciData {
 
     ASSERT(current_inbox.find(direction_and_element_id) == current_inbox.end(),
            "Received data from direction "
-               << direction_and_element_id.first << " and element ID "
-               << direction_and_element_id.second << " more than once");
+               << direction_and_element_id.direction << " and element ID "
+               << direction_and_element_id.id << " more than once");
     current_inbox.emplace(std::forward<ReceiveDataType>(data));
   }
 

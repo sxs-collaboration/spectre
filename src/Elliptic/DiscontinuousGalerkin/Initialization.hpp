@@ -26,6 +26,7 @@
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
@@ -293,7 +294,7 @@ struct InitializeFacesAndMortars {
     for (const auto& direction : element.external_boundaries()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const auto mortar_id =
-          std::make_pair(direction, ElementId<Dim>::external_boundary_id());
+          DirectionId<Dim>{direction, ElementId<Dim>::external_boundary_id()};
       mortar_meshes->emplace(mortar_id, face_mesh);
       mortar_sizes->emplace(mortar_id,
                             make_array<Dim - 1>(Spectral::MortarSize::Full));

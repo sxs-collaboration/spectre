@@ -29,24 +29,22 @@ void test() {
   using StorageType =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                  std::optional<DataVector>, ::TimeStepId, int>;
-  std::pair<
-      const TimeStepId,
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>, StorageType,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>
+  std::pair<const TimeStepId,
+            FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                         StorageType, boost::hash<DirectionId<Dim>>>>
       neighbor_data{};
-  const std::pair id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
+  const DirectionId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
   std::get<5>(neighbor_data.second.at(id_xi)) = 10;
-  std::pair<Direction<Dim>, ElementId<Dim>> id_eta;
-  std::pair<Direction<Dim>, ElementId<Dim>> id_zeta;
+  DirectionId<Dim> id_eta;
+  DirectionId<Dim> id_zeta;
   if constexpr (Dim > 1) {
-    id_eta = std::pair{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
+    id_eta = DirectionId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
     neighbor_data.second.insert(std::pair{id_eta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_eta)) = 12;
   }
   if constexpr (Dim > 2) {
-    id_zeta = std::pair{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
+    id_zeta = DirectionId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
     neighbor_data.second.insert(std::pair{id_zeta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_zeta)) = 15;
   }

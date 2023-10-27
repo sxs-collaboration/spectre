@@ -173,11 +173,9 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
           volume_spacetime_and_cons_vars,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<dim>>>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
@@ -190,11 +188,9 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
           subcell_volume_spacetime_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<dim>>>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

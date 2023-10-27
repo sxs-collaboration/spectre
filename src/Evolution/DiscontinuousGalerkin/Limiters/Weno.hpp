@@ -257,9 +257,8 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
       const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const std::array<double, VolumeDim>& element_size,
-      const std::unordered_map<
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionId<VolumeDim>>>&
           neighbor_data) const;
 
  private:
@@ -347,9 +346,8 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
@@ -398,14 +396,13 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       return false;
     }
 
-    std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                       boost::hash<DirectionId<VolumeDim>>>
         modified_neighbor_solution_buffer{};
     for (const auto& neighbor_and_data : neighbor_data) {
       const auto& neighbor = neighbor_and_data.first;
       modified_neighbor_solution_buffer.insert(
-          make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+          std::make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
     }
 
     EXPAND_PACK_LEFT_TO_RIGHT(Weno_detail::hweno_impl<Tags>(
@@ -420,14 +417,11 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
         Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
 
     // Buffers for simple WENO implementation
-    std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        intrp::RegularGrid<VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    std::unordered_map<DirectionId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+                       boost::hash<DirectionId<VolumeDim>>>
         interpolator_buffer{};
-    std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                       boost::hash<DirectionId<VolumeDim>>>
         modified_neighbor_solution_buffer{};
 
     bool some_component_was_limited = false;
@@ -454,7 +448,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
                 // triggered. This reduces allocation when no limiting occurs.
                 for (const auto& neighbor_and_data : neighbor_data) {
                   const auto& neighbor = neighbor_and_data.first;
-                  modified_neighbor_solution_buffer.insert(make_pair(
+                  modified_neighbor_solution_buffer.insert(std::make_pair(
                       neighbor, DataVector(mesh.number_of_grid_points())));
                 }
               }

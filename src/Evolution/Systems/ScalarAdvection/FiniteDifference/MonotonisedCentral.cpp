@@ -57,11 +57,9 @@ void MonotonisedCentral<Dim>::reconstruct(
         vars_on_upper_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+                       boost::hash<DirectionId<Dim>>>& ghost_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -81,11 +79,9 @@ void MonotonisedCentral<Dim>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                        evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+                       boost::hash<DirectionId<Dim>>>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -148,32 +144,28 @@ bool operator!=(const MonotonisedCentral<Dim>& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 #undef INSTANTIATION
 
-#define INSTANTIATION(r, data)                                                 \
-  template void MonotonisedCentral<DIM(data)>::reconstruct(                    \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>        \
-          vars_on_lower_face,                                                  \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>        \
-          vars_on_upper_face,                                                  \
-      const Variables<tmpl::list<Tags::U>>& volume_vars,                       \
-      const Element<DIM(data)>& element,                                       \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)),                              \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::GhostData,                                   \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
-          ghost_data,                                                          \
-      const Mesh<DIM(data)>& subcell_mesh) const;                              \
-  template void MonotonisedCentral<DIM(data)>::reconstruct_fd_neighbor(        \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                 \
-      const Variables<tmpl::list<Tags::U>>& volume_vars,                       \
-      const Element<DIM(data)>& element,                                       \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)),                              \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::GhostData,                                   \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
-          ghost_data,                                                          \
-      const Mesh<DIM(data)>& subcell_mesh,                                     \
+#define INSTANTIATION(r, data)                                             \
+  template void MonotonisedCentral<DIM(data)>::reconstruct(                \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>    \
+          vars_on_lower_face,                                              \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>    \
+          vars_on_upper_face,                                              \
+      const Variables<tmpl::list<Tags::U>>& volume_vars,                   \
+      const Element<DIM(data)>& element,                                   \
+      const FixedHashMap<maximum_number_of_neighbors(DIM(data)),           \
+                         DirectionId<DIM(data)>,                           \
+                         evolution::dg::subcell::GhostData,                \
+                         boost::hash<DirectionId<DIM(data)>>>& ghost_data, \
+      const Mesh<DIM(data)>& subcell_mesh) const;                          \
+  template void MonotonisedCentral<DIM(data)>::reconstruct_fd_neighbor(    \
+      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,             \
+      const Variables<tmpl::list<Tags::U>>& volume_vars,                   \
+      const Element<DIM(data)>& element,                                   \
+      const FixedHashMap<maximum_number_of_neighbors(DIM(data)),           \
+                         DirectionId<DIM(data)>,                           \
+                         evolution::dg::subcell::GhostData,                \
+                         boost::hash<DirectionId<DIM(data)>>>& ghost_data, \
+      const Mesh<DIM(data)>& subcell_mesh,                                 \
       const Direction<DIM(data)> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))

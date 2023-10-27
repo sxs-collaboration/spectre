@@ -140,65 +140,61 @@ using reconstruction_argument_tags =
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
                  evolution::dg::subcell::Tags::Mesh<dim>>;
 
-  template <size_t ThermodynamicDim, typename TagsList>
-  void reconstruct(
-      gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_lower_face,
-      gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_upper_face,
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
-      const Variables<typename System::variables_tag::type::tags_list>&
-          volume_spacetime_and_cons_vars,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
-      const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
-      const Mesh<dim>& subcell_mesh) const;
+template <size_t ThermodynamicDim, typename TagsList>
+void reconstruct(
+    gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_lower_face,
+    gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_upper_face,
+    const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
+    const Variables<typename System::variables_tag::type::tags_list>&
+        volume_spacetime_and_cons_vars,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const Element<dim>& element,
+    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                       evolution::dg::subcell::GhostData,
+                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const Mesh<dim>& subcell_mesh) const;
 
-  template <size_t ThermodynamicDim, typename TagsList>
-  void reconstruct_fd_neighbor(
-      gsl::not_null<Variables<TagsList>*> vars_on_face,
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
-      const Variables<
-          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
-          subcell_volume_spacetime_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
-      const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
-      const Mesh<dim>& subcell_mesh,
-      const Direction<dim>& direction_to_reconstruct) const;
+template <size_t ThermodynamicDim, typename TagsList>
+void reconstruct_fd_neighbor(
+    gsl::not_null<Variables<TagsList>*> vars_on_face,
+    const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
+    const Variables<
+        grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+        subcell_volume_spacetime_metric,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const Element<dim>& element,
+    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                       evolution::dg::subcell::GhostData,
+                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const Mesh<dim>& subcell_mesh,
+    const Direction<dim>& direction_to_reconstruct) const;
 
- private:
-  // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
-  friend bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
+private:
+// NOLINTNEXTLINE(readability-redundant-declaration)
+friend bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
+friend bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
 
-  size_t nonlinear_weight_exponent_ = 0;
-  double epsilon_ = std::numeric_limits<double>::signaling_NaN();
-  FallbackReconstructorType fallback_reconstructor_ =
-      FallbackReconstructorType::None;
-  size_t max_number_of_extrema_ = 0;
+size_t nonlinear_weight_exponent_ = 0;
+double epsilon_ = std::numeric_limits<double>::signaling_NaN();
+FallbackReconstructorType fallback_reconstructor_ =
+    FallbackReconstructorType::None;
+size_t max_number_of_extrema_ = 0;
 
-  void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
-                       gsl::not_null<std::array<gsl::span<double>, dim>*>,
-                       const gsl::span<const double>&,
-                       const DirectionMap<dim, gsl::span<const double>>&,
-                       const Index<dim>&, size_t, double, size_t) = nullptr;
-  void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
-                                      const DataVector&, const DataVector&,
-                                      const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&, const double&,
-                                      const size_t&) = nullptr;
-  void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
-                                      const DataVector&, const DataVector&,
-                                      const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&, const double&,
-                                      const size_t&) = nullptr;
+void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
+                     gsl::not_null<std::array<gsl::span<double>, dim>*>,
+                     const gsl::span<const double>&,
+                     const DirectionMap<dim, gsl::span<const double>>&,
+                     const Index<dim>&, size_t, double, size_t) = nullptr;
+void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
+                                    const DataVector&, const DataVector&,
+                                    const Index<dim>&, const Index<dim>&,
+                                    const Direction<dim>&, const double&,
+                                    const size_t&) = nullptr;
+void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
+                                    const DataVector&, const DataVector&,
+                                    const Index<dim>&, const Index<dim>&,
+                                    const Direction<dim>&, const double&,
+                                    const size_t&) = nullptr;
 };
 
 }  // namespace grmhd::GhValenciaDivClean::fd

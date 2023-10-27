@@ -59,20 +59,18 @@ class TaggedTuple;
 namespace evolution::dg::Initialization {
 namespace detail {
 template <size_t Dim>
-std::tuple<
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::MortarData<Dim>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim - 1>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::array<Spectral::MortarSize, Dim - 1>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>, TimeStepId,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    DirectionMap<Dim, std::optional<Variables<tmpl::list<
-                          evolution::dg::Tags::MagnitudeOfNormal,
-                          evolution::dg::Tags::NormalCovector<Dim>>>>>>
+std::tuple<std::unordered_map<DirectionId<Dim>, evolution::dg::MortarData<Dim>,
+                              boost::hash<DirectionId<Dim>>>,
+           std::unordered_map<DirectionId<Dim>, Mesh<Dim - 1>,
+                              boost::hash<DirectionId<Dim>>>,
+           std::unordered_map<DirectionId<Dim>,
+                              std::array<Spectral::MortarSize, Dim - 1>,
+                              boost::hash<DirectionId<Dim>>>,
+           std::unordered_map<DirectionId<Dim>, TimeStepId,
+                              boost::hash<DirectionId<Dim>>>,
+           DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                                 evolution::dg::Tags::MagnitudeOfNormal,
+                                 evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                    Spectral::Quadrature quadrature, const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
@@ -101,7 +99,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
  */
 template <size_t Dim, typename System>
 struct Mortars {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionId<Dim>;
 
   template <typename MappedType>
   using MortarMap = std::unordered_map<Key, MappedType, boost::hash<Key>>;
@@ -219,7 +217,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
     for (const auto& [direction, neighbors] : new_element.neighbors()) {
       (*normal_covector_and_magnitude)[direction] = std::nullopt;
       for (const auto& neighbor : neighbors) {
-        const auto mortar_id = std::make_pair(direction, neighbor);
+        const DirectionId<dim> mortar_id{direction, neighbor};
         mortar_data->emplace(mortar_id, MortarData<dim>{1});
         const auto new_neighbor_mesh = neighbors.orientation().inverse_map()(
             neighbor_info.at(neighbor).new_mesh);

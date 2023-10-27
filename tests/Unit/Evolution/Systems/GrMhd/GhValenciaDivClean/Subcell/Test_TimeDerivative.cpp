@@ -300,7 +300,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
             std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
     const auto key =
-        std::pair{direction, *element.neighbors().at(direction).begin()};
+        DirectionId<3>{direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;
@@ -582,13 +582,13 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
               interface_data.begin());
 
     if (local_data) {
-      mortar_data[std::pair{direction,
-                            *element.neighbors().at(direction).begin()}]
+      mortar_data[DirectionId<3>{direction,
+                                 *element.neighbors().at(direction).begin()}]
           .insert_local_mortar_data(TimeStepId{true, 0, Time{slab, {0, 1}}},
                                     interface_mesh, std::move(interface_data));
     } else {
-      mortar_data[std::pair{direction,
-                            *element.neighbors().at(direction).begin()}]
+      mortar_data[DirectionId<3>{direction,
+                                 *element.neighbors().at(direction).begin()}]
           .insert_neighbor_mortar_data(TimeStepId{true, 0, Time{slab, {0, 1}}},
                                        interface_mesh,
                                        std::move(interface_data));

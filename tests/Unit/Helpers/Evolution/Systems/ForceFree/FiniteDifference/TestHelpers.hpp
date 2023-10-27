@@ -53,17 +53,15 @@ namespace ForceFree::fd {
 using GhostData = evolution::dg::subcell::GhostData;
 
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3),
-             std::pair<Direction<3>, ElementId<3>>, GhostData,
-             boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
+             boost::hash<DirectionId<3>>>
 compute_ghost_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, GhostData,
-               boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
+               boost::hash<DirectionId<3>>>
       ghost_data{};
 
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -86,8 +84,8 @@ compute_ghost_data(
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
 
-    ghost_data[std::pair{direction, neighbor_id}] = GhostData{1};
-    ghost_data.at(std::pair{direction, neighbor_id})
+    ghost_data[DirectionId<3>{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(DirectionId<3>{direction, neighbor_id})
         .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
@@ -170,9 +168,8 @@ void test_reconstructor(const size_t points_per_dimension,
       get<TildeJ>(volume_vars_and_tilde_j);
 
   // compute ghost data from neighbor
-  const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, GhostData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
+                     boost::hash<DirectionId<3>>>
       ghost_data =
           compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
                              reconstructor.ghost_zone_size(), compute_solution);

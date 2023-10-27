@@ -62,9 +62,8 @@ bool minmod_impl(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));

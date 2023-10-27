@@ -218,22 +218,18 @@ struct TciAndRollback {
             const auto active_vars_ptr, const auto active_history_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
-            const gsl::not_null<FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+            const gsl::not_null<
+                FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                             GhostData, boost::hash<DirectionId<Dim>>>*>
                 ghost_data_ptr,
-            const FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-                neighbor_meshes,
+            const FixedHashMap<maximum_number_of_neighbors(Dim),
+                               DirectionId<Dim>, Mesh<Dim>,
+                               boost::hash<DirectionId<Dim>>>& neighbor_meshes,
             const size_t ghost_zone_size,
-            const FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>,
-                std::optional<intrp::Irregular<Dim>>,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+            const FixedHashMap<maximum_number_of_neighbors(Dim),
+                               DirectionId<Dim>,
+                               std::optional<intrp::Irregular<Dim>>,
+                               boost::hash<DirectionId<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           ASSERT(active_history_ptr->size() > 0,
                  "We cannot have an empty history when unwinding, that's just "

@@ -15,6 +15,7 @@
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -84,16 +85,15 @@ void test() {
     const SubcellFaceVars interior_lower_packaged_data = lower_packaged_data;
     const SubcellFaceVars interior_upper_packaged_data = upper_packaged_data;
 
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::MortarData<Dim>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+    std::unordered_map<DirectionId<Dim>, evolution::dg::MortarData<Dim>,
+                       boost::hash<DirectionId<Dim>>>
         mortar_data{};
     const Direction<Dim> upper{direction_to_check, Side::Upper};
     const Direction<Dim> lower{direction_to_check, Side::Lower};
-    const std::pair upper_neighbor{upper,
-                                   *element.neighbors().at(upper).begin()};
-    const std::pair lower_neighbor{lower,
-                                   *element.neighbors().at(lower).begin()};
+    const DirectionId<Dim> upper_neighbor{
+        upper, *element.neighbors().at(upper).begin()};
+    const DirectionId<Dim> lower_neighbor{
+        lower, *element.neighbors().at(lower).begin()};
     evolution::dg::MortarData<Dim>& upper_mortar_data =
         mortar_data[upper_neighbor] = {};
     evolution::dg::MortarData<Dim>& lower_mortar_data =

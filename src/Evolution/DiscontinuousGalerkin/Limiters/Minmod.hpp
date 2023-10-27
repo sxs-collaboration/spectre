@@ -285,9 +285,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>&
           logical_coords,
       const std::array<double, VolumeDim>& element_size,
-      const std::unordered_map<
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionId<VolumeDim>>>&
           neighbor_data) const;
 
  private:
@@ -351,9 +350,8 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors

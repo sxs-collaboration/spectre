@@ -93,19 +93,16 @@ void Wcns5zPrim::reconstruct(
         volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
+    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
                        evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
+                       boost::hash<DirectionId<dim>>>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
-  FixedHashMap<maximum_number_of_neighbors(dim),
-               std::pair<Direction<dim>, ElementId<dim>>,
+  FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
                Variables<all_tags_for_reconstruction>,
-               boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>
+               boost::hash<DirectionId<dim>>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
@@ -165,10 +162,9 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
         subcell_volume_spacetime_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& ghost_data,
+    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
+                       evolution::dg::subcell::GhostData,
+                       boost::hash<DirectionId<3>>>& ghost_data,
     const Mesh<3>& subcell_mesh,
     const Direction<3>& direction_to_reconstruct) const {
   using prim_tags_for_reconstruction =
@@ -358,11 +354,9 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
           volume_spacetime_and_cons_vars,                                      \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<maximum_number_of_neighbors(3),                       \
-                         std::pair<Direction<3>, ElementId<3>>,                \
+      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,       \
                          evolution::dg::subcell::GhostData,                    \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
-          ghost_data,                                                          \
+                         boost::hash<DirectionId<3>>>& ghost_data,             \
       const Mesh<3>& subcell_mesh) const;                                      \
   template void Wcns5zPrim::reconstruct_fd_neighbor(                           \
       gsl::not_null<Variables<TAGS_LIST_DG_FD_INTERFACE(data)>*> vars_on_face, \
@@ -372,11 +366,9 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
           subcell_volume_spacetime_metric,                                     \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<maximum_number_of_neighbors(3),                       \
-                         std::pair<Direction<3>, ElementId<3>>,                \
+      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,       \
                          evolution::dg::subcell::GhostData,                    \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
-          ghost_data,                                                          \
+                         boost::hash<DirectionId<3>>>& ghost_data,             \
       const Mesh<3>& subcell_mesh,                                             \
       const Direction<3>& direction_to_reconstruct) const;
 

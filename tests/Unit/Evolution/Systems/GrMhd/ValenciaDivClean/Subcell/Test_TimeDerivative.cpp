@@ -318,7 +318,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
             0, {})
             .at(direction.opposite());
     const auto key =
-        std::pair{direction, *element.neighbors().at(direction).begin()};
+        DirectionId<3>{direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;

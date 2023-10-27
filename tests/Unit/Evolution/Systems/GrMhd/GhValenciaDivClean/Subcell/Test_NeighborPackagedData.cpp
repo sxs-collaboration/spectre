@@ -163,7 +163,7 @@ double test(const size_t num_dg_pts) {
             .at(direction.opposite());
 
     const auto key =
-        std::pair{direction, *element.neighbors().at(direction).begin()};
+        DirectionId<3>{direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         std::move(neighbor_data_in_direction);
@@ -326,10 +326,10 @@ double test(const size_t num_dg_pts) {
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
 
-  std::vector<std::pair<Direction<3>, ElementId<3>>>
-      mortars_to_reconstruct_to{};
+  std::vector<DirectionId<3>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    mortars_to_reconstruct_to.emplace_back(direction, *neighbors.begin());
+    mortars_to_reconstruct_to.emplace_back(
+        DirectionId<3>{direction, *neighbors.begin()});
   }
 
   const auto all_packaged_data =
@@ -337,14 +337,12 @@ double test(const size_t num_dg_pts) {
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
-  FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>,
-               typename variables_tag::type,
-               boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
+               typename variables_tag::type, boost::hash<DirectionId<3>>>
       evolved_vars_errors{};
   double max_rel_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
-    const auto& direction = direction_and_id.first;
+    const auto& direction = direction_and_id.direction;
     const Mesh<2> dg_interface_mesh = dg_mesh.slice_away(direction.dimension());
 
     using dg_package_field_tags =

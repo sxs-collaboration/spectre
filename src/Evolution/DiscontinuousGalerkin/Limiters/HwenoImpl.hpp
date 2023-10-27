@@ -145,33 +145,28 @@ Matrix inverse_a_matrix(
 // scenario can arise in various test cases, but is unlikely to arise in science
 // cases.
 template <typename Tag, size_t VolumeDim, typename Package>
-std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>
-secondary_neighbors_to_exclude_from_fit(
+std::vector<DirectionId<VolumeDim>> secondary_neighbors_to_exclude_from_fit(
     const double local_mean, const size_t tensor_index,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, Package,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor) {
+    const DirectionId<VolumeDim>& primary_neighbor) {
   // Rare case: with only one neighbor, there is no secondary to exclude
   if (UNLIKELY(neighbor_data.size() == 1)) {
-    return std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>{};
+    return std::vector<DirectionId<VolumeDim>>{};
   }
 
   // Identify element with maximum mean difference
   const auto mean_difference =
       [&tensor_index, &local_mean](
-          const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-                          Package>& neighbor_and_data) {
+          const std::pair<DirectionId<VolumeDim>, Package>& neighbor_and_data) {
         return fabs(get<::Tags::Mean<Tag>>(
                         neighbor_and_data.second.means)[tensor_index] -
                     local_mean);
       };
 
   double max_difference = std::numeric_limits<double>::lowest();
-  std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>
-      neighbor_max_difference{};
+  DirectionId<VolumeDim> neighbor_max_difference{};
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
     if (neighbor == primary_neighbor) {
@@ -184,8 +179,8 @@ secondary_neighbors_to_exclude_from_fit(
     }
   }
 
-  std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>
-      neighbors_to_exclude{{neighbor_max_difference}};
+  std::vector<DirectionId<VolumeDim>> neighbors_to_exclude{
+      {neighbor_max_difference}};
 
   // See if other elements share this maximum mean difference. This loop should
   // only rarely find other neighbors with the same maximal mean difference to
@@ -216,14 +211,11 @@ DataVector b_vector(
     const DirectionMap<VolumeDim, Matrix>& interpolation_matrices,
     const DirectionMap<VolumeDim, DataVector>&
         quadrature_weights_dot_interpolation_matrices,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, Package,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor,
-    const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
-        neighbors_to_exclude) {
+    const DirectionId<VolumeDim>& primary_neighbor,
+    const std::vector<DirectionId<VolumeDim>>& neighbors_to_exclude) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   DataVector b(number_of_grid_points, 0.);
 
@@ -235,7 +227,7 @@ DataVector b_vector(
       continue;
     }
 
-    const auto& direction = neighbor_and_data.first.first;
+    const auto& direction = neighbor_and_data.first.direction;
     ASSERT(interpolation_matrices.contains(direction),
            "interpolation_matrices does not contain key: " << direction);
     ASSERT(
@@ -286,14 +278,11 @@ void solve_constrained_fit(
     const gsl::not_null<DataVector*> constrained_fit_result,
     const DataVector& u, const size_t tensor_index, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionId<VolumeDim>, Package,
+                             boost::hash<DirectionId<VolumeDim>>>&
         neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor,
-    const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
-        neighbors_to_exclude) {
+    const DirectionId<VolumeDim>& primary_neighbor,
+    const std::vector<DirectionId<VolumeDim>>& neighbors_to_exclude) {
   ASSERT(not alg::found(neighbors_to_exclude, primary_neighbor),
          "Logical inconsistency: trying to exclude the primary neighbor.");
   ASSERT(not neighbors_to_exclude.empty() or neighbor_data.size() == 1,
@@ -307,12 +296,12 @@ void solve_constrained_fit(
 
   // Because we don't support h-refinement, the direction is the only piece
   // of the neighbor information that we actually need.
-  const Direction<VolumeDim> primary_direction = primary_neighbor.first;
+  const Direction<VolumeDim> primary_direction = primary_neighbor.direction;
   const std::vector<Direction<VolumeDim>> directions_to_exclude =
       [&neighbors_to_exclude]() {
         std::vector<Direction<VolumeDim>> result(neighbors_to_exclude.size());
         for (size_t i = 0; i < result.size(); ++i) {
-          result[i] = neighbors_to_exclude[i].first;
+          result[i] = neighbors_to_exclude[i].direction;
         }
         return result;
       }();
@@ -525,18 +514,16 @@ void solve_constrained_fit(
  * `neighbor_data`).
  */
 template <typename Tag, size_t VolumeDim, typename PackagedData>
-void hweno_impl(
-    const gsl::not_null<std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
-        modified_neighbor_solution_buffer,
-    const gsl::not_null<typename Tag::type*> tensor,
-    const double neighbor_linear_weight, const Mesh<VolumeDim>& mesh,
-    const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) {
+void hweno_impl(const gsl::not_null<
+                    std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                                       boost::hash<DirectionId<VolumeDim>>>*>
+                    modified_neighbor_solution_buffer,
+                const gsl::not_null<typename Tag::type*> tensor,
+                const double neighbor_linear_weight,
+                const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
+                const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                                         boost::hash<DirectionId<VolumeDim>>>&
+                    neighbor_data) {
   // Check that basis is LGL or LG
   // The Hweno reconstruction implemented here is specialized to the case of a
   // Legendre basis. While the underlying algorithm should work for other bases
@@ -560,7 +547,7 @@ void hweno_impl(
   alg::for_each(
       neighbor_data, [&mesh, &element](const auto& neighbor_and_data) {
         ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
-                   element, neighbor_and_data.first.first),
+                   element, neighbor_and_data.first.direction),
                "Found some amount of h-refinement; this is not supported");
         ASSERT(neighbor_and_data.second.mesh == mesh,
                "Found some amount of p-refinement; this is not supported");

@@ -67,19 +67,16 @@ namespace evolution::dg::subcell {
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <typename Metavariables, typename DbTagsList>
 void neighbor_reconstructed_face_solution(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const gsl::not_null<std::pair<
+    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    gsl::not_null<std::pair<
         const TimeStepId,
-        FixedHashMap<
-            maximum_number_of_neighbors(Metavariables::volume_dim),
-            std::pair<Direction<Metavariables::volume_dim>,
-                      ElementId<Metavariables::volume_dim>>,
-            std::tuple<Mesh<Metavariables::volume_dim>,
-                       Mesh<Metavariables::volume_dim - 1>,
-                       std::optional<DataVector>, std::optional<DataVector>,
-                       ::TimeStepId, int>,
-            boost::hash<std::pair<Direction<Metavariables::volume_dim>,
-                                  ElementId<Metavariables::volume_dim>>>>>*>
+        FixedHashMap<maximum_number_of_neighbors(Metavariables::volume_dim),
+                     DirectionId<Metavariables::volume_dim>,
+                     std::tuple<Mesh<Metavariables::volume_dim>,
+                                Mesh<Metavariables::volume_dim - 1>,
+                                std::optional<DataVector>,
+                                std::optional<DataVector>, ::TimeStepId, int>,
+                     boost::hash<DirectionId<Metavariables::volume_dim>>>>*>
         received_temporal_id_and_data);
 template <size_t Dim, typename DbTagsList>
 void neighbor_tci_decision(
@@ -87,12 +84,10 @@ void neighbor_tci_decision(
     const std::pair<
         const TimeStepId,
         FixedHashMap<
-            maximum_number_of_neighbors(Dim),
-            std::pair<Direction<Dim>, ElementId<Dim>>,
+            maximum_number_of_neighbors(Dim), DirectionId<Dim>,
             std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                        std::optional<DataVector>, ::TimeStepId, int>,
-            boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>&
-        received_temporal_id_and_data);
+            boost::hash<DirectionId<Dim>>>>& received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
 
@@ -106,7 +101,7 @@ bool receive_boundary_data_global_time_stepping(
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
-  using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+  using Key = DirectionId<volume_dim>;
   std::map<
       TimeStepId,
       FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
@@ -152,11 +147,8 @@ bool receive_boundary_data_global_time_stepping(
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
               mortar_next_time_step_id,
           const gsl::not_null<FixedHashMap<
-              maximum_number_of_neighbors(volume_dim),
-              std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-              Mesh<volume_dim>,
-              boost::hash<
-                  std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>*>
+              maximum_number_of_neighbors(volume_dim), DirectionId<volume_dim>,
+              Mesh<volume_dim>, boost::hash<DirectionId<volume_dim>>>*>
               neighbor_mesh) {
         neighbor_mesh->clear();
         for (auto& received_mortar_data :
@@ -210,7 +202,7 @@ bool receive_boundary_data_local_time_stepping(
   // using the `NormalDotNumericalFlux` prefix tag. This is because the
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-  using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+  using Key = DirectionId<volume_dim>;
   std::map<
       TimeStepId,
       FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
@@ -257,11 +249,8 @@ bool receive_boundary_data_local_time_stepping(
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
               mortar_next_time_step_id,
           const gsl::not_null<FixedHashMap<
-              maximum_number_of_neighbors(volume_dim),
-              std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-              Mesh<volume_dim>,
-              boost::hash<
-                  std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>*>
+              maximum_number_of_neighbors(volume_dim), DirectionId<volume_dim>,
+              Mesh<volume_dim>, boost::hash<DirectionId<volume_dim>>>*>
               neighbor_mesh,
           const Element<volume_dim>& element) {
         // Remove neighbor meshes for neighbors that don't exist anymore
@@ -329,7 +318,7 @@ bool receive_boundary_data_local_time_stepping(
       db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box),
       [&needed_time](
           const std::pair<Key, TimeStepId>& mortar_id_and_next_temporal_id) {
-        return mortar_id_and_next_temporal_id.first.second ==
+        return mortar_id_and_next_temporal_id.first.id ==
                    ElementId<volume_dim>::external_boundary_id() or
                not needed_time(mortar_id_and_next_temporal_id.second);
       });
@@ -519,8 +508,8 @@ struct ApplyBoundaryCorrections {
 
           for (auto& mortar_id_and_data : *mortar_data) {
             const auto& mortar_id = mortar_id_and_data.first;
-            const auto& direction = mortar_id.first;
-            if (UNLIKELY(mortar_id.second ==
+            const auto& direction = mortar_id.direction;
+            if (UNLIKELY(mortar_id.id ==
                          ElementId<volume_dim>::external_boundary_id())) {
               ERROR(
                   "Cannot impose boundary conditions on external boundary in "

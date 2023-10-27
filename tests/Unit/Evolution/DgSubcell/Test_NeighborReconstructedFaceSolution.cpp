@@ -35,15 +35,13 @@ struct VolumeDouble : db::SimpleTag {
 
 template <size_t Dim>
 using GhostDataMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>,
+    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
                  evolution::dg::subcell::GhostData,
-                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+                 boost::hash<DirectionId<Dim>>>;
 template <size_t Dim>
 using NeighborReconstructionMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
-                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, DataVector,
+                 boost::hash<DirectionId<Dim>>>;
 
 template <size_t Dim>
 using MortarData =
@@ -52,9 +50,8 @@ using MortarData =
 
 template <size_t Dim>
 using MortarDataMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, MortarData<Dim>,
-                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
+                 MortarData<Dim>, boost::hash<DirectionId<Dim>>>;
 
 template <size_t Dim>
 struct Metavariables {
@@ -64,8 +61,7 @@ struct Metavariables {
       template <typename DbTagsList>
       static NeighborReconstructionMap<Dim> apply(
           const db::DataBox<DbTagsList>& box,
-          const std::vector<
-              std::pair<Direction<volume_dim>, ElementId<volume_dim>>>&
+          const std::vector<DirectionId<volume_dim>>&
               mortars_to_reconstruct_to) {
         const GhostDataMap<Dim>& ghost_data = db::get<
             evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(box);
@@ -89,8 +85,6 @@ template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   using metavars = Metavariables<Dim>;
-  const std::pair self_id{Direction<Dim>::lower_xi(),
-                          ElementId<Dim>::external_boundary_id()};
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
@@ -123,20 +117,20 @@ void test() {
     }
     DataVector dg_flux_data(2 * Dim + 1);
     if (d % 2 == 0) {
-      mortar_data_from_neighbors.second[std::pair{
+      mortar_data_from_neighbors.second[DirectionId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
           MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
                           dg_flux_data,   {},           1};
-      mortar_data_from_neighbors.second[std::pair{
+      mortar_data_from_neighbors.second[DirectionId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
           MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
                           std::nullopt,   {},           2};
     } else {
-      mortar_data_from_neighbors.second[std::pair{
+      mortar_data_from_neighbors.second[DirectionId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
           MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
                           dg_flux_data,   {},           3};
-      mortar_data_from_neighbors.second[std::pair{
+      mortar_data_from_neighbors.second[DirectionId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
           MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
                           std::nullopt,   {},           4};
@@ -147,8 +141,9 @@ void test() {
   for (size_t d = 0; d < Dim; ++d) {
     CAPTURE(d);
     const bool d_is_odd = (d % 2 != 0);
-    const std::pair id{Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
-                       ElementId<Dim>{2 * d + 1}};
+    const DirectionId<Dim> id{
+        Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
+        ElementId<Dim>{2 * d + 1}};
     CAPTURE(id);
     REQUIRE(mortar_data_from_neighbors.second.contains(id));
     REQUIRE(std::get<2>(mortar_data_from_neighbors.second.at(id)).has_value());

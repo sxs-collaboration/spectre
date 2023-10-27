@@ -110,11 +110,9 @@ class MonotonisedCentral : public Reconstructor {
       const Variables<volume_vars_tags>& volume_vars,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<dim>>>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   void reconstruct_fd_neighbor(
@@ -122,11 +120,9 @@ class MonotonisedCentral : public Reconstructor {
       const Variables<volume_vars_tags>& volume_vars,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
+                         evolution::dg::subcell::GhostData,
+                         boost::hash<DirectionId<dim>>>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 };

@@ -72,12 +72,10 @@ namespace grmhd::GhValenciaDivClean::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(3),
-                      std::pair<Direction<3>, ElementId<3>>, DataVector,
-                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  static FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
+                      DataVector, boost::hash<DirectionId<3>>>
   apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<std::pair<Direction<3>, ElementId<3>>>&
-            mortars_to_reconstruct_to) {
+        const std::vector<DirectionId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -91,9 +89,8 @@ struct NeighborPackagedData {
         typename grmhd::ValenciaDivClean::System::variables_tag;
     using grmhd_evolved_vars_tags = typename grmhd_evolved_vars_tag::tags_list;
 
-    FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, DataVector,
-                 boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+    FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, DataVector,
+                 boost::hash<DirectionId<3>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
@@ -165,7 +162,7 @@ struct NeighborPackagedData {
           Variables<dg_package_data_argument_tags> vars_on_face{0};
           Variables<dg_package_field_tags> packaged_data{0};
           for (const auto& mortar_id : mortars_to_reconstruct_to) {
-            const Direction<3>& direction = mortar_id.first;
+            const Direction<3>& direction = mortar_id.direction;
 
             const Mesh<2> dg_face_mesh =
                 dg_mesh.slice_away(direction.dimension());
@@ -191,7 +188,7 @@ struct NeighborPackagedData {
                   reconstructor->reconstruct_fd_neighbor(
                       make_not_null(&vars_on_face), volume_prims,
                       volume_spacetime_vars, eos, element, ghost_subcell_data,
-                      subcell_mesh, mortar_id.first);
+                      subcell_mesh, mortar_id.direction);
                 });
 
             // Get the mesh velocity if needed
@@ -285,7 +282,7 @@ struct NeighborPackagedData {
                 evolution::dg::Tags::NormalCovector<3>>(
                 *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(
                      box)
-                     .at(mortar_id.first));
+                     .at(mortar_id.direction));
             for (auto& t : normal_covector) {
               t *= -1.0;
             }
@@ -294,9 +291,9 @@ struct NeighborPackagedData {
             for (size_t i = 0; i < 3; ++i) {
               normal_covector.get(i) = evolution::dg::subcell::fd::project(
                   normal_covector.get(i),
-                  dg_mesh.slice_away(mortar_id.first.dimension()),
+                  dg_mesh.slice_away(mortar_id.direction.dimension()),
                   subcell_mesh.extents().slice_away(
-                      mortar_id.first.dimension()));
+                      mortar_id.direction.dimension()));
             }
             // Need to renormalize the normal vector with the neighbor's
             // inverse spatial metric.
@@ -343,7 +340,8 @@ struct NeighborPackagedData {
                                                               dg_data.size()};
             evolution::dg::subcell::fd::reconstruct(
                 make_not_null(&dg_packaged_data), packaged_data, dg_face_mesh,
-                subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+                subcell_mesh.extents().slice_away(
+                    mortar_id.direction.dimension()),
                 subcell_options.reconstruction_method());
 
             neighbor_package_data[mortar_id] = std::move(dg_data);

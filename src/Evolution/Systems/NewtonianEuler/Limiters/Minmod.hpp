@@ -163,9 +163,8 @@ class Minmod {
       const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
           equation_of_state,
-      const std::unordered_map<
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionId<VolumeDim>>>&
           neighbor_data) const;
 
  private:

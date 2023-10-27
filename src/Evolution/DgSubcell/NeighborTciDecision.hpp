@@ -32,20 +32,17 @@ void neighbor_tci_decision(
     const std::pair<
         const TimeStepId,
         FixedHashMap<
-            maximum_number_of_neighbors(Dim),
-            std::pair<Direction<Dim>, ElementId<Dim>>,
+            maximum_number_of_neighbors(Dim), DirectionId<Dim>,
             std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                        std::optional<DataVector>, ::TimeStepId, int>,
-            boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>&
-        received_temporal_id_and_data) {
+            boost::hash<DirectionId<Dim>>>>& received_temporal_id_and_data) {
   db::mutate<subcell::Tags::NeighborTciDecisions<Dim>>(
       [&received_temporal_id_and_data](const auto neighbor_tci_decisions_ptr) {
         for (const auto& [directional_element_id, neighbor_data] :
              received_temporal_id_and_data.second) {
           ASSERT(neighbor_tci_decisions_ptr->contains(directional_element_id),
-                 "The NeighborTciDecisions tag does not contain the neighbor ("
-                     << directional_element_id.first << ", "
-                     << directional_element_id.second << ")");
+                 "The NeighborTciDecisions tag does not contain the neighbor "
+                     << directional_element_id);
           neighbor_tci_decisions_ptr->at(directional_element_id) =
               std::get<5>(neighbor_data);
         }

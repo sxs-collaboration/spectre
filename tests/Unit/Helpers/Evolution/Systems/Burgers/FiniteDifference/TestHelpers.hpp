@@ -42,19 +42,15 @@ namespace TestHelpers {
  */
 namespace Burgers::fd {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(1),
-             std::pair<Direction<1>, ElementId<1>>,
-             evolution::dg::subcell::GhostData,
-             boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
+             evolution::dg::subcell::GhostData, boost::hash<DirectionId<1>>>
 compute_ghost_data(
     const Mesh<1>& subcell_mesh,
     const tnsr::I<DataVector, 1, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<1, Neighbors<1>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(1),
-               std::pair<Direction<1>, ElementId<1>>,
-               evolution::dg::subcell::GhostData,
-               boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+  FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
+               evolution::dg::subcell::GhostData, boost::hash<DirectionId<1>>>
       ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() ==
@@ -74,9 +70,9 @@ compute_ghost_data(
         std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    ghost_data[std::pair{direction, neighbor_id}] =
+    ghost_data[DirectionId<1>{direction, neighbor_id}] =
         evolution::dg::subcell::GhostData{1};
-    ghost_data.at(std::pair{direction, neighbor_id})
+    ghost_data.at(DirectionId<1>{direction, neighbor_id})
         .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
@@ -115,10 +111,9 @@ void test_reconstructor(const size_t num_pts,
   const Mesh<1> subcell_mesh{num_pts, Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
-  const FixedHashMap<maximum_number_of_neighbors(1),
-                     std::pair<Direction<1>, ElementId<1>>,
+  const FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
                      evolution::dg::subcell::GhostData,
-                     boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+                     boost::hash<DirectionId<1>>>
       ghost_data =
           compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
                              reconstructor.ghost_zone_size(), compute_solution);

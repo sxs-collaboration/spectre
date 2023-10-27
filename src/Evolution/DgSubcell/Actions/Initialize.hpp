@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -163,7 +164,7 @@ struct SetSubcellGrid {
                element.neighbors()) {
             for (const auto& neighbor : neighbors_in_direction.ids()) {
               neighbor_decisions_ptr->insert(
-                  std::pair{std::pair{direction, neighbor}, 0});
+                  std::pair{DirectionId<Dim>{direction, neighbor}, 0});
             }
           }
         },
@@ -273,15 +274,15 @@ struct SetAndCommunicateInitialRdmpData {
       const auto& orientation = neighbors.orientation();
       const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor : neighbors) {
-        const std::pair mortar_id{direction, neighbor};
         evolution::dg::subcell::InitialTciData data{{}, rdmp_data};
         // We use temporal ID 0 for sending RDMP data
         const int temporal_id = 0;
         Parallel::receive_data<
             evolution::dg::subcell::Tags::InitialTciData<Dim>>(
             receiver_proxy[neighbor], temporal_id,
-            std::make_pair(std::pair{direction_from_neighbor, element.id()},
-                           std::move(data)));
+            std::make_pair(
+                DirectionId<Dim>{direction_from_neighbor, element.id()},
+                std::move(data)));
       }
     }
 
@@ -353,9 +354,9 @@ struct ComputeAndSendTciOnInitialGrid {
                               neighbor_initial_tci_data] : received->second) {
               ASSERT(neighbor_initial_tci_data.initial_rdmp_data.has_value(),
                      "Neighbor in direction "
-                         << direction_and_neighbor_element_id.first
+                         << direction_and_neighbor_element_id.direction
                          << " with element ID "
-                         << direction_and_neighbor_element_id.second << " of "
+                         << direction_and_neighbor_element_id.id << " of "
                          << element.id()
                          << " didn't send initial TCI data correctly");
               ASSERT(
@@ -368,7 +369,7 @@ struct ComputeAndSendTciOnInitialGrid {
                              .max_variables_values.size()
                       << " the local element ID is " << element.id()
                       << " and the remote id is "
-                      << direction_and_neighbor_element_id.second);
+                      << direction_and_neighbor_element_id.id);
               ASSERT(
                   neighbor_initial_tci_data.initial_rdmp_data.value()
                           .min_variables_values.size() == number_of_rdmp_vars,
@@ -379,7 +380,7 @@ struct ComputeAndSendTciOnInitialGrid {
                              .min_variables_values.size()
                       << " the local element ID is " << element.id()
                       << " and the remote id is "
-                      << direction_and_neighbor_element_id.second);
+                      << direction_and_neighbor_element_id.id);
               for (size_t var_index = 0; var_index < number_of_rdmp_vars;
                    ++var_index) {
                 rdmp_tci_data_ptr->max_variables_values[var_index] =
@@ -407,15 +408,15 @@ struct ComputeAndSendTciOnInitialGrid {
         const auto& orientation = neighbors.orientation();
         const auto direction_from_neighbor = orientation(direction.opposite());
         for (const auto& neighbor : neighbors) {
-          const std::pair mortar_id{direction, neighbor};
           evolution::dg::subcell::InitialTciData data{tci_decision, {}};
           // We use temporal ID 1 for ending the TCI decision.
           const int temporal_id = 1;
           Parallel::receive_data<
               evolution::dg::subcell::Tags::InitialTciData<Dim>>(
               receiver_proxy[neighbor], temporal_id,
-              std::make_pair(std::pair{direction_from_neighbor, element.id()},
-                             std::move(data)));
+              std::make_pair(
+                  DirectionId<Dim>{direction_from_neighbor, element.id()},
+                  std::move(data)));
         }
       }
     };
@@ -506,9 +507,9 @@ struct SetInitialGridFromTciData {
               (void)element;
               ASSERT(neighbor_initial_tci_data.tci_status.has_value(),
                      "Neighbor in direction "
-                         << directional_element_id.first << " with element ID "
-                         << directional_element_id.second << " of "
-                         << element.id()
+                         << directional_element_id.direction
+                         << " with element ID " << directional_element_id.id
+                         << " of " << element.id()
                          << " didn't send initial TCI decision correctly");
               neighbor_tci_decisions_ptr->at(directional_element_id) =
                   neighbor_initial_tci_data.tci_status.value();

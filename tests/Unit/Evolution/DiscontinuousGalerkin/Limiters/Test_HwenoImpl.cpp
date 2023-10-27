@@ -59,18 +59,13 @@ void test_secondary_neighbors_to_exclude_from_fit() {
   struct DummyPackage {
     tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
   };
-  std::unordered_map<std::pair<Direction<2>, ElementId<2>>, DummyPackage,
-                     boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+  std::unordered_map<DirectionId<2>, DummyPackage, boost::hash<DirectionId<2>>>
       dummy_neighbor_data;
 
-  const auto lower_xi =
-      std::make_pair(Direction<2>::lower_xi(), ElementId<2>{1});
-  const auto upper_xi =
-      std::make_pair(Direction<2>::upper_xi(), ElementId<2>{2});
-  const auto lower_eta =
-      std::make_pair(Direction<2>::lower_eta(), ElementId<2>{3});
-  const auto upper_eta =
-      std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
+  const DirectionId<2> lower_xi{Direction<2>::lower_xi(), ElementId<2>{1}};
+  const DirectionId<2> upper_xi{Direction<2>::upper_xi(), ElementId<2>{2}};
+  const DirectionId<2> lower_eta{Direction<2>::lower_eta(), ElementId<2>{3}};
+  const DirectionId<2> upper_eta{Direction<2>::upper_eta(), ElementId<2>{4}};
 
   get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[lower_xi].means)) = 1.;
   get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[upper_xi].means)) = 2.;
@@ -79,11 +74,8 @@ void test_secondary_neighbors_to_exclude_from_fit() {
 
   const auto check_excluded_neighbors =
       [&dummy_neighbor_data](
-          const double mean,
-          const std::pair<Direction<2>, ElementId<2>>& primary_neighbor,
-          const std::unordered_set<
-              std::pair<Direction<2>, ElementId<2>>,
-              boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
+          const double mean, const DirectionId<2>& primary_neighbor,
+          const std::unordered_set<DirectionId<2>, boost::hash<DirectionId<2>>>&
               expected_excluded_neighbors) {
         const size_t tensor_index = 0;
         const auto excluded_neighbors_vector =
@@ -96,9 +88,7 @@ void test_secondary_neighbors_to_exclude_from_fit() {
         // comparisons, we move the data into an unordered_set. (A sort would
         // also work here, if the Direction and ElementId classes were sortable,
         // which they aren't.)
-        const std::unordered_set<
-            std::pair<Direction<2>, ElementId<2>>,
-            boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+        const std::unordered_set<DirectionId<2>, boost::hash<DirectionId<2>>>
             excluded_neighbors(excluded_neighbors_vector.begin(),
                                excluded_neighbors_vector.end());
         CHECK(excluded_neighbors == expected_excluded_neighbors);
@@ -127,10 +117,10 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
   const auto mesh = Mesh<1>{{{3}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<1>::lower_xi(), ElementId<1>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<1>::upper_xi(), ElementId<1>{2});
+  const DirectionId<1> lower_xi_neighbor{Direction<1>::lower_xi(),
+                                         ElementId<1>{1}};
+  const DirectionId<1> upper_xi_neighbor{Direction<1>::upper_xi(),
+                                         ElementId<1>{2}};
 
   const auto local_data = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
@@ -162,8 +152,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     Variables<TagsList> volume_data;
     Mesh<1> mesh;
   };
-  std::unordered_map<std::pair<Direction<1>, ElementId<1>>, PackagedData,
-                     boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+  std::unordered_map<DirectionId<1>, PackagedData, boost::hash<DirectionId<1>>>
       neighbor_data{};
   neighbor_data[lower_xi_neighbor].means = make_tuple_of_means(lower_xi_vars);
   neighbor_data[lower_xi_neighbor].volume_data = lower_xi_vars;
@@ -177,8 +166,8 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
   {
     INFO("One excluded neighbor");
     const auto primary_neighbor = lower_xi_neighbor;
-    const std::vector<std::pair<Direction<1>, ElementId<1>>>
-        neighbors_to_exclude = {upper_xi_neighbor};
+    const std::vector<DirectionId<1>> neighbors_to_exclude = {
+        upper_xi_neighbor};
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
@@ -236,8 +225,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     neighbor_data_at_lower_xi_bdry.erase(lower_xi_neighbor);
 
     const auto primary_neighbor = upper_xi_neighbor;
-    const std::vector<std::pair<Direction<1>, ElementId<1>>>
-        neighbors_to_exclude = {};
+    const std::vector<DirectionId<1>> neighbors_to_exclude = {};
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
@@ -282,8 +270,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     neighbor_data_at_upper_xi_bdry.erase(upper_xi_neighbor);
 
     const auto primary_neighbor = lower_xi_neighbor;
-    const std::vector<std::pair<Direction<1>, ElementId<1>>>
-        neighbors_to_exclude = {};
+    const std::vector<DirectionId<1>> neighbors_to_exclude = {};
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
@@ -330,14 +317,14 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
   const auto mesh = Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<2>::lower_xi(), ElementId<2>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<2>::upper_xi(), ElementId<2>{2});
-  const auto lower_eta_neighbor =
-      std::make_pair(Direction<2>::lower_eta(), ElementId<2>{3});
-  const auto upper_eta_neighbor =
-      std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
+  const DirectionId<2> lower_xi_neighbor{Direction<2>::lower_xi(),
+                                         ElementId<2>{1}};
+  const DirectionId<2> upper_xi_neighbor{Direction<2>::upper_xi(),
+                                         ElementId<2>{2}};
+  const DirectionId<2> lower_eta_neighbor{Direction<2>::lower_eta(),
+                                          ElementId<2>{3}};
+  const DirectionId<2> upper_eta_neighbor{Direction<2>::upper_eta(),
+                                          ElementId<2>{4}};
 
   const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
@@ -399,8 +386,7 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
     Variables<TagsList> volume_data;
     Mesh<2> mesh;
   };
-  std::unordered_map<std::pair<Direction<2>, ElementId<2>>, PackagedData,
-                     boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+  std::unordered_map<DirectionId<2>, PackagedData, boost::hash<DirectionId<2>>>
       neighbor_data{};
   neighbor_data[lower_xi_neighbor].means = make_tuple_of_means(lower_xi_vars);
   neighbor_data[lower_xi_neighbor].volume_data = lower_xi_vars;
@@ -424,8 +410,8 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
     // tensor component would have different excluded neighbors. But for the
     // test of the constrained fit itself, this is not important, and so we
     // simplify by using the same excluded neighbors for each component.
-    const std::vector<std::pair<Direction<2>, ElementId<2>>>
-        neighbors_to_exclude = {lower_xi_neighbor};
+    const std::vector<DirectionId<2>> neighbors_to_exclude = {
+        lower_xi_neighbor};
 
     tnsr::I<DataVector, 2> constrained_fit{};
     for (size_t tensor_index = 0; tensor_index < 2; ++tensor_index) {
@@ -553,8 +539,8 @@ void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
     neighbor_data_at_lower_eta_bdry.erase(lower_eta_neighbor);
 
     const auto primary_neighbor = lower_xi_neighbor;
-    const std::vector<std::pair<Direction<2>, ElementId<2>>>
-        neighbors_to_exclude = {upper_xi_neighbor, upper_eta_neighbor};
+    const std::vector<DirectionId<2>> neighbors_to_exclude = {
+        upper_xi_neighbor, upper_eta_neighbor};
 
     tnsr::I<DataVector, 2> constrained_fit{};
     for (size_t tensor_index = 0; tensor_index < 2; ++tensor_index) {
@@ -622,18 +608,18 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
     Mesh<3> mesh;
   };
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<3>::lower_xi(), ElementId<3>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<3>::upper_xi(), ElementId<3>{2});
-  const auto lower_eta_neighbor =
-      std::make_pair(Direction<3>::lower_eta(), ElementId<3>{3});
-  const auto upper_eta_neighbor =
-      std::make_pair(Direction<3>::upper_eta(), ElementId<3>{4});
-  const auto lower_zeta_neighbor =
-      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>{5});
-  const auto upper_zeta_neighbor =
-      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
+  const DirectionId<3> lower_xi_neighbor{Direction<3>::lower_xi(),
+                                         ElementId<3>{1}};
+  const DirectionId<3> upper_xi_neighbor{Direction<3>::upper_xi(),
+                                         ElementId<3>{2}};
+  const DirectionId<3> lower_eta_neighbor{Direction<3>::lower_eta(),
+                                          ElementId<3>{3}};
+  const DirectionId<3> upper_eta_neighbor{Direction<3>::upper_eta(),
+                                          ElementId<3>{4}};
+  const DirectionId<3> lower_zeta_neighbor{Direction<3>::lower_zeta(),
+                                           ElementId<3>{5}};
+  const DirectionId<3> upper_zeta_neighbor{Direction<3>::upper_zeta(),
+                                           ElementId<3>{6}};
 
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
@@ -692,8 +678,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
             mean_value(get(get<ScalarTag>(vars)), mesh));
       };
 
-  std::unordered_map<std::pair<Direction<3>, ElementId<3>>, PackagedData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  std::unordered_map<DirectionId<3>, PackagedData, boost::hash<DirectionId<3>>>
       neighbor_data{};
   neighbor_data[lower_xi_neighbor].means = make_tuple_of_means(lower_xi_vars);
   neighbor_data[lower_xi_neighbor].volume_data = lower_xi_vars;
@@ -721,8 +706,8 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
   {
     INFO("One excluded neighbor");
     const auto primary_neighbor = upper_zeta_neighbor;
-    const std::vector<std::pair<Direction<3>, ElementId<3>>>
-        neighbors_to_exclude = {lower_eta_neighbor};
+    const std::vector<DirectionId<3>> neighbors_to_exclude = {
+        lower_eta_neighbor};
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
@@ -936,8 +921,8 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
     neighbor_data_two_bdries.erase(lower_eta_neighbor);
 
     const auto primary_neighbor = upper_xi_neighbor;
-    const std::vector<std::pair<Direction<3>, ElementId<3>>>
-        neighbors_to_exclude = {upper_eta_neighbor, upper_zeta_neighbor};
+    const std::vector<DirectionId<3>> neighbors_to_exclude = {
+        upper_eta_neighbor, upper_zeta_neighbor};
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
@@ -1013,17 +998,12 @@ void test_hweno_work(
     const tnsr::I<DataVector, VolumeDim>& local_vector,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        Variables<tmpl::list<VectorTag<VolumeDim>>>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_vars,
+        DirectionId<VolumeDim>, Variables<tmpl::list<VectorTag<VolumeDim>>>,
+        boost::hash<DirectionId<VolumeDim>>>& neighbor_vars,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        std::array<
-            std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>,
-            VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        expected_excluded_neighbors,
+        DirectionId<VolumeDim>,
+        std::array<std::vector<DirectionId<VolumeDim>>, VolumeDim>,
+        boost::hash<DirectionId<VolumeDim>>>& expected_excluded_neighbors,
     Approx local_approx = approx) {
   struct PackagedData {
     tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> means;
@@ -1042,9 +1022,8 @@ void test_hweno_work(
         return result;
       };
 
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, PackagedData,
+                     boost::hash<DirectionId<VolumeDim>>>
       neighbor_data{};
   for (auto& neighbor_and_vars : neighbor_vars) {
     const auto& neighbor = neighbor_and_vars.first;
@@ -1054,14 +1033,13 @@ void test_hweno_work(
     neighbor_data[neighbor].mesh = mesh;
   }
 
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                     boost::hash<DirectionId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
     modified_neighbor_solution_buffer.insert(
-        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+        std::make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
   }
 
   auto vector_to_limit = local_vector;
@@ -1078,9 +1056,8 @@ void test_hweno_work(
   }
 
   auto expected_hweno = local_vector;
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionId<VolumeDim>, DataVector,
+                     boost::hash<DirectionId<VolumeDim>>>
       expected_neighbor_polynomials;
   for (size_t i = 0; i < VolumeDim; ++i) {
     // Call solve_constrained_fit to make the expected neighbors for each
@@ -1115,10 +1092,10 @@ void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
   const auto element = TestHelpers::Limiters::make_element<1>();
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<1>::lower_xi(), ElementId<1>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<1>::upper_xi(), ElementId<1>{2});
+  const DirectionId<1> lower_xi_neighbor{Direction<1>::lower_xi(),
+                                         ElementId<1>{1}};
+  const DirectionId<1> upper_xi_neighbor{Direction<1>::upper_xi(),
+                                         ElementId<1>{2}};
 
   const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
@@ -1146,12 +1123,10 @@ void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
        std::make_pair(upper_xi_neighbor, upper_xi_vars)},
       {std::make_pair(
            lower_xi_neighbor,
-           make_array<1>(std::vector<std::pair<Direction<1>, ElementId<1>>>{
-               upper_xi_neighbor})),
+           make_array<1>(std::vector<DirectionId<1>>{upper_xi_neighbor})),
        std::make_pair(
            upper_xi_neighbor,
-           make_array<1>(std::vector<std::pair<Direction<1>, ElementId<1>>>{
-               lower_xi_neighbor}))},
+           make_array<1>(std::vector<DirectionId<1>>{lower_xi_neighbor}))},
       local_approx);
 }
 
@@ -1164,14 +1139,14 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
   const auto element = TestHelpers::Limiters::make_element<2>();
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<2>::lower_xi(), ElementId<2>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<2>::upper_xi(), ElementId<2>{2});
-  const auto lower_eta_neighbor =
-      std::make_pair(Direction<2>::lower_eta(), ElementId<2>{3});
-  const auto upper_eta_neighbor =
-      std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
+  const DirectionId<2> lower_xi_neighbor{Direction<2>::lower_xi(),
+                                         ElementId<2>{1}};
+  const DirectionId<2> upper_xi_neighbor{Direction<2>::upper_xi(),
+                                         ElementId<2>{2}};
+  const DirectionId<2> lower_eta_neighbor{Direction<2>::lower_eta(),
+                                          ElementId<2>{3}};
+  const DirectionId<2> upper_eta_neighbor{Direction<2>::upper_eta(),
+                                          ElementId<2>{4}};
 
   const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
@@ -1220,7 +1195,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  using DirKey = std::pair<Direction<2>, ElementId<2>>;
+  using DirKey = DirectionId<2>;
   Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
   test_hweno_work<2>(
       local_tensor, mesh, element,
@@ -1256,18 +1231,18 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
   const auto element = TestHelpers::Limiters::make_element<3>();
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto lower_xi_neighbor =
-      std::make_pair(Direction<3>::lower_xi(), ElementId<3>{1});
-  const auto upper_xi_neighbor =
-      std::make_pair(Direction<3>::upper_xi(), ElementId<3>{2});
-  const auto lower_eta_neighbor =
-      std::make_pair(Direction<3>::lower_eta(), ElementId<3>{3});
-  const auto upper_eta_neighbor =
-      std::make_pair(Direction<3>::upper_eta(), ElementId<3>{4});
-  const auto lower_zeta_neighbor =
-      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>{5});
-  const auto upper_zeta_neighbor =
-      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
+  const DirectionId<3> lower_xi_neighbor{Direction<3>::lower_xi(),
+                                         ElementId<3>{1}};
+  const DirectionId<3> upper_xi_neighbor{Direction<3>::upper_xi(),
+                                         ElementId<3>{2}};
+  const DirectionId<3> lower_eta_neighbor{Direction<3>::lower_eta(),
+                                          ElementId<3>{3}};
+  const DirectionId<3> upper_eta_neighbor{Direction<3>::upper_eta(),
+                                          ElementId<3>{4}};
+  const DirectionId<3> lower_zeta_neighbor{Direction<3>::lower_zeta(),
+                                           ElementId<3>{5}};
+  const DirectionId<3> upper_zeta_neighbor{Direction<3>::upper_zeta(),
+                                           ElementId<3>{6}};
 
   const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
@@ -1326,7 +1301,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  using DirKey = std::pair<Direction<3>, ElementId<3>>;
+  using DirKey = DirectionId<3>;
   Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
   test_hweno_work<3>(
       local_tensor, mesh, element,
