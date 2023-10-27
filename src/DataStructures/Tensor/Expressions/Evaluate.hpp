@@ -143,7 +143,7 @@ struct CheckNoLhsAntiSymmetries<SymmList<Symm...>> {
  * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
  * @param rhs_tensorexpression the RHS TensorExpression to be evaluated
  */
-template <bool EvaluateSubtrees, auto&... LhsTensorIndices,
+template <bool EvaluateSubtrees, typename... LhsTensorIndices,
           typename LhsDataType, typename LhsSymmetry, typename LhsIndexList,
           typename Derived, typename RhsDataType, typename RhsSymmetry,
           typename RhsIndexList, typename... RhsTensorIndices>
@@ -156,8 +156,7 @@ void evaluate_impl(
   constexpr size_t num_lhs_indices = sizeof...(LhsTensorIndices);
   constexpr size_t num_rhs_indices = sizeof...(RhsTensorIndices);
 
-  using lhs_tensorindex_list =
-      tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
+  using lhs_tensorindex_list = tmpl::list<LhsTensorIndices...>;
   using rhs_tensorindex_list = tmpl::list<RhsTensorIndices...>;
 
   using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
@@ -202,7 +201,7 @@ void evaluate_impl(
       "time indices (ti::T and ti::t) can be repeated.)");
   static_assert(
       not contains_indices_to_contract<num_lhs_indices>(
-          {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
+          {{LhsTensorIndices::value...}}),
       "Cannot assign a tensor expression to a LHS tensor with generic "
       "indices that would be contracted, e.g. evaluate<ti::A, ti::a>.");
   // `IndexPropertyCheck` does also check that valence (Up/Lo) of indices that
@@ -250,8 +249,7 @@ void evaluate_impl(
 
   constexpr std::array<size_t, num_rhs_indices> index_transformation =
       compute_tensorindex_transformation<num_lhs_indices, num_rhs_indices>(
-          {{std::decay_t<decltype(LhsTensorIndices)>::value...}},
-          {{RhsTensorIndices::value...}});
+          {{LhsTensorIndices::value...}}, {{RhsTensorIndices::value...}});
 
   // positions of indices in LHS tensor where generic spatial indices are used
   // for spacetime indices
@@ -330,15 +328,14 @@ void evaluate_impl(
  * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
  * @param rhs_value the RHS value to assigned
  */
-template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
+template <typename... LhsTensorIndices, typename X, typename LhsSymmetry,
           typename LhsIndexList, typename NumberType>
 void evaluate_impl(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
     const NumberType& rhs_value) {
   using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
   constexpr size_t num_lhs_indices = sizeof...(LhsTensorIndices);
-  using lhs_tensorindex_list =
-      tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
+  using lhs_tensorindex_list = tmpl::list<LhsTensorIndices...>;
 
   static_assert(is_supported_tensor_datatype_v<X> and
                 "TensorExpressions currently only support Tensors whose data "
@@ -368,7 +365,7 @@ void evaluate_impl(
       "time indices (ti::T and ti::t) can be repeated.)");
   static_assert(
       not contains_indices_to_contract<num_lhs_indices>(
-          {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
+          {{LhsTensorIndices::value...}}),
       "Cannot assign a tensor expression to a LHS tensor with generic "
       "indices that would be contracted, e.g. evaluate<ti::A, ti::a>.");
 
@@ -456,7 +453,8 @@ void evaluate(
       typename std::decay_t<decltype(~rhs_tensorexpression)>;
   constexpr bool evaluate_subtrees =
       rhs_expression_type::primary_subtree_contains_primary_start;
-  detail::evaluate_impl<evaluate_subtrees, LhsTensorIndices...>(
+  detail::evaluate_impl<evaluate_subtrees,
+                        std::decay_t<decltype(LhsTensorIndices)>...>(
       lhs_tensor, rhs_tensorexpression);
 }
 
@@ -487,14 +485,16 @@ template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
 void evaluate(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
     const N rhs_value) {
-  detail::evaluate_impl<LhsTensorIndices...>(lhs_tensor, rhs_value);
+  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(lhs_tensor,
+                                                                     rhs_value);
 }
 template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
           typename LhsIndexList, typename N>
 void evaluate(
     const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
     const std::complex<N>& rhs_value) {
-  detail::evaluate_impl<LhsTensorIndices...>(lhs_tensor, rhs_value);
+  detail::evaluate_impl<std::decay_t<decltype(LhsTensorIndices)>...>(lhs_tensor,
+                                                                     rhs_value);
 }
 /// @}
 
@@ -625,7 +625,7 @@ void update(
       .template assert_lhs_tensorindices_same_in_rhs<lhs_tensorindex_list>(
           lhs_tensor);
 
-  detail::evaluate_impl<false, LhsTensorIndices...>(lhs_tensor,
-                                                    rhs_tensorexpression);
+  detail::evaluate_impl<false, std::decay_t<decltype(LhsTensorIndices)>...>(
+      lhs_tensor, rhs_tensorexpression);
 }
 }  // namespace tenex
