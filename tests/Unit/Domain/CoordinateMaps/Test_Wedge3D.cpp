@@ -8,6 +8,9 @@
 #include <optional>
 #include <random>
 
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Identity.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -332,6 +335,169 @@ void test_wedge3d_random_radii() {
   }
 }
 
+void test_wedge3d_large_radius() {
+  INFO("Wedge3d large radius");
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> real_dis(-1, 1);
+  std::uniform_real_distribution<> angle_dis(55.0, 125.0);
+
+  const double inner_radius = 1.5;
+  const double outer_radius = 1.0e11;
+
+  const double opening_angle_xi = angle_dis(gen) * M_PI / 180.0;
+  CAPTURE(opening_angle_xi * 180.0 / M_PI);
+  const double opening_angle_eta = angle_dis(gen) * M_PI / 180.0;
+  CAPTURE(opening_angle_eta * 180.0 / M_PI);
+  std::array<double, 2> opening_angles{{opening_angle_xi, opening_angle_eta}};
+  std::array<double, 2> default_angles{{M_PI_2, M_PI_2}};
+
+  // Check that random points on the edges of the reference cube map to the
+  // correct edges of the wedge.
+  const std::array<double, 3> random_inner_logical{
+      {real_dis(gen), real_dis(gen), -1.0}};
+  const std::array<double, 3> random_outer_logical{
+      {real_dis(gen), real_dis(gen), 1.0}};
+
+  using WedgeHalves = Wedge3D::WedgeHalves;
+  for (const auto& with_equiangular_map : {true, false}) {
+    CAPTURE(with_equiangular_map);
+    for (const auto& which_wedges :
+         {WedgeHalves::Both, WedgeHalves::UpperOnly, WedgeHalves::LowerOnly}) {
+      const Wedge3D map(inner_radius, outer_radius, 1.0, 1.0,
+                        OrientationMap<3>{}, with_equiangular_map, which_wedges,
+                        CoordinateMaps::Distribution::Inverse,
+                        with_equiangular_map ? opening_angles : default_angles);
+      const double cap_xi_one =
+          tan(with_equiangular_map ? 0.5 * opening_angle_xi : M_PI_4);
+      const double cap_eta_one =
+          tan(with_equiangular_map ? 0.5 * opening_angle_eta : M_PI_4);
+      const double one_over_denominator =
+          1.0 / sqrt(1.0 + square(cap_xi_one) + square(cap_eta_one));
+
+      // 1/r^2 dr/dzeta
+      const double radius_scale_factor =
+          (outer_radius - inner_radius) / (2.0 * outer_radius * inner_radius);
+      const auto check_point = [&](const std::array<double, 3>& logical_point,
+                                   const double expected_radius) {
+        CAPTURE(logical_point);
+        CAPTURE(expected_radius);
+        const auto mapped_point = map(logical_point);
+        CAPTURE(mapped_point);
+
+        CHECK(magnitude(mapped_point) == approx(expected_radius));
+        CHECK_ITERABLE_APPROX(map.inverse(mapped_point).value(), logical_point);
+
+        const auto jacobian = map.jacobian(logical_point);
+        const auto inv_jacobian = map.inv_jacobian(logical_point);
+        CAPTURE(jacobian);
+        CAPTURE(inv_jacobian);
+
+        {
+          const std::array<double, 3> radial_vector =
+              mapped_point / magnitude(mapped_point);
+          std::array r_dot_jacobian{0.0, 0.0, 0.0};
+          for (size_t i = 0; i < 3; ++i) {
+            for (size_t j = 0; j < 3; ++j) {
+              gsl::at(r_dot_jacobian, i) +=
+                  gsl::at(radial_vector, j) * jacobian.get(j, i);
+            }
+          }
+
+          CAPTURE(r_dot_jacobian);
+          auto jacobian_approx = approx.scale(square(expected_radius));
+          CHECK(gsl::at(r_dot_jacobian, 0) == jacobian_approx(0.0));
+          CHECK(gsl::at(r_dot_jacobian, 1) == jacobian_approx(0.0));
+          CHECK(gsl::at(r_dot_jacobian, 2) ==
+                jacobian_approx(radius_scale_factor * square(expected_radius)));
+        }
+
+        const auto jacobian_times_inverse = tenex::evaluate<ti::I, ti::j>(
+            jacobian(ti::I, ti::k) * inv_jacobian(ti::K, ti::j));
+        const auto inverse_times_jacobian = tenex::evaluate<ti::I, ti::j>(
+            inv_jacobian(ti::I, ti::k) * jacobian(ti::K, ti::j));
+        CAPTURE(jacobian_times_inverse);
+        CAPTURE(inverse_times_jacobian);
+        CHECK_ITERABLE_APPROX(jacobian_times_inverse,
+                              (identity<3, double>(0.0)));
+        CHECK_ITERABLE_APPROX(inverse_times_jacobian,
+                              (identity<3, double>(0.0)));
+      };
+
+      // Check that points on the corners of the reference cube map to
+      // the correct corners of the wedge.
+      for (const double x : {-1.0, 1.0}) {
+        for (const double y : {-1.0, 1.0}) {
+          const std::array inner_logical{x, y, -1.0};
+          const std::array outer_logical{x, y, 1.0};
+          check_point(inner_logical, inner_radius);
+          check_point(outer_logical, outer_radius);
+
+          if (not(which_wedges == WedgeHalves::LowerOnly and x == 1.0) and
+              not(which_wedges == WedgeHalves::UpperOnly and x == -1.0)) {
+            CHECK(map(inner_logical)[2] ==
+                  approx(inner_radius * one_over_denominator));
+            CHECK(map(outer_logical)[2] ==
+                  approx(outer_radius * one_over_denominator));
+          }
+        }
+      }
+
+      // Check at the center of the full wedge, as it is easy to
+      // calculate expected values there.
+      const auto check_center = [&](const double zeta,
+                                    const double expected_radius) {
+        const double xi_center = which_wedges == WedgeHalves::UpperOnly   ? -1.0
+                                 : which_wedges == WedgeHalves::LowerOnly ? 1.0
+                                                                          : 0.0;
+        const std::array logical_point{xi_center, 0.0, zeta};
+        check_point(logical_point, expected_radius);
+
+        CAPTURE(logical_point);
+
+        const auto mapped_point = map(logical_point);
+        CAPTURE(mapped_point);
+
+        CHECK(mapped_point[0] == approx(0.0));
+        CHECK(mapped_point[1] == approx(0.0));
+        CHECK(mapped_point[2] == approx(expected_radius));
+
+        const auto jacobian = map.jacobian(logical_point);
+        const auto inv_jacobian = map.inv_jacobian(logical_point);
+
+        std::array expected_jacobian_diagonal{
+            expected_radius *
+                (with_equiangular_map ? 0.5 * opening_angle_xi : 1.0),
+            expected_radius *
+                (with_equiangular_map ? 0.5 * opening_angle_eta : 1.0),
+            radius_scale_factor * square(expected_radius)};
+        if (which_wedges != WedgeHalves::Both) {
+          expected_jacobian_diagonal[0] *= 0.5;
+        }
+        for (size_t i = 0; i < 3; ++i) {
+          CAPTURE(i);
+          for (size_t j = 0; j < 3; ++j) {
+            CAPTURE(j);
+            if (i == j) {
+              CHECK(jacobian.get(i, i) ==
+                    approx(gsl::at(expected_jacobian_diagonal, i)));
+              CHECK(inv_jacobian.get(i, i) ==
+                    approx(1.0 / gsl::at(expected_jacobian_diagonal, i)));
+            } else {
+              CHECK(jacobian.get(i, j) == approx(0.0));
+              CHECK(inv_jacobian.get(i, j) == approx(0.0));
+            }
+          }
+        }
+      };
+      check_center(-1.0, inner_radius);
+      check_center(1.0, outer_radius);
+
+      check_point(random_inner_logical, inner_radius);
+      check_point(random_outer_logical, outer_radius);
+    }
+  }
+}
+
 void test_wedge3d_fail() {
   INFO("Wedge3d fail");
   const Wedge3D map(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true);
@@ -372,6 +538,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
   test_wedge3d_all_directions();
   test_wedge3d_alignment();
   test_wedge3d_random_radii();
+  test_wedge3d_large_radius();
   CHECK(not Wedge3D{}.is_identity());
 
 #ifdef SPECTRE_DEBUG
