@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_DataVectorBinaryOperations.cpp
   Test_DiagonalModalOperator.cpp
   Test_DynamicBuffer.cpp
+  Test_ExtractPoint.cpp
   Test_FixedHashMap.cpp
   Test_FloatingPointType.cpp
   Test_IdPair.cpp
