@@ -110,7 +110,7 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
   // If an inner radius specified then take the inverse of the
   // piecewise specific translation.
   if (inner_radius_.has_value()) {
-    auto target_radius = magnitude(target_coords);
+    const double target_radius = magnitude(target_coords);
     double non_translated_radius = 0.;
     for (size_t i = 0; i < Dim; i++) {
       non_translated_radius +=
@@ -142,7 +142,7 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
       b += 2 * outer_radius_.value() *
            (outer_radius_.value() - inner_radius_.value());
       c -= square(outer_radius_.value());
-      auto roots = real_roots(a, b, c);
+      const std::optional<std::array<double, 2>> roots = real_roots(a, b, c);
       double radial_falloff_factor = 0.;
       ASSERT(
           roots.has_value() and roots.value()[0] >= 0 and roots.value()[1] >= 0,
@@ -205,7 +205,7 @@ Translation<Dim>::jacobian(
   // If inner radius has a value, then calculate the jacobian for the piecewise
   // translation.
   if (inner_radius_.has_value()) {
-    auto radius = magnitude(source_coords);
+    const tt::remove_cvref_wrap_t<T> radius = magnitude(source_coords);
     const DataVector function_of_time =
         functions_of_time.at(f_of_t_name_)->func(time)[0];
     auto result = make_with_value<
@@ -241,7 +241,7 @@ Translation<Dim>::jacobian(
         gsl::at(distance_to_center, i) =
             gsl::at(source_coords, i) - gsl::at(center_, i);
       }
-      auto radius = magnitude(distance_to_center);
+      const tt::remove_cvref_wrap_t<T> radius = magnitude(distance_to_center);
       const DataVector function_of_time =
           functions_of_time.at(f_of_t_name_)->func(time)[0];
 
@@ -297,7 +297,7 @@ Translation<Dim>::math_function_helper(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const size_t function_or_deriv_index) const {
-  const auto func_or_deriv_of_time =
+  const DataVector func_or_deriv_of_time =
       gsl::at(functions_of_time.at(f_of_t_name_)->func_and_deriv(time),
               function_or_deriv_index);
   ASSERT(func_or_deriv_of_time.size() == Dim,
@@ -335,7 +335,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const size_t function_or_deriv_index) const {
-  const auto func_or_deriv_of_time =
+  const DataVector func_or_deriv_of_time =
       gsl::at(functions_of_time.at(f_of_t_name_)->func_and_deriv(time),
               function_or_deriv_index);
   ASSERT(func_or_deriv_of_time.size() == Dim,
@@ -348,7 +348,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(source_coords, i);
   }
-  auto radius = magnitude(result);
+  const tt::remove_cvref_wrap_t<T> radius = magnitude(result);
   if (function_or_deriv_index == 1) {
     for (size_t i = 0; i < Dim; i++) {
       gsl::at(result, i) = 0.0;
