@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace evolution::dg {
+namespace dg {
 namespace detail {
 template <size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
@@ -173,4 +173,4 @@ void lift_boundary_terms_gauss_points(
       Spectral::boundary_lifting_term(volume_stripe_mesh).first,
       lower_magnitude_of_face_normal, lower_face_det_jacobian);
 }
-}  // namespace evolution::dg
+}  // namespace dg

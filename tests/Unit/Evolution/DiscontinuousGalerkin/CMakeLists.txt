@@ -16,12 +16,9 @@ set(LIBRARY_SOURCES
   Tags/Test_NeighborMesh.cpp
   Test_BackgroundGrVars.cpp
   Test_BoundaryCorrectionsHelper.cpp
-  Test_InterpolateFromBoundary.cpp
-  Test_LiftFromBoundary.cpp
   Test_MortarData.cpp
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
-  Test_ProjectToBoundary.cpp
   Test_UsingSubcell.cpp
   )
 

@@ -8,20 +8,15 @@ spectre_target_headers(
   BackgroundGrVars.hpp
   DgElementArray.hpp
   InboxTags.hpp
-  InterpolateFromBoundary.hpp
-  LiftFromBoundary.hpp
   MortarData.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
-  ProjectToBoundary.hpp
   UsingSubcell.hpp
   )
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  InterpolateFromBoundary.cpp
-  LiftFromBoundary.cpp
   MortarData.cpp
   )
 

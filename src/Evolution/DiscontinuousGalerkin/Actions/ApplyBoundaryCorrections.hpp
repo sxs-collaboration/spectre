@@ -22,7 +22,6 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -30,6 +29,7 @@
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -680,7 +680,7 @@ struct ApplyBoundaryCorrections {
 
                 volume_dt_correction.initialize(
                     volume_mesh.number_of_grid_points(), 0.0);
-                evolution::dg::lift_boundary_terms_gauss_points(
+                ::dg::lift_boundary_terms_gauss_points(
                     make_not_null(&volume_dt_correction),
                     volume_det_inv_jacobian, volume_mesh, direction,
                     dt_boundary_correction, magnitude_of_face_normal,

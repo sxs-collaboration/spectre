@@ -9,10 +9,13 @@ set(LIBRARY_SOURCES
   Test_ApplyMassMatrix.cpp
   Test_Formulation.cpp
   Test_HasReceivedFromAllMortars.cpp
+  Test_InterpolateFromBoundary.cpp
   Test_LiftFlux.cpp
+  Test_LiftFromBoundary.cpp
   Test_MetricIdentityJacobian.cpp
   Test_MortarHelpers.cpp
   Test_NormalDotFlux.cpp
+  Test_ProjectToBoundary.cpp
   Test_SimpleBoundaryData.cpp
   Test_SimpleMortarData.cpp
   Test_Tags.cpp
@@ -28,6 +31,7 @@ target_link_libraries(
   DomainStructure
   DiscontinuousGalerkin
   ErrorHandling
+  Interpolation
   Spectral
   Utilities
   )

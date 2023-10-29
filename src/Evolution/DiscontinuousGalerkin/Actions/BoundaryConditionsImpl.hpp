@@ -37,11 +37,11 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
-#include "Evolution/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
-#include "Evolution/DiscontinuousGalerkin/LiftFromBoundary.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -226,17 +226,18 @@ void apply_boundary_condition_on_face(
   // evolved vars are guaranteed to be contiguous, but only if we are doing a
   // ghost boundary condition.
   if constexpr (uses_ghost_condition) {
-    project_contiguous_data_to_boundary(make_not_null(&interior_face_fields),
-                                        volume_evolved_vars, volume_mesh,
-                                        direction);
+    ::dg::project_contiguous_data_to_boundary(
+        make_not_null(&interior_face_fields), volume_evolved_vars, volume_mesh,
+        direction);
   } else {
-    project_tensors_to_boundary<interior_evolved_vars_tags>(
+    ::dg::project_tensors_to_boundary<interior_evolved_vars_tags>(
         make_not_null(&interior_face_fields), volume_evolved_vars, volume_mesh,
         direction);
   }
   if constexpr (tmpl::size<fluxes_tags>::value != 0) {
-    project_contiguous_data_to_boundary(make_not_null(&interior_face_fields),
-                                        volume_fluxes, volume_mesh, direction);
+    ::dg::project_contiguous_data_to_boundary(
+        make_not_null(&interior_face_fields), volume_fluxes, volume_mesh,
+        direction);
   } else {
     (void)volume_fluxes;
   }
@@ -246,7 +247,7 @@ void apply_boundary_condition_on_face(
   if constexpr (tmpl::size<tmpl::append<
                     temp_tags_no_coordinates,
                     detail::inverse_spatial_metric_tag<System>>>::value != 0) {
-    project_tensors_to_boundary<tmpl::append<
+    ::dg::project_tensors_to_boundary<tmpl::append<
         temp_tags_no_coordinates, detail::inverse_spatial_metric_tag<System>>>(
         make_not_null(&interior_face_fields), volume_temporaries, volume_mesh,
         direction);
@@ -256,7 +257,7 @@ void apply_boundary_condition_on_face(
     ASSERT(volume_primitive_variables != nullptr,
            "The volume primitive variables are not set even though the "
            "system has primitive variables.");
-    project_tensors_to_boundary<interior_prim_tags>(
+    ::dg::project_tensors_to_boundary<interior_prim_tags>(
         make_not_null(&interior_face_fields), *volume_primitive_variables,
         volume_mesh, direction);
   } else {
@@ -264,13 +265,14 @@ void apply_boundary_condition_on_face(
   }
   if constexpr (tmpl::size<
                     bcondition_interior_deriv_evolved_vars_tags>::value != 0) {
-    project_tensors_to_boundary<bcondition_interior_deriv_evolved_vars_tags>(
+    ::dg::project_tensors_to_boundary<
+        bcondition_interior_deriv_evolved_vars_tags>(
         make_not_null(&interior_face_fields), partial_derivs, volume_mesh,
         direction);
   }
   if constexpr (tmpl::size<bcondition_interior_dt_evolved_vars_tags>::value !=
                 0) {
-    project_tensors_to_boundary<bcondition_interior_dt_evolved_vars_tags>(
+    ::dg::project_tensors_to_boundary<bcondition_interior_dt_evolved_vars_tags>(
         make_not_null(&interior_face_fields), db::get<dt_variables_tag>(*box),
         volume_mesh, direction);
   }
@@ -278,8 +280,9 @@ void apply_boundary_condition_on_face(
   std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   if (volume_mesh_velocity.has_value()) {
     face_mesh_velocity = tnsr::I<DataVector, Dim>{number_of_points_on_face};
-    project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
-                               *volume_mesh_velocity, volume_mesh, direction);
+    ::dg::project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
+                                     *volume_mesh_velocity, volume_mesh,
+                                     direction);
   }
 
   // Normalize the normal vectors. We cache the unit normal covector For
@@ -311,7 +314,7 @@ void apply_boundary_condition_on_face(
                             .data()),
                     volume_mesh.number_of_grid_points());
           }
-          project_tensor_to_boundary(
+          ::dg::project_tensor_to_boundary(
               make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
                   *normal_covector_quantity)),
               volume_unnormalized_normal_covector, volume_mesh, direction);
@@ -621,7 +624,7 @@ void apply_boundary_condition_on_face(
           [&direction, &boundary_corrections_on_face, &face_det_jacobian,
            &magnitude_of_interior_face_normal, &volume_det_inv_jacobian,
            &volume_mesh](const auto dt_variables_ptr) {
-            evolution::dg::lift_boundary_terms_gauss_points(
+            ::dg::lift_boundary_terms_gauss_points(
                 dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
                 direction, boundary_corrections_on_face,
                 magnitude_of_interior_face_normal, face_det_jacobian);
@@ -645,9 +648,9 @@ void apply_boundary_condition_on_face(
       db::mutate<dt_variables_tag>(
           [&direction, &dt_time_derivative_correction,
            &volume_mesh](const auto dt_variables_ptr) {
-            interpolate_dt_terms_gauss_points(dt_variables_ptr, volume_mesh,
-                                              direction,
-                                              dt_time_derivative_correction);
+            ::dg::interpolate_dt_terms_gauss_points(
+                dt_variables_ptr, volume_mesh, direction,
+                dt_time_derivative_correction);
           },
           box);
     }

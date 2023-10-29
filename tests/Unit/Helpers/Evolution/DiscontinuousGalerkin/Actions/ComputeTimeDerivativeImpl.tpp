@@ -43,7 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "Evolution/PassVariables.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -1669,7 +1669,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
     face_normals[direction] = tnsr::i<DataVector, Dim, Frame::Inertial>{
         face_mesh.number_of_grid_points()};
-    ::evolution::dg::project_tensor_to_boundary(
+    ::dg::project_tensor_to_boundary(
         make_not_null(&face_normals[direction]), volume_inv_jac_in_direction,
         mesh, direction);
     for (auto& component : face_normals[direction]) {
@@ -1702,21 +1702,21 @@ void test_impl(const Spectral::Quadrature quadrature,
             tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
                          primitive_tags_for_face>>
             fields_on_face{face_mesh.number_of_grid_points()};
-        ::evolution::dg::project_contiguous_data_to_boundary(
+        ::dg::project_contiguous_data_to_boundary(
             make_not_null(&fields_on_face),
             variables_before_compute_time_derivatives, mesh, local_direction);
         if constexpr (tmpl::size<fluxes_tags>::value != 0) {
-          ::evolution::dg::project_contiguous_data_to_boundary(
+          ::dg::project_contiguous_data_to_boundary(
               make_not_null(&fields_on_face), expected_fluxes, mesh,
               local_direction);
         } else {
           (void)expected_fluxes;
         }
-        ::evolution::dg::project_tensors_to_boundary<temporary_tags_for_face>(
+        ::dg::project_tensors_to_boundary<temporary_tags_for_face>(
             make_not_null(&fields_on_face), volume_temporaries, mesh,
             local_direction);
         if constexpr (system::has_primitive_and_conservative_vars) {
-          ::evolution::dg::project_tensors_to_boundary<primitive_tags_for_face>(
+          ::dg::project_tensors_to_boundary<primitive_tags_for_face>(
               make_not_null(&fields_on_face),
               get_tag(typename system::primitive_variables_tag{}), mesh,
               local_direction);
@@ -1725,7 +1725,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         if (UseMovingMesh) {
           face_mesh_velocity =
               tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
-          ::evolution::dg::project_tensor_to_boundary(
+          ::dg::project_tensor_to_boundary(
               make_not_null(&*face_mesh_velocity), *mesh_velocity, mesh,
               local_direction);
         }

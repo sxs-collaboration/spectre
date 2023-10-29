@@ -24,9 +24,9 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Evolution/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
@@ -188,7 +188,7 @@ void test(const double eps) {
         polynomial_volume_fluxes<tags>(face_inertial_coords, powers));
 
     // Now perform lifting
-    evolution::dg::lift_boundary_terms_gauss_points(
+    ::dg::lift_boundary_terms_gauss_points(
         make_not_null(&dt_vars_lifted_one_at_a_time), volume_det_inv_jacobian,
         volume_mesh, direction, boundary_corrections, face_normal_magnitude,
         face_det_jacobian);
@@ -216,7 +216,7 @@ void test(const double eps) {
           polynomial_volume_fluxes<tags>(lower_face_inertial_coords, powers));
 
       // Now perform lifting
-      evolution::dg::lift_boundary_terms_gauss_points(
+      ::dg::lift_boundary_terms_gauss_points(
           make_not_null(&dt_vars_lifted_two_at_a_time), volume_det_inv_jacobian,
           volume_mesh, direction.dimension(), boundary_corrections,
           face_normal_magnitude, face_det_jacobian, lower_boundary_corrections,
@@ -248,7 +248,8 @@ void test(const double eps) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.LiftFromBoundary", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFromBoundary",
+                  "[Unit][NumericalAlgorithms]") {
   // We test the lifting procedure (and at the same time the weak divergence
   // more thoroughly) by checking the
   //    weak divergence + lifting boundary terms == strong divergence

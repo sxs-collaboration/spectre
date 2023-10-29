@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace evolution::dg {
+namespace dg {
 namespace detail {
 template <size_t Dim>
 void interpolate_dt_terms_gauss_points_impl(
@@ -69,4 +69,4 @@ void interpolate_dt_terms_gauss_points(
           ? Spectral::boundary_interpolation_term(volume_stripe_mesh).second
           : Spectral::boundary_interpolation_term(volume_stripe_mesh).first);
 }
-}  // namespace evolution::dg
+}  // namespace dg

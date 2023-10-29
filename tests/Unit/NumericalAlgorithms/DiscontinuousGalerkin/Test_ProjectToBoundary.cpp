@@ -14,9 +14,9 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
@@ -92,14 +92,14 @@ void test(const Spectral::Quadrature quadrature) {
 
     Variables<tmpl::list<Var1, Var2, Var3>> face_values{
         face_mesh.number_of_grid_points(), 0.0};
-    evolution::dg::project_tensors_to_boundary<tmpl::list<Var2>>(
+    ::dg::project_tensors_to_boundary<tmpl::list<Var2>>(
         make_not_null(&face_values), volume_data, volume_mesh, direction);
     CHECK_ITERABLE_APPROX(get<Var1>(face_values), expected_var1);
     CHECK_ITERABLE_APPROX(get<Var2>(face_values),
                           get<Var2>(expected_face_values));
     CHECK_ITERABLE_APPROX(get<Var3>(face_values), expected_var3);
 
-    evolution::dg::project_tensors_to_boundary<tmpl::list<Var3>>(
+    ::dg::project_tensors_to_boundary<tmpl::list<Var3>>(
         make_not_null(&face_values), volume_data, volume_mesh, direction);
     CHECK_ITERABLE_APPROX(get<Var1>(face_values), expected_var1);
     CHECK_ITERABLE_APPROX(get<Var2>(face_values),
@@ -108,7 +108,7 @@ void test(const Spectral::Quadrature quadrature) {
                           get<Var3>(expected_face_values));
 
     face_values.initialize(face_mesh.number_of_grid_points(), 0.0);
-    evolution::dg::project_tensors_to_boundary<tmpl::list<Var2, Var3>>(
+    ::dg::project_tensors_to_boundary<tmpl::list<Var2, Var3>>(
         make_not_null(&face_values), volume_data, volume_mesh, direction);
     CHECK_ITERABLE_APPROX(get<Var1>(face_values), expected_var1);
     CHECK_ITERABLE_APPROX(get<Var2>(face_values),
@@ -118,7 +118,7 @@ void test(const Spectral::Quadrature quadrature) {
 
     Variables<tmpl::list<Var1, Var2, Var3>> face_values_contiguous_project{
         face_mesh.number_of_grid_points(), 0.0};
-    evolution::dg::project_contiguous_data_to_boundary(
+    ::dg::project_contiguous_data_to_boundary(
         make_not_null(&face_values_contiguous_project), volume_data,
         volume_mesh, direction);
     CHECK_ITERABLE_APPROX(get<Var1>(face_values_contiguous_project),
@@ -129,20 +129,21 @@ void test(const Spectral::Quadrature quadrature) {
                           get<Var3>(expected_face_values));
 
     Scalar<DataVector> var3_face{face_mesh.number_of_grid_points()};
-    evolution::dg::project_tensor_to_boundary(
-        make_not_null(&var3_face), var3_volume, volume_mesh, direction);
+    ::dg::project_tensor_to_boundary(make_not_null(&var3_face), var3_volume,
+                                     volume_mesh, direction);
     CHECK_ITERABLE_APPROX(var3_face, get<Var3>(expected_face_values));
 
     tnsr::I<DataVector, 2, Frame::Inertial> var2_face{
         face_mesh.number_of_grid_points()};
-    evolution::dg::project_tensor_to_boundary(
-        make_not_null(&var2_face), var2_volume, volume_mesh, direction);
+    ::dg::project_tensor_to_boundary(make_not_null(&var2_face), var2_volume,
+                                     volume_mesh, direction);
     CHECK_ITERABLE_APPROX(var2_face, get<Var2>(expected_face_values));
   }
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.ProjectToBoundary", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.ProjectToBoundary",
+                  "[Unit][NumericalAlgorithms]") {
   for (const auto quadrature :
        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
     test<1>(quadrature);

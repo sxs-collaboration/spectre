@@ -9,7 +9,7 @@
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Evolution/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/InterpolateFromBoundary.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
@@ -68,9 +68,9 @@ void test(const double eps) {
     for (size_t i = 0; i < Dim; ++i) {
       get<Tags::dt<Var2<Dim>>>(dt_correction_on_boundary).get(i) *= (2.0 + i);
     }
-    evolution::dg::interpolate_dt_terms_gauss_points(make_not_null(&volume_dt),
-                                                     volume_mesh, direction,
-                                                     dt_correction_on_boundary);
+    ::dg::interpolate_dt_terms_gauss_points(make_not_null(&volume_dt),
+                                            volume_mesh, direction,
+                                            dt_correction_on_boundary);
 
     Approx local_approx = Approx::custom().epsilon(eps).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::dt<Var1>>(volume_dt),
@@ -82,8 +82,8 @@ void test(const double eps) {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.InterpolateDtCorrection",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.InterpolateDtCorrection",
+                  "[Unit][NumericalAlgorithms]") {
   test<1>(1.0e-14);
   test<2>(1.0e-14);
   test<3>(1.0e-14);

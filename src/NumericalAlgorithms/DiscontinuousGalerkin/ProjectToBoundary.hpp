@@ -20,7 +20,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace evolution::dg {
+namespace dg {
 namespace detail {
 template <typename TagsList>
 struct NumberOfIndependentComponents;
@@ -45,7 +45,7 @@ struct NumberOfIndependentComponents<tmpl::list<Tags...>> {
  *
  * In general, this function will be used for projecting all the evolved
  * variables or all the volume fluxes to the faces. The function
- * `evolution::dg::project_tensors_to_boundary()` should be used for projecting
+ * `dg::project_tensors_to_boundary()` should be used for projecting
  * individual tensors to the face.
  *
  * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.
@@ -235,8 +235,7 @@ void project_tensor_to_boundary(
     const Tensor<DataVector, Symm, IndexList>& volume_field,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   const size_t sliced_dim = direction.dimension();
-  if (volume_mesh.quadrature(sliced_dim) ==
-      Spectral::Quadrature::Gauss) {
+  if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
     const Matrix identity{};
     auto interpolation_matrices = make_array<Dim>(std::cref(identity));
     const std::pair<Matrix, Matrix>& matrices =
@@ -267,4 +266,4 @@ void project_tensor_to_boundary(
     }
   }
 }
-}  // namespace evolution::dg
+}  // namespace dg

@@ -32,6 +32,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -873,7 +874,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
         Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
             volume_dt_correction{mesh.number_of_grid_points(), 0.0};
-        evolution::dg::lift_boundary_terms_gauss_points(
+        ::dg::lift_boundary_terms_gauss_points(
             make_not_null(&volume_dt_correction), det_inv_jacobian, mesh,
             direction, dt_boundary_correction, magnitude_of_face_normal,
             face_det_jacobian);
@@ -893,7 +894,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                        DataVector{1.0 / get(det_inv_jacobian)}, mesh.extents());
 
         // Lift from the Gauss points into the volume
-        evolution::dg::lift_boundary_terms_gauss_points(
+        ::dg::lift_boundary_terms_gauss_points(
             make_not_null(&expected_dt_variables_volume), det_inv_jacobian,
             mesh, direction, dt_boundary_correction, magnitude_of_face_normal,
             face_det_jacobian);

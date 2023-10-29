@@ -28,8 +28,8 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Time/TimeStepId.hpp"
@@ -142,19 +142,19 @@ void internal_mortar_data_impl(
     //    re-projection onto subcell mortars later).
 
     // Perform step 1
-    project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
-                                        volume_evolved_vars, volume_mesh,
-                                        direction);
+    ::dg::project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
+                                              volume_evolved_vars, volume_mesh,
+                                              direction);
     if constexpr (tmpl::size<fluxes_tags>::value != 0) {
-      project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
-                                          volume_fluxes, volume_mesh,
-                                          direction);
+      ::dg::project_contiguous_data_to_boundary(make_not_null(&fields_on_face),
+                                                volume_fluxes, volume_mesh,
+                                                direction);
     }
     if constexpr (tmpl::size<tmpl::append<
                       temporary_tags_for_face,
                       detail::inverse_spatial_metric_tag<System>>>::value !=
                   0) {
-      project_tensors_to_boundary<tmpl::append<
+      ::dg::project_tensors_to_boundary<tmpl::append<
           temporary_tags_for_face, detail::inverse_spatial_metric_tag<System>>>(
           make_not_null(&fields_on_face), volume_temporaries, volume_mesh,
           direction);
@@ -164,7 +164,7 @@ void internal_mortar_data_impl(
       ASSERT(volume_primitive_variables != nullptr,
              "The volume primitive variables are not set even though the "
              "system has primitive variables.");
-      project_tensors_to_boundary<primitive_tags_for_face>(
+      ::dg::project_tensors_to_boundary<primitive_tags_for_face>(
           make_not_null(&fields_on_face), *volume_primitive_variables,
           volume_mesh, direction);
     } else {
@@ -177,8 +177,9 @@ void internal_mortar_data_impl(
         face_mesh_velocity =
             tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
       }
-      project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
-                                 *volume_mesh_velocity, volume_mesh, direction);
+      ::dg::project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
+                                       *volume_mesh_velocity, volume_mesh,
+                                       direction);
     }
 
     // Normalize the normal vectors. We cache the unit normal covector For
@@ -204,7 +205,7 @@ void internal_mortar_data_impl(
                                   .data()),
                           volume_mesh.number_of_grid_points());
       }
-      project_tensor_to_boundary(
+      ::dg::project_tensor_to_boundary(
           make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
               *normal_covector_quantity)),
           volume_unnormalized_normal_covector, volume_mesh, direction);
