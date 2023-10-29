@@ -154,12 +154,17 @@ struct Metavariables {
   using observe_fields = tmpl::append<
       analytic_solution_fields, error_tags,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 ::Events::Tags::ObserverDetInvJacobianCompute<
+                     Frame::ElementLogical, Frame::Inertial>,
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
-                     volume_dim, Frame::Inertial>>>;
+                     volume_dim, Frame::Inertial>>,
+      typename fixed_sources_tag::tags_list,
+      typename db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+                                  fields_tag>::tags_list,
+      typename db::add_tag_prefix<LinearSolver::Tags::Operand,
+                                  fields_tag>::tags_list>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 ::Events::Tags::ObserverDetInvJacobianCompute<
-                   Frame::ElementLogical, Frame::Inertial>,
                  error_compute>;
 
   // Collect all items to store in the cache.
