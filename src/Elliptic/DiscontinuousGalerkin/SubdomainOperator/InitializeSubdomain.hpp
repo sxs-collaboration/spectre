@@ -40,6 +40,7 @@
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -276,10 +277,11 @@ struct InitializeSubdomain {
             // this is also what the DG operator currently does. The result is
             // the same on Gauss-Lobatto grids, but may need adjusting when
             // adding support for Gauss grids.
-            data_on_slice(make_not_null(&face_background_fields[direction]),
-                          *background_fields, mesh.extents(),
-                          direction.dimension(),
-                          index_to_slice_at(mesh.extents(), direction));
+            face_background_fields[direction].initialize(
+                mesh.slice_away(direction.dimension()).number_of_grid_points());
+            ::dg::project_contiguous_data_to_boundary(
+                make_not_null(&face_background_fields[direction]),
+                *background_fields, mesh, direction);
           }
         },
         box, overlap_id);

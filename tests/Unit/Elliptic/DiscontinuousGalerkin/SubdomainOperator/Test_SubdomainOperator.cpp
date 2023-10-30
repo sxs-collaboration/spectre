@@ -68,7 +68,9 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -444,6 +446,7 @@ template <typename System, typename ExtraInitActions = tmpl::list<>,
 void test_subdomain_operator(
     const DomainCreator<Dim>& domain_creator,
     const bool use_massive_dg_operator = true,
+    const Spectral::Quadrature quadrature = Spectral::Quadrature::GaussLobatto,
     const bool override_boundary_conditions = false,
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const size_t max_overlap = 3, const double penalty_parameter = 1.2) {
@@ -496,7 +499,7 @@ void test_subdomain_operator(
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
         std::make_unique<RandomBackground<Dim>>(), overlap, penalty_parameter,
-        use_massive_dg_operator, Spectral::Quadrature::GaussLobatto}};
+        use_massive_dg_operator, quadrature}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {
@@ -691,9 +694,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           make_boundary_condition<system>(
               elliptic::BoundaryConditionType::Neumann)};
-      for (const bool use_massive_dg_operator : {false, true}) {
-        test_subdomain_operator<system>(domain_creator,
-                                        use_massive_dg_operator);
+      for (const auto& [use_massive_dg_operator, quadrature] :
+           cartesian_product(make_array(false, true),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
+        test_subdomain_operator<system>(domain_creator, use_massive_dg_operator,
+                                        quadrature);
       }
     }
     {
@@ -708,7 +714,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       test_subdomain_operator<system>(domain_creator);
-      test_subdomain_operator<system>(domain_creator, true, true);
+      test_subdomain_operator<system>(domain_creator, true,
+                                      Spectral::Quadrature::GaussLobatto, true);
     }
     {
       INFO("3D");
@@ -886,9 +893,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           size_t{0},
           std::array<size_t, 3>{{3, 4, 2}},
           false};
-      for (const bool use_massive_dg_operator : {false, true}) {
-        test_subdomain_operator<system>(domain_creator,
-                                        use_massive_dg_operator);
+      for (const auto& [use_massive_dg_operator, quadrature] :
+           cartesian_product(make_array(false, true),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
+        test_subdomain_operator<system>(domain_creator, use_massive_dg_operator,
+                                        quadrature);
       }
     }
   }
