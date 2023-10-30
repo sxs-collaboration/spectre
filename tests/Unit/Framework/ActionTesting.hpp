@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <charm++.h>
 #include <cstddef>
+#include <memory>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -457,13 +458,15 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
  public:
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
+  MockDistributedObjectProxy() = default;
+
   MockDistributedObjectProxy(
       size_t mock_node, size_t mock_local_core,
       MockDistributedObject<Component>& mock_distributed_object, Inbox& inbox)
       : mock_node_(mock_node),
         mock_local_core_(mock_local_core),
-        mock_distributed_object_(mock_distributed_object),
-        inbox_(inbox) {}
+        mock_distributed_object_(&mock_distributed_object),
+        inbox_(&inbox) {}
 
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, Data&& data,
@@ -472,37 +475,37 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
     // not needed now. However, it is required by the interface to be compliant
     // with the Algorithm invocations.
     (void)enable_if_disabled;
-    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(inbox_)),
+    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(*inbox_)),
                                 id, std::forward<Data>(data));
   }
 
   template <typename InboxTag, typename MessageType>
   void receive_data(MessageType* message) {
-    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(inbox_)),
+    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(*inbox_)),
                                 message);
   }
 
   template <typename Action, typename... Args>
   void simple_action(std::tuple<Args...> args) {
-    mock_distributed_object_.template simple_action<Action>(std::move(args));
+    mock_distributed_object_->template simple_action<Action>(std::move(args));
   }
 
   template <typename Action>
   void simple_action() {
-    mock_distributed_object_.template simple_action<Action>();
+    mock_distributed_object_->template simple_action<Action>();
   }
 
   template <typename Action, typename... Args>
   void threaded_action(std::tuple<Args...> args) {
-    mock_distributed_object_.template threaded_action<Action>(std::move(args));
+    mock_distributed_object_->template threaded_action<Action>(std::move(args));
   }
 
   template <typename Action>
   void threaded_action() {
-    mock_distributed_object_.template threaded_action<Action>();
+    mock_distributed_object_->template threaded_action<Action>();
   }
 
-  void set_terminate(bool t) { mock_distributed_object_.set_terminate(t); }
+  void set_terminate(bool t) { mock_distributed_object_->set_terminate(t); }
 
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
@@ -510,11 +513,11 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
   void perform_algorithm(const bool /*restart_if_terminated*/) {}
 
   MockDistributedObject<Component>* ckLocal() {
-    return (mock_distributed_object_.my_node() ==
+    return (mock_distributed_object_->my_node() ==
                 static_cast<int>(mock_node_) and
-            mock_distributed_object_.my_local_rank() ==
+            mock_distributed_object_->my_local_rank() ==
                 static_cast<int>(mock_local_core_))
-               ? &mock_distributed_object_
+               ? mock_distributed_object_
                : nullptr;
   }
 
@@ -549,8 +552,8 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
   // lives on.
   size_t mock_node_{0};
   size_t mock_local_core_{0};
-  MockDistributedObject<Component>& mock_distributed_object_;
-  Inbox& inbox_;
+  MockDistributedObject<Component>* mock_distributed_object_{nullptr};
+  Inbox* inbox_{nullptr};
 };
 
 template <typename ChareType>
