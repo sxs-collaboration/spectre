@@ -35,6 +35,7 @@
 #include "Domain/Tags/SurfaceJacobian.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -323,6 +324,7 @@ struct InitializeBackground {
                             Frame::Inertial>& inv_jacobian,
       const BackgroundBase& background,
       tmpl::list<BackgroundClasses...> /*meta*/) const {
+    // Background fields in the volume
     *background_fields =
         call_with_dynamic_type<Variables<BackgroundFields>,
                                tmpl::list<BackgroundClasses...>>(
@@ -331,16 +333,21 @@ struct InitializeBackground {
               return variables_from_tagged_tuple(derived->variables(
                   inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
             });
-    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-           "Only Gauss-Lobatto quadrature is currently implemented for "
-           "slicing background fields to faces.");
+    // Background fields on faces
     for (const auto& direction : Direction<Dim>::all_directions()) {
       // Possible optimization: Only the background fields in the
       // System::fluxes_computer::argument_tags are needed on internal faces.
-      data_on_slice(
+      // On Gauss grids we could evaluate the background directly on the faces
+      // instead of projecting the data. However, we need to take derivatives of
+      // the background fields, so we could evaluate them on a Gauss-Lobatto
+      // grid in the volume. We could even evaluate the background fields on a
+      // higher-order grid and project down to get more accurate derivatives if
+      // needed.
+      (*face_background_fields)[direction].initialize(
+          mesh.slice_away(direction.dimension()).number_of_grid_points());
+      ::dg::project_contiguous_data_to_boundary(
           make_not_null(&(*face_background_fields)[direction]),
-          *background_fields, mesh.extents(), direction.dimension(),
-          index_to_slice_at(mesh.extents(), direction));
+          *background_fields, mesh, direction);
     }
   }
 };
