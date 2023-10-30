@@ -491,11 +491,12 @@ void test_subdomain_operator(
         domain::Tags::ExternalBoundaryConditions<Dim>,
         elliptic::Tags::Background<elliptic::analytic_data::Background>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
-        elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>{
+        elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
+        elliptic::dg::Tags::Quadrature>{
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
         std::make_unique<RandomBackground<Dim>>(), overlap, penalty_parameter,
-        use_massive_dg_operator}};
+        use_massive_dg_operator, Spectral::Quadrature::GaussLobatto}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {

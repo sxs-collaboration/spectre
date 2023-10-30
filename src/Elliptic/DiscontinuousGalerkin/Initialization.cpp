@@ -52,9 +52,13 @@ void InitializeGeometry<Dim>::operator()(
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
     const Domain<Dim>& domain,
     const domain::FunctionsOfTimeMap& functions_of_time,
+    const Spectral::Quadrature quadrature,
     const ElementId<Dim>& element_id) const {
   // Mesh
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  ASSERT(quadrature == Spectral::Quadrature::GaussLobatto,
+         "The elliptic DG scheme only supports Gauss-Lobatto "
+         "grids, but the chosen quadrature is: "
+             << quadrature);
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
                                                       element_id, quadrature);
   // Element

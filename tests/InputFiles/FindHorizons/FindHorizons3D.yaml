@@ -29,6 +29,10 @@ DomainCreator:
     RadialDistribution: [Logarithmic]
     TimeDependentMaps: None
 
+Discretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
+
 Importers:
   VolumeData:
     FileGlob: "KerrVolume*.h5"

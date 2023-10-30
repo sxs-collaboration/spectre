@@ -91,7 +91,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         Spectral::Quadrature::GaussLobatto}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -163,7 +164,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         Spectral::Quadrature::GaussLobatto}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -236,7 +238,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         Spectral::Quadrature::GaussLobatto}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});

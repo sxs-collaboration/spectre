@@ -223,10 +223,12 @@ void test_dg_operator(
       domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ExternalBoundaryConditions<Dim>,
       ::elliptic::dg::Tags::PenaltyParameter, ::elliptic::dg::Tags::Massive,
+      ::elliptic::dg::Tags::Quadrature,
       ::Tags::AnalyticSolution<AnalyticSolution>>{
       std::move(domain), domain_creator.functions_of_time(),
       std::move(boundary_conditions), penalty_parameter,
-      use_massive_dg_operator, analytic_solution}};
+      use_massive_dg_operator, Spectral::Quadrature::GaussLobatto,
+      analytic_solution}};
 
   // DataBox shortcuts
   const auto get_tag = [&runner](

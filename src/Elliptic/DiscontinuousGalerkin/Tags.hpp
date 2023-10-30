@@ -4,7 +4,9 @@
 #pragma once
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic::dg {
@@ -41,6 +43,15 @@ struct Massive {
   using group = DiscontinuousGalerkin;
 };
 
+struct Quadrature {
+  using type = Spectral::Quadrature;
+  static constexpr Options::String help =
+      "The quadrature method used, which determines the distribution of points "
+      "on the grid. Gauss-Lobatto points have a point at the boundary and "
+      "Gauss points do not. Other quadratures are not currently supported.";
+  using group = DiscontinuousGalerkin;
+};
+
 }  // namespace OptionTags
 
 /// DataBox tags related to elliptic discontinuous Galerkin schemes
@@ -66,6 +77,22 @@ struct Massive : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::Massive>;
   static bool create_from_options(const bool value) { return value; }
+};
+
+/// The quadrature method used for the elliptic DG discretization
+struct Quadrature : db::SimpleTag {
+  using type = Spectral::Quadrature;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::Quadrature>;
+  static type create_from_options(const type value) {
+    if (not(value == Spectral::Quadrature::Gauss or
+            value == Spectral::Quadrature::GaussLobatto)) {
+      ERROR_NO_TRACE(
+          "Choose Gauss or Gauss-Lobatto quadrature for elliptic DG "
+          "discretizations.");
+    }
+    return value;
+  }
 };
 
 }  // namespace Tags

@@ -73,7 +73,8 @@ struct InitializeGeometry {
   using argument_tags =
       tmpl::list<domain::Tags::InitialExtents<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>,
-                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
+                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime,
+                 elliptic::dg::Tags::Quadrature>;
   void operator()(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
       gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
@@ -88,7 +89,7 @@ struct InitializeGeometry {
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      const ElementId<Dim>& element_id) const;
+      Spectral::Quadrature quadrature, const ElementId<Dim>& element_id) const;
 };
 
 namespace detail {
