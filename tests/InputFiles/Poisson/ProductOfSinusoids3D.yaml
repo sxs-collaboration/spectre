@@ -22,7 +22,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   ProductOfSinusoids:
     WaveNumbers: [1, 1, 1]
 
@@ -40,12 +40,15 @@ DomainCreator:
     TimeDependence: None
     BoundaryConditionInX:
       AnalyticSolution:
+        Solution: *solution
         Field: Dirichlet
     BoundaryConditionInY:
       AnalyticSolution:
+        Solution: *solution
         Field: Dirichlet
     BoundaryConditionInZ:
       AnalyticSolution:
+        Solution: *solution
         Field: Dirichlet
 
 Discretization:

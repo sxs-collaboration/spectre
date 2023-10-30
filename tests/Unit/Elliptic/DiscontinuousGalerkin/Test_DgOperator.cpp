@@ -161,6 +161,8 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   tmpl::list<AnalyticSolution>>,
         tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>>;
   };
 };
@@ -443,9 +445,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{4}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Neumann)};
       const ElementId<1> left_id{0, {{{2, 0}}}};
       const ElementId<1> midleft_id{0, {{{2, 1}}}};
@@ -524,9 +528,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{12}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Neumann)};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI);
@@ -562,6 +568,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{3, 2}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       const ElementId<2> northwest_id{0, {{{1, 0}, {1, 1}}}};
@@ -627,6 +634,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{12, 12}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       Approx analytic_solution_aux_approx =
@@ -657,12 +665,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{2, 3, 4}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       const ElementId<3> self_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
@@ -751,12 +762,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{12, 12, 12}},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       Approx analytic_solution_aux_approx =
@@ -797,6 +811,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet)};
       const ElementId<2> lowerleft_id{0, {{{0, 0}, {1, 0}}}};
       const ElementId<2> upperleft_id{0, {{{0, 0}, {1, 1}}}};
@@ -881,6 +896,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {},
           std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet)};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-12).scale(M_PI);

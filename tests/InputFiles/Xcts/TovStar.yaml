@@ -22,7 +22,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   TovStar:
     CentralDensity: 1.e-3
     EquationOfState:
@@ -49,6 +49,7 @@ DomainCreator:
     TimeDependentMaps: None
     OuterBoundaryCondition:
       AnalyticSolution:
+        Solution: *solution
         ConformalFactor: Dirichlet
         LapseTimesConformalFactor: Dirichlet
         ShiftExcess: Dirichlet

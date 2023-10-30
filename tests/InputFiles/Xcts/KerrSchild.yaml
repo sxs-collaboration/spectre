@@ -22,7 +22,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   KerrSchild:
     Mass: 1.
     Spin: [0., 0., 0.]
@@ -37,6 +37,7 @@ DomainCreator:
     Interior:
       ExciseWithBoundaryCondition:
         AnalyticSolution:
+          Solution: *solution
           ConformalFactor: Dirichlet
           LapseTimesConformalFactor: Dirichlet
           ShiftExcess: Dirichlet
@@ -50,6 +51,7 @@ DomainCreator:
     TimeDependentMaps: None
     OuterBoundaryCondition:
       AnalyticSolution:
+        Solution: *solution
         ConformalFactor: Dirichlet
         LapseTimesConformalFactor: Dirichlet
         ShiftExcess: Dirichlet

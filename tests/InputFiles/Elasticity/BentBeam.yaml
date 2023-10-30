@@ -20,7 +20,7 @@ ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto
 
-Background:
+Background: &solution
   BentBeam:
     Length: 2.
     Height: 1.
@@ -44,6 +44,7 @@ DomainCreator:
     TimeDependence: None
     BoundaryCondition:
       AnalyticSolution:
+        Solution: *solution
         Displacement: Dirichlet
 
 Discretization:

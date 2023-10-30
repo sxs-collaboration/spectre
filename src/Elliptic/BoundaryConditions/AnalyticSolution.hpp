@@ -4,16 +4,13 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <ostream>
 #include <pup.h>
 #include <string>
 #include <vector>
 
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
@@ -21,13 +18,14 @@
 #include "Elliptic/BoundaryConditions/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace elliptic::BoundaryConditions {
 
@@ -61,14 +59,29 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   using Base = BoundaryCondition<Dim>;
 
  public:
+  struct Solution {
+    using type = std::unique_ptr<elliptic::analytic_data::AnalyticSolution>;
+    static constexpr Options::String help = {
+        "The analytic solution to impose on the boundary"};
+  };
+
   using options =
-      tmpl::list<elliptic::OptionTags::BoundaryConditionType<FieldTags>...>;
+      tmpl::list<Solution,
+                 elliptic::OptionTags::BoundaryConditionType<FieldTags>...>;
   static constexpr Options::String help =
       "Boundary conditions from the analytic solution";
 
   AnalyticSolution() = default;
-  AnalyticSolution(const AnalyticSolution&) = default;
-  AnalyticSolution& operator=(const AnalyticSolution&) = default;
+  AnalyticSolution(const AnalyticSolution& rhs) : Base(rhs) { *this = rhs; }
+  AnalyticSolution& operator=(const AnalyticSolution& rhs) {
+    if (rhs.solution_ != nullptr) {
+      solution_ = rhs.solution_->get_clone();
+    } else {
+      solution_ = nullptr;
+    }
+    boundary_condition_types_ = rhs.boundary_condition_types_;
+    return *this;
+  }
   AnalyticSolution(AnalyticSolution&&) = default;
   AnalyticSolution& operator=(AnalyticSolution&&) = default;
   ~AnalyticSolution() = default;
@@ -81,11 +94,13 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 
   /// Select which `elliptic::BoundaryConditionType` to apply for each field
   explicit AnalyticSolution(
+      std::unique_ptr<elliptic::analytic_data::AnalyticSolution> solution,
       // This pack expansion repeats the type `elliptic::BoundaryConditionType`
       // for each system field
       const typename elliptic::OptionTags::BoundaryConditionType<
           FieldTags>::type... boundary_condition_types)
-      : boundary_condition_types_{boundary_condition_types...} {}
+      : solution_(std::move(solution)),
+        boundary_condition_types_{boundary_condition_types...} {}
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
@@ -110,41 +125,35 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   }
 
   using argument_tags =
-      tmpl::list<::Tags::AnalyticSolutionsBase, domain::Tags::Mesh<Dim>,
-                 domain::Tags::Direction<Dim>,
+      tmpl::list<Parallel::Tags::Metavariables,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<
                      Dim, Frame::Inertial>>>;
-  using volume_tags =
-      tmpl::list<::Tags::AnalyticSolutionsBase, domain::Tags::Mesh<Dim>>;
+  using volume_tags = tmpl::list<Parallel::Tags::Metavariables>;
 
-  template <typename OptionalAnalyticSolutions>
+  template <typename Metavariables>
   void apply(const gsl::not_null<typename FieldTags::type*>... fields,
              const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes,
-             const OptionalAnalyticSolutions& optional_analytic_solutions,
-             const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
+             const Metavariables& /*meta*/,
+             const tnsr::I<DataVector, Dim>& face_inertial_coords,
              const tnsr::i<DataVector, Dim>& face_normal) const {
-    const auto& analytic_solutions = [&optional_analytic_solutions]()
-        -> const auto& {
-      if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
-        if (not optional_analytic_solutions.has_value()) {
-          ERROR_NO_TRACE(
-              "Trying to impose boundary conditions from an analytic solution, "
-              "but no analytic solution is available. You probably selected "
-              "the 'AnalyticSolution' boundary condition but chose to solve a "
-              "problem that has no analytic solution. If this is the case, you "
-              "should probably select a different boundary condition.");
-        }
-        return *optional_analytic_solutions;
-      } else {
-        return optional_analytic_solutions;
-      }
-    }
-    ();
-    const size_t slice_index =
-        index_to_slice_at(volume_mesh.extents(), direction);
-    const auto impose_boundary_condition = [this, &analytic_solutions,
-                                            &volume_mesh, &direction,
-                                            &slice_index, &face_normal](
+    // Retrieve variables for both Dirichlet and Neumann conditions, then decide
+    // which to impose. We could also retrieve either the field for the flux for
+    // each field individually based on the selection, but that would incur the
+    // overhead of calling into the analytic solution multiple times and
+    // possibly computing temporary quantities multiple times. This performance
+    // consideration is probably irrelevant because the boundary conditions are
+    // only evaluated once at the beginning of the solve.
+    using analytic_tags = tmpl::list<FieldTags..., FluxTags...>;
+    using factory_classes =
+        typename Metavariables::factory_creation::factory_classes;
+    const auto solution_vars = call_with_dynamic_type<
+        tuples::tagged_tuple_from_typelist<analytic_tags>,
+        tmpl::at<factory_classes, elliptic::analytic_data::AnalyticSolution>>(
+        solution_.get(), [&face_inertial_coords](const auto* const derived) {
+          return derived->variables(face_inertial_coords, analytic_tags{});
+        });
+    const auto impose_boundary_condition = [this, &solution_vars, &face_normal](
                                                auto field_tag_v,
                                                auto flux_tag_v,
                                                const auto field,
@@ -154,18 +163,11 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
       switch (get<elliptic::Tags::BoundaryConditionType<field_tag>>(
           boundary_condition_types_)) {
         case elliptic::BoundaryConditionType::Dirichlet:
-          data_on_slice(
-              field,
-              get<::Tags::detail::AnalyticImpl<field_tag>>(analytic_solutions),
-              volume_mesh.extents(), direction.dimension(), slice_index);
+          *field = get<field_tag>(solution_vars);
           break;
         case elliptic::BoundaryConditionType::Neumann:
-          normal_dot_flux(
-              n_dot_flux, face_normal,
-              data_on_slice(get<::Tags::detail::AnalyticImpl<flux_tag>>(
-                                analytic_solutions),
-                            volume_mesh.extents(), direction.dimension(),
-                            slice_index));
+          normal_dot_flux(n_dot_flux, face_normal,
+                          get<flux_tag>(solution_vars));
           break;
         default:
           ERROR("Unsupported boundary condition type: "
@@ -213,16 +215,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   void pup(PUP::er& p) override;
 
  private:
-  friend bool operator==(const AnalyticSolution& lhs,
-                         const AnalyticSolution& rhs) {
-    return lhs.boundary_condition_types_ == rhs.boundary_condition_types_;
-  }
-
-  friend bool operator!=(const AnalyticSolution& lhs,
-                         const AnalyticSolution& rhs) {
-    return not(lhs == rhs);
-  }
-
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> solution_{nullptr};
   tuples::TaggedTuple<elliptic::Tags::BoundaryConditionType<FieldTags>...>
       boundary_condition_types_{};
 };
@@ -232,6 +225,7 @@ template <typename System, size_t Dim, typename... FieldTags,
 void AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                       tmpl::list<FluxTags...>>::pup(PUP::er& p) {
   Base::pup(p);
+  p | solution_;
   p | boundary_condition_types_;
 }
 
