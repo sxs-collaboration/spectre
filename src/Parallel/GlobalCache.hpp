@@ -466,6 +466,7 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
   };
 
   if (callback_was_registered()) {
+    optional_callback->register_with_charm();
     // Second mutex is for vector of callbacks
     std::mutex& mutex = tuples::get<MutexTag<tag>>(mutexes_).second;
     {
