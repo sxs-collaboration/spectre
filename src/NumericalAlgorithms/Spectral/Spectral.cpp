@@ -665,7 +665,7 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
       "since for Gauss-Lobatto you can just copy values off the volume.");
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+                 Spectral::maximum_number_of_points<BasisType> + 1>>(
       [](const size_t local_num_points) {
         return std::pair<Matrix, Matrix>{
             interpolation_matrix<BasisType, QuadratureType>(local_num_points,
@@ -699,7 +699,7 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
       "volume.");
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+                 Spectral::maximum_number_of_points<BasisType> + 1>>(
       [](const size_t local_num_points) {
         const Matrix interp_matrix =
             interpolation_matrix<BasisType, Quadrature::GaussLobatto>(
@@ -742,7 +742,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
       "since for Gauss-Lobatto you can just copy values off the volume.");
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
-                 Spectral::maximum_number_of_points<BasisType>>>(
+                 Spectral::maximum_number_of_points<BasisType> + 1>>(
       [](const size_t local_num_points) {
         const auto& matrices =
             boundary_interpolation_matrices<BasisType, QuadratureType>(
