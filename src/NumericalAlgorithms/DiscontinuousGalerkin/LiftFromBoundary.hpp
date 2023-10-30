@@ -68,6 +68,21 @@ void lift_boundary_terms_gauss_points_impl(
  * \f$\ell_{\breve{\imath}}(\xi=\pm1)/w_{\breve{\imath}}\f$.
  *
  * \note that normal vectors are pointing out of the element.
+ *
+ * \param dt_vars The volume time derivatives
+ * $\partial_t u_{\alpha\breve{\imath}\breve{\jmath}\breve{k}}$ to be updated
+ * \param volume_det_inv_jacobian The inverse Jacobian determinant in the volume
+ * $J^{-1}_{\breve{\imath}\breve{\jmath}\breve{k}}$
+ * \param volume_mesh The mesh of the volume
+ * \param direction The direction of the face on which the boundary corrections
+ * are defined
+ * \param boundary_corrections The boundary corrections
+ * $\left(G_{\alpha} + D_{\alpha}\right)$
+ * \param magnitude_of_face_normal The term $\sqrt{
+ * \frac{\partial\xi}{\partial x^i} \gamma^{ij}
+ * \frac{\partial\xi}{\partial x^j}}$
+ * \param face_det_jacobian The volume Jacobian determinant $J$ evaluated on the
+ * face (not the surface Jacobian determinant)
  */
 template <size_t Dim, typename DtTagsList, typename BoundaryCorrectionTagsList>
 void lift_boundary_terms_gauss_points(
