@@ -381,6 +381,74 @@ void test_history() {
   CHECK(static_cast<const ConstUntyped&>(const_history.untyped())
             .at_step_start());
 
+  // Test transform when the substeps are not associated with the last
+  // step.  This causes errors in a naive implementation.
+  {
+    const auto return_transformer = []() {
+      if constexpr (tt::is_a_v<Variables, Vars>) {
+        return [](const auto& input) { return input.data()[0] + 1.0; };
+      } else {
+        return [](const double& input) { return input + 1.0; };
+      }
+    }();
+    const auto return_transformer2 = []() {
+      if constexpr (tt::is_a_v<Variables, Vars>) {
+        return [](const auto& input) { return input.data()[0] + 2.0; };
+      } else {
+        return [](const double& input) { return input + 2.0; };
+      }
+    }();
+    const auto mutate_transformer = []() {
+      if constexpr (tt::is_a_v<Variables, Vars>) {
+        return [](const gsl::not_null<double*> result, const auto& input) {
+          *result = input.data()[0] + 1.0;
+        };
+      } else {
+        return [](const gsl::not_null<double*> result, const double& input) {
+          *result = input + 1.0;
+        };
+      }
+    }();
+
+    TimeSteppers::History<double> transformed_history{};
+    transform(make_not_null(&transformed_history), history, return_transformer);
+
+    CHECK(transformed_history.integration_order() ==
+          history.integration_order());
+
+    CHECK(transformed_history.size() == 3);
+    CHECK(not transformed_history[0].value.has_value());
+    CHECK(transformed_history[0].derivative == 11.0);
+    CHECK(transformed_history[1].value == std::optional{3.0});
+    CHECK(transformed_history[1].derivative == 21.0);
+    CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].value == 5.0);
+    CHECK(transformed_history.substeps()[0].derivative == 41.0);
+
+    transform(make_not_null(&transformed_history), history, return_transformer,
+              return_transformer2);
+
+    CHECK(transformed_history.size() == 3);
+    CHECK(not transformed_history[0].value.has_value());
+    CHECK(transformed_history[0].derivative == 12.0);
+    CHECK(transformed_history[1].value == std::optional{3.0});
+    CHECK(transformed_history[1].derivative == 22.0);
+    CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].value == 5.0);
+    CHECK(transformed_history.substeps()[0].derivative == 42.0);
+
+    transform(make_not_null(&transformed_history), history, mutate_transformer);
+
+    CHECK(transformed_history.size() == 3);
+    CHECK(not transformed_history[0].value.has_value());
+    CHECK(transformed_history[0].derivative == 11.0);
+    CHECK(transformed_history[1].value == std::optional{3.0});
+    CHECK(transformed_history[1].derivative == 21.0);
+    CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].value == 5.0);
+    CHECK(transformed_history.substeps()[0].derivative == 41.0);
+  }
+
   history.undo_latest();
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 40), (2, 5, 50)]
 

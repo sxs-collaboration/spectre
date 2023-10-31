@@ -879,6 +879,22 @@ void History<Vars>::pup(PUP::er& p) {
   // Don't serialize the allocation cache.
 }
 
+template <typename Vars>
+std::ostream& History<Vars>::print(std::ostream& os) const {
+  using ::operator<<;
+  os << "Integration order: " << integration_order_ << "\n";
+  os << "Step values:\n";
+  for (auto& record : *this) {
+    record.print(os);
+  }
+  os << "Substep values:\n";
+  for (auto& record : substep_values_) {
+    record.print(os);
+  }
+  os << "Latest value if discarded: " << latest_value_if_discarded_ << "\n";
+  return os;
+}
+
 // Doxygen is confused by this function for some reason.
 /// \cond
 template <typename Vars>
@@ -989,23 +1005,95 @@ bool operator!=(const History<Vars>& a, const History<Vars>& b) {
 }
 
 template <typename Vars>
-std::ostream& History<Vars>::print(std::ostream& os) const {
-  using ::operator<<;
-  os << "Integration order: " << integration_order_ << "\n";
-  os << "Step values:\n";
-  for (auto& record : *this) {
-    record.print(os);
-  }
-  os << "Substep values:\n";
-  for (auto& record : substep_values_) {
-    record.print(os);
-  }
-  os << "Latest value if discarded: " << latest_value_if_discarded_ << "\n";
-  return os;
-}
-
-template <typename Vars>
 std::ostream& operator<<(std::ostream& os, const History<Vars>& history) {
   return history.print(os);
 }
+
+/// \ingroup TimeSteppersGroup
+/// Initialize a History object based on the contents of another,
+/// applying a transformation to each value and derivative.
+///
+/// The transformation functions can either take a value from the
+/// source history and return a value for the destination history or
+/// take a `gsl::not_null` value from the destination history and a
+/// value from the source history to initialize it with.  For the sake
+/// of implementation simplicity, either both transformers must mutate
+/// or both must produce values.
+///
+/// An overload applying the same transformation to the values and
+/// derivatives is provided for convenience.
+/// @{
+template <typename DestVars, typename SourceVars, typename ValueTransformer,
+          typename DerivativeTransformer>
+void transform(const gsl::not_null<History<DestVars>*> dest,
+               const History<SourceVars>& source,
+               ValueTransformer&& value_transformer,
+               DerivativeTransformer&& derivative_transformer) {
+  dest->clear_substeps();
+  dest->clear();
+  dest->integration_order(source.integration_order());
+  if (source.empty()) {
+    return;
+  }
+  auto pre_substep_end = source.end();
+  if (not source.substeps().empty() and
+      source.back().time_step_id > source.substeps().back().time_step_id) {
+    --pre_substep_end;
+  }
+
+  const auto transform_record =
+      [&derivative_transformer, &dest, &value_transformer](
+          const typename History<SourceVars>::value_type& record) {
+        if constexpr (std::is_invocable_v<ValueTransformer,
+                                          gsl::not_null<DestVars*>,
+                                          const SourceVars&>) {
+          if (record.value.has_value()) {
+            dest->insert_in_place(
+                record.time_step_id,
+                [&](const auto result) {
+                  value_transformer(result, *record.value);
+                },
+                [&](const auto result) {
+                  derivative_transformer(result, record.derivative);
+                });
+          } else {
+            dest->insert_in_place(
+                record.time_step_id, History<DestVars>::no_value,
+                [&](const auto result) {
+                  derivative_transformer(result, record.derivative);
+                });
+          }
+        } else {
+          static_assert(
+              std::is_invocable_v<ValueTransformer, const SourceVars&>,
+              "Transform function must either be callable to mutate entries "
+              "or return the transformed state by value.");
+          if (record.value.has_value()) {
+            dest->insert(record.time_step_id, value_transformer(*record.value),
+                         derivative_transformer(record.derivative));
+          } else {
+            dest->insert(record.time_step_id, History<DestVars>::no_value,
+                         derivative_transformer(record.derivative));
+          }
+        }
+      };
+
+  auto copying_step = source.begin();
+  for (; copying_step != pre_substep_end; ++copying_step) {
+    transform_record(*copying_step);
+  }
+  for (const auto& record : source.substeps()) {
+    transform_record(record);
+  }
+  if (pre_substep_end != source.end()) {
+    transform_record(*pre_substep_end);
+  }
+}
+
+template <typename DestVars, typename SourceVars, typename Transformer>
+void transform(const gsl::not_null<History<DestVars>*> dest,
+               const History<SourceVars>& source, Transformer&& transformer) {
+  transform(dest, source, transformer, transformer);
+}
+/// @}
 }  // namespace TimeSteppers
