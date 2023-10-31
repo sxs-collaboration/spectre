@@ -24,15 +24,17 @@ ResourceInfo:
 
 Background: &solution
   KerrSchild:
-    Mass: 1.
-    Spin: [0., 0., 0.]
+    Mass: &KerrMass 1.
+    Spin: &KerrSpin [0., 0., 0.6]
     Center: [0., 0., 0.]
 
 InitialGuess: Flatness
 
 DomainCreator:
   Sphere:
-    InnerRadius: 1.9
+    # Boyer-Lindquist radius a bit inside the horizon:
+    # 0.89 * (M + sqrt(M^2 - a^2))
+    InnerRadius: 1.602
     OuterRadius: 10.
     Interior:
       ExciseWithBoundaryCondition:
@@ -48,7 +50,13 @@ DomainCreator:
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
-    TimeDependentMaps: None
+    TimeDependentMaps:
+      InitialTime: 0.
+      ShapeMap:
+        LMax: 20
+        InitialValues:
+          Mass: *KerrMass
+          Spin: *KerrSpin
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
@@ -68,10 +76,10 @@ Observers:
 NonlinearSolver:
   NewtonRaphson:
     ConvergenceCriteria:
-      # Stop after 1 iteration so this test runs quickly. Set MaxIterations to
+      # Stop after 2 iteration so this test runs quickly. Set MaxIterations to
       # ~20 for runs at higher resolution (most nonlinear problems need ~5
       # iterations, so 20 is a safe setting).
-      MaxIterations: 1
+      MaxIterations: 2
       RelativeResidual: 0.
       AbsoluteResidual: 1.e-10
     SufficientDecrease: 1.e-4
@@ -161,6 +169,9 @@ EventsAndTriggers:
             - ExtrinsicCurvature
             - HamiltonianConstraint
             - MomentumConstraint
+            - Error(ConformalFactor)
+            - Error(LapseTimesConformalFactor)
+            - Error(ShiftExcess)
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]

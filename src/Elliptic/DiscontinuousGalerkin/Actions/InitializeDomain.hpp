@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
@@ -40,6 +41,8 @@ namespace elliptic::dg::Actions {
  *   - `domain::Tags::Domain<Dim, Frame::Inertial>`
  *   - `domain::Tags::InitialExtents<Dim>`
  *   - `domain::Tags::InitialRefinementLevels<Dim>`
+ *   - `domain::Tags::FunctionsOfTime` (Parameters for maps that distort the
+ *     domain. These are always evaluated at t=0.)
  * - Adds:
  *   - `domain::Tags::Mesh<Dim>`
  *   - `domain::Tags::Element<Dim>`
@@ -61,6 +64,8 @@ struct InitializeDomain {
                  domain::Tags::InitialRefinementLevels<Dim>>;
   using simple_tags = typename InitializeGeometry::return_tags;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>

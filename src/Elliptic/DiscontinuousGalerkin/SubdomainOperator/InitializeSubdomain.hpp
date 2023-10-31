@@ -25,6 +25,7 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -217,6 +218,7 @@ struct InitializeSubdomain {
               tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
                             overlap_id,
                             db::get<domain::Tags::InitialExtents<Dim>>(box),
+                            db::get<domain::Tags::FunctionsOfTime>(box),
                             background, background_classes{});
           // Background fields
           initialize_background_fields(make_not_null(&box), overlap_id);
@@ -230,7 +232,8 @@ struct InitializeSubdomain {
                   typename InitializeFacesAndMortars::argument_tags>,
               tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
                             overlap_id,
-                            db::get<domain::Tags::InitialExtents<Dim>>(box));
+                            db::get<domain::Tags::InitialExtents<Dim>>(box),
+                            db::get<domain::Tags::FunctionsOfTime>(box));
         }
         // Faces on the other side of the overlapped element's mortars
         initialize_remote_faces(make_not_null(&box), overlap_id);
@@ -317,6 +320,8 @@ struct InitializeSubdomain {
     const auto& element =
         db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
     const auto& domain = db::get<domain::Tags::Domain<Dim>>(*box);
+    const auto& functions_of_time =
+        db::get<domain::Tags::FunctionsOfTime>(*box);
     const auto& neighbor_meshes = db::get<overlaps_tag<
         elliptic::dg::subdomain_operator::Tags::NeighborMortars<
             domain::Tags::Mesh<Dim>, Dim>>>(*box)
@@ -329,19 +334,23 @@ struct InitializeSubdomain {
         const auto neighbor_face_mesh =
             neighbor_meshes.at(mortar_id).slice_away(
                 direction_from_neighbor.dimension());
+        const auto neighbor_face_logical_coords = interface_logical_coordinates(
+            neighbor_face_mesh, direction_from_neighbor);
         const auto& neighbor_block = domain.blocks()[neighbor_id.block_id()];
-        ElementMap<Dim, Frame::Inertial> neighbor_element_map{
-            neighbor_id, neighbor_block.stationary_map().get_clone()};
+        const ElementMap<Dim, Frame::Inertial> neighbor_element_map{
+            neighbor_id, neighbor_block};
         const auto neighbor_face_normal = unnormalized_face_normal(
-            neighbor_face_mesh, neighbor_element_map, direction_from_neighbor);
+            neighbor_face_mesh,
+            neighbor_element_map.inv_jacobian(neighbor_face_logical_coords, 0.,
+                                              functions_of_time),
+            direction_from_neighbor);
         using neighbor_face_normal_magnitudes_tag = overlaps_tag<
             elliptic::dg::subdomain_operator::Tags::NeighborMortars<
                 domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>, Dim>>;
         if constexpr (is_curved) {
           const auto& background = db::get<BackgroundTag>(*box);
-          const auto neighbor_face_inertial_coords =
-              neighbor_element_map(interface_logical_coordinates(
-                  neighbor_face_mesh, direction_from_neighbor));
+          const auto neighbor_face_inertial_coords = neighbor_element_map(
+              neighbor_face_logical_coords, 0., functions_of_time);
           const auto inv_metric_on_face = get<typename System::inv_metric_tag>(
               elliptic::util::get_analytic_data<
                   tmpl::list<typename System::inv_metric_tag>>(

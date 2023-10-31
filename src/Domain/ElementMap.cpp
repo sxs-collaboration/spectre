@@ -3,8 +3,10 @@
 
 #include "Domain/ElementMap.hpp"
 
+#include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/OptimizerHacks.hpp"
 
@@ -52,6 +54,40 @@ ElementMap<Dim, TargetFrame>::ElementMap(
       }()},
       jacobian_{map_slope_},
       inverse_jacobian_{map_inverse_slope_} {}
+
+// We could refactor the ElementMap class to use a `Composition` internally also
+// for the element-to-block-logical map, so the whole map is just one
+// composition.
+template <size_t Dim, typename TargetFrame>
+ElementMap<Dim, TargetFrame>::ElementMap(ElementId<Dim> element_id,
+                                         const Block<Dim>& block)
+    : ElementMap(
+          std::move(element_id),
+          [&block]() -> std::unique_ptr<domain::CoordinateMapBase<
+                         Frame::BlockLogical, TargetFrame, Dim>> {
+            if constexpr (std::is_same_v<TargetFrame, Frame::Inertial>) {
+              if (block.is_time_dependent()) {
+                using CompositionType = domain::CoordinateMaps::Composition<
+                    tmpl::list<Frame::BlockLogical, Frame::Grid,
+                               Frame::Inertial>,
+                    Dim>;
+                return std::make_unique<CompositionType>(
+                    block.moving_mesh_logical_to_grid_map().get_clone(),
+                    block.moving_mesh_grid_to_inertial_map().get_clone());
+              } else {
+                return block.stationary_map().get_clone();
+              }
+            } else if constexpr (std::is_same_v<TargetFrame, Frame::Grid>) {
+              if (block.is_time_dependent()) {
+                return block.moving_mesh_logical_to_grid_map().get_clone();
+              } else {
+                return block.stationary_map().get_to_grid_frame();
+              }
+            }
+          }()) {
+  ASSERT(element_id_.block_id() == block.id(),
+         "Element " << element_id_ << " is not in block " << block.id() << ".");
+}
 
 template <size_t Dim, typename TargetFrame>
 void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) {

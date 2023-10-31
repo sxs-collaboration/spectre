@@ -46,7 +46,7 @@ bool functions_of_time_are_ready_impl(
     const Component* /*meta*/, const double time,
     const std::optional<std::unordered_set<std::string>>& functions_to_check,
     Args&&... args) {
-  if constexpr (Parallel::is_in_global_cache<Metavariables, CacheTag>) {
+  if constexpr (Parallel::is_in_mutable_global_cache<Metavariables, CacheTag>) {
     const auto& proxy =
         ::Parallel::get_parallel_component<Component>(cache)[array_index];
     const Parallel::ArrayComponentId array_component_id =

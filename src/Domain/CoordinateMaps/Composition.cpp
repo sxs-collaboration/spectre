@@ -366,6 +366,15 @@ bool Composition<Frames, Dim, std::index_sequence<Is...>>::is_equal_to(
 
 #define INSTANTIATE(_, data)                                                   \
   template class Composition<                                                  \
+      tmpl::list<Frame::BlockLogical, Frame::Grid, Frame::Inertial>,           \
+      DIM(data)>;                                                              \
+  template class Composition<                                                  \
+      tmpl::list<Frame::BlockLogical, Frame::Grid, Frame::Distorted>,          \
+      DIM(data)>;                                                              \
+  template class Composition<tmpl::list<Frame::BlockLogical, Frame::Grid,      \
+                                        Frame::Distorted, Frame::Inertial>,    \
+                             DIM(data)>;                                       \
+  template class Composition<                                                  \
       tmpl::list<Frame::ElementLogical, Frame::BlockLogical, Frame::Inertial>, \
       DIM(data)>;                                                              \
   template class Composition<                                                  \
@@ -390,6 +399,48 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #if defined(__clang__) && __clang_major__ >= 15
 #define INSTANTIATE2(_, data)                                                  \
+  template domain::CoordinateMaps::Composition<                                \
+      brigand::list<Frame::BlockLogical, Frame::Grid, Frame::Distorted>,       \
+      DIM(data), std::integer_sequence<unsigned long, 0ul, 1ul>>::             \
+      Composition(                                                             \
+          std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,       \
+                                                    Frame::Grid, DIM(data)>,   \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::BlockLogical, Frame::Grid, DIM(data)>>>,  \
+          std::unique_ptr<domain::CoordinateMapBase<                           \
+                              Frame::Grid, Frame::Distorted, DIM(data)>,       \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::Grid, Frame::Distorted, DIM(data)>>>);    \
+  template domain::CoordinateMaps::Composition<                                \
+      brigand::list<Frame::BlockLogical, Frame::Grid, Frame::Inertial>,        \
+      DIM(data), std::integer_sequence<unsigned long, 0ul, 1ul>>::             \
+      Composition(                                                             \
+          std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,       \
+                                                    Frame::Grid, DIM(data)>,   \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::BlockLogical, Frame::Grid, DIM(data)>>>,  \
+          std::unique_ptr<domain::CoordinateMapBase<                           \
+                              Frame::Grid, Frame::Inertial, DIM(data)>,        \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::Grid, Frame::Inertial, DIM(data)>>>);     \
+  template domain::CoordinateMaps::Composition<                                \
+      brigand::list<Frame::BlockLogical, Frame::Grid, Frame::Distorted,        \
+                    Frame::Inertial>,                                          \
+      DIM(data), std::integer_sequence<unsigned long, 0ul, 1ul, 2ul>>::        \
+      Composition(                                                             \
+          std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,       \
+                                                    Frame::Grid, DIM(data)>,   \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::BlockLogical, Frame::Grid, DIM(data)>>>,  \
+          std::unique_ptr<domain::CoordinateMapBase<                           \
+                              Frame::Grid, Frame::Distorted, DIM(data)>,       \
+                          std::default_delete<domain::CoordinateMapBase<       \
+                              Frame::Grid, Frame::Distorted, DIM(data)>>>,     \
+          std::unique_ptr<                                                     \
+              domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial,     \
+                                        DIM(data)>,                            \
+              std::default_delete<domain::CoordinateMapBase<                   \
+                  Frame::Distorted, Frame::Inertial, DIM(data)>>>);            \
   template domain::CoordinateMaps::Composition<                                \
       brigand::list<Frame::ElementLogical, Frame::BlockLogical,                \
                     Frame::Inertial>,                                          \

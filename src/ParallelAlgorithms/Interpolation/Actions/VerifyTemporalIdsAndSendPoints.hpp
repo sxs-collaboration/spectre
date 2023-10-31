@@ -107,40 +107,56 @@ void verify_temporal_ids_and_send_points_time_dependent(
   const Parallel::ArrayComponentId array_component_id =
       Parallel::make_array_component_id<ParallelComponent>(array_index);
   const bool at_least_one_pending_temporal_id_is_ready =
-      ::Parallel::mutable_cache_item_is_ready<domain::Tags::FunctionsOfTime>(
-          cache, array_component_id,
-          [&this_proxy, &pending_temporal_ids, &min_expiration_time](
-              const std::unordered_map<
-                  std::string,
-                  std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                  functions_of_time) -> std::unique_ptr<Parallel::Callback> {
-            min_expiration_time =
-                std::min_element(functions_of_time.begin(),
-                                 functions_of_time.end(),
-                                 [](const auto& a, const auto& b) {
-                                   return a.second->time_bounds()[1] <
-                                          b.second->time_bounds()[1];
-                                 })
-                    ->second->time_bounds()[1];
-            for (const auto& pending_id : pending_temporal_ids) {
-              if (InterpolationTarget_detail::get_temporal_id_value(
-                      pending_id) <= min_expiration_time) {
-                // Success: at least one pending_temporal_id is ok.
-                return std::unique_ptr<Parallel::Callback>{};
-              }
-            }
-            // Failure: none of the pending_temporal_ids are ok.
-            // Even though the GlobalCache docs say to only return a
-            // PerformAlgorithmCallback, we return a SimpleActionCallback here
-            // because it was already like this, and the effort to change it is
-            // too great right now. This is alright because this code should
-            // never be executed because the functions of time should always be
-            // valid for times sent to the interpolation target
-            return std::unique_ptr<Parallel::Callback>(
-                new Parallel::SimpleActionCallback<
-                    VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
-                    decltype(this_proxy)>(this_proxy));
-          });
+      [&cache, &array_component_id, &this_proxy, &pending_temporal_ids,
+       &min_expiration_time]() {
+        if constexpr (Parallel::is_in_mutable_global_cache<
+                          Metavariables, domain::Tags::FunctionsOfTime>) {
+          return ::Parallel::mutable_cache_item_is_ready<
+              domain::Tags::FunctionsOfTime>(
+              cache, array_component_id,
+              [&this_proxy, &pending_temporal_ids, &min_expiration_time](
+                  const std::unordered_map<
+                      std::string,
+                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+                      functions_of_time)
+                  -> std::unique_ptr<Parallel::Callback> {
+                min_expiration_time =
+                    std::min_element(functions_of_time.begin(),
+                                     functions_of_time.end(),
+                                     [](const auto& a, const auto& b) {
+                                       return a.second->time_bounds()[1] <
+                                              b.second->time_bounds()[1];
+                                     })
+                        ->second->time_bounds()[1];
+                for (const auto& pending_id : pending_temporal_ids) {
+                  if (InterpolationTarget_detail::get_temporal_id_value(
+                          pending_id) <= min_expiration_time) {
+                    // Success: at least one pending_temporal_id is ok.
+                    return std::unique_ptr<Parallel::Callback>{};
+                  }
+                }
+                // Failure: none of the pending_temporal_ids are ok.
+                // Even though the GlobalCache docs say to only return a
+                // PerformAlgorithmCallback, we return a SimpleActionCallback
+                // here because it was already like this, and the effort to
+                // change it is too great right now. This is alright because
+                // this code should never be executed because the functions of
+                // time should always be valid for times sent to the
+                // interpolation target
+                return std::unique_ptr<Parallel::Callback>(
+                    new Parallel::SimpleActionCallback<
+                        VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
+                        decltype(this_proxy)>(this_proxy));
+              });
+        } else {
+          (void)cache;
+          (void)array_component_id;
+          (void)this_proxy;
+          (void)pending_temporal_ids;
+          (void)min_expiration_time;
+          return true;
+        }
+      }();
 
   if (not at_least_one_pending_temporal_id_is_ready) {
     // A callback has been set so that VerifyTemporalIdsAndSendPoints will
@@ -283,7 +299,7 @@ struct VerifyTemporalIdsAndSendPoints {
       const auto& domain =
           get<domain::Tags::Domain<Metavariables::volume_dim>>(cache);
       if (domain.is_time_dependent()) {
-        if constexpr (Parallel::is_in_mutable_global_cache<
+        if constexpr (Parallel::is_in_global_cache<
                           Metavariables, domain::Tags::FunctionsOfTime>) {
           detail::verify_temporal_ids_and_send_points_time_dependent<
               InterpolationTargetTag, ParallelComponent>(make_not_null(&box),

@@ -18,6 +18,7 @@ set(LIBS_TO_LINK
   EllipticSubdomainPreconditioners
   Events
   EventsAndTriggers
+  FunctionsOfTime
   Informer
   LinearOperators
   Observer

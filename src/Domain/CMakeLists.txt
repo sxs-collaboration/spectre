@@ -70,6 +70,7 @@ target_link_libraries(
   DomainBoundaryConditions
   DomainStructure
   ErrorHandling
+  FunctionsOfTime
   Options
   Spectral
   Utilities
@@ -77,8 +78,6 @@ target_link_libraries(
   LinearOperators
   RootFinding
   SphericalHarmonics
-  INTERFACE
-  FunctionsOfTime
 )
 
 add_subdirectory(Amr)

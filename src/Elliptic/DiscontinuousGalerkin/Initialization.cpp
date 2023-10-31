@@ -50,29 +50,26 @@ void InitializeGeometry<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
-    const Domain<Dim>& domain, const ElementId<Dim>& element_id) const {
+    const Domain<Dim>& domain,
+    const domain::FunctionsOfTimeMap& functions_of_time,
+    const ElementId<Dim>& element_id) const {
   // Mesh
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
                                                       element_id, quadrature);
   // Element
   const auto& block = domain.blocks()[element_id.block_id()];
-  if (block.is_time_dependent()) {
-    ERROR_NO_TRACE(
-        "The InitializeDomain action is for elliptic systems which do not have "
-        "any time-dependence, but the domain creator has set up the domain to "
-        "have time-dependence.");
-  }
   *element = domain::Initialization::create_initial_element(element_id, block,
                                                             initial_refinement);
   // Element map
-  *element_map = ElementMap<Dim, Frame::Inertial>{
-      element_id, block.stationary_map().get_clone()};
+  *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
   // Coordinates
   *logical_coords = logical_coordinates(*mesh);
-  *inertial_coords = element_map->operator()(*logical_coords);
+  *inertial_coords =
+      element_map->operator()(*logical_coords, 0., functions_of_time);
   // Jacobian
-  *inv_jacobian = element_map->inv_jacobian(*logical_coords);
+  *inv_jacobian =
+      element_map->inv_jacobian(*logical_coords, 0., functions_of_time);
   *det_inv_jacobian = determinant(*inv_jacobian);
 }
 

@@ -84,4 +84,8 @@ class FunctionOfTime : public PUP::able {
   WRAPPED_PUPable_abstract(FunctionOfTime);  // NOLINT
 };
 }  // namespace FunctionsOfTime
+
+using FunctionsOfTimeMap = std::unordered_map<
+    std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
+
 }  // namespace domain

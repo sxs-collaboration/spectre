@@ -20,8 +20,11 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -64,20 +67,31 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
+  domain::creators::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
   {
     INFO("1D");
     // Reference element:
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{2}}, {{4}}};
-    // Register the coordinate map for serialization
-    domain::creators::register_derived_with_charm();
+        {{-0.5}},
+        {{1.5}},
+        {{2}},
+        {{4}},
+        {{false}},
+        domain::CoordinateMaps::Distribution::Linear,
+        std::nullopt,
+        // Time dependence evaluates to a translation of +1 at t=0
+        std::make_unique<
+            domain::creators::time_dependence::UniformTranslation<1>>(
+            -1., std::array<double, 1>{{1.}})};
 
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -102,12 +116,13 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                       {Direction<1>::upper_xi(),
                        {{{ElementId<1>{0, {{SegmentId{2, 2}}}}}}, {}}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<1>{});
+    const auto& functions_of_time = get_tag(domain::Tags::FunctionsOfTime{});
     const tnsr::I<DataVector, 1, Frame::ElementLogical>
         logical_coords_for_element_map{{{{-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
-        element_map(logical_coords_for_element_map);
+        element_map(logical_coords_for_element_map, 0., functions_of_time);
     const tnsr::I<DataVector, 1, Frame::Inertial> expected_inertial_coords{
-        {{{0., 0.125, 0.25, 0.275, 0.5}}}};
+        {{{1., 1.125, 1.25, 1.275, 1.5}}}};
     CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
                           get<0>(expected_inertial_coords));
     const auto& logical_coords =
@@ -117,11 +132,13 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                                        Spectral::Quadrature::GaussLobatto>(4));
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
-    CHECK(inertial_coords == element_map(logical_coords));
+    CHECK(inertial_coords ==
+          element_map(logical_coords, 0., functions_of_time));
     const auto& inverse_jacobian =
         get_tag(domain::Tags::InverseJacobian<1, Frame::ElementLogical,
                                               Frame::Inertial>{});
-    CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
+    CHECK(inverse_jacobian ==
+          element_map.inv_jacobian(logical_coords, 0., functions_of_time));
     const auto& det_inv_jacobian = get_tag(
         domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>{});
     CHECK(det_inv_jacobian == determinant(inverse_jacobian));
@@ -146,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -219,7 +236,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
