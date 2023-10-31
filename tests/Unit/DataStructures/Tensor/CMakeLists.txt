@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Tensor")
 
 set(LIBRARY_SOURCES
+  Test_ContractFirstNIndices.cpp
   Test_Identity.cpp
   Test_Metafunctions.cpp
   Test_Slice.cpp
