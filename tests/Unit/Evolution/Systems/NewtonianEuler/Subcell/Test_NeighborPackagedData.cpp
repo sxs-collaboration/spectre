@@ -26,6 +26,7 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -275,9 +276,7 @@ double test(const size_t num_dg_pts) {
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-               typename variables_tag::type, boost::hash<DirectionId<Dim>>>
-      evolved_vars_errors{};
+  DirectionIdMap<Dim, typename variables_tag::type> evolved_vars_errors{};
   double max_abs_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.direction;

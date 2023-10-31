@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
 #include <limits>
@@ -14,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -35,10 +35,7 @@ namespace {
 template <size_t Dim>
 void test() {
   CAPTURE(Dim);
-  using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<DirectionId<Dim>>>;
+  using Interps = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   // Have upper xi neighbor do DG and lower xi neighbor do FD. For eta do
   // reverse, and zeta do same as xi.
   const Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
@@ -167,9 +164,7 @@ void test() {
     return expected_data;
   }();
 
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-               evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
-      neighbor_data{};
+  DirectionIdMap<Dim, evolution::dg::subcell::GhostData> neighbor_data{};
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{
       DataVector{std::numeric_limits<double>::min(),
                  std::numeric_limits<double>::min()},

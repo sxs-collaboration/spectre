@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <brigand/sequences/back.hpp>
 #include <cstddef>
 #include <optional>
@@ -15,15 +14,14 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -72,10 +70,9 @@ namespace grmhd::GhValenciaDivClean::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                      DataVector, boost::hash<DirectionId<3>>>
-  apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<DirectionId<3>>& mortars_to_reconstruct_to) {
+  static DirectionIdMap<3, DataVector> apply(
+      const db::DataBox<DbTagsList>& box,
+      const std::vector<DirectionId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -89,9 +86,7 @@ struct NeighborPackagedData {
         typename grmhd::ValenciaDivClean::System::variables_tag;
     using grmhd_evolved_vars_tags = typename grmhd_evolved_vars_tag::tags_list;
 
-    FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, DataVector,
-                 boost::hash<DirectionId<3>>>
-        neighbor_package_data{};
+    DirectionIdMap<3, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

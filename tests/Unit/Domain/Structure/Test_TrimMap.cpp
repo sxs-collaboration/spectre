@@ -3,23 +3,20 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
 template <size_t Dim>
 void test_remove_nonexistent_neighbors() {
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, int,
-               boost::hash<DirectionId<Dim>>>
-      map_to_trim{};
+  DirectionIdMap<Dim, int> map_to_trim{};
 
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   for (size_t i = 0; i < 2 * Dim; ++i) {

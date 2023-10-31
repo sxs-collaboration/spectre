@@ -7,13 +7,12 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
@@ -31,9 +30,7 @@ void spacetime_kreiss_oliger_filter(
     const Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& all_ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& all_ghost_data,
     const Mesh<3>& volume_mesh, const size_t order, const double epsilon) {
   if (UNLIKELY(result->number_of_grid_points() !=
                volume_evolved_variables.number_of_grid_points())) {

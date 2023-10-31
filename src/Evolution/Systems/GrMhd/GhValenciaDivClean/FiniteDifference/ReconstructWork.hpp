@@ -4,13 +4,11 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 
@@ -64,9 +62,7 @@ void reconstruct_prims_work(
     const Variables<SpacetimeAndConsTags>& volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       Variables<PrimsTagsSentByNeighbor>,
-                       boost::hash<DirectionId<3>>>& neighbor_data,
+    const DirectionIdMap<3, Variables<PrimsTagsSentByNeighbor>>& neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
     bool compute_conservatives);
 
@@ -100,9 +96,7 @@ void reconstruct_fd_neighbor_work(
         subcell_volume_spacetime_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     size_t ghost_zone_size, bool compute_conservatives);
 }  // namespace grmhd::GhValenciaDivClean::fd

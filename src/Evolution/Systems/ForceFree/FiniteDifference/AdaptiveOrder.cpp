@@ -4,7 +4,6 @@
 #include "Evolution/Systems/ForceFree/FiniteDifference/AdaptiveOrder.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -85,13 +84,9 @@ void AdaptiveOrder::reconstruct(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
-  FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-               Variables<volume_vars_tags>, boost::hash<DirectionId<dim>>>
-      neighbor_variables_data{};
+  DirectionIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
                                         subcell_mesh);
@@ -118,9 +113,7 @@ void AdaptiveOrder::reconstruct_fd_neighbor(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

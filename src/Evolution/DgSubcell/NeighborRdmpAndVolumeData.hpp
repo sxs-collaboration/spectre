@@ -3,16 +3,14 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
@@ -36,19 +34,14 @@ namespace evolution::dg::subcell {
  */
 template <bool InsertIntoMap, size_t Dim>
 void insert_or_update_neighbor_volume_data(
-    gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                     GhostData, boost::hash<DirectionId<Dim>>>*>
-        ghost_data_ptr,
+    gsl::not_null<DirectionIdMap<Dim, GhostData>*> ghost_data_ptr,
     const DataVector& neighbor_subcell_data,
     const size_t number_of_rdmp_vars_in_buffer,
     const DirectionId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
     const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<DirectionId<Dim>>>&
-        neighbor_dg_to_fd_interpolants);
+    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+        Neighbor_dg_to_fd_interpolants);
 
 /*!
  * \brief Check whether the neighbor sent is DG volume or FD ghost data, and
@@ -59,16 +52,11 @@ void insert_or_update_neighbor_volume_data(
 template <size_t Dim>
 void insert_neighbor_rdmp_and_volume_data(
     gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
-    gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                     GhostData, boost::hash<DirectionId<Dim>>>*>
-        ghost_data_ptr,
+    gsl::not_null<DirectionIdMap<Dim, GhostData>*> ghost_data_ptr,
     const DataVector& received_neighbor_subcell_data,
     size_t number_of_rdmp_vars, const DirectionId<Dim>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
     const Mesh<Dim>& subcell_mesh, size_t number_of_ghost_zones,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<DirectionId<Dim>>>&
+    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         neighbor_dg_to_fd_interpolants);
 }  // namespace evolution::dg::subcell

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -12,16 +11,15 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
@@ -61,11 +59,10 @@ struct MortarDataInboxTag
     : public Parallel::InboxInserters::Map<
           MortarDataInboxTag<Dim, TemporalIdTag, PrimalFields, PrimalFluxes>> {
   using temporal_id = typename TemporalIdTag::type;
-  using type = std::map<
-      temporal_id,
-      FixedHashMap<maximum_number_of_neighbors(Dim), ::dg::MortarId<Dim>,
-                   elliptic::dg::BoundaryData<PrimalFields, PrimalFluxes>,
-                   boost::hash<::dg::MortarId<Dim>>>>;
+  using type =
+      std::map<temporal_id,
+               DirectionIdMap<Dim, elliptic::dg::BoundaryData<PrimalFields,
+                                                              PrimalFluxes>>>;
 };
 
 // Initializes all quantities the DG operator needs on internal and external

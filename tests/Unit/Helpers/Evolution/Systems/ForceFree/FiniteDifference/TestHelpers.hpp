@@ -6,7 +6,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <utility>
@@ -16,16 +15,15 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -53,16 +51,12 @@ namespace ForceFree::fd {
 using GhostData = evolution::dg::subcell::GhostData;
 
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-             boost::hash<DirectionId<3>>>
-compute_ghost_data(
+DirectionIdMap<3, GhostData> compute_ghost_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-               boost::hash<DirectionId<3>>>
-      ghost_data{};
+  DirectionIdMap<3, GhostData> ghost_data{};
 
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
@@ -168,11 +162,9 @@ void test_reconstructor(const size_t points_per_dimension,
       get<TildeJ>(volume_vars_and_tilde_j);
 
   // compute ghost data from neighbor
-  const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-                     boost::hash<DirectionId<3>>>
-      ghost_data =
-          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
-                             reconstructor.ghost_zone_size(), compute_solution);
+  const DirectionIdMap<3, GhostData> ghost_data =
+      compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                         reconstructor.ghost_zone_size(), compute_solution);
 
   // create Variables on lower and upper faces to perform reconstruction
   const size_t reconstructed_num_pts =

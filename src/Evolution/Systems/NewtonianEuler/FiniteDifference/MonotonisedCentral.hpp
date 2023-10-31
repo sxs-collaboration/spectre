@@ -9,10 +9,9 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -111,9 +110,7 @@ class MonotonisedCentralPrim : public Reconstructor<Dim> {
       const Variables<prims_tags>& volume_prims,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<Dim>>>& ghost_data,
+      const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
@@ -128,9 +125,7 @@ class MonotonisedCentralPrim : public Reconstructor<Dim> {
       const Variables<prims_tags>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<Dim>>>& ghost_data,
+      const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 };

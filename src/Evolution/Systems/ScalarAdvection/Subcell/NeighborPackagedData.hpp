@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <type_traits>
@@ -12,14 +11,13 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -64,14 +62,11 @@ namespace ScalarAdvection::subcell {
 
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                      DataVector, boost::hash<DirectionId<Dim>>>
-  apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<DirectionId<Dim>>& mortars_to_reconstruct_to) {
+  static DirectionIdMap<Dim, DataVector> apply(
+      const db::DataBox<DbTagsList>& box,
+      const std::vector<DirectionId<Dim>>& mortars_to_reconstruct_to) {
     // The object to return
-    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, DataVector,
-                 boost::hash<DirectionId<Dim>>>
-        neighbor_package_data{};
+    DirectionIdMap<Dim, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

@@ -4,17 +4,15 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -94,17 +92,13 @@ class MonotonisedCentral : public Reconstructor {
           vars_on_upper_face,
       const Variables<tmpl::list<Burgers::Tags::U>>& volume_vars,
       const Element<1>& element,
-      const FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<1>>>& ghost_data,
+      const DirectionIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<1>& subcell_mesh) const;
 
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
       const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
-      const FixedHashMap<maximum_number_of_neighbors(1), DirectionId<1>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<1>>>& ghost_data,
+      const DirectionIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<1>& subcell_mesh,
       const Direction<1> direction_to_reconstruct) const;
 };

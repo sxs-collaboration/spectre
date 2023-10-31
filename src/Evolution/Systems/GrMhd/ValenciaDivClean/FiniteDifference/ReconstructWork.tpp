@@ -5,23 +5,21 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iterator>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -136,10 +134,7 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), DirectionId<3>,
-        Variables<PrimsTagsSentByNeighbor>,
-        boost::hash<DirectionId<3>>>& neighbor_data,
+    const DirectionIdMap<3, Variables<PrimsTagsSentByNeighbor>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
     const bool compute_conservatives) {
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
@@ -251,10 +246,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), DirectionId<3>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<DirectionId<3>>>& ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {
   const DirectionId<3> mortar_id{

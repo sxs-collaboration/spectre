@@ -16,10 +16,10 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -39,17 +39,13 @@
 namespace TestHelpers::NewtonianEuler::fd {
 using GhostData = evolution::dg::subcell::GhostData;
 template <size_t Dim, typename F>
-FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-             evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
-compute_ghost_data(const Mesh<Dim>& subcell_mesh,
-                   const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
-                       volume_logical_coords,
-                   const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
-                   const size_t ghost_zone_size,
-                   const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-               evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
-      ghost_data{};
+DirectionIdMap<Dim, evolution::dg::subcell::GhostData> compute_ghost_data(
+    const Mesh<Dim>& subcell_mesh,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+        volume_logical_coords,
+    const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
+    const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
+  DirectionIdMap<Dim, evolution::dg::subcell::GhostData> ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
     const ElementId<Dim>& neighbor_id = *neighbors_in_direction.begin();
@@ -139,11 +135,9 @@ void test_prim_reconstructor_impl(
     return vars;
   };
 
-  const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                     GhostData, boost::hash<DirectionId<Dim>>>
-      ghost_data =
-          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
-                             reconstructor.ghost_zone_size(), compute_solution);
+  const DirectionIdMap<Dim, GhostData> ghost_data =
+      compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                         reconstructor.ghost_zone_size(), compute_solution);
 
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *

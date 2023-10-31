@@ -4,7 +4,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Wcns5z.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -13,13 +12,12 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -83,13 +81,9 @@ void Wcns5zPrim::reconstruct(
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh) const {
-  FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-               Variables<prims_to_reconstruct_tags>,
-               boost::hash<DirectionId<dim>>>
+  DirectionIdMap<dim, Variables<prims_to_reconstruct_tags>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
@@ -114,9 +108,7 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh,
     const Direction<3> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work<prims_to_reconstruct_tags,
@@ -190,28 +182,24 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
              gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
              evolution::dg::Actions::detail::NormalVector<3>>
 
-#define INSTANTIATION(r, data)                                              \
-  template void Wcns5zPrim::reconstruct(                                    \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
-          vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
-          vars_on_upper_face,                                               \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,    \
-                         evolution::dg::subcell::GhostData,                 \
-                         boost::hash<DirectionId<3>>>& ghost_data,          \
-      const Mesh<3>& subcell_mesh) const;                                   \
-  template void Wcns5zPrim::reconstruct_fd_neighbor(                        \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,              \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,    \
-                         evolution::dg::subcell::GhostData,                 \
-                         boost::hash<DirectionId<3>>>& ghost_data,          \
-      const Mesh<3>& subcell_mesh,                                          \
+#define INSTANTIATION(r, data)                                                \
+  template void Wcns5zPrim::reconstruct(                                      \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_lower_face,                                                 \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_upper_face,                                                 \
+      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data, \
+      const Mesh<3>& subcell_mesh) const;                                     \
+  template void Wcns5zPrim::reconstruct_fd_neighbor(                          \
+      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
+      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data, \
+      const Mesh<3>& subcell_mesh,                                            \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

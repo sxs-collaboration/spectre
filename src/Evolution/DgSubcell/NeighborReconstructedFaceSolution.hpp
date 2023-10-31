@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iterator>
 #include <optional>
@@ -13,11 +12,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -50,11 +48,7 @@ namespace evolution::dg::subcell {
  * which must return a
  *
  * \code
- *  FixedHashMap<
- *      maximum_number_of_neighbors(volume_dim),
- *      DirectionId<volume_dim>,
- *      DataVector,
- *      boost::hash<DirectionId<volume_dim>>>
+ *  DirectionIdMap<volume_dim, DataVector>
  * \endcode
  *
  * which holds the reconstructed `dg_packaged_data` on the face (stored in the
@@ -67,15 +61,14 @@ namespace evolution::dg::subcell {
 template <typename Metavariables, typename DbTagsList>
 void neighbor_reconstructed_face_solution(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const gsl::not_null<std::pair<
-        const TimeStepId,
-        FixedHashMap<maximum_number_of_neighbors(Metavariables::volume_dim),
-                     DirectionId<Metavariables::volume_dim>,
-                     std::tuple<Mesh<Metavariables::volume_dim>,
-                                Mesh<Metavariables::volume_dim - 1>,
-                                std::optional<DataVector>,
-                                std::optional<DataVector>, ::TimeStepId, int>,
-                     boost::hash<DirectionId<Metavariables::volume_dim>>>>*>
+    const gsl::not_null<
+        std::pair<const TimeStepId,
+                  DirectionIdMap<Metavariables::volume_dim,
+                                 std::tuple<Mesh<Metavariables::volume_dim>,
+                                            Mesh<Metavariables::volume_dim - 1>,
+                                            std::optional<DataVector>,
+                                            std::optional<DataVector>,
+                                            ::TimeStepId, int>>>*>
         received_temporal_id_and_data) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   db::mutate<subcell::Tags::GhostDataForReconstruction<volume_dim>,
@@ -142,11 +135,9 @@ void neighbor_reconstructed_face_solution(
       mortars_to_reconstruct_to.push_back(mortar_id);
     }
   }
-  FixedHashMap<maximum_number_of_neighbors(volume_dim), DirectionId<volume_dim>,
-               DataVector, boost::hash<DirectionId<volume_dim>>>
-      neighbor_reconstructed_evolved_vars =
-          Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::
-              apply(*box, mortars_to_reconstruct_to);
+  DirectionIdMap<volume_dim, DataVector> neighbor_reconstructed_evolved_vars =
+      Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::
+          apply(*box, mortars_to_reconstruct_to);
   ASSERT(neighbor_reconstructed_evolved_vars.size() ==
              mortars_to_reconstruct_to.size(),
          "Should have reconstructed "

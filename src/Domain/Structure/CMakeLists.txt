@@ -36,6 +36,7 @@ spectre_target_headers(
   CreateInitialMesh.hpp
   Direction.hpp
   DirectionId.hpp
+  DirectionIdMap.hpp
   DirectionMap.hpp
   Element.hpp
   ElementId.hpp

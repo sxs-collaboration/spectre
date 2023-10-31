@@ -8,9 +8,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace evolution::dg::Tags {
@@ -23,7 +21,6 @@ namespace evolution::dg::Tags {
  */
 template <size_t Dim>
 struct NeighborMesh : db::SimpleTag {
-  using type = FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                            Mesh<Dim>, boost::hash<DirectionId<Dim>>>;
+  using type = DirectionIdMap<Dim, Mesh<Dim>>;
 };
 }  // namespace evolution::dg::Tags

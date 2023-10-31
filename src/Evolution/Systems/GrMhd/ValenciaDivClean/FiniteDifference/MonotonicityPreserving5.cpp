@@ -4,21 +4,19 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/MonotonicityPreserving5.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
@@ -62,13 +60,9 @@ void MonotonicityPreserving5Prim::reconstruct(
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
-  FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-               Variables<prims_to_reconstruct_tags>,
-               boost::hash<DirectionId<dim>>>
+  DirectionIdMap<dim, Variables<prims_to_reconstruct_tags>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
@@ -94,9 +88,7 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<dim>>>& ghost_data,
+    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work<prims_to_reconstruct_tags,
@@ -171,28 +163,24 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
              gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
              evolution::dg::Actions::detail::NormalVector<3>>
 
-#define INSTANTIATION(r, data)                                              \
-  template void MonotonicityPreserving5Prim::reconstruct(                   \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
-          vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
-          vars_on_upper_face,                                               \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,    \
-                         evolution::dg::subcell::GhostData,                 \
-                         boost::hash<DirectionId<3>>>& ghost_data,          \
-      const Mesh<3>& subcell_mesh) const;                                   \
-  template void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(       \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,              \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,    \
-                         evolution::dg::subcell::GhostData,                 \
-                         boost::hash<DirectionId<3>>>& ghost_data,          \
-      const Mesh<3>& subcell_mesh,                                          \
+#define INSTANTIATION(r, data)                                                \
+  template void MonotonicityPreserving5Prim::reconstruct(                     \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_lower_face,                                                 \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_upper_face,                                                 \
+      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data, \
+      const Mesh<3>& subcell_mesh) const;                                     \
+  template void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(         \
+      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
+      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data, \
+      const Mesh<3>& subcell_mesh,                                            \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

@@ -17,6 +17,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -126,14 +127,10 @@ std::vector<Direction<Dim>> expected_neighbor_directions() {
 }
 
 template <size_t Dim>
-FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, Mesh<Dim>,
-             boost::hash<DirectionId<Dim>>>
-compute_neighbor_meshes(const Element<Dim>& element, const bool all_dg,
-                        const Mesh<Dim>& dg_mesh,
-                        const Mesh<Dim>& subcell_mesh) {
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, Mesh<Dim>,
-               boost::hash<DirectionId<Dim>>>
-      result{};
+DirectionIdMap<Dim, Mesh<Dim>> compute_neighbor_meshes(
+    const Element<Dim>& element, const bool all_dg, const Mesh<Dim>& dg_mesh,
+    const Mesh<Dim>& subcell_mesh) {
+  DirectionIdMap<Dim, Mesh<Dim>> result{};
   bool already_set_fd = false;
   for (const auto& [direction, neighbors] : element.neighbors()) {
     for (const auto& neighbor : neighbors) {
@@ -180,10 +177,7 @@ void test(const bool all_neighbors_are_doing_dg,
   CAPTURE(all_neighbors_are_doing_dg);
   CAPTURE(fd_derivative_order);
   CAPTURE(Dim);
-  using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<DirectionId<Dim>>>;
+  using Interps = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};

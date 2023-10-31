@@ -4,7 +4,6 @@
 #pragma once
 
 #include <algorithm>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <iterator>
@@ -17,11 +16,11 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -218,18 +217,10 @@ struct TciAndRollback {
             const auto active_vars_ptr, const auto active_history_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
-            const gsl::not_null<
-                FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                             GhostData, boost::hash<DirectionId<Dim>>>*>
-                ghost_data_ptr,
-            const FixedHashMap<maximum_number_of_neighbors(Dim),
-                               DirectionId<Dim>, Mesh<Dim>,
-                               boost::hash<DirectionId<Dim>>>& neighbor_meshes,
+            const gsl::not_null<DirectionIdMap<Dim, GhostData>*> ghost_data_ptr,
+            const DirectionIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
             const size_t ghost_zone_size,
-            const FixedHashMap<maximum_number_of_neighbors(Dim),
-                               DirectionId<Dim>,
-                               std::optional<intrp::Irregular<Dim>>,
-                               boost::hash<DirectionId<Dim>>>&
+            const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           ASSERT(active_history_ptr->size() > 0,
                  "We cannot have an empty history when unwinding, that's just "

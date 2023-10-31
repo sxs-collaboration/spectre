@@ -15,11 +15,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -110,10 +109,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
 
  public:
   using temporal_id = TimeStepId;
-  using type =
-      std::map<TimeStepId,
-               FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                            stored_type, boost::hash<DirectionId<Dim>>>>;
+  using type = std::map<TimeStepId, DirectionIdMap<Dim, stored_type>>;
 
   template <typename Inbox, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
@@ -234,10 +230,7 @@ struct BoundaryMessageInbox {
 
  public:
   using temporal_id = TimeStepId;
-  using type =
-      std::map<TimeStepId,
-               FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                            stored_type, boost::hash<DirectionId<Dim>>>>;
+  using type = std::map<TimeStepId, DirectionIdMap<Dim, stored_type>>;
   using message_type = BoundaryMessage<Dim>;
 
   template <typename Inbox>

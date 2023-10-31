@@ -19,10 +19,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -51,16 +51,12 @@ namespace TestHelpers::grmhd::GhValenciaDivClean::fd {
 namespace detail {
 using GhostData = evolution::dg::subcell::GhostData;
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-             boost::hash<DirectionId<3>>>
-compute_ghost_data(
+DirectionIdMap<3, GhostData> compute_ghost_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-               boost::hash<DirectionId<3>>>
-      ghost_data{};
+  DirectionIdMap<3, GhostData> ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
     const ElementId<3>& neighbor_id = *neighbors_in_direction.begin();
@@ -221,11 +217,9 @@ void test_prim_reconstructor_impl(
   auto neighbors_for_data = element.neighbors();
   neighbors_for_data[gsl::at(Direction<3>::all_directions(), 5)] =
       Neighbors<3>{{ElementId<3>::external_boundary_id()}, {}};
-  const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>, GhostData,
-                     boost::hash<DirectionId<3>>>
-      ghost_data = compute_ghost_data(
-          subcell_mesh, logical_coords, neighbors_for_data,
-          reconstructor.ghost_zone_size(), compute_prim_solution);
+  const DirectionIdMap<3, GhostData> ghost_data = compute_ghost_data(
+      subcell_mesh, logical_coords, neighbors_for_data,
+      reconstructor.ghost_zone_size(), compute_prim_solution);
 
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *

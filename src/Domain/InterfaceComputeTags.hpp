@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"

@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <tuple>
@@ -11,10 +10,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Time/TimeStepId.hpp"
@@ -29,10 +27,7 @@ void test() {
   using StorageType =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                  std::optional<DataVector>, ::TimeStepId, int>;
-  std::pair<const TimeStepId,
-            FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                         StorageType, boost::hash<DirectionId<Dim>>>>
-      neighbor_data{};
+  std::pair<const TimeStepId, DirectionIdMap<Dim, StorageType>> neighbor_data{};
   const DirectionId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
   std::get<5>(neighbor_data.second.at(id_xi)) = 10;

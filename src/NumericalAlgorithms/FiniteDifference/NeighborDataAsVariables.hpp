@@ -3,17 +3,15 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -31,13 +29,10 @@ namespace fd {
  */
 template <size_t Dim, typename ReconstructionTags>
 void neighbor_data_as_variables(
-    const gsl::not_null<FixedHashMap<
-        maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-        Variables<ReconstructionTags>, boost::hash<DirectionId<Dim>>>*>
+    const gsl::not_null<DirectionIdMap<Dim, Variables<ReconstructionTags>>*>
         vars_neighbor_data,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<Dim>>>& all_ghost_data,
+    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>&
+        all_ghost_data,
     const size_t ghost_zone_size, const Mesh<Dim>& subcell_mesh) {
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();

@@ -28,6 +28,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -337,9 +338,7 @@ double test(const size_t num_dg_pts) {
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
-  FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-               typename variables_tag::type, boost::hash<DirectionId<3>>>
-      evolved_vars_errors{};
+  DirectionIdMap<3, typename variables_tag::type> evolved_vars_errors{};
   double max_rel_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.direction;

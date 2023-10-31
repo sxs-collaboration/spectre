@@ -8,14 +8,13 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/ReconstructWork.tpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
@@ -55,9 +54,7 @@ void MonotonisedCentralPrim<Dim>::reconstruct(
     const Variables<prims_tags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<Dim>>>& ghost_data,
+    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -78,9 +75,7 @@ void MonotonisedCentralPrim<Dim>::reconstruct_fd_neighbor(
     const Variables<prims_tags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<Dim>>>& ghost_data,
+    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -143,20 +138,16 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const Variables<prims_tags>& volume_prims,                             \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
       const Element<DIM(data)>& element,                                     \
-      const FixedHashMap<maximum_number_of_neighbors(DIM(data)),             \
-                         DirectionId<DIM(data)>,                             \
-                         evolution::dg::subcell::GhostData,                  \
-                         boost::hash<DirectionId<DIM(data)>>>& ghost_data,   \
+      const DirectionIdMap<DIM(data), evolution::dg::subcell::GhostData>&    \
+          ghost_data,                                                        \
       const Mesh<DIM(data)>& subcell_mesh) const;                            \
   template void MonotonisedCentralPrim<DIM(data)>::reconstruct_fd_neighbor(  \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,               \
       const Variables<prims_tags>& subcell_volume_prims,                     \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
       const Element<DIM(data)>& element,                                     \
-      const FixedHashMap<maximum_number_of_neighbors(DIM(data)),             \
-                         DirectionId<DIM(data)>,                             \
-                         evolution::dg::subcell::GhostData,                  \
-                         boost::hash<DirectionId<DIM(data)>>>& ghost_data,   \
+      const DirectionIdMap<DIM(data), evolution::dg::subcell::GhostData>&    \
+          ghost_data,                                                        \
       const Mesh<DIM(data)>& subcell_mesh,                                   \
       const Direction<DIM(data)> direction_to_reconstruct) const;
 

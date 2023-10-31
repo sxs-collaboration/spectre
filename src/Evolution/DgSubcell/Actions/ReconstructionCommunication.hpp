@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -18,15 +17,15 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
@@ -314,11 +313,10 @@ struct ReceiveDataForReconstruction {
     using Key = DirectionId<Dim>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
-             FixedHashMap<
-                 maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>,
-                 boost::hash<Key>>>& inbox =
+             DirectionIdMap<Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                                            std::optional<DataVector>,
+                                            std::optional<DataVector>,
+                                            ::TimeStepId, int>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
@@ -330,10 +328,9 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    FixedHashMap<maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>,
-                 boost::hash<Key>>
+    DirectionIdMap<
+        Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                        std::optional<DataVector>, ::TimeStepId, int>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
 
@@ -349,10 +346,7 @@ struct ReceiveDataForReconstruction {
              db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
                  .ghost_zone_size(),
          &received_data, &subcell_mesh](
-            const gsl::not_null<
-                FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                             GhostData, boost::hash<DirectionId<Dim>>>*>
-                ghost_data_ptr,
+            const gsl::not_null<DirectionIdMap<Dim, GhostData>*> ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
             const gsl::not_null<std::unordered_map<
                 Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
@@ -360,15 +354,9 @@ struct ReceiveDataForReconstruction {
             const gsl::not_null<
                 std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
                 mortar_next_time_step_id,
-            const gsl::not_null<
-                FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                             Mesh<Dim>, boost::hash<DirectionId<Dim>>>*>
-                neighbor_mesh,
+            const gsl::not_null<DirectionIdMap<Dim, Mesh<Dim>>*> neighbor_mesh,
             const auto neighbor_tci_decisions,
-            const FixedHashMap<maximum_number_of_neighbors(Dim),
-                               DirectionId<Dim>,
-                               std::optional<intrp::Irregular<Dim>>,
-                               boost::hash<DirectionId<Dim>>>&
+            const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           // Remove neighbor meshes for neighbors that don't exist anymore
           domain::remove_nonexistent_neighbors(neighbor_mesh, element);

@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -154,8 +155,7 @@ void test(const fd::DerivativeOrder correction_order) {
   // We do this by computing the solution in our entire neighbor, then using
   // slice_data to get the subset of points that are needed.
   DirectionMap<Dim, FluxVars> neighbor_data{};
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-               evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
+  DirectionIdMap<Dim, evolution::dg::subcell::GhostData>
       reconstruction_ghost_data{};
 
   for (const auto& direction : Direction<Dim>::all_directions()) {

@@ -4,12 +4,10 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
@@ -50,9 +48,7 @@ void reconstruct_work(
     const Variables<System::variables_tag::tags_list>& volume_evolved_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& volume_tilde_j,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& neighbor_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& neighbor_data,
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size);
 
 /*!
@@ -75,9 +71,7 @@ void reconstruct_fd_neighbor_work(
         subcell_volume_evolved_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_volume_tilde_j,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3), DirectionId<3>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<3>>>& ghost_data,
+    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size);
 

@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
@@ -14,7 +13,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -23,8 +21,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -262,9 +260,7 @@ void test_impl(
   const std::unique_ptr<TimeStepper> time_stepper =
       make_time_stepper(multistep_time_stepper);
 
-  FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-               evolution::dg::subcell::GhostData, boost::hash<DirectionId<Dim>>>
-      ghost_data{};
+  DirectionIdMap<Dim, evolution::dg::subcell::GhostData> ghost_data{};
 
   const int tci_decision{-1};  // default value
 

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iomanip>
 #include <map>
@@ -11,11 +10,10 @@
 #include <string>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/InitialTciData.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -29,9 +27,7 @@ struct InitialTciData {
   using temporal_id = int;
   using type =
       std::map<temporal_id,
-               FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                            evolution::dg::subcell::InitialTciData,
-                            boost::hash<DirectionId<Dim>>>>;
+               DirectionIdMap<Dim, evolution::dg::subcell::InitialTciData>>;
 
   template <typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<type*> inbox,

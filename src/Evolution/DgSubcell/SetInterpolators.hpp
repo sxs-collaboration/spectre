@@ -3,22 +3,21 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <utility>
 
 #include "DataStructures/ExtractPoint.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
@@ -66,17 +65,14 @@ struct SetInterpolators {
 
   template <typename ReconstructorType>
   static void apply(
-      const gsl::not_null<FixedHashMap<
-          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
+      const gsl::not_null<
+          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_fd_to_neighbor_fd_ptr,
-      const gsl::not_null<FixedHashMap<
-          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
+      const gsl::not_null<
+          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_dg_to_neighbor_fd_ptr,
-      const gsl::not_null<FixedHashMap<
-          maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-          std::optional<intrp::Irregular<Dim>>, boost::hash<DirectionId<Dim>>>*>
+      const gsl::not_null<
+          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_neighbor_dg_to_fd_ptr,
       const Element<Dim>& element, const Domain<Dim>& domain,
       const Mesh<Dim>& my_dg_mesh,

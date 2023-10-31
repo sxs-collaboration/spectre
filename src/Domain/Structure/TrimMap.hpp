@@ -3,14 +3,13 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
@@ -20,10 +19,7 @@ namespace domain {
  */
 template <size_t Dim, typename T>
 void remove_nonexistent_neighbors(
-    const gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, T,
-                     boost::hash<DirectionId<Dim>>>*>
-        map_to_trim,
+    const gsl::not_null<DirectionIdMap<Dim, T>*> map_to_trim,
     const Element<Dim>& element) {
   std::array<DirectionId<Dim>, maximum_number_of_neighbors(Dim)>
       ids_to_remove{};

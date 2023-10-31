@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Utilities/TMPL.hpp"
@@ -99,9 +100,7 @@ void test_slice_data(
       }
 
       {
-        FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                     std::optional<intrp::Irregular<Dim>>,
-                     boost::hash<DirectionId<Dim>>>
+        DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
             fd_to_neighbor_fd_interpolants{};
         for (const auto& direction : directions_to_slice) {
           fd_to_neighbor_fd_interpolants[DirectionId<Dim>{

@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <tuple>
@@ -13,10 +12,9 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -34,14 +32,9 @@ struct VolumeDouble : db::SimpleTag {
 };
 
 template <size_t Dim>
-using GhostDataMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                 evolution::dg::subcell::GhostData,
-                 boost::hash<DirectionId<Dim>>>;
+using GhostDataMap = DirectionIdMap<Dim, evolution::dg::subcell::GhostData>;
 template <size_t Dim>
-using NeighborReconstructionMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>, DataVector,
-                 boost::hash<DirectionId<Dim>>>;
+using NeighborReconstructionMap = DirectionIdMap<Dim, DataVector>;
 
 template <size_t Dim>
 using MortarData =
@@ -49,9 +42,7 @@ using MortarData =
                std::optional<DataVector>, ::TimeStepId, int>;
 
 template <size_t Dim>
-using MortarDataMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                 MortarData<Dim>, boost::hash<DirectionId<Dim>>>;
+using MortarDataMap = DirectionIdMap<Dim, MortarData<Dim>>;
 
 template <size_t Dim>
 struct Metavariables {

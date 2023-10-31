@@ -4,12 +4,10 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 
 /// \cond
 class DataVector;
@@ -50,9 +48,7 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<Dim>>>& ghost_data,
+    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
@@ -71,9 +67,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<DirectionId<Dim>>>& ghost_data,
+    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct, size_t ghost_zone_size);
 }  // namespace NewtonianEuler::fd

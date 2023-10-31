@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -12,9 +11,8 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
@@ -131,9 +129,7 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<dim>>>& ghost_data,
+      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
@@ -142,9 +138,7 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<dim>>>& ghost_data,
+      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

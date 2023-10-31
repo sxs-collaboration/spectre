@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <iterator>
@@ -16,13 +15,12 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -159,10 +157,7 @@ void test(const bool use_cell_centered_flux) {
   CAPTURE(Dim);
   CAPTURE(use_cell_centered_flux);
 
-  using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<DirectionId<Dim>>>;
+  using Interps = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 
   using metavars = Metavariables<Dim>;
   metavars::ghost_zone_size_invoked = false;
@@ -229,9 +224,7 @@ void test(const bool use_cell_centered_flux) {
   const Element<Dim> element{self_id, neighbors};
 
   using NeighborDataMap =
-      FixedHashMap<maximum_number_of_neighbors(Dim), DirectionId<Dim>,
-                   evolution::dg::subcell::GhostData,
-                   boost::hash<DirectionId<Dim>>>;
+      DirectionIdMap<Dim, evolution::dg::subcell::GhostData>;
   NeighborDataMap neighbor_data{};
   const DirectionId<Dim> east_neighbor_id{Direction<Dim>::upper_xi(), east_id};
   // insert data from one of the neighbors to make sure the send actions clears

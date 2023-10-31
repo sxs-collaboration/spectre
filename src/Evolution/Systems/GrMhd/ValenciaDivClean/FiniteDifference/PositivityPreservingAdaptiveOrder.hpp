@@ -9,9 +9,8 @@
 #include <memory>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -168,9 +167,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<dim>>>& ghost_data,
+      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
@@ -179,9 +176,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<maximum_number_of_neighbors(dim), DirectionId<dim>,
-                         evolution::dg::subcell::GhostData,
-                         boost::hash<DirectionId<dim>>>& ghost_data,
+      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 
