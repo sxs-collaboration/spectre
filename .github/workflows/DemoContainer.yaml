@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-name: Demo Container
+name: Deploy containers
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   docker:
-    name: Build and push 'demo' image to DockerHub
+    name: Build and push
     runs-on: ubuntu-latest
     environment: deploy-containers
     steps:
@@ -32,13 +32,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
+      - name: Build and push deploy container
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: .
+          file: "./containers/Dockerfile.buildenv"
+          target: deploy
+          tags: sxscollaboration/spectre:deploy,sxscollaboration/spectre:latest
+          platforms: linux/amd64,linux/arm64
+      - name: Build and push demo container
         uses: docker/build-push-action@v3
         with:
           push: true
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: demo
-          tags: sxscollaboration/spectre:latest,sxscollaboration/spectre:demo
+          tags: sxscollaboration/spectre:demo
           platforms: linux/amd64,linux/arm64
 

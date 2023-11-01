@@ -354,21 +354,50 @@ RUN apt-get -y clean
 WORKDIR /work
 
 
-# We don't inherit from ci because that has lots of unnecessary compilers that
-# we don't need and would only increase the size of the image. We inherit from
-# the remote image rather than the local dev because it is faster on release
-# CI to just pull the remote dev image and build demo rather than having to
-# build all of dev and demo combined.
-# Instead of basing demo off the remote dev image, we could pre-fetch the dev
-# image and then build from the local cache like
-# FROM dev AS demo
-# Either way works, we just chose to build from remote instead.
-FROM sxscollaboration/spectre:dev AS demo
+# Deploy compiled executables to an image that can be run on HPC systems.
+# - We could also compile in the dev container and then copy the executables to
+#   a minimal deploy container to reduce its size. That requires keeping track
+#   of the shared libraries that are needed to run the executables, so to make
+#   things easier we just base the deploy container on the dev container.
+# - We inherit from the remote image rather than the local dev because it is
+#   faster on release CI to just pull the remote dev image rather than having to
+#   build the dev container again. We could pre-fetch the dev image and then
+#   build from the local cache, but that didn't work right away.
+FROM sxscollaboration/spectre:dev AS deploy
 ARG BUILDARCH
 ARG TARGETARCH
+ARG PARALLEL_MAKE_ARG=-j2
 
-# When building this image individually, the PARALLEL_MAKE_ARG from above is not
-# remembered (and it doesn't hurt to redefine the env variable).
+COPY . spectre/
+
+RUN mkdir spectre/build && cd spectre/build \
+    && cmake \
+    -D CMAKE_C_COMPILER=clang \
+    -D CMAKE_CXX_COMPILER=clang++ \
+    -D CMAKE_Fortran_COMPILER=gfortran \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D DEBUG_SYMBOLS=OFF \
+    -D BUILD_PYTHON_BINDINGS=ON \
+    -D MEMORY_ALLOCATOR=SYSTEM \
+    ..
+
+# Skip compiling the executables if we are emulating the target architecture
+# because that takes a long time. They can be compiled on-demand.
+RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
+        cd spectre/build \
+        && make ${PARALLEL_MAKE_ARG} cli \
+        && make ${PARALLEL_MAKE_ARG} CharacteristicExtract \
+    ; fi
+
+ENV SPECTRE_HOME /work/spectre
+ENV PATH $SPECTRE_HOME/build/bin:$PATH
+ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
+
+
+# Build a demo image with extra software used in the tutorials.
+FROM deploy AS demo
+ARG BUILDARCH
+ARG TARGETARCH
 ARG PARALLEL_MAKE_ARG=-j2
 
 # vim and emacs for editing files
@@ -391,37 +420,11 @@ RUN if [ "$TARGETARCH" != "arm64" ] ; then \
 
 ENV PATH "/opt/paraview/bin:$PATH"
 
-# We copy the entire SpECTRE repo from the current context so that people can
-# edit and rebuild the pre-built executables if they want to experiment with
-# editing and building SpECTRE. The executables are chosen because they are the
-# ones in the "Hitchhikers's" tutorial for SpECTRE. More executables can be
-# added in later if we so desire. We also build python bindings and install
-# jupyterlab for other demos and tutorials.
-COPY . spectre/
-
-RUN mkdir spectre/build && cd spectre/build \
-    && cmake \
-        -D CMAKE_C_COMPILER=clang \
-        -D CMAKE_CXX_COMPILER=clang++ \
-        -D CMAKE_Fortran_COMPILER=gfortran \
-        -D CMAKE_BUILD_TYPE=Release \
-        -D DEBUG_SYMBOLS=OFF \
-        -D BUILD_PYTHON_BINDINGS=ON \
-        -D MEMORY_ALLOCATOR=SYSTEM \
-        ..
-# Skip compiling the executables if we are emulating the target architecture
-# because that takes a long time. They can be compiled on-demand.
+# Build the executables used in the tutorial
 RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
         cd spectre/build \
         && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
         && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
-        && make ${PARALLEL_MAKE_ARG} all-pybindings; \
-    fi
+    ; fi
 
 RUN pip3 --no-cache-dir install jupyterlab
-
-ENV SPECTRE_HOME /work/spectre
-ENV PATH $SPECTRE_HOME/build/bin:$PATH
-ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
-
-WORKDIR /work
