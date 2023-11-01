@@ -64,6 +64,7 @@ spectre_target_headers(
   Requires.hpp
   SetNumberOfGridPoints.hpp
   Spherepack.hpp
+  SplitTuple.hpp
   StaticCache.hpp
   StdArrayHelpers.hpp
   StdHelpers.hpp
