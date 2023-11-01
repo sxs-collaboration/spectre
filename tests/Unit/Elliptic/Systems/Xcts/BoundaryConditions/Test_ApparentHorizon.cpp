@@ -403,7 +403,8 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   std::array<double, 3> rotation =
       -0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
-  const KerrSchild solution{mass, dimensionless_spin, {{0., 0., 0.}}};
+  const KerrSchild solution{
+      mass, dimensionless_spin, {{0., 0., 0.}}, {{0., 0., 0.}}};
   const ApparentHorizon<Xcts::Geometry::Curved> kerr_horizon{
       center, rotation, std::make_unique<KerrSchild>(solution),
       // Check with and without the negative-expansion condition. Either the
@@ -563,8 +564,8 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                 "  Lapse: Auto\n"
                 "  NegativeExpansion: None\n");
   test_creation({{1., 2., 3.}}, {{0.1, 0.2, 0.3}},
-                {{2.3, {{0.4, 0.5, 0.6}}, {{0., 0., 0.}}}},
-                {{3.4, {{0.3, 0.2, 0.1}}, {{0., 0., 0.}}}},
+                {{2.3, {{0.4, 0.5, 0.6}}, {{0., 0., 0.}}, {{0., 0., 0.}}}},
+                {{3.4, {{0.3, 0.2, 0.1}}, {{0., 0., 0.}}, {{0., 0., 0.}}}},
                 "ApparentHorizon:\n"
                 "  Center: [1., 2., 3.]\n"
                 "  Rotation: [0.1, 0.2, 0.3]\n"
@@ -573,11 +574,13 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                 "      Mass: 2.3\n"
                 "      Spin: [0.4, 0.5, 0.6]\n"
                 "      Center: [0., 0., 0.]\n"
+                "      Velocity: [0., 0., 0.]\n"
                 "  NegativeExpansion:\n"
                 "    KerrSchild:\n"
                 "      Mass: 3.4\n"
                 "      Spin: [0.3, 0.2, 0.1]\n"
-                "      Center: [0., 0., 0.]\n");
+                "      Center: [0., 0., 0.]\n"
+                "      Velocity: [0., 0., 0.]\n");
   test_with_random_values();
   test_consistency_with_kerr(false);
   test_consistency_with_kerr(true);

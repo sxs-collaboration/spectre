@@ -37,7 +37,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.BackgroundSpacetime",
   const auto ks_background =
       gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}});
   const std::string& ks_option_string =
-      "Mass: 0.5\nSpin: [0.1,0.2,0.3]\nCenter: [1.0,3.0,2.0]";
+      "Mass: 0.5\nSpin: [0.1,0.2,0.3]\nCenter: [1.0,3.0,2.0]\nVelocity: "
+      "[0.0,0.0,0.0]";
   test_option_parsing(ks_background, ks_option_string);
 
   const auto spherical_ks_background = gr::Solutions::SphericalKerrSchild(

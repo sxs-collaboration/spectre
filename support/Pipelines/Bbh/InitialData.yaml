@@ -31,11 +31,13 @@ Background: &background
         Mass: {{ MassLeft }}
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: {{ MassRight }}
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
     LinearVelocity: [0., 0., 0.]

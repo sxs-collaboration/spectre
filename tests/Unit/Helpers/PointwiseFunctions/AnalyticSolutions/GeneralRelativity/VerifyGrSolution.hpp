@@ -426,5 +426,55 @@ void verify_consistency(const Solution& solution, const double time,
                                               derivative_delta),
       derivative_approx);
 }
+
+/// Check the consistency of dependent quantities returned by a
+/// solution.  This includes checking pointwise relations such as
+/// consistency of the metric and inverse and comparing returned and
+/// numerical derivatives.
+template <typename Solution, typename Frame>
+void verify_spatial_consistency(const Solution& solution, const double time,
+                                const tnsr::I<double, 3, Frame>& position,
+                                const double derivative_delta,
+                                const double derivative_tolerance) {
+  using Lapse = gr::Tags::Lapse<double>;
+  using Shift = gr::Tags::Shift<double, 3, Frame>;
+  using SpatialMetric = gr::Tags::SpatialMetric<double, 3, Frame>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<double>;
+  using InverseSpatialMetric = gr::Tags::InverseSpatialMetric<double, 3, Frame>;
+  using ExtrinsicCurvature = gr::Tags::ExtrinsicCurvature<double, 3, Frame>;
+  using tags =
+      tmpl::list<SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
+                 ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift, Frame>,
+                 Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric, Frame>,
+                 Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse, Frame>>;
+
+  auto derivative_approx = approx.epsilon(derivative_tolerance);
+
+  const auto vars = solution.variables(position, time, tags{});
+
+  const auto numerical_metric_det_and_inverse =
+      determinant_and_inverse(get<SpatialMetric>(vars));
+  CHECK_ITERABLE_APPROX(get(get<SqrtDetSpatialMetric>(vars)),
+                        sqrt(get(numerical_metric_det_and_inverse.first)));
+  CHECK_ITERABLE_APPROX(get<InverseSpatialMetric>(vars),
+                        numerical_metric_det_and_inverse.second);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<Lapse, Frame>>(vars)),
+      detail::space_derivative<Lapse>(solution, position, time,
+                                      derivative_delta),
+      derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<Shift, Frame>>(vars)),
+      detail::space_derivative<Shift>(solution, position, time,
+                                      derivative_delta),
+      derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      SINGLE_ARG(get<detail::deriv<SpatialMetric, Frame>>(vars)),
+      detail::space_derivative<SpatialMetric>(solution, position, time,
+                                              derivative_delta),
+      derivative_approx);
+}
+
 }  // namespace VerifyGrSolution
 }  // namespace TestHelpers
