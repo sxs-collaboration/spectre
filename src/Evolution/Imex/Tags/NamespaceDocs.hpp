@@ -6,4 +6,6 @@
 namespace imex {
 /// Tags for IMEX
 namespace Tags {}
+/// Input-file options for IMEX
+namespace OptionTags {}
 }  // namespace imex

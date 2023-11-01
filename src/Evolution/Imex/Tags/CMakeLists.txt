@@ -7,6 +7,9 @@ spectre_target_headers(
   HEADERS
   ImplicitHistory.hpp
   Jacobian.hpp
+  Mode.hpp
   NamespaceDocs.hpp
+  OptionGroup.hpp
   SolveFailures.hpp
+  SolveTolerance.hpp
   )
