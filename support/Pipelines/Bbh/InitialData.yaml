@@ -34,6 +34,7 @@ Background: &background
           - {{ DimensionlessSpinLeft_y }}
           - {{ DimensionlessSpinLeft_z }}
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: &mass_right {{ MassRight }}
@@ -42,6 +43,7 @@ Background: &background
           - {{ DimensionlessSpinRight_y }}
           - {{ DimensionlessSpinRight_z }}
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
     LinearVelocity: [0., 0., 0.]

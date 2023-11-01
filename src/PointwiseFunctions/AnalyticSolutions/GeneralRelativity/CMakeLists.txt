@@ -44,6 +44,7 @@ target_link_libraries(
   GeneralRelativity
   Interpolation
   Serialization
+  SpecialRelativity
   )
 
 add_subdirectory(Python)
