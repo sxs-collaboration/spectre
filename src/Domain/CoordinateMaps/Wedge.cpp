@@ -85,11 +85,14 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
     sphere_rate_ = 0.5 * (log(radius_outer / radius_inner));
   } else if (radial_distribution_ == Distribution::Inverse) {
     scaled_frustum_zero_ = 0.0;
-    sphere_zero_ =
-        0.5 * (radius_inner + radius_outer) / radius_inner / radius_outer;
+    // Most places where sphere_zero_ and sphere_rate_ would be used
+    // would cause precision issues for large wedges, so we don't
+    // define them.
+    // 0.5 * (radius_inner + radius_outer) / radius_inner / radius_outer;
+    sphere_zero_ = std::numeric_limits<double>::signaling_NaN();
     scaled_frustum_rate_ = 0.0;
-    sphere_rate_ =
-        0.5 * (radius_inner - radius_outer) / radius_inner / radius_outer;
+    // 0.5 * (radius_inner - radius_outer) / radius_inner / radius_outer;
+    sphere_rate_ = std::numeric_limits<double>::signaling_NaN();
   } else {
     ERROR("Unsupported radial distribution: " << radial_distribution_);
   }
@@ -113,7 +116,8 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
   } else if (radial_distribution_ == Distribution::Logarithmic) {
     return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho;
   } else {
-    return one_over_rho / (sphere_zero_ + sphere_rate_ * zeta);
+    return 2.0 * one_over_rho /
+           ((1.0 + zeta) / radius_outer_ + (1.0 - zeta) / radius_inner_);
   }
 }
 
@@ -178,41 +182,41 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
 
   std::array<double, Dim - 1> cap{};
   cap[0] = physical_coords[polar_coord] / physical_coords[radial_coord];
-  double one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     cap[1] = physical_coords[azimuth_coord] / physical_coords[radial_coord];
-    one_over_rho += square(cap[1]);
   }
-  one_over_rho = 1. / sqrt(one_over_rho);
-  const double zeta_coefficient =
-      (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
-  // If -sphere_rate_/scaled_frustum_rate_ > 1, then
-  // there exists a cone in x,y,z space given by the surface
-  // zeta_coefficient=0; the map is singular on this surface.
-  // We return nullopt if we are on or outside this cone.
-  // If scaled_frustum_rate_ > 0, then outside the cone
-  // corresponds to zeta_coefficient > 0, and if scaled_frustum_rate_
-  // < 0, then outside the cone corresponds to zeta_coefficient < 0.
-  // We test in two cases, and avoid division.
-  if ((scaled_frustum_rate_ > 0.0 and scaled_frustum_rate_ < -sphere_rate_ and
-       zeta_coefficient > 0.0) or
-      (scaled_frustum_rate_ < 0.0 and scaled_frustum_rate_ > -sphere_rate_ and
-       zeta_coefficient < 0.0) or
-      equal_within_roundoff(zeta_coefficient, 0.0)) {
-    return std::nullopt;
-  }
-  const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
+  const double radius = magnitude(physical_coords);
   // Radial coordinate
-  const double zeta = [this, physical_z = physical_coords[radial_coord],
-                       &one_over_rho, &z_zero, &zeta_coefficient]() {
-    if (radial_distribution_ == Distribution::Linear) {
-      return (physical_z - z_zero) / zeta_coefficient;
-    } else if (radial_distribution_ == Distribution::Logarithmic) {
-      return (log(physical_z / one_over_rho) - sphere_zero_) / sphere_rate_;
-    } else {
-      return (one_over_rho / physical_z - sphere_zero_) / sphere_rate_;
+  double zeta = std::numeric_limits<double>::signaling_NaN();
+  if (radial_distribution_ == Distribution::Linear) {
+    const double physical_z = physical_coords[radial_coord];
+    const double zeta_coefficient =
+        (scaled_frustum_rate_ + sphere_rate_ * physical_z / radius);
+    // If -sphere_rate_/scaled_frustum_rate_ > 1, then
+    // there exists a cone in x,y,z space given by the surface
+    // zeta_coefficient=0; the map is singular on this surface.
+    // We return nullopt if we are on or outside this cone.
+    // If scaled_frustum_rate_ > 0, then outside the cone
+    // corresponds to zeta_coefficient > 0, and if scaled_frustum_rate_
+    // < 0, then outside the cone corresponds to zeta_coefficient < 0.
+    // We test in two cases, and avoid division.
+    if ((scaled_frustum_rate_ > 0.0 and scaled_frustum_rate_ < -sphere_rate_ and
+         zeta_coefficient > 0.0) or
+        (scaled_frustum_rate_ < 0.0 and scaled_frustum_rate_ > -sphere_rate_ and
+         zeta_coefficient < 0.0) or
+        equal_within_roundoff(zeta_coefficient, 0.0)) {
+      return std::nullopt;
     }
-  }();
+    const auto z_zero =
+        (scaled_frustum_zero_ + sphere_zero_ * physical_z / radius);
+    zeta = (physical_z - z_zero) / zeta_coefficient;
+  } else if (radial_distribution_ == Distribution::Logarithmic) {
+    zeta = (log(radius) - sphere_zero_) / sphere_rate_;
+  } else {
+    zeta = (radius_inner_ * (radius_outer_ / radius - 1.0) +
+            radius_outer_ * (radius_inner_ / radius - 1.0)) /
+           (radius_inner_ - radius_outer_);
+  }
   // Polar angle
   double xi = with_equiangular_map_
                   ? 2.0 *
@@ -271,8 +275,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
       with_equiangular_map_
           ? 0.5 * opening_angles_distribution_[0] *
                 tan(0.5 * opening_angles_[0]) /
-                tan(0.5 * opening_angles_distribution_[0]) *
-                (1.0 + square(tan(0.5 * opening_angles_distribution_[0] * xi)))
+                tan(0.5 * opening_angles_distribution_[0]) /
+                square(cos(0.5 * opening_angles_distribution_[0] * xi))
           : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
@@ -287,9 +291,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
         with_equiangular_map_
             ? 0.5 * opening_angles_distribution_[1] *
                   tan(0.5 * opening_angles_[1]) /
-                  tan(0.5 * opening_angles_distribution_[1]) *
-                  (1.0 +
-                   square(tan(0.5 * opening_angles_distribution_[1] * eta)))
+                  tan(0.5 * opening_angles_distribution_[1]) /
+                  square(cos(0.5 * opening_angles_distribution_[1] * eta))
             : make_with_value<ReturnType>(xi, 1.0);
     one_over_rho += square(cap[1]);
   }
@@ -303,7 +306,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
     } else if (radial_distribution_ == Distribution::Logarithmic) {
       return exp(sphere_zero_ + sphere_rate_ * zeta);
     } else {
-      return 1. / (sphere_zero_ + sphere_rate_ * zeta);
+      return 2.0 /
+             ((1.0 + zeta) / radius_outer_ + (1.0 - zeta) / radius_inner_);
     }
   }();
 
@@ -314,8 +318,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
   std::array<ReturnType, Dim> dxyz_dxi{};
   dxyz_dxi[radial_coord] =
       -s_factor * cap[0] * cap_deriv[0] * one_over_rho_cubed;
-  dxyz_dxi[polar_coord] =
-      cap[0] * dxyz_dxi[radial_coord] + cap_deriv[0] * physical_z;
+  if (radial_distribution_ == Distribution::Linear) {
+    dxyz_dxi[polar_coord] =
+        cap[0] * dxyz_dxi[radial_coord] + cap_deriv[0] * physical_z;
+  } else {
+    dxyz_dxi[polar_coord] = square(one_over_rho) * cap_deriv[0] * physical_z;
+    if constexpr (Dim == 3) {
+      dxyz_dxi[polar_coord] *= 1.0 + square(cap[1]);
+    }
+  }
   if constexpr (Dim == 3) {
     dxyz_dxi[azimuth_coord] = cap[1] * dxyz_dxi[radial_coord];
   }
@@ -338,8 +349,14 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
     std::array<ReturnType, Dim> dxyz_deta{};
     dxyz_deta[radial_coord] =
         -s_factor * cap[1] * cap_deriv[1] * one_over_rho_cubed;
-    dxyz_deta[azimuth_coord] =
-        cap[1] * dxyz_deta[radial_coord] + cap_deriv[1] * physical_z;
+    if (radial_distribution_ == Distribution::Linear) {
+      dxyz_deta[azimuth_coord] =
+          cap[1] * dxyz_deta[radial_coord] + cap_deriv[1] * physical_z;
+    } else {
+      dxyz_deta[azimuth_coord] = (1.0 + square(cap[0])) * square(one_over_rho) *
+                                 cap_deriv[1] * physical_z;
+    }
+
     dxyz_deta[polar_coord] = cap[0] * dxyz_deta[radial_coord];
     dX_dlogical =
         discrete_rotation(orientation_of_wedge_, std::move(dxyz_deta));
@@ -356,7 +373,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
   } else if (radial_distribution_ == Distribution::Logarithmic) {
     dxyz_dzeta[radial_coord] = s_factor * sphere_rate_ * one_over_rho;
   } else {
-    dxyz_dzeta[radial_coord] = -square(s_factor) * sphere_rate_ * one_over_rho;
+    const double sphere_rate =
+        0.5 * (1.0 / radius_outer_ - 1.0 / radius_inner_);
+    dxyz_dzeta[radial_coord] = -square(s_factor) * sphere_rate * one_over_rho;
   }
   dxyz_dzeta[polar_coord] = cap[0] * dxyz_dzeta[radial_coord];
   if constexpr (Dim == 3) {
@@ -400,8 +419,8 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
       with_equiangular_map_
           ? 0.5 * opening_angles_distribution_[0] *
                 tan(0.5 * opening_angles_[0]) /
-                tan(0.5 * opening_angles_distribution_[0]) *
-                (1.0 + square(tan(0.5 * opening_angles_distribution_[0] * xi)))
+                tan(0.5 * opening_angles_distribution_[0]) /
+                square(cos(0.5 * opening_angles_distribution_[0] * xi))
           : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
@@ -416,9 +435,8 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
         with_equiangular_map_
             ? 0.5 * opening_angles_distribution_[1] *
                   tan(0.5 * opening_angles_[1]) /
-                  tan(0.5 * opening_angles_distribution_[1]) *
-                  (1.0 +
-                   square(tan(0.5 * opening_angles_distribution_[1] * eta)))
+                  tan(0.5 * opening_angles_distribution_[1]) /
+                  square(cos(0.5 * opening_angles_distribution_[1] * eta))
             : make_with_value<ReturnType>(xi, 1.0);
     one_over_rho += square(cap[1]);
   }
@@ -436,7 +454,8 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
     } else if (radial_distribution_ == Distribution::Logarithmic) {
       return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho_cubed;
     } else {
-      return one_over_rho_cubed / (sphere_zero_ + sphere_rate_ * zeta);
+      return 2.0 * one_over_rho_cubed /
+             ((1.0 + zeta) / radius_outer_ + (1.0 - zeta) / radius_inner_);
     }
   }();
   const ReturnType one_over_dz_dzeta = [this, &zeta,
@@ -447,8 +466,12 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
       return 1.0 / (exp(sphere_zero_ + sphere_rate_ * zeta) * sphere_rate_ *
                     one_over_rho);
     } else {
-      return -square(sphere_zero_ + sphere_rate_ * zeta) / sphere_rate_ /
-             one_over_rho;
+      const double sphere_rate =
+          0.5 * (1.0 / radius_outer_ - 1.0 / radius_inner_);
+      return -0.25 *
+             square((1.0 + zeta) / radius_outer_ +
+                    (1.0 - zeta) / radius_inner_) /
+             sphere_rate / one_over_rho;
     }
   }();
   const ReturnType dzeta_factor = one_over_physical_z * one_over_dz_dzeta;
@@ -552,9 +575,7 @@ bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
          lhs.sphericity_inner_ == rhs.sphericity_inner_ and
          lhs.sphericity_outer_ == rhs.sphericity_outer_ and
          lhs.scaled_frustum_zero_ == rhs.scaled_frustum_zero_ and
-         lhs.sphere_zero_ == rhs.sphere_zero_ and
          lhs.scaled_frustum_rate_ == rhs.scaled_frustum_rate_ and
-         lhs.sphere_rate_ == rhs.sphere_rate_ and
          lhs.opening_angles_ == rhs.opening_angles_ and
          lhs.opening_angles_distribution_ == rhs.opening_angles_distribution_;
 }
