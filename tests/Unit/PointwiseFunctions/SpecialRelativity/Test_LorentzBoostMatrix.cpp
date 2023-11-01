@@ -60,6 +60,89 @@ void test_lorentz_boost_matrix_analytic(const double& velocity_squared) {
   }
   CHECK_ITERABLE_APPROX(inverse_check, identity_matrix);
 }
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_lorentz_boost(const std::array<double, SpatialDim> velocity,
+                        const std::array<double, SpatialDim> velocity_2) {
+  const DataVector used_for_size{3., 4., 5.};
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-0.2, 0.2);
+
+  auto covariant_vector =
+      make_with_random_values<tnsr::a<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+
+  tnsr::a<DataType, SpatialDim, Frame> boosted_covariant_vector;
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(
+      make_not_null(&boosted_covariant_vector), covariant_vector, velocity);
+
+  // Check that applying the inverse boost returns the original vector
+  tnsr::a<DataType, SpatialDim, Frame> unboosted_covariant_vector;
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(
+      make_not_null(&unboosted_covariant_vector), boosted_covariant_vector,
+      -velocity);
+  CHECK_ITERABLE_APPROX(unboosted_covariant_vector, covariant_vector);
+
+  // Check boost of the spatial vector
+  tnsr::I<DataType, SpatialDim, Frame> spatial_vector =
+      make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    spatial_vector.get(i) = covariant_vector.get(i + 1);
+  }
+  // Lower index, i.e. v_0
+  const double vector_component_0 = get<0>(covariant_vector);
+
+  tnsr::I<DataType, SpatialDim, Frame> boosted_spatial_vector =
+      make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
+
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(
+      make_not_null(&boosted_spatial_vector), spatial_vector,
+      vector_component_0, velocity);
+
+  tnsr::I<DataType, SpatialDim, Frame> expected_spatial_vector =
+      make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    expected_spatial_vector.get(i) = boosted_covariant_vector.get(i + 1);
+  }
+  CHECK_ITERABLE_APPROX(expected_spatial_vector, boosted_spatial_vector);
+
+  // Check boost on rank-2 matrix by constructing one with an outer tensor
+  // product, i.e. T_{ab} = v_{a} u_{b}
+  tnsr::ab<DataType, SpatialDim, Frame> tensor =
+      make_with_value<tnsr::ab<DataType, SpatialDim, Frame>>(used_for_size,
+                                                             0.0);
+  tnsr::ab<DataType, SpatialDim, Frame> boosted_tensor =
+      make_with_value<tnsr::ab<DataType, SpatialDim, Frame>>(used_for_size,
+                                                             0.0);
+  tnsr::ab<DataType, SpatialDim, Frame> expected_tensor =
+      make_with_value<tnsr::ab<DataType, SpatialDim, Frame>>(used_for_size,
+                                                             0.0);
+  // We need a second covariant vector
+  auto covariant_vector_2 =
+      make_with_random_values<tnsr::a<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  // We boost it as well, but with possibly another velocity
+  tnsr::a<DataType, SpatialDim, Frame> boosted_covariant_vector_2;
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(
+      make_not_null(&boosted_covariant_vector_2), covariant_vector_2,
+      velocity_2);
+
+  for (size_t i = 0; i < SpatialDim + 1; ++i) {
+    for (size_t j = 0; j < SpatialDim + 1; ++j) {
+      tensor.get(i, j) = covariant_vector.get(i) * covariant_vector_2.get(j);
+      expected_tensor.get(i, j) =
+          boosted_covariant_vector.get(i) * boosted_covariant_vector_2.get(j);
+    }
+  }
+
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(make_not_null(&boosted_tensor),
+                                                 tensor, velocity, velocity_2);
+  CHECK_ITERABLE_APPROX(expected_tensor, boosted_tensor);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -85,4 +168,11 @@ SPECTRE_TEST_CASE(
 
   d = large_velocity_squared;
   CHECK_FOR_DOUBLES(test_lorentz_boost_matrix_analytic, (1, 2, 3));
+}
+
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.SpecialRelativity.LorentzBoost",
+                  "[PointwiseFunctions][Unit]") {
+  const std::array<double, 3> velocity{{0.1, -0.4, 0.3}};
+  const std::array<double, 3> velocity_2{{0.2, -0.1, -0.5}};
+  test_lorentz_boost<double, 3, Frame::Inertial>(velocity, velocity_2);
 }

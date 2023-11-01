@@ -3,9 +3,12 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 
 /// \cond
 namespace gsl {
@@ -53,5 +56,51 @@ template <size_t SpatialDim>
 void lorentz_boost_matrix(
     gsl::not_null<tnsr::Ab<double, SpatialDim, Frame::NoFrame>*> boost_matrix,
     const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity);
+
+template <size_t SpatialDim>
+tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
+    const std::array<double, SpatialDim>& velocity);
+/// @}
+
+/// @{
+/*!
+ * \ingroup SpecialRelativityGroup
+ * \brief Apply a Lorentz boost to the spatial part of a one form.
+ * \details The zero component of the one form is also specified.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+void lorentz_boost(
+    const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
+    const tnsr::I<DataType, SpatialDim, Frame>& vector,
+    const double vector_component_0,
+    const std::array<double, SpatialDim>& velocity);
+/// @}
+
+/// @{
+/*!
+ * \ingroup SpecialRelativityGroup
+ * \brief Apply a Lorentz boost to a one form.
+ *
+ * Note that the Lorentz matrix is symmetric.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+void lorentz_boost(
+    const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> result,
+    const tnsr::a<DataType, SpatialDim, Frame>& vector,
+    const std::array<double, SpatialDim>& velocity);
+/// @}
+
+/// @{
+/*!
+ * \ingroup SpecialRelativityGroup
+ * \brief Apply a Lorentz boosts for each index of a rank-2 tensor with
+ * lower or covariant indices.
+ */
+template <typename DataType, size_t SpatialDim, typename Frame>
+void lorentz_boost(
+    const gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
+    const tnsr::ab<DataType, SpatialDim, Frame>& tensor,
+    const std::array<double, SpatialDim>& velocity_first_index,
+    const std::array<double, SpatialDim>& velocity_second_index);
 /// @}
 }  // namespace sr
