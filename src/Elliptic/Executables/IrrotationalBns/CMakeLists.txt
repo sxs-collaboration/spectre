@@ -1,6 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(EXECUTABLE "SolveIrrotationalBns")
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  SolveIrrotationalBns.cpp
+)
+
 set(LIBS_TO_LINK
   Convergence
   CoordinateMaps
@@ -24,16 +32,8 @@ set(LIBS_TO_LINK
   PoissonBoundaryConditions
   PoissonSolutions
   Utilities
-  )
+)
 
-function(add_irrotational_bns_executable)
-  add_spectre_parallel_executable(
-    "SolveIrrotationalBns"
-    SolveIrrotationalBns
-    Elliptic/Executables/IrrotationalBns
-    "Metavariables"
-    "${LIBS_TO_LINK}"
-    )
-endfunction(add_irrotational_bns_executable)
 
-add_irrotational_bns_executable()
+
+target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})

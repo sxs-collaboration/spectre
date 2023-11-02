@@ -50,7 +50,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/IrrotationalBns/Factory.hpp"
+#include "PointwiseFunctions/AnalyticData/IrrotationalBns/Factory.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -183,11 +183,11 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<elliptic::analytic_data::Background,
-                   IrrotationalBns::Solutions::all_analytic_solutions>,
+                   IrrotationalBns::InitialData::all_initial_data>,
         tmpl::pair<elliptic::analytic_data::InitialGuess,
-                   IrrotationalBns::Solutions::all_analytic_solutions>,
+                   IrrotationalBns::InitialData::all_initial_data>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
-                   IrrotationalBns::Solutions::all_analytic_solutions>,
+                   IrrotationalBns::InitialData::all_initial_data>,
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    IrrotationalBns::BoundaryConditions::
                        standard_boundary_conditions<system>>,

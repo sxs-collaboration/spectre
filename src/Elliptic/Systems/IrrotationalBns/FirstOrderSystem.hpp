@@ -20,7 +20,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace IrrotatalBns {
+namespace IrrotationalBns {
 
 /*!
  * \brief The Irrotational Bns equations From Baumgarte and Shapiro Chapter 15
@@ -81,20 +81,20 @@ struct FirstOrderSystem
   using auxiliary_fluxes = tmpl::list<
       ::Tags::Flux<auxiliary_velocity, tmpl::size_t<3>, Frame::Inertial>>;
 
-  using background_fields = tmpl::conditional_t<
-      BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
-      tmpl::list<
-          gr::Tags::InverseSpatialMetric<DataVector, 3>,
-          gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
-          gr::Tags::Lapse<DataVector>,
-          ::Tags::Deriv<gr::Tags::Lapse<DataVector, 3>>,
-          gr::Tags::Shift<DataVector, 3>,
-          ::Tags::Deriv<gr::Tags::Shift<DataVector, 3>>,
-          hydro::initial_data::Tags::EulerEnthalpyConstant
-              hydro::initial_data::Tags::RotationalShift,
-          ::Tags::Deriv<hydro::initial_data::Tags::RotationalShift>,
-
-          hdro :>>;
+  using background_fields = tmpl::list<
+      gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
+      gr::Tags::Lapse<DataVector>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::int_<3>,
+                    Frame::Inertial>,
+      gr::Tags::Shift<DataVector, 3>,
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::int_<3>,
+                    Frame::Inertial>,
+      Tags::EulerEnthalpyConstant, Tags::RotationalShift,
+      Tags::DerivLogLapseOverSpecificEnthalpy, Tags::FixedSources,
+      Tags::RotationalShiftStress, Tags::DivergenceRotationalShiftStress,
+      Tags::SpatialRotationalKillingVector,
+      Tags::DerivSpatialRotationalKillingVector>;
   using inv_metric_tag =
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
                           gr::Tags::InverseSpatialMetric<DataVector, 3>>;
@@ -105,4 +105,4 @@ struct FirstOrderSystem
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<3>;
 };
-}  // namespace IrrotatalBns
+}  // namespace IrrotationalBns

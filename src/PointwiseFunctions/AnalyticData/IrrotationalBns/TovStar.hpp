@@ -30,7 +30,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace IrrotationalBns::Solutions {
+namespace IrrotationalBns::InitialData {
 namespace tov_detail {
 
 using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
@@ -267,4 +267,4 @@ inline bool operator!=(const TovStar& lhs, const TovStar& rhs) {
   return not(lhs == rhs);
 }
 
-}  // namespace IrrotationalBns::Solutions
+}  // namespace IrrotationalBns::InitialData

@@ -17,9 +17,9 @@ class DataVector;
 
 /*!
  * \ingroup EllipticSystemsGroup
- * \brief Items related to solving relativisitic hydrostatic equalibrium.
+ * \brief Items related to solving for irrotational bns initial data
  */
-namespace Hydrostatic {
+namespace IrrotationalBns {
 namespace Tags {
 
 /*!
@@ -70,9 +70,22 @@ struct VelocityPotential : db::SimpleTag {
  *  U_i \equiv D_i \Phi  - \frac{C + B^jD_j \Phi}{\alpha^2}B_i
  * \f]
  */
-struct AuxiliaryVelocity : db::simpleTag {
-  using type = tnsr::i<Datavector, 3>;
+struct AuxiliaryVelocity : db::SimpleTag {
+  using type = tnsr::i<DataVector, 3>;
 };
 
+struct FixedSources : db::SimpleTag {
+  using type = tnsr::i<DataVector, 3>;
+};
+
+struct SpatialRotationalKillingVector : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
+};
+struct DerivSpatialRotationalKillingVector : db::SimpleTag {
+  using type = tnsr::iJ<DataVector, 3>;
+};
+struct EulerEnthalpyConstant : db::SimpleTag {
+  using type = double;
+};
 }  // namespace Tags
-}  // namespace Hydrostatic
+}  // namespace IrrotationalBns

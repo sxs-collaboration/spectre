@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Hydrostatic)
+set(LIBRARY IrrotationalBns)
 
 add_spectre_library(${LIBRARY})
 

@@ -41,7 +41,7 @@ class Neumann : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   Neumann& operator=(const Neumann&) = default;
   Neumann(Neumann&&) = default;
   Neumann& operator=(Neumann&&) = default;
-  ~Neumann() = default;
+  ~Neumann() override = default;
 
   /// \cond
   explicit Neumann(CkMigrateMessage* m) : Base(m) {}
@@ -54,7 +54,7 @@ class Neumann : public elliptic::BoundaryConditions::BoundaryCondition<3> {
     return std::make_unique<Neumann>(*this);
   }
 
-  Neumann(const Options::Context& context = {});
+  explicit Neumann(const Options::Context& context = {});
 
   std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
       const override {
@@ -81,9 +81,9 @@ class Neumann : public elliptic::BoundaryConditions::BoundaryCondition<3> {
 };
 
 template <size_t Dim>
-bool operator==(const Neumann<Dim>& lhs, const Neumann<Dim>& rhs);
+bool operator==(const Neumann& lhs, const Neumann& rhs);
 
 template <size_t Dim>
-bool operator!=(const Neumann<Dim>& lhs, const Neumann<Dim>& rhs);
+bool operator!=(const Neumann& lhs, const Neumann& rhs);
 
 }  // namespace IrrotationalBns::BoundaryConditions
