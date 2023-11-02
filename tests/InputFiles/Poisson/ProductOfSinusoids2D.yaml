@@ -46,6 +46,7 @@ Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
     Massive: True
+    Quadrature: Gauss
 
 Observers:
   VolumeFileName: "PoissonProductOfSinusoids2DVolume"

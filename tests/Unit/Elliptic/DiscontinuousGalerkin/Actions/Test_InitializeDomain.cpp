@@ -64,12 +64,7 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
 };
 
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
-  domain::creators::register_derived_with_charm();
-  domain::FunctionsOfTime::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
+void test_initialize_domain(const Spectral::Quadrature quadrature) {
   {
     INFO("1D");
     // Reference element:
@@ -90,8 +85,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
+
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -107,8 +104,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     };
 
     CHECK(get_tag(domain::Tags::Mesh<1>{}) ==
-          Mesh<1>{4, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          Mesh<1>{4, Spectral::Basis::Legendre, quadrature});
     CHECK(get_tag(domain::Tags::Element<1>{}) ==
           Element<1>{element_id,
                      {{Direction<1>::lower_xi(),
@@ -128,8 +124,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& logical_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::ElementLogical>{});
     CHECK(get<0>(logical_coords) ==
-          Spectral::collocation_points<Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto>(4));
+          Spectral::collocation_points(
+              Mesh<1>{4, Spectral::Basis::Legendre, quadrature}));
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords ==
@@ -162,8 +158,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
+
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -179,9 +177,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     };
 
     CHECK(get_tag(domain::Tags::Mesh<2>{}) ==
-          Mesh<2>{{{4, 3}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature});
     CHECK(
         get_tag(domain::Tags::Element<2>{}) ==
         Element<2>{
@@ -236,7 +232,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain(), domain_creator.functions_of_time()}};
+        {domain_creator.create_domain(), domain_creator.functions_of_time(),
+         quadrature}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
@@ -252,9 +249,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     };
 
     CHECK(get_tag(domain::Tags::Mesh<3>{}) ==
-          Mesh<3>{{{4, 3, 2}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          Mesh<3>{{{4, 3, 2}}, Spectral::Basis::Legendre, quadrature});
     CHECK(
         get_tag(domain::Tags::Element<3>{}) ==
         Element<3>{
@@ -301,4 +296,14 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>{});
     CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
+  domain::creators::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  test_initialize_domain(Spectral::Quadrature::GaussLobatto);
+  test_initialize_domain(Spectral::Quadrature::Gauss);
 }

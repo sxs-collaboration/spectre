@@ -116,9 +116,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
   ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<
       elliptic::Tags::Background<elliptic::analytic_data::Background>,
       domain::Tags::Domain<1>, domain::Tags::FunctionsOfTimeInitialize,
-      elliptic::dg::Tags::Massive>{std::make_unique<Background>(),
-                                   domain_creator.create_domain(),
-                                   domain_creator.functions_of_time(), false}};
+      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Quadrature>{
+      std::make_unique<Background>(), domain_creator.create_domain(),
+      domain_creator.functions_of_time(), false,
+      Spectral::Quadrature::GaussLobatto}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),

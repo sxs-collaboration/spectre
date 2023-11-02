@@ -51,6 +51,7 @@ Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
     Massive: True
+    Quadrature: GaussLobatto
 
 Observers:
   VolumeFileName: "ElasticBentBeam2DVolume"

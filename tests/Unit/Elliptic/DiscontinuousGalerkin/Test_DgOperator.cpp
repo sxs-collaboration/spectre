@@ -47,7 +47,9 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -175,7 +177,7 @@ template <
     typename ElementArray = typename Metavars::element_array>
 void test_dg_operator(
     const DomainCreator<Dim>& domain_creator, const double penalty_parameter,
-    const bool use_massive_dg_operator,
+    const bool use_massive_dg_operator, const Spectral::Quadrature quadrature,
     const AnalyticSolution& analytic_solution,
     // NOLINTNEXTLINE(google-runtime-references)
     Approx& analytic_solution_aux_approx,
@@ -223,10 +225,11 @@ void test_dg_operator(
       domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ExternalBoundaryConditions<Dim>,
       ::elliptic::dg::Tags::PenaltyParameter, ::elliptic::dg::Tags::Massive,
+      ::elliptic::dg::Tags::Quadrature,
       ::Tags::AnalyticSolution<AnalyticSolution>>{
       std::move(domain), domain_creator.functions_of_time(),
       std::move(boundary_conditions), penalty_parameter,
-      use_massive_dg_operator, analytic_solution}};
+      use_massive_dg_operator, quadrature, analytic_solution}};
 
   // DataBox shortcuts
   const auto get_tag = [&runner](
@@ -511,7 +514,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(3.e-2).scale(M_PI * penalty_parameter *
                                                 square(4) / 0.5);
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false, analytic_solution,
+          domain_creator, penalty_parameter, false,
+          Spectral::Quadrature::GaussLobatto, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{left_id, std::move(vars_rnd_left)},
              {midleft_id, std::move(vars_rnd_midleft)},
@@ -542,10 +546,13 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
                                                 square(12));
-      for (const bool use_massive_dg_operator : {true, false}) {
+      for (const auto& [use_massive_dg_operator, quadrature] :
+           cartesian_product(make_array(true, false),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            analytic_solution, analytic_solution_aux_approx,
+            quadrature, analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {});
       }
     }
@@ -620,7 +627,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
                                                 square(3));
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false, analytic_solution,
+          domain_creator, penalty_parameter, false,
+          Spectral::Quadrature::GaussLobatto, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{northwest_id, std::move(vars_rnd_northwest)},
              {southwest_id, std::move(vars_rnd_southwest)},
@@ -645,10 +653,13 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
                                                 square(12));
-      for (const bool use_massive_dg_operator : {true, false}) {
+      for (const auto& [use_massive_dg_operator, quadrature] :
+           cartesian_product(make_array(true, false),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            analytic_solution, analytic_solution_aux_approx,
+            quadrature, analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {});
       }
     }
@@ -747,7 +758,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(8.e-1).scale(M_PI * penalty_parameter *
                                                 square(4) / 2.);
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false, analytic_solution,
+          domain_creator, penalty_parameter, false,
+          Spectral::Quadrature::GaussLobatto, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{self_id, std::move(vars_rnd_self)},
              {neighbor_id_xi, std::move(vars_rnd_neighbor_xi)},
@@ -777,14 +789,17 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       Approx analytic_solution_aux_approx =
-          Approx::custom().epsilon(1.e-5).scale(M_PI);
+          Approx::custom().epsilon(1.e-4).scale(M_PI);
       Approx analytic_solution_operator_approx =
-          Approx::custom().epsilon(1.e-5).scale(M_PI * penalty_parameter *
+          Approx::custom().epsilon(1.e-4).scale(M_PI * penalty_parameter *
                                                 square(12) / 2.);
-      for (const bool use_massive_dg_operator : {true, false}) {
+      for (const auto& [use_massive_dg_operator, quadrature] :
+           cartesian_product(make_array(true, false),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            analytic_solution, analytic_solution_aux_approx,
+            quadrature, analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {});
       }
     }
@@ -878,7 +893,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
                                                 square(3));
       test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, true, analytic_solution,
+          domain_creator, penalty_parameter, true,
+          Spectral::Quadrature::GaussLobatto, analytic_solution,
           analytic_solution_aux_approx, analytic_solution_operator_approx,
           {{{{lowerleft_id, std::move(vars_rnd_lowerleft)},
              {upperleft_id, std::move(vars_rnd_upperleft)},
@@ -902,13 +918,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               analytic_solution.get_clone(),
               elliptic::BoundaryConditionType::Dirichlet)};
       Approx analytic_solution_aux_approx =
-          Approx::custom().epsilon(1.e-12).scale(M_PI);
+          Approx::custom().epsilon(1.e-11).scale(M_PI);
       Approx analytic_solution_operator_approx =
-          Approx::custom().epsilon(1.e-12).scale(M_PI * penalty_parameter *
-                                                square(12));
-      for (const bool massive : {true, false}) {
+          Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
+                                                 square(12));
+      for (const auto& [massive, quadrature] :
+           cartesian_product(make_array(true, false),
+                             make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(domain_creator, penalty_parameter,
-                                       massive, analytic_solution,
+                                       massive, quadrature, analytic_solution,
                                        analytic_solution_aux_approx,
                                        analytic_solution_operator_approx, {});
       }

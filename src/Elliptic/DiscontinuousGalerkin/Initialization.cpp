@@ -23,6 +23,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -52,9 +53,14 @@ void InitializeGeometry<Dim>::operator()(
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
     const Domain<Dim>& domain,
     const domain::FunctionsOfTimeMap& functions_of_time,
+    const Spectral::Quadrature quadrature,
     const ElementId<Dim>& element_id) const {
   // Mesh
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  ASSERT(quadrature == Spectral::Quadrature::GaussLobatto or
+             quadrature == Spectral::Quadrature::Gauss,
+         "The elliptic DG scheme supports Gauss and Gauss-Lobatto "
+         "grids, but the chosen quadrature is: "
+             << quadrature);
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
                                                       element_id, quadrature);
   // Element
@@ -84,16 +90,15 @@ void deriv_unnormalized_face_normals_impl(
   if (element.external_boundaries().empty()) {
     return;
   }
-  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-         "Slicing the Hessian to the boundary currently supports only "
-         "Gauss-Lobatto grids. Add support to "
-         "'elliptic::dg::InitializeFacesAndMortars'.");
+  // If the accuracy of this derivative is insufficient we could also compute
+  // it on a higher-order grid and then project it down.
+  // On Gauss grids we could compute the derivative on a Gauss-Lobatto grid and
+  // slice it.
   const auto deriv_inv_jac =
       partial_derivative(inv_jacobian, mesh, inv_jacobian);
   for (const auto& direction : element.external_boundaries()) {
     const auto deriv_inv_jac_on_face =
-        data_on_slice(deriv_inv_jac, mesh.extents(), direction.dimension(),
-                      index_to_slice_at(mesh.extents(), direction));
+        ::dg::project_tensor_to_boundary(deriv_inv_jac, mesh, direction);
     auto& deriv_unnormalized_face_normal =
         (*deriv_unnormalized_face_normals)[direction];
     for (size_t i = 0; i < Dim; ++i) {

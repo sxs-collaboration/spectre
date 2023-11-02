@@ -14,6 +14,7 @@
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -65,7 +66,8 @@ struct InitializeDomain {
   using simple_tags = typename InitializeGeometry::return_tags;
   using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
+                 elliptic::dg::Tags::Quadrature>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
