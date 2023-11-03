@@ -214,6 +214,16 @@ namespace Solutions {
  *
  * Right now we use (\f$\ref{eq:sphertocartsimple}\f$), but we may
  * wish to use the other transformation in the future.
+ *
+ * ## Boost of the Kerr-Schild solution
+ *
+ * We add initial momentum to the solution by applying a Lorentz boost to the
+ * metric. Given the form of the Kerr-Schild metric in terms of a covariant
+ * expression in terms of the Minkowski metric, a scalar function and a one
+ * form, this can be done by boosting the these objects individually and then
+ * constructing the metric as above. Notice that we also need to appropriately
+ * boost the coordinates to the boosted frame.
+ *
  */
 class KerrSchild : public AnalyticSolution<3_st>,
                    public MarkAsAnalyticSolution {
