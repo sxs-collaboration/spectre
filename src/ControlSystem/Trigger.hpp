@@ -143,8 +143,10 @@ class Trigger : public DenseTrigger {
       if (not is_ready) {
         if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
           Parallel::printf(
-              "%s, time = %.16f: Trigger - Cannot calculate next_check_time\n",
-              get_output(array_index), time);
+              "%s, time = %.16f: Trigger for control systems (%s) - Cannot "
+              "calculate next_check_time\n",
+              get_output(array_index), time,
+              pretty_type::list_of_names<ControlSystems>());
         }
         return std::nullopt;
       }
@@ -155,8 +157,11 @@ class Trigger : public DenseTrigger {
            "Next trigger is in the past: " << next_trigger << " > " << time);
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
-      Parallel::printf("%s, time = %.16f: Trigger - next check time is %.16f\n",
-                       get_output(array_index), time, next_trigger);
+      Parallel::printf(
+          "%s, time = %.16f: Trigger for control systems (%s) - next check "
+          "time is %.16f\n",
+          get_output(array_index), time,
+          pretty_type::list_of_names<ControlSystems>(), next_trigger);
     }
 
     return {next_trigger};
