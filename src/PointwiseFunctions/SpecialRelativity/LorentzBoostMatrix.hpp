@@ -70,9 +70,9 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
-    const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
+    gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
     const tnsr::I<DataType, SpatialDim, Frame>& vector,
-    const double vector_component_0,
+    double vector_component_0,
     const std::array<double, SpatialDim>& velocity);
 /// @}
 
@@ -85,7 +85,7 @@ void lorentz_boost(
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
-    const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> result,
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> result,
     const tnsr::a<DataType, SpatialDim, Frame>& vector,
     const std::array<double, SpatialDim>& velocity);
 /// @}
@@ -98,7 +98,7 @@ void lorentz_boost(
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
-    const gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
+    gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
     const tnsr::ab<DataType, SpatialDim, Frame>& tensor,
     const std::array<double, SpatialDim>& velocity_first_index,
     const std::array<double, SpatialDim>& velocity_second_index);
