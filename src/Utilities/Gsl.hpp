@@ -863,6 +863,6 @@ std::ostream& operator<<(std::ostream& os, const span<ElementType, Extent> t) {
 /// \note This is not a standard GSL function, and so is not in the
 /// gsl namespace.
 template <typename T>
-gsl::not_null<T*> make_not_null(T* ptr) {
+constexpr gsl::not_null<T*> make_not_null(T* ptr) {
   return gsl::not_null<T*>(ptr);
 }
