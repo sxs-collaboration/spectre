@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   RegisterDerivedWithCharm.cpp
   SphereTransition.cpp
+  Wedge.cpp
 )
 
 spectre_target_headers(
@@ -15,4 +16,5 @@ spectre_target_headers(
   RegisterDerivedWithCharm.hpp
   ShapeMapTransitionFunction.hpp
   SphereTransition.hpp
+  Wedge.hpp
 )
