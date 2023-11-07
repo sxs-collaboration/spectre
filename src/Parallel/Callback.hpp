@@ -12,6 +12,7 @@
 
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Parallel {
 /// An abstract base class, whose derived class holds a function that
@@ -28,6 +29,7 @@ class Callback : public PUP::able {
   ~Callback() override = default;
   explicit Callback(CkMigrateMessage* msg) : PUP::able(msg) {}
   virtual void invoke() = 0;
+  virtual void register_with_charm() = 0;
 };
 
 /// Wraps a call to a simple action and its arguments.
@@ -54,8 +56,17 @@ class SimpleActionCallback : public Callback {
     p | args_;
   }
 
+  void register_with_charm() override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;
+    }
+    done_registration = true;
+    register_classes_with_charm<SimpleActionCallback>();
+  }
+
  private:
-  Proxy proxy_{};
+  std::decay_t<Proxy> proxy_{};
   std::tuple<std::decay_t<Args>...> args_{};
 };
 
@@ -65,6 +76,7 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
   SimpleActionCallback() = default;
+  // NOLINTNEXTLINE(google-explicit-constructor)
   SimpleActionCallback(Proxy proxy) : proxy_(proxy) {}
   SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
@@ -72,8 +84,17 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
 
   void pup(PUP::er& p) override { p | proxy_; }
 
+  void register_with_charm() override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;
+    }
+    done_registration = true;
+    register_classes_with_charm<SimpleActionCallback>();
+  }
+
  private:
-  Proxy proxy_{};
+  std::decay_t<Proxy> proxy_{};
 };
 
 /// Wraps a call to perform_algorithm.
@@ -82,14 +103,24 @@ class PerformAlgorithmCallback : public Callback {
  public:
   WRAPPED_PUPable_decl_template(PerformAlgorithmCallback);  // NOLINT
   PerformAlgorithmCallback() = default;
+  // NOLINTNEXTLINE(google-explicit-constructor)
   PerformAlgorithmCallback(Proxy proxy) : proxy_(proxy) {}
   PerformAlgorithmCallback(CkMigrateMessage* msg) : Callback(msg) {}
   using PUP::able::register_constructor;
   void invoke() override { proxy_.perform_algorithm(); }
   void pup(PUP::er& p) override { p | proxy_; }
 
+  void register_with_charm() override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;
+    }
+    done_registration = true;
+    register_classes_with_charm<PerformAlgorithmCallback>();
+  }
+
  private:
-  Proxy proxy_{};
+  std::decay_t<Proxy> proxy_{};
 };
 
 /// \cond

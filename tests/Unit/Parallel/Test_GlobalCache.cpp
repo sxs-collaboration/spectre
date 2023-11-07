@@ -224,6 +224,8 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
   using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
   void pup(PUP::er& p) override { p | callback_; }
+  // We shouldn't be pupping so registration doesn't matter
+  void register_with_charm() override {}
 
  private:
   CkCallback callback_;
