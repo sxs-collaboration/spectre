@@ -8,6 +8,7 @@ spectre_target_sources(
   DemandOutgoingCharSpeeds.cpp
   DirichletAnalytic.cpp
   HydroFreeOutflow.cpp
+  Reflective.cpp
   )
 
 spectre_target_headers(
@@ -19,4 +20,5 @@ spectre_target_headers(
   DirichletAnalytic.hpp
   Factory.hpp
   HydroFreeOutflow.hpp
+  Reflective.hpp
   )
