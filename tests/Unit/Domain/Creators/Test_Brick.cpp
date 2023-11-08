@@ -92,7 +92,7 @@ std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_boundary_condition() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
-      Direction<3>::upper_zeta(), 2);
+      Direction<3>::lower_xi(), 2);
 }
 
 void test_brick() {
@@ -117,15 +117,20 @@ void test_brick() {
                                {Direction<3>::upper_eta()},
                                {Direction<3>::lower_zeta()},
                                {Direction<3>::upper_zeta()}}});
+  using VariantType = std::variant<
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+      creators::Brick::LowerUpperBoundaryCondition<
+          domain::BoundaryConditions::BoundaryCondition>>;
 
-  const creators::Brick brick_boundary_condition{lower_bound,
-                                                 upper_bound,
-                                                 refinement_level[0],
-                                                 grid_points[0],
-                                                 create_boundary_condition(),
-                                                 create_boundary_condition(),
-                                                 create_boundary_condition(),
-                                                 {}};
+  const creators::Brick brick_boundary_condition{
+      lower_bound,
+      upper_bound,
+      refinement_level[0],
+      grid_points[0],
+      VariantType{create_boundary_condition()},
+      VariantType{create_boundary_condition()},
+      VariantType{create_boundary_condition()},
+      {}};
   test_brick_construction(brick_boundary_condition, lower_bound, upper_bound,
                           grid_points, refinement_level,
                           std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
@@ -182,11 +187,11 @@ void test_brick() {
            {Direction<3>::upper_eta()}}});
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], create_boundary_condition(),
-                      create_boundary_condition(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone()},
+                      grid_points[0], VariantType{create_boundary_condition()},
+                      VariantType{create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -201,10 +206,11 @@ void test_brick() {
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
                       grid_points[0],
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      create_boundary_condition(), create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{create_boundary_condition()},
+                      VariantType{create_boundary_condition()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
@@ -218,11 +224,11 @@ void test_brick() {
   // Periodic in y
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], create_boundary_condition(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      create_boundary_condition()},
+                      grid_points[0], VariantType{create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{create_boundary_condition()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -249,13 +255,13 @@ void test_brick() {
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
                       grid_points[0],
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{create_boundary_condition()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
@@ -284,13 +290,13 @@ void test_brick() {
       }});
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], create_boundary_condition(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone()},
+                      grid_points[0], VariantType{create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -317,13 +323,13 @@ void test_brick() {
   test_brick_construction(
       creators::Brick{lower_bound, upper_bound, refinement_level[0],
                       grid_points[0],
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone(),
-                      create_boundary_condition(),
-                      TestHelpers::domain::BoundaryConditions::
-                          TestPeriodicBoundaryCondition<3>{}
-                              .get_clone()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()},
+                      VariantType{create_boundary_condition()},
+                      VariantType{TestHelpers::domain::BoundaryConditions::
+                                      TestPeriodicBoundaryCondition<3>{}
+                                          .get_clone()}},
       lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
@@ -354,15 +360,15 @@ void test_brick() {
       upper_bound,
       refinement_level[0],
       grid_points[0],
-      TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
-          3>{}
-          .get_clone(),
-      TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
-          3>{}
-          .get_clone(),
-      TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
-          3>{}
-          .get_clone()};
+      VariantType{TestHelpers::domain::BoundaryConditions::
+                      TestPeriodicBoundaryCondition<3>{}
+                          .get_clone()},
+      VariantType{TestHelpers::domain::BoundaryConditions::
+                      TestPeriodicBoundaryCondition<3>{}
+                          .get_clone()},
+      VariantType{TestHelpers::domain::BoundaryConditions::
+                      TestPeriodicBoundaryCondition<3>{}
+                          .get_clone()}};
   test_brick_construction(
       periodic_brick_boundary_conditions, lower_bound, upper_bound, grid_points,
       refinement_level,
@@ -390,41 +396,41 @@ void test_brick() {
                  *serialize_and_deserialize(base_map));
 
   CHECK_THROWS_WITH(
-      creators::Brick(lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      nullptr, Options::Context{false, {}, 1, 1}),
+      creators::Brick(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestNoneBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
-      creators::Brick(lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      nullptr, Options::Context{false, {}, 1, 1}),
+      creators::Brick(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestNoneBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
-      creators::Brick(lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>(),
-                      std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>(),
-                      nullptr, Options::Context{false, {}, 1, 1}),
+      creators::Brick(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestPeriodicBoundaryCondition<3>>()},
+          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                           TestNoneBoundaryCondition<3>>()},
+          nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));

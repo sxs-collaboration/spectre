@@ -412,6 +412,12 @@ void test_dg_operator(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
+  // Needed for Brick
+  using VariantType = std::variant<
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+      domain::creators::Brick::LowerUpperBoundaryCondition<
+          domain::BoundaryConditions::BoundaryCondition>>;
+
   domain::creators::register_derived_with_charm();
   // This is what the tests below check:
   //
@@ -677,18 +683,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{2, 3, 4}},
-          std::make_unique<
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
+              elliptic::BoundaryConditionType::Dirichlet)},
           nullptr};
       const ElementId<3> self_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
       const ElementId<3> neighbor_id_xi{0, {{{1, 1}, {1, 0}, {1, 0}}}};
@@ -775,18 +781,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{12, 12, 12}},
-          std::make_unique<
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
+              elliptic::BoundaryConditionType::Dirichlet)},
+          VariantType{std::make_unique<
               elliptic::BoundaryConditions::AnalyticSolution<system>>(
               analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
+              elliptic::BoundaryConditionType::Dirichlet)},
           nullptr};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-4).scale(M_PI);
