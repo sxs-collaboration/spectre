@@ -63,6 +63,9 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
   bool operator==(const MathFunction<1, Fr>& other) const override;
   bool operator!=(const MathFunction<1, Fr>& other) const override;
 
+  bool operator==(const PowX<1, Fr>& other) const;
+  bool operator!=(const PowX<1, Fr>& other) const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 

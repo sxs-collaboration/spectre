@@ -39,7 +39,7 @@ namespace {
 
 [[noreturn]] __attribute__((noinline)) void throw_overflow() {
   volatile double overflow = std::numeric_limits<double>::max();
-  overflow *= 1.0e300;
+  overflow = overflow * 1.0e300;
   (void)overflow;
   asm("");
   throw std::runtime_error("wrong");
@@ -47,7 +47,7 @@ namespace {
 
 [[noreturn]] __attribute__((noinline)) void throw_div_by_zero() {
   volatile double div_by_zero = 1.0;
-  div_by_zero /= 0.0;
+  div_by_zero = div_by_zero / 0.0;
   (void)div_by_zero;
   asm("");
   throw std::runtime_error("wrong");
@@ -85,10 +85,10 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
   double invalid = sqrt(x);
   static_cast<void>(invalid);
   volatile double overflow = std::numeric_limits<double>::max();
-  overflow *= 1.0e300;
+  overflow = overflow * 1.0e300;
   (void)overflow;
   volatile double div_by_zero = 1.0;
-  div_by_zero /= 0.0;
+  div_by_zero = div_by_zero / 0.0;
   (void)div_by_zero;
   CHECK(true);
 }

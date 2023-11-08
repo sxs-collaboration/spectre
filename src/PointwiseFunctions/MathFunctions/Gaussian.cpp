@@ -110,18 +110,23 @@ void Gaussian<1, Fr>::pup(PUP::er& p) {
 template <typename Fr>
 bool Gaussian<1, Fr>::operator==(const MathFunction<1, Fr>& other) const {
   const auto* derived_other = dynamic_cast<const Gaussian<1, Fr>*>(&other);
-  if (derived_other != nullptr) {
-    return (this->amplitude_ == derived_other->amplitude_) and
-           (this->inverse_width_ == derived_other->inverse_width_) and
-           (this->center_ == derived_other->center_);
-  }
-  // LCOV_EXCL_START
-  return false;
-  // LCOV_EXCL_STOP
+  return derived_other != nullptr and (*this == *derived_other);
 }
 
 template <typename Fr>
 bool Gaussian<1, Fr>::operator!=(const MathFunction<1, Fr>& other) const {
+  return not(*this == other);
+}
+
+template <typename Fr>
+bool Gaussian<1, Fr>::operator==(const Gaussian<1, Fr>& other) const {
+  return (this->amplitude_ == other.amplitude_) and
+         (this->inverse_width_ == other.inverse_width_) and
+         (this->center_ == other.center_);
+}
+
+template <typename Fr>
+bool Gaussian<1, Fr>::operator!=(const Gaussian<1, Fr>& other) const {
   return not(*this == other);
 }
 
@@ -287,19 +292,26 @@ bool Gaussian<VolumeDim, Fr>::operator==(
     const MathFunction<VolumeDim, Fr>& other) const {
   const auto* derived_other =
       dynamic_cast<const Gaussian<VolumeDim, Fr>*>(&other);
-  if (derived_other != nullptr) {
-    return this->amplitude_ == derived_other->amplitude_ and
-           this->inverse_width_ == derived_other->inverse_width_ and
-           this->center_ == derived_other->center_;
-  }
-  // LCOV_EXCL_START
-  return false;
-  // LCOV_EXCL_STOP
+  return derived_other != nullptr and (*this == *derived_other);
 }
 
 template <size_t VolumeDim, typename Fr>
 bool Gaussian<VolumeDim, Fr>::operator!=(
     const MathFunction<VolumeDim, Fr>& other) const {
+  return not(*this == other);
+}
+
+template <size_t VolumeDim, typename Fr>
+bool Gaussian<VolumeDim, Fr>::operator==(
+    const Gaussian<VolumeDim, Fr>& other) const {
+  return this->amplitude_ == other.amplitude_ and
+         this->inverse_width_ == other.inverse_width_ and
+         this->center_ == other.center_;
+}
+
+template <size_t VolumeDim, typename Fr>
+bool Gaussian<VolumeDim, Fr>::operator!=(
+    const Gaussian<VolumeDim, Fr>& other) const {
   return not(*this == other);
 }
 

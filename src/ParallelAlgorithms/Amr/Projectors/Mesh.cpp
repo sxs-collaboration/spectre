@@ -57,7 +57,7 @@ Mesh<Dim> parent_mesh(const std::vector<Mesh<Dim>>& children_meshes) {
   auto parent_extents = std::accumulate(
       std::next(children_meshes.begin()), children_meshes.end(),
       children_meshes.front().extents().indices(),
-      [](std::array<size_t, Dim>& extents, const Mesh<Dim>& mesh) {
+      [](auto&& extents, const Mesh<Dim>& mesh) {
         alg::transform(extents, mesh.extents().indices(), extents.begin(),
                        [](size_t a, size_t b) { return std::max(a, b); });
         return extents;

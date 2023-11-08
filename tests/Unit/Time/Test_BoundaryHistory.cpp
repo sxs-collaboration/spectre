@@ -116,6 +116,13 @@ size_t check_coupling_evaluation(const BoundaryHistoryType& hist) {
     NonCopyableCoupling(const NonCopyableCoupling&) = delete;
     NonCopyableCoupling& operator=(const NonCopyableCoupling&) = delete;
     ~NonCopyableCoupling() = default;
+    NonCopyableCoupling(gsl::not_null<std::string*> local_arg,
+                        gsl::not_null<std::vector<int>*> remote_arg,
+                        gsl::not_null<const double*> coupling_return)
+        : local_arg_(local_arg),
+          remote_arg_(remote_arg),
+          coupling_return_(coupling_return) {}
+
     double operator()(const std::string& local,
                       const std::vector<int>& remote) const {
       *local_arg_ = local;

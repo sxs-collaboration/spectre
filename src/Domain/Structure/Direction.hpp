@@ -31,7 +31,7 @@ class Direction {
   Direction(Axis axis, Side side) : axis_(axis), side_(side) {}
 
   /// Construct by specifying a dimension and a Side.
-  Direction<VolumeDim>(size_t dimension, Side side);
+  Direction(size_t dimension, Side side);
 
   /// Default constructor for Charm++ serialization.
   Direction();
