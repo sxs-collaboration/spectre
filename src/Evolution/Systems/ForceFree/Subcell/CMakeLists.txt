@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   GhostData.hpp
+  NeighborPackagedData.hpp
   SetInitialRdmpData.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
