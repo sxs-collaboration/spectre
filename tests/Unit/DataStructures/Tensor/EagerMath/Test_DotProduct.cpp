@@ -151,6 +151,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DotProduct",
     CHECK_ITERABLE_APPROX(
         get(dot_product(three_d_covector_a, three_d_covector_b, inv_g)),
         DataVector(npts, 486.0));
+    CHECK_ITERABLE_APPROX(
+        get(dot_product(three_d_covector_a, three_d_covector_a, inv_g)),
+        DataVector(npts, 778.0));
   }
 
   {
@@ -181,5 +184,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DotProduct",
     }();
     CHECK(get(dot_product(three_d_covector_a, three_d_covector_b, inv_g)) ==
           486.0);
+    CHECK(get(dot_product(three_d_covector_a, three_d_covector_a, inv_g)) ==
+          778.0);
   }
 }
