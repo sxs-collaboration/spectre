@@ -82,12 +82,12 @@ class Zenodo(uplink.Consumer):
         pass
 
     @uplink.returns.json(
-        key=("metadata", "relations", "version", 0, "last_child", "pid_value"),
-        type=int,
+        key=("metadata", "relations", "version", 0, "is_last"),
+        type=bool,
     )
     @uplink.get("records/{id}")
-    def get_latest_version_id(self, record_id: uplink.Path(name="id")):
-        """Retrieves only the latest version ID of a record."""
+    def is_latest_version(self, record_id: uplink.Path(name="id")):
+        """Checks whether the record is the latest version."""
         pass
 
     @uplink.response_handler(new_version_id_from_response)
@@ -475,8 +475,10 @@ def prepare(
         # just returns it.
         latest_version_id = metadata["ZenodoId"]
         try:
-            latest_version_id_on_zenodo = zenodo.get_latest_version_id(
-                record_id=latest_version_id
+            assert zenodo.is_latest_version(record_id=latest_version_id), (
+                "The latest Zenodo version ID in the repository is"
+                f" {latest_version_id}, but Zenodo reports it is not the latest"
+                " version."
             )
         except requests.exceptions.HTTPError as err:
             raise requests.exceptions.HTTPError(
@@ -485,11 +487,6 @@ def prepare(
                 "the script over a repository that already has an unpublished "
                 "new version ID inserted into Metadata.yaml."
             ) from err
-        assert latest_version_id == latest_version_id_on_zenodo, (
-            "The latest Zenodo version ID in the repository is "
-            f"{latest_version_id}, but Zenodo "
-            f"reports {latest_version_id_on_zenodo}."
-        )
         logger.info(f"The latest Zenodo version ID is {latest_version_id}.")
         # Reserve a DOI by creating a new version on Zenodo. It will remain a
         # draft until we publish it in the `publish` subprogram.
