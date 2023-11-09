@@ -45,7 +45,6 @@ void interface_null_normal(
     const double sign);
 /// @}
 
-/// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute null normal vector to the boundary of a closed
@@ -67,11 +66,25 @@ tnsr::A<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
     const double sign);
 
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Compute null normal vector to the boundary of a closed
+ * region in a spatial slice of spacetime.
+ *
+ * \details Consider an \f$n-1\f$-dimensional boundary \f$S\f$ of a closed
+ * region in an \f$n\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let
+ * \f$s^a\f$ be the unit spacelike vector orthogonal to \f$S\f$ in \f$\Sigma\f$,
+ * and \f$n^a\f$ be the timelike unit vector orthogonal to \f$\Sigma\f$.
+ * This function returns the null vector that is outgoing/ingoing on \f$S\f$:
+ *
+ * \f{align*}
+ * k^a = \frac{1}{\sqrt{2}}\left(n^a \pm s^a\right).
+ * \f}
+ */
 template <typename DataType, size_t VolumeDim, typename Frame>
 void interface_null_normal(
     gsl::not_null<tnsr::A<DataType, VolumeDim, Frame>*> null_vector,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
     const double sign);
-/// @}
 }  // namespace gr
