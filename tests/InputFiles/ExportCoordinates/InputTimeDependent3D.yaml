@@ -65,9 +65,11 @@ DomainCreator:
       ShapeMapA:
         LMax: 8
         SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: true
       ShapeMapB:
         LMax: 8
         SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: true
 
 SpatialDiscretization:
   ActiveGrid: Dg

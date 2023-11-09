@@ -47,7 +47,7 @@
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using CylBCO = ::domain::creators::CylindricalBinaryCompactObject;
-using TimeDepOptions = domain::creators::bco::TimeDependentMapOptions;
+using TimeDepOptions = domain::creators::bco::TimeDependentMapOptions<true>;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {

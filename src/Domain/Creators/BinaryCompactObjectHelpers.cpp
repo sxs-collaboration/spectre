@@ -15,6 +15,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/Wedge.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -40,7 +41,8 @@ create_grid_anchors(const std::array<double, 3>& center_a,
   return result;
 }
 
-TimeDependentMapOptions::TimeDependentMapOptions(
+template <bool IsCylindrical>
+TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     double initial_time,
     std::optional<ExpansionMapOptions> expansion_map_options,
     std::optional<RotationMapOptions> rotation_options,
@@ -74,9 +76,10 @@ TimeDependentMapOptions::TimeDependentMapOptions(
   check_l_max(shape_options_B_, domain::ObjectLabel::B);
 }
 
+template <bool IsCylindrical>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-TimeDependentMapOptions::create_functions_of_time(
+TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
   std::unordered_map<std::string,
@@ -175,10 +178,13 @@ TimeDependentMapOptions::create_functions_of_time(
   return result;
 }
 
-void TimeDependentMapOptions::build_maps(
+template <bool IsCylindrical>
+void TimeDependentMapOptions<IsCylindrical>::build_maps(
     const std::array<std::array<double, 3>, 2>& centers,
-    const std::optional<std::pair<double, double>>& object_A_inner_outer_radii,
-    const std::optional<std::pair<double, double>>& object_B_inner_outer_radii,
+    const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
+        object_A_radii,
+    const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
+        object_B_radii,
     const double domain_outer_radius) {
   if (expansion_map_options_.has_value()) {
     expansion_map_ = Expansion{domain_outer_radius, expansion_name,
@@ -189,9 +195,9 @@ void TimeDependentMapOptions::build_maps(
   }
 
   for (size_t i = 0; i < 2; i++) {
-    const auto& inner_outer_radii =
-        i == 0 ? object_A_inner_outer_radii : object_B_inner_outer_radii;
-    if (inner_outer_radii.has_value()) {
+    const auto& radii_opt = i == 0 ? object_A_radii : object_B_radii;
+    if (radii_opt.has_value()) {
+      const auto& radii = radii_opt.value();
       if (not(i == 0 ? shape_options_A_.has_value()
                      : shape_options_B_.has_value())) {
         ERROR_NO_TRACE(
@@ -200,20 +206,55 @@ void TimeDependentMapOptions::build_maps(
             << ", but no time dependent map options were specified "
                "for that object.");
       }
-      std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                          ShapeMapTransitionFunction>
-          transition_func = std::make_unique<
-              domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                  SphereTransition>(inner_outer_radii.value().first,
-                                    inner_outer_radii.value().second);
 
       const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
                                           : shape_options_B_.value().l_max;
 
-      gsl::at(shape_maps_, i) =
-          Shape{gsl::at(centers, i),     initial_l_max,
-                initial_l_max,           std::move(transition_func),
-                gsl::at(shape_names, i), gsl::at(size_names, i)};
+      std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                          ShapeMapTransitionFunction>
+          transition_func{};
+
+      // Currently, we don't support different transition functions for the
+      // cylindrical domain
+      if constexpr (IsCylindrical) {
+        transition_func =
+            std::make_unique<domain::CoordinateMaps::
+                                 ShapeMapTransitionFunctions::SphereTransition>(
+                radii[0], radii[1]);
+
+        gsl::at(shape_maps_, i) =
+            Shape{gsl::at(centers, i),     initial_l_max,
+                  initial_l_max,           std::move(transition_func),
+                  gsl::at(shape_names, i), gsl::at(size_names, i)};
+      } else {
+        // These must match the order of orientations_for_sphere_wrappings() in
+        // DomainHelpers.hpp
+        const std::array<size_t, 6> axes{2, 2, 1, 1, 0, 0};
+
+        const bool transition_ends_at_cube =
+            i == 0 ? shape_options_A_->transition_ends_at_cube
+                   : shape_options_B_->transition_ends_at_cube;
+
+        const double inner_sphericity = 1.0;
+        const double outer_sphericity = transition_ends_at_cube ? 0.0 : 1.0;
+
+        const double inner_radius = radii[0];
+        const double outer_radius =
+            transition_ends_at_cube ? radii[2] : radii[1];
+
+        for (size_t j = 0; j < axes.size(); j++) {
+          transition_func = std::make_unique<
+              domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge>(
+              inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+              gsl::at(axes, j));
+
+          gsl::at(gsl::at(shape_maps_, i), j) =
+              Shape{gsl::at(centers, i),     initial_l_max,
+                    initial_l_max,           std::move(transition_func),
+                    gsl::at(shape_names, i), gsl::at(size_names, i)};
+        }
+      }
+
     } else if (i == 0 ? shape_options_A_.has_value()
                       : shape_options_B_.has_value()) {
       ERROR_NO_TRACE(
@@ -224,7 +265,8 @@ void TimeDependentMapOptions::build_maps(
   }
 }
 
-bool TimeDependentMapOptions::has_distorted_frame_options(
+template <bool IsCylindrical>
+bool TimeDependentMapOptions<IsCylindrical>::has_distorted_frame_options(
     domain::ObjectLabel object) const {
   ASSERT(object == domain::ObjectLabel::A or object == domain::ObjectLabel::B,
          "object label for TimeDependentMapOptions must be either A or B, not"
@@ -233,10 +275,27 @@ bool TimeDependentMapOptions::has_distorted_frame_options(
                                           : shape_options_B_.has_value();
 }
 
-TimeDependentMapOptions::MapType<Frame::Distorted, Frame::Inertial>
-TimeDependentMapOptions::distorted_to_inertial_map(
-    const bool include_distorted_map) const {
-  if (include_distorted_map) {
+template <bool IsCylindrical>
+template <domain::ObjectLabel Object>
+typename TimeDependentMapOptions<IsCylindrical>::template MapType<
+    Frame::Distorted, Frame::Inertial>
+TimeDependentMapOptions<IsCylindrical>::distorted_to_inertial_map(
+    const IncludeDistortedMapType& include_distorted_map) const {
+  bool block_has_shape_map = false;
+
+  if constexpr (IsCylindrical) {
+    block_has_shape_map = include_distorted_map;
+  } else {
+    const bool transition_ends_at_cube =
+        Object == domain::ObjectLabel::A
+            ? shape_options_A_->transition_ends_at_cube
+            : shape_options_B_->transition_ends_at_cube;
+    block_has_shape_map =
+        include_distorted_map.has_value() and
+        (transition_ends_at_cube or include_distorted_map.value() < 6);
+  }
+
+  if (block_has_shape_map) {
     if (expansion_map_.has_value() and rotation_map_.has_value()) {
       return std::make_unique<detail::di_map<Expansion, Rotation>>(
           expansion_map_.value(), rotation_map_.value());
@@ -253,48 +312,103 @@ TimeDependentMapOptions::distorted_to_inertial_map(
   }
 }
 
+template <bool IsCylindrical>
 template <domain::ObjectLabel Object>
-TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>
-TimeDependentMapOptions::grid_to_distorted_map(
-    const bool include_distorted_map) const {
-  if (include_distorted_map) {
+typename TimeDependentMapOptions<IsCylindrical>::template MapType<
+    Frame::Grid, Frame::Distorted>
+TimeDependentMapOptions<IsCylindrical>::grid_to_distorted_map(
+    const IncludeDistortedMapType& include_distorted_map) const {
+  bool block_has_shape_map = false;
+
+  if constexpr (IsCylindrical) {
+    block_has_shape_map = include_distorted_map;
+  } else {
+    const bool transition_ends_at_cube =
+        Object == domain::ObjectLabel::A
+            ? shape_options_A_->transition_ends_at_cube
+            : shape_options_B_->transition_ends_at_cube;
+    block_has_shape_map =
+        include_distorted_map.has_value() and
+        (transition_ends_at_cube or include_distorted_map.value() < 6);
+  }
+
+  if (block_has_shape_map) {
     const size_t index = get_index(Object);
-    if (not gsl::at(shape_maps_, index).has_value()) {
+    const std::optional<Shape>* shape{};
+    if constexpr (IsCylindrical) {
+      shape = &gsl::at(shape_maps_, index);
+    } else {
+      if (include_distorted_map.value() >= 12) {
+        ERROR(
+            "Invalid 'include_distorted_map' argument. Max value allowed is "
+            "11, but it is "
+            << include_distorted_map.value());
+      }
+      shape = &gsl::at(gsl::at(shape_maps_, index),
+                       include_distorted_map.value() % 6);
+    }
+    if (not shape->has_value()) {
       ERROR(
           "Requesting grid to distorted map with distorted frame but shape map "
           "options were not specified.");
     }
-    return std::make_unique<detail::gd_map<Shape>>(
-        gsl::at(shape_maps_, index).value());
+    return std::make_unique<detail::gd_map<Shape>>(shape->value());
   } else {
     return nullptr;
   }
 }
 
+template <bool IsCylindrical>
 template <domain::ObjectLabel Object>
-TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>
-TimeDependentMapOptions::grid_to_inertial_map(
-    const bool include_distorted_map) const {
-  if (include_distorted_map) {
+typename TimeDependentMapOptions<IsCylindrical>::template MapType<
+    Frame::Grid, Frame::Inertial>
+TimeDependentMapOptions<IsCylindrical>::grid_to_inertial_map(
+    const IncludeDistortedMapType& include_distorted_map) const {
+  bool block_has_shape_map = false;
+
+  if constexpr (IsCylindrical) {
+    block_has_shape_map = include_distorted_map;
+  } else {
+    const bool transition_ends_at_cube =
+        Object == domain::ObjectLabel::A
+            ? shape_options_A_->transition_ends_at_cube
+            : shape_options_B_->transition_ends_at_cube;
+    block_has_shape_map =
+        include_distorted_map.has_value() and
+        (transition_ends_at_cube or include_distorted_map.value() < 6);
+  }
+
+  if (block_has_shape_map) {
     const size_t index = get_index(Object);
-    if (not gsl::at(shape_maps_, index).has_value()) {
+    const std::optional<Shape>* shape{};
+    if constexpr (IsCylindrical) {
+      shape = &gsl::at(shape_maps_, index);
+    } else {
+      if (include_distorted_map.value() >= 12) {
+        ERROR(
+            "Invalid 'include_distorted_map' argument. Max value allowed is "
+            "11, but it is "
+            << include_distorted_map.value());
+      }
+      shape = &gsl::at(gsl::at(shape_maps_, index),
+                       include_distorted_map.value() % 6);
+    }
+    if (not shape->has_value()) {
       ERROR(
           "Requesting grid to inertial map with distorted frame but shape map "
           "options were not specified.");
     }
     if (expansion_map_.has_value() and rotation_map_.has_value()) {
       return std::make_unique<detail::gi_map<Shape, Expansion, Rotation>>(
-          gsl::at(shape_maps_, index).value(), expansion_map_.value(),
-          rotation_map_.value());
+          shape->value(), expansion_map_.value(), rotation_map_.value());
     } else if (expansion_map_.has_value()) {
       return std::make_unique<detail::gi_map<Shape, Expansion>>(
-          gsl::at(shape_maps_, index).value(), expansion_map_.value());
+          shape->value(), expansion_map_.value());
     } else if (rotation_map_.has_value()) {
       return std::make_unique<detail::gi_map<Shape, Rotation>>(
-          gsl::at(shape_maps_, index).value(), rotation_map_.value());
+          shape->value(), rotation_map_.value());
     } else {
-      return std::make_unique<detail::gi_map<Shape>>(
-          gsl::at(shape_maps_, index).value());
+      return std::make_unique<detail::gi_map<Shape>>(shape->value());
     }
   } else {
     if (expansion_map_.has_value() and rotation_map_.has_value()) {
@@ -317,25 +431,44 @@ TimeDependentMapOptions::grid_to_inertial_map(
   }
 }
 
-size_t TimeDependentMapOptions::get_index(const domain::ObjectLabel object) {
+template <bool IsCylindrical>
+size_t TimeDependentMapOptions<IsCylindrical>::get_index(
+    const domain::ObjectLabel object) {
   ASSERT(object == domain::ObjectLabel::A or object == domain::ObjectLabel::B,
          "object label for TimeDependentMapOptions must be either A or B, not"
              << object);
   return object == domain::ObjectLabel::A ? 0_st : 1_st;
 }
 
-#define OBJECT(data) BOOST_PP_TUPLE_ELEM(0, data)
+template class TimeDependentMapOptions<true>;
+template class TimeDependentMapOptions<false>;
 
-#define INSTANTIATE(_, data)                                                \
-  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>  \
-  TimeDependentMapOptions::grid_to_distorted_map<OBJECT(data)>(bool) const; \
-  template TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>   \
-  TimeDependentMapOptions::grid_to_inertial_map<OBJECT(data)>(bool) const;
+#define ISCYL(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define OBJECT(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-GENERATE_INSTANTIATIONS(INSTANTIATE,
+#define INSTANTIATE(_, data)                                                 \
+  template TimeDependentMapOptions<ISCYL(data)>::MapType<Frame::Distorted,   \
+                                                         Frame::Inertial>    \
+  TimeDependentMapOptions<ISCYL(data)>::distorted_to_inertial_map<OBJECT(    \
+      data)>(                                                                \
+      const TimeDependentMapOptions<ISCYL(data)>::IncludeDistortedMapType&)  \
+      const;                                                                 \
+  template TimeDependentMapOptions<ISCYL(data)>::MapType<Frame::Grid,        \
+                                                         Frame::Distorted>   \
+  TimeDependentMapOptions<ISCYL(data)>::grid_to_distorted_map<OBJECT(data)>( \
+      const TimeDependentMapOptions<ISCYL(data)>::IncludeDistortedMapType&)  \
+      const;                                                                 \
+  template TimeDependentMapOptions<ISCYL(data)>::MapType<Frame::Grid,        \
+                                                         Frame::Inertial>    \
+  TimeDependentMapOptions<ISCYL(data)>::grid_to_inertial_map<OBJECT(data)>(  \
+      const TimeDependentMapOptions<ISCYL(data)>::IncludeDistortedMapType&)  \
+      const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
                         (domain::ObjectLabel::A, domain::ObjectLabel::B,
                          domain::ObjectLabel::None))
 
 #undef OBJECT
+#undef ISCYL
 #undef INSTANTIATE
 }  // namespace domain::creators::bco

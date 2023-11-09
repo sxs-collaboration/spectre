@@ -377,12 +377,15 @@ std::string create_option_string(
                        (excise_A
                             ? "    ShapeMapA:\n"
                               "      LMax: 8\n"
-                              "      SizeInitialValues: [0.0, -0.1, 0.01]\n"s
+                              "      SizeInitialValues: [0.0, -0.1, 0.01]\n"
+                              "      TransitionEndsAtCube: false\n"s
                             : "    ShapeMapA: None\n"s) +
-                       (excise_B ? "    ShapeMapB:\n"
-                                   "      LMax: 8\n"
-                                   "      SizeInitialValues: [0.0, -0.2, 0.02]"s
-                                 : "    ShapeMapB: None"s)
+                       (excise_B
+                            ? "    ShapeMapB:\n"
+                              "      LMax: 8\n"
+                              "      SizeInitialValues: [0.0, -0.2, 0.02]\n"
+                              "      TransitionEndsAtCube: true"s
+                            : "    ShapeMapB: None"s)
                  : "  TimeDependentMaps: None")
           : ""};
   const std::string interior_A{

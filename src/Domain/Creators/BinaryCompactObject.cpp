@@ -286,7 +286,7 @@ BinaryCompactObject::BinaryCompactObject(
 }
 
 BinaryCompactObject::BinaryCompactObject(
-    std::optional<bco::TimeDependentMapOptions> time_dependent_options,
+    std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     double envelope_radius, double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
@@ -306,25 +306,25 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(outer_boundary_condition), context) {
   time_dependent_options_ = std::move(time_dependent_options);
 
-  std::optional<std::pair<double, double>> inner_outer_radii_A{};
-  std::optional<std::pair<double, double>> inner_outer_radii_B{};
+  std::optional<std::array<double, 3>> radii_A{};
+  std::optional<std::array<double, 3>> radii_B{};
 
   if (is_excised_a_) {
-    inner_outer_radii_A =
-        std::make_pair(std::get<Object>(object_A_).inner_radius,
-                       std::get<Object>(object_A_).outer_radius);
+    radii_A = std::array{std::get<Object>(object_A_).inner_radius,
+                         std::get<Object>(object_A_).outer_radius,
+                         sqrt(3.0) * 0.5 * length_inner_cube_};
   }
   if (is_excised_b_) {
-    inner_outer_radii_B =
-        std::make_pair(std::get<Object>(object_B_).inner_radius,
-                       std::get<Object>(object_B_).outer_radius);
+    radii_B = std::array{std::get<Object>(object_B_).inner_radius,
+                         std::get<Object>(object_B_).outer_radius,
+                         sqrt(3.0) * 0.5 * length_inner_cube_};
   }
 
   if (time_dependent_options_.has_value()) {
     time_dependent_options_->build_maps(
         std::array{std::array{x_coord_a_, 0.0, 0.0},
                    std::array{x_coord_b_, 0.0, 0.0}},
-        inner_outer_radii_A, inner_outer_radii_B, outer_radius_);
+        radii_A, radii_B, outer_radius_);
   }
 }
 
@@ -567,19 +567,17 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // while other maps (e.g. size) are only applied to some blocks. Also, some
     // maps are applied from the Grid to the Inertial frame, while others are
     // applied to/from the Distorted frame. So there are several different
-    // distinct combinations of time-dependent maps that will be applied. Here,
-    // set the time-dependent maps for each distinct combination in a single
-    // block. Then, set the maps of the other blocks by cloning the maps from
-    // the appropriate block.
+    // distinct combinations of time-dependent maps that will be applied. This
+    // should largely be taken care of by the TimeDependentOptions.
 
-    // All blocks except possibly the first 6 blocks of each object get the same
-    // map from the Grid to the Inertial frame, so initialize the final block
-    // with the "base" map (here a composition of an expansion and a rotation).
-    // When covering the inner regions with cubes, all blocks will use the same
-    // time-dependent map instead.
+    // All blocks except possibly the first 6 or 12 blocks of each object get
+    // the same map from the Grid to the Inertial frame, so initialize the final
+    // block with the "base" map (here a composition of an expansion and a
+    // rotation). When covering the inner regions with cubes, all blocks will
+    // use the same time-dependent map instead.
     grid_to_inertial_block_maps[number_of_blocks_ - 1] =
         time_dependent_options_
-            ->grid_to_inertial_map<domain::ObjectLabel::None>(false);
+            ->grid_to_inertial_map<domain::ObjectLabel::None>(std::nullopt);
 
     // Inside the excision sphere we add the grid to inertial map from the outer
     // shell. This allows the center of the excisions/horizons to be mapped
@@ -595,61 +593,53 @@ Domain<3> BinaryCompactObject::create_domain() const {
           grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone());
     }
 
-    // Initialize the first block of the layer 1 blocks for each object
-    // If excising interior A or B, the block maps for the corrsponding layer 1
-    // blocks (first 6 blocks) should also include a size map from the Grid to
-    // the Distorted frame, and then the combination expansion + rotation from
-    // the Distorted to Inertial frame. If not excising interior A or B, the
-    // layer 1 blocks for that object will not have maps to the Distorted frame
-    // (nullptr).
-    grid_to_inertial_block_maps[0] =
-        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::A>(
-            is_excised_a_);
-    grid_to_distorted_block_maps[0] =
-        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
-            is_excised_a_);
-    distorted_to_inertial_block_maps[0] =
-        time_dependent_options_->distorted_to_inertial_map(is_excised_a_);
-
     const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;
-    grid_to_inertial_block_maps[first_block_object_B] =
-        time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::B>(
-            is_excised_b_);
-    grid_to_distorted_block_maps[first_block_object_B] =
-        time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
-            is_excised_b_);
-    distorted_to_inertial_block_maps[first_block_object_B] =
-        time_dependent_options_->distorted_to_inertial_map(is_excised_b_);
 
-    // Fill in the rest of the block maps by cloning the relevant maps
-    for (size_t block = 1; block < number_of_blocks_ - 1; ++block) {
-      if ((not use_single_block_a_) and block < 6) {
-        // We always have a grid to inertial map. We may or may not have maps to
-        // the distorted frame.
+    // We loop over all blocks. If we are using a single block for either A or
+    // B, then we only need a grid to inertial map; there is no distorted frame.
+    // If we don't have a single block around A or B, then for 12 blocks around
+    // each object we determine if there is a central cube. If there is, then
+    // there is no distorted frame (this is signaled by
+    // block_for_distorted_frame being a nullopt). If the region is excised,
+    // then it is up to the time dependent options to know if a distorted frame
+    // exists in that block. Therefore we just pass the relative block number to
+    // the time_dependent_options_ functions. The remaining blocks only get the
+    // grid to inertial map.
+    for (size_t block = 0; block < number_of_blocks_ - 1; ++block) {
+      if ((not use_single_block_a_) and block < first_block_object_B) {
+        const std::optional<size_t> block_for_distorted_frame =
+            is_excised_a_ ? std::optional{block} : std::nullopt;
         grid_to_inertial_block_maps[block] =
-            grid_to_inertial_block_maps[0]->get_clone();
-        if (grid_to_distorted_block_maps[0] != nullptr) {
-          grid_to_distorted_block_maps[block] =
-              grid_to_distorted_block_maps[0]->get_clone();
-          distorted_to_inertial_block_maps[block] =
-              distorted_to_inertial_block_maps[0]->get_clone();
-        }
-      } else if (block == first_block_object_B) {
-        continue;  // already initialized
-      } else if ((not use_single_block_b_) and block > first_block_object_B and
-                 block < first_block_object_B + 6) {
-        // We always have a grid to inertial map. We may or may not have maps to
-        // the distorted frame.
+            time_dependent_options_
+                ->grid_to_inertial_map<domain::ObjectLabel::A>(
+                    block_for_distorted_frame);
+        grid_to_distorted_block_maps[block] =
+            time_dependent_options_
+                ->grid_to_distorted_map<domain::ObjectLabel::A>(
+                    block_for_distorted_frame);
+        distorted_to_inertial_block_maps[block] =
+            time_dependent_options_
+                ->distorted_to_inertial_map<domain::ObjectLabel::A>(
+                    block_for_distorted_frame);
+      } else if ((not use_single_block_b_) and block >= first_block_object_B and
+                 block < first_block_object_B + 12) {
+        const std::optional<size_t> block_for_distorted_frame =
+            is_excised_b_ ? std::optional{block - first_block_object_B}
+                          : std::nullopt;
         grid_to_inertial_block_maps[block] =
-            grid_to_inertial_block_maps[first_block_object_B]->get_clone();
-        if (grid_to_distorted_block_maps[first_block_object_B] != nullptr) {
-          grid_to_distorted_block_maps[block] =
-              grid_to_distorted_block_maps[first_block_object_B]->get_clone();
-          distorted_to_inertial_block_maps[block] =
-              distorted_to_inertial_block_maps[first_block_object_B]
-                  ->get_clone();
-        }
+            time_dependent_options_
+                ->grid_to_inertial_map<domain::ObjectLabel::B>(
+                    block_for_distorted_frame);
+        grid_to_distorted_block_maps[block] =
+            time_dependent_options_
+                ->grid_to_distorted_map<domain::ObjectLabel::B>(
+                    block_for_distorted_frame);
+        distorted_to_inertial_block_maps[block] =
+            time_dependent_options_
+                ->distorted_to_inertial_map<domain::ObjectLabel::B>(
+                    block_for_distorted_frame);
       } else {
+        // No distorted frame
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
       }

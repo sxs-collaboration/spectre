@@ -71,9 +71,11 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    ShapeMapA:\n"
       "      LMax: 8\n"
       "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
+      "      TransitionEndsAtCube: false\n"
       "    ShapeMapB:\n"
       "      LMax: 8\n"
-      "      SizeInitialValues: [0.0, 0.0, 0.0]\n";
+      "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
+      "      TransitionEndsAtCube: false\n";
   return ::TestHelpers::test_option_tag<::domain::OptionTags::DomainCreator<3>,
                                         Metavariables>(
       binary_compact_object_options);

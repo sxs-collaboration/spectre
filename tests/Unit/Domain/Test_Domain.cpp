@@ -655,7 +655,11 @@ Domain<3> create_serialized_domain() {
   Domain<3> domain{std::move(maps), std::move(excision_spheres), block_names,
                    block_groups};
 
-  using TimeDepOps = domain::creators::bco::TimeDependentMapOptions;
+  // We have IsCylindrical = true even though this is the rectangular domain
+  // because the cylindrical domain uses the SphereTransition transition
+  // function for the shape map which is what is serialized. The rectangular
+  // domain uses the Wedge transition function.
+  using TimeDepOps = domain::creators::bco::TimeDependentMapOptions<true>;
   TimeDepOps time_dependent_options{
       0.,
       TimeDepOps::ExpansionMapOptions{
@@ -664,10 +668,10 @@ Domain<3> create_serialized_domain() {
       TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
       TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}};
 
-  const std::optional<std::pair<double, double>> inner_outer_radii_A =
-      std::make_pair(object_A.inner_radius, object_A.outer_radius);
-  const std::optional<std::pair<double, double>> inner_outer_radii_B =
-      std::make_pair(object_B.inner_radius, object_B.outer_radius);
+  const std::optional<std::array<double, 2>> inner_outer_radii_A =
+      std::array{object_A.inner_radius, object_A.outer_radius};
+  const std::optional<std::array<double, 2>> inner_outer_radii_B =
+      std::array{object_B.inner_radius, object_B.outer_radius};
   const std::array<std::array<double, 3>, 2> centers{
       std::array{x_coord_a, 0.0, 0.0}, std::array{x_coord_b, 0.0, 0.0}};
 
@@ -696,7 +700,8 @@ Domain<3> create_serialized_domain() {
       time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::A>(
           true);
   distorted_to_inertial_block_maps[0] =
-      time_dependent_options.distorted_to_inertial_map(true);
+      time_dependent_options.distorted_to_inertial_map<domain::ObjectLabel::A>(
+          true);
 
   const size_t first_block_object_B = 12;
   grid_to_inertial_block_maps[first_block_object_B] =
@@ -705,7 +710,8 @@ Domain<3> create_serialized_domain() {
       time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::B>(
           true);
   distorted_to_inertial_block_maps[first_block_object_B] =
-      time_dependent_options.distorted_to_inertial_map(true);
+      time_dependent_options.distorted_to_inertial_map<domain::ObjectLabel::B>(
+          true);
 
   for (size_t block = 1; block < number_of_blocks - 1; ++block) {
     if (block < 6) {
