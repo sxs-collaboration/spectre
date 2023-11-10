@@ -12,6 +12,7 @@ spectre_target_sources(
   Phi.cpp
   Pi.cpp
   Ricci.cpp
+  SecondTimeDerivOfSpacetimeMetric.cpp
   SpacetimeDerivOfDetSpatialMetric.cpp
   SpacetimeDerivOfNormOfShift.cpp
   SpacetimeDerivativeOfSpacetimeMetric.cpp
@@ -37,6 +38,7 @@ spectre_target_headers(
   Phi.hpp
   Pi.hpp
   Ricci.hpp
+  SecondTimeDerivOfSpacetimeMetric.hpp
   SpacetimeDerivOfDetSpatialMetric.hpp
   SpacetimeDerivOfNormOfShift.hpp
   SpacetimeDerivativeOfSpacetimeMetric.hpp

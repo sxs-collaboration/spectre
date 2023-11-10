@@ -121,6 +121,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 #include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -191,6 +192,7 @@
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SecondTimeDerivOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
@@ -554,12 +556,18 @@ struct GhValenciaDivCleanTemplateBase<
               hydro::Tags::SpatialVelocity<DataVector, volume_dim,
                                            Frame::Inertial>>,
           hydro::Tags::TransportVelocityCompute<DataVector, volume_dim,
-                                                               Frame::Inertial>,
+                                                Frame::Inertial>,
           grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
               DataVector, volume_dim,
               ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>,
               hydro::Tags::TransportVelocity<DataVector, volume_dim,
                                              Frame::Inertial>>,
+          gh::Tags::TimeDerivLapseCompute<volume_dim, Frame::Inertial>,
+          gh::Tags::TimeDerivShiftCompute<volume_dim, Frame::Inertial>,
+          ::Tags::dt<gh::Tags::Phi<DataVector, volume_dim, Frame::Inertial>>,
+          ::Tags::dt<gh::Tags::Pi<DataVector, volume_dim, Frame::Inertial>>,
+          gh::Tags::SecondTimeDerivOfSpacetimeMetricCompute<
+              volume_dim, Frame::Inertial>,
           ::Tags::DerivTensorCompute<
               gr::Tags::ExtrinsicCurvature<DataVector, 3>,
               ::Events::Tags::ObserverInverseJacobian<
