@@ -120,8 +120,8 @@ void check_write_volume_data(
   const observers::ObservationId write_vol_observation_id{
       1., "ElementObservationType"};
 
-  if (file_system::check_if_file_exists(h5_write_volume_file_name)) {
-    file_system::rm(h5_write_volume_file_name, true);
+  if (file_system::check_if_file_exists(h5_write_volume_file_name + ".h5"s)) {
+    file_system::rm(h5_write_volume_file_name + ".h5"s, true);
   }
 
   runner->template threaded_action<ObsWriter,
