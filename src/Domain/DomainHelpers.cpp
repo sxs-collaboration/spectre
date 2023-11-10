@@ -550,12 +550,7 @@ void set_identified_boundaries(
   }
 }
 
-namespace {
-// A Block or Blocks can be wrapped in an outer layer of Blocks surrounding
-// the original Block(s). In the BBH Domain, this occurs several times, using
-// both Wedges and Frustums. The simplest example in which wrapping is used is
-// Sphere, where the central Block is wrapped with six Wedge<3>s.
-std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
+std::array<OrientationMap<3>, 6> orientations_for_sphere_wrappings() {
   return {{
       // Upper Z
       OrientationMap<3>{},
@@ -581,7 +576,6 @@ std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
            Direction<3>::upper_eta()}}),
   }};
 }
-}  // namespace
 
 size_t which_wedge_index(const ShellWedges& which_wedges) {
   switch (which_wedges) {
@@ -614,7 +608,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
              << radial_distribution.size() << " items, but the domain has "
              << 1 + radial_partitioning.size() << " shells.");
 
-  const auto wedge_orientations = orientations_for_wrappings();
+  const auto wedge_orientations = orientations_for_sphere_wrappings();
 
   using Wedge3DMap = domain::CoordinateMaps::Wedge<3>;
   using Halves = Wedge3DMap::WedgeHalves;
@@ -702,7 +696,7 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
               0.5 * length_outer_cube,
       "The current choice for `origin_preimage` results in the inner cubes "
       "piercing the surface of the outer cube.");
-  const auto frustum_orientations = orientations_for_wrappings();
+  const auto frustum_orientations = orientations_for_sphere_wrappings();
   const double lower = 0.5 * length_inner_cube;
   const double top = 0.5 * length_outer_cube;
 

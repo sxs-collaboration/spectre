@@ -4,7 +4,6 @@
 set(LIBRARY "Test_CoordinateMapsTimeDependent")
 
 set(LIBRARY_SOURCES
-  ShapeMapTransitionFunctions/Test_SphereTransition.cpp
   Test_CubicScale.cpp
   Test_ProductMaps.cpp
   Test_Rotation.cpp
@@ -13,6 +12,8 @@ set(LIBRARY_SOURCES
   Test_SphericalCompression.cpp
   Test_Translation.cpp
   )
+
+add_subdirectory(ShapeMapTransitionFunctions)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 

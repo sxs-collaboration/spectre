@@ -123,6 +123,15 @@ auto corners_for_rectilinear_domains(
     -> std::vector<std::array<size_t, two_to_the(VolumeDim)>>;
 
 /// \ingroup ComputationalDomainGroup
+/// \brief An array of the orientations of the six blocks that make up a Sphere.
+///
+/// A Block or Blocks can be wrapped in an outer layer of Blocks surrounding
+/// the original Block(s). In the BBH Domain, this occurs several times, using
+/// both Wedges and Frustums. This standardizes the ordering of the orientations
+/// for both.
+std::array<OrientationMap<3>, 6> orientations_for_sphere_wrappings();
+
+/// \ingroup ComputationalDomainGroup
 /// The number of wedges to include in the Sphere domain.
 enum class ShellWedges {
   /// Use the entire shell
