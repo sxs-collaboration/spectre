@@ -20,7 +20,6 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/SpecifiedPoints.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -29,6 +28,18 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Interval make_interval() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return domain::creators::Interval({{-1.0}}, {{1.0}}, {{1}}, {{3}});
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return domain::creators::Interval({{-1.0}}, {{0.0}}, {{1}}, {{3}});
+  }
+  return domain::creators::Interval({{-1.0}}, {{0.5}}, {{1}}, {{3}});
+}
+
 template <size_t Dim>
 struct MockMetavariables {
   struct InterpolationTargetA
@@ -39,9 +50,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::SpecifiedPoints<InterpolationTargetA, Dim>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = Dim;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -53,6 +62,7 @@ struct MockMetavariables {
       InterpTargetTestHelpers::mock_interpolator<MockMetavariables<Dim>>>;
 };
 
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_1d() {
   // Options for SpecifiedPoints
   intrp::OptionHolders::SpecifiedPoints<1> points_opts(
@@ -65,8 +75,7 @@ void test_1d() {
           "Points: [[1.0], [0.3]]");
   CHECK(created_opts == points_opts);
 
-  const auto domain_creator =
-      domain::creators::Interval({{-1.0}}, {{1.0}}, {{1}}, {{3}});
+  const auto domain_creator = make_interval<ValidPoints>();
 
   const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 1, Frame::Inertial> points;
@@ -157,7 +166,9 @@ SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.InterpolationTarget.SpecifiedPoints", "[Unit]") {
   domain::creators::register_derived_with_charm();
 
-  test_1d();
+  test_1d<InterpTargetTestHelpers::ValidPoints::All>();
+  test_1d<InterpTargetTestHelpers::ValidPoints::Some>();
+  test_1d<InterpTargetTestHelpers::ValidPoints::None>();
   test_2d();
   test_3d();
 }

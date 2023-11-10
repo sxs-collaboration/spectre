@@ -19,7 +19,6 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
@@ -33,6 +32,18 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Sphere make_sphere() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return {0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return {4.9, 8.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+}
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -43,9 +54,7 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::KerrHorizon<InterpolationTargetA,
                                            ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -57,6 +66,7 @@ struct MockMetavariables {
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
 };
 
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_interpolation_target_kerr_horizon(
     const intrp::AngularOrdering angular_ordering) {
   // Constants used in this test.
@@ -84,8 +94,7 @@ void test_interpolation_target_kerr_horizon(
           std::string(MakeString{} << angular_ordering));
   CHECK(created_opts == kerr_horizon_opts);
 
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
 
   const auto expected_block_coord_holders = [&domain_creator, &mass, &center,
                                              &dimless_spin,
@@ -169,6 +178,15 @@ void test_interpolation_target_kerr_horizon(
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
-  test_interpolation_target_kerr_horizon(intrp::AngularOrdering::Cce);
-  test_interpolation_target_kerr_horizon(intrp::AngularOrdering::Strahlkorper);
+  test_interpolation_target_kerr_horizon<
+      InterpTargetTestHelpers::ValidPoints::All>(intrp::AngularOrdering::Cce);
+  test_interpolation_target_kerr_horizon<
+      InterpTargetTestHelpers::ValidPoints::All>(
+      intrp::AngularOrdering::Strahlkorper);
+  test_interpolation_target_kerr_horizon<
+      InterpTargetTestHelpers::ValidPoints::Some>(
+      intrp::AngularOrdering::Strahlkorper);
+  test_interpolation_target_kerr_horizon<
+      InterpTargetTestHelpers::ValidPoints::None>(
+      intrp::AngularOrdering::Strahlkorper);
 }

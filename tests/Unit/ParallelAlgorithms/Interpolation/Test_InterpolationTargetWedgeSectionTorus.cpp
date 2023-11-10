@@ -22,7 +22,6 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/WedgeSectionTorus.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -31,6 +30,18 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Sphere make_sphere() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return {0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return {4.9, 8.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+}
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -40,9 +51,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::WedgeSectionTorus<InterpolationTargetA>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -54,6 +63,7 @@ struct MockMetavariables {
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
 };
 
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_r_theta_lgl() {
   const size_t num_radial = 3;
   const size_t num_theta = 4;
@@ -63,11 +73,10 @@ void test_r_theta_lgl() {
       1.2, 4.0, 0.35 * M_PI, 0.55 * M_PI, num_radial, num_theta, num_phi, false,
       false);
 
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
 
   const size_t num_total = num_radial * num_theta * num_phi;
-  const auto expected_block_coord_holders = [&domain_creator, &num_total]() {
+  const auto expected_block_coord_holders = [&]() {
     tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius =
@@ -100,6 +109,7 @@ void test_r_theta_lgl() {
       domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
 }
 
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_r_theta_uniform() {
   const size_t num_radial = 4;
   const size_t num_theta = 5;
@@ -109,8 +119,7 @@ void test_r_theta_uniform() {
       1.8, 3.6, 0.25 * M_PI, 0.75 * M_PI, num_radial, num_theta, num_phi, true,
       true);
 
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
 
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders = [&domain_creator, &num_total]() {
@@ -162,6 +171,10 @@ SPECTRE_TEST_CASE(
                              1.8, 20., 0.785, 2.356, 20, 10, 20, false, true));
 
   // Check computing the points
-  test_r_theta_lgl();
-  test_r_theta_uniform();
+  test_r_theta_lgl<InterpTargetTestHelpers::ValidPoints::All>();
+  test_r_theta_lgl<InterpTargetTestHelpers::ValidPoints::Some>();
+  test_r_theta_lgl<InterpTargetTestHelpers::ValidPoints::None>();
+  test_r_theta_uniform<InterpTargetTestHelpers::ValidPoints::All>();
+  test_r_theta_uniform<InterpTargetTestHelpers::ValidPoints::Some>();
+  test_r_theta_uniform<InterpTargetTestHelpers::ValidPoints::None>();
 }

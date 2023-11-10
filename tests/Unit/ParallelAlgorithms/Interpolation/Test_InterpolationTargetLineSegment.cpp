@@ -18,7 +18,6 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -27,6 +26,18 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Sphere make_sphere() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return {0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return {4.9, 8.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+}
+
 template <typename Frame>
 struct MockMetavariables {
   struct InterpolationTargetA
@@ -37,9 +48,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3, Frame>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -50,11 +59,9 @@ struct MockMetavariables {
                      MockMetavariables, InterpolationTargetA>,
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
-                  "[Unit]") {
-  domain::creators::register_derived_with_charm();
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+void test() {
   // Options for LineSegment
   intrp::OptionHolders::LineSegment<3> line_segment_opts({{1.0, 1.0, 1.0}},
                                                          {{2.4, 2.4, 2.4}}, 15);
@@ -67,8 +74,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
           "NumberOfPoints: 15");
   CHECK(created_opts == line_segment_opts);
 
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
 
   const auto expected_block_coord_holders = [&domain_creator]() {
     const size_t n_pts = 15;
@@ -99,4 +105,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
           MockMetavariables<Frame::Inertial>::InterpolationTargetA, 3>>(
       domain_creator, std::move(line_segment_opts),
       expected_block_coord_holders);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
+                  "[Unit]") {
+  domain::creators::register_derived_with_charm();
+  test<InterpTargetTestHelpers::ValidPoints::All>();
+  test<InterpTargetTestHelpers::ValidPoints::Some>();
+  test<InterpTargetTestHelpers::ValidPoints::None>();
 }

@@ -24,7 +24,6 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
@@ -38,6 +37,17 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Sphere make_sphere() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return {0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return {4.9, 8.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+}
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -47,9 +57,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::Sphere<InterpolationTargetA, ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -61,7 +69,7 @@ struct MockMetavariables {
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
 };
 
-template <typename Generator>
+template <InterpTargetTestHelpers::ValidPoints ValidPoints, typename Generator>
 void test_interpolation_target_sphere(
     const gsl::not_null<Generator*> generator, const size_t number_of_spheres,
     const intrp::AngularOrdering angular_ordering) {
@@ -119,8 +127,7 @@ void test_interpolation_target_sphere(
           std::string(MakeString{} << angular_ordering));
   CHECK(created_opts == sphere_opts);
 
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
 
   TestHelpers::db::test_simple_tag<
       intrp::Tags::Sphere<MockMetavariables::InterpolationTargetA>>("Sphere");
@@ -227,9 +234,16 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Sphere",
   test_sphere_errors();
   MAKE_GENERATOR(gen);
   for (size_t num_spheres : {1_st, 2_st, 3_st}) {
-    test_interpolation_target_sphere(make_not_null(&gen), num_spheres,
-                                     intrp::AngularOrdering::Cce);
-    test_interpolation_target_sphere(make_not_null(&gen), num_spheres,
-                                     intrp::AngularOrdering::Strahlkorper);
+    test_interpolation_target_sphere<InterpTargetTestHelpers::ValidPoints::All>(
+        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Cce);
+    test_interpolation_target_sphere<InterpTargetTestHelpers::ValidPoints::All>(
+        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Strahlkorper);
+    test_interpolation_target_sphere<
+        InterpTargetTestHelpers::ValidPoints::None>(
+        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Strahlkorper);
+    // ValidPoints::Some is not tested as the radii of the
+    // interpolation targets are set randomly so it is difficult to
+    // arrange that only a subset of the target points are
+    // valid/invalid.
   }
 }

@@ -16,8 +16,10 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
@@ -64,6 +66,8 @@ class BlockId;
 /// \endcond
 
 namespace InterpTargetTestHelpers {
+
+enum class ValidPoints { All, None, Some };
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
@@ -241,10 +245,12 @@ void test_interpolation_target(
   CHECK(info.iteration == 0_st);
 
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(block_coord_holders[i].value().id ==
-          expected_block_coord_holders[i].value().id);
-    CHECK_ITERABLE_APPROX(block_coord_holders[i].value().data,
-                          expected_block_coord_holders[i].value().data);
+    if (block_coord_holders[i].has_value()) {
+      CHECK(block_coord_holders[i].value().id ==
+            expected_block_coord_holders[i].value().id);
+      CHECK_ITERABLE_APPROX(block_coord_holders[i].value().data,
+                            expected_block_coord_holders[i].value().data);
+    }
   }
 
   // Call again at a different temporal_id
@@ -263,10 +269,12 @@ void test_interpolation_target(
   const auto& new_block_coord_holders = new_info.block_coord_holders;
   CHECK(new_info.iteration == 0_st);
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(new_block_coord_holders[i].value().id ==
-          expected_block_coord_holders[i].value().id);
-    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].value().data,
-                          expected_block_coord_holders[i].value().data);
+    if (new_block_coord_holders[i].has_value()) {
+      CHECK(new_block_coord_holders[i].value().id ==
+            expected_block_coord_holders[i].value().id);
+      CHECK_ITERABLE_APPROX(new_block_coord_holders[i].value().data,
+                            expected_block_coord_holders[i].value().data);
+    }
   }
 }
 
