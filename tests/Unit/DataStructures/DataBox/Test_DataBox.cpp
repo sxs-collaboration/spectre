@@ -1110,6 +1110,7 @@ void test_reset_compute_items() {
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(2, 3.));
   CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
+  CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28");
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
   CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1129,6 +1130,46 @@ void test_reset_compute_items() {
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
   }
+  // The compute item overwrites the variables, so we can detect a
+  // reset by seeing if the address changes
+  const auto* vars_address =
+      db::get<test_databox_tags::MultiplyVariablesByTwo>(box).data();
+
+  db::mutate<test_databox_tags::Tag2>(
+      [](const gsl::not_null<std::string*> tag2) { *tag2 = "My New String"; },
+      make_not_null(&box));
+  CHECK(db::get<test_databox_tags::Tag5>(box) == "My New String6.28");
+  CHECK(vars_address ==
+        db::get<test_databox_tags::MultiplyVariablesByTwo>(box).data());
+
+  db::mutate<test_databox_tags::Tag0, test_databox_tags::ScalarTag>(
+      [](const gsl::not_null<double*> tag0,
+         const gsl::not_null<Scalar<DataVector>*> scalar) {
+        *tag0 = 2.718;
+        get(*scalar) = 5.;
+      },
+      make_not_null(&box));
+  CHECK(db::get<test_databox_tags::Tag5>(box) == "My New String5.436");
+  CHECK(get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 10.)));
+  CHECK(get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 10.)));
+  CHECK(vars_address !=
+        db::get<test_databox_tags::MultiplyVariablesByTwo>(box).data());
+
+  db::mutate<Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
+      [](const gsl::not_null<Variables<tmpl::list<
+             test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>*>
+             vars) { get(get<test_databox_tags::ScalarTag>(*vars)) = 1.; },
+      make_not_null(&box));
+  CHECK(get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 2.)));
+  CHECK(get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 2.)));
+
+  // Make sure this compiles.
+  db::mutate<>([]() {}, make_not_null(&box));
 }
 
 namespace ExtraResetTags {
