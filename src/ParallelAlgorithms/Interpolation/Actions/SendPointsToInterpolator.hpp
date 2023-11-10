@@ -13,6 +13,17 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace intrp {
+template <typename Metavariables, typename InterpolationTargetTag>
+struct InterpolationTarget;
+namespace Actions {
+template <typename InterpolationTargetTag>
+struct InterpolationTargetReceiveVars;
+}  // namespace Actions
+}  // namespace intrp
+/// \endcond
+
 namespace intrp {
 namespace Actions {
 /// \ingroup ActionsGroup
@@ -50,6 +61,26 @@ struct SendPointsToInterpolator {
         InterpolationTargetTag>(box, cache, temporal_id);
     InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
         make_not_null(&box), temporal_id, coords);
+
+    // If all target points are invalid, we need to notify the target as no
+    // interpolation is done.
+    const auto& invalid_points =
+        db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(box);
+    if (invalid_points.count(temporal_id) > 0) {
+      if (coords.size() == invalid_points.at(temporal_id).size()) {
+        auto& receiver_proxy = Parallel::get_parallel_component<
+            InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
+        // just send empty vectors for the data and global offsets.
+        std::vector<Variables<
+            typename InterpolationTargetTag::vars_to_interpolate_to_target>>
+            vars{};
+        std::vector<std::vector<size_t>> global_offsets{};
+        Parallel::simple_action<
+            Actions::InterpolationTargetReceiveVars<InterpolationTargetTag>>(
+            receiver_proxy, vars, global_offsets, temporal_id);
+      }
+    }
+
     auto& receiver_proxy =
         Parallel::get_parallel_component<Interpolator<Metavariables>>(cache);
     Parallel::simple_action<Actions::ReceivePoints<InterpolationTargetTag>>(

@@ -77,7 +77,8 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using component_being_mocked = void;  // not needed.
+  using component_being_mocked =
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename Metavariables::InterpolationTargetA::compute_target_points>>,
@@ -213,9 +214,19 @@ void test_interpolation_target(
             runner, 0)
             .empty());
 
-  // Should be no queued actions in mock_interpolation_target
-  CHECK(
-      ActionTesting::is_simple_action_queue_empty<target_component>(runner, 0));
+  const size_t number_of_points = expected_block_coord_holders.size();
+  const auto& invalid_points = ActionTesting::get_databox_tag<
+      target_component,
+      ::intrp::Tags::IndicesOfInvalidInterpPoints<temporal_id_type>>(runner, 0);
+  if (invalid_points.count(temporal_id) > 0) {
+    if (number_of_points == invalid_points.at(temporal_id).size()) {
+      CHECK_FALSE(ActionTesting::is_simple_action_queue_empty<target_component>(
+          runner, 0));
+    } else {
+      CHECK(ActionTesting::is_simple_action_queue_empty<target_component>(
+          runner, 0));
+    }
+  }
 
   // But there should be one in mock_interpolator
 
@@ -240,7 +251,6 @@ void test_interpolation_target(
   const auto& block_coord_holders = info.block_coord_holders;
 
   // Check number of points and iteration
-  const size_t number_of_points = expected_block_coord_holders.size();
   CHECK(block_coord_holders.size() == number_of_points);
   CHECK(info.iteration == 0_st);
 
