@@ -82,9 +82,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
                                 static_cast<double>(num_x_points[n] - 1);
     }
   }
+  CAPTURE(num_x_points);
+  CAPTURE(X_data);
 
   // Correct for NumVars
   total_num_points *= TEoS::NumberOfVars;
+  CAPTURE(total_num_points);
 
   // Allocate storage for main table
   std::vector<double> dependent_variables;
@@ -95,10 +98,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   double energy_shift = 0;  // Will test this later
 
   double eps_min = std::exp(lower_bounds[0]);
+  CAPTURE(eps_min);
 
   if (eps_min < 0) {
     energy_shift = 2. * eps_min;
   }
+  CAPTURE(energy_shift);
 
   auto test_eos = [&](auto state) {
     enum TableIndex { Temp = 0, Rho = 1, Ye = 2 };
@@ -173,8 +178,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
 
   pure_state[0] = std::log(pure_state[0]);
   pure_state[1] = std::log(pure_state[1]);
+  CAPTURE(pure_state);
+  CAPTURE(vector_state);
 
   const auto output = test_eos(pure_state);
+  CAPTURE(output);
 
   CHECK(std::abs((std::exp(output[TEoS::Epsilon]) + energy_shift) -
                  get(eos.specific_internal_energy_from_density_and_temperature(
@@ -190,6 +198,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   const auto eps_interp =
       eos.specific_internal_energy_from_density_and_temperature(
           vector_state[1], vector_state[0], vector_state[2]);
+  CAPTURE(eps_interp);
 
   // Ensure the tabulated EoS is applied to all elements in the datavector, not
   // just the first element
@@ -217,6 +226,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
   const auto eps_interp_vector =
       eos.specific_internal_energy_from_density_and_temperature(
           vector_state[1], vector_state[0], vector_state[2]);
+  CAPTURE(eps_interp_vector);
 
   CHECK(std::abs(std::exp(pure_state[0]) -
                  get(eos.temperature_from_density_and_energy(
