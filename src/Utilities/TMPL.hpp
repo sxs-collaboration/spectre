@@ -606,13 +606,26 @@ constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) {
 }
 
 namespace brigand {
+namespace lazy {
 /// Check if a typelist contains an item.
 template <typename Sequence, typename Item>
-using list_contains =
-    tmpl::found<Sequence, std::is_same<tmpl::_1, tmpl::pin<Item>>>;
+struct list_contains;
+
+/// \cond
+template <template <typename...> typename L, typename... Items, typename Item>
+struct list_contains<L<Items...>, Item>
+    : bool_<(... or std::is_same_v<Items, Item>)> {};
+/// \endcond
+}  // namespace lazy
+
+/// Check if a typelist contains an item.
+/// @{
+template <typename Sequence, typename Item>
+using list_contains = typename lazy::list_contains<Sequence, Item>::type;
 
 template <typename Sequence, typename Item>
-constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
+constexpr bool list_contains_v = lazy::list_contains<Sequence, Item>::value;
+/// @}
 
 /// Obtain the elements of `Sequence1` that are not in `Sequence2`.
 template <typename Sequence1, typename Sequence2>
