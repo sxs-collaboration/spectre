@@ -53,6 +53,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
@@ -231,6 +232,8 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag =
       hydro::Tags::EquationOfState<equation_of_state_type>;
+  using initial_data_list =
+      grmhd::ValenciaDivClean::InitialData::initial_data_list;
   // Do not limit the divergence-cleaning field Phi
   using limiter = Tags::Limiter<
       Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
@@ -299,7 +302,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
           hydro::Tags::SpatialVelocity<DataVector, volume_dim,
                                        Frame::Inertial>>,
       hydro::Tags::TransportVelocityCompute<DataVector, volume_dim,
-                                                               Frame::Inertial>,
+                                            Frame::Inertial>,
       grmhd::ValenciaDivClean::Tags::QuadrupoleMomentDerivativeCompute<
           DataVector, volume_dim,
           ::Events::Tags::ObserverCoordinates<volume_dim, Frame::Inertial>,
@@ -339,6 +342,7 @@ struct EvolutionMetavars<InitialData, tmpl::list<InterpolationTargetTags...>> {
                 Events::time_events<system>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, InterpolationTargetTags, interpolator_source_vars>...>>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::

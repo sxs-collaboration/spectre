@@ -43,6 +43,15 @@ PhaseChangeAndTriggers:
       - CheckpointAndExitAfterWallclock:
           WallclockHours: None
 
+AnalyticSolution: &initial_data
+  FishboneMoncriefDisk:
+    BhMass: &BhMass 1.0
+    BhDimlessSpin: &BhDimlessSpin 0.9375
+    InnerEdgeRadius: 6.0
+    MaxPressureRadius: 12.0
+    PolytropicConstant: 0.001
+    PolytropicExponent: 1.3333333333333333333333
+
 DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]
@@ -50,9 +59,16 @@ DomainCreator:
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
-    BoundaryConditionInX: DirichletAnalytic
-    BoundaryConditionInY: DirichletAnalytic
-    BoundaryConditionInZ: DirichletAnalytic
+    BoundaryConditionInX:
+      DirichletAnalytic:
+        AnalyticPrescription: *initial_data
+    BoundaryConditionInY:
+      DirichletAnalytic:
+        AnalyticPrescription: *initial_data
+    BoundaryConditionInZ:
+      DirichletAnalytic:
+        AnalyticPrescription: *initial_data
+
 
 SpatialDiscretization:
   BoundaryCorrection:
@@ -84,14 +100,6 @@ SpatialDiscretization:
     Reconstructor:
       MonotonisedCentralPrim:
 
-AnalyticSolution:
-  FishboneMoncriefDisk:
-    BhMass: &BhMass 1.0
-    BhDimlessSpin: &BhDimlessSpin 0.9375
-    InnerEdgeRadius: 6.0
-    MaxPressureRadius: 12.0
-    PolytropicConstant: 0.001
-    PolytropicExponent: 1.3333333333333333333333
 
 EvolutionSystem:
   ValenciaDivClean:

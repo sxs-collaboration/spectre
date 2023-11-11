@@ -315,7 +315,7 @@ SPECTRE_TEST_CASE(
         "ProductDirichletAnalyticAndAnalyticConstant:\n"
         "  GeneralizedHarmonicDirichletAnalytic:\n"
         "    AnalyticPrescription:\n"
-        "      KerrSphericalHarmonic:\n"
+        "      GeneralizedHarmonic(KerrSphericalHarmonic):\n"
         "        Mass: 1.5\n"
         "        Spin: [0.1, -0.2, 0.3]\n"
         "        Amplitude: 2.3\n"

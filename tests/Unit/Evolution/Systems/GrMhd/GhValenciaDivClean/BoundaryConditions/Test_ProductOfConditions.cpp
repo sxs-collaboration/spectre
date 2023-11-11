@@ -17,9 +17,12 @@
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ProductOfConditions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -37,24 +40,34 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
-  using type = gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>;
-};
-
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
-            tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
-                           ProductOfConditions<
-                               gh::BoundaryConditions::DirichletAnalytic<3_st>,
-                               grmhd::ValenciaDivClean::BoundaryConditions::
-                                   DirichletAnalytic>>>,
+            tmpl::list<
+                grmhd::GhValenciaDivClean::BoundaryConditions::
+                    ProductOfConditions<
+                        gh::BoundaryConditions::DirichletAnalytic<3_st>,
+                        grmhd::ValenciaDivClean::BoundaryConditions::
+                            DirichletAnalytic>,
+                grmhd::GhValenciaDivClean::BoundaryConditions::
+                    ProductOfConditions<
+                        gh::BoundaryConditions::DemandOutgoingCharSpeeds<3_st>,
+                        grmhd::ValenciaDivClean::BoundaryConditions::
+                            DemandOutgoingCharSpeeds>,
+                grmhd::GhValenciaDivClean::BoundaryConditions::
+                    ProductOfConditions<
+                        gh::BoundaryConditions::ConstraintPreservingBjorhus<
+                            3_st>,
+                        grmhd::ValenciaDivClean::BoundaryConditions::
+                            DirichletAnalytic>>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::list<gh::Solutions::WrappedGr<
-                       grmhd::Solutions::BondiMichel>>>>;
+                   tmpl::append<ghmhd::GhValenciaDivClean::InitialData::
+                                    analytic_solutions_and_data_list,
+                                grmhd::ValenciaDivClean::InitialData::
+                                    initial_data_list>>>;
   };
 };
 
@@ -411,7 +424,8 @@ SPECTRE_TEST_CASE(
                 gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>>(
                 1.0, 4.0, 0.1, 2.0, 0.01))};
     const grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic
-        valencia_condition{};
+        valencia_condition{std::make_unique<grmhd::Solutions::BondiMichel>(
+            1.0, 4.0, 0.1, 2.0, 0.01)};
     const auto product_boundary_condition = TestHelpers::test_creation<
         std::unique_ptr<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
@@ -419,17 +433,21 @@ SPECTRE_TEST_CASE(
         "ProductDirichletAnalyticAndDirichletAnalytic:\n"
         "  GeneralizedHarmonicDirichletAnalytic:\n"
         "    AnalyticPrescription:\n"
-        "      BondiMichel:\n"
+        "      GeneralizedHarmonic(BondiMichel):\n"
         "        Mass: 1.0\n"
         "        SonicRadius: 4.0\n"
         "        SonicDensity: 0.1\n"
         "        PolytropicExponent: 2.0\n"
         "        MagFieldStrength: 0.01\n"
-        "  ValenciaDirichletAnalytic:\n");
-    const auto gridless_box =
-        db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
-            0.5, gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>{
-                     1.0, 4.0, 0.1, 2.0, 0.01});
+        "  ValenciaDirichletAnalytic:\n"
+        "    AnalyticPrescription:\n"
+        "      BondiMichel:\n"
+        "        Mass: 1.0\n"
+        "        SonicRadius: 4.0\n"
+        "        SonicDensity: 0.1\n"
+        "        PolytropicExponent: 2.0\n"
+        "        MagFieldStrength: 0.01\n");
+    const auto gridless_box = db::create<db::AddSimpleTags<::Tags::Time>>(0.5);
     auto serialized_and_deserialized_condition = serialize_and_deserialize(
         *dynamic_cast<
             grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
@@ -451,24 +469,28 @@ SPECTRE_TEST_CASE(
         "Product condition of ValenciaDivClean DirichletAnalytic and "
         "GeneralizedHarmonic Bjorhus");
     const grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic
-        valencia_condition{};
+        valencia_condition{std::make_unique<grmhd::Solutions::BondiMichel>(
+            1.0, 4.0, 0.1, 2.0, 0.01)};
     const gh::BoundaryConditions::ConstraintPreservingBjorhus<3_st>
         gh_condition{
             gh::BoundaryConditions::detail::ConstraintPreservingBjorhusType::
                 ConstraintPreservingPhysical};
-    const auto product_boundary_condition = TestHelpers::test_factory_creation<
-        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
-        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
-            gh::BoundaryConditions::ConstraintPreservingBjorhus<3_st>,
-            grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>>(
+    const auto product_boundary_condition = TestHelpers::test_creation<
+        std::unique_ptr<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
+        Metavariables>(
         "ProductConstraintPreservingBjorhusAndDirichletAnalytic:\n"
         "  GeneralizedHarmonicConstraintPreservingBjorhus:\n"
         "    Type: ConstraintPreservingPhysical\n"
-        "  ValenciaDirichletAnalytic:");
-    const auto gridless_box =
-        db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
-            0.5, gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>{
-                     1.0, 4.0, 0.1, 2.0, 0.01});
+        "  ValenciaDirichletAnalytic:\n"
+        "    AnalyticPrescription:\n"
+        "      BondiMichel:\n"
+        "        Mass: 1.0\n"
+        "        SonicRadius: 4.0\n"
+        "        SonicDensity: 0.1\n"
+        "        PolytropicExponent: 2.0\n"
+        "        MagFieldStrength: 0.01\n");
+    const auto gridless_box = db::create<db::AddSimpleTags<::Tags::Time>>(0.5);
     auto serialized_and_deserialized_condition = serialize_and_deserialize(
         *dynamic_cast<
             grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
@@ -494,12 +516,10 @@ SPECTRE_TEST_CASE(
     const grmhd::ValenciaDivClean::BoundaryConditions::DemandOutgoingCharSpeeds
         valencia_condition{};
     const gh::BoundaryConditions::DemandOutgoingCharSpeeds<3_st> gh_condition{};
-    const auto product_boundary_condition = TestHelpers::test_factory_creation<
-        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
-        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
-            gh::BoundaryConditions::DemandOutgoingCharSpeeds<3_st>,
-            grmhd::ValenciaDivClean::BoundaryConditions::
-                DemandOutgoingCharSpeeds>>(
+    const auto product_boundary_condition = TestHelpers::test_creation<
+        std::unique_ptr<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
+        Metavariables>(
         "ProductDemandOutgoingCharSpeedsAndDemandOutgoingCharSpeeds:\n"
         "  GeneralizedHarmonicDemandOutgoingCharSpeeds:\n"
         "  ValenciaDemandOutgoingCharSpeeds:");

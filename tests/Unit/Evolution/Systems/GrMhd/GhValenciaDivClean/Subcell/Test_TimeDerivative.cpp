@@ -47,6 +47,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/AnalyticChristoffel.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -95,10 +96,14 @@ struct DummyEvolutionMetaVars {
   };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        BoundaryConditions::BoundaryCondition,
-        tmpl::push_back<BoundaryConditions::standard_fd_boundary_conditions,
-                        BoundaryConditions::DirichletAnalytic>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            BoundaryConditions::BoundaryCondition,
+            tmpl::push_back<BoundaryConditions::standard_fd_boundary_conditions,
+                            BoundaryConditions::DirichletAnalytic>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   ghmhd::GhValenciaDivClean::InitialData::
+                       analytic_solutions_and_data_list>>;
   };
 };
 
@@ -121,7 +126,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       external_boundary_conditions(1);
   for (const auto& direction : Direction<3>::all_directions()) {
     external_boundary_conditions.at(0)[direction] =
-        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{}
+        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic(
+            std::make_unique<gh::Solutions::WrappedGr<
+                ::RelativisticEuler::Solutions::TovStar>>(soln))
             .get_clone();
   }
   Block<3> block{test_non_diagonal_jacobian
@@ -625,7 +632,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           domain::Tags::InverseJacobian<3, Frame::ElementLogical,
                                         Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
-          domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
+          domain::Tags::FunctionsOfTimeInitialize,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
@@ -682,8 +689,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       std::move(domain), std::move(external_boundary_conditions),
       dg_mesh_velocity, div_dg_mesh_velocity,
       dg_logical_to_inertial_inv_jacobian, dummy_normal_covector_and_magnitude,
-      time, clone_unique_ptrs(functions_of_time), soln,
-      DummyEvolutionMetaVars{},
+      time, clone_unique_ptrs(functions_of_time), DummyEvolutionMetaVars{},
       // Note: These damping functions all assume Grid==Inertial. We need to
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS

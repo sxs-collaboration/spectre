@@ -35,7 +35,7 @@ PhaseChangeAndTriggers:
           WallclockHours: None
 
 InitialData: &InitialData
-  GaugeWave:
+  GeneralizedHarmonic(GaugeWave):
     Amplitude: 0.1
     Wavelength: 1.0
 

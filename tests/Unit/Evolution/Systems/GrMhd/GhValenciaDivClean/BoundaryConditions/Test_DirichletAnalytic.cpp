@@ -18,6 +18,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
@@ -28,12 +29,15 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -42,10 +46,6 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
-  using type = gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>;
-};
-
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -55,8 +55,10 @@ struct Metavariables {
             tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
                            DirichletAnalytic>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   tmpl::list<gh::Solutions::WrappedGr<
-                       grmhd::Solutions::BondiMichel>>>>;
+                   ghmhd::GhValenciaDivClean::InitialData::initial_data_list>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            tmpl::list<grmhd::AnalyticData::InitialMagneticFields::Poloidal>>>;
   };
 };
 
@@ -101,6 +103,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     using tags =
         tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                    hydro::Tags::ElectronFraction<DataVector>,
+                   hydro::Tags::Temperature<DataVector>,
                    hydro::Tags::SpecificInternalEnergy<DataVector>,
                    hydro::Tags::SpecificEnthalpy<DataVector>,
                    hydro::Tags::Pressure<DataVector>,
@@ -178,8 +181,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       make_not_null(&tilde_b_flux), make_not_null(&tilde_phi_flux),
       make_not_null(&gamma1), make_not_null(&gamma2), make_not_null(&lapse),
       make_not_null(&shift), make_not_null(&inverse_spatial_metric), {}, {}, {},
-      coords, interior_gamma1, interior_gamma2, time,
-      analytic_solution_or_data);
+      coords, interior_gamma1, interior_gamma2, time);
   CHECK(not result.has_value());
 
   CHECK(vars == expected_vars);
@@ -298,7 +300,7 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
       make_not_null(&lorentz_factor_times_spatial_velocity),
       make_not_null(&magnetic_field), make_not_null(&divergence_cleaning_field),
       direction, subcell_mesh, time, functions_of_time, logical_to_grid_map,
-      grid_to_inertial_map, reconstructor, analytic_solution_or_data);
+      grid_to_inertial_map, reconstructor);
   // failing line
   CHECK(vars == expected_vars);
 }
@@ -308,15 +310,24 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
   register_factory_classes_with_charm<Metavariables>();
-
-  const auto product_boundary_condition =
-      TestHelpers::test_creation<
-          std::unique_ptr<
-              grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
-          Metavariables>("DirichletAnalytic:\n")
-          ->get_clone();
+  EquationsOfState::register_derived_with_charm();
   {
     INFO("Test with analytic solution");
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<
+            std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
+                                BoundaryCondition>,
+            Metavariables>(
+            "DirichletAnalytic:\n"
+            "  AnalyticPrescription:\n"
+            "      GeneralizedHarmonic(BondiMichel):\n"
+            "        Mass: 1.0\n"
+            "        SonicRadius: 4.0\n"
+            "        SonicDensity: 0.1\n"
+            "        PolytropicExponent: 2.0\n"
+            "        MagFieldStrength: 0.01\n")
+            ->get_clone();
+
     const gh::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
         analytic_solution_or_data{1.0, 4.0, 0.1, 2.0, 0.01};
     const auto serialized_and_deserialized_condition =
@@ -331,6 +342,29 @@ SPECTRE_TEST_CASE(
   }
   {
     INFO("Test with analytic data");
+    const auto product_boundary_condition =
+        TestHelpers::test_creation<
+            std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
+                                BoundaryCondition>,
+            Metavariables>(
+            "DirichletAnalytic:\n"
+            "  AnalyticPrescription:\n"
+            "      GeneralizedHarmonic(MagnetizedTovStar):\n"
+            "        CentralDensity: 1.28e-3\n"
+            "        EquationOfState:\n"
+            "          PolytropicFluid:\n"
+            "            PolytropicConstant: 100.0\n"
+            "            PolytropicExponent: 2.0\n"
+            "        Coordinates: Schwarzschild\n"
+            "        MagneticFields: \n"
+            "          - Poloidal:\n"
+            "              PressureExponent: 2\n"
+            "              CutoffPressure: 0.04\n"
+            "              VectorPotentialAmplitude: 2500\n"
+            "              Center: [0.0, 0.0, 0.0]\n"
+            "              MaxDistanceFromCenter: 100.0\n")
+            ->get_clone();
+
     const gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedTovStar>
         analytic_solution_or_data{
             1.28e-3,

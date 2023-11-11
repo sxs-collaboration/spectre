@@ -41,7 +41,7 @@ PhaseChangeAndTriggers:
           WallclockHours: None
 
 InitialData: &InitialData
-  KerrSchild:
+  GeneralizedHarmonic(KerrSchild):
     Mass: 1.0
     Spin: [0.0, 0.0, 0.0]
     Center: &Center [0.0, 0.0, 0.0]

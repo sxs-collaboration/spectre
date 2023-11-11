@@ -388,7 +388,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
         TovStar{1.e-3,
                 std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.,
                                                                           2.)},
-        "TovStar:\n"
+        "GeneralizedHarmonic(TovStar):\n"
         "  CentralDensity: 1.e-3\n"
         "  EquationOfState:\n"
         "    PolytropicFluid:\n"

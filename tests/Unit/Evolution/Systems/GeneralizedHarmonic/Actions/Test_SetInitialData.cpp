@@ -316,7 +316,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
   test_set_initial_data(
       gh::Solutions::WrappedGr<gr::Solutions::KerrSchild>{
           1., {{0., 0., 0.}}, {{0., 0., 0.}}},
-      "KerrSchild:\n"
+      "GeneralizedHarmonic(KerrSchild):\n"
       "  Mass: 1.\n"
       "  Spin: [0, 0, 0]\n"
       "  Center: [0, 0, 0]",

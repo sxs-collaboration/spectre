@@ -78,6 +78,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -92,6 +93,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
@@ -436,8 +438,13 @@ struct GhValenciaDivCleanTemplateBase<
       hydro::Tags::EquationOfStateFromOptions<true, thermodynamic_dim>,
       hydro::Tags::EquationOfState<std::unique_ptr<
           EquationsOfState::EquationOfState<true, thermodynamic_dim>>>>;
-
-  using initial_data_list = gh::solutions_including_matter<3>;
+  // Currently we need to register all analytic solutions and data together,
+  // (including ValenciaDivClean initial data which is needed for product
+  // boundary conditions)
+  // This will likely change once we use runtime initial data.
+  using analytic_solutions_and_data_to_register =
+      tmpl::append<gh::solutions_including_matter<3>,
+                   grmhd::ValenciaDivClean::InitialData::initial_data_list>;
 
   using initial_data_tag =
       tmpl::conditional_t<is_analytic_solution_v<initial_data>,
@@ -690,19 +697,18 @@ struct GhValenciaDivCleanTemplateBase<
                        use_control_systems,
                        tmpl::list<::domain::creators::BinaryCompactObject>,
                        domain_creators<volume_dim>>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<volume_dim, observe_fields,
-                                               non_tensor_compute_tags>,
-                Events::ObserveAtExtremum<observe_fields,
-                                          non_tensor_compute_tags>,
-                Events::time_events<system>,
-                control_system::control_system_events<control_systems>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, InterpolationTargetTags,
-                    interpolator_source_vars>...>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, non_tensor_compute_tags>,
+                       Events::ObserveAtExtremum<observe_fields,
+                                                 non_tensor_compute_tags>,
+                       Events::time_events<system>,
+                       control_system::control_system_events<control_systems>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           volume_dim, InterpolationTargetTags,
+                           interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
@@ -720,7 +726,7 @@ struct GhValenciaDivCleanTemplateBase<
                     tmpl::conditional_t<
                         std::is_same_v<FukaInitialData, NoSuchType>,
                         tmpl::list<>, FukaInitialData>>>,
-                initial_data_list>>,
+                analytic_solutions_and_data_to_register>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,

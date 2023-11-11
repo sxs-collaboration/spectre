@@ -33,7 +33,7 @@ PhaseChangeAndTriggers:
       - VisitAndReturn(LoadBalancing)
 
 AnalyticSolution: &InitialData
-  BondiMichel:
+  GeneralizedHarmonic(BondiMichel):
     Mass: 1.0
     SonicRadius: 6.0
     SonicDensity: 1.0e-5
@@ -50,6 +50,13 @@ DomainCreator:
           GeneralizedHarmonicDirichletAnalytic:
             AnalyticPrescription: *InitialData
           ValenciaDirichletAnalytic:
+            AnalyticPrescription:
+              BondiMichel:
+                Mass: 1.0
+                SonicRadius: 6.0
+                SonicDensity: 1.0e-5
+                PolytropicExponent: 1.4
+                MagFieldStrength: 1.0e-2
     InitialRefinement: 1
     InitialGridPoints: 2
     UseEquiangularMap: true
@@ -63,6 +70,13 @@ DomainCreator:
         GeneralizedHarmonicDirichletAnalytic:
           AnalyticPrescription: *InitialData
         ValenciaDirichletAnalytic:
+          AnalyticPrescription:
+            BondiMichel:
+              Mass: 1.0
+              SonicRadius: 6.0
+              SonicDensity: 1.0e-5
+              PolytropicExponent: 1.4
+              MagFieldStrength: 1.0e-2
 
 VariableFixing:
   FixConservatives:

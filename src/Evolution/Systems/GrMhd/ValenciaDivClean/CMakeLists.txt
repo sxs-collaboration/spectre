@@ -30,6 +30,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AllSolutions.hpp
   Characteristics.hpp
   ComovingMagneticFieldMagnitude.hpp
   ConservativeFromPrimitive.hpp
@@ -64,11 +65,14 @@ target_link_libraries(
   Evolution
   FiniteDifference
   GeneralRelativity
+  GrMhdAnalyticData
+  GrMhdSolutions
   H5
   Hydro
   HydroHelpers
   Limiters
   Options
+  RelativisticEulerSolutions
   Utilities
   Valencia
   VariableFixing

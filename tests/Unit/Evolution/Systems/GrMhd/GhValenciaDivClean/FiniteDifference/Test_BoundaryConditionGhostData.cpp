@@ -82,8 +82,12 @@ struct EvolutionMetaVars {
   };
 };
 
+using SolutionForTest =
+    gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>;
+
 template <typename BoundaryConditionType>
-void test(const BoundaryConditionType& boundary_condition) {
+void test(const BoundaryConditionType& boundary_condition,
+          const SolutionForTest& solution) {
   CAPTURE(pretty_type::name<BoundaryConditionType>());
   const size_t num_dg_pts = 4;
 
@@ -148,11 +152,6 @@ void test(const BoundaryConditionType& boundary_condition) {
           domain::CoordinateMaps::Identity<3>{});
 
   const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
-
-  const gh::Solutions::WrappedGr solution{RelativisticEuler::Solutions::TovStar{
-      1.28e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
-      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
-  using SolutionForTest = std::decay_t<decltype(solution)>;
 
   // Below are tags used for testing Outflow boundary condition
   //  - volume metric and primitive variables on subcell mesh
@@ -221,10 +220,10 @@ void test(const BoundaryConditionType& boundary_condition) {
 
   get(get<RestMassDensity>(volume_prim_vars)) = 1.0;
   get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
-  get(get<Pressure>(volume_prim_vars)) = 1.0;
-  get<Temperature>(volume_prim_vars) =
-      solution.equation_of_state().temperature_from_density(
-          get<RestMassDensity>(volume_prim_vars));
+  get(get<Temperature>(volume_prim_vars)) = 0.5;
+  get(get<Pressure>(volume_prim_vars)) =
+      get(solution.equation_of_state().pressure_from_density(
+          get<RestMassDensity>(volume_prim_vars)));
   get(get<LorentzFactor>(volume_prim_vars)) = 2.0;
   for (size_t i = 0; i < 3; ++i) {
     get<SpatialVelocity>(volume_prim_vars).get(i) = 0.1;
@@ -245,8 +244,7 @@ void test(const BoundaryConditionType& boundary_condition) {
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
-      typename System::primitive_variables_tag,
-      ::Tags::AnalyticSolution<SolutionForTest>>>(
+      typename System::primitive_variables_tag>>(
       EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
       subcell_mesh, subcell_logical_coords, neighbor_data,
       std::unique_ptr<fd::Reconstructor>{
@@ -259,7 +257,7 @@ void test(const BoundaryConditionType& boundary_condition) {
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_prim_vars, solution);
+      volume_prim_vars);
 
   // compute FD ghost data and retrieve the result
   fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
@@ -340,10 +338,16 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/"};
-
-  test(grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{});
+  const SolutionForTest solution{RelativisticEuler::Solutions::TovStar{
+      1.28e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
+  test(
+      grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{
+          std::make_unique<SolutionForTest>(solution)},
+      solution);
   CHECK_THROWS_WITH(test(grmhd::GhValenciaDivClean::BoundaryConditions::
-                             ConstraintPreservingFreeOutflow{}),
+                             ConstraintPreservingFreeOutflow{},
+                         solution),
                     Catch::Matchers::ContainsSubstring(
                         "Not implemented because it's not trivial "
                         "to figure out what the right way of"));
@@ -352,7 +356,8 @@ SPECTRE_TEST_CASE(
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       test(domain::BoundaryConditions::Periodic<
-           BoundaryConditions::BoundaryCondition>{}),
+               BoundaryConditions::BoundaryCondition>{},
+           solution),
       Catch::Matchers::ContainsSubstring("not on external boundaries"));
 #endif
 }
