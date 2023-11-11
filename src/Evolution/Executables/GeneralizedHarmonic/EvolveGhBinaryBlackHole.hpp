@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
@@ -518,6 +519,7 @@ struct EvolutionMetavars {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor>>,
+              control_system::Actions::LimitTimeStep<control_systems>,
               Actions::UpdateU<system>>>,
       dg::Actions::Filter<
           Filters::Exponential<0>,

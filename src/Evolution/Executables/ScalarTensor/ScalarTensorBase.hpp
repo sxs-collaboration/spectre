@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/Factory1D.hpp"
@@ -419,6 +420,7 @@ struct ScalarTensorTemplateBase {
   static constexpr auto default_phase_order =
       detail::make_default_phase_order();
 
+  template <typename ControlSystems>
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
@@ -442,6 +444,7 @@ struct ScalarTensorTemplateBase {
                   system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              control_system::Actions::LimitTimeStep<ControlSystems>,
               Actions::UpdateU<system>,
               // We allow for separate filtering of the system variables
               dg::Actions::Filter<Filters::Exponential<0>,

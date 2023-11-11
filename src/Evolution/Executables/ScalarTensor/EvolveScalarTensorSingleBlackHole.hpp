@@ -192,7 +192,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
       tmpl::push_back<typename st_base::dg_registration_list,
                       intrp::Actions::RegisterElementWithInterpolator>;
 
-  using typename st_base::step_actions;
+  using step_actions = typename st_base::template step_actions<control_systems>;
 
   using initialization_actions = tmpl::push_back<
       tmpl::pop_back<typename st_base::template initialization_actions<

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/Factory1D.hpp"
@@ -335,6 +336,7 @@ struct GeneralizedHarmonicTemplateBase {
        Parallel::Phase::Register, Parallel::Phase::InitializeTimeStepperHistory,
        Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
+  template <typename ControlSystems>
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
@@ -351,6 +353,7 @@ struct GeneralizedHarmonicTemplateBase {
                   system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              control_system::Actions::LimitTimeStep<ControlSystems>,
               Actions::UpdateU<system>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
