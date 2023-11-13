@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 
 SPECTRE_TEST_CASE(
@@ -34,7 +35,11 @@ SPECTRE_TEST_CASE(
   }
   const Scalar<DataVector> sqrt_det_spatial_metric{num_pts, 1.0};
   const grmhd::ValenciaDivClean::FixConservatives variable_fixer{
-      1.e-7, 1.0e-7, 1.0e-10, 1.0e-10, 0.0, 0.0, 1.e-7, 0.0, true};
+      1.e-7,   1.0e-7,
+      1.0e-10, 1.0e-10,
+      0.0,     0.0,
+      1.e-7,   0.0,
+      true,    hydro::MagneticFieldTreatment::AssumeNonZero};
   typename System::variables_tag::type cons_vars{num_pts, 0.0};
   get(get<grmhd::ValenciaDivClean::Tags::TildeD>(cons_vars))[0] = 2.e-12;
   get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(cons_vars))[0] = 2.e-13;

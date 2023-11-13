@@ -10,6 +10,7 @@
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -160,11 +161,17 @@ class FixConservatives {
     static constexpr Options::String help = {
         "If true then the limiting is applied."};
   };
+  /// How to treat the magnetic field
+  struct MagneticField {
+    using type = hydro::MagneticFieldTreatment;
+    static constexpr Options::String help = {
+        "How to treat the magnetic field."};
+  };
 
   using options =
       tmpl::list<MinimumValueOfD, CutoffD, MinimumValueOfYe, CutoffYe,
                  SafetyFactorForB, SafetyFactorForS, SafetyFactorForSCutoffD,
-                 SafetyFactorForSSlope, Enable>;
+                 SafetyFactorForSSlope, Enable, MagneticField>;
   static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
@@ -176,6 +183,7 @@ class FixConservatives {
                    double safety_factor_for_momentum_density,
                    double safety_factor_for_momentum_density_cutoff_d,
                    double safety_factor_for_momentum_density_slope, bool enable,
+                   hydro::MagneticFieldTreatment magnetic_field_treatment,
                    const Options::Context& context = {});
 
   FixConservatives() = default;
@@ -230,6 +238,8 @@ class FixConservatives {
   double safety_factor_for_momentum_density_slope_{
       std::numeric_limits<double>::signaling_NaN()};
   bool enable_{true};
+  hydro::MagneticFieldTreatment magnetic_field_treatment_{
+      hydro::MagneticFieldTreatment::AssumeNonZero};
 };
 
 bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs);

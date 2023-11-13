@@ -11,6 +11,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -129,7 +130,11 @@ void run_benchmark(const bool enable) {
   }
 
   const grmhd::ValenciaDivClean::FixConservatives variable_fixer{
-      1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.0e-8, 0.0001, true};
+      1.e-12,  1.0e-11,
+      1.0e-10, 1.0e-9,
+      0.0,     0.0,
+      1.0e-8,  0.0001,
+      true,    hydro::MagneticFieldTreatment::AssumeNonZero};
 
   BENCHMARK("FixConservatives") {
     // Note: Benchmarking and perf indicates that software prefetching is likely
@@ -144,7 +149,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
   for (const bool enable : {true, false}) {
     grmhd::ValenciaDivClean::FixConservatives variable_fixer{
-        1.e-12, 1.0e-11, 1.0e-10, 1.0e-9, 0.0, 0.0, 1.e-12, 0.0, enable};
+        1.e-12,  1.0e-11,
+        1.0e-10, 1.0e-9,
+        0.0,     0.0,
+        1.e-12,  0.0,
+        enable,  hydro::MagneticFieldTreatment::AssumeNonZero};
     test_variable_fixer(serialize_and_deserialize(variable_fixer), enable);
     test_serialization(variable_fixer);
   }
@@ -159,7 +168,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
           "SafetyFactorForS: 0.0\n"
           "SafetyFactorForSCutoffD: 1.0e-12\n"
           "SafetyFactorForSSlope: 0.0\n"
-          "Enable: true\n");
+          "Enable: true\n"
+          "MagneticField: AssumeNonZero\n");
   test_variable_fixer(fixer_from_options, true);
 
   run_benchmark(false);

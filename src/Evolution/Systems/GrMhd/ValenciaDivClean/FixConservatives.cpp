@@ -17,6 +17,7 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Options/ParseError.hpp"
+#include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/Simd/Simd.hpp"
@@ -45,15 +46,18 @@ namespace {
 // + (W-[LB+1])^3
 // This form is only used if LB > 0, so, as in the previous case, it
 // is guaranteed to be negative at W-[LB+1] = 0.
-template <typename T>
+template <bool AssumeNonZeroMagneticField, typename T>
 class FunctionOfLorentzFactor {
  public:
   FunctionOfLorentzFactor(const T b_squared_over_d, const T tau_over_d,
                           [[maybe_unused]] const T normalized_s_dot_b,
                           const T lower_bound) {
     const auto mask = lower_bound == 0.0;
-    const T sqr_normalized_s_dot_b_times_b_squared_over_d =
-        square(normalized_s_dot_b) * b_squared_over_d;
+    T sqr_normalized_s_dot_b_times_b_squared_over_d{};
+    if constexpr (AssumeNonZeroMagneticField) {
+      sqr_normalized_s_dot_b_times_b_squared_over_d =
+          square(normalized_s_dot_b) * b_squared_over_d;
+    }
     const auto zero_bound_values =
         zero_bound(b_squared_over_d, tau_over_d,
                    sqr_normalized_s_dot_b_times_b_squared_over_d);
@@ -75,38 +79,53 @@ class FunctionOfLorentzFactor {
   static std::array<T, 4> zero_bound(
       const T& b_squared_over_d, const T& tau_over_d,
       const T& sqr_normalized_s_dot_b_times_b_squared_over_d) {
-    const T temp0 = b_squared_over_d - tau_over_d;
-    return std::array{
-        (0.5 * b_squared_over_d - tau_over_d) *
-            (sqr_normalized_s_dot_b_times_b_squared_over_d *
-                 (b_squared_over_d + 2.0) +
-             1.0),
-        2.0 * (sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0) * temp0 +
-            sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0,
-        temp0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d + 2.0,
-        static_cast<T>(1.0)};
+    if constexpr (AssumeNonZeroMagneticField) {
+      const T temp0 = b_squared_over_d - tau_over_d;
+      return std::array{
+          (0.5 * b_squared_over_d - tau_over_d) *
+              (sqr_normalized_s_dot_b_times_b_squared_over_d *
+                   (b_squared_over_d + 2.0) +
+               1.0),
+          2.0 * (sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0) * temp0 +
+              sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0,
+          temp0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d + 2.0,
+          static_cast<T>(1.0)};
+    } else {
+      return std::array{-tau_over_d, -2.0 * tau_over_d + 1.0, -tau_over_d + 2.0,
+                        static_cast<T>(1.0)};
+    }
   }
 
   static std::array<T, 4> nonzero_bound(
       const T& b_squared_over_d, const T& tau_over_d, const T& lower_bound,
       const T& sqr_normalized_s_dot_b_times_b_squared_over_d) {
-    return std::array{
-        -0.5 *
-            (b_squared_over_d + sqr_normalized_s_dot_b_times_b_squared_over_d *
-                                    tau_over_d * (tau_over_d + 2.0)),
-        1.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
-            lower_bound * (2.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
-                           lower_bound),
-        2.0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d +
-            2.0 * lower_bound,
-        static_cast<T>(1.0)};
+    if constexpr (AssumeNonZeroMagneticField) {
+      return std::array{
+          -0.5 * (b_squared_over_d +
+                  sqr_normalized_s_dot_b_times_b_squared_over_d * tau_over_d *
+                      (tau_over_d + 2.0)),
+          1.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
+              lower_bound *
+                  (2.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
+                   lower_bound),
+          2.0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d +
+              2.0 * lower_bound,
+          static_cast<T>(1.0)};
+    } else {
+      return std::array{static_cast<T>(0),
+                        1.0 + lower_bound * (2.0 + lower_bound),
+                        2.0 + 2.0 * lower_bound, static_cast<T>(1.0)};
+    }
   }
 
   std::array<T, 4> coefficients_;
 };
-template <typename T>
-FunctionOfLorentzFactor(T b_squared_over_d, T tau_over_d, T normalized_s_dot_b,
-                        T lower_bound) -> FunctionOfLorentzFactor<T>;
+template <bool AssumeNonZeroMagneticField, typename T>
+FunctionOfLorentzFactor<AssumeNonZeroMagneticField, T>
+make_function_of_lorentz_factor(T b_squared_over_d, T tau_over_d,
+                                T normalized_s_dot_b, T lower_bound) {
+  return {b_squared_over_d, tau_over_d, normalized_s_dot_b, lower_bound};
+}
 }  // namespace
 
 namespace grmhd::ValenciaDivClean {
@@ -118,6 +137,7 @@ FixConservatives::FixConservatives(
     const double safety_factor_for_momentum_density,
     const double safety_factor_for_momentum_density_cutoff_d,
     const double safety_factor_for_momentum_density_slope, const bool enable,
+    const hydro::MagneticFieldTreatment magnetic_field_treatment,
     const Options::Context& context)
     : minimum_rest_mass_density_times_lorentz_factor_(
           minimum_rest_mass_density_times_lorentz_factor),
@@ -133,7 +153,8 @@ FixConservatives::FixConservatives(
           safety_factor_for_momentum_density_cutoff_d),
       safety_factor_for_momentum_density_slope_(
           safety_factor_for_momentum_density_slope),
-      enable_(enable) {
+      enable_(enable),
+      magnetic_field_treatment_(magnetic_field_treatment) {
   if (minimum_rest_mass_density_times_lorentz_factor_ >
       rest_mass_density_times_lorentz_factor_cutoff_) {
     PARSE_ERROR(context,
@@ -176,6 +197,7 @@ void FixConservatives::pup(PUP::er& p) {
   p | safety_factor_for_momentum_density_cutoff_d_;
   p | safety_factor_for_momentum_density_slope_;
   p | enable_;
+  p | magnetic_field_treatment_;
 }
 
 // WARNING!
@@ -205,17 +227,28 @@ bool FixConservatives::operator()(
                        ::Tags::TempScalar<3>>>
       temp_buffer(size);
 
-  Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
-  dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
-              spatial_metric);
-
   Scalar<DataVector>& tilde_s_squared = get<::Tags::TempScalar<2>>(temp_buffer);
   dot_product(make_not_null(&tilde_s_squared), *tilde_s, *tilde_s,
               inv_spatial_metric);
 
+  const bool non_zero_mag =
+      magnetic_field_treatment_ == hydro::MagneticFieldTreatment::AssumeNonZero;
+  if (magnetic_field_treatment_ == hydro::MagneticFieldTreatment::CheckIfZero) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    const_cast<bool&>(non_zero_mag) =
+        (max(max(abs(get<0>(tilde_b)), abs(get<1>(tilde_b)),
+                 abs(get<2>(tilde_b)))) > 0.0);
+  }
+
+  Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
   Scalar<DataVector>& tilde_s_dot_tilde_b =
       get<::Tags::TempScalar<3>>(temp_buffer);
-  dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
+
+  if (non_zero_mag) {
+    dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
+                spatial_metric);
+    dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
+  }
 
   const double one_over_one_minus_safety_factor_for_magnetic_field =
       1.0 / one_minus_safety_factor_for_magnetic_field_;
@@ -223,7 +256,10 @@ bool FixConservatives::operator()(
       1.0 / safety_factor_for_momentum_density_cutoff_d_;
 
   const auto fix_impl = [&](const size_t grid_index, auto use_simd,
-                            const auto completion_mask) {
+                            const auto completion_mask,
+                            auto assume_non_zero_magnetic_field_v) {
+    constexpr bool assume_non_zero_magnetic_field =
+        decltype(assume_non_zero_magnetic_field_v)::value;
     using SimdType =
         tmpl::conditional_t<std::decay_t<decltype(use_simd)>::value,
                             simd::batch<double>, double>;
@@ -273,19 +309,22 @@ bool FixConservatives::operator()(
 
     // Increase internal energy if necessary
     auto tau_tilde = load(get(*tilde_tau));
-    const auto b_tilde_squared = load(get(tilde_b_squared));
-    // Equation B.39 of Foucart
-    if (const auto tilde_tau_mask =
-            b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ * 2. *
-                                  tau_tilde * sqrt_det_g;
-        simd::any(tilde_tau_mask)) {
-      needed_fixing = true;
-      tau_tilde =
-          simd::select(tilde_tau_mask,
-                       0.5 * b_tilde_squared *
-                           one_over_one_minus_safety_factor_for_magnetic_field *
-                           one_over_sqrt_det_g,
-                       tau_tilde);
+    auto b_tilde_squared = static_cast<SimdType>(0);
+    if constexpr (assume_non_zero_magnetic_field) {
+      b_tilde_squared = load(get(tilde_b_squared));
+      // Equation B.39 of Foucart
+      if (const auto tilde_tau_mask =
+              b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ *
+                                    2. * tau_tilde * sqrt_det_g;
+          simd::any(tilde_tau_mask)) {
+        needed_fixing = true;
+        tau_tilde = simd::select(
+            tilde_tau_mask,
+            0.5 * b_tilde_squared *
+                one_over_one_minus_safety_factor_for_magnetic_field *
+                one_over_sqrt_det_g,
+            tau_tilde);
+      }
     }
 
     // Decrease momentum density if necessary
@@ -294,15 +333,22 @@ bool FixConservatives::operator()(
     const SimdType tau_over_d = tau_tilde * one_over_d_tilde;
     // Equation B.23 of Foucart
     const SimdType b_squared_over_d =
-        b_tilde_squared * one_over_sqrt_det_g * one_over_d_tilde;
-    const auto s_tilde_dot_b_tilde = load(get(tilde_s_dot_tilde_b));
+        assume_non_zero_magnetic_field
+            ? b_tilde_squared * one_over_sqrt_det_g * one_over_d_tilde
+            : static_cast<SimdType>(0);
+    const auto s_tilde_dot_b_tilde = assume_non_zero_magnetic_field
+                                         ? load(get(tilde_s_dot_tilde_b))
+                                         : static_cast<SimdType>(0);
 
     // Equation B.27 of Foucart
-    const SimdType normalized_s_dot_b = simd::select(
-        (b_tilde_squared > 1.e-16 * d_tilde and
-         s_tilde_squared > 1.e-16 * square(d_tilde)),
-        s_tilde_dot_b_tilde / sqrt(b_tilde_squared * s_tilde_squared),
-        SimdType{0.});
+    const SimdType normalized_s_dot_b =
+        assume_non_zero_magnetic_field
+            ? simd::select(
+                  (b_tilde_squared > 1.e-16 * d_tilde and
+                   s_tilde_squared > 1.e-16 * square(d_tilde)),
+                  s_tilde_dot_b_tilde / sqrt(b_tilde_squared * s_tilde_squared),
+                  SimdType{0.})
+            : static_cast<SimdType>(0);
 
     // Equation B.40 of Foucart
     const auto lower_bound_of_lorentz_factor_minus_one =
@@ -314,15 +360,22 @@ bool FixConservatives::operator()(
           const auto local_lorentz_factor_minus_one =
               lower_bound_of_lorentz_factor_minus_one +
               local_excess_lorentz_factor;
-          return square(1.0 + local_lorentz_factor_minus_one +
-                        b_squared_over_d) *
-                 local_lorentz_factor_minus_one *
-                 (2.0 + local_lorentz_factor_minus_one) /
-                 (square(1.0 + local_lorentz_factor_minus_one) +
-                  square(normalized_s_dot_b) * b_squared_over_d *
-                      (b_squared_over_d +
-                       2.0 * (1.0 + local_lorentz_factor_minus_one))) *
-                 square(d_tilde);
+          if constexpr (assume_non_zero_magnetic_field) {
+            return square(1.0 + local_lorentz_factor_minus_one +
+                          b_squared_over_d) *
+                   local_lorentz_factor_minus_one *
+                   (2.0 + local_lorentz_factor_minus_one) /
+                   (square(1.0 + local_lorentz_factor_minus_one) +
+                    square(normalized_s_dot_b) * b_squared_over_d *
+                        (b_squared_over_d +
+                         2.0 * (1.0 + local_lorentz_factor_minus_one))) *
+                   square(d_tilde);
+          } else {
+            (void)b_squared_over_d;
+            (void)normalized_s_dot_b;
+            return local_lorentz_factor_minus_one *
+                   (2.0 + local_lorentz_factor_minus_one) * square(d_tilde);
+          }
         };
     const SimdType simple_upper_bound_for_s_tilde_squared =
         upper_bound_for_s_tilde_squared(SimdType{0.});
@@ -363,9 +416,10 @@ bool FixConservatives::operator()(
       //   the Lorentz factor will increase by a factor of 10 from one time step
       //   to the next in a physically meaning situation, and so 10 provides a
       //   reasonable bound.
-      const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
-          b_squared_over_d, tau_over_d, normalized_s_dot_b,
-          lower_bound_of_lorentz_factor_minus_one};
+      const auto f_of_lorentz_factor =
+          make_function_of_lorentz_factor<assume_non_zero_magnetic_field>(
+              b_squared_over_d, tau_over_d, normalized_s_dot_b,
+              lower_bound_of_lorentz_factor_minus_one);
       SimdType upper_bound =
           simd::select(lower_bound_of_lorentz_factor_minus_one == 0.0,
                        tau_over_d, b_squared_over_d);
@@ -476,24 +530,54 @@ bool FixConservatives::operator()(
 #ifdef SPECTRE_USE_XSIMD
   constexpr size_t simd_width = simd::size<simd::batch<double>>();
   if (size < simd_width) {
-    for (size_t s = 0; s < size; s++) {
-      fix_impl(s, std::false_type{}, false);
+    if (non_zero_mag) {
+      for (size_t s = 0; s < size; s++) {
+        fix_impl(s, std::false_type{}, false, std::true_type{});
+      }
+    } else {
+      for (size_t s = 0; s < size; s++) {
+        fix_impl(s, std::false_type{}, false, std::false_type{});
+      }
     }
   } else {
     const size_t vectorized_size = size - size % simd_width;
-    for (size_t s = 0; s < vectorized_size; s += simd_width) {
-      fix_impl(s, std::true_type{},
-               simd::mask_type_t<simd::batch<double>>{false});
-    }
-    if (const size_t remainder = size - vectorized_size; remainder > 0) {
-      const auto complete_mask = simd::make_sequence<simd::batch<double>>() <
-                                 (simd_width - static_cast<double>(remainder));
-      fix_impl(size - simd_width, std::true_type{}, complete_mask);
+    if (non_zero_mag) {
+      for (size_t s = 0; s < vectorized_size; s += simd_width) {
+        fix_impl(s, std::true_type{},
+                 simd::mask_type_t<simd::batch<double>>{false},
+                 std::true_type{});
+      }
+      if (const size_t remainder = size - vectorized_size; remainder > 0) {
+        const auto complete_mask =
+            simd::make_sequence<simd::batch<double>>() <
+            (simd_width - static_cast<double>(remainder));
+        fix_impl(size - simd_width, std::true_type{}, complete_mask,
+                 std::true_type{});
+      }
+    } else {
+      for (size_t s = 0; s < vectorized_size; s += simd_width) {
+        fix_impl(s, std::true_type{},
+                 simd::mask_type_t<simd::batch<double>>{false},
+                 std::false_type{});
+      }
+      if (const size_t remainder = size - vectorized_size; remainder > 0) {
+        const auto complete_mask =
+            simd::make_sequence<simd::batch<double>>() <
+            (simd_width - static_cast<double>(remainder));
+        fix_impl(size - simd_width, std::true_type{}, complete_mask,
+                 std::false_type{});
+      }
     }
   }
 #else
-  for (size_t s = 0; s < size; s++) {
-    fix_impl(s, std::false_type{}, false);
+  if (non_zero_mag) {
+    for (size_t s = 0; s < size; s++) {
+      fix_impl(s, std::false_type{}, false, std::true_type{});
+    }
+  } else {
+    for (size_t s = 0; s < size; s++) {
+      fix_impl(s, std::false_type{}, false, std::false_type{});
+    }
   }
 #endif
   return needed_fixing;

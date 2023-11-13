@@ -105,6 +105,7 @@ VariableFixing:
     SafetyFactorForS: 1.0e-12
     SafetyFactorForSCutoffD: 1.0e-12
     SafetyFactorForSSlope: 0.0
+    MagneticField: AssumeNonZero
   FixToAtmosphere:
     DensityOfAtmosphere: 1.0e-12
     DensityCutoff: 1.0e-12
