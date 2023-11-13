@@ -74,6 +74,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3>,
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
 
+  using TimeStepperBase = typename gh_base::TimeStepperBase;
   static constexpr bool local_time_stepping = gh_base::local_time_stepping;
 
   template <bool DuringSelfStart>
@@ -133,7 +134,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3>,
   // addition of initializing the interpolation points (second-to-last action).
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,

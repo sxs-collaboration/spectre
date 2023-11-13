@@ -39,6 +39,8 @@ class TimeStepId;
 /// placed in the cpp file.
 class LtsTimeStepper : public virtual TimeStepper {
  public:
+  static constexpr bool local_time_stepping = true;
+
   WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
 
   // These two are defined as separate type aliases to keep the

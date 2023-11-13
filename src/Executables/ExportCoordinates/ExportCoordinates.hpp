@@ -265,7 +265,11 @@ struct SetMeshType {
 template <size_t Dim, bool EnableTimeDependentMaps>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
+
   // A placeholder system for the domain creators
   struct system {};
 
@@ -334,7 +338,7 @@ struct Metavariables {
               Parallel::Phase::Initialization,
               tmpl::list<Initialization::Actions::InitializeItems<
                              Initialization::TimeStepping<Metavariables,
-                                                          local_time_stepping>,
+                                                          TimeStepperBase>,
                              evolution::dg::Initialization::Domain<Dim>,
                              ::amr::Initialization::Initialize<volume_dim>,
                              Initialization::SetMeshType<Dim>>,

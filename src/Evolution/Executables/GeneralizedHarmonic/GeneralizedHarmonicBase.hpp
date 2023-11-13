@@ -295,7 +295,10 @@ template <size_t VolumeDim>
 struct GeneralizedHarmonicTemplateBase {
   static constexpr size_t volume_dim = VolumeDim;
   using system = gh::System<volume_dim>;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -364,7 +367,7 @@ struct GeneralizedHarmonicTemplateBase {
   template <typename DerivedMetavars, bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<DerivedMetavars, local_time_stepping>,
+          Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,

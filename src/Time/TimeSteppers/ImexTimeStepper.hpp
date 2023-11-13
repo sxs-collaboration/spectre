@@ -62,6 +62,8 @@
  */
 class ImexTimeStepper : public virtual TimeStepper {
  public:
+  static constexpr bool imex = true;
+
   WRAPPED_PUPable_abstract(ImexTimeStepper);  // NOLINT
 
 /// \cond

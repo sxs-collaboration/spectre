@@ -141,9 +141,11 @@ struct EvolutionMetavars {
 
   using system = CurvedScalarWave::System<volume_dim>;
   using temporal_id = Tags::TimeStepId;
+  // LTS not implemented yet
+  using TimeStepperBase = TimeStepper;
 
-  // not implemented yet
-  static constexpr bool local_time_stepping = false;
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -274,7 +276,7 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,

@@ -42,6 +42,9 @@ namespace TimeSteppers {}
 /// in the cpp file.
 class TimeStepper : public PUP::able {
  public:
+  static constexpr bool local_time_stepping = false;
+  static constexpr bool imex = false;
+
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
   /// \cond

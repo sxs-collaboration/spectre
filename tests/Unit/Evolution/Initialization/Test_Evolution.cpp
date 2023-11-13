@@ -89,8 +89,8 @@ void test_gts() {
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, TimeDelta{});
 
-  db::mutate_apply<
-      Initialization::TimeStepping<TestMetavariables<TimeStepper>, false>>(
+  db::mutate_apply<Initialization::TimeStepping<TestMetavariables<TimeStepper>,
+                                                TimeStepper>>(
       make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
@@ -134,9 +134,8 @@ void test_lts() {
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, TimeDelta{});
 
-  db::mutate_apply<
-      Initialization::TimeStepping<TestMetavariables<LtsTimeStepper>, true>>(
-      make_not_null(&box));
+  db::mutate_apply<Initialization::TimeStepping<
+      TestMetavariables<LtsTimeStepper>, LtsTimeStepper>>(make_not_null(&box));
 
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
         expected_next_time_step_id);

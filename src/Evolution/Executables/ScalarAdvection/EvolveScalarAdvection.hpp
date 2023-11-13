@@ -122,7 +122,10 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = ScalarAdvection::System<Dim>;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
@@ -302,7 +305,7 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
