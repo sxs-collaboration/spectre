@@ -4,7 +4,7 @@
 Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 50
   Priority: High
 ExpectedOutput:
   - KerrSchildReductions.h5
@@ -44,7 +44,7 @@ DomainCreator:
           LapseTimesConformalFactor: Dirichlet
           ShiftExcess: Dirichlet
     InitialRefinement: 0
-    InitialGridPoints: 3
+    InitialGridPoints: 4
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All
