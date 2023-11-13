@@ -12,6 +12,7 @@ spectre_target_sources(
   InversePlasmaBeta.cpp
   LorentzFactor.cpp
   LowerSpatialFourVelocity.cpp
+  MagneticFieldTreatment.cpp
   MassFlux.cpp
   MassWeightedFluidItems.cpp
   QuadrupoleFormula.cpp
@@ -29,6 +30,7 @@ spectre_target_headers(
   InversePlasmaBeta.hpp
   LorentzFactor.hpp
   LowerSpatialFourVelocity.hpp
+  MagneticFieldTreatment.hpp
   MassFlux.hpp
   MassWeightedFluidItems.hpp
   QuadrupoleFormula.hpp
