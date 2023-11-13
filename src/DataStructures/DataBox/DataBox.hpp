@@ -84,9 +84,8 @@ struct creation_tag_impl {
   // `normalized_tag` because subitems of compute tags normalize to
   // `Tags::Subitem<...>`, which is not what is in the `Subitems`
   // list.
-  using parent_of_subitem =
-      tmpl::filter<TagsList, tmpl::bind<tmpl::list_contains, Subitems<tmpl::_1>,
-                                        tmpl::pin<Tag>>>;
+  using parent_of_subitem = tmpl::filter<
+      TagsList, tmpl::lazy::list_contains<Subitems<tmpl::_1>, tmpl::pin<Tag>>>;
   using type = tmpl::front<tmpl::push_back<parent_of_subitem, normalized_tag>>;
 };
 }  // namespace detail
@@ -758,8 +757,7 @@ decltype(auto) mutate(Invokable&& invokable,
     using extra_mutated_tags = tmpl::list_difference<
         tmpl::filter<TagList,
                      tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
-                                tmpl::pin<tmpl::bind<
-                                    tmpl::list_contains,
+                                tmpl::pin<tmpl::lazy::list_contains<
                                     tmpl::pin<mutate_tags_list>, tmpl::_1>>>>,
         mutate_tags_list>;
     // Extract the subtags inside the MutateTags and reset compute items
@@ -770,9 +768,9 @@ decltype(auto) mutate(Invokable&& invokable,
 
     using first_compute_items_to_reset = tmpl::remove_duplicates<
         tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
-                                     tmpl::bind<tmpl::list_contains,
-                                                tmpl::pin<full_mutated_items>,
-                                                tmpl::get_source<tmpl::_1>>>,
+                                     tmpl::lazy::list_contains<
+                                         tmpl::pin<full_mutated_items>,
+                                         tmpl::get_source<tmpl::_1>>>,
                         tmpl::get_destination<tmpl::_1>>>;
 
     const CleanupRoutine unlock_box = [&box]() {
