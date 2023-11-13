@@ -52,10 +52,14 @@ class FunctionOfLorentzFactor {
                           [[maybe_unused]] const T normalized_s_dot_b,
                           const T lower_bound) {
     const auto mask = lower_bound == 0.0;
+    const T sqr_normalized_s_dot_b_times_b_squared_over_d =
+        square(normalized_s_dot_b) * b_squared_over_d;
     const auto zero_bound_values =
-        zero_bound(b_squared_over_d, tau_over_d, normalized_s_dot_b);
-    const auto nonzero_bound_values = nonzero_bound(
-        b_squared_over_d, tau_over_d, normalized_s_dot_b, lower_bound);
+        zero_bound(b_squared_over_d, tau_over_d,
+                   sqr_normalized_s_dot_b_times_b_squared_over_d);
+    const auto nonzero_bound_values =
+        nonzero_bound(b_squared_over_d, tau_over_d, lower_bound,
+                      sqr_normalized_s_dot_b_times_b_squared_over_d);
     for (size_t i = 0; i < 4; ++i) {
       gsl::at(coefficients_, i) =
           simd::select(mask, gsl::at(zero_bound_values, i),
@@ -68,36 +72,34 @@ class FunctionOfLorentzFactor {
   }
 
  private:
-  static std::array<T, 4> zero_bound(const T& b_squared_over_d,
-                                     const T& tau_over_d,
-                                     const T& normalized_s_dot_b) {
+  static std::array<T, 4> zero_bound(
+      const T& b_squared_over_d, const T& tau_over_d,
+      const T& sqr_normalized_s_dot_b_times_b_squared_over_d) {
+    const T temp0 = b_squared_over_d - tau_over_d;
     return std::array{
         (0.5 * b_squared_over_d - tau_over_d) *
-            (square(normalized_s_dot_b) * b_squared_over_d *
+            (sqr_normalized_s_dot_b_times_b_squared_over_d *
                  (b_squared_over_d + 2.0) +
              1.0),
-        2.0 * (square(normalized_s_dot_b) * b_squared_over_d + 1.0) *
-                (b_squared_over_d - tau_over_d) +
-            b_squared_over_d * square(normalized_s_dot_b) + 1.0,
-        b_squared_over_d - tau_over_d +
-            1.5 * square(normalized_s_dot_b) * b_squared_over_d + 2.0,
-        T(1.0)};
+        2.0 * (sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0) * temp0 +
+            sqr_normalized_s_dot_b_times_b_squared_over_d + 1.0,
+        temp0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d + 2.0,
+        static_cast<T>(1.0)};
   }
 
-  static std::array<T, 4> nonzero_bound(const T& b_squared_over_d,
-                                        const T& tau_over_d,
-                                        const T& normalized_s_dot_b,
-                                        const T& lower_bound) {
+  static std::array<T, 4> nonzero_bound(
+      const T& b_squared_over_d, const T& tau_over_d, const T& lower_bound,
+      const T& sqr_normalized_s_dot_b_times_b_squared_over_d) {
     return std::array{
-        -0.5 * b_squared_over_d *
-            (1.0 +
-             square(normalized_s_dot_b) * tau_over_d * (tau_over_d + 2.0)),
-        1.0 + square(normalized_s_dot_b) * b_squared_over_d +
-            lower_bound * (2.0 + square(normalized_s_dot_b) * b_squared_over_d +
+        -0.5 *
+            (b_squared_over_d + sqr_normalized_s_dot_b_times_b_squared_over_d *
+                                    tau_over_d * (tau_over_d + 2.0)),
+        1.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
+            lower_bound * (2.0 + sqr_normalized_s_dot_b_times_b_squared_over_d +
                            lower_bound),
-        2.0 + 1.5 * square(normalized_s_dot_b) * b_squared_over_d +
+        2.0 + 1.5 * sqr_normalized_s_dot_b_times_b_squared_over_d +
             2.0 * lower_bound,
-        T(1.0)};
+        static_cast<T>(1.0)};
   }
 
   std::array<T, 4> coefficients_;
