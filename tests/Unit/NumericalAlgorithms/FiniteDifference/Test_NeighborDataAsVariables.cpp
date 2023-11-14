@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
@@ -42,15 +42,16 @@ void test() {
                                Spectral::Quadrature::CellCentered};
   const size_t neighbor_mesh_size =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
-  DirectionIdMap<Dim, evolution::dg::subcell::GhostData> neighbor_data{};
+  DirectionalIdMap<Dim, evolution::dg::subcell::GhostData> neighbor_data{};
   for (size_t i = 0; i < Direction<Dim>::all_directions().size(); ++i) {
-    neighbor_data[DirectionId<Dim>{gsl::at(Direction<Dim>::all_directions(), i),
-                                   ElementId<Dim>{i}}]
+    neighbor_data[DirectionalId<Dim>{
+                      gsl::at(Direction<Dim>::all_directions(), i),
+                      ElementId<Dim>{i}}]
         .neighbor_ghost_data_for_reconstruction() =
         DataVector{Vars::number_of_independent_components * neighbor_mesh_size,
                    square(i + 1.0)};
   }
-  DirectionIdMap<Dim, Vars> neighbor_data_as_vars{};
+  DirectionalIdMap<Dim, Vars> neighbor_data_as_vars{};
   fd::neighbor_data_as_variables(make_not_null(&neighbor_data_as_vars),
                                  neighbor_data, ghost_zone_size, subcell_mesh);
   REQUIRE(neighbor_data_as_vars.size() == neighbor_data.size());

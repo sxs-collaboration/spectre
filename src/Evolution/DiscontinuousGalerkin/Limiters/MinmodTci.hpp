@@ -53,8 +53,8 @@ bool tvb_minmod_indicator(
     const double tvb_constant, const typename Tags::type&... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) {
   Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const auto effective_neighbor_sizes =

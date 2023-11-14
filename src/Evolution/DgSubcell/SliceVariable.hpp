@@ -11,9 +11,9 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -29,7 +29,7 @@ void slice_variable(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t ghost_zone_size,
     const Direction<Dim>& direction,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   // check the size of sliced_subcell_vars (output)
   const size_t num_sliced_pts =
@@ -58,7 +58,7 @@ Variables<TagList> slice_variable(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t ghost_zone_size,
     const Direction<Dim>& direction,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   Variables<TagList> sliced_subcell_vars{
       subcell_extents.slice_away(direction.dimension()).product() *

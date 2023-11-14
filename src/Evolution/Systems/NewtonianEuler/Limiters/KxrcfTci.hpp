@@ -19,7 +19,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -70,8 +70,8 @@ bool kxrcf_indicator(
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
     const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
         VolumeDim>::type& normals_and_magnitudes,
-    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) {
   // Enforce restrictions on h-refinement, p-refinement
   if (UNLIKELY(

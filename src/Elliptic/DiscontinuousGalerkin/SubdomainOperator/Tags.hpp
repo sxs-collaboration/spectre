@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 
 namespace elliptic::dg::subdomain_operator::Tags {
 
@@ -26,7 +26,7 @@ struct ExtrudingExtent : db::SimpleTag {
 template <typename Tag, size_t VolumeDim>
 struct NeighborMortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using Key = DirectionId<VolumeDim>;
+  using Key = DirectionalId<VolumeDim>;
   using type = std::unordered_map<Key, typename Tag::type, boost::hash<Key>>;
 };
 

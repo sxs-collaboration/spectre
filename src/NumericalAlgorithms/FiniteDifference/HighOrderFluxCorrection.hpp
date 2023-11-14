@@ -16,8 +16,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
@@ -452,7 +452,7 @@ template <size_t Dim, typename FluxesTags>
 void set_cartesian_neighbor_cell_centered_fluxes(
     const gsl::not_null<DirectionMap<Dim, Variables<FluxesTags>>*>
         flux_neighbor_data,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>&
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     const size_t number_of_rdmp_values_in_ghost_data) {
@@ -508,7 +508,7 @@ void cartesian_high_order_flux_corrections(
     const std::array<Variables<tmpl::list<EvolvedVarsTags...>>, Dim>&
         second_order_boundary_corrections,
     const fd::DerivativeOrder& fd_derivative_order,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>&
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     [[maybe_unused]] const std::array<gsl::span<std::uint8_t>, Dim>&

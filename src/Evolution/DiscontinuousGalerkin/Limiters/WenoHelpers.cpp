@@ -38,8 +38,8 @@ void reconstruct_from_weighted_sum(
     const gsl::not_null<DataVector*> local_polynomial,
     const double neighbor_linear_weight,
     const DerivativeWeight derivative_weight, const Mesh<VolumeDim>& mesh,
-    const std::unordered_map<DirectionId<VolumeDim>, DataVector,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_polynomials) {
 #ifdef SPECTRE_DEBUG
   ASSERT(local_polynomial->size() > 0,
@@ -61,8 +61,8 @@ void reconstruct_from_weighted_sum(
   // These weights will have to be generalized for multiple neighbors per
   // face for use with h-refinement and AMR.
   double local_weight = 1.;
-  std::unordered_map<DirectionId<VolumeDim>, double,
-                     boost::hash<DirectionId<VolumeDim>>>
+  std::unordered_map<DirectionalId<VolumeDim>, double,
+                     boost::hash<DirectionalId<VolumeDim>>>
       neighbor_weights;
   for (const auto& kv : neighbor_polynomials) {
     local_weight -= neighbor_linear_weight;
@@ -109,8 +109,8 @@ void reconstruct_from_weighted_sum(
   template void reconstruct_from_weighted_sum(                                \
       const gsl::not_null<DataVector*>, const double, const DerivativeWeight, \
       const Mesh<DIM(data)>&,                                                 \
-      const std::unordered_map<DirectionId<DIM(data)>, DataVector,            \
-                               boost::hash<DirectionId<DIM(data)>>>&);
+      const std::unordered_map<DirectionalId<DIM(data)>, DataVector,          \
+                               boost::hash<DirectionalId<DIM(data)>>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

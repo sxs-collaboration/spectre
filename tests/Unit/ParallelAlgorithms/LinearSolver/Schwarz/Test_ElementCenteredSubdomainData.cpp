@@ -23,10 +23,10 @@ struct ScalarField : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.ParallelSchwarz.ElementCenteredSubdomainData",
                   "[Unit][ParallelAlgorithms][LinearSolver]") {
-  const DirectionId<1> west_id{Direction<1>::lower_xi(),
-                               ElementId<1>{0, {{{2, 0}}}}};
-  const DirectionId<1> east_id{Direction<1>::upper_xi(),
-                               ElementId<1>{0, {{{2, 2}}}}};
+  const DirectionalId<1> west_id{Direction<1>::lower_xi(),
+                                 ElementId<1>{0, {{{2, 0}}}}};
+  const DirectionalId<1> east_id{Direction<1>::upper_xi(),
+                                 ElementId<1>{0, {{{2, 2}}}}};
   const auto make_subdomain_data = [&west_id, &east_id](
                                        DataVector element_data,
                                        DataVector east_overlap_data,

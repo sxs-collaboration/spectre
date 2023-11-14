@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 
 /// \cond
 class DataVector;
@@ -57,7 +57,8 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTagsVolume>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const DirectionIdMap<3, Variables<PrimsTagsSentByNeighbor>>& neighbor_data,
+    const DirectionalIdMap<3, Variables<PrimsTagsSentByNeighbor>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
     bool compute_conservatives);
 
@@ -85,7 +86,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, bool compute_conservatives);
 }  // namespace grmhd::ValenciaDivClean::fd

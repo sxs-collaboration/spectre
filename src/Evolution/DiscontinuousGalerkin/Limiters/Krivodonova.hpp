@@ -22,7 +22,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"         // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"             // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"         // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
 #include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
@@ -513,8 +513,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   bool operator()(
       const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                               boost::hash<DirectionId<VolumeDim>>>&
+      const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionalId<VolumeDim>>>&
           neighbor_data) const;
 
  private:
@@ -522,22 +522,22 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   char limit_one_tensor(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*> coeffs_self,
       gsl::not_null<bool*> limited_any_component, const Mesh<1>& mesh,
-      const std::unordered_map<DirectionId<1>, PackagedData,
-                               boost::hash<DirectionId<1>>>& neighbor_data)
+      const std::unordered_map<DirectionalId<1>, PackagedData,
+                               boost::hash<DirectionalId<1>>>& neighbor_data)
       const;
   template <typename Tag>
   char limit_one_tensor(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*> coeffs_self,
       gsl::not_null<bool*> limited_any_component, const Mesh<2>& mesh,
-      const std::unordered_map<DirectionId<2>, PackagedData,
-                               boost::hash<DirectionId<2>>>& neighbor_data)
+      const std::unordered_map<DirectionalId<2>, PackagedData,
+                               boost::hash<DirectionalId<2>>>& neighbor_data)
       const;
   template <typename Tag>
   char limit_one_tensor(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*> coeffs_self,
       gsl::not_null<bool*> limited_any_component, const Mesh<3>& mesh,
-      const std::unordered_map<DirectionId<3>, PackagedData,
-                               boost::hash<DirectionId<3>>>& neighbor_data)
+      const std::unordered_map<DirectionalId<3>, PackagedData,
+                               boost::hash<DirectionalId<3>>>& neighbor_data)
       const;
 
   template <typename Tag, size_t Dim>
@@ -599,8 +599,8 @@ template <size_t VolumeDim, typename... Tags>
 bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
@@ -664,8 +664,8 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
         coeffs_self,
     const gsl::not_null<bool*> limited_any_component, const Mesh<1>& mesh,
-    const std::unordered_map<DirectionId<1>, PackagedData,
-                             boost::hash<DirectionId<1>>>& neighbor_data)
+    const std::unordered_map<DirectionalId<1>, PackagedData,
+                             boost::hash<DirectionalId<1>>>& neighbor_data)
     const {
   using tensor_type = typename Tag::type;
   for (size_t storage_index = 0; storage_index < tensor_type::size();
@@ -708,8 +708,8 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
         coeffs_self,
     const gsl::not_null<bool*> limited_any_component, const Mesh<2>& mesh,
-    const std::unordered_map<DirectionId<2>, PackagedData,
-                             boost::hash<DirectionId<2>>>& neighbor_data)
+    const std::unordered_map<DirectionalId<2>, PackagedData,
+                             boost::hash<DirectionalId<2>>>& neighbor_data)
     const {
   using tensor_type = typename Tag::type;
   const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](
@@ -795,8 +795,8 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
         coeffs_self,
     const gsl::not_null<bool*> limited_any_component, const Mesh<3>& mesh,
-    const std::unordered_map<DirectionId<3>, PackagedData,
-                             boost::hash<DirectionId<3>>>& neighbor_data)
+    const std::unordered_map<DirectionalId<3>, PackagedData,
+                             boost::hash<DirectionalId<3>>>& neighbor_data)
     const {
   using tensor_type = typename Tag::type;
   const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](

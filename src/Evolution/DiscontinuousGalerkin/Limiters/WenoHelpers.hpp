@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "Utilities/Gsl.hpp"
@@ -41,8 +41,8 @@ template <size_t VolumeDim>
 void reconstruct_from_weighted_sum(
     gsl::not_null<DataVector*> local_polynomial, double neighbor_linear_weight,
     DerivativeWeight derivative_weight, const Mesh<VolumeDim>& mesh,
-    const std::unordered_map<DirectionId<VolumeDim>, DataVector,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_polynomials);
 
 }  // namespace Limiters::Weno_detail

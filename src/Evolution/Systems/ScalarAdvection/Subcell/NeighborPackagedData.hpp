@@ -16,7 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -62,11 +62,11 @@ namespace ScalarAdvection::subcell {
 
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
-  static DirectionIdMap<Dim, DataVector> apply(
+  static DirectionalIdMap<Dim, DataVector> apply(
       const db::DataBox<DbTagsList>& box,
-      const std::vector<DirectionId<Dim>>& mortars_to_reconstruct_to) {
+      const std::vector<DirectionalId<Dim>>& mortars_to_reconstruct_to) {
     // The object to return
-    DirectionIdMap<Dim, DataVector> neighbor_package_data{};
+    DirectionalIdMap<Dim, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

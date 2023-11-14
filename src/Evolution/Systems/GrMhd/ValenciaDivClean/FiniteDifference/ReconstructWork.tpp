@@ -15,8 +15,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -134,7 +134,8 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const DirectionIdMap<3, Variables<PrimsTagsSentByNeighbor>>& neighbor_data,
+    const DirectionalIdMap<3, Variables<PrimsTagsSentByNeighbor>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
     const bool compute_conservatives) {
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
@@ -206,7 +207,7 @@ void reconstruct_prims_work(
                    << neighbors_in_direction.size() << " in direction "
                    << direction);
         ghost_cell_vars[direction] =
-            gsl::make_span(get<tag>(neighbor_data.at(DirectionId<3>{
+            gsl::make_span(get<tag>(neighbor_data.at(DirectionalId<3>{
                                direction, *neighbors_in_direction.begin()}))[0]
                                .data(),
                            number_of_variables * neighbor_num_pts);
@@ -217,7 +218,7 @@ void reconstruct_prims_work(
             "Element has neither neighbor nor external boundary to direction : "
                 << direction);
         ghost_cell_vars[direction] = gsl::make_span(
-            get<tag>(neighbor_data.at(DirectionId<3>{
+            get<tag>(neighbor_data.at(DirectionalId<3>{
                 direction, ElementId<3>::external_boundary_id()}))[0]
                 .data(),
             number_of_variables * neighbor_num_pts);
@@ -246,10 +247,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const DirectionIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {
-  const DirectionId<3> mortar_id{
+  const DirectionalId<3> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<3> ghost_data_extents = subcell_mesh.extents();

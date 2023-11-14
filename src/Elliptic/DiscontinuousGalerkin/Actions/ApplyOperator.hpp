@@ -17,8 +17,8 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
@@ -61,8 +61,8 @@ struct MortarDataInboxTag
   using temporal_id = typename TemporalIdTag::type;
   using type =
       std::map<temporal_id,
-               DirectionIdMap<Dim, elliptic::dg::BoundaryData<PrimalFields,
-                                                              PrimalFluxes>>>;
+               DirectionalIdMap<Dim, elliptic::dg::BoundaryData<PrimalFields,
+                                                                PrimalFluxes>>>;
 };
 
 // Initializes all quantities the DG operator needs on internal and external

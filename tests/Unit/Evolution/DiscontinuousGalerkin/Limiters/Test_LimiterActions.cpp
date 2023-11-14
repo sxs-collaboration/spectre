@@ -86,9 +86,9 @@ class DummyLimiterForTest {
       tmpl::list<domain::Tags::Mesh<2>, domain::Tags::Element<2>>;
   void operator()(const gsl::not_null<typename Var::type*> var,
                   const Mesh<2>& /*mesh*/, const Element<2>& /*element*/,
-                  const std::unordered_map<DirectionId<2>,
+                  const std::unordered_map<DirectionalId<2>,
                                            DummyLimiterForTest::PackagedData,
-                                           boost::hash<DirectionId<2>>>&
+                                           boost::hash<DirectionalId<2>>>&
                       neighbor_packaged_data) const {
     // Zero the data as an easy check that the limiter got called
     get(*var) = 0.;
@@ -266,7 +266,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
               tuples::get<limiter_comm_tag>(
                   runner.inboxes<my_component>().at(self_id))
                   .at(0)
-                  .at(DirectionId<2>{direction, id});
+                  .at(DirectionalId<2>{direction, id});
           CHECK(received_package.mean_ == approx(expected_mean_data));
           CHECK(received_package.mesh_ == expected_mesh);
         };

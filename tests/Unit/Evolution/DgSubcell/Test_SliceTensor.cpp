@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TMPL.hpp"
@@ -58,9 +58,9 @@ void test() {
 
       for (const auto& direction : Direction<Dim>::all_directions()) {
         {
-          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
+          DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
               fd_to_neighbor_fd_interpolants{};
-          fd_to_neighbor_fd_interpolants[DirectionId<Dim>{
+          fd_to_neighbor_fd_interpolants[DirectionalId<Dim>{
               direction, ElementId<Dim>{0}}] = std::nullopt;
           const Scalar<DataVector> expected_sliced_scalar{
               volume_extents.slice_away(direction.dimension()).product() *

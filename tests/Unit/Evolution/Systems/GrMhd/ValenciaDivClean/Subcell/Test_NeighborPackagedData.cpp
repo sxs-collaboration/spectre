@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -174,7 +174,7 @@ double test(const size_t num_dg_pts) {
             std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
     const auto key =
-        DirectionId<3>{direction, *element.neighbors().at(direction).begin()};
+        DirectionalId<3>{direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         std::move(neighbor_data_in_direction);
@@ -278,10 +278,10 @@ double test(const size_t num_dg_pts) {
           std::nullopt, ::fd::DerivativeOrder::Two});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
-  std::vector<DirectionId<3>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<3>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(
-        DirectionId<3>{direction, *neighbors.begin()});
+        DirectionalId<3>{direction, *neighbors.begin()});
   }
 
   const auto all_packaged_data =
@@ -289,7 +289,7 @@ double test(const size_t num_dg_pts) {
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
-  DirectionIdMap<3, typename variables_tag::type> evolved_vars_errors{};
+  DirectionalIdMap<3, typename variables_tag::type> evolved_vars_errors{};
   double max_rel_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.direction;

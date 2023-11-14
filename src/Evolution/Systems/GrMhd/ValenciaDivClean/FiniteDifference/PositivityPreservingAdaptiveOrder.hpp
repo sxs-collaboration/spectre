@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -167,7 +167,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
@@ -176,7 +177,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

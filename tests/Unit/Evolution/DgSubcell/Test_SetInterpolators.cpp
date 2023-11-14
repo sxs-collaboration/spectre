@@ -76,8 +76,8 @@ void test() {
   const ElementId<Dim> element_id{0};
   const ElementId<Dim> lower_xi_element_id{1};
   DirectionMap<Dim, Neighbors<Dim>> element_neighbors{};
-  const DirectionId<Dim> lower_xi_id{Direction<Dim>::lower_xi(),
-                                     lower_xi_element_id};
+  const DirectionalId<Dim> lower_xi_id{Direction<Dim>::lower_xi(),
+                                       lower_xi_element_id};
   OrientationMap<Dim> orientation{};
   if constexpr (Dim == 1) {
     orientation = OrientationMap<Dim>{{{Direction<Dim>::lower_xi()}}};

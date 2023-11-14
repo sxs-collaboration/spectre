@@ -12,7 +12,7 @@ spectre_target_sources(
   ChildSize.cpp
   CreateInitialMesh.cpp
   Direction.cpp
-  DirectionId.cpp
+  DirectionalId.cpp
   Element.cpp
   ElementId.cpp
   Hypercube.cpp
@@ -35,8 +35,8 @@ spectre_target_headers(
   ChildSize.hpp
   CreateInitialMesh.hpp
   Direction.hpp
-  DirectionId.hpp
-  DirectionIdMap.hpp
+  DirectionalId.hpp
+  DirectionalIdMap.hpp
   DirectionMap.hpp
   Element.hpp
   ElementId.hpp

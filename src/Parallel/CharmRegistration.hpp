@@ -24,9 +24,9 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 class FixedHashMap;
 template <size_t Dim, class ValueType>
-class DirectionIdMap;
+class DirectionalIdMap;
 template <size_t Dim>
-class DirectionId;
+class DirectionalId;
 namespace Parallel {
 template <typename Metavariables>
 class CProxy_GlobalCache;
@@ -440,7 +440,7 @@ struct get_value_type<FixedHashMap<Size, Key, Mapped, Hash, KeyEqual>> {
 };
 
 template <size_t Dim, class Mapped>
-struct get_value_type<DirectionIdMap<Dim, Mapped>> {
+struct get_value_type<DirectionalIdMap<Dim, Mapped>> {
   // When sending data it is typical to use `std::make_pair(a, b)` which results
   // in a non-const Key type, which is different from what
   // `FixedHashMap::value_type` is (e.g. `std::pair<const Key, Mapped>`). This
@@ -448,7 +448,7 @@ struct get_value_type<DirectionIdMap<Dim, Mapped>> {
   // when registering `receive_data` methods we register the `inbox_type`'s
   // `value_type` (`std::pair<const Key, Mapped>` in this case), not the type
   // passed to `receive_data`.
-  using type = std::pair<DirectionId<Dim>, Mapped>;
+  using type = std::pair<DirectionalId<Dim>, Mapped>;
 };
 
 template <class Key, class Hash, class KeyEqual, class Allocator>

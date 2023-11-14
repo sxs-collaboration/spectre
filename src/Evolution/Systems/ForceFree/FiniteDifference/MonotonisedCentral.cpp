@@ -13,8 +13,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -47,9 +47,9 @@ void MonotonisedCentral::reconstruct(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
-  DirectionIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
+  DirectionalIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
                                         subcell_mesh);
@@ -72,7 +72,7 @@ void MonotonisedCentral::reconstruct_fd_neighbor(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

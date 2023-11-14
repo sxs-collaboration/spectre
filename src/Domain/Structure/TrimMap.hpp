@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <utility>
 
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -19,9 +19,9 @@ namespace domain {
  */
 template <size_t Dim, typename T>
 void remove_nonexistent_neighbors(
-    const gsl::not_null<DirectionIdMap<Dim, T>*> map_to_trim,
+    const gsl::not_null<DirectionalIdMap<Dim, T>*> map_to_trim,
     const Element<Dim>& element) {
-  std::array<DirectionId<Dim>, maximum_number_of_neighbors(Dim)>
+  std::array<DirectionalId<Dim>, maximum_number_of_neighbors(Dim)>
       ids_to_remove{};
   size_t ids_index = 0;
   for (const auto& [neighbor_id, mesh] : *map_to_trim) {

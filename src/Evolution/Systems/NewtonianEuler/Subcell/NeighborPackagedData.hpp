@@ -18,7 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -65,9 +65,9 @@ namespace NewtonianEuler::subcell {
  */
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
-  static DirectionIdMap<Dim, DataVector> apply(
+  static DirectionalIdMap<Dim, DataVector> apply(
       const db::DataBox<DbTagsList>& box,
-      const std::vector<DirectionId<Dim>>& mortars_to_reconstruct_to) {
+      const std::vector<DirectionalId<Dim>>& mortars_to_reconstruct_to) {
     using system = typename std::decay_t<decltype(
         db::get<Parallel::Tags::Metavariables>(box))>::system;
     using evolved_vars_tag = typename system::variables_tag;
@@ -82,7 +82,7 @@ struct NeighborPackagedData {
            "storing the mesh velocity on the faces instead of "
            "re-slicing/projecting.");
 
-    DirectionIdMap<Dim, DataVector> neighbor_package_data{};
+    DirectionalIdMap<Dim, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

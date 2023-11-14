@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -46,7 +46,7 @@ void set_solution(
     const gsl::not_null<Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>*>
         volume_vars,
-    const gsl::not_null<DirectionIdMap<3, evolution::dg::subcell::GhostData>*>
+    const gsl::not_null<DirectionalIdMap<3, evolution::dg::subcell::GhostData>*>
         neighbor_data,
     const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& logical_coords,
@@ -89,7 +89,7 @@ void set_solution(
     CAPTURE(deriv_order / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    const auto key = DirectionId<3>{direction, ElementId<3>{0}};
+    const auto key = DirectionalId<3>{direction, ElementId<3>{0}};
     (*neighbor_data)[key] = evolution::dg::subcell::GhostData{1};
     (*neighbor_data)[key].neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
       typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>
       volume_evolved_variables{subcell_mesh.number_of_grid_points()};
 
-  DirectionIdMap<3, evolution::dg::subcell::GhostData>
+  DirectionalIdMap<3, evolution::dg::subcell::GhostData>
       neighbor_data_for_reconstruction{};
 
   set_solution(&volume_evolved_variables, &neighbor_data_for_reconstruction,

@@ -257,8 +257,8 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
       const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const std::array<double, VolumeDim>& element_size,
-      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                               boost::hash<DirectionId<VolumeDim>>>&
+      const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionalId<VolumeDim>>>&
           neighbor_data) const;
 
  private:
@@ -346,8 +346,8 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
@@ -396,8 +396,8 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       return false;
     }
 
-    std::unordered_map<DirectionId<VolumeDim>, DataVector,
-                       boost::hash<DirectionId<VolumeDim>>>
+    std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                       boost::hash<DirectionalId<VolumeDim>>>
         modified_neighbor_solution_buffer{};
     for (const auto& neighbor_and_data : neighbor_data) {
       const auto& neighbor = neighbor_and_data.first;
@@ -417,11 +417,11 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
         Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
 
     // Buffers for simple WENO implementation
-    std::unordered_map<DirectionId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
-                       boost::hash<DirectionId<VolumeDim>>>
+    std::unordered_map<DirectionalId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+                       boost::hash<DirectionalId<VolumeDim>>>
         interpolator_buffer{};
-    std::unordered_map<DirectionId<VolumeDim>, DataVector,
-                       boost::hash<DirectionId<VolumeDim>>>
+    std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                       boost::hash<DirectionalId<VolumeDim>>>
         modified_neighbor_solution_buffer{};
 
     bool some_component_was_limited = false;

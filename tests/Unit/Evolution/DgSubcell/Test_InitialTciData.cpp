@@ -22,8 +22,8 @@ void test() {
   using Inbox = typename Tag::type;
   Inbox inbox{};
 
-  const DirectionId<Dim> id0{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
-  const DirectionId<Dim> id1{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
+  const DirectionalId<Dim> id0{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
+  const DirectionalId<Dim> id1{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
   const std::pair const_initial_tci_data{
       id0, InitialTciData{{100}, {RdmpTciData{{1.0}, {-1.0}}}}};
   Tag::insert_into_inbox(&inbox, 1, const_initial_tci_data);

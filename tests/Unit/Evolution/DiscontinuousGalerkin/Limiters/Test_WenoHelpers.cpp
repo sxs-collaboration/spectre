@@ -47,11 +47,12 @@ void test_reconstruction_1d_impl(const Spectral::Quadrature quadrature) {
                mean_value(neighbor_data, mesh);
       };
 
-  std::unordered_map<DirectionId<1>, DataVector, boost::hash<DirectionId<1>>>
+  std::unordered_map<DirectionalId<1>, DataVector,
+                     boost::hash<DirectionalId<1>>>
       neighbor_data{};
-  neighbor_data[DirectionId<1>{Direction<1>::lower_xi(), ElementId<1>(1)}] =
+  neighbor_data[DirectionalId<1>{Direction<1>::lower_xi(), ElementId<1>(1)}] =
       shift_data_to_local_mean(evaluate_polynomial({{0., 1., 0., 1., 0.}}));
-  neighbor_data[DirectionId<1>{Direction<1>::upper_xi(), ElementId<1>(2)}] =
+  neighbor_data[DirectionalId<1>{Direction<1>::upper_xi(), ElementId<1>(2)}] =
       shift_data_to_local_mean(evaluate_polynomial({{0., 0., 1., 1., 2.}}));
 
   // Expected result computed in Mathematica by computing oscillation indicator
@@ -100,18 +101,19 @@ void test_reconstruction_2d_impl(const Spectral::Quadrature quadrature) {
                mean_value(neighbor_data, mesh);
       };
 
-  std::unordered_map<DirectionId<2>, DataVector, boost::hash<DirectionId<2>>>
+  std::unordered_map<DirectionalId<2>, DataVector,
+                     boost::hash<DirectionalId<2>>>
       neighbor_data{};
-  neighbor_data[DirectionId<2>{Direction<2>::lower_xi(), ElementId<2>(1)}] =
+  neighbor_data[DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(1)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{0., 1., 0., 0., 1., 1., 0., 0., 0}}));
-  neighbor_data[DirectionId<2>{Direction<2>::upper_xi(), ElementId<2>(2)}] =
+  neighbor_data[DirectionalId<2>{Direction<2>::upper_xi(), ElementId<2>(2)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{0., 0., 1., 1., 2., 1., 0., 1., 1.}}));
-  neighbor_data[DirectionId<2>{Direction<2>::lower_eta(), ElementId<2>(3)}] =
+  neighbor_data[DirectionalId<2>{Direction<2>::lower_eta(), ElementId<2>(3)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{1., 0., 0., 0., 0.5, 0., 0., 0., 0.5}}));
-  neighbor_data[DirectionId<2>{Direction<2>::upper_eta(), ElementId<2>(4)}] =
+  neighbor_data[DirectionalId<2>{Direction<2>::upper_eta(), ElementId<2>(4)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{1., 0., 0., 0.5, 1., 0., 0., 0., 0.}}));
 
@@ -164,21 +166,22 @@ void test_reconstruction_3d_impl(const Spectral::Quadrature quadrature) {
       };
 
   // We skip one neighbor, lower_eta, to simulate an external boundary
-  std::unordered_map<DirectionId<3>, DataVector, boost::hash<DirectionId<3>>>
+  std::unordered_map<DirectionalId<3>, DataVector,
+                     boost::hash<DirectionalId<3>>>
       neighbor_data{};
-  neighbor_data[DirectionId<3>{Direction<3>::lower_xi(), ElementId<3>(1)}] =
+  neighbor_data[DirectionalId<3>{Direction<3>::lower_xi(), ElementId<3>(1)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{0.3, 0.2, 0.2, 0., 0., 0.1}}));
-  neighbor_data[DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(2)}] =
+  neighbor_data[DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(2)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{2.5, 1., 0., 0., 1., 1.}}));
-  neighbor_data[DirectionId<3>{Direction<3>::upper_eta(), ElementId<3>(4)}] =
+  neighbor_data[DirectionalId<3>{Direction<3>::upper_eta(), ElementId<3>(4)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{1., 0.5, 0.5, 0.2, 0.2, 0.2}}));
-  neighbor_data[DirectionId<3>{Direction<3>::lower_zeta(), ElementId<3>(5)}] =
+  neighbor_data[DirectionalId<3>{Direction<3>::lower_zeta(), ElementId<3>(5)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{1., 0.2, 0., 0., 0., 0.}}));
-  neighbor_data[DirectionId<3>{Direction<3>::upper_zeta(), ElementId<3>(6)}] =
+  neighbor_data[DirectionalId<3>{Direction<3>::upper_zeta(), ElementId<3>(6)}] =
       shift_data_to_local_mean(
           evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}}));
 

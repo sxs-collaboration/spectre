@@ -198,7 +198,8 @@ struct Test<1, LocalTimeStepping> {
 
     // We are working with 2 mortars here: a domain boundary at lower xi
     // and an interface at upper xi.
-    const DirectionId<1> interface_mortar_id{Direction<1>::upper_xi(), east_id};
+    const DirectionalId<1> interface_mortar_id{Direction<1>::upper_xi(),
+                                               east_id};
     const ::dg::MortarMap<1, Mesh<0>> expected_mortar_meshes{
         {interface_mortar_id, {}}};
     const ::dg::MortarMap<1, std::array<Spectral::MortarSize, 0>>
@@ -247,10 +248,10 @@ struct Test<2, LocalTimeStepping> {
 
     // We are working with 4 mortars here: the domain boundary west and north,
     // and interfaces south and east.
-    const DirectionId<2> interface_mortar_id_east{Direction<2>::upper_xi(),
-                                                  east_id};
-    const DirectionId<2> interface_mortar_id_south{Direction<2>::lower_eta(),
-                                                   south_id};
+    const DirectionalId<2> interface_mortar_id_east{Direction<2>::upper_xi(),
+                                                    east_id};
+    const DirectionalId<2> interface_mortar_id_south{Direction<2>::lower_eta(),
+                                                     south_id};
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
         {interface_mortar_id_east,
@@ -310,12 +311,12 @@ struct Test<3, LocalTimeStepping> {
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
     const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
-    const DirectionId<3> interface_mortar_id_right{Direction<3>::upper_xi(),
-                                                   right_id};
-    const DirectionId<3> interface_mortar_id_front{Direction<3>::lower_eta(),
-                                                   front_id};
-    const DirectionId<3> interface_mortar_id_top{Direction<3>::upper_zeta(),
-                                                 top_id};
+    const DirectionalId<3> interface_mortar_id_right{Direction<3>::upper_xi(),
+                                                     right_id};
+    const DirectionalId<3> interface_mortar_id_front{Direction<3>::lower_eta(),
+                                                     front_id};
+    const DirectionalId<3> interface_mortar_id_top{Direction<3>::upper_zeta(),
+                                                   top_id};
 
     const ::dg::MortarMap<3, Mesh<2>> expected_mortar_meshes{
         {interface_mortar_id_right,
@@ -476,7 +477,7 @@ void test_p_refine_gts() {
   std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
   for (const auto& [direction, neighbors] : old_element.neighbors()) {
     for (const auto& neighbor : neighbors) {
-      const DirectionId<Dim> mortar_id{direction, neighbor};
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_info.emplace(
           neighbor,
@@ -497,7 +498,7 @@ void test_p_refine_gts() {
   for (const auto& [direction, neighbors] : new_element.neighbors()) {
     expected_normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
-      const DirectionId<Dim> mortar_id{direction, neighbor};
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
       expected_mortar_data.emplace(mortar_id, MortarData<Dim>{1});
       expected_mortar_mesh.emplace(
           mortar_id,

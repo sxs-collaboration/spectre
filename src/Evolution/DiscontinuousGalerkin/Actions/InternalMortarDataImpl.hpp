@@ -52,8 +52,8 @@ void internal_mortar_data_impl(
                               evolution::dg::Tags::NormalCovector<Dim>>>>>*>
         normal_covector_and_magnitude_ptr,
     const gsl::not_null<
-        std::unordered_map<DirectionId<Dim>, evolution::dg::MortarData<Dim>,
-                           boost::hash<DirectionId<Dim>>>*>
+        std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
+                           boost::hash<DirectionalId<Dim>>>*>
         mortar_data_ptr,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
@@ -67,11 +67,11 @@ void internal_mortar_data_impl(
     const Variables<get_primitive_vars_tags_from_system<System>>* const
         volume_primitive_variables,
     const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
-    const std::unordered_map<DirectionId<Dim>, Mesh<Dim - 1>,
-                             boost::hash<DirectionId<Dim>>>& mortar_meshes,
-    const std::unordered_map<DirectionId<Dim>,
+    const std::unordered_map<DirectionalId<Dim>, Mesh<Dim - 1>,
+                             boost::hash<DirectionalId<Dim>>>& mortar_meshes,
+    const std::unordered_map<DirectionalId<Dim>,
                              std::array<Spectral::MortarSize, Dim - 1>,
-                             boost::hash<DirectionId<Dim>>>& mortar_sizes,
+                             boost::hash<DirectionalId<Dim>>>& mortar_sizes,
     const TimeStepId& temporal_id,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,
@@ -244,7 +244,7 @@ void internal_mortar_data_impl(
     // packaged_data_buffer that was passed in.
     if (neighbors_in_direction.size() == 1) {
       const auto& neighbor = *neighbors_in_direction.begin();
-      const auto mortar_id = DirectionId<Dim>{direction, neighbor};
+      const auto mortar_id = DirectionalId<Dim>{direction, neighbor};
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
       const auto& mortar_size = mortar_sizes.at(mortar_id);
 
@@ -299,7 +299,7 @@ void internal_mortar_data_impl(
     // or
     //  b) the one (and only) neighbor in this direction needed projection
     for (const auto& neighbor : neighbors_in_direction) {
-      const DirectionId<Dim> mortar_id{direction, neighbor};
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
       const auto& mortar_size = mortar_sizes.at(mortar_id);
 

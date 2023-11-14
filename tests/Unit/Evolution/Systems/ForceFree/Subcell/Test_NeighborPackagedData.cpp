@@ -27,8 +27,8 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -304,10 +304,10 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
           std::nullopt, ::fd::DerivativeOrder::Two});
 
   // Compute the packaged data
-  std::vector<DirectionId<3>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<3>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(
-        DirectionId<3>{direction, *neighbors.begin()});
+        DirectionalId<3>{direction, *neighbors.begin()});
   }
   const auto packaged_data =
       subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);

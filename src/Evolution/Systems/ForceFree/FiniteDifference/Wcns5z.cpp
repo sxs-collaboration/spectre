@@ -65,9 +65,9 @@ void Wcns5z::reconstruct(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
-  DirectionIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
+  DirectionalIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
                                         subcell_mesh);
@@ -90,7 +90,7 @@ void Wcns5z::reconstruct_fd_neighbor(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

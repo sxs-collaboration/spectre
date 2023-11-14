@@ -11,8 +11,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -30,7 +30,7 @@ void neighbor_tci_decision(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const std::pair<
         const TimeStepId,
-        DirectionIdMap<
+        DirectionalIdMap<
             Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                             std::optional<DataVector>, ::TimeStepId, int>>>&
         received_temporal_id_and_data) {

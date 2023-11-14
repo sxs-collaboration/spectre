@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -164,7 +164,7 @@ struct SetSubcellGrid {
                element.neighbors()) {
             for (const auto& neighbor : neighbors_in_direction.ids()) {
               neighbor_decisions_ptr->insert(
-                  std::pair{DirectionId<Dim>{direction, neighbor}, 0});
+                  std::pair{DirectionalId<Dim>{direction, neighbor}, 0});
             }
           }
         },
@@ -281,7 +281,7 @@ struct SetAndCommunicateInitialRdmpData {
             evolution::dg::subcell::Tags::InitialTciData<Dim>>(
             receiver_proxy[neighbor], temporal_id,
             std::make_pair(
-                DirectionId<Dim>{direction_from_neighbor, element.id()},
+                DirectionalId<Dim>{direction_from_neighbor, element.id()},
                 std::move(data)));
       }
     }
@@ -415,7 +415,7 @@ struct ComputeAndSendTciOnInitialGrid {
               evolution::dg::subcell::Tags::InitialTciData<Dim>>(
               receiver_proxy[neighbor], temporal_id,
               std::make_pair(
-                  DirectionId<Dim>{direction_from_neighbor, element.id()},
+                  DirectionalId<Dim>{direction_from_neighbor, element.id()},
                   std::move(data)));
         }
       }

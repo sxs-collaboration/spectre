@@ -15,8 +15,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
@@ -56,11 +56,11 @@ namespace Burgers::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static DirectionIdMap<1, DataVector> apply(
+  static DirectionalIdMap<1, DataVector> apply(
       const db::DataBox<DbTagsList>& box,
-      const std::vector<DirectionId<1>>& mortars_to_reconstruct_to) {
+      const std::vector<DirectionalId<1>>& mortars_to_reconstruct_to) {
     // The object to return
-    DirectionIdMap<1, DataVector> neighbor_package_data{};
+    DirectionalIdMap<1, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

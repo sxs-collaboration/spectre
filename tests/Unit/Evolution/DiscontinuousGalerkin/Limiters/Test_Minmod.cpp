@@ -914,10 +914,10 @@ void test_minmod_impl_work(
     const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
-        DirectionId<VolumeDim>,
+        DirectionalId<VolumeDim>,
         typename Limiters::Minmod<
             VolumeDim, tmpl::list<VectorTag<VolumeDim>>>::PackagedData,
-        boost::hash<DirectionId<VolumeDim>>>& neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const std::array<std::array<double, VolumeDim>, VolumeDim>&
         target_vector_slope) {
   auto vector_to_limit = input_vector;
@@ -986,11 +986,11 @@ void test_minmod_impl_1d_work(const Spectral::Quadrature quadrature) {
   const auto input_vector = VectorTag<1>::type{data};
 
   std::unordered_map<
-      DirectionId<1>,
+      DirectionalId<1>,
       Limiters::Minmod<1, tmpl::list<VectorTag<1>>>::PackagedData,
-      boost::hash<DirectionId<1>>>
+      boost::hash<DirectionalId<1>>>
       neighbor_data{};
-  const std::array<DirectionId<1>, 2> dir_keys = {
+  const std::array<DirectionalId<1>, 2> dir_keys = {
       {{Direction<1>::lower_xi(), ElementId<1>(1)},
        {Direction<1>::upper_xi(), ElementId<1>(2)}}};
   neighbor_data[dir_keys[0]].element_size = element_size;
@@ -1037,11 +1037,11 @@ void test_minmod_impl_2d_work(const Spectral::Quadrature quadrature) {
   // We fill the neighbor mean data with different values for each vector
   // component, so that each component is limited in a different way
   std::unordered_map<
-      DirectionId<2>,
+      DirectionalId<2>,
       Limiters::Minmod<2, tmpl::list<VectorTag<2>>>::PackagedData,
-      boost::hash<DirectionId<2>>>
+      boost::hash<DirectionalId<2>>>
       neighbor_data{};
-  const std::array<DirectionId<2>, 4> dir_keys = {
+  const std::array<DirectionalId<2>, 4> dir_keys = {
       {{Direction<2>::lower_xi(), ElementId<2>(1)},
        {Direction<2>::upper_xi(), ElementId<2>(2)},
        {Direction<2>::lower_eta(), ElementId<2>(3)},
@@ -1092,10 +1092,10 @@ void test_minmod_impl_limits_in_x_only(
     const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
-        DirectionId<VolumeDim>,
+        DirectionalId<VolumeDim>,
         typename Limiters::Minmod<VolumeDim,
                                   tmpl::list<ScalarTag>>::PackagedData,
-        boost::hash<DirectionId<VolumeDim>>>& neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const double expected_slope) {
   auto input_to_limit = input;
 
@@ -1148,16 +1148,16 @@ void test_minmod_impl_two_lower_xi_neighbors() {
                                     const double right, const double left1_size,
                                     const double left2_size) {
     using Pack = Limiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
-    return std::unordered_map<DirectionId<2>, Pack,
-                              boost::hash<DirectionId<2>>>{
+    return std::unordered_map<DirectionalId<2>, Pack,
+                              boost::hash<DirectionalId<2>>>{
         std::make_pair(
-            DirectionId<2>{Direction<2>::lower_xi(), ElementId<2>(1)},
+            DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(1)},
             Pack{Scalar<double>(left1), make_array(left1_size, dx)}),
         std::make_pair(
-            DirectionId<2>{Direction<2>::lower_xi(), ElementId<2>(7)},
+            DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(7)},
             Pack{Scalar<double>(left2), make_array(left2_size, dx)}),
         std::make_pair(
-            DirectionId<2>{Direction<2>::upper_xi(), ElementId<2>(2)},
+            DirectionalId<2>{Direction<2>::upper_xi(), ElementId<2>(2)},
             Pack{Scalar<double>(right), make_array<2>(dx)}),
     };
   };
@@ -1212,11 +1212,11 @@ void test_minmod_impl_3d_work(const Spectral::Quadrature quadrature) {
   // We fill the neighbor mean data with different values for each vector
   // component, so that each component is limited in a different way
   std::unordered_map<
-      DirectionId<3>,
+      DirectionalId<3>,
       Limiters::Minmod<3, tmpl::list<VectorTag<3>>>::PackagedData,
-      boost::hash<DirectionId<3>>>
+      boost::hash<DirectionalId<3>>>
       neighbor_data{};
-  const std::array<DirectionId<3>, 6> dir_keys = {
+  const std::array<DirectionalId<3>, 6> dir_keys = {
       {{Direction<3>::lower_xi(), ElementId<3>(1)},
        {Direction<3>::upper_xi(), ElementId<3>(2)},
        {Direction<3>::lower_eta(), ElementId<3>(3)},
@@ -1299,22 +1299,22 @@ void test_minmod_impl_four_upper_xi_neighbors() {
             const double right2_size, const double right3_size,
             const double right4_size) {
         using Pack = Limiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
-        return std::unordered_map<DirectionId<3>, Pack,
-                                  boost::hash<DirectionId<3>>>{
+        return std::unordered_map<DirectionalId<3>, Pack,
+                                  boost::hash<DirectionalId<3>>>{
             std::make_pair(
-                DirectionId<3>{Direction<3>::lower_xi(), ElementId<3>(1)},
+                DirectionalId<3>{Direction<3>::lower_xi(), ElementId<3>(1)},
                 Pack{Scalar<double>(left), make_array<3>(dx)}),
             std::make_pair(
-                DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(2)},
+                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(2)},
                 Pack{Scalar<double>(right1), make_array(right1_size, dx, dx)}),
             std::make_pair(
-                DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(7)},
+                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(7)},
                 Pack{Scalar<double>(right2), make_array(right2_size, dx, dx)}),
             std::make_pair(
-                DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(8)},
+                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(8)},
                 Pack{Scalar<double>(right3), make_array(right3_size, dx, dx)}),
             std::make_pair(
-                DirectionId<3>{Direction<3>::upper_xi(), ElementId<3>(9)},
+                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(9)},
                 Pack{Scalar<double>(right4), make_array(right4_size, dx, dx)}),
         };
       };
@@ -1363,11 +1363,11 @@ void test_minmod_work(
     const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
-        DirectionId<VolumeDim>,
+        DirectionalId<VolumeDim>,
         typename Limiters::Minmod<
             VolumeDim,
             tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
-        boost::hash<DirectionId<VolumeDim>>>& neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const std::array<double, VolumeDim>& target_scalar_slope,
     const std::array<std::array<double, VolumeDim>, VolumeDim>&
         target_vector_slope) {
@@ -1448,11 +1448,11 @@ void test_minmod_1d() {
   // We fill the neighbor mean data with different values for each tensor
   // component, so that each component is limited in a different way
   std::unordered_map<
-      DirectionId<1>,
+      DirectionalId<1>,
       Limiters::Minmod<1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
-      boost::hash<DirectionId<1>>>
+      boost::hash<DirectionalId<1>>>
       neighbor_data{};
-  const std::array<DirectionId<1>, 2> dir_keys = {
+  const std::array<DirectionalId<1>, 2> dir_keys = {
       {{Direction<1>::lower_xi(), ElementId<1>(1)},
        {Direction<1>::upper_xi(), ElementId<1>(2)}}};
   neighbor_data[dir_keys[0]].element_size = element_size;
@@ -1507,11 +1507,11 @@ void test_minmod_2d() {
   // We fill the neighbor mean data with different values for each tensor
   // component, so that each component is limited in a different way
   std::unordered_map<
-      DirectionId<2>,
+      DirectionalId<2>,
       Limiters::Minmod<2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
-      boost::hash<DirectionId<2>>>
+      boost::hash<DirectionalId<2>>>
       neighbor_data{};
-  const std::array<DirectionId<2>, 4> dir_keys = {
+  const std::array<DirectionalId<2>, 4> dir_keys = {
       {{Direction<2>::lower_xi(), ElementId<2>(1)},
        {Direction<2>::upper_xi(), ElementId<2>(2)},
        {Direction<2>::lower_eta(), ElementId<2>(3)},
@@ -1599,11 +1599,11 @@ void test_minmod_3d() {
   // We fill the neighbor mean data with different values for each tensor
   // component, so that each component is limited in a different way
   std::unordered_map<
-      DirectionId<3>,
+      DirectionalId<3>,
       Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
-      boost::hash<DirectionId<3>>>
+      boost::hash<DirectionalId<3>>>
       neighbor_data{};
-  const std::array<DirectionId<3>, 6> dir_keys = {
+  const std::array<DirectionalId<3>, 6> dir_keys = {
       {{Direction<3>::lower_xi(), ElementId<3>(1)},
        {Direction<3>::upper_xi(), ElementId<3>(2)},
        {Direction<3>::lower_eta(), ElementId<3>(3)},

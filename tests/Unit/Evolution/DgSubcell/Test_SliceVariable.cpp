@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceVariable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -36,9 +36,9 @@ void test_slice(
     const Index<Dim>& volume_extents, size_t num_ghost_pts,
     const Direction<Dim>& direction) {
   {
-    DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
+    DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
         fd_to_neighbor_fd_interpolants{};
-    fd_to_neighbor_fd_interpolants[DirectionId<Dim>{
+    fd_to_neighbor_fd_interpolants[DirectionalId<Dim>{
         direction, ElementId<Dim>{0}}] = std::nullopt;
     const Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>>
         expected_sliced_vars{

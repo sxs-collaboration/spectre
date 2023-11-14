@@ -16,7 +16,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/TrimMap.hpp"
@@ -69,21 +69,21 @@ namespace evolution::dg::subcell {
 template <typename Metavariables, typename DbTagsList>
 void neighbor_reconstructed_face_solution(
     gsl::not_null<db::DataBox<DbTagsList>*> box,
-    gsl::not_null<
-        std::pair<const TimeStepId,
-                  DirectionIdMap<Metavariables::volume_dim,
-                                 std::tuple<Mesh<Metavariables::volume_dim>,
-                                            Mesh<Metavariables::volume_dim - 1>,
-                                            std::optional<DataVector>,
-                                            std::optional<DataVector>,
-                                            ::TimeStepId, int>>>*>
+    gsl::not_null<std::pair<
+        const TimeStepId,
+        DirectionalIdMap<
+            Metavariables::volume_dim,
+            std::tuple<Mesh<Metavariables::volume_dim>,
+                       Mesh<Metavariables::volume_dim - 1>,
+                       std::optional<DataVector>, std::optional<DataVector>,
+                       ::TimeStepId, int>>>*>
         received_temporal_id_and_data);
 template <size_t Dim, typename DbTagsList>
 void neighbor_tci_decision(
     gsl::not_null<db::DataBox<DbTagsList>*> box,
     const std::pair<
         const TimeStepId,
-        DirectionIdMap<
+        DirectionalIdMap<
             Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                             std::optional<DataVector>, ::TimeStepId, int>>>&
         received_temporal_id_and_data);
@@ -100,16 +100,15 @@ bool receive_boundary_data_global_time_stepping(
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
-  using Key = DirectionId<volume_dim>;
-  std::map<
-      TimeStepId,
-      DirectionIdMap<volume_dim,
-                     std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                                std::optional<DataVector>,
-                                std::optional<DataVector>, ::TimeStepId, int>>>&
-      inbox =
-          tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-              volume_dim>>(*inboxes);
+  using Key = DirectionalId<volume_dim>;
+  std::map<TimeStepId,
+           DirectionalIdMap<
+               volume_dim,
+               std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                          std::optional<DataVector>, std::optional<DataVector>,
+                          ::TimeStepId, int>>>& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          volume_dim>>(*inboxes);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
   if (received_temporal_id_and_data == inbox.end()) {
     return false;
@@ -145,7 +144,7 @@ bool receive_boundary_data_global_time_stepping(
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
               mortar_next_time_step_id,
-          const gsl::not_null<DirectionIdMap<volume_dim, Mesh<volume_dim>>*>
+          const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
               neighbor_mesh) {
         neighbor_mesh->clear();
         for (auto& received_mortar_data :
@@ -199,16 +198,15 @@ bool receive_boundary_data_local_time_stepping(
   // using the `NormalDotNumericalFlux` prefix tag. This is because the
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-  using Key = DirectionId<volume_dim>;
-  std::map<
-      TimeStepId,
-      DirectionIdMap<volume_dim,
-                     std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                                std::optional<DataVector>,
-                                std::optional<DataVector>, ::TimeStepId, int>>>&
-      inbox =
-          tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-              volume_dim>>(*inboxes);
+  using Key = DirectionalId<volume_dim>;
+  std::map<TimeStepId,
+           DirectionalIdMap<
+               volume_dim,
+               std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                          std::optional<DataVector>, std::optional<DataVector>,
+                          ::TimeStepId, int>>>& inbox =
+      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          volume_dim>>(*inboxes);
 
   const auto needed_time = [&box]() {
     const auto& local_next_temporal_id =
@@ -245,7 +243,7 @@ bool receive_boundary_data_local_time_stepping(
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
               mortar_next_time_step_id,
-          const gsl::not_null<DirectionIdMap<volume_dim, Mesh<volume_dim>>*>
+          const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
               neighbor_mesh,
           const Element<volume_dim>& element) {
         // Remove neighbor meshes for neighbors that don't exist anymore

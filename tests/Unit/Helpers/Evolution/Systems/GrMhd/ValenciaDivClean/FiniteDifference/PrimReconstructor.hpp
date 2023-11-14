@@ -19,8 +19,8 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -48,12 +48,12 @@ namespace TestHelpers::grmhd::ValenciaDivClean::fd {
 namespace detail {
 using GhostData = evolution::dg::subcell::GhostData;
 template <typename F>
-DirectionIdMap<3, GhostData> compute_ghost_data(
+DirectionalIdMap<3, GhostData> compute_ghost_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  DirectionIdMap<3, GhostData> ghost_data{};
+  DirectionalIdMap<3, GhostData> ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() == 1);
     const ElementId<3>& neighbor_id = *neighbors_in_direction.begin();
@@ -70,8 +70,8 @@ DirectionIdMap<3, GhostData> compute_ghost_data(
         std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    ghost_data[DirectionId<3>{direction, neighbor_id}] = GhostData{1};
-    ghost_data.at(DirectionId<3>{direction, neighbor_id})
+    ghost_data[DirectionalId<3>{direction, neighbor_id}] = GhostData{1};
+    ghost_data.at(DirectionalId<3>{direction, neighbor_id})
         .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
@@ -151,7 +151,7 @@ void test_prim_reconstructor_impl(
     return vars;
   };
 
-  const DirectionIdMap<3, evolution::dg::subcell::GhostData> ghost_data =
+  const DirectionalIdMap<3, evolution::dg::subcell::GhostData> ghost_data =
       compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
                          reconstructor.ghost_zone_size(), compute_solution);
 

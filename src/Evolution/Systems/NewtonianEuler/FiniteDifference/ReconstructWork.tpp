@@ -12,8 +12,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -36,7 +36,7 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -98,7 +98,8 @@ void reconstruct_prims_work(
 
       const DataVector& neighbor_data =
           ghost_data
-              .at(DirectionId<Dim>{direction, *neighbors_in_direction.begin()})
+              .at(DirectionalId<Dim>{direction,
+                                     *neighbors_in_direction.begin()})
               .neighbor_ghost_data_for_reconstruction();
 
       ASSERT(neighbor_data.size() != 0,
@@ -162,7 +163,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
@@ -180,7 +181,7 @@ void reconstruct_fd_neighbor_work(
   using prim_tags_for_reconstruction =
       tmpl::list<MassDensity, Velocity, Pressure>;
 
-  const DirectionId<Dim> mortar_id{
+  const DirectionalId<Dim> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<Dim> ghost_data_extents = subcell_mesh.extents();

@@ -686,7 +686,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     const size_t total_neighbors = neighbors.size();
     size_t neighbor_count = 1;
     for (const auto& neighbor : neighbors) {
-      const DirectionId<Dim> mortar_id{direction, neighbor};
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
 
       std::pair<Mesh<Dim - 1>, DataVector> neighbor_boundary_data_on_mortar{};
       ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
@@ -742,7 +742,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
           evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
           receiver_proxy[neighbor], time_step_id,
           std::make_pair(
-              DirectionId<Dim>{direction_from_neighbor, element.id()},
+              DirectionalId<Dim>{direction_from_neighbor, element.id()},
               std::move(data)));
       ++neighbor_count;
     }
@@ -775,7 +775,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     // using the `NormalDotNumericalFlux` prefix tag. This is because the
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    using Key = DirectionId<Dim>;
+    using Key = DirectionalId<Dim>;
     const auto integration_order =
         db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
@@ -835,7 +835,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             }
 
             for (const auto& neighbor : neighbors_in_direction) {
-              const DirectionId<Dim> mortar_id{direction, neighbor};
+              const DirectionalId<Dim> mortar_id{direction, neighbor};
               if (using_gauss_points) {
                 mortar_data->at(mortar_id).insert_local_geometric_quantities(
                     volume_det_inv_jacobian, face_det_jacobian,

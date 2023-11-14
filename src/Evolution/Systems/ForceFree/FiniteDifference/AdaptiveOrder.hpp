@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -155,7 +155,8 @@ class AdaptiveOrder : public Reconstructor {
       const Variables<volume_vars_tags>& volume_vars,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
       const Element<dim>& element,
-      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   void reconstruct_fd_neighbor(
@@ -163,7 +164,8 @@ class AdaptiveOrder : public Reconstructor {
       const Variables<volume_vars_tags>& volume_vars,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
       const Element<dim>& element,
-      const DirectionIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

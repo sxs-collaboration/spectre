@@ -16,8 +16,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -100,10 +100,10 @@ void test_slice_data(
       }
 
       {
-        DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
+        DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
             fd_to_neighbor_fd_interpolants{};
         for (const auto& direction : directions_to_slice) {
-          fd_to_neighbor_fd_interpolants[DirectionId<Dim>{
+          fd_to_neighbor_fd_interpolants[DirectionalId<Dim>{
               direction, ElementId<Dim>{0}}] = std::nullopt;
         }
         const auto sliced_data = subcell::slice_data(

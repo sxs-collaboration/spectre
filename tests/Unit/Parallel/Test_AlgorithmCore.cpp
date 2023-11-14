@@ -19,7 +19,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
@@ -423,7 +423,7 @@ struct BoundaryMessageReceiveTag {
   using temporal_id = ::TimeStepId;
   using type = std::unordered_map<
       temporal_id,
-      std::map<DirectionId<3>, std::unique_ptr<BoundaryMessage<3>>>>;
+      std::map<DirectionalId<3>, std::unique_ptr<BoundaryMessage<3>>>>;
   using message_type = BoundaryMessage<3>;
 
   template <typename Inbox>
@@ -432,8 +432,8 @@ struct BoundaryMessageReceiveTag {
     auto& time_step_id = boundary_message->current_time_step_id;
     auto& current_inbox = (*inbox)[time_step_id];
 
-    auto key = DirectionId<3>{boundary_message->neighbor_direction,
-                              boundary_message->element_id};
+    auto key = DirectionalId<3>{boundary_message->neighbor_direction,
+                                boundary_message->element_id};
 
     current_inbox.insert_or_assign(
         key, std::unique_ptr<BoundaryMessage<3>>(boundary_message));

@@ -12,8 +12,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -22,13 +22,13 @@ namespace LinearSolver::Schwarz {
 
 /// Identifies a subdomain region that overlaps with another element
 template <size_t Dim>
-using OverlapId = DirectionId<Dim>;
+using OverlapId = DirectionalId<Dim>;
 
 /// Data structure that can store the `ValueType` on each possible overlap of an
 /// element-centered subdomain with its neighbors. Overlaps are identified by
 /// their `OverlapId`.
 template <size_t Dim, typename ValueType>
-using OverlapMap = DirectionIdMap<Dim, ValueType>;
+using OverlapMap = DirectionalIdMap<Dim, ValueType>;
 
 /*!
  * \brief The number of points that an overlap extends into the `volume_extent`

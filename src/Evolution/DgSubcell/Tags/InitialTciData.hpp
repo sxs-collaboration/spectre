@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/InitialTciData.hpp"
 #include "Utilities/Gsl.hpp"
@@ -27,7 +27,7 @@ struct InitialTciData {
   using temporal_id = int;
   using type =
       std::map<temporal_id,
-               DirectionIdMap<Dim, evolution::dg::subcell::InitialTciData>>;
+               DirectionalIdMap<Dim, evolution::dg::subcell::InitialTciData>>;
 
   template <typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<type*> inbox,

@@ -8,8 +8,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -34,7 +34,7 @@ struct TciDecision : db::SimpleTag {
 /// The TCI decision of neighboring elements.
 template <size_t Dim>
 struct NeighborTciDecisions : db::SimpleTag {
-  using type = DirectionIdMap<Dim, int>;
+  using type = DirectionalIdMap<Dim, int>;
 };
 
 /// Stores the status of the troubled cell indicator in the element

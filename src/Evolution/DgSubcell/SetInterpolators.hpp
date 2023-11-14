@@ -14,8 +14,8 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -66,13 +66,13 @@ struct SetInterpolators {
   template <typename ReconstructorType>
   static void apply(
       const gsl::not_null<
-          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
+          DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_fd_to_neighbor_fd_ptr,
       const gsl::not_null<
-          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
+          DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_dg_to_neighbor_fd_ptr,
       const gsl::not_null<
-          DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
+          DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_neighbor_dg_to_fd_ptr,
       const Element<Dim>& element, const Domain<Dim>& domain,
       const Mesh<Dim>& my_dg_mesh,
@@ -169,10 +169,10 @@ struct SetInterpolators {
 
         // Set up interpolators for our local element to our neighbor's
         // ghost zones.
-        (*interpolators_fd_to_neighbor_fd_ptr)[DirectionId<Dim>{
+        (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
             direction, neighbor_id}] = intrp::Irregular<Dim>{
             my_fd_mesh, neighbor_logical_ghost_zone_coords};
-        (*interpolators_dg_to_neighbor_fd_ptr)[DirectionId<Dim>{
+        (*interpolators_dg_to_neighbor_fd_ptr)[DirectionalId<Dim>{
             direction, neighbor_id}] = intrp::Irregular<Dim>{
             my_dg_mesh, neighbor_logical_ghost_zone_coords};
 
@@ -207,7 +207,7 @@ struct SetInterpolators {
           const ElementMap neighbor_element_map(
               neighbor_id,
               neighbor_block.moving_mesh_logical_to_grid_map().get_clone());
-          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionId<Dim>{
+          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionalId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
               neighbor_dg_mesh, get_logical_coords(neighbor_element_map,
                                                    my_grid_ghost_zone_coords)};
@@ -221,7 +221,7 @@ struct SetInterpolators {
                             my_grid_ghost_zone_coords[i], 0,
                             my_grid_ghost_zone_coords[i].size());
           }
-          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionId<Dim>{
+          (*interpolators_neighbor_dg_to_fd_ptr)[DirectionalId<Dim>{
               direction, neighbor_id}] = intrp::Irregular<Dim>{
               neighbor_dg_mesh,
               get_logical_coords(neighbor_element_map,

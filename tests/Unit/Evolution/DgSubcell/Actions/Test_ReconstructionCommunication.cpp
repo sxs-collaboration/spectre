@@ -19,7 +19,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
@@ -157,7 +157,7 @@ void test(const bool use_cell_centered_flux) {
   CAPTURE(Dim);
   CAPTURE(use_cell_centered_flux);
 
-  using Interps = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 
   using metavars = Metavariables<Dim>;
   metavars::ghost_zone_size_invoked = false;
@@ -224,9 +224,10 @@ void test(const bool use_cell_centered_flux) {
   const Element<Dim> element{self_id, neighbors};
 
   using NeighborDataMap =
-      DirectionIdMap<Dim, evolution::dg::subcell::GhostData>;
+      DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>;
   NeighborDataMap neighbor_data{};
-  const DirectionId<Dim> east_neighbor_id{Direction<Dim>::upper_xi(), east_id};
+  const DirectionalId<Dim> east_neighbor_id{Direction<Dim>::upper_xi(),
+                                            east_id};
   // insert data from one of the neighbors to make sure the send actions clears
   // it.
   neighbor_data[east_neighbor_id] = {};
@@ -259,8 +260,8 @@ void test(const bool use_cell_centered_flux) {
   mortar_data[east_neighbor_id] = {};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
-    const DirectionId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
-                                             south_id};
+    const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
+                                               south_id};
     mortar_data[south_neighbor_id] = {};
     mortar_next_id[south_neighbor_id] = {};
   }
@@ -272,7 +273,7 @@ void test(const bool use_cell_centered_flux) {
     (void)direction;
     for (const auto& neighbor_id : neighbor_ids) {
       neighbor_decision.insert(
-          std::pair{DirectionId<Dim>{direction, neighbor_id}, 0});
+          std::pair{DirectionalId<Dim>{direction, neighbor_id}, 0});
       // Initialize neighbors with garbage data. We won't ever run any actions
       // on them, we just need to insert them to make sure things are sent to
       // the right places. We'll check their inboxes directly.
@@ -388,10 +389,11 @@ void test(const bool use_cell_centered_flux) {
         expected_east_data,
         *std::get<2>(
             east_data.at(time_step_id)
-                .at(DirectionId<Dim>{Direction<Dim>::lower_xi(), self_id})));
+                .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})));
     CHECK(std::get<5>(east_data.at(time_step_id)
-                          .at(DirectionId<Dim>{Direction<Dim>::lower_xi(),
-                                               self_id})) == self_tci_decision);
+                          .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(),
+                                                 self_id})) ==
+          self_tci_decision);
   }
   if constexpr (Dim > 1) {
     const auto direction = Direction<Dim>::lower_eta();
@@ -432,10 +434,10 @@ void test(const bool use_cell_centered_flux) {
         runner, south_id);
     CHECK(expected_south_data ==
           *std::get<2>(south_data.at(time_step_id)
-                           .at(DirectionId<Dim>{
+                           .at(DirectionalId<Dim>{
                                orientation(direction.opposite()), self_id})));
     CHECK(std::get<5>(south_data.at(time_step_id)
-                          .at(DirectionId<Dim>{
+                          .at(DirectionalId<Dim>{
                               orientation(direction.opposite()), self_id})) ==
           self_tci_decision);
   }
@@ -463,7 +465,7 @@ void test(const bool use_cell_centered_flux) {
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{
-                DirectionId<Dim>{Direction<Dim>::upper_xi(), east_id},
+                DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
                 std::tuple{// subcell_mesh because we are sending the projected
                            // data right now.
                            subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
@@ -484,7 +486,7 @@ void test(const bool use_cell_centered_flux) {
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{
-                DirectionId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
                 std::tuple{// subcell_mesh because we are sending the projected
                            // data right now.
                            subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
@@ -522,8 +524,8 @@ void test(const bool use_cell_centered_flux) {
           runner, self_id)
           .at(east_neighbor_id) == -10);
   if constexpr (Dim > 1) {
-    const DirectionId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
-                                             south_id};
+    const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
+                                               south_id};
     REQUIRE(ghost_data_from_box.find(south_neighbor_id) !=
             ghost_data_from_box.end());
     const DataVector south_ghost_cells_and_rdmp_view{
@@ -546,7 +548,7 @@ void test(const bool use_cell_centered_flux) {
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
       const auto it =
-          neighbor_meshes.find(DirectionId<Dim>{direction, neighbor});
+          neighbor_meshes.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(it != neighbor_meshes.end());
       // Currently all neighbors are doing subcell. We probably want to
       // generalize this in the future.

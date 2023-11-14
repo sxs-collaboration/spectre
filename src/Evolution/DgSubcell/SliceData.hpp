@@ -11,8 +11,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Utilities/Gsl.hpp"
@@ -34,7 +34,7 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
     size_t additional_buffer,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants);
 }  // namespace detail
 
@@ -65,7 +65,7 @@ DirectionMap<Dim, DataVector> slice_data(
     const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   return detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
@@ -79,7 +79,7 @@ DirectionMap<Dim, DataVector> slice_data(
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   const DataVector view{const_cast<double*>(volume_subcell_vars.data()),

@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -27,19 +27,21 @@ void test() {
   using StorageType =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                  std::optional<DataVector>, ::TimeStepId, int>;
-  std::pair<const TimeStepId, DirectionIdMap<Dim, StorageType>> neighbor_data{};
-  const DirectionId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
+  std::pair<const TimeStepId, DirectionalIdMap<Dim, StorageType>>
+      neighbor_data{};
+  const DirectionalId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
   std::get<5>(neighbor_data.second.at(id_xi)) = 10;
-  DirectionId<Dim> id_eta;
-  DirectionId<Dim> id_zeta;
+  DirectionalId<Dim> id_eta;
+  DirectionalId<Dim> id_zeta;
   if constexpr (Dim > 1) {
-    id_eta = DirectionId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
+    id_eta = DirectionalId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
     neighbor_data.second.insert(std::pair{id_eta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_eta)) = 12;
   }
   if constexpr (Dim > 2) {
-    id_zeta = DirectionId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
+    id_zeta =
+        DirectionalId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
     neighbor_data.second.insert(std::pair{id_zeta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_zeta)) = 15;
   }

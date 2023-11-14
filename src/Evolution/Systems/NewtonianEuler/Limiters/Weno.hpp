@@ -182,8 +182,8 @@ class Weno {
           VolumeDim>::type& normals_and_magnitudes,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
           equation_of_state,
-      const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                               boost::hash<DirectionId<VolumeDim>>>&
+      const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                               boost::hash<DirectionalId<VolumeDim>>>&
           neighbor_data) const;
 
  private:

@@ -214,10 +214,10 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       make_not_null(&box));
 
   // Compute the packaged data
-  std::vector<DirectionId<Dim>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<Dim>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(
-        DirectionId<Dim>{direction, *neighbors.begin()});
+        DirectionalId<Dim>{direction, *neighbors.begin()});
   }
   const auto packaged_data =
       subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);

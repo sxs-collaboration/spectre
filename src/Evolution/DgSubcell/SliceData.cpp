@@ -85,7 +85,7 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
     const std::unordered_set<Direction<Dim>>& directions_to_slice,
     const size_t additional_buffer,
-    const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   const size_t num_pts = subcell_extents.product();
   const size_t number_of_components = volume_subcell_vars.size() / num_pts;
@@ -142,8 +142,8 @@ DirectionMap<Dim, DataVector> slice_data_impl(
     // We add directions to `interpolated` to mark that we are interpolating
     // in this particular direction. The value of the bool is `true` _if_ we
     // did FD interpolation and `false` if DG interpolation should be
-    // done. This allows passing in a DirectionIdMap of just the neighbors that
-    // need interpolation but with `std::nullopt` in order to not spend
+    // done. This allows passing in a DirectionalIdMap of just the neighbors
+    // that need interpolation but with `std::nullopt` in order to not spend
     // resources slicing when the data would be overwritten by DG
     // interpolation (cheaper and more accurate).
     DirectionMap<Dim, bool> interpolated{};
@@ -199,13 +199,13 @@ DirectionMap<Dim, DataVector> slice_data_impl(
 template DirectionMap<1, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<1>&, const size_t,
     const std::unordered_set<Direction<1>>&, size_t,
-    const DirectionIdMap<1, std::optional<intrp::Irregular<1>>>&);
+    const DirectionalIdMap<1, std::optional<intrp::Irregular<1>>>&);
 template DirectionMap<2, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<2>&, const size_t,
     const std::unordered_set<Direction<2>>&, size_t,
-    const DirectionIdMap<2, std::optional<intrp::Irregular<2>>>&);
+    const DirectionalIdMap<2, std::optional<intrp::Irregular<2>>>&);
 template DirectionMap<3, DataVector> slice_data_impl(
     const gsl::span<const double>&, const Index<3>&, const size_t,
     const std::unordered_set<Direction<3>>&, size_t,
-    const DirectionIdMap<3, std::optional<intrp::Irregular<3>>>&);
+    const DirectionalIdMap<3, std::optional<intrp::Irregular<3>>>&);
 }  // namespace evolution::dg::subcell::detail

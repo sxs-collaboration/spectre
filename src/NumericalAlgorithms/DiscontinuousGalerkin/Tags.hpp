@@ -13,7 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -30,7 +30,7 @@ namespace Tags {
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using Key = DirectionId<VolumeDim>;
+  using Key = DirectionalId<VolumeDim>;
   using type = std::unordered_map<Key, typename Tag::type, boost::hash<Key>>;
 };
 

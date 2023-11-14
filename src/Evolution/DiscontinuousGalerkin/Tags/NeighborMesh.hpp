@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace evolution::dg::Tags {
@@ -21,6 +21,6 @@ namespace evolution::dg::Tags {
  */
 template <size_t Dim>
 struct NeighborMesh : db::SimpleTag {
-  using type = DirectionIdMap<Dim, Mesh<Dim>>;
+  using type = DirectionalIdMap<Dim, Mesh<Dim>>;
 };
 }  // namespace evolution::dg::Tags

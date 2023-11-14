@@ -16,8 +16,8 @@
 #include <utility>
 
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -109,7 +109,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
 
  public:
   using temporal_id = TimeStepId;
-  using type = std::map<TimeStepId, DirectionIdMap<Dim, stored_type>>;
+  using type = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
 
   template <typename Inbox, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
@@ -230,7 +230,7 @@ struct BoundaryMessageInbox {
 
  public:
   using temporal_id = TimeStepId;
-  using type = std::map<TimeStepId, DirectionIdMap<Dim, stored_type>>;
+  using type = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
   using message_type = BoundaryMessage<Dim>;
 
   template <typename Inbox>
@@ -239,8 +239,8 @@ struct BoundaryMessageInbox {
     const auto& time_step_id = boundary_message->current_time_step_id;
     auto& current_inbox = (*inbox)[time_step_id];
 
-    const auto key = DirectionId<Dim>{boundary_message->neighbor_direction,
-                                      boundary_message->element_id};
+    const auto key = DirectionalId<Dim>{boundary_message->neighbor_direction,
+                                        boundary_message->element_id};
 
     if (auto it = current_inbox.find(key); it != current_inbox.end()) {
       auto& current_boundary_data = it->second;

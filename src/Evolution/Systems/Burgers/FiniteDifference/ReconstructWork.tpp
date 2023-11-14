@@ -11,8 +11,8 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -30,7 +30,7 @@ void reconstruct_work(
     const gsl::not_null<std::array<Variables<TagsList>, 1>*> vars_on_upper_face,
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars, const Element<1>& element,
-    const DirectionIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh, const size_t ghost_zone_size) {
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
   const size_t reconstructed_num_pts = volume_num_pts + 1;
@@ -67,7 +67,7 @@ void reconstruct_work(
 
       const DataVector& neighbor_data =
           ghost_data
-              .at(DirectionId<1>{direction, *neighbors_in_direction.begin()})
+              .at(DirectionalId<1>{direction, *neighbors_in_direction.begin()})
               .neighbor_ghost_data_for_reconstruction();
 
       ASSERT(neighbor_data.size() != 0,
@@ -80,7 +80,7 @@ void reconstruct_work(
       // retrieve boundary ghost data from ghost_data
       const DataVector& neighbor_data =
           ghost_data
-              .at(DirectionId<1>{direction,
+              .at(DirectionalId<1>{direction,
                                  ElementId<1>::external_boundary_id()})
               .neighbor_ghost_data_for_reconstruction();
       ghost_cell_vars[direction] = gsl::make_span(
@@ -106,10 +106,10 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<1>& element,
-    const DirectionIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh, const Direction<1>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
-  const DirectionId<1> mortar_id{
+  const DirectionalId<1> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
 

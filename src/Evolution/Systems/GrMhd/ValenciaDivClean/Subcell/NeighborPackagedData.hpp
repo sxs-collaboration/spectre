@@ -18,7 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -65,9 +65,9 @@ namespace grmhd::ValenciaDivClean::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static DirectionIdMap<3, DataVector> apply(
+  static DirectionalIdMap<3, DataVector> apply(
       const db::DataBox<DbTagsList>& box,
-      const std::vector<DirectionId<3>>& mortars_to_reconstruct_to) {
+      const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -83,7 +83,7 @@ struct NeighborPackagedData {
            "storing the mesh velocity on the faces instead of "
            "re-slicing/projecting.");
 
-    DirectionIdMap<3, DataVector> neighbor_package_data{};
+    DirectionalIdMap<3, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }

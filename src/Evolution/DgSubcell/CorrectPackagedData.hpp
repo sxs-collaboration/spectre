@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -77,8 +77,8 @@ void correct_package_data(
     const gsl::not_null<Variables<DgPackageFieldTags>*> upper_packaged_data,
     const size_t logical_dimension_to_operate_in, const Element<Dim>& element,
     const Mesh<Dim>& subcell_volume_mesh,
-    const std::unordered_map<DirectionId<Dim>, evolution::dg::MortarData<Dim>,
-                             boost::hash<DirectionId<Dim>>>& mortar_data,
+    const std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
+                             boost::hash<DirectionalId<Dim>>>& mortar_data,
     const size_t variables_to_offset_in_dg_grid) {
   const Direction<Dim> upper_direction{logical_dimension_to_operate_in,
                                        Side::Upper};
@@ -86,16 +86,16 @@ void correct_package_data(
                                        Side::Lower};
   const bool has_upper_neighbor = element.neighbors().contains(upper_direction);
   const bool has_lower_neighbor = element.neighbors().contains(lower_direction);
-  const DirectionId<Dim> upper_mortar_id =
+  const DirectionalId<Dim> upper_mortar_id =
       has_upper_neighbor
-          ? DirectionId<Dim>{upper_direction,
-                             *element.neighbors().at(upper_direction).begin()}
-          : DirectionId<Dim>{};
-  const DirectionId<Dim> lower_mortar_id =
+          ? DirectionalId<Dim>{upper_direction,
+                               *element.neighbors().at(upper_direction).begin()}
+          : DirectionalId<Dim>{};
+  const DirectionalId<Dim> lower_mortar_id =
       has_lower_neighbor
-          ? DirectionId<Dim>{lower_direction,
-                             *element.neighbors().at(lower_direction).begin()}
-          : DirectionId<Dim>{};
+          ? DirectionalId<Dim>{lower_direction,
+                               *element.neighbors().at(lower_direction).begin()}
+          : DirectionalId<Dim>{};
 
   Index<Dim> subcell_extents_with_faces = subcell_volume_mesh.extents();
   ++subcell_extents_with_faces[logical_dimension_to_operate_in];

@@ -21,7 +21,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
@@ -268,7 +268,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(neighbor_is_troubled);
   CAPTURE(disable_subcell_in_block);
 
-  using Interps = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
@@ -304,13 +304,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   using GhostData = evolution::dg::subcell::GhostData;
 
-  DirectionIdMap<Dim, GhostData> ghost_data{};
+  DirectionalIdMap<Dim, GhostData> ghost_data{};
 
-  DirectionIdMap<Dim, Mesh<Dim>> neighbor_meshes{};
+  DirectionalIdMap<Dim, Mesh<Dim>> neighbor_meshes{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     REQUIRE(not neighbors.ids().empty());
-    const DirectionId<Dim> directional_element_id{direction,
-                                                  *neighbors.ids().begin()};
+    const DirectionalId<Dim> directional_element_id{direction,
+                                                    *neighbors.ids().begin()};
     if ((direction.side() == Side::Upper and direction.dimension() % 2 == 0) or
         (direction.side() == Side::Lower and direction.dimension() % 2 != 0)) {
       neighbor_meshes[directional_element_id] = dg_mesh;
@@ -406,7 +406,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
   neighbor_decisions.insert(std::pair{
-      DirectionId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+      DirectionalId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
       neighbor_is_troubled ? 10 : 0});
 
   if constexpr (HasPrims) {

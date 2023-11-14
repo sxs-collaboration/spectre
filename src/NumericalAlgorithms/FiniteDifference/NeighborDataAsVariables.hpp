@@ -9,8 +9,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -29,9 +29,9 @@ namespace fd {
  */
 template <size_t Dim, typename ReconstructionTags>
 void neighbor_data_as_variables(
-    const gsl::not_null<DirectionIdMap<Dim, Variables<ReconstructionTags>>*>
+    const gsl::not_null<DirectionalIdMap<Dim, Variables<ReconstructionTags>>*>
         vars_neighbor_data,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>&
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const size_t ghost_zone_size, const Mesh<Dim>& subcell_mesh) {
   const size_t neighbor_num_pts =

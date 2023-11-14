@@ -171,10 +171,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{}, normal_vectors);
 
   // Compute the packaged data
-  std::vector<DirectionId<1>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<1>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(
-        DirectionId<1>{direction, *neighbors.begin()});
+        DirectionalId<1>{direction, *neighbors.begin()});
   }
   const auto packaged_data =
       subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);

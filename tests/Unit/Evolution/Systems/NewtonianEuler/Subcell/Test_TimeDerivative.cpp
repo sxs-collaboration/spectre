@@ -218,8 +218,8 @@ std::array<double, 3> test(const size_t num_dg_pts) {
             NewtonianEuler::fd::MonotonisedCentralPrim<dim>{}.ghost_zone_size(),
             std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
-    const auto key =
-        DirectionId<dim>{direction, *element.neighbors().at(direction).begin()};
+    const auto key = DirectionalId<dim>{
+        direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;

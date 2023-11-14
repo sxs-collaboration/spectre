@@ -17,8 +17,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionId.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -217,10 +217,11 @@ struct TciAndRollback {
             const auto active_vars_ptr, const auto active_history_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
-            const gsl::not_null<DirectionIdMap<Dim, GhostData>*> ghost_data_ptr,
-            const DirectionIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
+            const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
+                ghost_data_ptr,
+            const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
             const size_t ghost_zone_size,
-            const DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
+            const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           ASSERT(active_history_ptr->size() > 0,
                  "We cannot have an empty history when unwinding, that's just "

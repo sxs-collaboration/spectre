@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 
 /// \cond
 template <size_t Dim>
@@ -31,7 +31,7 @@ namespace evolution::dg::subcell::Tags {
  */
 template <size_t Dim>
 struct InterpolatorsFromFdToNeighborFd : db::SimpleTag {
-  using type = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 
 /*!
@@ -42,7 +42,7 @@ struct InterpolatorsFromFdToNeighborFd : db::SimpleTag {
  */
 template <size_t Dim>
 struct InterpolatorsFromDgToNeighborFd : db::SimpleTag {
-  using type = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 
 /*!
@@ -53,6 +53,6 @@ struct InterpolatorsFromDgToNeighborFd : db::SimpleTag {
  */
 template <size_t Dim>
 struct InterpolatorsFromNeighborDgToFd : db::SimpleTag {
-  using type = DirectionIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 }  // namespace evolution::dg::subcell::Tags

@@ -21,7 +21,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
@@ -260,7 +260,7 @@ void test_impl(
   const std::unique_ptr<TimeStepper> time_stepper =
       make_time_stepper(multistep_time_stepper);
 
-  DirectionIdMap<Dim, evolution::dg::subcell::GhostData> ghost_data{};
+  DirectionalIdMap<Dim, evolution::dg::subcell::GhostData> ghost_data{};
 
   const int tci_decision{-1};  // default value
 
@@ -315,7 +315,7 @@ void test_impl(
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
   neighbor_decisions.insert(std::pair{
-      DirectionId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+      DirectionalId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
       neighbor_is_troubled ? 10 : 0});
 
   ActionTesting::emplace_array_component_and_initialize<comp>(

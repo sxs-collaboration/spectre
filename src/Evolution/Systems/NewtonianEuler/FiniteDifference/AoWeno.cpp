@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
@@ -78,7 +78,7 @@ void AoWeno53Prim<Dim>::reconstruct(
     const Variables<prims_tags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -99,7 +99,7 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
     const Variables<prims_tags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -170,7 +170,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const Variables<prims_tags>& volume_prims,                             \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
       const Element<DIM(data)>& element,                                     \
-      const DirectionIdMap<DIM(data), evolution::dg::subcell::GhostData>&    \
+      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>&  \
           ghost_data,                                                        \
       const Mesh<DIM(data)>& subcell_mesh) const;                            \
   template void AoWeno53Prim<DIM(data)>::reconstruct_fd_neighbor(            \
@@ -178,7 +178,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const Variables<prims_tags>& subcell_volume_prims,                     \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
       const Element<DIM(data)>& element,                                     \
-      const DirectionIdMap<DIM(data), evolution::dg::subcell::GhostData>&    \
+      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>&  \
           ghost_data,                                                        \
       const Mesh<DIM(data)>& subcell_mesh,                                   \
       const Direction<DIM(data)> direction_to_reconstruct) const;

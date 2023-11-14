@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 
 /// \cond
 class DataVector;
@@ -48,7 +48,7 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
@@ -67,7 +67,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct, size_t ghost_zone_size);
 }  // namespace NewtonianEuler::fd

@@ -43,8 +43,8 @@ namespace Limiters {
 // limiter both to a Scalar and to a tnsr::I<Dim>.
 namespace {
 template <size_t VolumeDim, typename PackagedData>
-using NeighborData = std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                                        boost::hash<DirectionId<VolumeDim>>>;
+using NeighborData = std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                                        boost::hash<DirectionalId<VolumeDim>>>;
 
 template <size_t Identifier>
 struct ScalarTag : db::SimpleTag {
@@ -132,9 +132,9 @@ void test_limiting_two_neighbors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_upper = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_upper = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lower = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lower = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
 
   package_data_upper.modal_volume_data.initialize(num_pts);
@@ -269,9 +269,9 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
@@ -826,13 +826,13 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_eta(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
@@ -930,13 +930,13 @@ void run() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_eta(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
@@ -2560,18 +2560,20 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_zeta = neighbor_data[DirectionId<dim>{
-      Direction<dim>::upper_zeta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_zeta = neighbor_data[DirectionId<dim>{
-      Direction<dim>::lower_zeta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::upper_zeta(),
+                                       ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::lower_zeta(),
+                                       ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;
@@ -2791,18 +2793,20 @@ void run() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_xi(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::upper_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionId<dim>{
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
       Direction<dim>::lower_eta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_up_zeta = neighbor_data[DirectionId<dim>{
-      Direction<dim>::upper_zeta(), ElementId<dim>{0}}];
-  Limiter::PackagedData& package_data_lo_zeta = neighbor_data[DirectionId<dim>{
-      Direction<dim>::lower_zeta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::upper_zeta(),
+                                       ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::lower_zeta(),
+                                       ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;

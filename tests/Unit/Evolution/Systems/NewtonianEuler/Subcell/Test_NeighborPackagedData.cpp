@@ -26,8 +26,8 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -194,8 +194,8 @@ double test(const size_t num_dg_pts) {
             NewtonianEuler::fd::MonotonisedCentralPrim<Dim>{}.ghost_zone_size(),
             std::unordered_set{direction.opposite()}, 0, {})
             .at(direction.opposite());
-    const auto key =
-        DirectionId<Dim>{direction, *element.neighbors().at(direction).begin()};
+    const auto key = DirectionalId<Dim>{
+        direction, *element.neighbors().at(direction).begin()};
     neighbor_data[key] = evolution::dg::subcell::GhostData{1};
     neighbor_data[key].neighbor_ghost_data_for_reconstruction() =
         neighbor_data_in_direction;
@@ -264,10 +264,10 @@ double test(const size_t num_dg_pts) {
   db::mutate_apply<NewtonianEuler::ConservativeFromPrimitive<Dim>>(
       make_not_null(&box));
 
-  std::vector<DirectionId<Dim>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<Dim>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(
-        DirectionId<Dim>{direction, *neighbors.begin()});
+        DirectionalId<Dim>{direction, *neighbors.begin()});
   }
 
   const auto all_packaged_data =
@@ -276,7 +276,7 @@ double test(const size_t num_dg_pts) {
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
-  DirectionIdMap<Dim, typename variables_tag::type> evolved_vars_errors{};
+  DirectionalIdMap<Dim, typename variables_tag::type> evolved_vars_errors{};
   double max_abs_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.direction;

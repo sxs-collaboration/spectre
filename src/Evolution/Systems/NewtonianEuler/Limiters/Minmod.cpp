@@ -40,9 +40,9 @@ bool characteristic_minmod_impl(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const std::unordered_map<
-        DirectionId<VolumeDim>,
+        DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
-        boost::hash<DirectionId<VolumeDim>>>& neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const bool compute_char_transformation_numerically) {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsMinmod =
@@ -50,9 +50,9 @@ bool characteristic_minmod_impl(
                        tmpl::list<NewtonianEuler::Tags::VMinus,
                                   NewtonianEuler::Tags::VMomentum<VolumeDim>,
                                   NewtonianEuler::Tags::VPlus>>;
-  std::unordered_map<DirectionId<VolumeDim>,
+  std::unordered_map<DirectionalId<VolumeDim>,
                      typename CharacteristicVarsMinmod::PackagedData,
-                     boost::hash<DirectionId<VolumeDim>>>
+                     boost::hash<DirectionalId<VolumeDim>>>
       neighbor_char_data{};
   for (const auto& [key, data] : neighbor_data) {
     neighbor_char_data[key].element_size = data.element_size;
@@ -161,8 +161,8 @@ bool Minmod<VolumeDim>::operator()(
     const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const std::unordered_map<DirectionId<VolumeDim>, PackagedData,
-                             boost::hash<DirectionId<VolumeDim>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
@@ -271,8 +271,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&,      \
       const std::array<double, DIM(data)>&, const Scalar<DataVector>&,   \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&, \
-      const std::unordered_map<DirectionId<DIM(data)>, PackagedData,     \
-                               boost::hash<DirectionId<DIM(data)>>>&) const;
+      const std::unordered_map<DirectionalId<DIM(data)>, PackagedData,   \
+                               boost::hash<DirectionalId<DIM(data)>>>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

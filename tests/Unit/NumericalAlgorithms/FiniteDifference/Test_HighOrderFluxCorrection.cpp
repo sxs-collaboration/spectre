@@ -12,8 +12,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -155,7 +155,7 @@ void test(const fd::DerivativeOrder correction_order) {
   // We do this by computing the solution in our entire neighbor, then using
   // slice_data to get the subset of points that are needed.
   DirectionMap<Dim, FluxVars> neighbor_data{};
-  DirectionIdMap<Dim, evolution::dg::subcell::GhostData>
+  DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>
       reconstruction_ghost_data{};
 
   for (const auto& direction : Direction<Dim>::all_directions()) {
@@ -181,7 +181,7 @@ void test(const fd::DerivativeOrder correction_order) {
               sliced_data.at(direction.opposite()).end(),
               neighbor_data[direction].data());
 
-    const DirectionId<Dim> mortar_id{direction, ElementId<Dim>{0}};
+    const DirectionalId<Dim> mortar_id{direction, ElementId<Dim>{0}};
     reconstruction_ghost_data[mortar_id] = evolution::dg::subcell::GhostData{1};
     reconstruction_ghost_data[mortar_id]
         .neighbor_ghost_data_for_reconstruction() =

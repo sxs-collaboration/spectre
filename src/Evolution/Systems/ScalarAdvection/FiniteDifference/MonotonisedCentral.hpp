@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/DirectionIdMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -90,7 +90,8 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   template <typename TagsList>
@@ -98,7 +99,8 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       gsl::not_null<Variables<TagsList>*> vars_on_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const DirectionIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
+      const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 };
