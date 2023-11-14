@@ -106,9 +106,10 @@ void PrimitiveFromConservative<Dim>::apply(
   DataVector z;
   try {
     // NOLINTNEXTLINE(clang-analyzer-core)
-    z = RootFinder::toms748(f_of_z, lower_bound, upper_bound,
-                            10.0 * std::numeric_limits<double>::epsilon(),
-                            10.0 * std::numeric_limits<double>::epsilon(), 100);
+    z = RootFinder::toms748<false>(
+        f_of_z, lower_bound, upper_bound,
+        10.0 * std::numeric_limits<double>::epsilon(),
+        10.0 * std::numeric_limits<double>::epsilon(), 100);
   } catch (std::exception& exception) {
     ERROR(
         "Failed to find the intermediate variable z with TOMS748 root finder "

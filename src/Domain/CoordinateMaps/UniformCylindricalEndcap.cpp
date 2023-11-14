@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/UniformCylindricalEndcap.hpp"
 
+#include <boost/math/special_functions/sign.hpp>
 #include <cmath>
 #include <limits>
 #include <optional>

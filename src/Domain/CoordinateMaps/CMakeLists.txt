@@ -83,6 +83,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  RootFinding
   PUBLIC
   Boost::boost
   DataStructures
@@ -90,8 +91,8 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   GSL::gsl
+  Logging
   MathFunctions
-  RootFinding
   Serialization
   SphericalHarmonics
   )

@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
   Charmxx::main
   DomainCreators
   Informer
+  Logging
   Options
   PhaseControl
   Spectral

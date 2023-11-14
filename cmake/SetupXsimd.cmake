@@ -6,6 +6,10 @@ option(USE_XSIMD "Use xsimd if it is available" OFF)
 if(USE_XSIMD)
   find_package(xsimd REQUIRED)
 
+  if(xsimd_VERSION VERSION_LESS 11.0.1)
+    message(FATAL_ERROR "xsimd must be at least 11.0.1, got ${xsimd_VERSION}")
+  endif()
+
   message(STATUS "xsimd incld: ${xsimd_INCLUDE_DIRS}")
   message(STATUS "xsimd vers: ${xsimd_VERSION}")
 
@@ -22,11 +26,13 @@ if(USE_XSIMD)
 
   # As long as we want xsimd support to be optional we need to be
   # able to figure out if we have it available.
-  set_property(TARGET xsimd
-    APPEND PROPERTY
-    INTERFACE_COMPILE_OPTIONS
-    -DSPECTRE_USE_XSIMD
-    -DBLAZE_USE_XSIMD=1
+  #
+  # To enable use with Blaze, add:
+  #   -DBLAZE_USE_XSIMD=1
+  target_compile_definitions(
+    xsimd
+    INTERFACE
+    $<$<COMPILE_LANGUAGE:CXX>:SPECTRE_USE_XSIMD>
     )
 
   set_property(
@@ -34,9 +40,12 @@ if(USE_XSIMD)
     xsimd
     )
 
-  target_link_libraries(
-    Blaze
-    INTERFACE
-    xsimd
-    )
+  # Currently we still have some compatibility bugs to sort out between Blaze
+  # and xsimd. Once that's done we will enable combining the two.
+  #
+  # target_link_libraries(
+  #   Blaze
+  #   INTERFACE
+  #   xsimd
+  #   )
 endif()
