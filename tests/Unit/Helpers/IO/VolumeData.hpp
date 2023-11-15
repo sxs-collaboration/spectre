@@ -10,6 +10,7 @@
 #include <vector>
 
 /// \cond
+class DataVector;
 namespace Spectral {
 enum class Basis;
 enum class Quadrature;
@@ -38,7 +39,9 @@ T multiply(const double obs_value, const T& component) {
 ///       and quadratures in the file.
 ///    3. That the expected_components are present in the file.
 ///    4. That the expected_components, after rescaling them by a constant
-///       factor_to_rescale_components, agree with the components in the file.
+///       factor_to_rescale_components, agree with the components in the file,
+///       except for those that are invalid_components which should be nans in
+///       the file.
 ///       Note: if components_comparison_precision is defined, then the
 ///       comparison is approximate, using *components_comparison_precision as
 ///       the tolerance.
@@ -55,5 +58,6 @@ void check_volume_data(
     const std::vector<std::string>& expected_components,
     const std::vector<std::vector<size_t>>& grid_data_orders,
     const std::optional<double>& components_comparison_precision,
-    double factor_to_rescale_components = 1.0);
+    double factor_to_rescale_components = 1.0,
+    const std::vector<std::string>& invalid_components = {});
 }  // namespace TestHelpers::io::VolumeData

@@ -33,7 +33,8 @@ void check_volume_data(
     const std::vector<std::string>& expected_components,
     const std::vector<std::vector<size_t>>& grid_data_orders,
     const std::optional<double>& components_comparison_precision,
-    const double factor_to_rescale_components) {
+    const double factor_to_rescale_components,
+    const std::vector<std::string>& invalid_components) {
   h5::H5File<h5::AccessType::ReadOnly> file_read{h5_file_name};
   const auto& volume_file =
       file_read.get<h5::VolumeData>("/"s + group_name, version_number);
@@ -116,23 +117,29 @@ void check_volume_data(
   // are in a particular order.
   for (size_t i = 0; i < expected_components.size(); i++) {
     const auto& component = expected_components[i];
+    const bool component_is_invalid =
+        (alg::find(invalid_components, component) != invalid_components.end());
     // for each grid
     for (size_t j = 0; j < grid_names.size(); j++) {
-      if (components_comparison_precision) {
-        Approx custom_approx = Approx::custom()
-                                   .epsilon(*components_comparison_precision)
-                                   .scale(1.0);
+      const auto& data = get_grid_data(
+          volume_file.get_tensor_component(observation_id, component),
+          grid_positions[j]);
+      if (component_is_invalid) {
+        for (size_t s = 0; s < data.size(); ++s) {
+          CHECK_THAT(data[s], Catch::Matchers::IsNaN());
+        }
+      } else if (components_comparison_precision.has_value()) {
+        Approx custom_approx =
+            Approx::custom()
+                .epsilon(components_comparison_precision.value())
+                .scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(
-            get_grid_data(
-                volume_file.get_tensor_component(observation_id, component),
-                grid_positions[j]),
+            data,
             multiply(factor_to_rescale_components,
                      tensor_components_and_coords[grid_data_orders[j][i]]),
             custom_approx);
       } else {
-        CHECK(get_grid_data(
-                  volume_file.get_tensor_component(observation_id, component),
-                  grid_positions[j]) ==
+        CHECK(data ==
               multiply(factor_to_rescale_components,
                        tensor_components_and_coords[grid_data_orders[j][i]]));
       }
@@ -164,6 +171,9 @@ void check_volume_data(
 
       for (size_t i = 0; i < expected_components.size(); i++) {
         const auto& component = expected_components[i];
+        const bool component_is_valid =
+            (alg::find(invalid_components, component) ==
+             invalid_components.end());
         const auto expected_data = get_grid_data(
             volume_file.get_tensor_component(observation_id, component),
             grid_positions[j]);
@@ -173,29 +183,35 @@ void check_volume_data(
                            return tensor_component.name == component;
                          });
         REQUIRE(component_data_it != volume_data_it->tensor_components.end());
-        CHECK(std::get<DataType>(component_data_it->data) == expected_data);
+        if (component_is_valid) {
+          CHECK(std::get<DataType>(component_data_it->data) == expected_data);
+        }
       }
     }
   }
   CHECK(observations_found == 1);
-  // Test that the data is sorted by copying it, sorting it, and verifying
-  // everything is the same. First sort outer vector by observation value, then
-  // sort the vector of ElementVolumeData on each time slice.
-  auto volume_data_sorted = volume_data;
-  alg::sort(volume_data_sorted, [](const auto& lhs, const auto& rhs) {
-    return std::get<1>(lhs) < std::get<1>(rhs);
-  });
-  for (auto& data_at_time : volume_data_sorted) {
-    alg::sort(std::get<2>(data_at_time), [](const auto& lhs, const auto& rhs) {
-      return lhs.element_name < rhs.element_name;
+  if (invalid_components.empty()) {
+    // Test that the data is sorted by copying it, sorting it, and verifying
+    // everything is the same. First sort outer vector by observation value,
+    // then sort the vector of ElementVolumeData on each time slice.
+    auto volume_data_sorted = volume_data;
+    alg::sort(volume_data_sorted, [](const auto& lhs, const auto& rhs) {
+      return std::get<1>(lhs) < std::get<1>(rhs);
     });
-    for (auto& element_data : std::get<2>(data_at_time)) {
-      alg::sort(
-          element_data.tensor_components,
-          [](const auto& lhs, const auto& rhs) { return lhs.name < rhs.name; });
+    for (auto& data_at_time : volume_data_sorted) {
+      alg::sort(std::get<2>(data_at_time),
+                [](const auto& lhs, const auto& rhs) {
+                  return lhs.element_name < rhs.element_name;
+                });
+      for (auto& element_data : std::get<2>(data_at_time)) {
+        alg::sort(element_data.tensor_components,
+                  [](const auto& lhs, const auto& rhs) {
+                    return lhs.name < rhs.name;
+                  });
+      }
     }
+    CHECK((volume_data == volume_data_sorted));
   }
-  CHECK((volume_data == volume_data_sorted));
 }
 
 #define GET_DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -213,7 +229,8 @@ void check_volume_data(
       const std::vector<std::string>& expected_components,               \
       const std::vector<std::vector<size_t>>& grid_data_orders,          \
       const std::optional<double>& components_comparison_precision,      \
-      const double factor_to_rescale_components);
+      const double factor_to_rescale_components,                         \
+      const std::vector<std::string>& invalid_components);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (DataVector, std::vector<float>))
 

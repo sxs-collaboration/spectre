@@ -313,10 +313,12 @@ void clean_up_interpolation_target(
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 bool have_data_at_all_points(const db::DataBox<DbTags>& box,
                              const TemporalId& temporal_id) {
-  const size_t filled_size =
-      db::get<Tags::IndicesOfFilledInterpPoints<TemporalId>>(box)
-          .at(temporal_id)
-          .size();
+  const auto& filled_indices =
+      db::get<Tags::IndicesOfFilledInterpPoints<TemporalId>>(box);
+
+  const size_t filled_size = filled_indices.count(temporal_id) > 0
+                                 ? filled_indices.at(temporal_id).size()
+                                 : 0;
   const size_t invalid_size = [&box, &temporal_id]() {
     const auto& invalid_indices =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(box);

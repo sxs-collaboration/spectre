@@ -32,6 +32,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/IO/VolumeData.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -93,6 +94,18 @@ struct SurfaceIntegral;
 }  // namespace gr::surfaces::Tags
 
 namespace {
+
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+domain::creators::Sphere make_sphere() {
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::All) {
+    return {0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    return {4.9, 8.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+  }
+  return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
+}
+
 void check_ylm_data(const std::string& h5_file_name) {
   // Parameters chosen to match SurfaceE choices below
   constexpr size_t l_max = 3;
@@ -131,6 +144,16 @@ void check_ylm_data(const std::string& h5_file_name) {
       "coef(3,3)"};
   const size_t expected_num_columns = ylm_expected_legend.size();
 
+  // Check that the H5 file was written correctly.
+  const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
+  const auto& ylm_dat_file = file.get<h5::Dat>("/SurfaceE_Ylm");
+  const Matrix ylm_written_data = ylm_dat_file.get_data();
+  const auto& ylm_written_legend = ylm_dat_file.get_legend();
+
+  CHECK(ylm_written_legend.size() == expected_num_columns);
+  CHECK(ylm_written_data.columns() == expected_num_columns);
+  CHECK(ylm_written_legend == ylm_expected_legend);
+
   std::vector<double> ylm_expected_data{0.0, expansion_center[0],
                                         expansion_center[1],
                                         expansion_center[2], l_max};
@@ -148,16 +171,6 @@ void check_ylm_data(const std::string& h5_file_name) {
              << expected_num_columns
              << ") and the number of columns in the constructed test Ylm data ("
              << ylm_expected_data.size() << ") do not match.");
-
-  // Check that the H5 file was written correctly.
-  const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
-  const auto& ylm_dat_file = file.get<h5::Dat>("/SurfaceE_Ylm");
-  const Matrix ylm_written_data = ylm_dat_file.get_data();
-  const auto& ylm_written_legend = ylm_dat_file.get_legend();
-
-  CHECK(ylm_written_legend.size() == expected_num_columns);
-  CHECK(ylm_written_data.columns() == expected_num_columns);
-  CHECK(ylm_written_legend == ylm_expected_legend);
 
   for (size_t i = 0; i < expected_num_columns; i++) {
     CHECK(ylm_written_data(0, i) == ylm_expected_data[i]);
@@ -258,6 +271,7 @@ void check_ylm_data_with_greater_max_l() {
   }
 }
 
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   // Parameters chosen to match SurfaceD choices below
   constexpr size_t l_max = 10;
@@ -292,15 +306,25 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   const std::vector<Spectral::Quadrature> quadratures{
       {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
   const observers::ObservationId observation_id{0., "/SurfaceD.vol"};
-  TestHelpers::io::VolumeData::check_volume_data(
-      surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
-      observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
-      {quadratures}, {extents},
-      {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
-       "InertialCoordinates_z"s, "Square"s},
-      {{0, 1, 2, 3}}, 1.e-2);  // loose tolerance because of low resolution
-                               // in the volume, which limits interpolation
-                               // accuracy
+  if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
+    TestHelpers::io::VolumeData::check_volume_data(
+        surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
+        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
+        {quadratures}, {extents},
+        {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
+         "InertialCoordinates_z"s, "Square"s},
+        {{0, 1, 2, 3}}, 1.e-14, 1.0, {"Square"s});
+  } else {
+    TestHelpers::io::VolumeData::check_volume_data(
+        surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
+        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
+        {quadratures}, {extents},
+        {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
+         "InertialCoordinates_z"s, "Square"s},
+        {{0, 1, 2, 3}}, 1.e-2);  // loose tolerance because of low resolution
+                                 // in the volume, which limits interpolation
+                                 // accuracy
+  }
 }
 
 // Simple DataBoxItems for test.
@@ -502,11 +526,8 @@ struct MockMetavariables {
                  MockInterpolator<MockMetavariables>>;
 };
 
-SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesAndSurfaceData",
-    "[Unit]") {
-  domain::creators::register_derived_with_charm();
-
+template <InterpTargetTestHelpers::ValidPoints ValidPoints>
+void run_test() {
   // Check if either file generated by this test exists and remove them
   // if so. Check for both files existing before the test runs, since
   // both files get written when evaluating the list of post interpolation
@@ -572,8 +593,7 @@ SPECTRE_TEST_CASE(
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_E(
       3, {{0.04, 0.05, 0.06}}, 1.1, {{1.0, 0.0, 0.0}},
       intrp::AngularOrdering::Strahlkorper);
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto domain_creator = make_sphere<ValidPoints>();
   tuples::TaggedTuple<
       observers::Tags::ReductionFileName, observers::Tags::SurfaceFileName,
       ::intrp::Tags::KerrHorizon<metavars::SurfaceA>, domain::Tags::Domain<3>,
@@ -815,7 +835,13 @@ SPECTRE_TEST_CASE(
         // The interpolation is not perfect because I use too few grid points.
         Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
         for (size_t i = 0; i < expected_integral.size(); ++i) {
-          CHECK(expected_integral[i] == custom_approx(written_data(0, i + 1)));
+          if constexpr (ValidPoints ==
+                        InterpTargetTestHelpers::ValidPoints::None) {
+            CHECK_THAT(written_data(0, i + 1), Catch::Matchers::IsNaN());
+          } else {
+            CHECK(expected_integral[i] ==
+                  custom_approx(written_data(0, i + 1)));
+          }
         }
       };
   check_file_contents(expected_integral_a, expected_legend_a, "/SurfaceA");
@@ -823,6 +849,8 @@ SPECTRE_TEST_CASE(
   check_file_contents(expected_integral_c, expected_legend_c, "/SurfaceC");
 
   // Check that the Ylm data were written correctly
+  // As this data depends only on the known target (a KerrHorizon) it
+  // uses no interpolated data
   check_ylm_data(h5_file_name);
 
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -830,12 +858,26 @@ SPECTRE_TEST_CASE(
   }
 
   // Check that the Surfaces file contains the correct surface data
-  check_surface_volume_data(surfaces_file_prefix);
+  check_surface_volume_data<ValidPoints>(surfaces_file_prefix);
 
   if (file_system::check_if_file_exists(surfaces_file_prefix + ".h5"s)) {
     file_system::rm(surfaces_file_prefix + ".h5"s, true);
   }
 
+  // This check also uses no interpolated data
   check_ylm_data_with_greater_max_l();
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesAndSurfaceData",
+    "[Unit]") {
+  domain::creators::register_derived_with_charm();
+  run_test<InterpTargetTestHelpers::ValidPoints::All>();
+  run_test<InterpTargetTestHelpers::ValidPoints::None>();
+  // ValidPoints::Some is not tested as that would vastly increase the
+  // complexity of the test for limited gain.  In order to test
+  // properly would require passing in the list of valid points.  The
+  // only difference between the cases All and Some would be that
+  // invalid points print nan, which is only tested by None.
 }
 }  // namespace

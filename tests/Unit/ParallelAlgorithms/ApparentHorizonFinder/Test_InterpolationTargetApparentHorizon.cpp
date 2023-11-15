@@ -24,7 +24,6 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -44,9 +43,7 @@ struct MockMetavariables {
     using compute_target_points =
         ::intrp::TargetPoints::ApparentHorizon<InterpolationTargetA,
                                                ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<>, InterpolationTargetA>>;
+    using post_interpolation_callbacks = tmpl::list<>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
