@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -164,11 +165,9 @@ void test_interpolation_target(
                 intrp::protocols::ComputeTargetPoints>);
   using interp_component = mock_interpolator<metavars>;
 
-  tuples::TaggedTuple<InterpolationTargetOptionTag,
-                      domain::Tags::Domain<MetaVariables::volume_dim>>
-      tuple_of_opts{std::move(options),
-                    std::move(domain_creator.create_domain())};
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {std::move(options), domain_creator.create_domain(),
+       ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);

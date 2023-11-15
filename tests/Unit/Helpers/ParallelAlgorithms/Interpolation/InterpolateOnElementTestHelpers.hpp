@@ -23,6 +23,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -197,7 +198,9 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::conditional_t<
       tt::is_a_v<intrp::TargetPoints::Sphere,
                  typename InterpolationTargetTag::compute_target_points>,
-      tmpl::list<intrp::Tags::Sphere<InterpolationTargetTag>>, tmpl::list<>>;
+      tmpl::list<intrp::Tags::Sphere<InterpolationTargetTag>,
+                 intrp::Tags::Verbosity>,
+      tmpl::list<intrp::Tags::Verbosity>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -339,12 +342,14 @@ void test_interpolate_on_element(
 
   tuples::tagged_tuple_from_typelist<tmpl::conditional_t<
       is_sphere,
-      tmpl::list<domain::Tags::Domain<3>, intrp::Tags::Sphere<target_tag>>,
-      tmpl::list<domain::Tags::Domain<3>>>>
+      tmpl::list<domain::Tags::Domain<3>, intrp::Tags::Sphere<target_tag>,
+                 intrp::Tags::Verbosity>,
+      tmpl::list<domain::Tags::Domain<3>, intrp::Tags::Verbosity>>>
       init_tuple{};
 
   tuples::get<domain::Tags::Domain<3>>(init_tuple) =
       std::move(domain_creator.create_domain());
+  tuples::get<intrp::Tags::Verbosity>(init_tuple) = ::Verbosity::Silent;
 
   if constexpr (is_sphere) {
     tuples::get<intrp::Tags::Sphere<target_tag>>(init_tuple) =

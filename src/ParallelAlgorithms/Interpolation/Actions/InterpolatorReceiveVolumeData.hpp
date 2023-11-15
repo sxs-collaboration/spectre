@@ -5,6 +5,9 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
+#include <sstream>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -12,12 +15,15 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -73,6 +79,9 @@ struct InterpolatorReceiveVolumeData {
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&
           interpolator_source_vars) {
+    std::stringstream ss{};
+    const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool debug_print = verbosity >= ::Verbosity::Debug;
     // Determine if we have already finished interpolating on this
     // temporal_id.  If so, then we simply return, ignore the incoming
     // data, and do not interpolate.
@@ -85,8 +94,14 @@ struct InterpolatorReceiveVolumeData {
     bool this_temporal_id_is_done = true;
     const auto& holders =
         db::get<Tags::InterpolatedVarsHolders<Metavariables>>(box);
+    if (debug_print) {
+      ss << InterpolationTarget_detail::interpolator_output_prefix(element_id,
+                                                                   temporal_id)
+         << ", is ";
+    }
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
-        [&holders, &this_temporal_id_is_done, &temporal_id](auto tag_v) {
+        [&holders, &this_temporal_id_is_done, &temporal_id, &ss,
+         &debug_print](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           // Here we decide whether this interpolation target is "done" (i.e. it
           // does not need to interpolate) at this temporal_id. If it is "done",
@@ -106,12 +121,21 @@ struct InterpolatorReceiveVolumeData {
                     .temporal_ids_when_data_has_been_interpolated;
             if (not alg::found(finished_temporal_ids, temporal_id)) {
               this_temporal_id_is_done = false;
+              if (debug_print) {
+                ss << "not finished for " << pretty_type::name<tag>() << ", ";
+              }
             }
           }
         });
 
     if (this_temporal_id_is_done) {
+      if (debug_print) {
+        Parallel::printf("%s done. Not storing.\n", ss.str());
+      }
       return;
+    } else if (debug_print) {
+      ss << "being stored.";
+      Parallel::printf("%s\n", ss.str());
     }
 
     // Add to the VolumeVarsInfo for this TemporalId type.  (Note that

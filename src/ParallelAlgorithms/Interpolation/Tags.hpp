@@ -13,6 +13,8 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
+#include "IO/Logging/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
@@ -66,6 +68,18 @@ struct DumpVolumeDataOnFailure : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
 
   static bool create_from_options(const bool input) { return input; }
+};
+
+/// Tag that determines the verbosity of output from the interpolator
+struct Verbosity : db::SimpleTag {
+  using type = ::Verbosity;
+
+  using option_tags =
+      tmpl::list<logging::OptionTags::Verbosity<OptionTags::Interpolator>>;
+  static constexpr bool pass_metavariables = false;
+  static ::Verbosity create_from_options(const ::Verbosity& verbosity) {
+    return verbosity;
+  }
 };
 
 /// Keeps track of which points have been filled with interpolated data.

@@ -9,6 +9,8 @@
 #include <optional>
 #include <pup.h>
 #include <set>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,15 +25,19 @@
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/GetComputeItemsOnSource.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -141,6 +147,18 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         domain::BlockId, tnsr::I<double, VolumeDim, ::Frame::BlockLogical>>>>
         block_logical_coords{};
 
+    std::stringstream ss{};
+    ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
+       << std::scientific;
+    const ::Verbosity verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool debug_print = verbosity >= ::Verbosity::Debug;
+    if (debug_print) {
+      ss << InterpolationTarget_detail::target_output_prefix<
+                InterpolateWithoutInterpComponent, InterpolationTargetTag>(
+                temporal_id)
+         << ", " << array_index << ", ";
+    }
+
     // The sphere target is special because we have a better idea of where the
     // points will be.
     if constexpr (tt::is_a_v<
@@ -201,6 +219,11 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
       // If no radii pass through this element, there's nothing to do so return
       if (not offset_and_num_points.has_value()) {
+        if (debug_print) {
+          using ::operator<<;
+          ss << "No radii in this element.";
+          Parallel::printf("%s\n", ss.str());
+        }
         return;
       }
 
@@ -295,6 +318,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         element_logical_coordinates(element_ids, block_logical_coords);
 
     if (element_coord_holders.count(array_index) == 0) {
+      if (debug_print) {
+        ss << "No target points in this element. Skipping.";
+        Parallel::printf("%s\n", ss.str());
+      }
       // There are no target points in this element, so we don't need
       // to do anything.
       return;
@@ -376,6 +403,11 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         block_logical_coords,
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
         temporal_id);
+
+    if (debug_print) {
+      ss << "Sending points and vars to target.";
+      Parallel::printf("%s\n", ss.str());
+    }
   }
 
   using is_ready_argument_tags = tmpl::list<>;

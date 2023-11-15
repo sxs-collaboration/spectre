@@ -4,16 +4,21 @@
 #pragma once
 
 #include <algorithm>
+#include <sstream>
+#include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace intrp {
@@ -54,6 +59,9 @@ struct AddTemporalIdsToInterpolationTarget {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     std::vector<TemporalId>&& temporal_ids) {
+    const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(cache);
+    const bool verbose_print = verbosity >= ::Verbosity::Verbose;
+    const bool debug_print = verbosity >= ::Verbosity::Debug;
     if constexpr (InterpolationTargetTag::compute_target_points::is_sequential::
                       value) {
       // InterpolationTarget is sequential.
@@ -86,6 +94,31 @@ struct AddTemporalIdsToInterpolationTarget {
         Parallel::simple_action<
             Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
             my_proxy);
+
+        if (verbose_print) {
+          Parallel::printf("%s, Adding temporal ids %s to box.\n",
+                           InterpolationTarget_detail::target_output_prefix<
+                               AddTemporalIdsToInterpolationTarget,
+                               InterpolationTargetTag>(),
+                           temporal_ids);
+        }
+      } else if (debug_print) {
+        std::stringstream ss{};
+        ss << InterpolationTarget_detail::target_output_prefix<
+                  AddTemporalIdsToInterpolationTarget, InterpolationTargetTag>()
+           << ", ";
+        using ::operator<<;
+        if (not db::get<Tags::TemporalIds<TemporalId>>(box).empty()) {
+          ss << "Temporal ids not empty. "
+             << db::get<Tags::TemporalIds<TemporalId>>(box);
+        } else if (not pending_temporal_ids_was_empty_on_entry) {
+          ss << "Pending temporal ids not empty on entry. "
+             << db::get<Tags::PendingTemporalIds<TemporalId>>(box);
+        } else if (db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
+          ss << "Pending temporal ids empty. ";
+        }
+
+        Parallel::printf("%s\n", ss.str());
       }
     } else {
       // InterpolationTarget is not sequential. So everything in
@@ -103,6 +136,18 @@ struct AddTemporalIdsToInterpolationTarget {
         Parallel::simple_action<
             Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
             my_proxy);
+        if (verbose_print) {
+          Parallel::printf("%s: Adding temporal ids %s to box.\n",
+                           InterpolationTarget_detail::target_output_prefix<
+                               AddTemporalIdsToInterpolationTarget,
+                               InterpolationTargetTag>(),
+                           temporal_ids);
+        }
+      } else if (debug_print) {
+        Parallel::printf(
+            "%s: No pending temporal ids.\n",
+            InterpolationTarget_detail::target_output_prefix<
+                AddTemporalIdsToInterpolationTarget, InterpolationTargetTag>());
       }
     }
   }

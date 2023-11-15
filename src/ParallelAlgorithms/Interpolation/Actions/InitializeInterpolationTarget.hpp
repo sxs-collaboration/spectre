@@ -85,6 +85,7 @@ struct InitializeInterpolationTarget {
       initialize_interpolation_target_detail::get_compute_tags_or_default_t<
           typename InterpolationTargetTag::compute_target_points, tmpl::list<>>,
       typename InterpolationTargetTag::compute_items_on_target>;
+  using const_global_cache_tags = tmpl::list<intrp::Tags::Verbosity>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>

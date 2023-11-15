@@ -310,10 +310,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
       domain::Tags::Domain<3>,
       intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
-      intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>>
+      intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>,
+      intrp::Tags::Verbosity>
       tuple_of_opts(std::move(line_segment_opts_A),
                     domain_creator.create_domain(),
-                    std::move(line_segment_opts_B), kerr_horizon_opts_C);
+                    std::move(line_segment_opts_B), kerr_horizon_opts_C,
+                    ::Verbosity::Silent);
 
   // 3 mock nodes, with 2, 3, and 1 mocked core respectively.
   ActionTesting::MockRuntimeSystem<metavars> runner{

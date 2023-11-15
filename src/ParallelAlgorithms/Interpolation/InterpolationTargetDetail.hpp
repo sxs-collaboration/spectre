@@ -4,7 +4,10 @@
 #pragma once
 
 #include <cstddef>
+#include <ios>
+#include <limits>
 #include <memory>
+#include <sstream>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
@@ -19,15 +22,20 @@
 #include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/ElementToBlockLogicalMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/TagsMetafunctions.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -92,6 +100,53 @@ double get_temporal_id_value(const T& id) {
                   "'LinkedMessageId<double>', or 'TimeStepId'.");
     return id;
   }
+}
+
+template <typename InterpolationTargetTag, typename TemporalId>
+std::string interpolator_output_prefix(const TemporalId& temporal_id) {
+  std::stringstream ss{};
+  ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
+     << std::scientific;
+  ss << "Interpolator, " << pretty_type::name<InterpolationTargetTag>() << ", "
+     << temporal_id << ", WC " << sys::wall_time();
+
+  return ss.str();
+}
+
+template <size_t Dim, typename TemporalId>
+std::string interpolator_output_prefix(const ElementId<Dim>& element_id,
+                                       const TemporalId& temporal_id) {
+  std::stringstream ss{};
+  ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
+     << std::scientific;
+  ss << "Interpolator, " << element_id << ", " << temporal_id << ", WC "
+     << sys::wall_time();
+
+  return ss.str();
+}
+
+template <typename Action, typename InterpolationTargetTag, typename TemporalId>
+std::string target_output_prefix(const TemporalId& temporal_id) {
+  std::stringstream ss{};
+  ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
+     << std::scientific;
+  ss << pretty_type::name<Action>() << ", "
+     << pretty_type::name<InterpolationTargetTag>() << ", " << temporal_id
+     << ", WC " << sys::wall_time();
+
+  return ss.str();
+}
+
+template <typename Action, typename InterpolationTargetTag>
+std::string target_output_prefix() {
+  std::stringstream ss{};
+  ss << std::setprecision(std::numeric_limits<double>::digits10 + 4)
+     << std::scientific;
+  ss << pretty_type::name<Action>() << ", "
+     << pretty_type::name<InterpolationTargetTag>() << ", WC "
+     << sys::wall_time();
+
+  return ss.str();
 }
 
 CREATE_IS_CALLABLE(apply)
@@ -307,12 +362,16 @@ void clean_up_interpolation_target(
 ///
 /// have_data_at_all_points is called by an Action of InterpolationTarget.
 ///
+/// Since this will be called often, output is only printed to stdout if the
+/// verbosity is greater than or equal to `::Verbosity::Debug`.
+///
 /// Currently two Actions call have_data_at_all_points:
 /// - InterpolationTargetReceiveVars (called by Interpolator ParallelComponent)
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
-bool have_data_at_all_points(const db::DataBox<DbTags>& box,
-                             const TemporalId& temporal_id) {
+bool have_data_at_all_points(
+    const db::DataBox<DbTags>& box, const TemporalId& temporal_id,
+    const ::Verbosity verbosity = ::Verbosity::Silent) {
   const size_t filled_size =
       db::get<Tags::IndicesOfFilledInterpPoints<TemporalId>>(box)
           .at(temporal_id)
@@ -329,6 +388,15 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
       db::get<Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(box)
           .at(temporal_id)
           .number_of_grid_points();
+  if (verbosity >= ::Verbosity::Debug) {
+    struct HaveDataAtAllPoints {};
+    Parallel::printf(
+        "%s, Total expected points = %d, valid points received = %d, "
+        "invalid points received = %d\n",
+        target_output_prefix<HaveDataAtAllPoints, InterpolationTargetTag>(
+            temporal_id),
+        interp_size, filled_size, invalid_size);
+  }
   return (invalid_size + filled_size == interp_size);
 }
 

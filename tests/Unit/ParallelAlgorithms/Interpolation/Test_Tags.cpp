@@ -102,6 +102,7 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
       "NumberOfElements");
   TestHelpers::db::test_simple_tag<intrp::Tags::InterpPointInfo<Metavars>>(
       "InterpPointInfo");
+  TestHelpers::db::test_simple_tag<intrp::Tags::Verbosity>("Verbosity");
   TestHelpers::db::test_base_tag<intrp::Tags::InterpPointInfoBase>(
       "InterpPointInfoBase");
 

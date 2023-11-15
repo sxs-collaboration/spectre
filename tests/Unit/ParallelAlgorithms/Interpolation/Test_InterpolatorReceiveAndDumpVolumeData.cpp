@@ -36,6 +36,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -275,7 +276,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
   using const_global_cache_tags =
-      tmpl::list<intrp::Tags::DumpVolumeDataOnFailure>;
+      tmpl::list<intrp::Tags::DumpVolumeDataOnFailure, intrp::Tags::Verbosity>;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
       intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
@@ -433,7 +434,8 @@ void test(const bool dump_vol_data) {
   }
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), dump_vol_data, filename}};
+      {domain_creator.create_domain(), dump_vol_data, ::Verbosity::Silent,
+       filename}};
   ActionTesting::emplace_group_component_and_initialize<interp_component>(
       &runner,
       {0_st,

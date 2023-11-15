@@ -35,6 +35,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -580,11 +581,12 @@ SPECTRE_TEST_CASE(
       ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
       ::intrp::Tags::KerrHorizon<metavars::SurfaceC>,
       ::intrp::Tags::KerrHorizon<metavars::SurfaceD>,
-      ::intrp::Tags::KerrHorizon<metavars::SurfaceE>>
+      ::intrp::Tags::KerrHorizon<metavars::SurfaceE>, ::intrp::Tags::Verbosity>
       tuple_of_opts{h5_file_prefix,      surfaces_file_prefix,
                     kerr_horizon_opts_A, domain_creator.create_domain(),
                     kerr_horizon_opts_B, kerr_horizon_opts_C,
-                    kerr_horizon_opts_D, kerr_horizon_opts_E};
+                    kerr_horizon_opts_D, kerr_horizon_opts_E,
+                    ::Verbosity::Silent};
 
   // Three mock nodes, with 2, 1, and 4 mock cores.
   ActionTesting::MockRuntimeSystem<metavars> runner{

@@ -116,6 +116,7 @@ Observers:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+  Verbosity: Silent
 
 EventsAndTriggers:
   - Trigger:

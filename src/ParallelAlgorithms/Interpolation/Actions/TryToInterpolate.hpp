@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <sstream>
+#include <string>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -10,12 +13,16 @@
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -165,10 +172,23 @@ void try_to_interpolate(
   const auto& vars_infos =
       get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(holders)
           .infos;
+  std::stringstream ss{};
+  const ::Verbosity& verbosity = Parallel::get<intrp::Tags::Verbosity>(*cache);
+  const bool debug_print = verbosity >= ::Verbosity::Debug;
+
+  if (debug_print) {
+    ss << InterpolationTarget_detail::interpolator_output_prefix<
+              InterpolationTargetTag>(temporal_id)
+       << ", ";
+  }
 
   // If we don't yet have any points for this InterpolationTarget at
   // this temporal_id, we should exit (we can't interpolate anyway).
   if (vars_infos.count(temporal_id) == 0) {
+    if (debug_print) {
+      ss << "no points received yet. Can't do anything.\n";
+      Parallel::printf("%s", ss.str());
+    }
     return;
   }
 
@@ -182,6 +202,11 @@ void try_to_interpolate(
           .interpolation_is_done_for_these_elements.size() == num_elements) {
     // Send data to InterpolationTarget, but only if the list of points is
     // non-empty.
+    if (debug_print) {
+      ss << "finished interpolation on all " << num_elements
+         << " elements on core " << sys::my_proc();
+    }
+
     if (not vars_infos.at(temporal_id).global_offsets.empty()) {
       const auto& info = vars_infos.at(temporal_id);
       auto& receiver_proxy = Parallel::get_parallel_component<
@@ -189,6 +214,12 @@ void try_to_interpolate(
       Parallel::simple_action<
           Actions::InterpolationTargetReceiveVars<InterpolationTargetTag>>(
           receiver_proxy, info.vars, info.global_offsets, temporal_id);
+
+      if (debug_print) {
+        ss << " Sending interpolated data.\n";
+      }
+    } else if (debug_print) {
+      ss << " Global offsets empty. Nothing to interpolate.";
     }
 
     // Clear interpolated data, since we don't need it anymore.
@@ -202,6 +233,15 @@ void try_to_interpolate(
               .infos.erase(temporal_id);
         },
         box);
+  } else if (debug_print) {
+    ss << "interpolation not finished on all local elements of core "
+       << sys::my_proc() << ". Expected " << num_elements << ", received "
+       << vars_infos.at(temporal_id)
+              .interpolation_is_done_for_these_elements.size();
+  }
+
+  if (debug_print) {
+    Parallel::printf("%s\n", ss.str());
   }
 }
 

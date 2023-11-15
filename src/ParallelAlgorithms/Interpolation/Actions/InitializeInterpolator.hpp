@@ -29,6 +29,7 @@ template <typename Metavariables>
 struct InterpolatedVarsHolders;
 template <typename Metavariables, typename TemporalId>
 struct VolumeVarsInfo;
+struct Verbosity;
 }  // namespace Tags
 }  // namespace intrp
 /// \endcond
@@ -58,6 +59,7 @@ struct InitializeInterpolator {
 
   using simple_tags = return_tag_list;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<intrp::Tags::Verbosity>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

@@ -23,6 +23,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -166,7 +167,8 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>,
+                 intrp::Tags::Verbosity>;
   using simple_tags = typename intrp::Actions::InitializeInterpolationTarget<
       Metavariables, InterpolationTargetTag>::simple_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -250,12 +252,12 @@ void test() {
                                                        &init_expr_times]() {
     if constexpr (UseTimeDepMaps) {
       return ActionTesting::MockRuntimeSystem<metavars>(
-          domain_creator.create_domain(),
-          domain_creator.functions_of_time(init_expr_times));
+          {domain_creator.create_domain(), ::Verbosity::Silent},
+          {domain_creator.functions_of_time(init_expr_times)});
     } else {
       (void)init_expr_times;
       return ActionTesting::MockRuntimeSystem<metavars>(
-          domain_creator.create_domain());
+          {domain_creator.create_domain(), ::Verbosity::Silent});
     }
   }();
   ActionTesting::emplace_component_and_initialize<target_component>(

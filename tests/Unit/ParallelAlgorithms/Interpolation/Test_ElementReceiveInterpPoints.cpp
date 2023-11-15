@@ -16,6 +16,7 @@
 #include "Domain/Domain.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -64,7 +65,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::push_back<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
-      domain::Tags::Domain<Metavariables::volume_dim>>;
+      domain::Tags::Domain<Metavariables::volume_dim>, intrp::Tags::Verbosity>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -142,10 +143,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
                                                metavars::volume_dim>,
                       intrp::Tags::LineSegment<metavars::InterpolationTargetB,
                                                metavars::volume_dim>,
-                      domain::Tags::Domain<metavars::volume_dim>>
+                      domain::Tags::Domain<metavars::volume_dim>,
+                      intrp::Tags::Verbosity>
       tuple_of_opts{std::move(line_segment_opts_a),
                     std::move(line_segment_opts_b),
-                    domain_creator.create_domain()};
+                    domain_creator.create_domain(), ::Verbosity::Silent};
 
   // Initialization
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
