@@ -4,7 +4,6 @@
 #pragma once
 
 #include <cstddef>
-#include <limits>
 #include <optional>
 #include <pup.h>
 #include <string>
@@ -38,7 +37,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/Numeric.hpp"
 #include "Utilities/OptionalHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -217,6 +215,17 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>,
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
 
+  template <typename TensorToObserveTag, typename ComputeTagsList,
+            typename DataBoxType, size_t Dim>
+  void observe_norms_impl(
+      gsl::not_null<
+          std::unordered_map<std::string, std::pair<std::vector<double>,
+                                                    std::vector<std::string>>>*>
+          norm_values_and_names,
+      const ObservationBox<ComputeTagsList, DataBoxType>& box,
+      const Mesh<Dim>& mesh, const DataVector& det_jacobian,
+      size_t number_of_points) const;
+
   template <typename ComputeTagsList, typename DataBoxType,
             typename Metavariables, size_t VolumeDim,
             typename ParallelComponent>
@@ -321,6 +330,52 @@ ObserveNorms<tmpl::list<ObservableTensorTags...>,
   }
 }
 
+// implementation of ObserveNorms::operator() factored out to save on compile
+// time and compile memory
+namespace ObserveNorms_impl {
+void check_norm_is_observable(const std::string& tensor_name,
+                              bool tag_has_value);
+
+template <size_t Dim>
+void fill_norm_values_and_names(
+    gsl::not_null<std::unordered_map<
+        std::string, std::pair<std::vector<double>, std::vector<std::string>>>*>
+        norm_values_and_names,
+    const std::pair<std::vector<std::string>, std::vector<DataVector>>&
+        names_and_components,
+    const Mesh<Dim>& mesh, const DataVector& det_jacobian,
+    const std::string& tensor_name, const std::string& tensor_norm_type,
+    const std::string& tensor_component, size_t number_of_points);
+}  // namespace ObserveNorms_impl
+
+template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
+          typename ArraySectionIdTag>
+template <typename TensorToObserveTag, typename ComputeTagsList,
+          typename DataBoxType, size_t Dim>
+void ObserveNorms<tmpl::list<ObservableTensorTags...>,
+                  tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
+    observe_norms_impl(
+        const gsl::not_null<std::unordered_map<
+            std::string,
+            std::pair<std::vector<double>, std::vector<std::string>>>*>
+            norm_values_and_names,
+        const ObservationBox<ComputeTagsList, DataBoxType>& box,
+        const Mesh<Dim>& mesh, const DataVector& det_jacobian,
+        const size_t number_of_points) const {
+  const std::string tensor_name = db::tag_name<TensorToObserveTag>();
+  for (size_t i = 0; i < tensor_names_.size(); ++i) {
+    if (tensor_name == tensor_names_[i]) {
+      ObserveNorms_impl::check_norm_is_observable(
+          tensor_name, has_value(get<TensorToObserveTag>(box)));
+      ObserveNorms_impl::fill_norm_values_and_names(
+          norm_values_and_names,
+          value(get<TensorToObserveTag>(box)).get_vector_of_data(), mesh,
+          det_jacobian, tensor_name, tensor_norm_types_[i],
+          tensor_components_[i], number_of_points);
+    }
+  }
+}
+
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 template <typename ComputeTagsList, typename DataBoxType,
@@ -339,11 +394,6 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
     return;
   }
 
-  using tensor_tags = tmpl::list<ObservableTensorTags...>;
-
-  std::unordered_map<std::string,
-                     std::pair<std::vector<double>, std::vector<std::string>>>
-      norm_values_and_names{};
   const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
   const DataVector det_jacobian =
     1. / get(get<::Events::Tags::ObserverDetInvJacobian
@@ -351,92 +401,16 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
   const size_t number_of_points = mesh.number_of_grid_points();
   const double local_volume = definite_integral(det_jacobian, mesh);
 
+  std::unordered_map<std::string,
+                     std::pair<std::vector<double>, std::vector<std::string>>>
+      norm_values_and_names{};
   // Loop over ObservableTensorTags and see if it was requested to be observed.
   // This approach allows us to delay evaluating any compute tags until they're
   // actually needed for observing.
-  tmpl::for_each<tensor_tags>([this, &box, &norm_values_and_names,
-                               &number_of_points, &mesh,
-                               &det_jacobian](auto tag_v) {
-    using tag = tmpl::type_from<decltype(tag_v)>;
-    const std::string tensor_name = db::tag_name<tag>();
-    for (size_t i = 0; i < tensor_names_.size(); ++i) {
-      if (tensor_name == tensor_names_[i]) {
-        if (UNLIKELY(not has_value(get<tag>(box)))) {
-          ERROR("Cannot observe a norm of '"
-                << tensor_name
-                << "' because it is a std::optional and wasn't able to be "
-                   "computed. This can happen when you try to observe errors "
-                   "without an analytic solution.");
-        }
-        const auto& tensor = value(get<tag>(box));
-
-        auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
-        const auto names_and_components = tensor.get_vector_of_data();
-        const auto& component_names = names_and_components.first;
-        const auto& components = names_and_components.second;
-        if (components[0].size() != number_of_points) {
-          ERROR("The number of grid points of the mesh is "
-                << number_of_points << " but the tensor '" << tensor_name
-                << "' has " << components[0].size()
-                << " points. This means you're computing norms of tensors over "
-                   "different grids, which will give the wrong answer for "
-                   "norms that use the grid points.");
-        }
-
-        if (tensor_components_[i] == "Individual") {
-          for (size_t storage_index = 0; storage_index < component_names.size();
-               ++storage_index) {
-            if (tensor_norm_types_[i] == "Max") {
-              values.push_back(max(components[storage_index]));
-            } else if (tensor_norm_types_[i] == "Min") {
-              values.push_back(min(components[storage_index]));
-            } else if (tensor_norm_types_[i] == "L2Norm") {
-              values.push_back(
-                  alg::accumulate(square(components[storage_index]), 0.0));
-            } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
-              values.push_back(definite_integral(
-                  square(components[storage_index]) * det_jacobian, mesh));
-            } else if (tensor_norm_types_[i] == "VolumeIntegral") {
-              values.push_back(definite_integral(
-                         components[storage_index] * det_jacobian, mesh));
-            }
-            names.push_back(
-                tensor_norm_types_[i] + "(" +
-                (component_names.size() == 1
-                     ? tensor_name
-                     : (tensor_name + "_" + component_names[storage_index])) +
-                ")");
-          }
-        } else if (tensor_components_[i] == "Sum") {
-          double value = 0.0;
-          if (tensor_norm_types_[i] == "Max") {
-            value = std::numeric_limits<double>::min();
-          } else if (tensor_norm_types_[i] == "Min") {
-            value = std::numeric_limits<double>::max();
-          }
-          for (size_t storage_index = 0; storage_index < component_names.size();
-               ++storage_index) {
-            if (tensor_norm_types_[i] == "Max") {
-              value = std::max(value, max(components[storage_index]));
-            } else if (tensor_norm_types_[i] == "Min") {
-              value = std::min(value, min(components[storage_index]));
-            } else if (tensor_norm_types_[i] == "L2Norm") {
-              value += alg::accumulate(square(components[storage_index]), 0.0);
-            } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
-              value += definite_integral(
-                  square(components[storage_index]) * det_jacobian, mesh);
-            } else if (tensor_norm_types_[i] == "VolumeIntegral") {
-              value += definite_integral(
-                  components[storage_index] * det_jacobian, mesh);
-            }
-          }
-
-          names.push_back(tensor_norm_types_[i] + "(" + tensor_name + ")");
-          values.push_back(value);
-        }
-      }
-    }
-  });
+  (observe_norms_impl<ObservableTensorTags>(
+       make_not_null(&norm_values_and_names), box, mesh, det_jacobian,
+       number_of_points),
+   ...);
 
   // Concatenate the legend info together.
   std::vector<std::string> legend{observation_value.name, "NumberOfPoints",
