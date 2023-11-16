@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_ProjectionOperators.cpp
   Test_Psi4.cpp
   Test_Ricci.cpp
+  Test_SpacetimeDerivativeOfGothG.cpp
   Test_Tags.cpp
   Test_Transform.cpp
   Test_WeylElectric.cpp
