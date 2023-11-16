@@ -249,11 +249,12 @@ jobs:
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D OVERRIDE_ARCH=x86-64
           -D USE_CCACHE=OFF
+          -D USE_PCH=OFF
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
           $GITHUB_WORKSPACE
 
-          make -j2 SpectrePch module_All
+          make -j2 module_All
       - name: Use new clang-tidy-diff
         # The clang-tidy-diff tool shipped with clang 14 doesn't report exit
         # codes, so we grab the version that does:

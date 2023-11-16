@@ -108,7 +108,7 @@ struct call_replace_at_impl
 namespace lazy {
 template <typename L, typename I, typename R>
 using replace_at = ::brigand::detail::call_replace_at_impl<L, I, R>;
-}
+}  // namespace lazy
 template <typename L, typename I, typename R>
 using replace_at = typename ::brigand::lazy::replace_at<L, I, R>::type;
 }  // namespace brigand
@@ -183,7 +183,7 @@ struct permutations_impl<List, 1> {
 namespace lazy {
 template <typename List>
 using permutations = detail::permutations_impl<List>;
-}
+}  // namespace lazy
 
 template <typename List>
 using permutations = typename lazy::permutations<List>::type;
@@ -215,7 +215,7 @@ struct generic_permutations_impl<List, 1> {
 namespace lazy {
 template <typename List>
 using generic_permutations = detail::generic_permutations_impl<List>;
-}
+}  // namespace lazy
 
 template <typename List>
 using generic_permutations = typename lazy::generic_permutations<List>::type;
@@ -251,7 +251,7 @@ struct combinations_impl<
 namespace lazy {
 template <typename List, typename OutSize = uint32_t<2>>
 using combinations = detail::combinations_impl<List, OutSize>;
-}
+}  // namespace lazy
 
 template <typename List, typename OutSize = uint32_t<2>>
 using combinations = typename lazy::combinations<List, OutSize>::type;
@@ -447,7 +447,7 @@ template <typename Sequence, typename State, typename Functor,
           typename I = brigand::int32_t<0>>
 using enumerated_fold =
     typename detail::enumerated_fold_impl<Functor, State, I, Sequence>;
-}
+}  // namespace lazy
 
 template <typename Sequence, typename State, typename Functor,
           typename I = brigand::int32_t<0>>
@@ -577,7 +577,7 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
  * EXPAND_PACK_LEFT_TO_RIGHT
  */
 template <typename... Ts>
-constexpr void expand_pack(Ts&&...) {}
+constexpr void expand_pack(Ts&&... /*unused*/) {}
 
 /*!
  * \ingroup UtilitiesGroup
@@ -606,13 +606,26 @@ constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) {
 }
 
 namespace brigand {
+namespace lazy {
 /// Check if a typelist contains an item.
 template <typename Sequence, typename Item>
-using list_contains =
-    tmpl::found<Sequence, std::is_same<tmpl::_1, tmpl::pin<Item>>>;
+struct list_contains;
+
+/// \cond
+template <template <typename...> typename L, typename... Items, typename Item>
+struct list_contains<L<Items...>, Item>
+    : bool_<(... or std::is_same_v<Items, Item>)> {};
+/// \endcond
+}  // namespace lazy
+
+/// Check if a typelist contains an item.
+/// @{
+template <typename Sequence, typename Item>
+using list_contains = typename lazy::list_contains<Sequence, Item>::type;
 
 template <typename Sequence, typename Item>
-constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
+constexpr bool list_contains_v = lazy::list_contains<Sequence, Item>::value;
+/// @}
 
 /// Obtain the elements of `Sequence1` that are not in `Sequence2`.
 template <typename Sequence1, typename Sequence2>

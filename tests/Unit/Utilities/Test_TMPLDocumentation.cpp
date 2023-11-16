@@ -686,11 +686,15 @@ assert_same<tmpl::index_of<List1<Type1>, Type2>,
             tmpl::no_such_type_>();
 // [tmpl::index_of]
 
+{
+using lazy_test_arguments = tmpl::list<List1<Type1, Type2>, Type1>;
 // [tmpl::list_contains]
 assert_same<tmpl::list_contains<List1<Type1, Type2>, Type1>, tmpl::true_type>();
 static_assert(tmpl::list_contains_v<List1<Type1, Type2>, Type1>);
 static_assert(not tmpl::list_contains_v<List1<Type2, Type2>, Type1>);
+HAS_LAZY_VERSION(list_contains);
 // [tmpl::list_contains]
+}
 
 // [tmpl::none]
 assert_same<
