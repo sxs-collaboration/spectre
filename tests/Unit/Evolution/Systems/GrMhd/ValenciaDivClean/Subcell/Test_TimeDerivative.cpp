@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -42,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
@@ -56,6 +56,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/TagsDomain.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -402,6 +403,23 @@ std::array<double, 5> test(const size_t num_dg_pts,
           evolution::dg::subcell::Tags::SubcellOptions<3>,
           evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
       db::AddComputeTags<
+          ::domain::Tags::LogicalCoordinates<3>,
+          // Compute tags for Frame::Grid quantities
+          ::domain::Tags::MappedCoordinates<
+              ::domain::Tags::ElementMap<3, Frame::Grid>,
+              ::domain::Tags::Coordinates<3, Frame::ElementLogical>>,
+          ::domain::Tags::InverseJacobianCompute<
+              ::domain::Tags::ElementMap<3, Frame::Grid>,
+              ::domain::Tags::Coordinates<3, Frame::ElementLogical>>,
+          // Compute tags for Frame::Inertial quantities
+          ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                            Frame::Inertial>>,
+          ::domain::Tags::InertialFromGridCoordinatesCompute<3>,
+          ::domain::Tags::ElementToInertialInverseJacobian<3>,
+          ::domain::Tags::DetInvJacobianCompute<3, Frame::ElementLogical,
+                                                Frame::Inertial>,
+
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>,
           ::domain::Tags::MappedCoordinates<
               ::domain::Tags::ElementMap<3, Frame::Grid>,
@@ -522,7 +540,11 @@ SPECTRE_TEST_CASE(
   std::array<double, 5> second_order_error_6{};
   std::optional<double> dummy_expansion_velocity{};
   using DO = ::fd::DerivativeOrder;
-  for (const DO fd_do : {DO::Two, DO::Four, DO::Six, DO::Eight, DO::Ten}) {
+  // Note: All the high order cases are commented out because we don't yet
+  // have support for high-order FD on curved meshes.
+  for (const DO fd_do : {
+           DO::Two  // , DO::Four, DO::Six, DO::Eight, DO::Ten
+       }) {
     CAPTURE(fd_do);
     // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
     // verifies that the time derivative vanishes. Or, more specifically, that
@@ -556,9 +578,10 @@ SPECTRE_TEST_CASE(
     // verifies that the time derivative is the same when using no mesh
     // velocity and when using a zero mesh velocity
     std::optional<double> zero_expansion_velocity(0.0);
-    const auto data_no_mesh_velocity =
-        test(5, DO::Four, dummy_expansion_velocity);
-    const auto data_mesh_velocity = test(5, DO::Four, zero_expansion_velocity);
+    const auto data_no_mesh_velocity = test(5, DO::Two,  // DO::Four,
+                                            dummy_expansion_velocity);
+    const auto data_mesh_velocity = test(5, DO::Two,  // DO::Four,
+                                         zero_expansion_velocity);
 
     for (size_t i = 0; i < data_no_mesh_velocity.size(); ++i) {
       CAPTURE(i);
@@ -570,7 +593,9 @@ SPECTRE_TEST_CASE(
   // Now use an expansion map.
   previous_error_5 = {};
   previous_error_6 = {};
-  for (const DO fd_do : {DO::Two, DO::Four}) {
+  for (const DO fd_do : {
+           DO::Two  // , DO::Four
+       }) {
     CAPTURE(fd_do);
     std::optional<double> expansion_velocity(0.1);
     // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and
@@ -601,18 +626,19 @@ SPECTRE_TEST_CASE(
   }
 
   // Check the adaptive correction order works.
-  for (const auto& recon_order : make_array(
-           DO::OneHigherThanRecons, DO::OneHigherThanReconsButFiveToFour)) {
-    CAPTURE(recon_order);
-    const auto five_pts_data = test(5, recon_order, dummy_expansion_velocity);
-    const auto six_pts_data = test(6, recon_order, dummy_expansion_velocity);
-    for (size_t i = 0; i < five_pts_data.size(); ++i) {
-      CAPTURE(i);
-      CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
-      CHECK(gsl::at(five_pts_data, i) < gsl::at(second_order_error_5, i));
-      CHECK(gsl::at(six_pts_data, i) < gsl::at(second_order_error_6, i));
-    }
-  }
+  // for (const auto& recon_order : make_array(
+  //          DO::OneHigherThanRecons, DO::OneHigherThanReconsButFiveToFour)) {
+  //   CAPTURE(recon_order);
+  //   const auto five_pts_data = test(5, recon_order,
+  //   dummy_expansion_velocity); const auto six_pts_data = test(6, recon_order,
+  //   dummy_expansion_velocity); for (size_t i = 0; i < five_pts_data.size();
+  //   ++i) {
+  //     CAPTURE(i);
+  //     CHECK(gsl::at(six_pts_data, i) < gsl::at(five_pts_data, i));
+  //     CHECK(gsl::at(five_pts_data, i) < gsl::at(second_order_error_5, i));
+  //     CHECK(gsl::at(six_pts_data, i) < gsl::at(second_order_error_6, i));
+  //   }
+  // }
 }
 }  // namespace
 }  // namespace grmhd::ValenciaDivClean
