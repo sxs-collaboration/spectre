@@ -205,26 +205,33 @@ struct SendDataForReconstruction {
         // Allocate with subcell data and rdmp data
         DataVector subcell_data_to_send{sliced_data_in_direction.size() +
                                         rdmp_size};
-        if (not orientation.is_aligned()) {
-          std::array<size_t, Dim> slice_extents{};
-          for (size_t d = 0; d < Dim; ++d) {
-            gsl::at(slice_extents, d) = subcell_mesh.extents(d);
-          }
-          gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
-
-          // Need a view so we only get the subcell data and not the rdmp data
-          DataVector subcell_data_to_send_view{
-              subcell_data_to_send.data(),
-              subcell_data_to_send.size() - rdmp_size};
-
-          orient_variables(make_not_null(&subcell_data_to_send_view),
-                           sliced_data_in_direction, Index<Dim>{slice_extents},
-                           orientation);
-        } else {
-          std::copy(sliced_data_in_direction.begin(),
-                    sliced_data_in_direction.end(),
-                    subcell_data_to_send.begin());
-        }
+        // Note: Currently we interpolate our solution to our neighbor FD grid
+        // even when grid points align but are oriented differently. There's a
+        // possible optimization for the rare (almost never?) edge case where
+        // two blocks have the same ghost zone coordinates but have different
+        // orientations (e.g. RotatedBricks). Since this shouldn't ever happen
+        // outside of tests, we currently don't bother with it. If we wanted to,
+        // here's the code:
+        //
+        // if (not orientation.is_aligned()) {
+        //   std::array<size_t, Dim> slice_extents{};
+        //   for (size_t d = 0; d < Dim; ++d) {
+        //     gsl::at(slice_extents, d) = subcell_mesh.extents(d);
+        //   }
+        //   gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
+        //   // Need a view so we only get the subcell data and not the rdmp
+        //   // data
+        //   DataVector subcell_data_to_send_view{
+        //       subcell_data_to_send.data(),
+        //       subcell_data_to_send.size() - rdmp_size};
+        //   orient_variables(make_not_null(&subcell_data_to_send_view),
+        //                  sliced_data_in_direction, Index<Dim>{slice_extents},
+        //                  orientation);
+        // } else { std::copy(...); }
+        //
+        // Copy over data since it's already oriented from interpolation
+        std::copy(sliced_data_in_direction.begin(),
+                  sliced_data_in_direction.end(), subcell_data_to_send.begin());
         // Copy rdmp data to end of subcell_data_to_send
         std::copy(
             rdmp_tci_data.max_variables_values.cbegin(),
