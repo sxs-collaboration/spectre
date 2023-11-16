@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
+#include "Evolution/DgSubcell/SetInterpolators.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMeshVelocity.hpp"
@@ -903,7 +904,9 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<evolution::dg::subcell::Actions::SetSubcellGrid<
-              volume_dim, system, use_numeric_initial_data>>,
+                         volume_dim, system, use_numeric_initial_data>,
+                     Actions::MutateApply<
+                         evolution::dg::subcell::SetInterpolators<volume_dim>>>,
           tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
                               evolution::Initialization::Actions::SetVariables<
                                   ::domain::Tags::Coordinates<
