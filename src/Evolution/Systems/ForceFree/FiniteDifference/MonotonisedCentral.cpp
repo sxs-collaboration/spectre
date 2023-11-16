@@ -4,20 +4,19 @@
 #include "Evolution/Systems/ForceFree/FiniteDifference/MonotonisedCentral.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Reconstructor.hpp"
@@ -48,17 +47,9 @@ void MonotonisedCentral::reconstruct(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
-  FixedHashMap<maximum_number_of_neighbors(dim),
-               std::pair<Direction<dim>, ElementId<dim>>,
-               Variables<volume_vars_tags>,
-               boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>
-      neighbor_variables_data{};
+  DirectionalIdMap<dim, Variables<volume_vars_tags>> neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
                                         subcell_mesh);
@@ -81,11 +72,7 @@ void MonotonisedCentral::reconstruct_fd_neighbor(
     const Variables<volume_vars_tags>& volume_vars,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_j,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

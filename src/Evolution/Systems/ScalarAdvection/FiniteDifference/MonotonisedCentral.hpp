@@ -4,17 +4,15 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -92,11 +90,8 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   template <typename TagsList>
@@ -104,11 +99,8 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       gsl::not_null<Variables<TagsList>*> vars_on_face,
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& ghost_data,
+      const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<Dim>& subcell_mesh,
       const Direction<Dim> direction_to_reconstruct) const;
 };

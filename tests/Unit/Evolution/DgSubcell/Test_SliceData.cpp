@@ -17,6 +17,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -99,13 +100,10 @@ void test_slice_data(
       }
 
       {
-        FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>,
-                     std::optional<intrp::Irregular<Dim>>,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+        DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
             fd_to_neighbor_fd_interpolants{};
         for (const auto& direction : directions_to_slice) {
-          fd_to_neighbor_fd_interpolants[std::pair{
+          fd_to_neighbor_fd_interpolants[DirectionalId<Dim>{
               direction, ElementId<Dim>{0}}] = std::nullopt;
         }
         const auto sliced_data = subcell::slice_data(

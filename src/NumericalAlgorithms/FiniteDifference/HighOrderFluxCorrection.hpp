@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -13,14 +12,13 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -454,21 +452,19 @@ template <size_t Dim, typename FluxesTags>
 void set_cartesian_neighbor_cell_centered_fluxes(
     const gsl::not_null<DirectionMap<Dim, Variables<FluxesTags>>*>
         flux_neighbor_data,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     const size_t number_of_rdmp_values_in_ghost_data) {
   for (const auto& [direction_id, ghost_data] : all_ghost_data) {
     const size_t neighbor_flux_size =
         subcell_mesh.number_of_grid_points() /
-        subcell_mesh.extents(direction_id.first.dimension()) * ghost_zone_size *
+        subcell_mesh.extents(direction_id.direction.dimension()) *
+        ghost_zone_size *
         Variables<FluxesTags>::number_of_independent_components;
     const DataVector& neighbor_data =
         ghost_data.neighbor_ghost_data_for_reconstruction();
-    (*flux_neighbor_data)[direction_id.first].set_data_ref(
+    (*flux_neighbor_data)[direction_id.direction].set_data_ref(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<double*>(std::next(
             neighbor_data.data(),
@@ -512,10 +508,7 @@ void cartesian_high_order_flux_corrections(
     const std::array<Variables<tmpl::list<EvolvedVarsTags...>>, Dim>&
         second_order_boundary_corrections,
     const fd::DerivativeOrder& fd_derivative_order,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size,
     [[maybe_unused]] const std::array<gsl::span<std::uint8_t>, Dim>&

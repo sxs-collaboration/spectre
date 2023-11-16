@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -27,7 +28,7 @@ namespace evolution::dg::Tags {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarData : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type =
       std::unordered_map<Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>;
 };
@@ -43,7 +44,7 @@ struct MortarData : db::SimpleTag {
 /// template parameter.
 template <size_t Dim, typename CouplingResult>
 struct MortarDataHistory : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type =
       std::unordered_map<Key,
                          TimeSteppers::BoundaryHistory<
@@ -57,7 +58,7 @@ struct MortarDataHistory : db::SimpleTag {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarMesh : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type = std::unordered_map<Key, Mesh<Dim - 1>, boost::hash<Key>>;
 };
 
@@ -67,7 +68,7 @@ struct MortarMesh : db::SimpleTag {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarSize : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type =
       std::unordered_map<Key, std::array<Spectral::MortarSize, Dim - 1>,
                          boost::hash<Key>>;
@@ -78,7 +79,7 @@ struct MortarSize : db::SimpleTag {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarNextTemporalId : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type = std::unordered_map<Key, TimeStepId, boost::hash<Key>>;
 };
 
@@ -89,7 +90,7 @@ struct MortarNextTemporalId : db::SimpleTag {
 /// \tparam Dim The volume dimension, not the face dimension
 template <size_t Dim>
 struct BoundaryMessageFromInbox : db::SimpleTag {
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   using type = std::unordered_map<Key, std::unique_ptr<BoundaryMessage<Dim>>,
                                   boost::hash<Key>>;
 };

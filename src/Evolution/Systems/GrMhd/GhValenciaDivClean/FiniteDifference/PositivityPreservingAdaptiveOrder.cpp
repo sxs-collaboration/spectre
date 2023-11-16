@@ -6,7 +6,6 @@
 #include <pup.h>
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <tuple>
@@ -14,14 +13,13 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
@@ -121,19 +119,12 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
         volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh) const {
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
-  FixedHashMap<maximum_number_of_neighbors(dim),
-               std::pair<Direction<dim>, ElementId<dim>>,
-               Variables<all_tags_for_reconstruction>,
-               boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>
+  DirectionalIdMap<dim, Variables<all_tags_for_reconstruction>>
       neighbor_variables_data{};
   ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
                                         ghost_data, ghost_zone_size(),
@@ -252,11 +243,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         subcell_volume_spacetime_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim),
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   using prim_tags_for_reconstruction =
@@ -458,10 +445,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
           volume_spacetime_and_cons_vars,                                      \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<maximum_number_of_neighbors(3),                       \
-                         std::pair<Direction<3>, ElementId<3>>,                \
-                         evolution::dg::subcell::GhostData,                    \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&            \
           ghost_data,                                                          \
       const Mesh<3>& subcell_mesh) const;                                      \
   template void                                                                \
@@ -473,10 +457,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
           subcell_volume_spacetime_metric,                                     \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<maximum_number_of_neighbors(3),                       \
-                         std::pair<Direction<3>, ElementId<3>>,                \
-                         evolution::dg::subcell::GhostData,                    \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&            \
           ghost_data,                                                          \
       const Mesh<3>& subcell_mesh,                                             \
       const Direction<3> direction_to_reconstruct) const;

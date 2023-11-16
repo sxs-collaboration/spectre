@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
@@ -14,7 +13,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -23,8 +21,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -262,11 +260,7 @@ void test_impl(
   const std::unique_ptr<TimeStepper> time_stepper =
       make_time_stepper(multistep_time_stepper);
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>,
-               evolution::dg::subcell::GhostData,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      ghost_data{};
+  DirectionalIdMap<Dim, evolution::dg::subcell::GhostData> ghost_data{};
 
   const int tci_decision{-1};  // default value
 
@@ -320,9 +314,9 @@ void test_impl(
 
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
-  neighbor_decisions.insert(
-      std::pair{std::pair{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
-                neighbor_is_troubled ? 10 : 0});
+  neighbor_decisions.insert(std::pair{
+      DirectionalId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+      neighbor_is_troubled ? 10 : 0});
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,

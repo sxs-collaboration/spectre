@@ -4,7 +4,6 @@
 #include "Evolution/Systems/Burgers/FiniteDifference/MonotonisedCentral.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -12,14 +11,14 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/ReconstructWork.tpp"
@@ -50,10 +49,7 @@ void MonotonisedCentral::reconstruct(
         vars_on_upper_face,
     const Variables<tmpl::list<Burgers::Tags::U>>& volume_vars,
     const Element<1>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh) const {
   reconstruct_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -70,10 +66,7 @@ void MonotonisedCentral::reconstruct(
 void MonotonisedCentral::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
     const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh,
     const Direction<1> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

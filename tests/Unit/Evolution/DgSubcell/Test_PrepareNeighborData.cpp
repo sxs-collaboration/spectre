@@ -18,6 +18,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -126,24 +127,20 @@ std::vector<Direction<Dim>> expected_neighbor_directions() {
 }
 
 template <size_t Dim>
-FixedHashMap<maximum_number_of_neighbors(Dim),
-             std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-             boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-compute_neighbor_meshes(const Element<Dim>& element, const bool all_dg,
-                        const Mesh<Dim>& dg_mesh,
-                        const Mesh<Dim>& subcell_mesh) {
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      result{};
+DirectionalIdMap<Dim, Mesh<Dim>> compute_neighbor_meshes(
+    const Element<Dim>& element, const bool all_dg, const Mesh<Dim>& dg_mesh,
+    const Mesh<Dim>& subcell_mesh) {
+  DirectionalIdMap<Dim, Mesh<Dim>> result{};
   bool already_set_fd = false;
   for (const auto& [direction, neighbors] : element.neighbors()) {
     for (const auto& neighbor : neighbors) {
       if (not already_set_fd and not all_dg) {
-        result.insert(std::pair{std::pair{direction, neighbor}, subcell_mesh});
+        result.insert(
+            std::pair{DirectionalId<Dim>{direction, neighbor}, subcell_mesh});
         already_set_fd = true;
       } else {
-        result.insert(std::pair{std::pair{direction, neighbor}, dg_mesh});
+        result.insert(
+            std::pair{DirectionalId<Dim>{direction, neighbor}, dg_mesh});
       }
     }
   }
@@ -180,11 +177,7 @@ void test(const bool all_neighbors_are_doing_dg,
   CAPTURE(all_neighbors_are_doing_dg);
   CAPTURE(fd_derivative_order);
   CAPTURE(Dim);
-  using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
@@ -238,10 +231,12 @@ void test(const bool all_neighbors_are_doing_dg,
     const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
         oriented_logical_coords, subcell_mesh.extents(), ghost_zone_size,
         orientation_map(direction), {});
-    dg_to_fd_neighbor_interpolants[std::pair{direction, neighbor_element_id}] =
+    dg_to_fd_neighbor_interpolants[DirectionalId<Dim>{direction,
+                                                      neighbor_element_id}] =
         intrp::Irregular<Dim>{dg_mesh, target_points};
 
-    fd_to_fd_neighbor_interpolants[std::pair{direction, neighbor_element_id}] =
+    fd_to_fd_neighbor_interpolants[DirectionalId<Dim>{direction,
+                                                      neighbor_element_id}] =
         intrp::Irregular<Dim>{subcell_mesh, target_points};
   }
 

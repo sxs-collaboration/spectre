@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -18,15 +17,15 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
@@ -249,7 +248,7 @@ struct SendDataForReconstruction {
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
             receiver_proxy[neighbor], time_step_id,
-            std::pair{std::pair{direction_from_neighbor, element.id()},
+            std::pair{DirectionalId<Dim>{direction_from_neighbor, element.id()},
                       std::move(data)});
       }
     }
@@ -311,14 +310,13 @@ struct ReceiveDataForReconstruction {
     }
 
     using ::operator<<;
-    using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+    using Key = DirectionalId<Dim>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
-             FixedHashMap<
-                 maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>,
-                 boost::hash<Key>>>& inbox =
+             DirectionalIdMap<Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                                              std::optional<DataVector>,
+                                              std::optional<DataVector>,
+                                              ::TimeStepId, int>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
@@ -330,10 +328,9 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    FixedHashMap<maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>,
-                 boost::hash<Key>>
+    DirectionalIdMap<
+        Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                        std::optional<DataVector>, ::TimeStepId, int>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
 
@@ -349,10 +346,7 @@ struct ReceiveDataForReconstruction {
              db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
                  .ghost_zone_size(),
          &received_data, &subcell_mesh](
-            const gsl::not_null<FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+            const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
             const gsl::not_null<std::unordered_map<
@@ -361,17 +355,10 @@ struct ReceiveDataForReconstruction {
             const gsl::not_null<
                 std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
                 mortar_next_time_step_id,
-            const gsl::not_null<FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
                 neighbor_mesh,
             const auto neighbor_tci_decisions,
-            const FixedHashMap<
-                maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>,
-                std::optional<intrp::Irregular<Dim>>,
-                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+            const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           // Remove neighbor meshes for neighbors that don't exist anymore
           domain::remove_nonexistent_neighbors(neighbor_mesh, element);
@@ -385,7 +372,7 @@ struct ReceiveDataForReconstruction {
                   std::get<4>(received_mortar_data.second);
             } catch (std::exception& e) {
               ERROR("Failed retrieving the MortarId: ("
-                    << mortar_id.first << ',' << mortar_id.second
+                    << mortar_id.direction << ',' << mortar_id.id
                     << ") from the mortar_next_time_step_id. Got exception: "
                     << e.what());
             }
@@ -416,7 +403,7 @@ struct ReceiveDataForReconstruction {
           for (const auto& [direction, neighbors_in_direction] :
                element.neighbors()) {
             for (const auto& neighbor : neighbors_in_direction) {
-              std::pair directional_element_id{direction, neighbor};
+              DirectionalId<Dim> directional_element_id{direction, neighbor};
               ASSERT(ghost_data_ptr->count(directional_element_id) == 0,
                      "Found neighbor already inserted in direction "
                          << direction << " with ElementId " << neighbor);
@@ -436,8 +423,8 @@ struct ReceiveDataForReconstruction {
                   neighbor_dg_to_fd_interpolants);
               ASSERT(neighbor_tci_decisions->contains(directional_element_id),
                      "The NeighorTciDecisions should contain the neighbor ("
-                         << directional_element_id.first << ", "
-                         << directional_element_id.second << ") but doesn't");
+                         << directional_element_id.direction << ", "
+                         << directional_element_id.id << ") but doesn't");
               neighbor_tci_decisions->at(directional_element_id) =
                   std::get<5>(received_data[directional_element_id]);
             }

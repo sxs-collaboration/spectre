@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
@@ -14,7 +13,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -23,8 +21,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -270,11 +268,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(neighbor_is_troubled);
   CAPTURE(disable_subcell_in_block);
 
-  using Interps =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
@@ -310,18 +304,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   using GhostData = evolution::dg::subcell::GhostData;
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, GhostData,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      ghost_data{};
+  DirectionalIdMap<Dim, GhostData> ghost_data{};
 
-  FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
-               boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-      neighbor_meshes{};
+  DirectionalIdMap<Dim, Mesh<Dim>> neighbor_meshes{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     REQUIRE(not neighbors.ids().empty());
-    const std::pair directional_element_id{direction, *neighbors.ids().begin()};
+    const DirectionalId<Dim> directional_element_id{direction,
+                                                    *neighbors.ids().begin()};
     if ((direction.side() == Side::Upper and direction.dimension() % 2 == 0) or
         (direction.side() == Side::Lower and direction.dimension() % 2 != 0)) {
       neighbor_meshes[directional_element_id] = dg_mesh;
@@ -416,9 +405,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
-  neighbor_decisions.insert(
-      std::pair{std::pair{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
-                neighbor_is_troubled ? 10 : 0});
+  neighbor_decisions.insert(std::pair{
+      DirectionalId<Dim>{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+      neighbor_is_troubled ? 10 : 0});
 
   if constexpr (HasPrims) {
     ActionTesting::emplace_array_component_and_initialize<comp>(

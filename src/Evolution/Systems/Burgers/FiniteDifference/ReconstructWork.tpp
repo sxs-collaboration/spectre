@@ -4,19 +4,18 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -31,10 +30,7 @@ void reconstruct_work(
     const gsl::not_null<std::array<Variables<TagsList>, 1>*> vars_on_upper_face,
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars, const Element<1>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh, const size_t ghost_zone_size) {
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
   const size_t reconstructed_num_pts = volume_num_pts + 1;
@@ -70,7 +66,8 @@ void reconstruct_work(
                  << direction);
 
       const DataVector& neighbor_data =
-          ghost_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+          ghost_data
+              .at(DirectionalId<1>{direction, *neighbors_in_direction.begin()})
               .neighbor_ghost_data_for_reconstruction();
 
       ASSERT(neighbor_data.size() != 0,
@@ -83,7 +80,8 @@ void reconstruct_work(
       // retrieve boundary ghost data from ghost_data
       const DataVector& neighbor_data =
           ghost_data
-              .at(std::pair{direction, ElementId<1>::external_boundary_id()})
+              .at(DirectionalId<1>{direction,
+                                 ElementId<1>::external_boundary_id()})
               .neighbor_ghost_data_for_reconstruction();
       ghost_cell_vars[direction] = gsl::make_span(
           &neighbor_data[0], number_of_variables * ghost_zone_size);
@@ -108,13 +106,10 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<1>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& ghost_data,
+    const DirectionalIdMap<1, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<1>& subcell_mesh, const Direction<1>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
-  const std::pair mortar_id{
+  const DirectionalId<1> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
 
@@ -126,8 +121,7 @@ void reconstruct_fd_neighbor_work(
 
   {
     ASSERT(ghost_data.contains(mortar_id),
-           "The neighbor data does not contain the mortar: ("
-               << mortar_id.first << ',' << mortar_id.second << ")");
+           "The neighbor data does not contain the mortar: " << mortar_id);
 
     const DataVector& neighbor_data_in_direction =
         ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();

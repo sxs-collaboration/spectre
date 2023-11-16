@@ -209,7 +209,8 @@ struct SetLocalMortarData {
           make_not_null(&box), direction);
 
       for (const auto& neighbor_id : neighbor_ids) {
-        std::pair mortar_id{direction, neighbor_id};
+        DirectionalId<Metavariables::volume_dim> mortar_id{direction,
+                                                           neighbor_id};
         const Mesh<Metavariables::volume_dim - 1>& mortar_mesh =
             mortar_meshes.at(mortar_id);
 
@@ -315,7 +316,7 @@ struct SetLocalMortarData {
 
                 const Scalar<DataVector>& face_normal_magnitude =
                     get<evolution::dg::Tags::MagnitudeOfNormal>(
-                        *normal_covector_and_magnitude.at(mortar_id.first));
+                        *normal_covector_and_magnitude.at(mortar_id.direction));
 
                 const bool using_gauss_points =
                     mesh.quadrature() == make_array<Metavariables::volume_dim>(
@@ -324,7 +325,7 @@ struct SetLocalMortarData {
                   const Scalar<DataVector> det_jacobian{
                       DataVector{1.0 / get(det_inv_jacobian)}};
                   Scalar<DataVector> face_det_jacobian{
-                      mesh.slice_away(mortar_id.first.dimension())
+                      mesh.slice_away(mortar_id.direction.dimension())
                           .number_of_grid_points()};
                   const Matrix identity{};
                   auto interpolation_matrices =
@@ -332,10 +333,12 @@ struct SetLocalMortarData {
                           std::cref(identity));
                   const std::pair<Matrix, Matrix>& matrices =
                       Spectral::boundary_interpolation_matrices(
-                          mesh.slice_through(mortar_id.first.dimension()));
-                  gsl::at(interpolation_matrices, mortar_id.first.dimension()) =
-                      mortar_id.first.side() == Side::Upper ? matrices.second
-                                                            : matrices.first;
+                          mesh.slice_through(mortar_id.direction.dimension()));
+                  gsl::at(interpolation_matrices,
+                          mortar_id.direction.dimension()) =
+                      mortar_id.direction.side() == Side::Upper
+                          ? matrices.second
+                          : matrices.first;
                   apply_matrices(make_not_null(&get(face_det_jacobian)),
                                  interpolation_matrices, get(det_jacobian),
                                  mesh.extents());
@@ -498,8 +501,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   ElementId<Dim> self_id{};
   ElementId<Dim> east_id{};
   ElementId<Dim> south_id{};  // not used in 1d
-  std::vector<std::pair<Direction<Dim>, ElementId<Dim>>>
-      order_to_send_neighbor_data_in{};
+  std::vector<DirectionalId<Dim>> order_to_send_neighbor_data_in{};
 
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
@@ -521,10 +523,10 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
   if constexpr (Dim > 1) {
     order_to_send_neighbor_data_in.push_back(
-        std::pair{Direction<Dim>::lower_eta(), south_id});
+        DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id});
   }
   order_to_send_neighbor_data_in.push_back(
-      std::pair{Direction<Dim>::upper_xi(), east_id});
+      DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id});
 
   const Element<Dim> element{self_id, neighbors};
 
@@ -604,7 +606,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
       for (const auto& neighbor : neighbors_in_direction) {
-        const std::pair mortar_id{direction, neighbor};
+        const DirectionalId<Dim> mortar_id{direction, neighbor};
         // Copy past and current mortar data from element's DataBox
         mortar_data_history.insert({mortar_id, {}});
         mortar_data_history.at(mortar_id).local().insert(
@@ -638,8 +640,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       neighbor_decision{};
   int decision = 1;
   for (const auto& direction_and_neighbor_id : order_to_send_neighbor_data_in) {
-    const auto& direction = direction_and_neighbor_id.first;
-    const auto& neighbor_id = direction_and_neighbor_id.second;
+    const auto& direction = direction_and_neighbor_id.direction;
+    const auto& neighbor_id = direction_and_neighbor_id.id;
     CAPTURE(direction);
     CAPTURE(neighbor_id);
 
@@ -656,7 +658,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                           const TimeStepId&
                                               neighbor_next_time_step_id) {
       CAPTURE(neighbor_next_time_step_id);
-      std::pair mortar_id{direction, neighbor_id};
+      DirectionalId<Dim> mortar_id{direction, neighbor_id};
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
 
       DataVector flux_data{mortar_mesh.number_of_grid_points() *
@@ -679,7 +681,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           .template receive_data<
               evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
               neighbor_time_step_id,
-              std::pair{std::pair{direction, neighbor_id}, data});
+              std::pair{DirectionalId<Dim>{direction, neighbor_id}, data});
       if (UseLocalTimeStepping) {
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
@@ -760,7 +762,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   Variables<dt_variables_tags> dt_boundary_correction_projected_onto_face{};
   Variables<dt_variables_tags> expected_dt_variables_volume{
       mesh.number_of_grid_points(), 0.0};
-  const std::pair<Direction<Dim>, ElementId<Dim>>* mortar_id_ptr = nullptr;
+  const DirectionalId<Dim>* mortar_id_ptr = nullptr;
 
   const auto compute_correction_coupling =
       [&det_inv_jacobian, &dg_formulation, &dt_boundary_correction_on_mortar,
@@ -771,7 +773,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  const evolution::dg::MortarData<Dim>& neighbor_mortar_data)
       -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>> {
     const auto& mortar_id = *mortar_id_ptr;
-    const auto& direction = mortar_id.first;
+    const auto& direction = mortar_id.direction;
     const auto& mortar_mesh = mortar_meshes.at(mortar_id);
     const size_t dimension = direction.dimension();
 
@@ -913,7 +915,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   if (UseLocalTimeStepping) {
     for (auto& mortar_id_and_data : mortar_data_history) {
       const auto& mortar_id = mortar_id_and_data.first;
-      const auto& direction = mortar_id.first;
+      const auto& direction = mortar_id.direction;
       auto& mortar_data_hist = mortar_id_and_data.second;
       mortar_id_ptr = &mortar_id;
       Variables<variables_tags> lifted_volume_data{
@@ -946,7 +948,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     });
   } else {
     for (auto& [mortar_id, mortar_data] : all_mortar_data) {
-      if (mortar_id.second == ElementId<Dim>::external_boundary_id()) {
+      if (mortar_id.id == ElementId<Dim>::external_boundary_id()) {
         continue;
       }
       mortar_id_ptr = &mortar_id;
@@ -979,7 +981,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       get_tag<::evolution::dg::Tags::NeighborMesh<Dim>>(runner, self_id);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
-      const auto it = neighbor_meshes.find(std::pair{direction, neighbor});
+      const auto it =
+          neighbor_meshes.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(it != neighbor_meshes.end());
       CHECK(it->second == mesh);
       ++total_neighbors;

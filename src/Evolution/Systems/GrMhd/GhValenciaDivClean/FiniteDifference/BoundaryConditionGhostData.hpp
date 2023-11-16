@@ -125,7 +125,8 @@ void BoundaryConditionGhostData::apply(
         evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box);
     // Put the computed ghost data into neighbor data with {direction,
     // ElementId::external_boundary_id()} as the mortar_id key
-    const std::pair mortar_id{direction, ElementId<3>::external_boundary_id()};
+    const DirectionalId<3> mortar_id{direction,
+                                     ElementId<3>::external_boundary_id()};
     all_ghost_data[mortar_id] = evolution::dg::subcell::GhostData{1};
     DataVector& boundary_ghost_data =
         all_ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();

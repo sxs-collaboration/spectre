@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceVariable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -35,13 +36,10 @@ void test_slice(
     const Index<Dim>& volume_extents, size_t num_ghost_pts,
     const Direction<Dim>& direction) {
   {
-    FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>,
-                 std::optional<intrp::Irregular<Dim>>,
-                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+    DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
         fd_to_neighbor_fd_interpolants{};
-    fd_to_neighbor_fd_interpolants[std::pair{direction, ElementId<Dim>{0}}] =
-        std::nullopt;
+    fd_to_neighbor_fd_interpolants[DirectionalId<Dim>{
+        direction, ElementId<Dim>{0}}] = std::nullopt;
     const Variables<tmpl::list<Tags::Scalar, Tags::TensorI<Dim>>>
         expected_sliced_vars{
             volume_extents.slice_away(direction.dimension()).product() *

@@ -28,10 +28,9 @@ namespace {
 template <size_t Dim>
 BoundaryMessage<Dim>* create_boundary_message(
     const TimeStepId& current_time_step_id, const TimeStepId& next_time_step_id,
-    const std::pair<Direction<Dim>, ElementId<Dim>>& key,
-    const Mesh<Dim>& volume_mesh, const Mesh<Dim - 1>& interface_mesh,
-    std::optional<DataVector>& ghost_data, std::optional<DataVector>& dg_data,
-    const int tci_status) {
+    const DirectionalId<Dim>& key, const Mesh<Dim>& volume_mesh,
+    const Mesh<Dim - 1>& interface_mesh, std::optional<DataVector>& ghost_data,
+    std::optional<DataVector>& dg_data, const int tci_status) {
   return new BoundaryMessage<Dim>(
       ghost_data.value_or(DataVector{}).size(),  // subcell_ghost_data_size
       dg_data.value_or(DataVector{}).size(),     // dg_flux_data_size
@@ -42,8 +41,8 @@ BoundaryMessage<Dim>* create_boundary_message(
       tci_status,                                // tci_status
       current_time_step_id,                      // current_time_step_id
       next_time_step_id,                         // next_time_step_id
-      key.first,                                 // neighbor_direction
-      key.second,                                // element_id
+      key.direction,                             // neighbor_direction
+      key.id,                                    // element_id
       volume_mesh,                               // volume_or_ghost_mesh
       interface_mesh,                            // interface_mesh
       ghost_data.has_value() ? ghost_data.value().data()
@@ -69,7 +68,8 @@ void test_no_ghost_cells() {
   const TimeStepId time_step_id_a{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
   const TimeStepId time_step_id_b{true, 4, Time{Slab{3.4, 5.4}, {13, 100}}};
   const TimeStepId time_step_id_c{true, 5, Time{Slab{5.4, 6.4}, {17, 100}}};
-  const std::pair nhbr_key{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
+  const DirectionalId<Dim> nhbr_key{Direction<Dim>::lower_xi(),
+                                    ElementId<Dim>{1}};
 
   BcInbox bc_inbox{};
   BmInbox bm_inbox{};
@@ -186,7 +186,8 @@ void test_with_ghost_cells() {
   const TimeStepId time_step_id_a{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
   const TimeStepId time_step_id_b{true, 4, Time{Slab{3.4, 5.4}, {13, 100}}};
   const TimeStepId time_step_id_c{true, 5, Time{Slab{5.4, 6.4}, {17, 100}}};
-  const std::pair nhbr_key{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
+  const DirectionalId<Dim> nhbr_key{Direction<Dim>::lower_xi(),
+                                    ElementId<Dim>{1}};
 
   BcInbox bc_inbox{};
   BmInbox bm_inbox{};

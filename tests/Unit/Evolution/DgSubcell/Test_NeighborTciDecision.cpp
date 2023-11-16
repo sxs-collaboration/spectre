@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <tuple>
@@ -11,10 +10,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Time/TimeStepId.hpp"
@@ -29,24 +27,21 @@ void test() {
   using StorageType =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
                  std::optional<DataVector>, ::TimeStepId, int>;
-  std::pair<
-      const TimeStepId,
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>, StorageType,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>
+  std::pair<const TimeStepId, DirectionalIdMap<Dim, StorageType>>
       neighbor_data{};
-  const std::pair id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
+  const DirectionalId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
   std::get<5>(neighbor_data.second.at(id_xi)) = 10;
-  std::pair<Direction<Dim>, ElementId<Dim>> id_eta;
-  std::pair<Direction<Dim>, ElementId<Dim>> id_zeta;
+  DirectionalId<Dim> id_eta;
+  DirectionalId<Dim> id_zeta;
   if constexpr (Dim > 1) {
-    id_eta = std::pair{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
+    id_eta = DirectionalId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
     neighbor_data.second.insert(std::pair{id_eta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_eta)) = 12;
   }
   if constexpr (Dim > 2) {
-    id_zeta = std::pair{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
+    id_zeta =
+        DirectionalId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
     neighbor_data.second.insert(std::pair{id_zeta, StorageType{}});
     std::get<5>(neighbor_data.second.at(id_zeta)) = 15;
   }

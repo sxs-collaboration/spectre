@@ -52,10 +52,9 @@ bool characteristic_simple_weno_impl(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const bool compute_char_transformation_numerically) {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsWeno =
@@ -63,10 +62,9 @@ bool characteristic_simple_weno_impl(
                      tmpl::list<NewtonianEuler::Tags::VMinus,
                                 NewtonianEuler::Tags::VMomentum<VolumeDim>,
                                 NewtonianEuler::Tags::VPlus>>;
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      typename CharacteristicVarsWeno::PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>,
+                     typename CharacteristicVarsWeno::PackagedData,
+                     boost::hash<DirectionalId<VolumeDim>>>
       neighbor_char_data{};
   for (const auto& [key, data] : neighbor_data) {
     neighbor_char_data[key].volume_data.initialize(
@@ -82,14 +80,11 @@ bool characteristic_simple_weno_impl(
                                                                 neighbor_data);
 
   // Buffers for SimpleWeno extrapolated poly
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      intrp::RegularGrid<VolumeDim>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+                     boost::hash<DirectionalId<VolumeDim>>>
       interpolator_buffer{};
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                     boost::hash<DirectionalId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
 
   // Outer lambda: wraps applying SimpleWeno to the NewtonianEuler
@@ -183,10 +178,9 @@ bool characteristic_hweno_impl(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data,
     const bool compute_char_transformation_numerically) {
   // Hweno checks TCI before limiting any tensors
   const bool cell_is_troubled = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
@@ -204,10 +198,9 @@ bool characteristic_hweno_impl(
                      tmpl::list<NewtonianEuler::Tags::VMinus,
                                 NewtonianEuler::Tags::VMomentum<VolumeDim>,
                                 NewtonianEuler::Tags::VPlus>>;
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      typename CharacteristicVarsWeno::PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>,
+                     typename CharacteristicVarsWeno::PackagedData,
+                     boost::hash<DirectionalId<VolumeDim>>>
       neighbor_char_data{};
   for (const auto& [key, data] : neighbor_data) {
     neighbor_char_data[key].volume_data.initialize(
@@ -217,9 +210,8 @@ bool characteristic_hweno_impl(
   }
 
   // Buffers for Hweno extrapolated poly
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                     boost::hash<DirectionalId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& [neighbor, data] : neighbor_char_data) {
     (void)data;
@@ -279,10 +271,9 @@ bool conservative_hweno_impl(
     const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
         VolumeDim>::type& normals_and_magnitudes,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) {
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data) {
   // Hweno checks TCI before limiting any tensors
   const bool cell_is_troubled = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
       kxrcf_constant, *mass_density_cons, *momentum_density, *energy_density,
@@ -294,9 +285,8 @@ bool conservative_hweno_impl(
   }
 
   // Buffers for Hweno extrapolated poly
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                     boost::hash<DirectionalId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& [neighbor, data] : neighbor_data) {
     (void)data;
@@ -403,9 +393,8 @@ bool Weno<VolumeDim>::operator()(
         VolumeDim>::type& normals_and_magnitudes,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
@@ -550,20 +539,18 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(_, data)                                                   \
-  template bool Weno<DIM(data)>::operator()(                                   \
-      const gsl::not_null<Scalar<DataVector>*>,                                \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                    \
-      const gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&,        \
-      const Element<DIM(data)>&, const std::array<double, DIM(data)>&,         \
-      const Scalar<DataVector>&,                                               \
-      const typename evolution::dg::Tags::NormalCovectorAndMagnitude<DIM(      \
-          data)>::type&,                                                       \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&,       \
-      const std::unordered_map<                                                \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, PackagedData, \
-          boost::hash<                                                         \
-              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&) const;
+#define INSTANTIATE(_, data)                                              \
+  template bool Weno<DIM(data)>::operator()(                              \
+      const gsl::not_null<Scalar<DataVector>*>,                           \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,               \
+      const gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&,   \
+      const Element<DIM(data)>&, const std::array<double, DIM(data)>&,    \
+      const Scalar<DataVector>&,                                          \
+      const typename evolution::dg::Tags::NormalCovectorAndMagnitude<DIM( \
+          data)>::type&,                                                  \
+      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&,  \
+      const std::unordered_map<DirectionalId<DIM(data)>, PackagedData,    \
+                               boost::hash<DirectionalId<DIM(data)>>>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

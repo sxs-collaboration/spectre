@@ -4,19 +4,18 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -34,11 +33,7 @@ void reconstruct_work(
     const Reconstructor& reconstruct,
     const Variables<tmpl::list<Tags::U>> volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // check if subcell mesh is isotropic
   ASSERT(Mesh<Dim>(subcell_mesh.extents(0), subcell_mesh.basis(0),
@@ -82,7 +77,8 @@ void reconstruct_work(
                << direction);
 
     const DataVector& neighbor_data =
-        ghost_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+        ghost_data
+            .at(DirectionalId<Dim>{direction, *neighbors_in_direction.begin()})
             .neighbor_ghost_data_for_reconstruction();
 
     ASSERT(neighbor_data.size() != 0, "The neighber data is empty in direction "
@@ -112,15 +108,11 @@ void reconstruct_fd_neighbor_work(
     const ReconstructUpper& reconstruct_upper_neighbor,
     const Variables<tmpl::list<Tags::U>>& subcell_volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
-  const std::pair mortar_id{
+  const DirectionalId<Dim> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
 
@@ -132,8 +124,7 @@ void reconstruct_fd_neighbor_work(
 
   {
     ASSERT(ghost_data.contains(mortar_id),
-           "The neighbor data does not contain the mortar: ("
-               << mortar_id.first << ',' << mortar_id.second << ")");
+           "The neighbor data does not contain the mortar: " << mortar_id);
 
     const DataVector& neighbor_data_in_direction =
         ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();

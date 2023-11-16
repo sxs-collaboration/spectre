@@ -56,16 +56,15 @@ struct DummyPackagedData {
 };
 
 template <size_t VolumeDim>
-using VariablesMap = std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-    Variables<tmpl::list<VectorTag<VolumeDim>>>,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
+using VariablesMap =
+    std::unordered_map<DirectionalId<VolumeDim>,
+                       Variables<tmpl::list<VectorTag<VolumeDim>>>,
+                       boost::hash<DirectionalId<VolumeDim>>>;
 
 template <size_t VolumeDim>
-std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-    DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+std::unordered_map<DirectionalId<VolumeDim>,
+                   DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
+                   boost::hash<DirectionalId<VolumeDim>>>
 make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const VariablesMap<VolumeDim>& neighbor_vars) {
@@ -80,16 +79,15 @@ make_neighbor_data_from_neighbor_vars(
         return result;
       };
 
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>,
+                     DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
+                     boost::hash<DirectionalId<VolumeDim>>>
       neighbor_data{};
 
   for (const auto& neighbor : element.neighbors()) {
     const auto dir = neighbor.first;
     const auto id = *(neighbor.second.cbegin());
-    const auto dir_and_id = std::make_pair(dir, id);
+    const auto dir_and_id = DirectionalId<VolumeDim>{dir, id};
     neighbor_data[dir_and_id].volume_data = neighbor_vars.at(dir_and_id);
     neighbor_data[dir_and_id].means =
         make_tuple_of_means(neighbor_vars.at(dir_and_id));
@@ -103,10 +101,9 @@ template <size_t VolumeDim>
 void test_simple_weno_work(
     const tnsr::I<DataVector, VolumeDim>& local_data,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>,
+                             DummyPackagedData<VolumeDim, VectorTag<VolumeDim>>,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data,
     const VariablesMap<VolumeDim>& expected_neighbor_modified_vars,
     Approx local_approx = approx) {
@@ -124,7 +121,7 @@ void test_simple_weno_work(
     }
     const auto dir = neighbor.first;
     const auto id = *(neighbor.second.cbegin());
-    const auto dir_and_id = std::make_pair(dir, id);
+    const auto dir_and_id = DirectionalId<VolumeDim>{dir, id};
     if (neighbor_data.find(dir_and_id) == neighbor_data.end()) {
       ERROR("Missing neighbor_data at an internal boundary");
     }
@@ -135,19 +132,16 @@ void test_simple_weno_work(
   }
 
   // Buffers for simple WENO implementation
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      intrp::RegularGrid<VolumeDim>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, intrp::RegularGrid<VolumeDim>,
+                     boost::hash<DirectionalId<VolumeDim>>>
       interpolator_buffer{};
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                     boost::hash<DirectionalId<VolumeDim>>>
       modified_neighbor_solution_buffer{};
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
     modified_neighbor_solution_buffer.insert(
-        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+        std::make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
   }
 
   // WENO should preserve the mean, so expected means = initial means
@@ -175,9 +169,8 @@ void test_simple_weno_work(
   }
 
   auto expected_vector = local_data;
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+  std::unordered_map<DirectionalId<VolumeDim>, DataVector,
+                     boost::hash<DirectionalId<VolumeDim>>>
       expected_neighbor_polynomials;
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (auto& neighbor_and_vars : expected_neighbor_modified_vars) {
@@ -241,22 +234,23 @@ void test_simple_weno_1d_impl(const Spectral::Quadrature quadrature,
   const auto make_neighbor_vars =
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
-          const std::pair<Direction<1>, ElementId<1>>& neighbor,
-          const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const DirectionalId<1>& neighbor, const auto make_vars) {
+        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
           const double offset =
-              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));
         }
       };
 
-  make_neighbor_vars(std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1)),
-                     make_lower_xi_vars);
+  make_neighbor_vars(
+      DirectionalId<1>{Direction<1>::lower_xi(), ElementId<1>(1)},
+      make_lower_xi_vars);
 
-  make_neighbor_vars(std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2)),
-                     make_upper_xi_vars);
+  make_neighbor_vars(
+      DirectionalId<1>{Direction<1>::upper_xi(), ElementId<1>(2)},
+      make_upper_xi_vars);
 
   const auto neighbor_data =
       make_neighbor_data_from_neighbor_vars(mesh, element, neighbor_vars);
@@ -357,28 +351,31 @@ void test_simple_weno_2d_impl(const Spectral::Quadrature quadrature,
   const auto make_neighbor_vars =
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
-          const std::pair<Direction<2>, ElementId<2>>& neighbor,
-          const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const DirectionalId<2>& neighbor, const auto make_vars) {
+        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
           const double offset =
-              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));
         }
       };
 
-  make_neighbor_vars(std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
-                     make_lower_xi_vars);
+  make_neighbor_vars(
+      DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(1)},
+      make_lower_xi_vars);
 
-  make_neighbor_vars(std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
-                     make_upper_xi_vars);
+  make_neighbor_vars(
+      DirectionalId<2>{Direction<2>::upper_xi(), ElementId<2>(2)},
+      make_upper_xi_vars);
 
-  make_neighbor_vars(std::make_pair(Direction<2>::lower_eta(), ElementId<2>(3)),
-                     make_lower_eta_vars);
+  make_neighbor_vars(
+      DirectionalId<2>{Direction<2>::lower_eta(), ElementId<2>(3)},
+      make_lower_eta_vars);
 
-  make_neighbor_vars(std::make_pair(Direction<2>::upper_eta(), ElementId<2>(4)),
-                     make_upper_eta_vars);
+  make_neighbor_vars(
+      DirectionalId<2>{Direction<2>::upper_eta(), ElementId<2>(4)},
+      make_upper_eta_vars);
 
   const auto neighbor_data =
       make_neighbor_data_from_neighbor_vars(mesh, element, neighbor_vars);
@@ -515,35 +512,38 @@ void test_simple_weno_3d_impl(const Spectral::Quadrature quadrature,
   const auto make_neighbor_vars =
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
-          const std::pair<Direction<3>, ElementId<3>>& neighbor,
-          const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const DirectionalId<3>& neighbor, const auto make_vars) {
+        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
           const double offset =
-              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));
         }
       };
 
-  make_neighbor_vars(std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1)),
-                     make_lower_xi_vars);
-
-  make_neighbor_vars(std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2)),
-                     make_upper_xi_vars);
-
-  make_neighbor_vars(std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3)),
-                     make_lower_eta_vars);
-
-  make_neighbor_vars(std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4)),
-                     make_upper_eta_vars);
+  make_neighbor_vars(
+      DirectionalId<3>{Direction<3>::lower_xi(), ElementId<3>(1)},
+      make_lower_xi_vars);
 
   make_neighbor_vars(
-      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>(5)),
+      DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(2)},
+      make_upper_xi_vars);
+
+  make_neighbor_vars(
+      DirectionalId<3>{Direction<3>::lower_eta(), ElementId<3>(3)},
+      make_lower_eta_vars);
+
+  make_neighbor_vars(
+      DirectionalId<3>{Direction<3>::upper_eta(), ElementId<3>(4)},
+      make_upper_eta_vars);
+
+  make_neighbor_vars(
+      DirectionalId<3>{Direction<3>::lower_zeta(), ElementId<3>(5)},
       make_lower_zeta_vars);
 
   make_neighbor_vars(
-      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>(6)),
+      DirectionalId<3>{Direction<3>::upper_zeta(), ElementId<3>(6)},
       make_upper_zeta_vars);
 
   const auto neighbor_data =

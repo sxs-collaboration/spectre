@@ -181,10 +181,9 @@ void test_neuler_vs_generic_minmod_work(
     const std::array<double, VolumeDim>& element_size,
     const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
     const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) {
+        boost::hash<DirectionalId<VolumeDim>>>& neighbor_data) {
   // Sanity check that input momentum satisfies simplifying assumptions
   if constexpr (VolumeDim > 1) {
     const auto zero_momentum = make_with_value<tnsr::I<DataVector, VolumeDim>>(
@@ -278,10 +277,9 @@ void test_neuler_vs_generic_minmod_work(
                          tmpl::list<NewtonianEuler::Tags::VMinus,
                                     NewtonianEuler::Tags::VMomentum<VolumeDim>,
                                     NewtonianEuler::Tags::VPlus>>;
-    std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename GenericMinmod::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+    std::unordered_map<DirectionalId<VolumeDim>,
+                       typename GenericMinmod::PackagedData,
+                       boost::hash<DirectionalId<VolumeDim>>>
         neighbor_char_data{};
     for (const auto& [key, data] : neighbor_data) {
       neighbor_char_data[key].element_size = data.element_size;
@@ -360,11 +358,11 @@ void test_neuler_vs_generic_minmod_1d() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
-  std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
+  std::unordered_map<DirectionalId<1>,
                      NewtonianEuler::Limiters::Minmod<1>::PackagedData,
-                     boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+                     boost::hash<DirectionalId<1>>>
       neighbor_data{};
-  const std::array<std::pair<Direction<1>, ElementId<1>>, 2> dir_keys = {
+  const std::array<DirectionalId<1>, 2> dir_keys = {
       {{Direction<1>::lower_xi(), ElementId<1>(1)},
        {Direction<1>::upper_xi(), ElementId<1>(2)}}};
   for (const auto& dir_key : dir_keys) {
@@ -421,11 +419,11 @@ void test_neuler_vs_generic_minmod_2d() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
-  std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
+  std::unordered_map<DirectionalId<2>,
                      NewtonianEuler::Limiters::Minmod<2>::PackagedData,
-                     boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+                     boost::hash<DirectionalId<2>>>
       neighbor_data{};
-  const std::array<std::pair<Direction<2>, ElementId<2>>, 4> dir_keys = {
+  const std::array<DirectionalId<2>, 4> dir_keys = {
       {{Direction<2>::lower_xi(), ElementId<2>(1)},
        {Direction<2>::upper_xi(), ElementId<2>(2)},
        {Direction<2>::lower_eta(), ElementId<2>(3)},
@@ -489,11 +487,11 @@ void test_neuler_vs_generic_minmod_3d() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
-  std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
+  std::unordered_map<DirectionalId<3>,
                      NewtonianEuler::Limiters::Minmod<3>::PackagedData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+                     boost::hash<DirectionalId<3>>>
       neighbor_data{};
-  const std::array<std::pair<Direction<3>, ElementId<3>>, 6> dir_keys = {
+  const std::array<DirectionalId<3>, 6> dir_keys = {
       {{Direction<3>::lower_xi(), ElementId<3>(1)},
        {Direction<3>::upper_xi(), ElementId<3>(2)},
        {Direction<3>::lower_eta(), ElementId<3>(3)},
@@ -558,9 +556,9 @@ void test_neuler_minmod_flattener() {
 
   // Empty map because no neighbors
   const std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+      DirectionalId<VolumeDim>,
       typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+      boost::hash<DirectionalId<VolumeDim>>>
       neighbor_data{};
 
   // First a sanity check: there should be a negative density for this test to

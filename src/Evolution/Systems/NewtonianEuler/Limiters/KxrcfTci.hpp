@@ -19,6 +19,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
@@ -69,9 +70,8 @@ bool kxrcf_indicator(
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
     const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
         VolumeDim>::type& normals_and_magnitudes,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+    const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                             boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) {
   // Enforce restrictions on h-refinement, p-refinement
   if (UNLIKELY(
@@ -117,7 +117,7 @@ bool kxrcf_indicator(
   // limiter to know about the boundary condition, which may be difficult to
   // do in a general way.
   for (const auto& [neighbor, data] : neighbor_data) {
-    const auto& dir = neighbor.first;
+    const auto& dir = neighbor.direction;
 
     // Check consistency of neighbor_data with element and normals
     ASSERT(element.neighbors().contains(dir),

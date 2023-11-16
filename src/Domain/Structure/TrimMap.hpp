@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
@@ -19,22 +19,17 @@ namespace domain {
  */
 template <size_t Dim, typename T>
 void remove_nonexistent_neighbors(
-    const gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>, T,
-                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-        map_to_trim,
+    const gsl::not_null<DirectionalIdMap<Dim, T>*> map_to_trim,
     const Element<Dim>& element) {
-  std::array<std::pair<Direction<Dim>, ElementId<Dim>>,
-             maximum_number_of_neighbors(Dim)>
+  std::array<DirectionalId<Dim>, maximum_number_of_neighbors(Dim)>
       ids_to_remove{};
   size_t ids_index = 0;
   for (const auto& [neighbor_id, mesh] : *map_to_trim) {
     const auto& neighbors = element.neighbors();
-    if (const auto neighbors_it = neighbors.find(neighbor_id.first);
+    if (const auto neighbors_it = neighbors.find(neighbor_id.direction);
         neighbors_it != neighbors.end()) {
       if (const auto neighbor_it =
-              neighbors_it->second.ids().find(neighbor_id.second);
+              neighbors_it->second.ids().find(neighbor_id.id);
           neighbor_it == neighbors_it->second.ids().end()) {
         gsl::at(ids_to_remove, ids_index) = neighbor_id;
         ++ids_index;

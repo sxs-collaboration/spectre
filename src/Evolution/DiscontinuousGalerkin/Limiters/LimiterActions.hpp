@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -35,11 +36,8 @@ struct LimiterCommunicationTag : public Parallel::InboxInserters::Map<
   using temporal_id = typename Metavariables::temporal_id::type;
   using type =
       std::map<temporal_id,
-               std::unordered_map<
-                   std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-                   packaged_data_t,
-                   boost::hash<std::pair<Direction<volume_dim>,
-                                         ElementId<volume_dim>>>>>;
+               std::unordered_map<DirectionalId<volume_dim>, packaged_data_t,
+                                  boost::hash<DirectionalId<volume_dim>>>>;
 };
 }  // namespace Tags
 
@@ -186,9 +184,9 @@ struct SendData {
       for (const auto& neighbor : neighbors_in_direction) {
         Parallel::receive_data<limiter_comm_tag>(
             receiver_proxy[neighbor], temporal_id,
-            std::make_pair(
-                std::make_pair(direction_from_neighbor, element.id()),
-                packaged_data));
+            std::make_pair(DirectionalId<volume_dim>{direction_from_neighbor,
+                                                     element.id()},
+                           packaged_data));
 
       }  // loop over neighbors_in_direction
     }    // loop over element.neighbors()

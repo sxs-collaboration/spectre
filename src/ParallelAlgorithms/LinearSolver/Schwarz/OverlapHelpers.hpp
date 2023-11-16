@@ -3,19 +3,18 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <limits>
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
@@ -23,15 +22,13 @@ namespace LinearSolver::Schwarz {
 
 /// Identifies a subdomain region that overlaps with another element
 template <size_t Dim>
-using OverlapId = std::pair<Direction<Dim>, ElementId<Dim>>;
+using OverlapId = DirectionalId<Dim>;
 
 /// Data structure that can store the `ValueType` on each possible overlap of an
 /// element-centered subdomain with its neighbors. Overlaps are identified by
 /// their `OverlapId`.
 template <size_t Dim, typename ValueType>
-using OverlapMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim), OverlapId<Dim>, ValueType,
-                 boost::hash<OverlapId<Dim>>>;
+using OverlapMap = DirectionalIdMap<Dim, ValueType>;
 
 /*!
  * \brief The number of points that an overlap extends into the `volume_extent`

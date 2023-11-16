@@ -9,8 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 
 /// \cond
 template <size_t Dim>
@@ -32,11 +31,7 @@ namespace evolution::dg::subcell::Tags {
  */
 template <size_t Dim>
 struct InterpolatorsFromFdToNeighborFd : db::SimpleTag {
-  using type =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 
 /*!
@@ -47,11 +42,7 @@ struct InterpolatorsFromFdToNeighborFd : db::SimpleTag {
  */
 template <size_t Dim>
 struct InterpolatorsFromDgToNeighborFd : db::SimpleTag {
-  using type =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 
 /*!
@@ -62,10 +53,6 @@ struct InterpolatorsFromDgToNeighborFd : db::SimpleTag {
  */
 template <size_t Dim>
 struct InterpolatorsFromNeighborDgToFd : db::SimpleTag {
-  using type =
-      FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::optional<intrp::Irregular<Dim>>,
-                   boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
+  using type = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 };
 }  // namespace evolution::dg::subcell::Tags

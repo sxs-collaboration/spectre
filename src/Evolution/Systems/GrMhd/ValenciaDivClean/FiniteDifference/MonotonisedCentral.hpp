@@ -4,16 +4,14 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -108,11 +106,8 @@ class MonotonisedCentralPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
@@ -122,11 +117,8 @@ class MonotonisedCentralPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 };

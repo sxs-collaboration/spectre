@@ -311,8 +311,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     SubdomainData source{};
     source.element_data.initialize(5);
     source
-        .overlap_data[std::make_pair(Direction<Dim>::lower_xi(),
-                                     ElementId<Dim>{0})]
+        .overlap_data[DirectionalId<Dim>{Direction<Dim>::lower_xi(),
+                                         ElementId<Dim>{0}}]
         .initialize(3);
     std::iota(source.begin(), source.end(), 1.);
     // Apply the solver

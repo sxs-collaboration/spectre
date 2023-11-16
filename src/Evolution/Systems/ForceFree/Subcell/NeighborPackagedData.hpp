@@ -4,7 +4,6 @@
 #pragma once
 
 #include <algorithm>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <type_traits>
@@ -13,15 +12,15 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -66,12 +65,9 @@ namespace ForceFree::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<maximum_number_of_neighbors(3),
-                      std::pair<Direction<3>, ElementId<3>>, DataVector,
-                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-  apply(const db::DataBox<DbTagsList>& box,
-        const std::vector<std::pair<Direction<3>, ElementId<3>>>&
-            mortars_to_reconstruct_to) {
+  static DirectionalIdMap<3, DataVector> apply(
+      const db::DataBox<DbTagsList>& box,
+      const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tags = typename System::variables_tag::tags_list;
     using fluxes_tags = typename Fluxes::return_tags;
 
@@ -82,10 +78,7 @@ struct NeighborPackagedData {
            "storing the mesh velocity on the faces instead of "
            "re-slicing/projecting.");
 
-    FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, DataVector,
-                 boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        neighbor_package_data{};
+    DirectionalIdMap<3, DataVector> neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
       return neighbor_package_data;
     }
@@ -165,7 +158,7 @@ struct NeighborPackagedData {
             vars_on_face_with_tildej_buffer{0};
 
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
-          const Direction<3>& direction = mortar_id.first;
+          const Direction<3>& direction = mortar_id.direction;
 
           // Switch to face-centered points
           Index<3> extents = subcell_mesh.extents();
@@ -220,7 +213,7 @@ struct NeighborPackagedData {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&reconstructed_vars_on_face),
                     volume_vars_subcell, volume_tildej_subcell, element,
-                    ghost_subcell_data, subcell_mesh, mortar_id.first);
+                    ghost_subcell_data, subcell_mesh, mortar_id.direction);
               });
           ForceFree::subcell::compute_fluxes(
               make_not_null(&vars_on_face_with_tildej_buffer));
@@ -235,7 +228,7 @@ struct NeighborPackagedData {
               get<evolution::dg::Tags::NormalCovector<3>>(
                   *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(
                        box)
-                       .at(mortar_id.first));
+                       .at(mortar_id.direction));
           for (auto& t : normal_covector) {
             t *= -1.0;
           }
@@ -246,8 +239,9 @@ struct NeighborPackagedData {
           for (size_t i = 0; i < 3; ++i) {
             normal_covector.get(i) = evolution::dg::subcell::fd::project(
                 dg_normal_covector.get(i),
-                dg_mesh.slice_away(mortar_id.first.dimension()),
-                subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+                dg_mesh.slice_away(mortar_id.direction.dimension()),
+                subcell_mesh.extents().slice_away(
+                    mortar_id.direction.dimension()));
           }
 
           // Compute the packaged data
@@ -266,8 +260,10 @@ struct NeighborPackagedData {
           // boundary correction and then reconstructing, but away from a shock
           // this doesn't matter.
           auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
-              packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
-              subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+              packaged_data,
+              dg_mesh.slice_away(mortar_id.direction.dimension()),
+              subcell_mesh.extents().slice_away(
+                  mortar_id.direction.dimension()),
               subcell_options.reconstruction_method());
 
           // Make a view so we can use iterators with std::copy

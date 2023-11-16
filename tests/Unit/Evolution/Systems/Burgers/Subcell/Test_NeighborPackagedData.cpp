@@ -171,10 +171,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{}, normal_vectors);
 
   // Compute the packaged data
-  std::vector<std::pair<Direction<1>, ElementId<1>>>
-      mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<1>> mortars_to_reconstruct_to{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    mortars_to_reconstruct_to.emplace_back(direction, *neighbors.begin());
+    mortars_to_reconstruct_to.emplace_back(
+        DirectionalId<1>{direction, *neighbors.begin()});
   }
   const auto packaged_data =
       subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);
@@ -192,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
   Variables<dg_package_field_tags> expected_fd_packaged_data_on_mortar{0};
 
   for (const auto& mortar_id : mortars_to_reconstruct_to) {
-    const Direction<1>& direction = mortar_id.first;
+    const Direction<1>& direction = mortar_id.direction;
 
     // Note : 1D mortar has only one face point
     vars_on_mortar_face.initialize(1);
@@ -210,7 +210,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
     // revert normal vector
     auto normal_covector = get<evolution::dg::Tags::NormalCovector<1>>(
         *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<1>>(box).at(
-            mortar_id.first));
+            mortar_id.direction));
     for (auto& t : normal_covector) {
       t *= -1.0;
     }

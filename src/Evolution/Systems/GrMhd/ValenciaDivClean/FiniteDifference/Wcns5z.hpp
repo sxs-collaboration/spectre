@@ -9,9 +9,8 @@
 #include <memory>
 #include <utility>
 
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -140,11 +139,8 @@ class Wcns5zPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
@@ -153,11 +149,8 @@ class Wcns5zPrim : public Reconstructor {
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>,
-          evolution::dg::subcell::GhostData,
-          boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& ghost_data,
+      const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
+          ghost_data,
       const Mesh<dim>& subcell_mesh,
       const Direction<dim> direction_to_reconstruct) const;
 

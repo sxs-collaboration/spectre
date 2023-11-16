@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/Gsl.hpp"
@@ -42,9 +41,7 @@ void spacetime_kreiss_oliger_filter(
     const Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        evolution::dg::subcell::GhostData,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& all_ghost_data,
+    const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
+        all_ghost_data,
     const Mesh<3>& volume_mesh, size_t order, double epsilon);
 }  // namespace grmhd::GhValenciaDivClean::fd

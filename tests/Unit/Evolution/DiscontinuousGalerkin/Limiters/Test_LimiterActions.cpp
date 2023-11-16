@@ -86,10 +86,9 @@ class DummyLimiterForTest {
       tmpl::list<domain::Tags::Mesh<2>, domain::Tags::Element<2>>;
   void operator()(const gsl::not_null<typename Var::type*> var,
                   const Mesh<2>& /*mesh*/, const Element<2>& /*element*/,
-                  const std::unordered_map<
-                      std::pair<Direction<2>, ElementId<2>>,
-                      DummyLimiterForTest::PackagedData,
-                      boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
+                  const std::unordered_map<DirectionalId<2>,
+                                           DummyLimiterForTest::PackagedData,
+                                           boost::hash<DirectionalId<2>>>&
                       neighbor_packaged_data) const {
     // Zero the data as an easy check that the limiter got called
     get(*var) = 0.;
@@ -259,19 +258,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   // Here we check that the inbox is correctly filled with information from
   // neighbors.
   {
-    const auto check_inbox = [&runner, &self_id](
-                                 const ElementId<2>& id,
-                                 const Direction<2>& direction,
-                                 const double expected_mean_data,
-                                 const Mesh<2>& expected_mesh) {
-      const auto received_package =
-          tuples::get<limiter_comm_tag>(
-              runner.inboxes<my_component>().at(self_id))
-              .at(0)
-              .at(std::make_pair(direction, id));
-      CHECK(received_package.mean_ == approx(expected_mean_data));
-      CHECK(received_package.mesh_ == expected_mesh);
-    };
+    const auto check_inbox =
+        [&runner, &self_id](
+            const ElementId<2>& id, const Direction<2>& direction,
+            const double expected_mean_data, const Mesh<2>& expected_mesh) {
+          const auto received_package =
+              tuples::get<limiter_comm_tag>(
+                  runner.inboxes<my_component>().at(self_id))
+                  .at(0)
+                  .at(DirectionalId<2>{direction, id});
+          CHECK(received_package.mean_ == approx(expected_mean_data));
+          CHECK(received_package.mesh_ == expected_mesh);
+        };
 
     const Mesh<2> rotated_mesh{{{4, 3}},
                                Spectral::Basis::Legendre,

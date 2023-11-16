@@ -4,20 +4,19 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
@@ -37,11 +36,7 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -102,7 +97,9 @@ void reconstruct_prims_work(
                  << direction);
 
       const DataVector& neighbor_data =
-          ghost_data.at(std::pair{direction, *neighbors_in_direction.begin()})
+          ghost_data
+              .at(DirectionalId<Dim>{direction,
+                                     *neighbors_in_direction.begin()})
               .neighbor_ghost_data_for_reconstruction();
 
       ASSERT(neighbor_data.size() != 0,
@@ -166,11 +163,7 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::GhostData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        ghost_data,
+    const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
@@ -188,7 +181,7 @@ void reconstruct_fd_neighbor_work(
   using prim_tags_for_reconstruction =
       tmpl::list<MassDensity, Velocity, Pressure>;
 
-  const std::pair mortar_id{
+  const DirectionalId<Dim> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<Dim> ghost_data_extents = subcell_mesh.extents();
@@ -197,8 +190,7 @@ void reconstruct_fd_neighbor_work(
       ghost_data_extents.product()};
   {
     ASSERT(ghost_data.contains(mortar_id),
-           "The neighbor data does not contain the mortar: ("
-               << mortar_id.first << ',' << mortar_id.second << ")");
+           "The neighbor data does not contain the mortar: " << mortar_id);
     const DataVector& neighbor_data_in_direction =
         ghost_data.at(mortar_id).neighbor_ghost_data_for_reconstruction();
     std::copy(neighbor_data_in_direction.begin(),

@@ -24,7 +24,7 @@
 namespace evolution::dg::Initialization::detail {
 namespace {
 template <size_t Dim>
-using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+using Key = DirectionalId<Dim>;
 template <typename MappedType, size_t Dim>
 using MortarMap =
     std::unordered_map<Key<Dim>, MappedType, boost::hash<Key<Dim>>>;
@@ -32,16 +32,15 @@ using MortarMap =
 
 template <size_t Dim>
 std::tuple<
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::MortarData<Dim>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim - 1>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>,
+    std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
+                       boost::hash<DirectionalId<Dim>>>,
+    std::unordered_map<DirectionalId<Dim>, Mesh<Dim - 1>,
+                       boost::hash<DirectionalId<Dim>>>,
+    std::unordered_map<DirectionalId<Dim>,
                        std::array<Spectral::MortarSize, Dim - 1>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
-    std::unordered_map<std::pair<Direction<Dim>, ElementId<Dim>>, TimeStepId,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>,
+                       boost::hash<DirectionalId<Dim>>>,
+    std::unordered_map<DirectionalId<Dim>, TimeStepId,
+                       boost::hash<DirectionalId<Dim>>>,
     DirectionMap<Dim, std::optional<Variables<tmpl::list<
                           evolution::dg::Tags::MagnitudeOfNormal,
                           evolution::dg::Tags::NormalCovector<Dim>>>>>>
@@ -61,7 +60,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
   for (const auto& [direction, neighbors] : element.neighbors()) {
     normal_covector_quantities[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
-      const auto mortar_id = std::make_pair(direction, neighbor);
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
       mortar_data.emplace(mortar_id, MortarData<Dim>{1});
       mortar_meshes.emplace(
           mortar_id,
@@ -92,31 +91,26 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                                 \
-  template std::tuple<                                                         \
-      std::unordered_map<                                                      \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::MortarData<DIM(data)>,                                \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>, \
-      std::unordered_map<                                                      \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          Mesh<DIM(data) - 1>,                                                 \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>, \
-      std::unordered_map<                                                      \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          std::array<Spectral::MortarSize, DIM(data) - 1>,                     \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>, \
-      std::unordered_map<                                                      \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, TimeStepId,   \
-          boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>, \
-      DirectionMap<DIM(data),                                                  \
-                   std::optional<Variables<tmpl::list<                         \
-                       evolution::dg::Tags::MagnitudeOfNormal,                 \
-                       evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>     \
-  mortars_apply_impl(                                                          \
-      const std::vector<std::array<size_t, DIM(data)>>& initial_extents,       \
-      const Spectral::Quadrature quadrature,                                   \
-      const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \
+#define INSTANTIATION(r, data)                                               \
+  template std::tuple<                                                       \
+      std::unordered_map<DirectionalId<DIM(data)>,                           \
+                         evolution::dg::MortarData<DIM(data)>,               \
+                         boost::hash<DirectionalId<DIM(data)>>>,             \
+      std::unordered_map<DirectionalId<DIM(data)>, Mesh<DIM(data) - 1>,      \
+                         boost::hash<DirectionalId<DIM(data)>>>,             \
+      std::unordered_map<DirectionalId<DIM(data)>,                           \
+                         std::array<Spectral::MortarSize, DIM(data) - 1>,    \
+                         boost::hash<DirectionalId<DIM(data)>>>,             \
+      std::unordered_map<DirectionalId<DIM(data)>, TimeStepId,               \
+                         boost::hash<DirectionalId<DIM(data)>>>,             \
+      DirectionMap<DIM(data),                                                \
+                   std::optional<Variables<tmpl::list<                       \
+                       evolution::dg::Tags::MagnitudeOfNormal,               \
+                       evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>   \
+  mortars_apply_impl(                                                        \
+      const std::vector<std::array<size_t, DIM(data)>>& initial_extents,     \
+      const Spectral::Quadrature quadrature,                                 \
+      const Element<DIM(data)>& element, const TimeStepId& next_temporal_id, \
       const Mesh<DIM(data)>& volume_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

@@ -6,23 +6,21 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -42,20 +40,12 @@ namespace TestHelpers {
  */
 namespace Burgers::fd {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(1),
-             std::pair<Direction<1>, ElementId<1>>,
-             evolution::dg::subcell::GhostData,
-             boost::hash<std::pair<Direction<1>, ElementId<1>>>>
-compute_ghost_data(
+DirectionalIdMap<1, evolution::dg::subcell::GhostData> compute_ghost_data(
     const Mesh<1>& subcell_mesh,
     const tnsr::I<DataVector, 1, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<1, Neighbors<1>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(1),
-               std::pair<Direction<1>, ElementId<1>>,
-               evolution::dg::subcell::GhostData,
-               boost::hash<std::pair<Direction<1>, ElementId<1>>>>
-      ghost_data{};
+  DirectionalIdMap<1, evolution::dg::subcell::GhostData> ghost_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
     REQUIRE(neighbors_in_direction.size() ==
             1);  // currently only support one neighbor in each direction
@@ -74,9 +64,9 @@ compute_ghost_data(
         std::unordered_set{direction.opposite()}, 0, {});
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    ghost_data[std::pair{direction, neighbor_id}] =
+    ghost_data[DirectionalId<1>{direction, neighbor_id}] =
         evolution::dg::subcell::GhostData{1};
-    ghost_data.at(std::pair{direction, neighbor_id})
+    ghost_data.at(DirectionalId<1>{direction, neighbor_id})
         .neighbor_ghost_data_for_reconstruction() =
         sliced_data.at(direction.opposite());
   }
@@ -115,13 +105,9 @@ void test_reconstructor(const size_t num_pts,
   const Mesh<1> subcell_mesh{num_pts, Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
-  const FixedHashMap<maximum_number_of_neighbors(1),
-                     std::pair<Direction<1>, ElementId<1>>,
-                     evolution::dg::subcell::GhostData,
-                     boost::hash<std::pair<Direction<1>, ElementId<1>>>>
-      ghost_data =
-          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
-                             reconstructor.ghost_zone_size(), compute_solution);
+  const DirectionalIdMap<1, evolution::dg::subcell::GhostData> ghost_data =
+      compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
+                         reconstructor.ghost_zone_size(), compute_solution);
 
   // create Variables on lower and upper faces to perform reconstruction
   using dg_package_data_argument_tags = tmpl::list<

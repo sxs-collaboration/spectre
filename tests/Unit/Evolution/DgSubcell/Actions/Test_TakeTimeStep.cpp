@@ -147,14 +147,15 @@ void test() {
                                Spectral::Quadrature::CellCentered};
   // Set up nonsense mortar data since we only need to check that it got
   // cleared.
-  using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+  using Key = DirectionalId<Dim>;
   std::unordered_map<Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>
       mortar_data{};
   evolution::dg::MortarData<Dim> lower_xi_data{};
   lower_xi_data.insert_local_mortar_data(
       TimeStepId{true, 1, Time{Slab{1.2, 7.8}, {1, 10}}},
       subcell_mesh.slice_away(0), DataVector{1.1, 2.43, 7.8});
-  const std::pair lower_id{Direction<Dim>::lower_xi(), ElementId<Dim>{1}};
+  const DirectionalId<Dim> lower_id{Direction<Dim>::lower_xi(),
+                                    ElementId<Dim>{1}};
   mortar_data[lower_id] = lower_xi_data;
 
   ActionTesting::emplace_array_component_and_initialize<comp>(

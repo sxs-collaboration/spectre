@@ -43,9 +43,8 @@ namespace Limiters {
 // limiter both to a Scalar and to a tnsr::I<Dim>.
 namespace {
 template <size_t VolumeDim, typename PackagedData>
-using NeighborData = std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
+using NeighborData = std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
+                                        boost::hash<DirectionalId<VolumeDim>>>;
 
 template <size_t Identifier>
 struct ScalarTag : db::SimpleTag {
@@ -133,10 +132,10 @@ void test_limiting_two_neighbors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_upper = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lower = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_upper = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lower = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
 
   package_data_upper.modal_volume_data.initialize(num_pts);
   package_data_upper.mesh = mesh;
@@ -270,10 +269,10 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;
@@ -827,14 +826,14 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_eta(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_eta(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;
@@ -931,14 +930,14 @@ void run() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_eta(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_eta(), ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;
@@ -2561,18 +2560,20 @@ void test_limiting_different_values_different_tensors() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_zeta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_zeta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_zeta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_zeta(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::upper_zeta(),
+                                       ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::lower_zeta(),
+                                       ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;
@@ -2792,18 +2793,20 @@ void run() {
 
   const Element<dim> element(ElementId<dim>{0}, {});
   // We don't care about the ElementId for these tests, just the direction.
-  Limiter::PackagedData& package_data_up_xi = neighbor_data[std::make_pair(
-      Direction<dim>::upper_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_xi = neighbor_data[std::make_pair(
-      Direction<dim>::lower_xi(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_eta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_eta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_eta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_up_zeta = neighbor_data[std::make_pair(
-      Direction<dim>::upper_zeta(), ElementId<dim>{0})];
-  Limiter::PackagedData& package_data_lo_zeta = neighbor_data[std::make_pair(
-      Direction<dim>::lower_zeta(), ElementId<dim>{0})];
+  Limiter::PackagedData& package_data_up_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_xi = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_xi(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::upper_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_eta = neighbor_data[DirectionalId<dim>{
+      Direction<dim>::lower_eta(), ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_up_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::upper_zeta(),
+                                       ElementId<dim>{0}}];
+  Limiter::PackagedData& package_data_lo_zeta =
+      neighbor_data[DirectionalId<dim>{Direction<dim>::lower_zeta(),
+                                       ElementId<dim>{0}}];
 
   package_data_up_xi.modal_volume_data.initialize(num_pts);
   package_data_up_xi.mesh = mesh;

@@ -8,10 +8,10 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -50,15 +50,11 @@ SPECTRE_TEST_CASE(
   const Element<3> element =
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::set_element();
 
-  const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>,
-                     evolution::dg::subcell::GhostData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-      all_ghost_data = TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
-          compute_ghost_data(subcell_mesh, logical_coords, element.neighbors(),
-                             ghost_zone_size,
-                             TestHelpers::grmhd::GhValenciaDivClean::fd::
-                                 detail::compute_prim_solution);
+  const DirectionalIdMap<3, evolution::dg::subcell::GhostData> all_ghost_data =
+      TestHelpers::grmhd::GhValenciaDivClean::fd::detail::compute_ghost_data(
+          subcell_mesh, logical_coords, element.neighbors(), ghost_zone_size,
+          TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
+              compute_prim_solution);
   const auto volume_prims_for_recons =
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::compute_prim_solution(
           logical_coords);
@@ -157,13 +153,10 @@ SPECTRE_TEST_CASE(
   // Test ASSERT triggers for incorrect neighbor size.
 #ifdef SPECTRE_DEBUG
   for (const auto& direction : Direction<3>::all_directions()) {
-    const std::pair directional_element_id{
+    const DirectionalId<3> directional_element_id{
         direction, *element.neighbors().at(direction).begin()};
-    FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>,
-                 evolution::dg::subcell::GhostData,
-                 boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        bad_ghost_data = all_ghost_data;
+    DirectionalIdMap<3, evolution::dg::subcell::GhostData> bad_ghost_data =
+        all_ghost_data;
     DataVector& neighbor_data = bad_ghost_data.at(directional_element_id)
                                     .neighbor_ghost_data_for_reconstruction();
     neighbor_data = DataVector{2};

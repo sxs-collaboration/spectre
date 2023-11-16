@@ -11,6 +11,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,10 +26,7 @@ void slice_tensor_for_subcell(
     const Tensor<VectorType, Symmetry<>, index_list<>>& volume_scalar,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const Direction<Dim>& direction,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   std::unordered_set directions_to_slice{direction};
 
@@ -55,10 +54,7 @@ void slice_tensor_for_subcell(
     const Tensor<VectorType, Structure...>& volume_tensor,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const Direction<Dim>& direction,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   std::unordered_set directions_to_slice{direction};
 
@@ -80,10 +76,7 @@ Tensor<VectorType, Structure...> slice_tensor_for_subcell(
     const Tensor<VectorType, Structure...>& volume_tensor,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const Direction<Dim>& direction,
-    const FixedHashMap<maximum_number_of_neighbors(Dim),
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       std::optional<intrp::Irregular<Dim>>,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
         fd_to_neighbor_fd_interpolants) {
   Tensor<VectorType, Structure...> sliced_tensor(
       subcell_extents.slice_away(direction.dimension()).product() *
