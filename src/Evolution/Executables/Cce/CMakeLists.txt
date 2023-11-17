@@ -16,11 +16,11 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_cce_executable EXECUTABLE BOUNDARY_COMPONENT)
+function(add_cce_executable EXECUTABLE BOUNDARY_COMPONENT SYSTEM)
   add_spectre_executable(
     ${EXECUTABLE}
     EXCLUDE_FROM_ALL
-    CharacteristicExtract.cpp
+    ${SYSTEM}.cpp
   )
   target_compile_definitions(
     ${EXECUTABLE}
@@ -33,8 +33,15 @@ endfunction()
 add_cce_executable(
   CharacteristicExtract
   Cce::H5WorldtubeBoundary
+  CharacteristicExtract
   )
 add_cce_executable(
   AnalyticTestCharacteristicExtract
   Cce::AnalyticWorldtubeBoundary
+  CharacteristicExtract
+  )
+add_cce_executable(
+  KleinGordonCharacteristicExtract
+  Cce::KleinGordonH5WorldtubeBoundary
+  KleinGordonCharacteristicExtract
   )
