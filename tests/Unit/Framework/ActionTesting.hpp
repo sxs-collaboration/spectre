@@ -525,9 +525,11 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
   // creating/destroying MockDistributedObjects is not supported; it must be
   // called on an existing MockDistrubtedObject.
   template <typename CacheProxy>
-  void insert(const CacheProxy& /*global_cache_proxy*/,
-              Parallel::Phase /*current_phase*/,
-              const std::unique_ptr<Parallel::Callback>& callback) {
+  void insert(
+      const CacheProxy& /*global_cache_proxy*/,
+      Parallel::Phase /*current_phase*/,
+      const std::unordered_map<Parallel::Phase, size_t>& /*phase_bookmarks*/,
+      const std::unique_ptr<Parallel::Callback>& callback) {
     callback->invoke();
   }
 

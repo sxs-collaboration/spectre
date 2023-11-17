@@ -47,7 +47,9 @@ struct CreateChild {
       ElementProxy element_proxy,
       ElementId<Metavariables::volume_dim> parent_id,
       std::vector<ElementId<Metavariables::volume_dim>> children_ids,
-      const size_t index_of_child_id) {
+      const size_t index_of_child_id,
+      const std::unordered_map<Parallel::Phase, size_t>
+          parent_phase_bookmarks) {
     auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     const ElementId<Metavariables::volume_dim>& child_id =
         children_ids[index_of_child_id];
@@ -55,6 +57,7 @@ struct CreateChild {
       auto parent_proxy = element_proxy[parent_id];
       element_proxy[child_id].insert(
           cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
+          parent_phase_bookmarks,
           std::make_unique<Parallel::SimpleActionCallback<
               SendDataToChildren, decltype(parent_proxy),
               std::vector<ElementId<Metavariables::volume_dim>>>>(
@@ -62,12 +65,15 @@ struct CreateChild {
     } else {
       element_proxy[child_id].insert(
           cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
+          parent_phase_bookmarks,
           std::make_unique<Parallel::SimpleActionCallback<
               CreateChild, decltype(my_proxy), ElementProxy,
               ElementId<Metavariables::volume_dim>,
-              std::vector<ElementId<Metavariables::volume_dim>>, size_t>>(
+              std::vector<ElementId<Metavariables::volume_dim>>, size_t,
+              std::unordered_map<Parallel::Phase, size_t>>>(
               my_proxy, std::move(element_proxy), std::move(parent_id),
-              std::move(children_ids), index_of_child_id + 1));
+              std::move(children_ids), index_of_child_id + 1,
+              parent_phase_bookmarks));
     }
   }
 };

@@ -111,6 +111,8 @@ struct AdjustDomain {
     const auto& my_amr_flags = my_amr_info.flags;
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(cache);
+    const auto& phase_bookmarks =
+        Parallel::local(element_array[element_id])->phase_bookmarks();
 
     // Check for h-refinement
     if (alg::any_of(my_amr_flags,
@@ -125,7 +127,8 @@ struct AdjustDomain {
           Parallel::get_parallel_component<amr::Component<Metavariables>>(
               cache);
       Parallel::simple_action<CreateChild>(amr_component, element_array,
-                                           element_id, children_ids, 0_st);
+                                           element_id, children_ids, 0_st,
+                                           phase_bookmarks);
 
     } else if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
                  return flag == amr::Flag::Join;
@@ -138,9 +141,9 @@ struct AdjustDomain {
         auto& amr_component =
             Parallel::get_parallel_component<amr::Component<Metavariables>>(
                 cache);
-        Parallel::simple_action<CreateParent>(amr_component, element_array,
-                                              std::move(parent_id), element_id,
-                                              std::move(ids_to_join));
+        Parallel::simple_action<CreateParent>(
+            amr_component, element_array, std::move(parent_id), element_id,
+            std::move(ids_to_join), phase_bookmarks);
       }
 
     } else {

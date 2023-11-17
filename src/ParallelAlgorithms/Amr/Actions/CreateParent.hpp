@@ -40,10 +40,12 @@ struct CreateParent {
       ElementProxy element_proxy,
       ElementId<Metavariables::volume_dim> parent_id,
       const ElementId<Metavariables::volume_dim>& child_id,
-      std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect) {
+      std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect,
+      const std::unordered_map<Parallel::Phase, size_t> child_phase_bookmarks) {
     auto child_proxy = element_proxy[child_id];
     element_proxy[parent_id].insert(
         cache.get_this_proxy(), Parallel::Phase::AdjustDomain,
+        child_phase_bookmarks,
         std::make_unique<Parallel::SimpleActionCallback<
             CollectDataFromChildren, decltype(child_proxy),
             ElementId<Metavariables::volume_dim>,

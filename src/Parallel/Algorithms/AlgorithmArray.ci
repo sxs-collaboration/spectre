@@ -31,7 +31,8 @@ module AlgorithmArray {
 
     entry AlgorithmArray(
         Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
-        Parallel::Phase, std::unique_ptr<Parallel::Callback>);
+        Parallel::Phase, std::unordered_map<Parallel::Phase, size_t>,
+        std::unique_ptr<Parallel::Callback>);
 
     // Ordinarily, indiscriminate use of [inline] has the danger of arbitrarily
     // deep recursive function calls, which then exceed the stack limits of the

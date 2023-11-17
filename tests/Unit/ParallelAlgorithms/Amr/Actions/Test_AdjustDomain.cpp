@@ -46,11 +46,14 @@ struct MockCreateParent {
       const int /*array_index*/, ElementProxy /*element_proxy*/,
       ElementId<Metavariables::volume_dim> parent_id,
       const ElementId<Metavariables::volume_dim>& child_id,
-      std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect) {
+      std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect,
+      const std::unordered_map<Parallel::Phase, size_t>&
+          child_phase_bookmarks) {
     CHECK(parent_id == ElementId<1>{0, std::array{SegmentId{2, 0}}});
     CHECK(child_id == ElementId<1>{0, std::array{SegmentId{3, 0}}});
     CHECK(sibling_ids_to_collect ==
           std::deque{ElementId<1>{0, std::array{SegmentId{3, 1}}}});
+    CHECK(child_phase_bookmarks.empty());
   }
 };
 
@@ -62,7 +65,9 @@ struct MockCreateChild {
       const int /*array_index*/, ElementProxy /*element_proxy*/,
       ElementId<Metavariables::volume_dim> parent_id,
       std::vector<ElementId<Metavariables::volume_dim>> children_ids,
-      const size_t index_of_child_id) {
+      const size_t index_of_child_id,
+      const std::unordered_map<Parallel::Phase, size_t>&
+          parent_phase_bookmarks) {
     CHECK(parent_id == ElementId<1>{0, std::array{SegmentId{1, 1}}});
     if (index_of_child_id == 0) {
       CHECK(children_ids ==
@@ -74,6 +79,7 @@ struct MockCreateChild {
             std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}},
                         ElementId<1>{0, std::array{SegmentId{2, 3}}}});
     }
+    CHECK(parent_phase_bookmarks.empty());
   }
 };
 

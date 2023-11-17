@@ -97,7 +97,8 @@ void test() {
 
   ActionTesting::simple_action<singleton_component, amr::Actions::CreateParent>(
       make_not_null(&runner), 0, element_proxy, parent_id, lower_child_id,
-      std::deque{upper_child_id});
+      std::deque{upper_child_id},
+      std::unordered_map<Parallel::Phase, size_t>{});
   for (const auto& id : std::vector{upper_child_id, parent_id}) {
     CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(runner,
                                                                        id));

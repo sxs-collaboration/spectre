@@ -146,6 +146,9 @@ add_algorithm_test(
 add_algorithm_test(
   "AlgorithmPhaseControl"
   INPUT_FILE "Test_AlgorithmPhaseControl.yaml")
+add_algorithm_test(
+  "DynamicInsertionState"
+  INPUT_FILE "Test_DynamicInsertionState.yaml")
 
 add_algorithm_test_with_restart_from_checkpoint("CheckpointRestart")
 
