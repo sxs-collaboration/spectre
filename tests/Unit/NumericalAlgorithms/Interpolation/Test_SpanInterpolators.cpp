@@ -46,7 +46,7 @@ void test_linear_interpolator(const gsl::not_null<Generator*> gen) {
               linear_interpolator_complex_values.data(),
               linear_interpolator_complex_values.size()},
           target_point);
-  CHECK_COMPLEX_APPROX(
+  CHECK_ITERABLE_APPROX(
       complex_linear_interpolation,
       target_point * linear_interpolator_complex_values[1] +
           (1.0 - target_point) * linear_interpolator_complex_values[0]);
@@ -77,9 +77,9 @@ void test_interpolator_approximate_fidelity(
           interpolator_values.data(), interpolator_points.size()},
       target_time);
 
-  CHECK_COMPLEX_CUSTOM_APPROX(interpolator_result,
-                              amplitude * cos(frequency * target_time),
-                              interpolator_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(interpolator_result,
+                               amplitude * cos(frequency * target_time),
+                               interpolator_approx);
 }
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolation.SpanInterpolators",

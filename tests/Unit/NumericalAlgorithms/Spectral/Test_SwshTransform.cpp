@@ -269,7 +269,7 @@ void test_interpolate_to_collocation() {
     for (size_t j = 0; j < square(std::min(l_max, target_l_max) + 1); ++j) {
       CAPTURE(i);
       CAPTURE(j);
-      CHECK_COMPLEX_APPROX(
+      CHECK_ITERABLE_APPROX(
           expected_goldberg_modes.data()[i * square(l_max + 1) + j],
           resampled_goldberg_modes.data()[i * square(target_l_max + 1) + j]);
     }

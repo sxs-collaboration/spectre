@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ExpandOverBlocks", "[Domain][Unit]") {
       std::vector<std::array<size_t, 3>>{{2, 3, 4}, {3, 4, 5}, {4, 5, 6}}, 3,
       {{2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
   CHECK_THROWS_WITH(
-      SINGLE_ARG(ExpandOverBlocks<size_t, 1>{3}(
+      (ExpandOverBlocks<size_t, 1>{3}(
           std::vector<std::array<size_t, 1>>{{2}, {3}})),
       Catch::Matchers::ContainsSubstring(
           "You supplied 2 values, but the domain creator has 3 blocks."));

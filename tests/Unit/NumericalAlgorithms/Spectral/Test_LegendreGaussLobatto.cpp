@@ -150,7 +150,7 @@ void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
           num_points);
   Approx diff_approx = approx;
   diff_approx.margin(1.0e-13);
-  CHECK_MATRIX_CUSTOM_APPROX(expected_matrix, diff_matrix, diff_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_matrix, diff_matrix, diff_approx);
 }
 
 }  // namespace
@@ -259,7 +259,7 @@ void test_modal_to_nodal_matrix(const size_t num_points,
       Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::GaussLobatto>(
           num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, matrix);
+  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
@@ -346,7 +346,7 @@ void test_nodal_to_modal_matrix(const size_t num_points,
       Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::GaussLobatto>(
           num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, matrix);
+  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace

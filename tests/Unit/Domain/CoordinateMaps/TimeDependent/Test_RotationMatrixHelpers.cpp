@@ -31,12 +31,13 @@ void check_rotation_matrix_helpers_3d(
   Approx custom_approx = Approx::custom().epsilon(5e-12).scale(1.0);
   {
     INFO("Check rotation matrix");
-    CHECK_MATRIX_CUSTOM_APPROX(rot_matrix, expected_rot_matrix, custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(rot_matrix, expected_rot_matrix,
+                                 custom_approx);
   }
   {
     INFO("Check rotation matrix deriv");
-    CHECK_MATRIX_CUSTOM_APPROX(rot_matrix_deriv, expected_rot_matrix_deriv,
-                               custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(rot_matrix_deriv, expected_rot_matrix_deriv,
+                                 custom_approx);
   }
 }
 
@@ -57,11 +58,11 @@ void check_rotation_matrix_helpers_2d(const double init_omega,
 
   {
     INFO("Check rotation matrix");
-    CHECK_MATRIX_APPROX(rot_matrix, expected_rot_matrix);
+    CHECK_ITERABLE_APPROX(rot_matrix, expected_rot_matrix);
   }
   {
     INFO("Check rotation matrix deriv");
-    CHECK_MATRIX_APPROX(rot_matrix_deriv, expected_rot_matrix_deriv);
+    CHECK_ITERABLE_APPROX(rot_matrix_deriv, expected_rot_matrix_deriv);
   }
 }
 

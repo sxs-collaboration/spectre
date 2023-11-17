@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <numeric>
 
@@ -75,7 +76,7 @@ void test() {
           CHECK(get(sliced_scalar).size() ==
                 get(expected_sliced_scalar).size());
           for (const double value_at_point : get(sliced_scalar)) {
-            CHECK(isnan(value_at_point));
+            CHECK(std::isnan(value_at_point));
           }
           enable_floating_point_exceptions();
 #endif

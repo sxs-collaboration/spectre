@@ -80,10 +80,10 @@ void check_transforms(
   for (IndexIterator<Dim> index_it(mesh.extents()); index_it; ++index_it) {
     CAPTURE(*index_it);
     if (alg::found(coeffs_to_include, index_it->indices())) {
-      CHECK_COMPLEX_APPROX(u_modal[index_it.collapsed_index()], basis_factor);
+      CHECK_ITERABLE_APPROX(u_modal[index_it.collapsed_index()], basis_factor);
     } else {
-      CHECK_COMPLEX_APPROX(u_modal[index_it.collapsed_index()],
-                           typename ModalVectorType::ElementType{0.0});
+      CHECK_ITERABLE_APPROX(u_modal[index_it.collapsed_index()],
+                            typename ModalVectorType::ElementType{0.0});
     }
   }
 

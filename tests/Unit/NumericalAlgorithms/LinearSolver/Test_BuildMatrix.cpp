@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
     build_matrix(make_not_null(&matrix_representation),
                  make_not_null(&operand_buffer), make_not_null(&result_buffer),
                  linear_operator);
-    CHECK_MATRIX_APPROX(matrix_representation, matrix);
+    CHECK_ITERABLE_APPROX(matrix_representation, matrix);
     CHECK(linear_operator.invocations == 2);
   }
   {
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
     build_matrix(make_not_null(&matrix_representation),
                  make_not_null(&operand_buffer), make_not_null(&result_buffer),
                  linear_operator);
-    CHECK_MATRIX_APPROX(matrix_representation, expected_matrix);
+    CHECK_ITERABLE_APPROX(matrix_representation, expected_matrix);
   }
 }
 

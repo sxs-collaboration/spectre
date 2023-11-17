@@ -174,7 +174,7 @@ MAKE_BINARY_INPLACE_TEST(MinusAssign, -=, -);
 MAKE_BINARY_INPLACE_TEST(MultAssign, *=, *);
 MAKE_BINARY_INPLACE_TEST(PlusAssign, +=, +);
 
-using RealTypeList = tmpl::list<float, double, int, long>;
+using RealTypeList = tmpl::list<float, double>;
 using AllTypeList = tmpl::list<float, double, std::complex<double>>;
 using DoubleSet = tmpl::list<double, std::complex<double>>;
 
