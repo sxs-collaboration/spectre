@@ -651,10 +651,11 @@ db::DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate(
   using current_tags_to_reset = tmpl::list<TagsOfImmutableItemsToReset...>;
   using next_compute_tags_to_reset = tmpl::list_difference<
       tmpl::remove_duplicates<tmpl::transform<
-          tmpl::append<
-              tmpl::filter<typename DataBox<tmpl::list<Tags...>>::edge_list,
-                           std::is_same<tmpl::pin<TagsOfImmutableItemsToReset>,
-                                        tmpl::get_source<tmpl::_1>>>...>,
+          tmpl::filter<
+              typename DataBox<tmpl::list<Tags...>>::edge_list,
+              tmpl::lazy::list_contains<
+                  tmpl::pin<tmpl::list<TagsOfImmutableItemsToReset...>>,
+                  tmpl::get_source<tmpl::_1>>>,
           tmpl::get_destination<tmpl::_1>>>,
       current_tags_to_reset>;
   reset_compute_items_after_mutate(next_compute_tags_to_reset{});
