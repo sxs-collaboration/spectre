@@ -37,6 +37,12 @@ struct BondiJ : db::SimpleTag {
   static std::string name() { return "J"; }
 };
 
+// The scalar field in scalar-tensor theory
+struct KleinGordonPsi : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+  static std::string name() { return "KGPsi"; }
+};
+
 }  // namespace Tags
 }  // namespace Cce
 
@@ -47,6 +53,13 @@ struct dt<Cce::Tags::BondiJ> : db::PrefixTag, db::SimpleTag {
   static std::string name() { return "H"; }
   using type = Scalar<::SpinWeighted<ComplexDataVector, 2>>;
   using tag = Cce::Tags::BondiJ;
+};
+
+template <>
+struct dt<Cce::Tags::KleinGordonPsi> : db::PrefixTag, db::SimpleTag {
+  static std::string name() { return "KGPi"; }
+  using type = Scalar<::SpinWeighted<ComplexDataVector, 0>>;
+  using tag = Cce::Tags::KleinGordonPsi;
 };
 /// \endcond
 }  // namespace Tags
@@ -61,6 +74,9 @@ namespace Tags {
 /// with the physical Bondi radius, which is not directly used for numerical
 /// grids).
 using BondiH = ::Tags::dt<BondiJ>;
+
+/// \brief Klein-Gordon variable \f$\Pi = \partial_u \psi\f$.
+using KleinGordonPi = ::Tags::dt<KleinGordonPsi>;
 
 /// Bondi parameter \f$\bar{J}\f$
 struct BondiJbar : db::SimpleTag {

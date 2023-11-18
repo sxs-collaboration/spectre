@@ -82,6 +82,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::Tags::InterpolationManager<ComplexDataVector, SomeTag>>(
       "InterpolationManager(SomeTag)");
+  TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPsi>("KGPsi");
+  TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPi>("KGPi");
 
   TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::BondiJ>>("H");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
@@ -111,4 +113,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
       "ScriPlus(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::ScriPlusFactor<SomeTag>>(
       "ScriPlusFactor(SomeTag)");
+  TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::KleinGordonPsi>>(
+      "KGPi");
 }
