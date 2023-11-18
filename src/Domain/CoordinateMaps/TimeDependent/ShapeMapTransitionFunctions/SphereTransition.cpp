@@ -55,15 +55,6 @@ std::optional<double> SphereTransition::original_radius_over_radius(
              : std::nullopt;
 }
 
-double SphereTransition::map_over_radius(
-    const std::array<double, 3>& source_coords) const {
-  return map_over_radius_impl<double>(source_coords);
-}
-DataVector SphereTransition::map_over_radius(
-    const std::array<DataVector, 3>& source_coords) const {
-  return map_over_radius_impl<DataVector>(source_coords);
-}
-
 std::array<double, 3> SphereTransition::gradient(
     const std::array<double, 3>& source_coords) const {
   return gradient_impl<double>(source_coords);
@@ -77,15 +68,7 @@ template <typename T>
 T SphereTransition::call_impl(const std::array<T, 3>& source_coords) const {
   const T mag = magnitude(source_coords);
   check_magnitudes(mag);
-  return a_ + b_ / mag;
-}
-
-template <typename T>
-T SphereTransition::map_over_radius_impl(
-    const std::array<T, 3>& source_coords) const {
-  const T mag = magnitude(source_coords);
-  check_magnitudes(mag);
-  return a_ / mag + b_ / square(mag);
+  return a_ * mag + b_;
 }
 
 template <typename T>
@@ -93,7 +76,7 @@ std::array<T, 3> SphereTransition::gradient_impl(
     const std::array<T, 3>& source_coords) const {
   const T mag = magnitude(source_coords);
   check_magnitudes(mag);
-  return -b_ * source_coords / cube(mag);
+  return a_ * source_coords / mag;
 }
 
 bool SphereTransition::operator==(

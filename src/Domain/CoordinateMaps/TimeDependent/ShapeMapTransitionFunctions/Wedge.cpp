@@ -126,36 +126,20 @@ std::optional<double> Wedge::original_radius_over_radius(
     return std::optional{1.0};
   }
 
-  // Solving equation of the form rtil*x^2 + ((D_o - D_i)/SumYlm - D_o)*x - (D_o
-  // - D_i)/SumYlm = 0
-  const double a = radius;
-  const double c = -distance_difference / distorted_radius;
-  const double b = -c - outer_distance;
+  const double linear_a = -1.0 / distance_difference;
+  const double linear_b = -linear_a * outer_distance;
 
-  std::optional<std::array<double, 2>> roots = real_roots(a, b, c);
-
-  if (roots.has_value()) {
-    for (const double root : roots.value()) {
-      // Check if the root is positive and within the inner and outer distance
-      // (divided by the mapped radius)
-      if (root > 0.0 and root + eps_ >= inner_distance / radius and
-          root - eps_ <= outer_distance / radius) {
-        return std::optional{root};
-      }
-    }
-    return std::nullopt;
-  } else {
+  const double denom = 1. - distorted_radius * linear_a;
+  // prevent zero division
+  if (equal_within_roundoff(denom, 0.)) {
     return std::nullopt;
   }
-}
+  const double original_radius = (radius + distorted_radius * linear_b) / denom;
 
-double Wedge::map_over_radius(
-    const std::array<double, 3>& source_coords) const {
-  return map_over_radius_impl<double>(source_coords);
-}
-DataVector Wedge::map_over_radius(
-    const std::array<DataVector, 3>& source_coords) const {
-  return map_over_radius_impl<DataVector>(source_coords);
+  return (original_radius + eps_) >= inner_distance and
+                 (original_radius - eps_) <= outer_distance
+             ? std::optional<double>{original_radius / radius}
+             : std::nullopt;
 }
 
 std::array<double, 3> Wedge::gradient(
@@ -176,18 +160,6 @@ T Wedge::call_impl(const std::array<T, 3>& source_coords) const {
 
   return (outer_distance - magnitude(rotated_coords)) /
          (outer_distance - inner_surface_.distance(rotated_coords));
-}
-
-template <typename T>
-T Wedge::map_over_radius_impl(const std::array<T, 3>& source_coords) const {
-  const std::array<T, 3> rotated_coords =
-      discrete_rotation(orientation_map_.inverse_map(), source_coords);
-  check_distances(rotated_coords);
-  const T radius = magnitude(rotated_coords);
-  const T outer_distance = outer_surface_.distance(rotated_coords);
-
-  return (outer_distance - radius) /
-         ((outer_distance - inner_surface_.distance(rotated_coords)) * radius);
 }
 
 template <typename T>

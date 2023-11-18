@@ -87,18 +87,6 @@ class ShapeMapTransitionFunction : public PUP::able {
   virtual std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
       double distorted_radius) const = 0;
-  /*!
-   * Evaluate the transition function at the Cartesian coordinates divided by
-   * the radius. All divisions over the radius which could potentially be zero
-   * divisions are left to the transition function which uses its knowledge
-   * of the domain to do this safely or throw an appropriate error.
-   */
-  /// @{
-  virtual double map_over_radius(
-      const std::array<double, 3>& source_coords) const = 0;
-  virtual DataVector map_over_radius(
-      const std::array<DataVector, 3>& source_coords) const = 0;
-  /// @}
 
   /*!
    * Evaluate the gradient of the transition function with respect to the

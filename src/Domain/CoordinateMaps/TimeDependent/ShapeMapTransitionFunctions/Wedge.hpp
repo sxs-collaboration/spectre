@@ -96,20 +96,18 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * the ratio of the original radius $r$ to the mapped $\tilde{r}$ by solving
  *
  * \begin{equation}
- * \frac{r}{\tilde{r}} = \frac{1}{1-f(r,\theta,\phi)\Sigma(\theta,\phi)}
+ * \frac{r}{\tilde{r}} =
+ * \frac{1}{1-\frac{f(r,\theta,\phi)}{r}\Sigma(\theta,\phi)}
  * \end{equation}
  *
- * Because this is a linear transition, this will result in is having to solve a
- * quadratic equation of the form
+ * After plugging in the transition and solving, we get
  *
  * \begin{equation}
- * \tilde{r} x^2 + \left(\frac{D_{\text{out}} -
- * D_{\text{in}}}{\Sigma(\theta,\phi)} - D_{\text{out}}\right) x -
- * \frac{D_{\text{out}} - D_{\text{in}}}{\Sigma(\theta,\phi)} = 0
+ * \frac{r}{\tilde{r}} = \frac{1 + \frac{D_{\text{out}}\Sigma(\theta,
+ * \phi)}{\tilde{r}(D_{\text{out}} - D_{\text{in}})}}{1 + \frac{\Sigma(\theta,
+ * \phi)}{D_{\text{out}} - D_{\text{in}}}}
  * \label{eq:r_over_rtil}
  * \end{equation}
- *
- * where $x = \frac{r}{\tilde{r}}$.
  *
  * \note Since $D$ is not a function of the radius, we can treat it as a
  * constant in Eq. $\ref{eq:r_over_rtil}$ and compute the angles using
@@ -196,11 +194,6 @@ class Wedge final : public ShapeMapTransitionFunction {
       const std::array<double, 3>& target_coords,
       double distorted_radius) const override;
 
-  double map_over_radius(
-      const std::array<double, 3>& source_coords) const override;
-  DataVector map_over_radius(
-      const std::array<DataVector, 3>& source_coords) const override;
-
   std::array<double, 3> gradient(
       const std::array<double, 3>& source_coords) const override;
   std::array<DataVector, 3> gradient(
@@ -220,9 +213,6 @@ class Wedge final : public ShapeMapTransitionFunction {
  private:
   template <typename T>
   T call_impl(const std::array<T, 3>& source_coords) const;
-
-  template <typename T>
-  T map_over_radius_impl(const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   std::array<T, 3> gradient_impl(const std::array<T, 3>& source_coords) const;

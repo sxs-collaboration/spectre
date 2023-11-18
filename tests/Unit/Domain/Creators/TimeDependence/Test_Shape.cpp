@@ -119,10 +119,12 @@ void test_r_theta_phi(const tnsr::I<double, 3, SourceFrame>& input,
       gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
           inner_radius, input_theta_phi, mass, spin)
           .get();
+  const double radius = magnitude(input_centered).get();
   const double transition_factor =
       std::make_unique<Transition>(Transition{inner_radius, outer_radius})
           ->
-          operator()({{magnitude(input_centered).get(), 0.0, 0.0}});
+          operator()({radius, 0.0, 0.0}) /
+      radius;
   const double expected_output_centered_spherical =
       input_centered_spherical[0] *
       (1.0 + transition_factor * (kerr_schild_radius - inner_radius));

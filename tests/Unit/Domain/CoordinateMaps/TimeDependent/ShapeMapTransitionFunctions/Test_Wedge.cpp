@@ -156,7 +156,6 @@ void test_only_transition() {
   const double function_value = (outer_distance - 4.0) / distance_difference;
 
   CHECK(wedge(point) == approx(function_value));
-  CHECK(wedge.map_over_radius(point) == approx(function_value / 4.0));
   CHECK_ITERABLE_APPROX(wedge.gradient(point),
                         (std::array{0.0, 0.0, -1.0 / distance_difference}));
 
@@ -172,14 +171,14 @@ void test_only_transition() {
   set_orig_rad_over_rad(point, 0.0);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() == approx(1.0));
-  set_orig_rad_over_rad(point * (1.0 - function_value * 0.5), 0.5);
+  set_orig_rad_over_rad(point * (1.0 - 0.25 * function_value * 0.5), 0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
-        approx(4.0 / magnitude(point * (1.0 - function_value * 0.5))));
-  set_orig_rad_over_rad(point * (1.0 + function_value * 0.5), -0.5);
+        approx(4.0 / magnitude(point * (1.0 - 0.25 * function_value * 0.5))));
+  set_orig_rad_over_rad(point * (1.0 + 0.25 * function_value * 0.5), -0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
-        approx(4.0 / magnitude(point * (1.0 + function_value * 0.5))));
+        approx(4.0 / magnitude(point * (1.0 + 0.25 * function_value * 0.5))));
   // Hit some internal checks
   set_orig_rad_over_rad(point * 0.0, 0.0);
   CHECK_FALSE(orig_rad_over_rad.has_value());
@@ -201,9 +200,9 @@ void test_only_transition() {
   set_orig_rad_over_rad(std::array{0.0, -4.0, 0.0}, 0.0);
   CHECK_FALSE(orig_rad_over_rad.has_value());
   // At overall inner boundary.
-  set_orig_rad_over_rad(std::array{0.0, 0.0, 0.5 * inner_radius}, 0.5);
+  set_orig_rad_over_rad(std::array{0.0, 0.0, 0.2 * inner_radius}, 0.4);
   CHECK(orig_rad_over_rad.has_value());
-  CHECK(orig_rad_over_rad.value() == 2.0);
+  CHECK(orig_rad_over_rad.value() == approx(5.0));
 
   test_gradient();
 }
