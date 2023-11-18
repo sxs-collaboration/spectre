@@ -61,7 +61,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag, false>,
+          typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -86,8 +86,8 @@ struct mock_characteristic_evolution {
 };
 
 struct metavariables {
-  using evolved_swsh_tag = Tags::BondiJ;
-  using evolved_swsh_dt_tag = Tags::BondiH;
+  using evolved_swsh_tags = tmpl::list<Tags::BondiJ>;
+  using evolved_swsh_dt_tags = tmpl::list<Tags::BondiH>;
   using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
@@ -223,8 +223,7 @@ SPECTRE_TEST_CASE(
   CHECK(coordinates_history.size() == 0);
   const auto& evolved_swsh_history = ActionTesting::get_databox_tag<
       component, ::Tags::HistoryEvolvedVariables<::Tags::Variables<
-                     tmpl::list<typename metavariables::evolved_swsh_tag>>>>(
-      runner, 0);
+                     typename metavariables::evolved_swsh_tags>>>(runner, 0);
   CHECK(evolved_swsh_history.size() == 0);
 
   // the tensor storage variables inserted during the `CharacteristicTags` step
@@ -273,17 +272,16 @@ SPECTRE_TEST_CASE(
             number_of_radial_points);
 
   const auto& evolved_swsh_variables = ActionTesting::get_databox_tag<
-      component,
-      ::Tags::Variables<tmpl::list<typename metavariables::evolved_swsh_tag>>>(
+      component, ::Tags::Variables<typename metavariables::evolved_swsh_tags>>(
       runner, 0);
   CHECK(evolved_swsh_variables.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
             number_of_radial_points);
 
   const auto& evolved_swsh_dt_variables = ActionTesting::get_databox_tag<
-      component, ::Tags::Variables<
-                     tmpl::list<typename metavariables::evolved_swsh_dt_tag>>>(
-      runner, 0);
+      component,
+      ::Tags::Variables<typename metavariables::evolved_swsh_dt_tags>>(runner,
+                                                                       0);
   CHECK(evolved_swsh_dt_variables.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
             number_of_radial_points);

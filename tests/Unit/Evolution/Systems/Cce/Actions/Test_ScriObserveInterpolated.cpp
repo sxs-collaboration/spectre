@@ -120,7 +120,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag, false>,
+          typename Metavariables::evolved_swsh_tags, false>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
@@ -150,8 +150,8 @@ struct mock_characteristic_evolution {
 };
 
 struct test_metavariables {
-  using evolved_swsh_tag = Tags::BondiJ;
-  using evolved_swsh_dt_tag = Tags::BondiH;
+  using evolved_swsh_tags = tmpl::list<Tags::BondiJ>;
+  using evolved_swsh_dt_tags = tmpl::list<Tags::BondiH>;
   using cce_step_choosers = tmpl::list<>;
   static constexpr bool local_time_stepping = false;
   using evolved_coordinates_variables_tag = ::Tags::Variables<

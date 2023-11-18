@@ -20,8 +20,8 @@
 template <bool EvolveCcm>
 struct CharacteristicExtractDefaults {
   static constexpr bool evolve_ccm = EvolveCcm;
-  using evolved_swsh_tag = Cce::Tags::BondiJ;
-  using evolved_swsh_dt_tag = Cce::Tags::BondiH;
+  using evolved_swsh_tags = tmpl::list<Cce::Tags::BondiJ>;
+  using evolved_swsh_dt_tags = tmpl::list<Cce::Tags::BondiH>;
   using evolved_coordinates_variables_tag = Tags::Variables<
       tmpl::conditional_t<evolve_ccm,
                           tmpl::list<Cce::Tags::CauchyCartesianCoords,
@@ -110,15 +110,15 @@ struct CharacteristicExtractDefaults {
                           tmpl::list<Cce::Tags::CauchyAngularCoords,
                                      Cce::Tags::PartiallyFlatAngularCoords>,
                           tmpl::list<Cce::Tags::CauchyAngularCoords>>;
-  using cce_step_choosers = tmpl::list<
-      StepChoosers::Constant<StepChooserUse::LtsStep>,
-      StepChoosers::Increase<StepChooserUse::LtsStep>,
-      StepChoosers::ErrorControl<StepChooserUse::LtsStep,
-                                 Tags::Variables<tmpl::list<evolved_swsh_tag>>,
-                                 swsh_vars_selector>,
-      StepChoosers::ErrorControl<StepChooserUse::LtsStep,
-                                 evolved_coordinates_variables_tag,
-                                 coord_vars_selector>>;
+  using cce_step_choosers =
+      tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
+                 StepChoosers::Increase<StepChooserUse::LtsStep>,
+                 StepChoosers::ErrorControl<StepChooserUse::LtsStep,
+                                            Tags::Variables<evolved_swsh_tags>,
+                                            swsh_vars_selector>,
+                 StepChoosers::ErrorControl<StepChooserUse::LtsStep,
+                                            evolved_coordinates_variables_tag,
+                                            coord_vars_selector>>;
 
   using ccm_psi0 = tmpl::list<
       Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
