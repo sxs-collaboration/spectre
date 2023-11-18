@@ -71,6 +71,6 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
 
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
-    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& specific_internal_energy,
     const double& constraint_damping_parameter);
 }  // namespace evolution::dg::Actions::detail

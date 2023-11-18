@@ -108,13 +108,15 @@ void sources_impl(
 
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& /* electron_fraction */,
-    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& specific_internal_energy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) {
   get(*h_rho_w_squared_plus_b_squared) =
-      get(magnetic_field_squared) + get(rest_mass_density) *
-                                        get(specific_enthalpy) *
-                                        square(get(lorentz_factor));
+      get(magnetic_field_squared) +
+      (get(rest_mass_density) * (1.0 + get(specific_internal_energy)) +
+       get(pressure)) *
+          square(get(lorentz_factor));
   ::densitized_stress(densitized_stress, inv_spatial_metric,
                       magnetic_field_dot_spatial_velocity, one_over_w_squared,
                       pressure_star, *h_rho_w_squared_plus_b_squared,
@@ -184,7 +186,7 @@ void ComputeSources::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
-    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -259,7 +261,7 @@ void ComputeSources::apply(
       sqrt_det_spatial_metric, inv_spatial_metric, d_lapse, d_shift,
       d_spatial_metric, spatial_velocity, lorentz_factor, magnetic_field,
 
-      rest_mass_density, electron_fraction, specific_enthalpy,
+      rest_mass_density, electron_fraction, pressure, specific_internal_energy,
       extrinsic_curvature, constraint_damping_parameter);
 }
 }  // namespace grmhd::ValenciaDivClean

@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 // Tag obtained from gh::TimeDerivative needs to be complete here to
 // be used in TemporaryReference.
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -236,7 +237,6 @@ struct TimeDerivativeTerms : evolution::PassVariables {
                  Tags::ComovingMagneticFieldOneForm>;
   using trace_reversed_stress_argument_tags = tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
       hydro::Tags::SpatialVelocityOneForm<DataVector, 3_st, Frame::Inertial>,
       hydro::Tags::MagneticFieldOneForm<DataVector, 3_st, Frame::Inertial>,
       hydro::Tags::MagneticFieldSquared<DataVector>,
@@ -244,6 +244,7 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       hydro::Tags::LorentzFactor<DataVector>,
       grmhd::ValenciaDivClean::TimeDerivativeTerms::OneOverLorentzFactorSquared,
       hydro::Tags::Pressure<DataVector>,
+      hydro::Tags::SpecificInternalEnergy<DataVector>,
       gr::Tags::SpacetimeMetric<DataVector, 3>,
       gr::Tags::Shift<DataVector, 3_st>, gr::Tags::Lapse<DataVector>>;
   using extra_temp_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>;

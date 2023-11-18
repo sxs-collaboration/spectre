@@ -372,8 +372,6 @@ struct ComputeTimeDerivImpl<
 
         get<hydro::Tags::RestMassDensity<DataVector>>(evolved_vars, temp_tags,
                                                       primitive_vars),
-        get<hydro::Tags::SpecificEnthalpy<DataVector>>(evolved_vars, temp_tags,
-                                                       primitive_vars),
         get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
                                                 Frame::Inertial>>(
             evolved_vars, temp_tags, primitive_vars),
@@ -393,6 +391,8 @@ struct ComputeTimeDerivImpl<
                                              primitive_vars),
         get<hydro::Tags::Pressure<DataVector>>(evolved_vars, temp_tags,
                                                primitive_vars),
+        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
+            evolved_vars, temp_tags, primitive_vars),
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(evolved_vars, temp_tags,
                                                       primitive_vars),
         get<gr::Tags::Shift<DataVector, 3>>(evolved_vars, temp_tags,

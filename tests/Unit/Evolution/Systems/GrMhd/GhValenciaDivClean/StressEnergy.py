@@ -6,7 +6,6 @@ import numpy as np
 
 def four_velocity_one_form(
     rest_mass_density,
-    specific_enthalpy,
     spatial_velocity_one_form,
     magnetic_field_one_form,
     magnetic_field_squared,
@@ -14,6 +13,7 @@ def four_velocity_one_form(
     lorentz_factor,
     one_over_w_squared,
     pressure,
+    specific_enthalpy,
     spacetime_metric,
     shift,
     lapse,
@@ -28,7 +28,6 @@ def four_velocity_one_form(
 
 def comoving_magnetic_field_one_form(
     rest_mass_density,
-    specific_enthalpy,
     spatial_velocity_one_form,
     magnetic_field_one_form,
     magnetic_field_squared,
@@ -36,6 +35,7 @@ def comoving_magnetic_field_one_form(
     lorentz_factor,
     one_over_w_squared,
     pressure,
+    specific_internal_energy,
     spacetime_metric,
     shift,
     lapse,
@@ -57,7 +57,6 @@ def comoving_magnetic_field_one_form(
 
 def trace_reversed_stress_energy(
     rest_mass_density,
-    specific_enthalpy,
     spatial_velocity_one_form,
     magnetic_field_one_form,
     magnetic_field_squared,
@@ -65,13 +64,13 @@ def trace_reversed_stress_energy(
     lorentz_factor,
     one_over_w_squared,
     pressure,
+    specific_internal_energy,
     spacetime_metric,
     shift,
     lapse,
 ):
     local_four_velocity_one_form = four_velocity_one_form(
         rest_mass_density,
-        specific_enthalpy,
         spatial_velocity_one_form,
         magnetic_field_one_form,
         magnetic_field_squared,
@@ -79,13 +78,13 @@ def trace_reversed_stress_energy(
         lorentz_factor,
         one_over_w_squared,
         pressure,
+        specific_internal_energy,
         spacetime_metric,
         shift,
         lapse,
     )
     local_comoving_magnetic_field_one_form = comoving_magnetic_field_one_form(
         rest_mass_density,
-        specific_enthalpy,
         spatial_velocity_one_form,
         magnetic_field_one_form,
         magnetic_field_squared,
@@ -93,12 +92,14 @@ def trace_reversed_stress_energy(
         lorentz_factor,
         one_over_w_squared,
         pressure,
+        specific_internal_energy,
         spacetime_metric,
         shift,
         lapse,
     )
     modified_enthalpy_times_rest_mass = (
-        rest_mass_density * specific_enthalpy
+        rest_mass_density * (1 + specific_internal_energy)
+        + pressure
         + magnetic_field_squared * one_over_w_squared
         + magnetic_field_dot_spatial_velocity**2
     )

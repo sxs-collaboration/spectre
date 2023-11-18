@@ -171,8 +171,6 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   const auto& lorentz_factor =
       get<hydro::Tags::LorentzFactor<DataVector>>(vars);
   const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(vars);
-  const auto& specific_enthalpy =
-      get<hydro::Tags::SpecificEnthalpy<DataVector>>(vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
   const auto& d_lapse =
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
@@ -288,11 +286,10 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   grmhd::ValenciaDivClean::ComputeSources::apply(
       make_not_null(&source_tilde_tau), make_not_null(&source_tilde_s),
       make_not_null(&source_tilde_b), make_not_null(&source_tilde_phi), tilde_d,
-      tilde_ye,
-      tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_velocity, magnetic_field,
-      rest_mass_density, electron_fraction,
-      specific_enthalpy, lorentz_factor, pressure, lapse,
-      d_lapse, d_shift, spatial_metric, d_spatial_metric, inv_spatial_metric,
+      tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_velocity,
+      magnetic_field, rest_mass_density, electron_fraction,
+      specific_internal_energy, lorentz_factor, pressure, lapse, d_lapse,
+      d_shift, spatial_metric, d_spatial_metric, inv_spatial_metric,
       sqrt_det_spatial_metric, extrinsic_curvature, 0.0);
 
   Scalar<DataVector> residual_tilde_d(number_of_points, 0.);

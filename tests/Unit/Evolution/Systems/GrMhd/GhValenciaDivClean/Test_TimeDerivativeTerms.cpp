@@ -316,7 +316,6 @@ SPECTRE_TEST_CASE(
           &get<grmhd::GhValenciaDivClean::Tags::ComovingMagneticFieldOneForm>(
               expected_temp_variables)),
       tuples::get<hydro::Tags::RestMassDensity<DataVector>>(arg_variables),
-      tuples::get<hydro::Tags::SpecificEnthalpy<DataVector>>(arg_variables),
       get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           expected_temp_variables),
       get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(
@@ -329,6 +328,8 @@ SPECTRE_TEST_CASE(
       get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
               OneOverLorentzFactorSquared>(expected_temp_variables),
       tuples::get<hydro::Tags::Pressure<DataVector>>(arg_variables),
+      tuples::get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
+          arg_variables),
       tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(arg_variables),
       get<gr::Tags::Shift<DataVector, 3_st>>(expected_temp_variables),
       get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));
