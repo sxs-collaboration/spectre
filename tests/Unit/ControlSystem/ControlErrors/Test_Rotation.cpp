@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <string>
 
-#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"

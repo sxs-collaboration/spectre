@@ -47,14 +47,6 @@ std::array<std::vector<double>, 22> KadathExportBHNS(
 
 namespace io {
 
-namespace {
-DataVector to_datavector(std::vector<double> vec) {
-  DataVector result(vec.size());
-  std::copy(vec.begin(), vec.end(), result.begin());
-  return result;
-}
-}  // namespace
-
 template <FukaIdType IdType>
 tuples::tagged_tuple_from_typelist<fuka_tags<IdType>> interpolate_from_fuka(
     const gsl::not_null<std::mutex*> fuka_lock,
@@ -109,41 +101,41 @@ tuples::tagged_tuple_from_typelist<fuka_tags<IdType>> interpolate_from_fuka(
   // The FUKA functions return tensor components in this order.
   // See: https://bitbucket.org/fukaws/kadathimporter/src/master/src/importer.h
   auto& lapse = get<gr::Tags::Lapse<DataVector>>(result);
-  get(lapse) = to_datavector(fuka_data[0]);
+  get(lapse) = DataVector(fuka_data[0]);
   auto& shift = get<gr::Tags::Shift<DataVector, 3>>(result);
-  get<0>(shift) = to_datavector(fuka_data[1]);
-  get<1>(shift) = to_datavector(fuka_data[2]);
-  get<2>(shift) = to_datavector(fuka_data[3]);
+  get<0>(shift) = DataVector(fuka_data[1]);
+  get<1>(shift) = DataVector(fuka_data[2]);
+  get<2>(shift) = DataVector(fuka_data[3]);
   auto& spatial_metric = get<gr::Tags::SpatialMetric<DataVector, 3>>(result);
-  get<0, 0>(spatial_metric) = to_datavector(fuka_data[4]);
-  get<0, 1>(spatial_metric) = to_datavector(fuka_data[5]);
-  get<0, 2>(spatial_metric) = to_datavector(fuka_data[6]);
-  get<1, 1>(spatial_metric) = to_datavector(fuka_data[7]);
-  get<1, 2>(spatial_metric) = to_datavector(fuka_data[8]);
-  get<2, 2>(spatial_metric) = to_datavector(fuka_data[9]);
+  get<0, 0>(spatial_metric) = DataVector(fuka_data[4]);
+  get<0, 1>(spatial_metric) = DataVector(fuka_data[5]);
+  get<0, 2>(spatial_metric) = DataVector(fuka_data[6]);
+  get<1, 1>(spatial_metric) = DataVector(fuka_data[7]);
+  get<1, 2>(spatial_metric) = DataVector(fuka_data[8]);
+  get<2, 2>(spatial_metric) = DataVector(fuka_data[9]);
   auto& extrinsic_curvature =
       get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result);
-  get<0, 0>(extrinsic_curvature) = to_datavector(fuka_data[10]);
-  get<0, 1>(extrinsic_curvature) = to_datavector(fuka_data[11]);
-  get<0, 2>(extrinsic_curvature) = to_datavector(fuka_data[12]);
-  get<1, 1>(extrinsic_curvature) = to_datavector(fuka_data[13]);
-  get<1, 2>(extrinsic_curvature) = to_datavector(fuka_data[14]);
-  get<2, 2>(extrinsic_curvature) = to_datavector(fuka_data[15]);
+  get<0, 0>(extrinsic_curvature) = DataVector(fuka_data[10]);
+  get<0, 1>(extrinsic_curvature) = DataVector(fuka_data[11]);
+  get<0, 2>(extrinsic_curvature) = DataVector(fuka_data[12]);
+  get<1, 1>(extrinsic_curvature) = DataVector(fuka_data[13]);
+  get<1, 2>(extrinsic_curvature) = DataVector(fuka_data[14]);
+  get<2, 2>(extrinsic_curvature) = DataVector(fuka_data[15]);
   if constexpr (IdType == FukaIdType::Ns or IdType == FukaIdType::Bns or
                 IdType == FukaIdType::Bhns) {
     auto& rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(result);
-    get(rest_mass_density) = to_datavector(fuka_data[16]);
+    get(rest_mass_density) = DataVector(fuka_data[16]);
     auto& specific_internal_energy =
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(result);
-    get(specific_internal_energy) = to_datavector(fuka_data[17]);
+    get(specific_internal_energy) = DataVector(fuka_data[17]);
     auto& pressure = get<hydro::Tags::Pressure<DataVector>>(result);
-    get(pressure) = to_datavector(fuka_data[18]);
+    get(pressure) = DataVector(fuka_data[18]);
     auto& spatial_velocity =
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(result);
-    get<0>(spatial_velocity) = to_datavector(fuka_data[19]);
-    get<1>(spatial_velocity) = to_datavector(fuka_data[20]);
-    get<2>(spatial_velocity) = to_datavector(fuka_data[21]);
+    get<0>(spatial_velocity) = DataVector(fuka_data[19]);
+    get<1>(spatial_velocity) = DataVector(fuka_data[20]);
+    get<2>(spatial_velocity) = DataVector(fuka_data[21]);
   }
   return result;
 }

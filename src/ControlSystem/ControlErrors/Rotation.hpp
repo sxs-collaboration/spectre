@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"

@@ -199,6 +199,18 @@ class VectorImpl
     std::fill(data(), data() + set_size, value);
   }
 
+  // Create from a copy of the given container
+  ///
+  /// \param container A container with a `value_type` that is the same as `T`,
+  /// e.g. `std::vector<T>` or `std::array<T>`.
+  template <typename Container, typename U = typename Container::value_type,
+            Requires<std::is_same_v<U, T>> = nullptr>
+  explicit VectorImpl(const Container& container)
+      : owned_data_(heap_alloc_if_necessary(container.size())) {
+    reset_pointer_vector(container.size());
+    std::copy(container.begin(), container.end(), data());
+  }
+
   /// Create a non-owning VectorImpl that points to `start`
   VectorImpl(T* start, size_t set_size)
       : BaseType(start, set_size), owning_(false) {}

@@ -21,7 +21,6 @@
 #include "ControlSystem/ControlErrors/Shape.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Controller.hpp"
-#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
