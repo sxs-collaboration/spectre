@@ -62,31 +62,39 @@ namespace creators {
 ///
 /// - The -x, -y, -z block has the aligned orientation, that is,
 ///   xi is aligned with x, eta is aligned with y, and zeta with z.
+///   This has block ID 0.
 ///
 /// - The +x, -y, -z block has the orientation (zeta, eta, -xi).
 ///   It corresponds to the orientation obtained by the rotation F.
+///   This has block ID 1.
 ///
 /// - The -x, +y, -z block has the orientation (xi, zeta, -eta).
 ///   It corresponds to the orientation obtained by the rotation R.
+///   This has block ID 2.
 ///
 /// - The +x, +y, -z block has the orientation (zeta, -xi, -eta).
 ///   It corresponds to the orientation obtained by the rotation F
 ///   followed by the rotation R.
+///   This has block ID 3.
 ///
 /// - The -x, -y, +z block has the orientation (eta, -xi, zeta).
 ///   It corresponds to the orientation obtained by the rotation U.
+///   This has block ID 4.
 ///
 /// - The +x, -y, +z block has the orientation (eta, -zeta, -xi).
 ///   It corresponds to the orientation obtained by the rotation F
 ///   followed by the rotation U.
+///   This has block ID 5.
 ///
 /// - The -x, +y, +z block has the orientation (zeta, -xi, -eta).
 ///   It corresponds to the orientation obtained by the rotation R
 ///   followed by the rotation U (equivalently, F followed by R).
+///   This has block ID 6.
 ///
 /// - The +x, +y, +z block also has the aligned orientation
 ///   (xi, eta, zeta), relative to the edifice. It is not aligned
 ///   relative to its neighbors.
+///   This has block ID 7.
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.

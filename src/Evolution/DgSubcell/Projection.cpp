@@ -40,11 +40,11 @@ void project_impl(gsl::span<double> subcell_u,
 // in the dimension of the desired face, and on a CellCentered basis in other
 // dimensions.
 template <size_t Dim>
-void project_to_face_impl(gsl::span<double> subcell_u,
-                          const gsl::span<const double> dg_u,
-                          const Mesh<Dim>& dg_mesh,
-                          const Index<Dim>& subcell_extents,
-                          const size_t& face_direction) {
+void project_to_faces_impl(gsl::span<double> subcell_u,
+                           const gsl::span<const double> dg_u,
+                           const Mesh<Dim>& dg_mesh,
+                           const Index<Dim>& subcell_extents,
+                           const size_t& face_direction) {
   const Matrix empty{};
   auto projection_mat = make_array<Dim>(std::cref(empty));
   for (size_t d = 0; d < Dim; d++) {
@@ -92,32 +92,32 @@ DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
 }
 
 template <size_t Dim>
-void project_to_face(const gsl::not_null<DataVector*> subcell_u,
-                     const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-                     const Index<Dim>& subcell_extents,
-                     const size_t& face_direction) {
+void project_to_faces(const gsl::not_null<DataVector*> subcell_u,
+                      const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
+                      const Index<Dim>& subcell_extents,
+                      const size_t& face_direction) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
              << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
   subcell_u->destructive_resize(subcell_extents.product() * dg_u.size() /
                                 dg_mesh.number_of_grid_points());
-  detail::project_to_face_impl(
+  detail::project_to_faces_impl(
       gsl::span<double>{subcell_u->data(), subcell_u->size()},
       gsl::span<const double>{dg_u.data(), dg_u.size()}, dg_mesh,
       subcell_extents, face_direction);
 }
 
 template <size_t Dim>
-DataVector project_to_face(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-                           const Index<Dim>& subcell_extents,
-                           const size_t& face_direction) {
+DataVector project_to_faces(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
+                            const Index<Dim>& subcell_extents,
+                            const size_t& face_direction) {
   ASSERT(dg_u.size() % dg_mesh.number_of_grid_points() == 0,
          "The vector dg_u must have size that is a multiple of the number of "
          "grid points "
              << dg_mesh.number_of_grid_points() << " but got " << dg_u.size());
   DataVector subcell_u{};
-  project_to_face(&subcell_u, dg_u, dg_mesh, subcell_extents, face_direction);
+  project_to_faces(&subcell_u, dg_u, dg_mesh, subcell_extents, face_direction);
   return subcell_u;
 }
 
@@ -132,13 +132,13 @@ DataVector project_to_face(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
                                      const gsl::span<const double> dg_u,       \
                                      const Mesh<DIM(data)>& dg_mesh,           \
                                      const Index<DIM(data)>& subcell_extents); \
-  template DataVector project_to_face(const DataVector&,                       \
-                                      const Mesh<DIM(data)>&,                  \
-                                      const Index<DIM(data)>&, const size_t&); \
-  template void project_to_face(gsl::not_null<DataVector*>, const DataVector&, \
-                                const Mesh<DIM(data)>&,                        \
-                                const Index<DIM(data)>&, const size_t&);       \
-  template void detail::project_to_face_impl(                                  \
+  template DataVector project_to_faces(                                        \
+      const DataVector&, const Mesh<DIM(data)>&, const Index<DIM(data)>&,      \
+      const size_t&);                                                          \
+  template void project_to_faces(gsl::not_null<DataVector*>,                   \
+                                 const DataVector&, const Mesh<DIM(data)>&,    \
+                                 const Index<DIM(data)>&, const size_t&);      \
+  template void detail::project_to_faces_impl(                                 \
       gsl::span<double> subcell_u, const gsl::span<const double> dg_u,         \
       const Mesh<DIM(data)>& dg_mesh, const Index<DIM(data)>& subcell_extents, \
       const size_t& face_direction);

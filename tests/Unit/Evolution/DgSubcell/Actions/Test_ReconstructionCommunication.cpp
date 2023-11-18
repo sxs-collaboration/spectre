@@ -410,9 +410,14 @@ void test(const bool use_cell_centered_flux) {
                                    rdmp_size};
     DataVector expected_south_data_view{expected_south_data.data(),
                                         south_sliced_neighbor_data.size()};
-    orient_variables(make_not_null(&expected_south_data_view),
-                     all_sliced_data.at(direction), Index<Dim>{slice_extents},
-                     orientation);
+    // Note: We do not orient the variables because that's currently handled
+    // by the interpolation code.
+    //
+    // orient_variables(make_not_null(&expected_south_data_view),
+    //                  all_sliced_data.at(direction),
+    //                  Index<Dim>{slice_extents},
+    //                  orientation);
+    expected_south_data_view = all_sliced_data.at(direction);
     const size_t bound_for_vars_to_multiply =
         expected_south_data_view.size() /
         (cell_centered_flux.has_value() ? (1 + Dim) : 1_st);

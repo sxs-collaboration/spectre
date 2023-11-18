@@ -166,7 +166,7 @@ void test_project_on_face_fd() {
             dg_mesh.extents(0) - 2, logical_coordinates(subcell_mesh));
     // Test projection of a DataVector
     const DataVector subcell_values =
-        evolution::dg::subcell::fd::project_to_face(
+        evolution::dg::subcell::fd::project_to_faces(
             nodal_coeffs, dg_mesh, subcell_mesh.extents(), Face_Dim);
     CHECK_ITERABLE_APPROX(subcell_values, expected_subcell_values);
   }
