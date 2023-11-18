@@ -661,7 +661,7 @@ struct TimeDerivative {
               for (size_t j = 0; j < 3; j++) {
                 // j^th component of the velocity on the i^th directed face
                 mesh_velocity_on_face.value().get(j) =
-                    evolution::dg::subcell::fd::project_to_face(
+                    evolution::dg::subcell::fd::project_to_faces(
                         mesh_velocity_dg.value().get(j), dg_mesh,
                         face_mesh_extents, i);
               }
@@ -714,11 +714,11 @@ struct TimeDerivative {
                 reconstructed_num_pts, 0.0};
             for (size_t j = 0; j < 3; j++) {
               lower_outward_conormal.get(j) =
-                  evolution::dg::subcell::fd::project_to_face(
+                  evolution::dg::subcell::fd::project_to_faces(
                       inv_jacobian_dg.get(i, j), dg_mesh, face_mesh_extents, i);
             }
             const auto det_inv_jacobian_face =
-                evolution::dg::subcell::fd::project_to_face(
+                evolution::dg::subcell::fd::project_to_faces(
                     get(det_inv_jacobian_dg), dg_mesh, face_mesh_extents, i);
 
             const Scalar<DataVector> normalization{sqrt(get(
