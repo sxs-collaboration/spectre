@@ -41,7 +41,6 @@ void RadiallyFallingFloor<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> density,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> temperature,
     [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
@@ -87,6 +86,7 @@ void RadiallyFallingFloor<Dim>::operator()(
 
     } else if constexpr (ThermodynamicDim == 3) {
       ERROR("RadiallyFallingFloor: 3D EoS currently not supported");
+      (void)specific_internal_energy;
       // For posterity: 3D EoS
       // // We need to assume either specific internal energy or temperature
       // remain
@@ -114,9 +114,6 @@ void RadiallyFallingFloor<Dim>::operator()(
     } else {
       ERROR("RadiallyFallingFloor: Must specify 1D, 2D, or 3D EoS");
     }
-    // Assumed relativistic EoS
-    specific_enthalpy->get()[i] = 1.0 + specific_internal_energy->get()[i] +
-                                  pressure->get()[i] / density->get()[i];
   }
 }
 
@@ -155,7 +152,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       gsl::not_null<Scalar<DataVector>*> density,                        \
       gsl::not_null<Scalar<DataVector>*> pressure,                       \
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,       \
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,              \
       gsl::not_null<Scalar<DataVector>*> temperature,                    \
       gsl::not_null<Scalar<DataVector>*> electron_fraction,              \
       const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>& coords, \

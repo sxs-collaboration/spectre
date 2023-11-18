@@ -22,7 +22,6 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
@@ -42,8 +41,8 @@ namespace grmhd::ValenciaDivClean {
  * volume data files and allows to choose constant values for some of them.
  *
  * Where the density is below the `DensityCutoff` the fluid variables are set to
- * vacuum (zero density, pressure, energy and velocity, unit Lorentz factor and
- * enthalpy). To evolve the initial data, an atmosphere treatment is likely
+ * vacuum (zero density, pressure, energy and velocity, and unit Lorentz
+ * factor). To evolve the initial data, an atmosphere treatment is likely
  * required to fix the value of the fluid variables in these regions.
  */
 class NumericInitialData : public evolution::initial_data::InitialData {
@@ -100,8 +99,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     using type = double;
     static constexpr Options::String help =
         "Where the density is below this cutoff the fluid variables are set to "
-        "vacuum (zero density, pressure, energy and velocity, unit Lorentz "
-        "factor and enthalpy). "
+        "vacuum (zero density, pressure, energy and velocity, and unit Lorentz "
+        "factor). "
         "During the evolution, atmosphere treatment will typically kick in and "
         "fix the value of the fluid variables in these regions. Therefore, "
         "it makes sense to set this density cutoff to the same value as the "
@@ -189,7 +188,6 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<Scalar<DataVector>*> div_cleaning_field,
       const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       const gsl::not_null<Scalar<DataVector>*> pressure,
-      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const gsl::not_null<Scalar<DataVector>*> temperature,
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
@@ -225,19 +223,17 @@ class NumericInitialData : public evolution::initial_data::InitialData {
     for (size_t d = 0; d < 3; ++d) {
       spatial_velocity->get(d) /= get(*lorentz_factor);
     }
-    // Specific internal energy, pressure, and enthalpy from EOS
+    // Specific internal energy, and pressure from EOS
     set_number_of_grid_points(specific_internal_energy, num_points);
     set_number_of_grid_points(pressure, num_points);
-    set_number_of_grid_points(specific_enthalpy, num_points);
     for (size_t i = 0; i < num_points; ++i) {
       double& local_rest_mass_density = get(*rest_mass_density)[i];
-      // Apply the EOS and specific enthalpy only where the density is above the
-      // cutoff, because the fluid model breaks down in the zero-density limit
+      // Apply the EOS only where the density is above the cutoff, because the
+      // fluid model breaks down in the zero-density limit
       if (local_rest_mass_density <= density_cutoff_) {
         local_rest_mass_density = 0.;
         get(*specific_internal_energy)[i] = 0.;
         get(*pressure)[i] = 0.;
-        get(*specific_enthalpy)[i] = 1.;
         get(*temperature)[i] = 0.;
         // Also reset velocity and Lorentz factor below cutoff to be safe
         for (size_t d = 0; d < 3; ++d) {
@@ -272,10 +268,6 @@ class NumericInitialData : public evolution::initial_data::InitialData {
               "Only 1d & 2d EOSes implemented for numerical initial data right "
               "now");
         }
-        get(*specific_enthalpy)[i] = get(hydro::relativistic_specific_enthalpy(
-            Scalar<double>(local_rest_mass_density),
-            Scalar<double>(get(*specific_internal_energy)[i]),
-            Scalar<double>(get(*pressure)[i])));
       }
     }
     // Magnetic field from dataset or constant value
@@ -415,7 +407,6 @@ struct SetNumericInitialData {
                hydro::Tags::DivergenceCleaningField<DataVector>,
                hydro::Tags::LorentzFactor<DataVector>,
                hydro::Tags::Pressure<DataVector>,
-               hydro::Tags::SpecificEnthalpy<DataVector>,
                hydro::Tags::Temperature<DataVector>>(
         [&initial_data, &numeric_data, &inv_spatial_metric, &equation_of_state](
             const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
@@ -426,12 +417,11 @@ struct SetNumericInitialData {
             const gsl::not_null<Scalar<DataVector>*> div_cleaning_field,
             const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
             const gsl::not_null<Scalar<DataVector>*> pressure,
-            const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
             const gsl::not_null<Scalar<DataVector>*> temperature) {
           initial_data.set_initial_data(
               rest_mass_density, electron_fraction, specific_internal_energy,
               spatial_velocity, magnetic_field, div_cleaning_field,
-              lorentz_factor, pressure, specific_enthalpy, temperature,
+              lorentz_factor, pressure, temperature,
               make_not_null(&numeric_data), inv_spatial_metric,
               equation_of_state);
         },

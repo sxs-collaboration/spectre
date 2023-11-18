@@ -22,7 +22,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -51,7 +50,6 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
           const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
           const gsl::not_null<Scalar<DataVector>*> pressure,
-          const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
           const gsl::not_null<Scalar<DataVector>*> temperature,
           const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
           const Scalar<DataVector>& tilde_tau,
@@ -230,10 +228,6 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       if constexpr (ThermodynamicDim != 1) {
         get(*specific_internal_energy)[s] =
             primitive_data.value().specific_internal_energy;
-        get(*specific_enthalpy)[s] = primitive_data.value().rho_h_w_squared /
-                                     (primitive_data.value().rest_mass_density *
-                                      primitive_data.value().lorentz_factor *
-                                      primitive_data.value().lorentz_factor);
       }
     } else {
       if constexpr (ErrorOnFailure) {
@@ -263,15 +257,12 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   if constexpr (ThermodynamicDim == 1) {
     // Since the primitive recovery scheme is not restricted to lie on the
     // EOS-satisfying sub-manifold, we project back to the sub-manifold by
-    // recomputing the specific internal energy and specific enthalpy from the
-    // EOS.
+    // recomputing the specific internal energy from the EOS.
     *specific_internal_energy =
         equation_of_state.specific_internal_energy_from_density(
             *rest_mass_density);
     *temperature =
         equation_of_state.temperature_from_density(*rest_mass_density);
-    hydro::relativistic_specific_enthalpy(specific_enthalpy, *rest_mass_density,
-                                          *specific_internal_energy, *pressure);
   } else if constexpr (ThermodynamicDim == 2) {
     *temperature = equation_of_state.temperature_from_density_and_energy(
         *rest_mass_density, *specific_internal_energy);
@@ -327,7 +318,6 @@ GENERATE_INSTANTIATIONS(
       const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,    \
       const gsl::not_null<Scalar<DataVector>*> lorentz_factor,               \
       const gsl::not_null<Scalar<DataVector>*> pressure,                     \
-      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,            \
       const gsl::not_null<Scalar<DataVector>*> temperature,                  \
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
       const Scalar<DataVector>& tilde_tau,                                   \

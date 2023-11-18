@@ -56,10 +56,6 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 /*!
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
- *
- * \warning If the analytic prescription is zero density/pressure/energy, then
- * computing the primitives will fail since the specific enthalpy has
- * \f$p/\rho\f$ in it.
  */
 class DirichletAnalytic final : public BoundaryCondition {
  public:

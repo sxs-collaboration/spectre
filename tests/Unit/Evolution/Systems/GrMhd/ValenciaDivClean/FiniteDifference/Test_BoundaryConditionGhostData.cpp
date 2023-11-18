@@ -171,7 +171,6 @@ void test(const BoundaryConditionType& boundary_condition,
       hydro::Tags::DivergenceCleaningField<DataVector>;
   using SpecificInternalEnergy =
       hydro::Tags::SpecificInternalEnergy<DataVector>;
-  using SpecificEnthalpy = hydro::Tags::SpecificEnthalpy<DataVector>;
 
   // Use the Minkowski spacetime for spacetime vars, but we manually tweak
   // values of shift vector so that the DemandOutgoingCharSpeeds condition can
@@ -199,7 +198,6 @@ void test(const BoundaryConditionType& boundary_condition,
       solution.equation_of_state().temperature_from_density_and_energy(
           get<RestMassDensity>(volume_prim_vars),
           get<SpecificInternalEnergy>(volume_prim_vars));
-  get(get<SpecificEnthalpy>(volume_prim_vars)) = 1.003;
   for (size_t i = 0; i < 3; ++i) {
     get<SpatialVelocity>(volume_prim_vars).get(i) = 0.1;
     get<MagneticField>(volume_prim_vars).get(i) = 0.5;

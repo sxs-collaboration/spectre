@@ -31,7 +31,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 namespace {
@@ -78,11 +77,6 @@ void test(const TestThis test_this, const int expected_tci_status,
   get(get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars)) = 1.0;
   get<hydro::Tags::Pressure<DataVector>>(prim_vars) = eos.pressure_from_density(
       get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
-  get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars) =
-      hydro::relativistic_specific_enthalpy(
-          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
-          get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prim_vars),
-          get<hydro::Tags::Pressure<DataVector>>(prim_vars));
   // set magnetic field to tiny but non-zero value
   for (size_t i = 0; i < 3; ++i) {
     get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(prim_vars)

@@ -286,7 +286,6 @@ EventsAndTriggers:
             - Pressure
             - SpatialVelocity
             - LorentzFactor
-            - SpecificEnthalpy
             - SpecificInternalEnergy
             - Temperature
             - MagneticField
@@ -338,7 +337,6 @@ EventsRunAtCleanup:
           - Pressure
           - SpatialVelocity
           - LorentzFactor
-          - SpecificEnthalpy
           - SpecificInternalEnergy
           - Temperature
           - MagneticField

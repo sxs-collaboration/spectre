@@ -25,7 +25,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -40,8 +39,7 @@ void compute_conservatives_for_reconstruction(
   // 2. Lorentz factor as sqrt(1 + Wv^i Wv^j\gamma_{ij})
   // 3. v^i = Wv^i / W
   // 4. specific internal energy
-  // 5. specific enthalpy
-  // 6. conserved variables
+  // 5. conserved variables
   // - note: spatial metric, inv spatial metric, lapse, and shift are
   //         all already in vars_on_face
   const auto& spatial_metric =
@@ -102,11 +100,6 @@ void compute_conservatives_for_reconstruction(
     ERROR("EOS Must be 1, 2, or 3d");
   }
 
-  auto& specific_enthalpy =
-      get<hydro::Tags::SpecificEnthalpy<DataVector>>(*vars_on_face);
-  hydro::relativistic_specific_enthalpy(make_not_null(&specific_enthalpy),
-                                        rest_mass_density,
-                                        specific_internal_energy, pressure);
   ConservativeFromPrimitive::apply(
       make_not_null(&get<ValenciaDivClean::Tags::TildeD>(*vars_on_face)),
       make_not_null(&get<ValenciaDivClean::Tags::TildeYe>(*vars_on_face)),

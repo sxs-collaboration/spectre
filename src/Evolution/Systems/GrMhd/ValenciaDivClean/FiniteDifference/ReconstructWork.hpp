@@ -40,7 +40,7 @@ namespace grmhd::ValenciaDivClean::fd {
  * \brief Reconstructs the `PrimTagsForReconstruction` (usually
  * \f$\rho, p, Wv^i, B^i\f$, and \f$\Phi\f$), and if `compute_conservatives` is
  * true computes the Lorentz factor, upper spatial velocity, specific internal
- * energy, specific enthalpy, and the conserved variables.
+ * energy, and the conserved variables.
  *
  * All results are written into `vars_on_lower_face` and `vars_on_upper_face`.
  *
@@ -65,8 +65,7 @@ void reconstruct_prims_work(
 /*!
  * \brief Reconstructs the `PrimTagsForReconstruction` and if
  * `compute_conservatives` is `true`  computes the Lorentz factor, upper spatial
- * velocity, specific internal energy, specific enthalpy, and the conserved
- * variables.
+ * velocity, specific internal energy, and the conserved variables.
  *
  * All results are written into `vars_on_face`.
  *

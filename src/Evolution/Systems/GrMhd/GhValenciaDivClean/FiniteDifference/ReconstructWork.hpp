@@ -41,8 +41,8 @@ namespace grmhd::GhValenciaDivClean::fd {
 /*!
  * \brief Reconstructs \f$\rho, p, Wv^i, B^i\f$, \f$\Phi\f$, and the spacetime
  * metric, then computes the Lorentz factor, upper spatial velocity, specific
- * internal energy, specific enthalpy, and the conserved variables. All results
- * are written into `vars_on_lower_face` and `vars_on_upper_face`.
+ * internal energy, and the conserved variables. All results are written into
+ * `vars_on_lower_face` and `vars_on_upper_face`.
  */
 template <typename SpacetimeTagsToReconstruct,
           typename PrimTagsForReconstruction, typename PrimsTags,
@@ -70,8 +70,8 @@ void reconstruct_prims_work(
 /*!
  * \brief Reconstructs \f$\rho, p, Wv^i, B^i\f$, \f$\Phi\f$, the spacetime
  * metric, \f$\Phi_{iab}\f$, and \f$\Pi_{ab}\f$, then computes the Lorentz
- * factor, upper spatial velocity, specific internal energy, specific enthalpy,
- * and the conserved variables. All results are written into `vars_on_face`.
+ * factor, upper spatial velocity, specific internal energy, and the conserved
+ * variables. All results are written into `vars_on_face`.
  *
  * This is used on DG elements to reconstruct their subcell neighbors' solution
  * on the shared faces.

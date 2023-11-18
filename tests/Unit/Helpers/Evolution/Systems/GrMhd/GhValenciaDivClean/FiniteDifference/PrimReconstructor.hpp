@@ -42,7 +42,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -190,7 +189,6 @@ void test_prim_reconstructor_impl(
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
   using SpecificInternalEnergy =
       hydro::Tags::SpecificInternalEnergy<DataVector>;
-  using SpecificEnthalpy = hydro::Tags::SpecificEnthalpy<DataVector>;
   using Temperature = hydro::Tags::Temperature<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<DataVector, 3>;
@@ -361,11 +359,6 @@ void test_prim_reconstructor_impl(
       get<Pressure>(expected_lower_face_values) =
           eos.pressure_from_density(get<Rho>(expected_lower_face_values));
     }
-    get<SpecificEnthalpy>(expected_lower_face_values) =
-        hydro::relativistic_specific_enthalpy(
-            get<Rho>(expected_lower_face_values),
-            get<SpecificInternalEnergy>(expected_lower_face_values),
-            get<Pressure>(expected_lower_face_values));
 
     gr::spatial_metric(
         make_not_null(&get<SpatialMetric>(expected_lower_face_values)),

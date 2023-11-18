@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Framework/TestingFramework.hpp"
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
