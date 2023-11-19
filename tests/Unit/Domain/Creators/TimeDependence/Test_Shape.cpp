@@ -125,8 +125,7 @@ void test_r_theta_phi(const tnsr::I<double, 3, SourceFrame>& input,
           operator()({{magnitude(input_centered).get(), 0.0, 0.0}});
   const double expected_output_centered_spherical =
       input_centered_spherical[0] *
-      (1.0 +
-       transition_factor * (kerr_schild_radius - inner_radius) / inner_radius);
+      (1.0 + transition_factor * (kerr_schild_radius - inner_radius));
   CHECK(output_centered_spherical[0] ==
         approx(expected_output_centered_spherical));
 }

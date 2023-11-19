@@ -4,6 +4,7 @@
 #include "Domain/Creators/TimeDependence/Shape.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -148,10 +149,11 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
   }
 
   const ylm::Spherepack ylm{l_max_, l_max_};
+  // The lambda_lm coefs actually have dimensions same as radius.
   const DataVector radial_distortion =
-      1.0 - get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-                inner_radius_, ylm.theta_phi_points(), mass_, spin_)) /
-                inner_radius_;
+      inner_radius_ -
+      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+          inner_radius_, ylm.theta_phi_points(), mass_, spin_));
   const auto radial_distortion_coefs = ylm.phys_to_spec(radial_distortion);
   const DataVector zeros =
       make_with_value<DataVector>(radial_distortion_coefs, 0.0);
@@ -174,7 +176,13 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
   result[size_name] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
       initial_time_,
       std::array<DataVector, 4>{
-          {{radial_distortion_coefs[0]}, zeros_size, zeros_size, zeros_size}},
+          // Size holds the *actual* \lambda_00 spherical harmonic coefficient,
+          // but shape holds Spherepack coefficients so we must convert between
+          // the two. Need to multiply lambda_00 by sqrt(2/pi)
+          {{M_SQRT1_2 * M_2_SQRTPI * radial_distortion_coefs[0]},
+           zeros_size,
+           zeros_size,
+           zeros_size}},
       std::numeric_limits<double>::infinity());
   return result;
 }

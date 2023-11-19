@@ -14,9 +14,19 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 /*!
  * \ingroup CoordMapsTimeDependentGroup
- * \brief A transition function that falls off as \f$f(r) = (ar + b) / r\f$. The
- * coefficients \f$a\f$ and \f$b\f$ are chosen so that the map falls off
- * linearly from 1 at `r_min` to 0 at `r_max`.
+ * \brief A transition function that falls off as $f(r) = g(r) / r$ where $g(r)
+ * = ar + b$.
+ *
+ * \details The coefficients $a$ and $b$ are chosen so that the function $g(r) =
+ * ar + b$ falls off linearly from 1 at `r_min` to 0 at `r_max`. This means that
+ * $f(r)$ falls off from $1/r_{\text{min}}$ at `r_min` to 0 at `r_max`. The
+ * coefficients are
+ *
+ * \f{align}{
+ * a &= \frac{-1}{r_{\text{max}} - r_{\text{min}}} \\
+ * b &= \frac{r_{\text{max}}}{r_{\text{max}} - r_{\text{min}}} = -a
+ * r_{\text{max}}
+ * \f}
  */
 class SphereTransition final : public ShapeMapTransitionFunction {
  public:
