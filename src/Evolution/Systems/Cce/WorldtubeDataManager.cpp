@@ -234,8 +234,9 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
   return true;
 }
 
-std::unique_ptr<WorldtubeDataManager> MetricWorldtubeDataManager::get_clone()
-    const {
+std::unique_ptr<WorldtubeDataManager<
+    Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>
+MetricWorldtubeDataManager::get_clone() const {
   return std::make_unique<MetricWorldtubeDataManager>(
       buffer_updater_->get_clone(), l_max_, buffer_depth_,
       interpolator_->get_clone(), fix_spec_normalization_);
@@ -419,8 +420,9 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
   return true;
 }
 
-std::unique_ptr<WorldtubeDataManager> BondiWorldtubeDataManager::get_clone()
-    const {
+std::unique_ptr<WorldtubeDataManager<
+    Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>
+BondiWorldtubeDataManager::get_clone() const {
   return std::make_unique<BondiWorldtubeDataManager>(
       buffer_updater_->get_clone(), l_max_, buffer_depth_,
       interpolator_->get_clone());

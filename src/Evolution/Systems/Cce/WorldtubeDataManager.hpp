@@ -28,7 +28,7 @@ class BondiWorldtubeDataManager;
 /*!
  *  \brief Abstract base class for managers of CCE worldtube data that is
  * provided in large time-series chunks, especially the type provided by input
- * h5 files.
+ * h5 files. `BoundaryTags` is a `tmpl::list` of tags on the worldtube boundary.
  *
  *  \details The methods that are required to be overridden in the derived
  * classes are:
@@ -48,6 +48,7 @@ class BondiWorldtubeDataManager;
  *   underlying data source. This is primarily used for monitoring the frequency
  *   and size of the buffer updates.
  */
+template <typename BoundaryTags>
 class WorldtubeDataManager : public PUP::able {
  public:
   using creatable_classes =
@@ -56,9 +57,7 @@ class WorldtubeDataManager : public PUP::able {
   WRAPPED_PUPable_abstract(WorldtubeDataManager);  // NOLINT
 
   virtual bool populate_hypersurface_boundary_data(
-      gsl::not_null<Variables<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
-          boundary_data_variables,
+      gsl::not_null<Variables<BoundaryTags>*> boundary_data_variables,
       double time, gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
 
   virtual std::unique_ptr<WorldtubeDataManager> get_clone() const = 0;
@@ -81,7 +80,9 @@ class WorldtubeDataManager : public PUP::able {
  * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
  * function that handles buffer updating and boundary computation.
  */
-class MetricWorldtubeDataManager : public WorldtubeDataManager {
+class MetricWorldtubeDataManager
+    : public WorldtubeDataManager<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
  public:
   // charm needs an empty constructor.
   MetricWorldtubeDataManager() = default;
@@ -174,7 +175,9 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
  * handled by `WorldtubeDataManager`. The set of 9 scalars is a far leaner
  * (factor of ~4) data storage format.
  */
-class BondiWorldtubeDataManager : public WorldtubeDataManager {
+class BondiWorldtubeDataManager
+    : public WorldtubeDataManager<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>> {
  public:
   // charm needs an empty constructor.
   BondiWorldtubeDataManager() = default;

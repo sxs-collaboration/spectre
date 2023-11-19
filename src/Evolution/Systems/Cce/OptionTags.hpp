@@ -281,7 +281,8 @@ struct CceEvolutionPrefix : Tag {
 
 /// A tag that constructs a `MetricWorldtubeDataManager` from options
 struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
-  using type = std::unique_ptr<WorldtubeDataManager>;
+  using type = std::unique_ptr<WorldtubeDataManager<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>;
   using option_tags =
       tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
