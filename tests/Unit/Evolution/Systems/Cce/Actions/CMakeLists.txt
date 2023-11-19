@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_GhBoundaryCommunication.cpp
   Test_H5BoundaryCommunication.cpp
   Test_InitializeCharacteristicEvolution.cpp
+  Test_InitializeKleinGordonWorldtubeBoundary.cpp
   Test_InitializeWorldtubeBoundary.cpp
   Test_Psi0Matching.cpp
   Test_RequestBoundaryData.cpp
@@ -28,6 +29,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Cce
+  CceHelpers
   GeneralRelativitySolutions
   Interpolation
   )

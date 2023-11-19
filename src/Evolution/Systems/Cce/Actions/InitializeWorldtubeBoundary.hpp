@@ -39,6 +39,8 @@ struct H5WorldtubeBoundary;
 template <typename Metavariables>
 struct AnalyticWorldtubeBoundary;
 template <typename Metavariables>
+struct KleinGordonH5WorldtubeBoundary;
+template <typename Metavariables>
 struct GhWorldtubeBoundary;
 /// \endcond
 namespace Actions {
@@ -125,6 +127,51 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
       InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>,
       tmpl::list<Tags::H5WorldtubeBoundaryDataManager>,
       typename Metavariables::cce_boundary_communication_tags>;
+  using base_type::apply;
+  using typename base_type::simple_tags;
+  using const_global_cache_tags =
+      tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
+  using typename base_type::simple_tags_from_options;
+};
+
+/*!
+ * \ingroup ActionsGroup
+ * \brief Initializes a KleinGordonH5WorldtubeBoundary
+ *
+ * \details Uses:
+ * - simple tags from options
+ * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
+ * `Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager`.
+ * - const global cache tag `Cce::Tags::LMax`.
+ *
+ * Databox changes:
+ * - Adds:
+ *   - `Cce::Tags::H5WorldtubeBoundaryDataManager`
+ *   - `Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager`
+ *   - `Tags::Variables<typename
+ * Metavariables::cce_boundary_communication_tags>`
+ *   - `Tags::Variables<typename
+ * Metavariables::klein_gordon_boundary_communication_tags>`
+ * - Removes: nothing
+ * - Modifies: nothing
+ */
+template <typename Metavariables>
+struct InitializeWorldtubeBoundary<
+    KleinGordonH5WorldtubeBoundary<Metavariables>>
+    : public detail::InitializeWorldtubeBoundaryBase<
+          InitializeWorldtubeBoundary<
+              KleinGordonH5WorldtubeBoundary<Metavariables>>,
+          tmpl::list<Tags::H5WorldtubeBoundaryDataManager,
+                     Tags::KleinGordonH5WorldtubeBoundaryDataManager>,
+          typename Metavariables::cce_boundary_communication_tags,
+          typename Metavariables::klein_gordon_boundary_communication_tags> {
+  using base_type = detail::InitializeWorldtubeBoundaryBase<
+      InitializeWorldtubeBoundary<
+          KleinGordonH5WorldtubeBoundary<Metavariables>>,
+      tmpl::list<Tags::H5WorldtubeBoundaryDataManager,
+                 Tags::KleinGordonH5WorldtubeBoundaryDataManager>,
+      typename Metavariables::cce_boundary_communication_tags,
+      typename Metavariables::klein_gordon_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
   using const_global_cache_tags =
