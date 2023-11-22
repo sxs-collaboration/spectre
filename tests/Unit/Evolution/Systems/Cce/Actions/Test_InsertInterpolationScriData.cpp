@@ -148,7 +148,7 @@ struct MockCharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag, false>,
+          typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime,
@@ -179,8 +179,8 @@ struct MockCharacteristicEvolution {
 };
 
 struct test_metavariables {
-  using evolved_swsh_tag = Tags::BondiJ;
-  using evolved_swsh_dt_tag = Tags::BondiH;
+  using evolved_swsh_tags = tmpl::list<Tags::BondiJ>;
+  using evolved_swsh_dt_tags = tmpl::list<Tags::BondiH>;
   using cce_step_choosers = tmpl::list<>;
   static constexpr bool local_time_stepping = false;
   using evolved_coordinates_variables_tag = ::Tags::Variables<

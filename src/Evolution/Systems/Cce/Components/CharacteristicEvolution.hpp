@@ -60,10 +60,11 @@ struct CceEvolutionLabelTag {};
  * - Type aliases:
  *  - `evolved_coordinates_variables_tag`: A `Tags::Variables` with real-valued
  * tensors associated with coordinates that must be evolved.
- *  - `evolved_swsh_tag`: The spin-weighted quantity to be evolved (typically
+ *  - `evolved_swsh_tags`: The spin-weighted quantities to be evolved (typically
  * `BondiJ`).
- *  - `evolved_swsh_dt_tag`: The spin-weighed quantity associated that is to act
- * as the time derivative to evolve `evolved_swsh_tag` (typically `BondiH`).
+ *  - `evolved_swsh_dt_tags`: The spin-weighed quantities associated that are to
+ * act as the time derivative to evolve `evolved_swsh_tags` (typically
+ * `BondiH`).
  *  - `cce_boundary_communication_tags`: A typelist of tags that will be
  * communicated between the worldtube boundary component and the extraction
  * component (typically
@@ -107,7 +108,7 @@ struct CharacteristicEvolution {
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,
-          typename Metavariables::evolved_swsh_tag,
+          typename Metavariables::evolved_swsh_tags,
           Metavariables::local_time_stepping>,
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
