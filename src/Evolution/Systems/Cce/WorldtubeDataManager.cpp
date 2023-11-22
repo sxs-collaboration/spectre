@@ -25,6 +25,54 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
+
+namespace detail {
+template <typename InputTags>
+void set_non_pupped_members(
+    const gsl::not_null<size_t*> time_span_start,
+    const gsl::not_null<size_t*> time_span_end,
+    const gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    const gsl::not_null<Variables<InputTags>*> interpolated_coefficients,
+    const size_t buffer_depth, const size_t interpolator_length,
+    const size_t l_max) {
+  *time_span_start = 0;
+  *time_span_end = 0;
+  const size_t size_of_buffer =
+      square(l_max + 1) * (buffer_depth + 2 * interpolator_length);
+  *coefficients_buffers = Variables<InputTags>{size_of_buffer};
+  *interpolated_coefficients = Variables<InputTags>{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+}
+
+template <typename InputTags>
+void initialize_buffers(
+    const gsl::not_null<size_t*> buffer_depth,
+    const gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    const size_t buffer_size, const size_t interpolator_length,
+    const size_t l_max) {
+  if (UNLIKELY(buffer_size < 2 * interpolator_length)) {
+    ERROR(
+        "The specified buffer updater doesn't have enough time points to "
+        "supply the requested interpolator. This almost certainly "
+        "indicates that the corresponding file hasn't been created properly, "
+        "but might indicate that the specified Interpolator requests too many "
+        "points");
+  }
+  // This will actually change the buffer depth in the case where the buffer
+  // depth passed to the constructor is too large for the worldtube file size.
+  // In that case, the worldtube data wouldn't be able to fill the buffer, so
+  // here we shrink the buffer depth down to be no larger than the length of the
+  // worldtube file.
+  if (UNLIKELY(buffer_size < 2 * interpolator_length + (*buffer_depth))) {
+    *buffer_depth = buffer_size - 2 * interpolator_length;
+  }
+
+  const size_t size_of_buffer =
+      square(l_max + 1) * (*buffer_depth + 2 * interpolator_length);
+  *coefficients_buffers = Variables<InputTags>{size_of_buffer};
+}
+}  // namespace detail
+
 MetricWorldtubeDataManager::MetricWorldtubeDataManager(
     std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
         buffer_updater,
@@ -38,34 +86,10 @@ MetricWorldtubeDataManager::MetricWorldtubeDataManager(
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
       interpolator_{std::move(interpolator)} {
-  if (UNLIKELY(
-          buffer_updater_->get_time_buffer().size() <
-          2 * interpolator_->required_number_of_points_before_and_after())) {
-    ERROR(
-        "The specified buffer updater doesn't have enough time points to "
-        "supply the requested interpolator. This almost certainly "
-        "indicates that the corresponding file hasn't been created properly, "
-        "but might indicate that the specified Interpolator requests too many "
-        "points");
-  }
-  // This will actually change the buffer depth in the case where the buffer
-  // depth passed to the constructor is too large for the worldtube file size.
-  // In that case, the worldtube data wouldn't be able to fill the buffer, so
-  // here we shrink the buffer depth down to be no larger than the length of the
-  // worldtube file.
-  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
-               2 * interpolator_->required_number_of_points_before_and_after() +
-                   buffer_depth_)) {
-    buffer_depth_ =
-        buffer_updater_->get_time_buffer().size() -
-        2 * interpolator_->required_number_of_points_before_and_after();
-  }
-
-  const size_t size_of_buffer =
-      square(l_max + 1) *
-      (buffer_depth_ +
-       2 * interpolator_->required_number_of_points_before_and_after());
-  coefficients_buffers_ = Variables<cce_metric_input_tags>{size_of_buffer};
+  detail::initialize_buffers<cce_metric_input_tags>(
+      make_not_null(&buffer_depth_), make_not_null(&coefficients_buffers_),
+      buffer_updater_->get_time_buffer().size(),
+      interpolator_->required_number_of_points_before_and_after(), l_max);
 }
 
 bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
@@ -255,15 +279,11 @@ void MetricWorldtubeDataManager::pup(PUP::er& p) {
   p | interpolator_;
   p | fix_spec_normalization_;
   if (p.isUnpacking()) {
-    time_span_start_ = 0;
-    time_span_end_ = 0;
-    const size_t size_of_buffer =
-        square(l_max_ + 1) *
-        (buffer_depth_ +
-         2 * interpolator_->required_number_of_points_before_and_after());
-    coefficients_buffers_ = Variables<cce_metric_input_tags>{size_of_buffer};
-    interpolated_coefficients_ = Variables<cce_metric_input_tags>{
-        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
+    detail::set_non_pupped_members<cce_metric_input_tags>(
+        make_not_null(&time_span_start_), make_not_null(&time_span_end_),
+        make_not_null(&coefficients_buffers_),
+        make_not_null(&interpolated_coefficients_), buffer_depth_,
+        interpolator_->required_number_of_points_before_and_after(), l_max_);
   }
 }
 
@@ -278,32 +298,10 @@ BondiWorldtubeDataManager::BondiWorldtubeDataManager(
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
       interpolator_{std::move(interpolator)} {
-  if (UNLIKELY(
-          buffer_updater_->get_time_buffer().size() <
-          2 * interpolator_->required_number_of_points_before_and_after())) {
-    ERROR(
-        "The specified buffer updater doesn't have enough time points to "
-        "supply the requested interpolator. This almost certainly "
-        "indicates that the corresponding file hasn't been created properly, "
-        "but might indicate that the specified Interpolator requests too many "
-        "points");
-  }
-  // This will actually change the buffer depth in the case where the buffer
-  // depth passed to the constructor is too large for the worldtube file size.
-  // In that case, the worldtube data wouldn't be able to fill the buffer, so
-  // here we shrink the buffer depth down to be no larger than the length of the
-  // worldtube file.
-  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
-               2 * interpolator_->required_number_of_points_before_and_after() +
-                   buffer_depth_)) {
-    buffer_depth_ =
-        buffer_updater_->get_time_buffer().size() -
-        2 * interpolator_->required_number_of_points_before_and_after();
-  }
-  coefficients_buffers_ = Variables<cce_bondi_input_tags>{
-      square(l_max + 1) *
-      (buffer_depth_ +
-       2 * interpolator_->required_number_of_points_before_and_after())};
+  detail::initialize_buffers<cce_bondi_input_tags>(
+      make_not_null(&buffer_depth_), make_not_null(&coefficients_buffers_),
+      buffer_updater_->get_time_buffer().size(),
+      interpolator_->required_number_of_points_before_and_after(), l_max);
 }
 
 bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
@@ -440,15 +438,11 @@ void BondiWorldtubeDataManager::pup(PUP::er& p) {
   p | buffer_depth_;
   p | interpolator_;
   if (p.isUnpacking()) {
-    time_span_start_ = 0;
-    time_span_end_ = 0;
-    const size_t size_of_buffer =
-        square(l_max_ + 1) *
-        (buffer_depth_ +
-         2 * interpolator_->required_number_of_points_before_and_after());
-    coefficients_buffers_ = Variables<cce_bondi_input_tags>{size_of_buffer};
-    interpolated_coefficients_ = Variables<cce_bondi_input_tags>{
-        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
+    detail::set_non_pupped_members<cce_bondi_input_tags>(
+        make_not_null(&time_span_start_), make_not_null(&time_span_end_),
+        make_not_null(&coefficients_buffers_),
+        make_not_null(&interpolated_coefficients_), buffer_depth_,
+        interpolator_->required_number_of_points_before_and_after(), l_max_);
   }
 }
 

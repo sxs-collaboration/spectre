@@ -20,6 +20,23 @@
 
 namespace Cce {
 
+namespace detail {
+
+template <typename InputTags>
+void set_non_pupped_members(
+    gsl::not_null<size_t*> time_span_start,
+    gsl::not_null<size_t*> time_span_end,
+    gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    gsl::not_null<Variables<InputTags>*> interpolated_coefficients,
+    size_t buffer_depth, size_t interpolator_length, size_t l_max);
+
+template <typename InputTags>
+void initialize_buffers(
+    gsl::not_null<size_t*> buffer_depth,
+    gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    size_t buffer_size, size_t interpolator_length, size_t l_max);
+}  // namespace detail
+
 /// \cond
 class MetricWorldtubeDataManager;
 class BondiWorldtubeDataManager;
