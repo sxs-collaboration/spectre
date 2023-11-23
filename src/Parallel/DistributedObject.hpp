@@ -209,6 +209,7 @@ class DistributedObject<ParallelComponent,
   DistributedObject(
       const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
       Parallel::Phase current_phase,
+      std::unordered_map<Parallel::Phase, size_t> phase_bookmarks,
       const std::unique_ptr<Parallel::Callback>& callback);
 
   /// Charm++ migration constructor, used after a chare is migrated
@@ -321,6 +322,15 @@ class DistributedObject<ParallelComponent,
 
   /// Get the current phase
   Phase phase() const { return phase_; }
+
+  /// \brief Get the phase bookmarks
+  ///
+  /// \details These are used to allow a phase to be resumed at a specific
+  /// step in its iterable action list after PhaseControl is used to temporarily
+  /// switch to other phases.
+  const std::unordered_map<Parallel::Phase, size_t>& phase_bookmarks() const {
+    return phase_bookmarks_;
+  }
 
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
@@ -525,6 +535,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     DistributedObject(
         const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
         Parallel::Phase current_phase,
+        std::unordered_map<Parallel::Phase, size_t> phase_bookmarks,
         const std::unique_ptr<Parallel::Callback>& callback)
     : DistributedObject() {
   static_assert(Parallel::is_array_proxy<cproxy_type>::value,
@@ -540,6 +551,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     this->setMigratable(true);
     global_cache_proxy_ = global_cache_proxy;
     phase_ = current_phase;
+    phase_bookmarks_ = std::move(phase_bookmarks);
     ::Initialization::mutate_assign<distributed_object_tags>(
         make_not_null(&box_), metavariables{}, array_index_,
         global_cache_proxy_);

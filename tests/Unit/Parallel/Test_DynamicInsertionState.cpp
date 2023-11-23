@@ -3,83 +3,80 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <deque>
-#include <memory>
-#include <vector>
-
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
-#include "Options/String.hpp"
-#include "Parallel/AlgorithmExecution.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
+#include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
+#include "Parallel/PhaseControl/PhaseChange.hpp"
+#include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// This executable tests dynamic insertion and deletion of array chare elements.
-//
-// In Parallel::Phase::Initialization 92 elements are created with the simple
-// item Value.  The action InitializeValue is called which sets the Value to be
-// the array index of the element plus one.
-//
-// In Parallel::Phase::Execute, the simple action ChangeArray is called.
-//    - Elements with array index 0 and 1 and prime numbers > 46 are unchanged
-//    - Each element with an array index that is a power of 2 is split into a
-//      number of children equal to the array index.  Each child will eventually
-//      set Value to be (array index / number of children) while the parent will
-//      eventually be deleted.
-//    - Each element with an array index that is a prime number in the range
-//      [3,46] will be joined with those elements whose array index has prime
-//      factors less than or equal to it (e.g. 3 will join any element whose
-//      array index is 2^m 3^n for some (m,n)).  The newly created parent
-//      element will eventually set its Value to the sum of the Values of the
-//      children, while the children will eventually be deleted.
-//
-//   An element that is split will create its children sequentially, with the
-//   last created child element executing the callback of the simple action
-//   SendDataToChildren.  SendDataToChildren sends each child its share of Value
-//   by calling the simple action SetValue and then deletes the parent element.
-//
-//   The prime member of joining elements will create the new parent element and
-//   execute the callback CollectDataFromChildren on the prime member.
-//   CollectDataFromChildren will collect data from the child, either call
-//   CollectDataFromChildren on the next child or (when executing on the last
-//   child) call SetValue on the new parent element, and then delete the child
-//   element.
-//
-// In Parallel::Phase::Testing, the Values are summed over all the array
-// elements via the reduction action ArrayReduce which executes the
-// CheckReduction action on the singleton component.  The test succeeds if the
-// sum over values of the array has been preserved.
+// This executable tests that newly created elements are at the same step in
+// an iterable action list as the already existing elements when the algorithm
+// resumes.
 
 namespace {
-static constexpr int initial_number_of_1d_array_elements = 92;
-static const double expected_value = 0.5 * initial_number_of_1d_array_elements *
-                                     (initial_number_of_1d_array_elements + 1);
+constexpr size_t number_of_iterations = 5;
+constexpr size_t number_of_doubling_actions = 2;
+constexpr size_t expected_value =
+    two_to_the(number_of_iterations * number_of_doubling_actions + 1);
 
 struct CheckReduction {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const double& value) {
+                    const ArrayIndex& /*array_index*/, const int& value) {
     SPECTRE_PARALLEL_REQUIRE(expected_value == value);
   }
 };
 
 struct Value : db::SimpleTag {
-  using type = double;
+  using type = int;
 };
 
-struct InitializeValue {
+struct Iteration : db::SimpleTag {
+  using type = size_t;
+};
+
+struct Initialize {
+  using simple_tags = tmpl::list<Value, Iteration>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 2, 0_st);
+    return {Parallel::AlgorithmExecution::Halt, std::nullopt};
+  }
+};
+
+template <size_t StepNumber>
+struct DoubleValue {
   using simple_tags = tmpl::list<Value>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -88,11 +85,34 @@ struct InitializeValue {
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                               array_index + 1.0);
-    return {Parallel::AlgorithmExecution::Halt, std::nullopt};
+    db::mutate<Value>([](const gsl::not_null<int*> value) { *value *= 2; },
+                      make_not_null(&box));
+
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+struct CheckForTermination {
+  using simple_tags = tmpl::list<Value>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    db::mutate<Iteration>(
+        [](const gsl::not_null<size_t*> iteration) { ++(*iteration); },
+        make_not_null(&box));
+
+    return {db::get<Iteration>(box) == number_of_iterations
+                ? Parallel::AlgorithmExecution::Halt
+                : Parallel::AlgorithmExecution::Continue,
+            std::nullopt};
   }
 };
 
@@ -106,7 +126,7 @@ struct ArrayReduce {
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index];
     const auto& singleton_proxy =
         Parallel::get_parallel_component<amr::Component<Metavariables>>(cache);
-    Parallel::ReductionData<Parallel::ReductionDatum<double, funcl::Plus<>>>
+    Parallel::ReductionData<Parallel::ReductionDatum<int, funcl::Plus<>>>
         reduction_data{db::get<Value>(box)};
     Parallel::contribute_to_reduction<CheckReduction>(reduction_data, my_proxy,
                                                       singleton_proxy);
@@ -118,10 +138,13 @@ struct SetValue {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const double value) {
-    db::mutate<Value>(
-        [&value](const gsl::not_null<double*> box_value) {
+                    const ArrayIndex& /*array_index*/, const int value,
+                    const size_t iteration) {
+    db::mutate<Value, Iteration>(
+        [&value, &iteration](const gsl::not_null<int*> box_value,
+                             const gsl::not_null<size_t*> box_iteration) {
           *box_value = value;
+          *box_iteration = iteration;
         },
         make_not_null(&box));
   }
@@ -134,11 +157,12 @@ struct SendDataToChildren {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const std::vector<ArrayIndex>& new_ids) {
-    const double value = db::get<Value>(box) / new_ids.size();
+    const int value = db::get<Value>(box) / 2;
     auto& array_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     for (const auto& new_id : new_ids) {
-      Parallel::simple_action<SetValue>(array_proxy[new_id], value);
+      Parallel::simple_action<SetValue>(array_proxy[new_id], value,
+                                        db::get<Iteration>(box));
     }
     array_proxy[array_index].ckDestroy();
   }
@@ -152,19 +176,19 @@ struct CollectDataFromChildren {
                     const ArrayIndex& array_index,
                     const ArrayIndex& parent_index,
                     std::deque<ArrayIndex> additional_children_ids,
-                    double accumulated_value) {
+                    int accumulated_value, size_t iteration) {
     accumulated_value += db::get<Value>(box);
     auto& array_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     if (additional_children_ids.empty()) {
       Parallel::simple_action<SetValue>(array_proxy[parent_index],
-                                        accumulated_value);
+                                        accumulated_value, iteration);
     } else {
       const auto next_child_id = additional_children_ids.front();
       additional_children_ids.pop_front();
       Parallel::simple_action<CollectDataFromChildren>(
           array_proxy[next_child_id], parent_index, additional_children_ids,
-          accumulated_value);
+          accumulated_value, iteration);
     }
     array_proxy[array_index].ckDestroy();
   }
@@ -203,7 +227,7 @@ struct CreateChild {
               CreateChild, decltype(my_proxy), ElementProxy, ElementIndex,
               ElementIndex, std::vector<ElementIndex>,
               std::unordered_map<Parallel::Phase, size_t>>>(
-              my_proxy, std::move(element_proxy), std::move(parent_id),
+              my_proxy, element_proxy, std::move(parent_id),
               std::move(next_child), std::move(children_ids), phase_bookmarks));
     }
   }
@@ -212,18 +236,18 @@ struct CreateChild {
 struct ChangeArray {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
-  static void apply(const db::DataBox<DbTags>& /*box*/,
+  static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
     auto& array_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     auto my_proxy = array_proxy[array_index];
+
     const auto& phase_bookmarks = Parallel::local(my_proxy)->phase_bookmarks();
+
     auto create_children = [&cache, &array_index, &array_proxy,
-                            &phase_bookmarks](
-                               const size_t number_of_new_elements) {
-      std::vector<int> new_ids(number_of_new_elements);
-      std::iota(new_ids.begin(), new_ids.end(), 100 * array_index);
+                            &phase_bookmarks]() {
+      std::vector new_ids{1, 2};
       auto& singleton_proxy =
           Parallel::get_parallel_component<amr::Component<Metavariables>>(
               cache);
@@ -232,55 +256,22 @@ struct ChangeArray {
                                            new_ids, phase_bookmarks);
     };
 
-    auto create_parent = [&cache, &array_proxy, &my_proxy,
+    auto create_parent = [&box, &cache, &array_proxy, &my_proxy,
                           &phase_bookmarks](std::deque<int> ids_to_join) {
-      int id_of_first_child = ids_to_join.front();
       ids_to_join.pop_front();
-      int parent_id = 100 * id_of_first_child;
+      const int parent_id = 0;
       array_proxy(parent_id).insert(
-          cache.thisProxy, Parallel::Phase::Execute, phase_bookmarks,
+          cache.thisProxy, Parallel::Phase::AdjustDomain, phase_bookmarks,
           std::make_unique<Parallel::SimpleActionCallback<
               CollectDataFromChildren, decltype(my_proxy), int, std::deque<int>,
-              double>>(my_proxy, std::move(parent_id), std::move(ids_to_join),
-                       0.0));
+              int, size_t>>(my_proxy, parent_id, std::move(ids_to_join), 0,
+                            db::get<Iteration>(box)));
     };
 
-    std::vector<size_t> ids_to_split{2, 4, 8, 16, 32, 64};
-    std::vector<size_t> ids_to_join{3,  5,  7,  11, 13, 17, 19,
-                                    23, 29, 31, 37, 41, 43};
-
-    for (const auto id_to_split : ids_to_split) {
-      if (id_to_split == static_cast<size_t>(array_index)) {
-        create_children(id_to_split);
-      }
-    }
-
-    if (3 == array_index) {
-      create_parent({3, 6, 9, 12, 18, 24, 27, 36, 48, 54, 72, 81});
-    } else if (5 == array_index) {
-      create_parent({5, 10, 15, 20, 25, 30, 40, 45, 50, 60, 75, 80, 90});
-    } else if (7 == array_index) {
-      create_parent({7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 84});
-    } else if (11 == array_index) {
-      create_parent({11, 22, 33, 44, 55, 66, 77, 88});
-    } else if (13 == array_index) {
-      create_parent({13, 26, 39, 52, 65, 78, 91});
-    } else if (17 == array_index) {
-      create_parent({17, 34, 51, 68, 85});
-    } else if (19 == array_index) {
-      create_parent({19, 38, 57, 76});
-    } else if (23 == array_index) {
-      create_parent({23, 46, 69});
-    } else if (29 == array_index) {
-      create_parent({29, 58, 87});
-    } else if (31 == array_index) {
-      create_parent({31, 62});
-    } else if (37 == array_index) {
-      create_parent({37, 74});
-    } else if (41 == array_index) {
-      create_parent({41, 82});
-    } else if (43 == array_index) {
-      create_parent({43, 86});
+    if (0 == array_index) {
+      create_children();
+    } else if (1 == array_index) {
+      create_parent({1, 2});
     }
   }
 };
@@ -290,9 +281,13 @@ struct TestArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        tmpl::list<InitializeValue>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<Initialize>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Execute,
+          tmpl::list<DoubleValue<0>, PhaseControl::Actions::ExecutePhaseChange,
+                     DoubleValue<1>, CheckForTermination>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -306,9 +301,8 @@ struct TestArray {
         Parallel::get_parallel_component<TestArray>(local_cache);
 
     TestHelpers::Parallel::assign_array_elements_round_robin_style(
-        array_proxy, static_cast<size_t>(initial_number_of_1d_array_elements),
-        static_cast<size_t>(sys::number_of_procs()), {}, global_cache,
-        procs_to_ignore);
+        array_proxy, 1_st, static_cast<size_t>(sys::number_of_procs()), {},
+        global_cache, procs_to_ignore);
   }
 
   static void execute_next_phase(
@@ -317,7 +311,7 @@ struct TestArray {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& my_proxy = Parallel::get_parallel_component<TestArray>(local_cache);
     my_proxy.start_phase(next_phase);
-    if (next_phase == Parallel::Phase::Execute) {
+    if (next_phase == Parallel::Phase::AdjustDomain) {
       Parallel::simple_action<ChangeArray>(my_proxy);
     }
     if (next_phase == Parallel::Phase::Testing) {
@@ -333,6 +327,13 @@ struct TestMetavariables {
   static constexpr Options::String help =
       "An executable for testing the dynamic insertion and deletion of "
       "elements of an array parallel component";
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
+        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers>>>;
+  };
 
   static constexpr std::array<Parallel::Phase, 4> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Execute,
@@ -358,11 +359,14 @@ void register_callback() {
           Parallel::SimpleActionCallback<
               CollectDataFromChildren,
               CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>,
-              int, std::deque<int>, double>>{});
+              int, std::deque<int>, int, size_t>>{});
 }
-}  //  namespace
+}  // namespace
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<TestMetavariables>();
-  Parallel::charmxx::register_init_node_and_proc({&register_callback}, {});
+  Parallel::charmxx::register_init_node_and_proc(
+      {&register_factory_classes_with_charm<TestMetavariables>,
+       &register_callback},
+      {});
 }

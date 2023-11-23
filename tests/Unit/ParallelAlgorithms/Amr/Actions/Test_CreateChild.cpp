@@ -138,7 +138,8 @@ void test() {
   // Call CreateChild, creating the first child and queueing CreateChild on
   // the singleton component in order to create the second child
   ActionTesting::simple_action<singleton_component, amr::Actions::CreateChild>(
-      make_not_null(&runner), 0, element_proxy, parent_id, children_ids, 0_st);
+      make_not_null(&runner), 0, element_proxy, parent_id, children_ids, 0_st,
+      std::unordered_map<Parallel::Phase, size_t>{});
   for (const auto& child_id : children_ids) {
     CHECK(ActionTesting::is_simple_action_queue_empty<array_component>(
         runner, child_id));

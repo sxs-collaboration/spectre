@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+---
+---
+
+PhaseChangeAndTriggers:
+  - Trigger: Always
+    PhaseChanges:
+      - VisitAndReturn(AdjustDomain)
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

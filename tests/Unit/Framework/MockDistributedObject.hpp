@@ -380,6 +380,10 @@ class MockDistributedObject {
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() const { return terminate_; }
 
+  // There are no phase bookmarks in mock distributed objects, so we just
+  // return an empty map
+  std::unordered_map<Parallel::Phase, size_t> phase_bookmarks() { return {}; }
+
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
   void perform_algorithm() {}

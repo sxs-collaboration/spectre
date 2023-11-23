@@ -25,7 +25,8 @@ void register_callbacks() {
               amr::Actions::CreateChild,
               CProxy_AlgorithmSingleton<amr::Component<Metavariables>, int>,
               CProxy_AlgorithmArray<Component, ArrayIndex>, ArrayIndex,
-              std::vector<ArrayIndex>, size_t>,
+              std::vector<ArrayIndex>, size_t,
+              std::unordered_map<Parallel::Phase, size_t>>,
           Parallel::SimpleActionCallback<
               amr::Actions::SendDataToChildren,
               CProxyElement_AlgorithmArray<Component, ArrayIndex>,
