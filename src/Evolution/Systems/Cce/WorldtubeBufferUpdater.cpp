@@ -68,6 +68,29 @@ std::pair<size_t, size_t> create_span_for_time_value(
 
   return std::make_pair(span_start, span_end);
 }
+
+std::string get_text_radius(const std::string& cce_data_filename) {
+  const size_t r_pos = cce_data_filename.find_last_of('R');
+  const size_t dot_pos = cce_data_filename.find_last_of('.');
+  return cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+}
+
+void set_time_buffer_and_lmax(const gsl::not_null<DataVector*> time_buffer,
+                              size_t& l_max, const h5::Dat& data) {
+  const auto data_table_dimensions = data.get_dimensions();
+  const Matrix time_matrix =
+      data.get_data_subset(std::vector<size_t>{0}, 0, data_table_dimensions[0]);
+  *time_buffer = DataVector{data_table_dimensions[0]};
+
+  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
+    (*time_buffer)[i] = time_matrix(i, 0);
+  }
+
+  // Avoid compiler warning
+  size_t l_plus_one_squared = data_table_dimensions[1] / 2;
+  l_max =
+      static_cast<size_t>(sqrt(static_cast<double>(l_plus_one_squared)) - 1);
+}
 }  // namespace detail
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
@@ -101,13 +124,7 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
   // was an old one that had a particular normalization bug
   has_version_history_ = cce_data_file_.exists<h5::Version>("/VersionHist");
 
-  // We assume that the filename has the extraction radius encoded as an
-  // integer between the last occurrence of 'R' and the last occurrence of
-  // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find_last_of('R');
-  const size_t dot_pos = cce_data_filename.find_last_of('.');
-  const std::string text_radius =
-      cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  const std::string text_radius = detail::get_text_radius(cce_data_filename);
   try {
     extraction_radius_ = static_cast<bool>(extraction_radius)
                              ? *extraction_radius
@@ -119,15 +136,9 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
         "CCE filename format). Provided filename : "
         << cce_data_filename);
   }
-  const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
-  const auto data_table_dimensions = lapse_data.get_dimensions();
-  const Matrix time_matrix = lapse_data.get_data_subset(
-      std::vector<size_t>{0}, 0, data_table_dimensions[0]);
-  time_buffer_ = DataVector{data_table_dimensions[0]};
-  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
-    time_buffer_[i] = time_matrix(i, 0);
-  }
-  l_max_ = sqrt(data_table_dimensions[1] / 2) - 1;
+
+  detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
+                                   cce_data_file_.get<h5::Dat>("/Lapse"));
   cce_data_file_.close_current_object();
 }
 
@@ -291,13 +302,7 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
       Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>>(
       dataset_names_) = "DuR";
 
-  // We assume that the filename has the extraction radius encoded as an
-  // integer between the last occurrence of 'R' and the last occurrence of
-  // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find_last_of('R');
-  const size_t dot_pos = cce_data_filename.find_last_of('.');
-  const std::string text_radius =
-      cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  const std::string text_radius = detail::get_text_radius(cce_data_filename);
   try {
     extraction_radius_ = static_cast<bool>(extraction_radius)
                              ? *extraction_radius
@@ -309,15 +314,8 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
     // `get_extraction_radius`.
   }
 
-  const auto& u_data = cce_data_file_.get<h5::Dat>("/U");
-  const auto data_table_dimensions = u_data.get_dimensions();
-  const Matrix time_matrix = u_data.get_data_subset(std::vector<size_t>{0}, 0,
-                                                    data_table_dimensions[0]);
-  time_buffer_ = DataVector{data_table_dimensions[0]};
-  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
-    time_buffer_[i] = time_matrix(i, 0);
-  }
-  l_max_ = sqrt(data_table_dimensions[1] / 2) - 1;
+  detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
+                                   cce_data_file_.get<h5::Dat>("/U"));
   cce_data_file_.close_current_object();
 }
 
