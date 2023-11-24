@@ -91,6 +91,82 @@ void set_time_buffer_and_lmax(const gsl::not_null<DataVector*> time_buffer,
   l_max =
       static_cast<size_t>(sqrt(static_cast<double>(l_plus_one_squared)) - 1);
 }
+
+void update_buffer_with_modal_data(
+    const gsl::not_null<ComplexModalVector*> buffer_to_update,
+    const h5::Dat& read_data, const size_t computation_l_max,
+    const size_t l_max, const size_t time_span_start,
+    const size_t time_span_end, const bool is_real) {
+  size_t number_of_columns = read_data.get_dimensions()[1];
+  if (UNLIKELY(buffer_to_update->size() !=
+               square(computation_l_max + 1) *
+                   (time_span_end - time_span_start))) {
+    ERROR("Incorrect storage size for the data to be loaded in.");
+  }
+  std::vector<size_t> cols(number_of_columns - 1);
+  std::iota(cols.begin(), cols.end(), 1);
+  Matrix data_matrix = read_data.get_data_subset(
+      cols, time_span_start, time_span_end - time_span_start);
+  *buffer_to_update = 0.0;
+  for (size_t time_row = 0; time_row < time_span_end - time_span_start;
+       ++time_row) {
+    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max));
+         ++l) {
+      for (int m = -l; m <= l; ++m) {
+        if (is_real) {
+          if (m == 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row, static_cast<size_t>(square(l))), 0.0);
+          } else if (m > 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * m - 1)),
+                    data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * m)));  // NOLINT
+          } else {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                (-m % 2 == 0 ? 1.0 : -1.0) *
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * -m - 1)),
+                    -data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * -m)));  // NOLINT
+          }
+        } else {
+          (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                  computation_l_max, static_cast<size_t>(l),
+                                  m) *
+                                  (time_span_end - time_span_start) +
+                              time_row] =
+              std::complex<double>(
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max, static_cast<size_t>(l), m)),
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max, static_cast<size_t>(l), m) +
+                                  1));
+        }
+      }
+    }
+  }
+}
 }  // namespace detail
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
@@ -362,75 +438,9 @@ void BondiWorldtubeH5BufferUpdater::update_buffer(
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end,
     const bool is_real) const {
-  size_t number_of_columns = read_data.get_dimensions()[1];
-  if (UNLIKELY(buffer_to_update->size() !=
-               square(computation_l_max + 1) *
-                   (time_span_end - time_span_start))) {
-    ERROR("Incorrect storage size for the data to be loaded in.");
-  }
-  std::vector<size_t> cols(number_of_columns - 1);
-  std::iota(cols.begin(), cols.end(), 1);
-  Matrix data_matrix = read_data.get_data_subset(
-      cols, time_span_start, time_span_end - time_span_start);
-  *buffer_to_update = 0.0;
-  for (size_t time_row = 0; time_row < time_span_end - time_span_start;
-       ++time_row) {
-    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max_));
-         ++l) {
-      for (int m = -l; m <= l; ++m) {
-        if (is_real) {
-          if (m == 0) {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                std::complex<double>(
-                    data_matrix(time_row, static_cast<size_t>(square(l))), 0.0);
-          } else if (m > 0) {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                std::complex<double>(
-                    data_matrix(time_row,
-                                static_cast<size_t>(square(l) + 2 * m - 1)),
-                    data_matrix(
-                        time_row,
-                        static_cast<size_t>(square(l) + 2 * m)));  // NOLINT
-          } else {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                (-m % 2 == 0 ? 1.0 : -1.0) *
-                std::complex<double>(
-                    data_matrix(time_row,
-                                static_cast<size_t>(square(l) + 2 * -m - 1)),
-                    -data_matrix(
-                        time_row,
-                        static_cast<size_t>(square(l) + 2 * -m)));  // NOLINT
-          }
-        } else {
-          (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                  computation_l_max, static_cast<size_t>(l),
-                                  m) *
-                                  (time_span_end - time_span_start) +
-                              time_row] =
-              std::complex<double>(
-                  data_matrix(time_row,
-                              2 * Spectral::Swsh::goldberg_mode_index(
-                                      l_max_, static_cast<size_t>(l), m)),
-                  data_matrix(time_row,
-                              2 * Spectral::Swsh::goldberg_mode_index(
-                                      l_max_, static_cast<size_t>(l), m) +
-                                  1));
-        }
-      }
-    }
-  }
+  detail::update_buffer_with_modal_data(
+      buffer_to_update, read_data, computation_l_max, l_max_, time_span_start,
+      time_span_end, is_real);
 }
 
 void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) {
