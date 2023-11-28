@@ -220,6 +220,13 @@ const Matrix& differentiation_matrix(const Mesh<1>& mesh);
 /*!
  * \brief %Matrix used to compute the divergence of the flux in weak form.
  *
+ * This is the transpose of the differentiation matrix multiplied by quadrature
+ * weights that appear in DG integrals:
+ *
+ * \begin{equation}
+ * \frac{D^T_{ij}} \frac{w_j}{w_i}
+ * \end{equation}
+ *
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>

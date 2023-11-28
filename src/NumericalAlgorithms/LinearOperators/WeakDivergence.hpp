@@ -52,8 +52,8 @@
  * This function computes the volume term:
  *
  * \f{align*}{
- * \int_{\Omega}d^n x\,F^i_{\breve{\jmath}} \phi_{\breve{\jmath}} \partial_i
- *    \phi_{\breve{\imath}}
+ * \frac{1}{w_\breve{\imath}} \int_{\Omega}d^n x \,
+ *   F^i_{\breve{\jmath}} \phi_{\breve{\jmath}} \partial_i \phi_{\breve{\imath}}
  * \f}
  *
  * \note When using Gauss-Lobatto points the numerical values of the
