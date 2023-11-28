@@ -258,7 +258,9 @@ long_lines_exclude() {
         grep -v '\\image' | \
         grep -v 'a href=' | \
         grep -v '"""' | \
-        grep -v 'import'
+        grep -v 'import' | \
+        grep -v '\\link' | \
+        grep -v '\\endlink'
 }
 long_lines() {
     whitelist "$1" \
@@ -311,6 +313,8 @@ long_lines_test() {
     test_check pass foo.cpp "// NOLINTNEXTLINE(${eighty})"$'\n'
     test_check pass foo.cpp "// \\snippet ${eighty}"$'\n'
     test_check pass foo.cpp "// \\image ${eighty}"$'\n'
+    test_check pass foo.cpp "// \\link ${eighty}"$'\n'
+    test_check pass foo.cpp "// \\endlink ${eighty}"$'\n'
 }
 standard_checks+=(long_lines)
 

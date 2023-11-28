@@ -41,11 +41,6 @@ class SphereTransition final : public ShapeMapTransitionFunction {
       const std::array<double, 3>& target_coords,
       double distorted_radius) const override;
 
-  double map_over_radius(
-      const std::array<double, 3>& source_coords) const override;
-  DataVector map_over_radius(
-      const std::array<DataVector, 3>& source_coords) const override;
-
   std::array<double, 3> gradient(
       const std::array<double, 3>& source_coords) const override;
   std::array<DataVector, 3> gradient(
@@ -65,9 +60,6 @@ class SphereTransition final : public ShapeMapTransitionFunction {
  private:
   template <typename T>
   T call_impl(const std::array<T, 3>& source_coords) const;
-
-  template <typename T>
-  T map_over_radius_impl(const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   std::array<T, 3> gradient_impl(const std::array<T, 3>& source_coords) const;

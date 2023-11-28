@@ -154,20 +154,17 @@ std::vector<std::vector<std::complex<double>>> generate_random_coefs(
     size_t l_max, size_t m_max, gsl::not_null<std::mt19937*> generator) {
   std::vector<std::vector<std::complex<double>>> coefs{};
   // if the coefficients are made too large, the map has a good chance of
-  // mapping through the center, causing the test to fail which is why we damp
-  // higher mode coefficients by `8 * l * l + 1`. This damping factor was found
-  // empirically by trial and error.
-  std::uniform_real_distribution<double> coef_dist{0., 1.};
+  // mapping through the center, causing the test to fail which is why we limit
+  // the coefficients to a magnitude of at most 0.01
+  std::uniform_real_distribution<double> coef_dist{0., 0.01};
 
   for (size_t l = 0; l <= l_max; ++l) {
     // m=0 is real
     std::vector<std::complex<double>> tmp{
-        make_with_random_values<double>(generator, coef_dist, 1) /
-        double(8 * l * l + 1)};
+        make_with_random_values<double>(generator, coef_dist, 1)};
     for (size_t m = 1; m <= std::min(l, m_max); ++m) {
       tmp.emplace_back(make_with_random_values<std::complex<double>>(
-                           generator, coef_dist, 2) /
-                       double(8 * l * l + 1));
+          generator, coef_dist, 2));
     }
     coefs.emplace_back(tmp);
   }
@@ -176,7 +173,7 @@ std::vector<std::vector<std::complex<double>>> generate_random_coefs(
 }
 
 double generate_random_00_coef(const gsl::not_null<std::mt19937*> generator) {
-  std::uniform_real_distribution<double> coef_dist{0., 1.};
+  std::uniform_real_distribution<double> coef_dist{0., 0.01};
   return coef_dist(*generator);
 }
 
@@ -340,7 +337,8 @@ std::array<DataVector, 3> calculate_analytical_map(
         identity, gsl::at(target_thetas, i), gsl::at(target_phis, i), coefs,
         lambda_00_coef, l_max, m_max);
   }
-  const auto spatial_part = transition_func(centered_coords);
+  const DataVector spatial_part =
+      transition_func(centered_coords) / magnitude(centered_coords);
   return target_points - centered_coords * angular_part * spatial_part;
 }
 
@@ -421,17 +419,18 @@ tnsr::Ij<DataVector, 3, Frame::NoFrame> calculate_analytical_jacobian(
   cartesian_gradient[2] = -theta_gradient;
 
   // this part essentially duplicates the code from the map
-  const auto spatial_part = transition_func(centered_coords);
-  const auto spatial_gradient = transition_func.gradient(centered_coords);
-  const auto spatial_part_over_radius =
-      transition_func.map_over_radius(centered_coords);
+  const DataVector radius = magnitude(centered_coords);
+  const DataVector spatial_part = transition_func(centered_coords) / radius;
+  const std::array<DataVector, 3> spatial_gradient =
+      transition_func.gradient(centered_coords) / radius -
+      centered_coords * spatial_part / square(radius);
   tnsr::Ij<DataVector, 3, Frame::NoFrame> result(num_points);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       result.get(i, j) =
           -gsl::at(centered_coords, i) *
           (angular_part * gsl::at(spatial_gradient, j) +
-           gsl::at(cartesian_gradient, j) * spatial_part_over_radius);
+           gsl::at(cartesian_gradient, j) * spatial_part / radius);
     }
     result.get(i, i) += 1. - angular_part * spatial_part;
   }

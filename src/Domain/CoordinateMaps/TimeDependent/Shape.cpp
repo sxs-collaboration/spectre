@@ -94,7 +94,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 #ifdef SPECTRE_DEBUG
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType shift_radii =
-      distorted_radii * transition_func_->operator()(centered_coords);
+      distorted_radii * transition_func_->operator()(centered_coords) *
+      check_and_compute_one_over_radius(centered_coords);
   if constexpr (std::is_same_v<ReturnType, double>) {
     ASSERT(shift_radii < 1., "Coordinates mapped through the center!");
   } else {
@@ -104,9 +105,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
   }
 #endif  // SPECTRE_DEBUG
 
-  return center_ + centered_coords *
-                       (1. - distorted_radii *
-                                 transition_func_->operator()(centered_coords));
+  return center_ +
+         centered_coords *
+             (1. - distorted_radii *
+                       transition_func_->operator()(centered_coords) *
+                       check_and_compute_one_over_radius(centered_coords));
 }
 
 std::optional<std::array<double, 3>> Shape::inverse(
@@ -145,7 +148,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
   ylm_.interpolate_from_coefs(make_not_null(&radii_velocities), coef_derivs,
                               interpolation_info);
   return -centered_coords * radii_velocities *
-         transition_func_->operator()(centered_coords);
+         transition_func_->operator()(centered_coords) *
+         check_and_compute_one_over_radius(centered_coords);
 }
 
 template <typename T>
@@ -243,52 +247,82 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
                            get<2>(cartesian_gradient).data(),
                            interpolation_info);
 
+  // No auto here to avoid DVExpressions
+  using ReturnType = tt::remove_cvref_wrap_t<T>;
+  const ReturnType one_over_radius =
+      check_and_compute_one_over_radius(centered_coords);
+  const ReturnType transition_func_over_radius =
+      transition_func_->operator()(centered_coords) * one_over_radius;
+  const ReturnType transition_func_over_square_radius =
+      transition_func_over_radius * one_over_radius;
+  const ReturnType transition_func_over_cube_radius =
+      transition_func_over_square_radius * one_over_radius;
+  const std::array<ReturnType, 3> transition_func_gradient_over_radius =
+      transition_func_->gradient(centered_coords) * one_over_radius;
+
   // re-use allocation
-  auto& transition_func = get<1>(theta_phis);
-  transition_func = transition_func_->operator()(centered_coords);
-  // leave it to the domain specific transition function to divide by the radii
-  // as it can safely do this
-  const auto transition_func_over_radius =
-      transition_func_->map_over_radius(centered_coords);
+  auto& target_gradient_x_times_spatial_part = target_gradient_x;
+  auto& target_gradient_y_times_spatial_part = target_gradient_y;
+  auto& target_gradient_z_times_spatial_part = target_gradient_z;
+  target_gradient_x_times_spatial_part *= transition_func_over_square_radius;
+  target_gradient_y_times_spatial_part *= transition_func_over_square_radius;
+  target_gradient_z_times_spatial_part *= transition_func_over_square_radius;
 
-  const auto transition_func_gradient =
-      transition_func_->gradient(centered_coords);
-
-  const auto& [x_transition_gradient, y_transition_gradient,
-               z_transition_gradient] = transition_func_gradient;
+  const auto& [x_transition_gradient_over_radius,
+               y_transition_gradient_over_radius,
+               z_transition_gradient_over_radius] =
+      transition_func_gradient_over_radius;
   const auto& [x_centered, y_centered, z_centered] = centered_coords;
 
   get<0, 0>(result) =
-      -x_centered * (x_transition_gradient * distorted_radii +
-                     target_gradient_x * transition_func_over_radius);
+      -x_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
   get<0, 1>(result) =
-      -x_centered * (y_transition_gradient * distorted_radii +
-                     target_gradient_y * transition_func_over_radius);
+      -x_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
   get<0, 2>(result) =
-      -x_centered * (z_transition_gradient * distorted_radii +
-                     target_gradient_z * transition_func_over_radius);
+      -x_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
   get<1, 0>(result) =
-      -y_centered * (x_transition_gradient * distorted_radii +
-                     target_gradient_x * transition_func_over_radius);
+      -y_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
   get<1, 1>(result) =
-      -y_centered * (y_transition_gradient * distorted_radii +
-                     target_gradient_y * transition_func_over_radius);
+      -y_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
   get<1, 2>(result) =
-      -y_centered * (z_transition_gradient * distorted_radii +
-                     target_gradient_z * transition_func_over_radius);
+      -y_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
   get<2, 0>(result) =
-      -z_centered * (x_transition_gradient * distorted_radii +
-                     target_gradient_x * transition_func_over_radius);
+      -z_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
   get<2, 1>(result) =
-      -z_centered * (y_transition_gradient * distorted_radii +
-                     target_gradient_y * transition_func_over_radius);
+      -z_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
   get<2, 2>(result) =
-      -z_centered * (z_transition_gradient * distorted_radii +
-                     target_gradient_z * transition_func_over_radius);
+      -z_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
 
-  get<0, 0>(result) += 1. - distorted_radii * transition_func;
-  get<1, 1>(result) += 1. - distorted_radii * transition_func;
-  get<2, 2>(result) += 1. - distorted_radii * transition_func;
+  get<0, 0>(result) += 1. - distorted_radii * transition_func_over_radius;
+  get<1, 1>(result) += 1. - distorted_radii * transition_func_over_radius;
+  get<2, 2>(result) += 1. - distorted_radii * transition_func_over_radius;
 
   return result;
 }
@@ -341,6 +375,24 @@ void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
     // Need to multiply lambda_00 by sqrt(2/pi)
     (*coefs)[0] = M_SQRT1_2 * M_2_SQRTPI * l0m0_spherical_harmonic_coef;
   }
+}
+
+template <typename T>
+T Shape::check_and_compute_one_over_radius(
+    const std::array<T, 3>& centered_coords) const {
+  const T radius = magnitude(centered_coords);
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get_size(radius); ++i) {
+    if (get_element(radius, i) == 0.0) {
+      ERROR(
+          "The shape map does not support a (centered) point with radius zero. "
+          "All centered coordinates: "
+          << centered_coords);
+    }
+  }
+#endif  // SPECTRE_DEBUG
+
+  return 1.0 / radius;
 }
 
 bool operator==(const Shape& lhs, const Shape& rhs) {

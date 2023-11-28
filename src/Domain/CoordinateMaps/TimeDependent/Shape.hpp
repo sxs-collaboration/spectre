@@ -31,18 +31,11 @@ namespace domain::CoordinateMaps::TimeDependent {
  * \brief Distorts a distribution of points radially according to a spherical
  * harmonic expansion while preserving angles.
  *
- * \details Given a point with cartesian coordinates \f$\xi^i\f$, let the polar
- * coordinates \f$(r, \theta, \phi)\f$ with respect to a center \f$x_c^i\f$ be
- * defined in the usual way: \f{align}{
- * \xi^0 - x_c^0 &= r sin(\theta) cos(\phi)\\
- * \xi^1 - x_c^1 &= r sin(\theta) sin(\phi)\\
- * \xi^2 - x_c^2 &= r cos(\theta)
- * \f}
- * The shape map distorts the distance \f$r\f$ between the point and the center
- * while leaving the angles \f$\theta\f$, \f$\phi\f$ between them preserved by
- * applying a spherical harmonic expansion with time-dependent coefficients
- * \f$\lambda_{lm}(t)\f$. There are two ways to specify the time-dependent
- * coefficients \f$\lambda_{lm}(t)\f$:
+ * \details The shape map distorts the distance \f$r\f$ between a point and
+ * the center while leaving the angles \f$\theta\f$, \f$\phi\f$ between them
+ * preserved by applying a spherical harmonic expansion with time-dependent
+ * coefficients \f$\lambda_{lm}(t)\f$. There are two ways to specify the
+ * time-dependent coefficients \f$\lambda_{lm}(t)\f$:
  *
  * 1. A single FunctionOfTime which specifies all coefficients. This
  *    FunctionOfTime should have `ylm::Spherepack::spectral_size()` number of
@@ -93,19 +86,49 @@ namespace domain::CoordinateMaps::TimeDependent {
  * FunctionOfTime representation we are using, because the resulting expressions
  * are much shorter.
  *
- * An additional domain-dependent transition function
+ * An additional dimensionless domain-dependent transition function
  * \f$f(r, \theta, \phi)\f$ ensures that the distortion falls off correctly to
- * zero at the boundary of the domain.
+ * zero at a certain boundary (must be a block boundary). The function \f$f(r,
+ * \theta, \phi)\f$ is restricted such that
+ *
+ * \f{equation}{
+ * 0 \leq f(r, \theta, \phi) \leq 1
+ * \f}
  *
  * ### Mapped coordinates
+ *
+ * Given a point with cartesian coordinates \f$\xi^i\f$, let the polar
+ * coordinates \f$(r, \theta, \phi)\f$ with respect to a center \f$x_c^i\f$ be
+ * defined in the usual way:
+ *
+ * \f{align}{
+ * \xi^0 - x_c^0 &= r \sin(\theta) \cos(\phi)\\
+ * \xi^1 - x_c^1 &= r \sin(\theta) \sin(\phi)\\
+ * \xi^2 - x_c^2 &= r \cos(\theta)
+ * \f}
  *
  * The shape map maps the unmapped
  * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
  *
  * \f{equation}{
- * x^i = \xi^i - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
+ * x^i = \xi^i - (\xi^i - x_c^i) \frac{f(r, \theta, \phi)}{r} \sum_{lm}
  * \lambda_{lm}(t)Y_{lm}(\theta, \phi).
  * \f}
+ *
+ * Or written another way
+ *
+ * \f{equation}{\label{eq:map_center_plus_distortion}
+ * x^i = x_c^i + (\xi^i - x_c^i) \left(1 - \frac{f(r, \theta, \phi)}{r}
+ * \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)\right).
+ * \f}
+ *
+ * The form in Eq. \f$\ref{eq:map_center_plus_distortion}\f$ makes two things
+ * clearer
+ *
+ * 1. This shape map is just a radial distortion about \f$x_c^i\f$
+ * 2. The coefficients \f$\lambda_{lm}\f$ have units of distance because
+ *    \f$\sum\lambda_{lm}(t)Y_{lm}(\theta,\phi) / r\f$ must be dimensionless
+ *    (because \f$f\f$ is dimensionless).
  *
  * ### Inverse map
  *
@@ -114,27 +137,42 @@ namespace domain::CoordinateMaps::TimeDependent {
  * \xi^i = x_c^i + (x^i-x_c^i)*(r/\tilde{r}),
  * \f}
  * where \f$\tilde{r}\f$ is the radius of \f$\xi\f$, calculated by the
- * transition map. For more details, see
- * ShapeMapTransitionFunction::original_radius_over_radius .
+ * transition map. In order to compute \f$r/\tilde{r}\f$, the following equation
+ * must be solved
+ *
+ * \f{equation}{
+ * \frac{r}{\tilde{r}} =
+ * \frac{1}{1-f(r,\theta,\phi)\sum\lambda_{lm}(t)Y_{lm}(\theta,\phi) / r}
+ * \f}
+ *
+ * For more details, see
+ * \link domain::CoordinateMaps::ShapeMapTransitionFunctions::ShapeMapTransitionFunction::original_radius_over_radius
+ * ShapeMapTransitionFunction::original_radius_over_radius \endlink.
  *
  * ### Frame velocity
  *
  * The frame velocity \f$v^i\ = dx^i / dt\f$ is calculated trivially:
  * \f{equation}{
- * v^i = - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
+ * v^i = - (\xi^i - x_c^i) \frac{f(r, \theta, \phi)}{r} \sum_{lm}
  * \dot{\lambda}_{lm}(t)Y_{lm}(\theta, \phi).
  * \f}
  *
  * ### Jacobian
  *
  * The Jacobian is given by:
- * \f{equation}{
- * \frac{\partial}{\partial \xi^j} x^i = \delta_j^i \left( 1 - f(r, \theta,
- * \phi) \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)\right) + (\xi^i - x_c^i)
- * \left(\frac{\partial}{\partial \xi^j} f(r, \theta, \phi) \sum_{lm}
- * \lambda_{lm}(t)Y_{lm}(\theta, \phi) + f(r, \theta, \phi) \sum_{lm}
- * \lambda_{lm}(t) \frac{\partial}{\partial \xi^j} Y_{lm}(\theta, \phi) \right).
+ * \f{align}{
+ * \frac{\partial x^i}{\partial \xi^j} = \delta_j^i &\left( 1 - \frac{f(r,
+ * \theta, \phi)}{r} \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)\right)
+ * \nonumber \\
+ * &- (\xi^i - x_c^i)
+ * \left[\left(\frac{1}{r}\frac{\partial}{\partial \xi^j} f(r, \theta, \phi) -
+ * \frac{\xi_j}{r^3} f(r, \theta, \phi)\right) \sum_{lm}
+ * \lambda_{lm}(t)Y_{lm}(\theta, \phi) + \frac{f(r, \theta, \phi)}{r}
+ * \sum_{lm} \lambda_{lm}(t) \frac{\partial}{\partial \xi^j} Y_{lm}(\theta,
+ * \phi) \right].
  * \f}
+ *
+ * where \f$\xi_j = \xi^j\f$.
  *
  * ### Inverse Jacobian
  *
@@ -225,6 +263,10 @@ class Shape {
   // Checks that the vector of coefficients has the right size and that the
   // monopole and dipole coefficients are zero.
   void check_coefficients(const DataVector& coefs) const;
+
+  template <typename T>
+  T check_and_compute_one_over_radius(
+      const std::array<T, 3>& centered_coords) const;
 
   friend bool operator==(const Shape& lhs, const Shape& rhs);
 };
