@@ -169,8 +169,7 @@ struct SubdomainOperator
       elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>;
   using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
   using sources_args_tags =
-      typename elliptic::get_sources_computer<System,
-                                              linearized>::argument_tags;
+      elliptic::get_sources_argument_tags<System, linearized>;
 
   // We need the fluxes args also on interfaces (internal and external). The
   // volume tags are the subset that don't have to be taken from interfaces.

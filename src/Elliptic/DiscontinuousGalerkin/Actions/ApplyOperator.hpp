@@ -145,8 +145,8 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalMortarFluxesTag,
           typename FluxesArgsTags =
               typename System::fluxes_computer::argument_tags,
-          typename SourcesArgsTags = typename elliptic::get_sources_computer<
-              System, Linearized>::argument_tags>
+          typename SourcesArgsTags =
+              elliptic::get_sources_argument_tags<System, Linearized>>
 struct PrepareAndSendMortarData;
 
 template <typename System, bool Linearized, typename TemporalIdTag,
@@ -328,8 +328,8 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalMortarFluxesTag,
           typename FluxesArgsTags =
               typename System::fluxes_computer::argument_tags,
-          typename SourcesArgsTags = typename elliptic::get_sources_computer<
-              System, Linearized>::argument_tags>
+          typename SourcesArgsTags =
+              elliptic::get_sources_argument_tags<System, Linearized>>
 struct ReceiveMortarDataAndApplyOperator;
 
 template <typename System, bool Linearized, typename TemporalIdTag,
@@ -503,10 +503,11 @@ using apply_operator =
  *
  * \see elliptic::dg::impose_inhomogeneous_boundary_conditions_on_source
  */
-template <
-    typename System, typename FixedSourcesTag,
-    typename FluxesArgsTags = typename System::fluxes_computer::argument_tags,
-    typename SourcesArgsTags = typename System::sources_computer::argument_tags>
+template <typename System, typename FixedSourcesTag,
+          typename FluxesArgsTags =
+              typename System::fluxes_computer::argument_tags,
+          typename SourcesArgsTags =
+              elliptic::get_sources_argument_tags<System, false>>
 struct ImposeInhomogeneousBoundaryConditionsOnSource;
 
 /// \cond

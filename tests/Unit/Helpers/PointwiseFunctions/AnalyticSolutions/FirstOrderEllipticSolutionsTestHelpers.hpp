@@ -158,7 +158,7 @@ void verify_solution(
     const double tolerance) {
   using argument_tags = tmpl::remove_duplicates<
       tmpl::append<typename System::fluxes_computer::argument_tags,
-                   typename System::sources_computer::argument_tags>>;
+                   elliptic::get_sources_argument_tags<System, false>>>;
   const auto background_fields = [&solution, &mesh, &coord_map]() {
     if constexpr (tmpl::size<argument_tags>::value > 0) {
       const auto logical_coords = logical_coordinates(mesh);
@@ -180,7 +180,7 @@ void verify_solution(
       solution, mesh, coord_map, tolerance,
       tuples::apply<typename System::fluxes_computer::argument_tags>(
           get_items, background_fields),
-      tuples::apply<typename System::sources_computer::argument_tags>(
+      tuples::apply<elliptic::get_sources_argument_tags<System, false>>(
           get_items, background_fields));
 }
 /// @}
