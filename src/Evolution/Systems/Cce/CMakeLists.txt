@@ -33,6 +33,7 @@ spectre_target_headers(
   Equations.hpp
   GaugeTransformBoundaryData.hpp
   IntegrandInputSteps.hpp
+  KleinGordonSystem.hpp
   LinearOperators.hpp
   LinearSolve.hpp
   NewmanPenrose.hpp

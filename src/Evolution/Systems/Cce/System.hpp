@@ -5,6 +5,10 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
+#include "Utilities/TMPL.hpp"
+
 /*!
  * \ingroup EvolutionSystemsGroup
  * \brief The set of utilities for performing Cauchy characteristic evolution
@@ -123,7 +127,7 @@ struct System {
   static constexpr size_t volume_dim = 3;
   using variables_tag =
       tmpl::list<::Tags::Variables<tmpl::list<Tags::BondiJ>>,
-                 ::Tags::Variables<std::conditional_t<
+                 ::Tags::Variables<tmpl::conditional_t<
                      EvolveCcm,
                      tmpl::list<Cce::Tags::CauchyCartesianCoords,
                                 Cce::Tags::PartiallyFlatCartesianCoords,
