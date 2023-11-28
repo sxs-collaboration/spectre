@@ -50,6 +50,12 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
       "DetInvJacobian(ElementLogical,Inertial)");
+  TestHelpers::db::test_simple_tag<
+      Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>>(
+      "DetJacobian(ElementLogical,Inertial)");
+  TestHelpers::db::test_simple_tag<
+      Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "DetTimesInvJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_simple_tag<Tags::InternalDirections<Dim>>(
       "InternalDirections");
   TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsInterior<Dim>>(
