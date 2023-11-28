@@ -11,7 +11,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -34,8 +33,6 @@ void test_variable_fixer(
   auto specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(density);
   auto temperature = equation_of_state.temperature_from_density(density);
-  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      density, specific_internal_energy, pressure);
   const Scalar<DataVector> electron_fraction{
       DataVector{get(density).size(), 0.5}};
 
@@ -50,16 +47,14 @@ void test_variable_fixer(
     spatial_metric.get(i, i) = 2.0;
   }
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &specific_enthalpy, &temperature,
-                 electron_fraction, spatial_metric, equation_of_state);
+                 &lorentz_factor, &pressure, &temperature, electron_fraction,
+                 spatial_metric, equation_of_state);
 
   Scalar<DataVector> expected_density{DataVector{1.e-12, 2.e-11, 4.e-12}};
   auto expected_pressure =
       equation_of_state.pressure_from_density(expected_density);
   auto expected_specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(expected_density);
-  auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{
       DataVector{1.0, 7.0710678118654752, 1.0000000001020408}};
   auto expected_spatial_velocity =
@@ -74,7 +69,6 @@ void test_variable_fixer(
 
   CHECK_ITERABLE_APPROX(density, expected_density);
   CHECK_ITERABLE_APPROX(pressure, expected_pressure);
-  CHECK_ITERABLE_APPROX(specific_enthalpy, expected_specific_enthalpy);
   CHECK_ITERABLE_APPROX(specific_internal_energy,
                         expected_specific_internal_energy);
   CHECK_ITERABLE_APPROX(lorentz_factor, expected_lorentz_factor);
@@ -95,8 +89,6 @@ void test_variable_fixer(
       density, specific_internal_energy);
   auto temperature = equation_of_state.temperature_from_density_and_energy(
       density, specific_internal_energy);
-  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      density, specific_internal_energy, pressure);
   const Scalar<DataVector> electron_fraction{
       DataVector{get(density).size(), 0.5}};
 
@@ -113,8 +105,8 @@ void test_variable_fixer(
     spatial_metric.get(i, i) = 2.;
   }
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &specific_enthalpy, &temperature,
-                 electron_fraction, spatial_metric, equation_of_state);
+                 &lorentz_factor, &pressure, &temperature, electron_fraction,
+                 spatial_metric, equation_of_state);
 
   Scalar<DataVector> expected_density{
       DataVector{1.e-12, 2.e-11, 4.e-12, 2.e-11}};
@@ -129,8 +121,6 @@ void test_variable_fixer(
   auto expected_temperature =
       equation_of_state.temperature_from_density_and_energy(
           expected_density, expected_specific_internal_energy);
-  auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{DataVector{
       1., 7.0710678118654752, 1.0000000001020408, 7.0710678118654752}};
   auto expected_spatial_velocity =
@@ -148,7 +138,6 @@ void test_variable_fixer(
   CHECK(get(expected_lorentz_factor).size() == get(expected_density).size());
   CHECK_ITERABLE_APPROX(density, expected_density);
   CHECK_ITERABLE_APPROX(pressure, expected_pressure);
-  CHECK_ITERABLE_APPROX(specific_enthalpy, expected_specific_enthalpy);
   CHECK_ITERABLE_APPROX(temperature, expected_temperature);
   CHECK_ITERABLE_APPROX(specific_internal_energy,
                         expected_specific_internal_energy);

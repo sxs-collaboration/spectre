@@ -146,7 +146,6 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
              hydro::Tags::DivergenceCleaningField<DataVector>,               \
              hydro::Tags::LorentzFactor<DataVector>,                         \
              hydro::Tags::Pressure<DataVector>,                              \
-             hydro::Tags::SpecificEnthalpy<DataVector>,                      \
              hydro::Tags::Temperature<DataVector>,                           \
              hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,  \
              ::Tags::Flux<Tags::TildeD, tmpl::size_t<3>, Frame::Inertial>,   \

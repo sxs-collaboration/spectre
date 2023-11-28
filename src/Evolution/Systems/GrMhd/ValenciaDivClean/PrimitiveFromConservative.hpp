@@ -61,7 +61,6 @@ struct PrimitiveFromConservative {
                  hydro::Tags::DivergenceCleaningField<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Temperature<DataVector>>;
 
   using argument_tags = tmpl::list<
@@ -87,7 +86,6 @@ struct PrimitiveFromConservative {
       gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       gsl::not_null<Scalar<DataVector>*> temperature,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
       const Scalar<DataVector>& tilde_tau,

@@ -8,7 +8,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/ParseError.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace VariableFixing {
@@ -65,7 +64,6 @@ void ParameterizedDeleptonization::operator()(
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const gsl::not_null<Scalar<DataVector>*> temperature,
     const Scalar<DataVector>& rest_mass_density,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -73,8 +71,8 @@ void ParameterizedDeleptonization::operator()(
   if (LIKELY(enable_)) {
     for (size_t i = 0; i < rest_mass_density.get().size(); i++) {
       correct_electron_fraction(specific_internal_energy, electron_fraction,
-                                pressure, specific_enthalpy, temperature,
-                                rest_mass_density, equation_of_state, i);
+                                pressure, temperature, rest_mass_density,
+                                equation_of_state, i);
     }
   }
 }
@@ -85,7 +83,6 @@ void ParameterizedDeleptonization::correct_electron_fraction(
         specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> pressure,
-    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> temperature,
     const Scalar<DataVector>& rest_mass_density,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -125,12 +122,6 @@ void ParameterizedDeleptonization::correct_electron_fraction(
             Scalar<double>{rest_mass_density.get()[grid_index]},
             Scalar<double>{specific_internal_energy->get()[grid_index]},
             Scalar<double>{electron_fraction->get()[grid_index]}));
-
-    specific_enthalpy->get()[grid_index] =
-        get(hydro::relativistic_specific_enthalpy(
-            Scalar<double>{rest_mass_density.get()[grid_index]},
-            Scalar<double>{specific_internal_energy->get()[grid_index]},
-            Scalar<double>{pressure->get()[grid_index]}));
   }
 }
 
@@ -171,7 +162,6 @@ bool operator!=(const ParameterizedDeleptonization& lhs,
       const gsl::not_null<Scalar<DataVector>*> specific_internal_energy, \
       const gsl::not_null<Scalar<DataVector>*> electron_fraction,        \
       const gsl::not_null<Scalar<DataVector>*> pressure,                 \
-      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,        \
       const gsl::not_null<Scalar<DataVector>*> temperature,              \
       const Scalar<DataVector>& rest_mass_density,                       \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&   \

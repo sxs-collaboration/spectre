@@ -90,7 +90,7 @@ void TimeDerivativeTerms::apply(
 
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
-    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& specific_internal_energy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) {
   // Note that if the temp_lapse and lapse arguments point to the same object
@@ -152,7 +152,7 @@ void TimeDerivativeTerms::apply(
       sqrt_det_spatial_metric, inv_spatial_metric, d_lapse, d_shift,
       d_spatial_metric, spatial_velocity, lorentz_factor, magnetic_field,
 
-      rest_mass_density, electron_fraction, specific_enthalpy,
+      rest_mass_density, electron_fraction, pressure, specific_internal_energy,
       extrinsic_curvature, constraint_damping_parameter);
 }
 }  // namespace grmhd::ValenciaDivClean

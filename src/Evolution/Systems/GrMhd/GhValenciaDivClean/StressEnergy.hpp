@@ -103,7 +103,6 @@ void trace_reversed_stress_energy(
     gsl::not_null<tnsr::a<DataVector, 3>*>
         comoving_magnetic_field_one_form_buffer,
     const Scalar<DataVector>& rest_mass_density,
-    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
     const tnsr::i<DataVector, 3, Frame::Inertial>& magnetic_field_one_form,
     const Scalar<DataVector>& magnetic_field_squared,
@@ -111,6 +110,7 @@ void trace_reversed_stress_energy(
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& one_over_w_squared,
     const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& specific_internal_energy,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const Scalar<DataVector>& lapse);

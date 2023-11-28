@@ -213,12 +213,10 @@ void Flattener<RecoverySchemesList>::operator()(
               make_not_null(
                   &get<hydro::Tags::Pressure<DataVector>>(temp_prims)),
               make_not_null(
-                  &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
-              make_not_null(
                   &get<hydro::Tags::Temperature<DataVector>>(temp_prims)),
               *tilde_d, *tilde_ye, *tilde_tau, *tilde_s, tilde_b, tilde_phi,
-              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-              eos, primitive_from_conservative_options)) {
+              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos,
+              primitive_from_conservative_options)) {
     compute_means();
 
     get(*tilde_d) = mean_tilde_d;
@@ -249,8 +247,6 @@ void Flattener<RecoverySchemesList>::operator()(
                   &get<hydro::Tags::LorentzFactor<DataVector>>(temp_prims)),
               make_not_null(
                   &get<hydro::Tags::Pressure<DataVector>>(temp_prims)),
-              make_not_null(
-                  &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
               make_not_null(
                   &get<hydro::Tags::Temperature<DataVector>>(temp_prims)),
               *tilde_d, *tilde_ye, *tilde_tau, *tilde_s, tilde_b, tilde_phi,

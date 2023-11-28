@@ -38,7 +38,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 
 namespace grmhd::ValenciaDivClean {
@@ -87,11 +86,6 @@ void test(const gsl::not_null<std::mt19937*> gen,
   get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prim_vars) =
       eos->specific_internal_energy_from_density(
           get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
-  get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars) =
-      hydro::relativistic_specific_enthalpy(
-          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
-          get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prim_vars),
-          get<hydro::Tags::Pressure<DataVector>>(prim_vars));
   {
     const auto& spatial_velocity =
         get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
@@ -187,8 +181,6 @@ void test(const gsl::not_null<std::mt19937*> gen,
             &get<hydro::Tags::DivergenceCleaningField<DataVector>>(prim_vars)),
         make_not_null(&get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars)),
         make_not_null(&get<hydro::Tags::Pressure<DataVector>>(prim_vars)),
-        make_not_null(
-            &get<hydro::Tags::SpecificEnthalpy<DataVector>>(prim_vars)),
         make_not_null(&get<hydro::Tags::Temperature<DataVector>>(prim_vars)),
         get<grmhd::ValenciaDivClean::Tags::TildeD>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeYe>(cons_vars),

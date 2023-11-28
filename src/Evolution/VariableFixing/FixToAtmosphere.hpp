@@ -12,7 +12,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma:  keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,16 +24,6 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare hydro::Tags::EquationOfStateBase
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
-// IWYU pragma: no_forward_declare hydro::Tags::Pressure
-// IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
-// IWYU pragma: no_forward_declare hydro::Tags::SpecificEnthalpy
-// IWYU pragma: no_forward_declare hydro::Tags::SpecificInternalEnergy
-
 namespace VariableFixing {
 
 /*!
@@ -42,11 +32,11 @@ namespace VariableFixing {
  *
  * If the rest mass density is below \f$\rho_{\textrm{cutoff}}\f$
  * (DensityCutoff), it is set to \f$\rho_{\textrm{atm}}\f$
- * (DensityOfAtmosphere), and the pressure, specific internal energy (for
- * one-dimensional equations of state), and specific enthalpy are adjusted to
- * satisfy the equation of state.  For a two-dimensional equation of state, the
- * specific internal energy is set to zero. In addition, the spatial velocity
- * is set to zero, and the Lorentz factor is set to one.
+ * (DensityOfAtmosphere), and the pressure, and specific internal energy (for
+ * one-dimensional equations of state) are adjusted to satisfy the equation of
+ * state.  For a two-dimensional equation of state, the specific internal energy
+ * is set to zero. In addition, the spatial velocity is set to zero, and the
+ * Lorentz factor is set to one.
  *
  * If the rest mass density is above \f$\rho_{\textrm{cutoff}}\f$ but below
  * \f$\rho_{\textrm{transition}}\f$ (TransitionDensityCutoff) then the velocity
@@ -110,8 +100,8 @@ class FixToAtmosphere {
                  MaxVelocityMagnitude>;
   static constexpr Options::String help = {
       "If the rest mass density is below DensityCutoff, it is set\n"
-      "to DensityOfAtmosphere, and the pressure, specific internal energy\n"
-      "(for one-dimensional equations of state), and specific enthalpy are\n"
+      "to DensityOfAtmosphere, and the pressure, and specific internal energy\n"
+      "(for one-dimensional equations of state) are\n"
       "adjusted to satisfy the equation of state. For a two-dimensional\n"
       "equation of state, the specific internal energy is set to zero.\n"
       "In addition, the spatial velocity is set to zero, and the Lorentz\n"
@@ -138,7 +128,6 @@ class FixToAtmosphere {
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Temperature<DataVector>>;
   using argument_tags = tmpl::list<hydro::Tags::ElectronFraction<DataVector>,
                                    gr::Tags::SpatialMetric<DataVector, Dim>,
@@ -153,7 +142,6 @@ class FixToAtmosphere {
           spatial_velocity,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       gsl::not_null<Scalar<DataVector>*> temperature,
       const Scalar<DataVector>& electron_fraction,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
@@ -167,7 +155,6 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
       gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const Scalar<DataVector>& electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state,

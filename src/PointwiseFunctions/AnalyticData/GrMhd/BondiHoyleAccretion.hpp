@@ -227,8 +227,10 @@ class BondiHoyleAccretion : public virtual evolution::initial_data::InitialData,
 
   /// Retrieve the metric variables at `x`
   template <typename DataType, typename Tag,
-            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
-                                               Tag>> = nullptr>
+            Requires<not tmpl::list_contains_v<
+                tmpl::push_back<hydro::grmhd_tags<DataType>,
+                                hydro::Tags::SpecificEnthalpy<DataType>>,
+                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.0;

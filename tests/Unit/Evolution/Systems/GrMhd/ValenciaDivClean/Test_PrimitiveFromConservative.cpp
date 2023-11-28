@@ -27,7 +27,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/HybridEos.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -81,9 +80,6 @@ void test_potentially_eos_dependent_primitive_corrections(
           expected_rest_mass_density, expected_temperature,
           expected_electron_fraction);
 
-  const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      expected_rest_mass_density, expected_specific_internal_energy,
-      expected_pressure);
   auto expected_magnetic_field = TestHelpers::hydro::random_magnetic_field(
       generator, expected_pressure, spatial_metric);
   if constexpr (!UseMagneticField) {
@@ -137,7 +133,6 @@ void test_potentially_eos_dependent_primitive_corrections(
   // need to zero-initialize pressure because the recovery schemes assume it is
   // not nan
   Scalar<DataVector> pressure(number_of_points, 0.0);
-  Scalar<DataVector> specific_enthalpy(number_of_points);
   Scalar<DataVector> temperature(number_of_points);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
@@ -146,10 +141,10 @@ void test_potentially_eos_dependent_primitive_corrections(
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), make_not_null(&temperature),
-          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-          equation_of_state, primitive_from_conservative_options);
+          make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau, tilde_s,
+          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          sqrt_det_spatial_metric, equation_of_state,
+          primitive_from_conservative_options);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
@@ -213,9 +208,6 @@ void test_primitive_from_conservative_random(
         expected_electron_fraction);
   }
 
-  const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      expected_rest_mass_density, expected_specific_internal_energy,
-      expected_pressure);
   auto expected_magnetic_field = TestHelpers::hydro::random_magnetic_field(
       generator, expected_pressure, spatial_metric);
   if constexpr (!UseMagneticField) {
@@ -268,7 +260,6 @@ void test_primitive_from_conservative_random(
   // need to zero-initialize pressure because the recovery schemes assume it is
   // not nan
   Scalar<DataVector> pressure(number_of_points, 0.0);
-  Scalar<DataVector> specific_enthalpy(number_of_points);
   Scalar<DataVector> temperature(number_of_points);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
@@ -277,10 +268,10 @@ void test_primitive_from_conservative_random(
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), make_not_null(&temperature),
-          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-          equation_of_state, primitive_from_conservative_options);
+          make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau, tilde_s,
+          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          sqrt_det_spatial_metric, equation_of_state,
+          primitive_from_conservative_options);
   INFO("Checking random-value primitive recovery.");
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
@@ -291,8 +282,6 @@ void test_primitive_from_conservative_random(
   CHECK_ITERABLE_CUSTOM_APPROX(expected_specific_internal_energy,
                                specific_internal_energy, larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_lorentz_factor, lorentz_factor,
-                               larger_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_specific_enthalpy, specific_enthalpy,
                                larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_pressure, pressure, larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_temperature, temperature,
@@ -330,8 +319,6 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
       make_with_value<Scalar<DataVector>>(used_for_size, 1.0);
   const auto expected_pressure =
       make_with_value<Scalar<DataVector>>(used_for_size, 2.0);
-  const auto expected_specific_enthalpy =
-      make_with_value<Scalar<DataVector>>(used_for_size, 5.0);
   auto expected_magnetic_field =
       make_with_value<tnsr::I<DataVector, 3>>(used_for_size, 0.0);
   get<0>(expected_magnetic_field) = 36.0 / 13.0;
@@ -389,7 +376,6 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   // need to zero-initialize pressure because the recovery schemes assume it is
   // not nan
   Scalar<DataVector> pressure(number_of_points, 0.0);
-  Scalar<DataVector> specific_enthalpy(number_of_points);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
@@ -398,17 +384,16 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), make_not_null(&temperature),
-          tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
-          spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
-          ideal_fluid, primitive_from_conservative_options);
+          make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau, tilde_s,
+          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          sqrt_det_spatial_metric, ideal_fluid,
+          primitive_from_conservative_options);
   INFO("test primitive from conservative with known values");
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_electron_fraction, electron_fraction);
   CHECK_ITERABLE_APPROX(expected_specific_internal_energy,
                         specific_internal_energy);
   CHECK_ITERABLE_APPROX(expected_lorentz_factor, lorentz_factor);
-  CHECK_ITERABLE_APPROX(expected_specific_enthalpy, specific_enthalpy);
   CHECK_ITERABLE_APPROX(expected_temperature, temperature);
   CHECK_ITERABLE_APPROX(expected_pressure, pressure);
   CHECK_ITERABLE_APPROX(expected_spatial_velocity, spatial_velocity);
@@ -429,7 +414,6 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
                       make_not_null(&magnetic_field),
                       make_not_null(&divergence_cleaning_field),
                       make_not_null(&lorentz_factor), make_not_null(&pressure),
-                      make_not_null(&specific_enthalpy),
                       make_not_null(&temperature), tilde_d, tilde_ye, tilde_tau,
                       tilde_s, tilde_b, tilde_phi, spatial_metric,
                       inv_spatial_metric, sqrt_det_spatial_metric, ideal_fluid,

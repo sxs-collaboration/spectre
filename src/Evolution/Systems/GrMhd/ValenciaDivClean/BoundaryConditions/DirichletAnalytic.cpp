@@ -248,8 +248,7 @@ void DirichletAnalytic::fd_ghost(
                           hydro::Tags::LorentzFactor<DataVector>,
                           hydro::Tags::MagneticField<DataVector, 3>,
                           hydro::Tags::DivergenceCleaningField<DataVector>,
-                          hydro::Tags::SpecificInternalEnergy<DataVector>,
-                          hydro::Tags::SpecificEnthalpy<DataVector>>,
+                          hydro::Tags::SpecificInternalEnergy<DataVector>>,
       grmhd::ValenciaDivClean::InitialData::initial_data_list>(
       analytic_prescription_.get(),
       [&ghost_inertial_coords, &time](const auto* const initial_data) {
@@ -262,8 +261,7 @@ void DirichletAnalytic::fd_ghost(
                        hydro::Tags::LorentzFactor<DataVector>,
                        hydro::Tags::MagneticField<DataVector, 3>,
                        hydro::Tags::DivergenceCleaningField<DataVector>,
-                       hydro::Tags::SpecificInternalEnergy<DataVector>,
-                       hydro::Tags::SpecificEnthalpy<DataVector>>;
+                       hydro::Tags::SpecificInternalEnergy<DataVector>>;
         if constexpr (is_analytic_solution_v<
                           std::decay_t<decltype(*initial_data)>>) {
           return initial_data->variables(ghost_inertial_coords, time,

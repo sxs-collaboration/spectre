@@ -114,8 +114,6 @@ void test(const EquationOfStateType& eos) {
           make_not_null(
               &get<hydro::Tags::Pressure<DataVector>>(expected_prims)),
           make_not_null(
-              &get<hydro::Tags::SpecificEnthalpy<DataVector>>(expected_prims)),
-          make_not_null(
               &get<hydro::Tags::Temperature<DataVector>>(expected_prims)),
           db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box),
           db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box),

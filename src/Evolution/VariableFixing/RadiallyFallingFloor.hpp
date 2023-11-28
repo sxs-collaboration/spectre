@@ -39,8 +39,6 @@ struct SpecificInternalEnergy;
 template <typename DataType>
 struct Temperature;
 template <typename DataType>
-struct SpecificEnthalpy;
-template <typename DataType>
 struct ElectronFraction;
 }  // namespace Tags
 }  // namespace hydro
@@ -134,7 +132,6 @@ class RadiallyFallingFloor {
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Temperature<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>>;
   using argument_tags =
@@ -146,7 +143,6 @@ class RadiallyFallingFloor {
       gsl::not_null<Scalar<DataVector>*> density,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,

@@ -35,21 +35,9 @@ void test_eos_call(
   Scalar<DataVector> initial_electron_fraction{
       DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> electron_fraction = initial_electron_fraction;
-  Scalar<DataVector> initial_specific_enthalpy{
-      DataVector{1.0, 1.0, 1.0, 1.0, 1.0}};
-  Scalar<DataVector> specific_enthalpy = initial_specific_enthalpy;
 
-  for (size_t i = 0; i < initial_specific_enthalpy.size(); i++) {
-    initial_specific_enthalpy[i] += initial_specific_internal_energy[i] +
-                                    initial_pressure[i] / initial_density[i];
-
-    specific_enthalpy[i] +=
-        specific_internal_energy[i] + pressure[i] / density[i];
-  }
-
-  variable_fixer(&density, &pressure, &specific_internal_energy,
-                 &specific_enthalpy, &temperature, &electron_fraction, coords,
-                 equation_of_state);
+  variable_fixer(&density, &pressure, &specific_internal_energy, &temperature,
+                 &electron_fraction, coords, equation_of_state);
 
   // Density should change
   CHECK_FALSE(initial_density == density);
@@ -59,9 +47,6 @@ void test_eos_call(
 
   // Specific internal energy should change
   CHECK_FALSE(initial_specific_internal_energy == specific_internal_energy);
-
-  // specific enthalpy should change
-  CHECK_FALSE(initial_specific_enthalpy == specific_enthalpy);
 
   // temperature should change (for 1D EoS)
   CHECK_FALSE(initial_temperature == temperature);
@@ -88,21 +73,9 @@ void test_eos_call(
   Scalar<DataVector> initial_electron_fraction{
       DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> electron_fraction = initial_electron_fraction;
-  Scalar<DataVector> initial_specific_enthalpy{
-      DataVector{1.0, 1.0, 1.0, 1.0, 1.0}};
-  Scalar<DataVector> specific_enthalpy = initial_specific_enthalpy;
 
-  for (size_t i = 0; i < initial_specific_enthalpy.size(); i++) {
-    initial_specific_enthalpy[i] += initial_specific_internal_energy[i] +
-                                    initial_pressure[i] / initial_density[i];
-
-    specific_enthalpy[i] +=
-        specific_internal_energy[i] + pressure[i] / density[i];
-  }
-
-  variable_fixer(&density, &pressure, &specific_internal_energy,
-                 &specific_enthalpy, &temperature, &electron_fraction, coords,
-                 equation_of_state);
+  variable_fixer(&density, &pressure, &specific_internal_energy, &temperature,
+                 &electron_fraction, coords, equation_of_state);
 
   // Density should change
   CHECK_FALSE(initial_density == density);
@@ -112,9 +85,6 @@ void test_eos_call(
 
   // Specific internal energy should change
   CHECK_FALSE(initial_specific_internal_energy == specific_internal_energy);
-
-  // specific enthalpy should change
-  CHECK_FALSE(initial_specific_enthalpy == specific_enthalpy);
 
   // temperature should change (for 2D EoS)
   CHECK_FALSE(initial_temperature == temperature);
@@ -131,12 +101,6 @@ void test_variable_fixer(
       DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> temperature{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> electron_fraction{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
-  Scalar<DataVector> specific_enthalpy{DataVector{1.0, 1.0, 1.0, 1.0, 1.0}};
-
-  for (size_t i = 0; i < specific_enthalpy.get().size(); i++) {
-    specific_enthalpy.get()[i] += specific_internal_energy.get()[i] +
-                                  pressure.get()[i] / density.get()[i];
-  }
 
   const double root_three = sqrt(3.0);
   const DataVector expected_density{
@@ -152,9 +116,8 @@ void test_variable_fixer(
   const EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
   const EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
 
-  variable_fixer(&density, &pressure, &specific_internal_energy,
-                 &specific_enthalpy, &temperature, &electron_fraction, coords,
-                 polytrope);
+  variable_fixer(&density, &pressure, &specific_internal_energy, &temperature,
+                 &electron_fraction, coords, polytrope);
 
   auto expected_pressure = get(polytrope.pressure_from_density(density));
   // The i = 2 entry should not change, b/c the radial coordinate <

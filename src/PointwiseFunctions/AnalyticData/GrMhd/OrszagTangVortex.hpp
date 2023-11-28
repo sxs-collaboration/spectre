@@ -9,6 +9,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Requires.hpp"
@@ -158,8 +159,10 @@ class OrszagTangVortex
 
   /// Retrieve the metric variables
   template <typename DataType, typename Tag,
-            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
-                                               Tag>> = nullptr>
+            Requires<not tmpl::list_contains_v<
+                tmpl::push_back<hydro::grmhd_tags<DataType>,
+                                hydro::Tags::SpecificEnthalpy<DataType>>,
+                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.;

@@ -7,6 +7,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -63,7 +64,8 @@ void sources_impl(
 
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
-    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& specific_internal_energy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     double constraint_damping_parameter);
 }  // namespace detail
@@ -143,7 +145,7 @@ struct ComputeSources {
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<DataVector>,
                  ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
@@ -172,7 +174,7 @@ struct ComputeSources {
       const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& electron_fraction,
-      const Scalar<DataVector>& specific_enthalpy,
+      const Scalar<DataVector>& specific_internal_energy,
       const Scalar<DataVector>& lorentz_factor,
       const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
       const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,

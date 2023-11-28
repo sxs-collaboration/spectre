@@ -24,7 +24,7 @@ def stress_tensor(
     spatial_velocity,
     magnetic_field,
     rest_mass_density,
-    specific_enthalpy,
+    specific_internal_energy,
     lorentz_factor,
     pressure,
     spatial_metric,
@@ -35,7 +35,8 @@ def stress_tensor(
     b_dot_v_ = b_dot_v(magnetic_field, spatial_velocity, spatial_metric)
     return sqrt_det_spatial_metric * (
         (
-            specific_enthalpy * rest_mass_density * lorentz_factor**2
+            ((1 + specific_internal_energy) * rest_mass_density + pressure)
+            * lorentz_factor**2
             + b_squared_
         )
         * np.outer(spatial_velocity, spatial_velocity)
@@ -61,7 +62,7 @@ def source_tilde_tau(
     magnetic_field,
     rest_mass_density,
     electron_fraction,
-    specific_enthalpy,
+    specific_internal_energy,
     lorentz_factor,
     pressure,
     lapse,
@@ -78,7 +79,7 @@ def source_tilde_tau(
         spatial_velocity,
         magnetic_field,
         rest_mass_density,
-        specific_enthalpy,
+        specific_internal_energy,
         lorentz_factor,
         pressure,
         spatial_metric,
@@ -101,7 +102,7 @@ def source_tilde_s(
     magnetic_field,
     rest_mass_density,
     electron_fraction,
-    specific_enthalpy,
+    specific_internal_energy,
     lorentz_factor,
     pressure,
     lapse,
@@ -118,7 +119,7 @@ def source_tilde_s(
         spatial_velocity,
         magnetic_field,
         rest_mass_density,
-        specific_enthalpy,
+        specific_internal_energy,
         lorentz_factor,
         pressure,
         spatial_metric,
@@ -143,7 +144,7 @@ def source_tilde_b(
     magnetic_field,
     rest_mass_density,
     electron_fraction,
-    specific_enthalpy,
+    specific_internal_energy,
     lorentz_factor,
     pressure,
     lapse,
@@ -181,7 +182,7 @@ def source_tilde_phi(
     magnetic_field,
     rest_mass_density,
     electron_fraction,
-    specific_enthalpy,
+    specific_internal_energy,
     lorentz_factor,
     pressure,
     lapse,

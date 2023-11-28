@@ -4,18 +4,12 @@
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 
 #include <limits>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/ParseError.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
 
 namespace VariableFixing {
 
@@ -68,7 +62,6 @@ void FixToAtmosphere<Dim>::operator()(
         spatial_velocity,
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const gsl::not_null<Scalar<DataVector>*> temperature,
     const Scalar<DataVector>& electron_fraction,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
@@ -77,8 +70,8 @@ void FixToAtmosphere<Dim>::operator()(
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
     if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
       set_density_to_atmosphere(rest_mass_density, specific_internal_energy,
-                                temperature, pressure, specific_enthalpy,
-                                electron_fraction, equation_of_state, i);
+                                temperature, pressure, electron_fraction,
+                                equation_of_state, i);
       for (size_t d = 0; d < Dim; ++d) {
         spatial_velocity->get(d)[i] = 0.0;
       }
@@ -132,10 +125,6 @@ void FixToAtmosphere<Dim>::operator()(
                   Scalar<double>{temperature->get()[i]},
                   Scalar<double>{get(electron_fraction)[i]}));
         }
-        specific_enthalpy->get()[i] = get(hydro::relativistic_specific_enthalpy(
-            Scalar<double>{rest_mass_density->get()[i]},
-            Scalar<double>{specific_internal_energy->get()[i]},
-            Scalar<double>{pressure->get()[i]}));
       }
     }
   }
@@ -148,7 +137,6 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> temperature,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
@@ -188,11 +176,6 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
               Scalar<double>{get(electron_fraction)[grid_index]}));
     }
   }
-  specific_enthalpy->get()[grid_index] =
-      get(hydro::relativistic_specific_enthalpy(
-          atmosphere_density,
-          Scalar<double>{specific_internal_energy->get()[grid_index]},
-          Scalar<double>{pressure->get()[grid_index]}));
 }
 
 template <size_t Dim>
@@ -266,7 +249,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           spatial_velocity,                                                   \
       const gsl::not_null<Scalar<DataVector>*> lorentz_factor,                \
       const gsl::not_null<Scalar<DataVector>*> pressure,                      \
-      const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,             \
       const gsl::not_null<Scalar<DataVector>*> temperature,                   \
       const Scalar<DataVector>& electron_fraction,                            \
       const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric, \

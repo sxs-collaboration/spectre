@@ -199,9 +199,6 @@ EventsAndTriggers:
             - Name: Error(Pressure)
               NormType: L2Norm
               Components: Sum
-            - Name: Error(SpecificEnthalpy)
-              NormType: L2Norm
-              Components: Sum
   - Trigger:
       Slabs:
         EvenlySpaced:

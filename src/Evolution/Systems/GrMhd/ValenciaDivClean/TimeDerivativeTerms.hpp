@@ -98,7 +98,7 @@ struct TimeDerivativeTerms {
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
                  gr::Tags::ExtrinsicCurvature<DataVector, 3>,
                  grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
@@ -168,7 +168,7 @@ struct TimeDerivativeTerms {
 
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& electron_fraction,
-      const Scalar<DataVector>& specific_enthalpy,
+      const Scalar<DataVector>& specific_internal_energy,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
       double constraint_damping_parameter);
 };

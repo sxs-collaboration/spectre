@@ -13,7 +13,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Tabulated3d.hpp"
-#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -39,13 +38,10 @@ void test_variable_fixer(
   auto pressure = equation_of_state.pressure_from_density(density);
   auto specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(density);
-  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      density, specific_internal_energy, pressure);
 
   // check Ye values that will naturally decrease
   variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
-                 &specific_enthalpy, &dummy_temperature, density,
-                 equation_of_state);
+                 &dummy_temperature, density, equation_of_state);
 
   const Scalar<DataVector> expected_electron_fraction{
       DataVector{0.5, 0.40980370118030457, 0.285}};
@@ -58,8 +54,7 @@ void test_variable_fixer(
       electron_fraction_low};
 
   variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
-                 &specific_enthalpy, &dummy_temperature, density,
-                 equation_of_state);
+                 &dummy_temperature, density, equation_of_state);
 
   CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
 }
@@ -79,13 +74,10 @@ void test_variable_fixer(
   Scalar<DataVector> specific_internal_energy{DataVector{1.0, 2.0, 3.0}};
   auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy);
-  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      density, specific_internal_energy, pressure);
 
   // check Ye values that will naturally decrease
   variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
-                 &specific_enthalpy, &dummy_temperature, density,
-                 equation_of_state);
+                 &dummy_temperature, density, equation_of_state);
 
   const Scalar<DataVector> expected_electron_fraction{
       DataVector{0.49, 0.3077746733472282, 0.2}};
@@ -97,8 +89,7 @@ void test_variable_fixer(
   const Scalar<DataVector> expected_electron_fraction_low{
       electron_fraction_low};
   variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
-                 &specific_enthalpy, &dummy_temperature, density,
-                 equation_of_state);
+                 &dummy_temperature, density, equation_of_state);
 
   CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
 }
@@ -121,13 +112,10 @@ void test_variable_fixer(
   auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy, electron_fraction);
   auto initial_pressure = pressure;
-  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      density, specific_internal_energy, pressure);
-  auto initial_specific_enthalpy = specific_enthalpy;
 
   // check Ye values that will naturally decrease
   variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
-                 &specific_enthalpy, &temperature, density, equation_of_state);
+                 &temperature, density, equation_of_state);
 
   const Scalar<DataVector> expected_electron_fraction{
       DataVector{0.49, 0.3077746733472282, 0.2}};
@@ -138,7 +126,7 @@ void test_variable_fixer(
   const Scalar<DataVector> expected_electron_fraction_low{
       electron_fraction_low};
   variable_fixer(&specific_internal_energy, &electron_fraction_low, &pressure,
-                 &specific_enthalpy, &temperature, density, equation_of_state);
+                 &temperature, density, equation_of_state);
 
   CHECK_ITERABLE_APPROX(electron_fraction_low, expected_electron_fraction_low);
 
@@ -154,9 +142,6 @@ void test_variable_fixer(
 
   // pressure should change
   CHECK_FALSE(pressure == initial_pressure);
-
-  // therefore specific enthalpy should change
-  CHECK_FALSE(specific_enthalpy == initial_specific_enthalpy);
 
   // temperature should change
   CHECK_FALSE(temperature == initial_temperature);

@@ -60,8 +60,6 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
               *primitive_vars_ptr)),
           make_not_null(
               &get<hydro::Tags::Pressure<DataVector>>(*primitive_vars_ptr)),
-          make_not_null(&get<hydro::Tags::SpecificEnthalpy<DataVector>>(
-              *primitive_vars_ptr)),
           make_not_null(
               &get<hydro::Tags::Temperature<DataVector>>(*primitive_vars_ptr)),
           get<Tags::TildeD>(*conserved_vars_ptr),
