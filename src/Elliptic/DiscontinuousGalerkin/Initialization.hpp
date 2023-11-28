@@ -139,6 +139,11 @@ struct InitializeFacesAndMortars {
                      domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>,
                      domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                       Frame::Inertial>,
+                     // This is the volume inverse Jacobian on the face grid
+                     // points, multiplied by the determinant of the _face_
+                     // Jacobian (the tag above)
+                     domain::Tags::DetTimesInvJacobian<
+                         Dim, Frame::ElementLogical, Frame::Inertial>,
                      // Possible optimization: The derivative of the face normal
                      // could be omitted for some systems, but its memory usage
                      // is probably insignificant since it's only added on
@@ -168,6 +173,10 @@ struct InitializeFacesAndMortars {
           face_normal_magnitudes,
       const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
           face_jacobians,
+      const gsl::not_null<DirectionMap<
+          Dim, InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                               Frame::Inertial>>*>
+          face_jacobian_times_inv_jacobian,
       const gsl::not_null<DirectionMap<Dim, tnsr::ij<DataVector, Dim>>*>
           deriv_unnormalized_face_normals,
       const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
@@ -220,10 +229,14 @@ struct InitializeFacesAndMortars {
       auto& face_normal = (*face_normals)[direction];
       auto& face_normal_vector = (*face_normal_vectors)[direction];
       auto& face_normal_magnitude = (*face_normal_magnitudes)[direction];
-      unnormalized_face_normal(
-          make_not_null(&face_normal), face_mesh,
-          element_map.inv_jacobian(face_logical_coords, 0., functions_of_time),
-          direction);
+      // Buffer the inv Jacobian on the face here, then multiply by the face
+      // Jacobian below
+      auto& inv_jacobian_on_face =
+          (*face_jacobian_times_inv_jacobian)[direction];
+      inv_jacobian_on_face =
+          element_map.inv_jacobian(face_logical_coords, 0., functions_of_time);
+      unnormalized_face_normal(make_not_null(&face_normal), face_mesh,
+                               inv_jacobian_on_face, direction);
       if constexpr (std::is_same_v<InvMetricTag, void>) {
         magnitude(make_not_null(&face_normal_magnitude), face_normal);
         for (size_t d = 0; d < Dim; ++d) {
@@ -240,10 +253,12 @@ struct InitializeFacesAndMortars {
         raise_or_lower_index(make_not_null(&face_normal_vector), face_normal,
                              inv_metric_on_face);
       }
-      get((*face_jacobians)[direction]) =
-          get(determinant(element_map.jacobian(face_logical_coords, 0.,
-                                               functions_of_time))) *
-          get(face_normal_magnitude);
+      auto& face_jacobian = (*face_jacobians)[direction];
+      get(face_jacobian) =
+          get(face_normal_magnitude) / get(determinant(inv_jacobian_on_face));
+      for (auto& component : inv_jacobian_on_face) {
+        component *= get(face_jacobian);
+      }
     }
     // Compute the Jacobian derivative numerically, because our coordinate maps
     // currently don't provide it analytically.
