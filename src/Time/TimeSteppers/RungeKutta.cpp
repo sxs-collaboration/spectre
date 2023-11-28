@@ -153,10 +153,9 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
   }
   const double step_start = history.front().time_step_id.step_time().value();
   const double step_end = history.back().time_step_id.step_time().value();
-  if (time == step_end) {
+  if (history.size() == 1 and time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = *history.back().value;
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -171,7 +170,6 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
   const auto& tableau = butcher_tableau();
 
-  *u = *history.front().value;
   const auto number_of_dense_coefficients = tableau.dense_coefficients.size();
   const size_t number_of_substep_terms = std::min(
       tableau.result_coefficients.size(), number_of_dense_coefficients);

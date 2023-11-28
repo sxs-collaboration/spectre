@@ -113,10 +113,9 @@ bool Rk3HesthavenSsp::dense_update_u_impl(const gsl::not_null<T*> u,
   }
   const double step_start = history.front().time_step_id.step_time().value();
   const double step_end = history.back().time_step_id.step_time().value();
-  if (time == step_end) {
+  if (history.size() == 1 and time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = *history.back().value;
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -129,12 +128,12 @@ bool Rk3HesthavenSsp::dense_update_u_impl(const gsl::not_null<T*> u,
                                      << time << ", but already progressed past "
                                      << step_start);
 
-  *u = (1.0 - (2.0 / 3.0) * square(output_fraction)) * *history.front().value +
-       output_fraction * (1.0 - output_fraction) * step_size *
-           history.front().derivative +
-       (2.0 / 3.0) * square(output_fraction) *
-           (*history.substeps()[1].value +
-            step_size * history.substeps()[1].derivative);
+  *u += -(2.0 / 3.0) * square(output_fraction) * *history.front().value +
+        output_fraction * (1.0 - output_fraction) * step_size *
+            history.front().derivative +
+        (2.0 / 3.0) * square(output_fraction) *
+            (*history.substeps()[1].value +
+             step_size * history.substeps()[1].derivative);
 
   return true;
 }

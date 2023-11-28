@@ -267,6 +267,7 @@ struct RunEventsAndDenseTriggers {
                   gsl::not_null<typename variables_tag::type*> vars,
                   const TimeStepper& stepper,
                   const typename history_tag::type& history) {
+                *vars = *history.complete_step_start().value;
                 dense_output_succeeded =
                     stepper.dense_update_u(vars, history, next_trigger);
               },
