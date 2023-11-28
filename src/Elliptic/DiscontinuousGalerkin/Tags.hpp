@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -52,6 +53,13 @@ struct Quadrature {
   using group = DiscontinuousGalerkin;
 };
 
+struct Formulation {
+  using type = ::dg::Formulation;
+  static constexpr Options::String help =
+      "The DG formulation to use (strong or weak).";
+  using group = DiscontinuousGalerkin;
+};
+
 }  // namespace OptionTags
 
 /// DataBox tags related to elliptic discontinuous Galerkin schemes
@@ -90,6 +98,19 @@ struct Quadrature : db::SimpleTag {
       ERROR_NO_TRACE(
           "Choose Gauss or Gauss-Lobatto quadrature for elliptic DG "
           "discretizations.");
+    }
+    return value;
+  }
+};
+
+/// The DG formulation to use (strong or weak)
+struct Formulation : db::SimpleTag {
+  using type = ::dg::Formulation;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::Formulation>;
+  static type create_from_options(const type value) {
+    if (not(value == ::dg::Formulation::StrongInertial)) {
+      ERROR_NO_TRACE("Only the strong formulation is currently supported.");
     }
     return value;
   }

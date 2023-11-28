@@ -59,6 +59,7 @@ Discretization:
     PenaltyParameter: 1.
     Massive: False
     Quadrature: GaussLobatto
+    Formulation: StrongInertial
 
 Observers:
   VolumeFileName: "PoissonProductOfSinusoids3DVolume"

@@ -24,6 +24,7 @@
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -605,7 +606,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
       const double penalty_parameter, const bool massive,
-      const TemporalId& /*temporal_id*/,
+      const ::dg::Formulation formulation, const TemporalId& /*temporal_id*/,
       const std::tuple<SourcesArgs...>& sources_args,
       const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
@@ -661,6 +662,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     if (local_data_is_zero) {
       operator_applied_to_vars->initialize(num_points, 0.);
     } else {
+      ASSERT(formulation == ::dg::Formulation::StrongInertial,
+             "Only the strong formulation is currently implemented.");
       divergence(operator_applied_to_vars, primal_fluxes, mesh, inv_jacobian);
       // This is the sign flip that makes the operator _minus_ the Laplacian for
       // a Poisson system
@@ -921,6 +924,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const double penalty_parameter, const bool massive,
+      const ::dg::Formulation formulation,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
@@ -958,13 +962,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         face_normal_vectors, face_normal_magnitudes, all_mortar_meshes,
         all_mortar_sizes, temporal_id, apply_boundary_condition, fluxes_args,
         fluxes_args_on_faces);
-    apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
-                         make_not_null(&all_mortar_data), zero_primal_vars,
-                         primal_fluxes_buffer, element, mesh, inv_jacobian,
-                         det_inv_jacobian, face_normal_magnitudes,
-                         face_jacobians, face_jacobian_times_inv_jacobians,
-                         all_mortar_meshes, all_mortar_sizes, {},
-                         penalty_parameter, massive, temporal_id, sources_args);
+    apply_operator<true>(
+        make_not_null(&operator_applied_to_zero_vars),
+        make_not_null(&all_mortar_data), zero_primal_vars, primal_fluxes_buffer,
+        element, mesh, inv_jacobian, det_inv_jacobian, face_normal_magnitudes,
+        face_jacobians, face_jacobian_times_inv_jacobians, all_mortar_meshes,
+        all_mortar_sizes, {}, penalty_parameter, massive, formulation,
+        temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;
