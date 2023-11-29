@@ -93,7 +93,7 @@ namespace Solutions {
  * where we have defined
  *
  * \f{align}{
- *   \rho \equiv r^2 + a^2. \label{eq:rho}
+ *   \rho^2 \equiv r^2 + a^2. \label{eq:rho}
  * \f}
  *
  * Therefore, we have that \f$r\f$ satisfies the equation for a sphere in
