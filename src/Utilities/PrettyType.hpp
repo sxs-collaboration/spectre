@@ -768,4 +768,14 @@ std::string list_of_names() {
 
   return ss.str();
 }
+
+/*!
+ * \ingroup PrettyTypeGroup
+ * \brief Return a vector of the `pretty_type::get_name` of every type
+ * in a `tmpl::list`.
+ */
+template <typename... Types>
+std::vector<std::string> vector_of_get_names(tmpl::list<Types...> /*meta*/) {
+  return {pretty_type::get_name<Types>()...};
+}
 }  // namespace pretty_type
