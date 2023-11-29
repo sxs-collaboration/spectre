@@ -866,6 +866,7 @@ def scheduler_options(f):
     @click.option("--queue", help="Name of the queue.")
     @click.option(
         "--time-limit",
+        "-t",
         help="Wall time limit. Must be compatible with the chosen queue.",
     )
     @click.option(
