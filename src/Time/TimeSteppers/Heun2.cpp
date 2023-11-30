@@ -16,6 +16,10 @@ size_t Heun2::error_estimate_order() const { return 1; }
 // alpha_n=1.0 for n=1...(order-1). It is the same as for forward Euler.
 double Heun2::stable_step() const { return 1.0; }
 
+size_t Heun2::imex_order() const { return 2; }
+
+size_t Heun2::implicit_stage_order() const { return 2; }
+
 const RungeKutta::ButcherTableau& Heun2::butcher_tableau() const {
   static const ButcherTableau tableau{
       // Substep times
@@ -29,6 +33,12 @@ const RungeKutta::ButcherTableau& Heun2::butcher_tableau() const {
       // Dense output coefficient polynomials
       {{0.0, 1.0, -0.5},
        {0.0, 0.0, 0.5}}};
+  return tableau;
+}
+
+const ImexRungeKutta::ImplicitButcherTableau&
+Heun2::implicit_butcher_tableau() const {
+  static const ImplicitButcherTableau tableau{{{0.5, 0.5}}};
   return tableau;
 }
 }  // namespace TimeSteppers

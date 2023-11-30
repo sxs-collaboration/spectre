@@ -14,9 +14,37 @@
 #include "Utilities/Numeric.hpp"
 
 namespace TestHelpers::RungeKutta {
+namespace {
+// Check order for quadrature (RHS depends only on time).
+void check_quadrature_order(const std::vector<double>& substep_times,
+                            const std::vector<double>& coefficients,
+                            const size_t expected) {
+  if (expected == 0) {
+    return;
+  }
+  CAPTURE(coefficients);
+  CAPTURE(expected);
+  // Split out first case to avoid 0^0 annoyance
+  CHECK(alg::accumulate(coefficients, 0.0) == approx(1.0));
+  // Don't require the next order to be inconsistent, as the method
+  // may do better for quadrature than for an ODE.  Order 0 (i.e.,
+  // that the stepper is at least first order) was checked above.
+  for (size_t order = 1; order < expected; ++order) {
+    CAPTURE(order);
+    double integral = 0.0;
+    for (size_t substep = 1; substep < coefficients.size(); ++substep) {
+      integral +=
+          coefficients[substep] * std::pow(substep_times[substep - 1], order);
+    }
+    CHECK(integral == approx(1.0 / (order + 1.0)));
+  }
+}
+}  // namespace
+
 void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
                    const size_t expected_order,
                    const size_t expected_error_order) {
+  INFO("check_tableau");
   const auto& substep_times = tableau.substep_times;
   const auto& substep_coefficients = tableau.substep_coefficients;
   const auto& result_coefficients = tableau.result_coefficients;
@@ -64,32 +92,48 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
     }
   }
 
-  // Check order for quadrature (RHS depends only on time).
-  const auto check_quadrature_order =
-      [&substep_times](const std::vector<double>& coefficients,
-                       const size_t expected) {
-        CAPTURE(coefficients);
-        CAPTURE(expected);
-        // Don't require the next order to be inconsistent, as the
-        // method may do better for quadrature than for an ODE.  Order
-        // 0 (i.e., that the stepper is at least first order) was
-        // checked above.
-        for (size_t order = 1; order < expected; ++order) {
-          CAPTURE(order);
-          double integral = 0.0;
-          for (size_t substep = 1; substep < coefficients.size(); ++substep) {
-            integral += coefficients[substep] *
-                        std::pow(substep_times[substep - 1], order);
-          }
-          CHECK(integral == approx(1.0 / (order + 1.0)));
-        }
-      };
-  check_quadrature_order(result_coefficients, expected_order);
-  check_quadrature_order(error_coefficients, expected_error_order);
+  check_quadrature_order(substep_times, result_coefficients, expected_order);
+  check_quadrature_order(substep_times, error_coefficients,
+                         expected_error_order);
 }
 
 void check_tableau(const TimeSteppers::RungeKutta& stepper) {
   check_tableau(stepper.butcher_tableau(), stepper.order(),
                 stepper.error_estimate_order());
+}
+
+void check_implicit_tableau(
+    const TimeSteppers::RungeKutta::ButcherTableau& explicit_tableau,
+    const TimeSteppers::ImexRungeKutta::ImplicitButcherTableau&
+        implicit_tableau,
+    const size_t expected_stage_order, const bool stiffly_accurate) {
+  INFO("check_implicit_tableau");
+  const auto& substep_times = explicit_tableau.substep_times;
+  const auto& implicit_coefficients = implicit_tableau.substep_coefficients;
+
+  const auto num_substeps = implicit_coefficients.size() + 1;
+
+  CHECK(num_substeps == explicit_tableau.result_coefficients.size());
+
+  if (stiffly_accurate) {
+    CHECK(implicit_coefficients.back() == explicit_tableau.result_coefficients);
+  }
+
+  // It is impossible to exceed second-order with a DIRK method.
+  CHECK(expected_stage_order <= 2);
+
+  for (size_t substep = 1; substep < num_substeps; ++substep) {
+    const auto& coefficients = implicit_coefficients[substep - 1];
+    // Substep is DIRK
+    CHECK(coefficients.size() <= substep + 1);
+    check_quadrature_order(substep_times, coefficients, expected_stage_order);
+  }
+}
+
+void check_implicit_tableau(const TimeSteppers::ImexRungeKutta& stepper,
+                            const bool stiffly_accurate) {
+  check_implicit_tableau(stepper.butcher_tableau(),
+                         stepper.implicit_butcher_tableau(),
+                         stepper.implicit_stage_order(), stiffly_accurate);
 }
 }  // namespace TestHelpers::RungeKutta

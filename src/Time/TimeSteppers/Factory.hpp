@@ -26,4 +26,7 @@ using time_steppers =
 
 /// Typelist of available LtsTimeSteppers
 using lts_time_steppers = tmpl::list<TimeSteppers::AdamsBashforth>;
+
+/// Typelist of available ImexTimeSteppers
+using imex_time_steppers = tmpl::list<TimeSteppers::Heun2>;
 }  // namespace Triggers

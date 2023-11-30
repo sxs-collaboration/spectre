@@ -37,7 +37,7 @@ class TimeStepId;
 /// private section of the class body, and
 /// LTS_TIME_STEPPER_DEFINE_OVERLOADS(derived_class), which must be
 /// placed in the cpp file.
-class LtsTimeStepper : public TimeStepper {
+class LtsTimeStepper : public virtual TimeStepper {
  public:
   WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
 
