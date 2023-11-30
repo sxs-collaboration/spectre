@@ -470,6 +470,72 @@ void BondiWorldtubeDataManager::pup(PUP::er& p) {
   }
 }
 
+KleinGordonWorldtubeDataManager::KleinGordonWorldtubeDataManager(
+    std::unique_ptr<WorldtubeBufferUpdater<klein_gordon_input_tags>>
+        buffer_updater,
+    const size_t l_max, const size_t buffer_depth,
+    std::unique_ptr<intrp::SpanInterpolator> interpolator)
+    : buffer_updater_{std::move(buffer_updater)},
+      l_max_{l_max},
+      interpolated_coefficients_{
+          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
+      buffer_depth_{buffer_depth},
+      interpolator_{std::move(interpolator)} {
+  detail::initialize_buffers<klein_gordon_input_tags>(
+      make_not_null(&buffer_depth_), make_not_null(&coefficients_buffers_),
+      buffer_updater_->get_time_buffer().size(),
+      interpolator_->required_number_of_points_before_and_after(), l_max);
+}
+
+bool KleinGordonWorldtubeDataManager::populate_hypersurface_boundary_data(
+    const gsl::not_null<Variables<Tags::klein_gordon_worldtube_boundary_tags>*>
+        boundary_data_variables,
+    const double time,
+    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
+  if (buffer_updater_->time_is_outside_range(time)) {
+    return false;
+  }
+
+  detail::populate_hypersurface_boundary_data<
+      klein_gordon_input_tags, Tags::klein_gordon_worldtube_boundary_tags>(
+      boundary_data_variables, make_not_null(&interpolated_coefficients_),
+      make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
+      make_not_null(&time_span_end_), hdf5_lock, time, interpolator_,
+      buffer_updater_, l_max_, buffer_depth_);
+
+  return true;
+}
+
+std::unique_ptr<
+    WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags>>
+KleinGordonWorldtubeDataManager::get_clone() const {
+  return std::make_unique<KleinGordonWorldtubeDataManager>(
+      buffer_updater_->get_clone(), l_max_, buffer_depth_,
+      interpolator_->get_clone());
+}
+
+std::pair<size_t, size_t> KleinGordonWorldtubeDataManager::get_time_span()
+    const {
+  return std::make_pair(time_span_start_, time_span_end_);
+}
+
+void KleinGordonWorldtubeDataManager::pup(PUP::er& p) {
+  p | buffer_updater_;
+  p | time_span_start_;
+  p | time_span_end_;
+  p | l_max_;
+  p | buffer_depth_;
+  p | interpolator_;
+  if (p.isUnpacking()) {
+    detail::set_non_pupped_members<klein_gordon_input_tags>(
+        make_not_null(&time_span_start_), make_not_null(&time_span_end_),
+        make_not_null(&coefficients_buffers_),
+        make_not_null(&interpolated_coefficients_), buffer_depth_,
+        interpolator_->required_number_of_points_before_and_after(), l_max_);
+  }
+}
+
 PUP::able::PUP_ID MetricWorldtubeDataManager::my_PUP_ID = 0;
 PUP::able::PUP_ID BondiWorldtubeDataManager::my_PUP_ID = 0;
+PUP::able::PUP_ID KleinGordonWorldtubeDataManager::my_PUP_ID = 0;  // NOLINT
 }  // namespace Cce

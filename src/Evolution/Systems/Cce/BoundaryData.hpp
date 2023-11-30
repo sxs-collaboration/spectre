@@ -548,6 +548,10 @@ using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
                Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr<Tags::BondiJ>,
                Tags::BondiH, Tags::Du<Tags::BondiJ>, Tags::BondiR,
                Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>>;
+
+using klein_gordon_worldtube_boundary_tags =
+    tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPsi>,
+               Tags::BoundaryValue<Tags::KleinGordonPi>>;
 }  // namespace Tags
 
 namespace detail {

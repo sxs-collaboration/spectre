@@ -7,9 +7,13 @@
 
 #include "Evolution/Systems/Cce/ReducedWorldtubeModeRecorder.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
+#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -191,6 +195,90 @@ PUP::able::PUP_ID Cce::KleinGordonDummyBufferUpdater::my_PUP_ID = 0;
 
 namespace {
 
+// This function tests `KleinGordonWorldtubeDataManager`, with special focus on
+// its interpolator. Its private member `buffer_updater_` is created from the
+// dummy buffer updater `KleinGordonDummyBufferUpdater` defined above, instead
+// of `KleinGordonWorldtubeH5BufferUpdater`.  This allows us to stick
+// exclusively to the test of `KleinGordonWorldtubeDataManager`. The test of
+// `KleinGordonWorldtubeH5BufferUpdater` is performed below in
+// `test_klein_gordon_worldtube_buffer_updater`.
+//
+// The function first generates nodal and modal data for the scalar field `psi`
+// and its time derivative `pi` for a range of time stamps; and then uses the
+// interpolator of `KleinGordonWorldtubeDataManager` to interpolate the data to
+// a different time (`target_time`). Finally, it compares the interpolated
+// results with the expected ones.
+template <typename Generator>
+void test_klein_gordon_data_manager_with_dummy_buffer_updater(
+    const gsl::not_null<Generator*> gen) {
+  const double extraction_radius = 100.0;
+  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+
+  const double frequency = 0.1 * value_dist(*gen);
+  const double amplitude = 0.1 * value_dist(*gen);
+  const double target_time = 50.0 * value_dist(*gen);
+
+  const size_t buffer_size = 4;
+  const size_t l_max = 8;
+
+  DataVector time_buffer{30};
+  // `target_time` is not an element of `time_buffer`, so the interpolation is
+  // non-trivial.
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = target_time - 1.55 + 0.1 * static_cast<double>(i);
+  }
+
+  // use `KleinGordonWorldtubeDataManager` to interpolate data
+  KleinGordonWorldtubeDataManager boundary_data_manager;
+
+  boundary_data_manager = KleinGordonWorldtubeDataManager{
+      std::make_unique<KleinGordonDummyBufferUpdater>(
+          time_buffer, extraction_radius, amplitude, frequency, l_max),
+      l_max, buffer_size,
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(8u, 10u)};
+
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  Variables<Tags::klein_gordon_worldtube_boundary_tags>
+      interpolated_boundary_variables{number_of_angular_points};
+
+  Parallel::NodeLock hdf5_lock{};
+  boundary_data_manager.populate_hypersurface_boundary_data(
+      make_not_null(&interpolated_boundary_variables), target_time,
+      make_not_null(&hdf5_lock));
+
+  // populate the expected variables with the result from the analytic modes
+  // passed to the boundary data computation.
+  Scalar<ComplexModalVector> kg_psi_modal;
+  Scalar<ComplexModalVector> kg_pi_modal;
+  Scalar<DataVector> kg_psi_nodal;
+  Scalar<DataVector> kg_pi_nodal;
+
+  TestHelpers::create_fake_time_varying_klein_gordon_data(
+      make_not_null(&kg_psi_modal), make_not_null(&kg_pi_modal),
+      make_not_null(&kg_psi_nodal), make_not_null(&kg_pi_nodal),
+      extraction_radius, amplitude, frequency, target_time, l_max);
+
+  // comparison
+  Approx angular_derivative_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e3)
+          .scale(1.0);
+
+  const auto& interpolated_psi =
+      get<Cce::Tags::BoundaryValue<Cce::Tags::KleinGordonPsi>>(
+          interpolated_boundary_variables);
+  CHECK_ITERABLE_CUSTOM_APPROX(get(kg_psi_nodal), get(interpolated_psi).data(),
+                               angular_derivative_approx);
+
+  const auto& interpolated_pi =
+      get<Cce::Tags::BoundaryValue<Cce::Tags::KleinGordonPi>>(
+          interpolated_boundary_variables);
+  CHECK_ITERABLE_CUSTOM_APPROX(get(kg_pi_nodal), get(interpolated_pi).data(),
+                               angular_derivative_approx);
+}
+
 // This function tests `KleinGordonWorldtubeH5BufferUpdater`, which handles
 // worldtube data of the Klein-Gordon system for CCE.
 // The testing procedure involves the creation of synthetic modal data for the
@@ -353,11 +441,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadKleinGordonBoundaryDataH5",
                   "[Unit][Cce]") {
   register_derived_classes_with_charm<
       Cce::WorldtubeBufferUpdater<klein_gordon_input_tags>>();
+  register_derived_classes_with_charm<Cce::WorldtubeDataManager<
+      Cce::Tags::klein_gordon_worldtube_boundary_tags>>();
+  register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
   {
     INFO("Testing Klein-Gordon buffer updaters");
     test_klein_gordon_worldtube_buffer_updater(make_not_null(&gen), true);
     test_klein_gordon_worldtube_buffer_updater(make_not_null(&gen), false);
+  }
+  {
+    INFO("Testing Klein-Gordon data manager");
+    test_klein_gordon_data_manager_with_dummy_buffer_updater(
+        make_not_null(&gen));
   }
 }
 }  // namespace Cce
