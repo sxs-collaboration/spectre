@@ -151,6 +151,13 @@ enum class SchwarzschildCoordinates {
    * the isotropic radius $\bar{r}$, $r$ is the areal radius we can obtain from
    * the isotropic radius by a root find, and $\beta^r$ is the magnitude of the
    * shift in areal coordinates, as given above.
+   *
+   * The horizon in these coordinates is at (Eq. (7.37) in
+   * \cite Pfeiffer2005zm):
+   *
+   * \begin{equation}
+   * \bar{r}_\mathrm{AH} / M \approx 1.2727410334221052
+   * \end{equation}
    */
   KerrSchildIsotropic,
 };
