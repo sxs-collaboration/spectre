@@ -54,6 +54,7 @@ spectre_target_headers(
   LinkedMessageQueue.hpp
   MathWrapper.hpp
   Matrix.hpp
+  MaybeOwned.hpp
   ModalVector.hpp
   SimpleSparseMatrix.hpp
   SliceIterator.hpp

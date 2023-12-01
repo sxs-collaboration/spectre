@@ -26,6 +26,7 @@ set(LIBRARY_SOURCES
   Test_LinkedMessageId.cpp
   Test_LinkedMessageQueue.cpp
   Test_MathWrapper.cpp
+  Test_MaybeOwned.cpp
   Test_ModalVector.cpp
   Test_ModalVectorInhomogeneousOperations.cpp
   Test_MoreComplexDiagonalModalOperatorMath.cpp
