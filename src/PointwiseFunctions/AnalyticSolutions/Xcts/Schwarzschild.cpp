@@ -609,14 +609,13 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
+    const gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift_excess,
     const gsl::not_null<Cache*> cache,
-    Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const {
-  // The shift strain is just the symmetrized partial derivative of the shift
-  // for these conformally flat coordinate systems
+    ::Tags::deriv<Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
-      std::fill(shift_strain->begin(), shift_strain->end(), 0.);
+      std::fill(deriv_shift_excess->begin(), deriv_shift_excess->end(), 0.);
       break;
     }
     case SchwarzschildCoordinates::PainleveGullstrand: {
@@ -626,10 +625,11 @@ void SchwarzschildVariables<DataType>::operator()(
       const DataType isotropic_prefactor =
           -1.5 * diagonal_prefactor / square(r);
       for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = i; j < 3; ++j) {
-          shift_strain->get(i, j) = isotropic_prefactor * x.get(i) * x.get(j);
+        for (size_t j = 0; j < 3; ++j) {
+          deriv_shift_excess->get(i, j) =
+              isotropic_prefactor * x.get(i) * x.get(j);
         }
-        shift_strain->get(i, i) += diagonal_prefactor;
+        deriv_shift_excess->get(i, i) += diagonal_prefactor;
       }
       break;
     }
@@ -645,10 +645,11 @@ void SchwarzschildVariables<DataType>::operator()(
                                            (square(lapse) * mass / r - 2.) *
                                            lapse / square(rbar);
       for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = i; j < 3; ++j) {
-          shift_strain->get(i, j) = isotropic_prefactor * x.get(i) * x.get(j);
+        for (size_t j = 0; j < 3; ++j) {
+          deriv_shift_excess->get(i, j) =
+              isotropic_prefactor * x.get(i) * x.get(j);
         }
-        shift_strain->get(i, i) += diagonal_prefactor;
+        deriv_shift_excess->get(i, i) += diagonal_prefactor;
       }
       break;
     }

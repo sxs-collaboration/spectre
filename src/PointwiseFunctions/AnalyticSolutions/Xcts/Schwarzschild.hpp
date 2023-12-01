@@ -348,10 +348,10 @@ struct SchwarzschildVariables
       Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
-      gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
+      gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift_excess,
       gsl::not_null<Cache*> cache,
-      Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/)
-      const override;
+      ::Tags::deriv<Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
       gsl::not_null<Cache*> cache,

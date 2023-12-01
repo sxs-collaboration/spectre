@@ -9,11 +9,12 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.tpp"
-#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
+#include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/Gsl.hpp"
@@ -33,6 +34,30 @@ void CommonVariables<DataType, Cache>::operator()(
       *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
   raise_or_lower_index(conformal_factor_flux, conformal_factor_gradient,
                        inv_conformal_metric);
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
+    const gsl::not_null<Cache*> cache,
+    Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const {
+  const auto& shift_excess = cache->get_var(
+      *this, Tags::ShiftExcess<DataType, Dim, Frame::Inertial>{});
+  const auto& deriv_shift_excess = cache->get_var(
+      *this, ::Tags::deriv<Tags::ShiftExcess<DataType, Dim, Frame::Inertial>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& conformal_metric = cache->get_var(
+      *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& deriv_conformal_metric = cache->get_var(
+      *this,
+      ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& conformal_christoffel_first_kind = cache->get_var(
+      *this, Xcts::Tags::ConformalChristoffelFirstKind<DataType, Dim,
+                                                       Frame::Inertial>{});
+  Elasticity::strain(shift_strain, deriv_shift_excess, conformal_metric,
+                     deriv_conformal_metric, conformal_christoffel_first_kind,
+                     shift_excess);
 }
 
 template <typename DataType, typename Cache>
@@ -58,12 +83,19 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/)
     const {
-  const auto& shift_strain = cache->get_var(
-      *this, Tags::ShiftStrain<DataType, Dim, Frame::Inertial>{});
+  const auto& shift_excess = cache->get_var(
+      *this, Tags::ShiftExcess<DataType, Dim, Frame::Inertial>{});
+  const auto& deriv_shift_excess = cache->get_var(
+      *this, ::Tags::deriv<Tags::ShiftExcess<DataType, Dim, Frame::Inertial>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
       *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
-  Xcts::longitudinal_operator(longitudinal_shift_excess, shift_strain,
-                              inv_conformal_metric);
+  const auto& conformal_christoffel_second_kind = cache->get_var(
+      *this,
+      Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
+  Xcts::longitudinal_operator(longitudinal_shift_excess, shift_excess,
+                              deriv_shift_excess, inv_conformal_metric,
+                              conformal_christoffel_second_kind);
 }
 
 template <typename DataType, typename Cache>

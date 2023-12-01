@@ -250,10 +250,11 @@ void TovVariables<DataType>::operator()(
 
 template <typename DataType>
 void TovVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
+    const gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift_excess,
     const gsl::not_null<Cache*> /* cache */,
-    Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const {
-  std::fill(shift_strain->begin(), shift_strain->end(), 0.);
+    ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+  std::fill(deriv_shift_excess->begin(), deriv_shift_excess->end(), 0.);
 }
 
 template <typename DataType>

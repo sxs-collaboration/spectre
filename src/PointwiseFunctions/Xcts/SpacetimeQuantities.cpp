@@ -127,10 +127,12 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial> /*meta*/)
     const {
-  const auto& shift_strain = cache->get_var(
-      *this, Tags::ShiftStrain<DataVector, 3, Frame::Inertial>{});
-  Xcts::longitudinal_operator(longitudinal_shift_excess, shift_strain,
-                              inv_conformal_metric);
+  const auto& deriv_shift_excess = cache->get_var(
+      *this, ::Tags::deriv<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  Xcts::longitudinal_operator(longitudinal_shift_excess, shift_excess,
+                              deriv_shift_excess, inv_conformal_metric,
+                              conformal_christoffel_second_kind);
 }
 
 void SpacetimeQuantitiesComputer::operator()(

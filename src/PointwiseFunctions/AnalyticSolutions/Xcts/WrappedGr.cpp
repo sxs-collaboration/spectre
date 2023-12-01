@@ -233,25 +233,13 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
-    const gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
-    const gsl::not_null<Cache*> cache,
-    Xcts::Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  const auto& shift = get<gr::Tags::Shift<DataType, Dim>>(gr_solution);
-  const auto& deriv_shift =
+    const gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_excess,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+  *deriv_shift_excess =
       get<::Tags::deriv<gr::Tags::Shift<DataType, Dim>, tmpl::size_t<Dim>,
                         Frame::Inertial>>(gr_solution);
-  const auto& conformal_metric = cache->get_var(
-      *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
-  const auto& deriv_conformal_metric = cache->get_var(
-      *this,
-      ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial>{});
-  const auto& conformal_christoffel_first_kind = cache->get_var(
-      *this, Xcts::Tags::ConformalChristoffelFirstKind<DataType, Dim,
-                                                       Frame::Inertial>{});
-  Elasticity::strain(shift_strain, deriv_shift, conformal_metric,
-                     deriv_conformal_metric, conformal_christoffel_first_kind,
-                     shift);
 }
 
 template <typename DataType, bool HasMhd>
