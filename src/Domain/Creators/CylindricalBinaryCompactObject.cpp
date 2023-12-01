@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -386,7 +387,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 }
 
 CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
-    std::optional<bco::TimeDependentMapOptions> time_dependent_options,
+    std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
     std::array<double, 3> center_A, std::array<double, 3> center_B,
     double radius_A, double radius_B, bool include_inner_sphere_A,
     bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
@@ -423,8 +424,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     time_dependent_options_->build_maps(
         std::array{rotate_from_z_to_x_axis(center_A_),
                    rotate_from_z_to_x_axis(center_B_)},
-        std::make_pair(radius_A_, outer_radius_A_),
-        std::make_pair(radius_B_, outer_radius_B_), outer_radius_);
+        std::array{radius_A_, outer_radius_A_},
+        std::array{radius_B_, outer_radius_B_}, outer_radius_);
   }
 }
 
@@ -936,7 +937,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::A>(
             true);
     distorted_to_inertial_block_maps[46] =
-        time_dependent_options_->distorted_to_inertial_map(true);
+        time_dependent_options_
+            ->distorted_to_inertial_map<domain::ObjectLabel::A>(true);
 
     grid_to_inertial_block_maps[60] =
         time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::B>(
@@ -945,7 +947,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         time_dependent_options_->grid_to_distorted_map<domain::ObjectLabel::B>(
             true);
     distorted_to_inertial_block_maps[60] =
-        time_dependent_options_->distorted_to_inertial_map(true);
+        time_dependent_options_
+            ->distorted_to_inertial_map<domain::ObjectLabel::B>(true);
 
     for (size_t block = 1; block < number_of_blocks_; ++block) {
       if (block == 46 or block == 60) {

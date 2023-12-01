@@ -15,6 +15,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
@@ -65,7 +66,7 @@ std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
 create_grid_anchors(const std::array<double, 3>& center_a,
                     const std::array<double, 3>& center_b);
 
-template <domain::ObjectLabel Object>
+template <bool IsCylindrical, domain::ObjectLabel Object>
 struct ShapeMapOptions {
   using type = Options::Auto<ShapeMapOptions, Options::AutoLabel::None>;
   static std::string name() { return "ShapeMap" + get_output(Object); }
@@ -87,10 +88,23 @@ struct ShapeMapOptions {
         "Initial value and two derivatives of the size map."};
   };
 
-  using options = tmpl::list<LMax, SizeInitialValues>;
+  struct TransitionEndsAtCube {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true', the shape map transition function will be 0 at the cubical "
+        "boundary around the object. If 'false' the transition function will "
+        "be 0 at the outer radius of the inner sphere around the object"};
+  };
+
+  using common_options = tmpl::list<LMax, SizeInitialValues>;
+
+  using options = tmpl::conditional_t<
+      IsCylindrical, common_options,
+      tmpl::push_back<common_options, TransitionEndsAtCube>>;
 
   size_t l_max{};
   std::array<double, 3> initial_size_values{};
+  bool transition_ends_at_cube{false};
 };
 
 namespace detail {
@@ -147,7 +161,9 @@ using produce_all_maps = tmpl::transform<
  * binary compact object domains.
  *
  * \details Since both domains will have the same (overall) time dependent maps,
- * their options are going to be the same as well.
+ * their options are going to be the same as well. The options won't be exactly
+ * the same though, so there is a \p IsCylindrical template parameter to
+ * distinguish.
  *
  * This class will create the FunctionsOfTime needed for the binary compact
  * object domains as well as the actual CoordinateMap%s themselves
@@ -155,6 +171,7 @@ using produce_all_maps = tmpl::transform<
  * \note This struct contains no information about what blocks the time
  * dependent maps will go in.
  */
+template <bool IsCylindrical>
 struct TimeDependentMapOptions {
  private:
   template <typename SourceFrame, typename TargetFrame>
@@ -251,7 +268,8 @@ struct TimeDependentMapOptions {
   // TimeDependentMapOptions and just use a type alias here, the linking error
   // goes away.
   template <domain::ObjectLabel Object>
-  using ShapeMapOptions = domain::creators::bco::ShapeMapOptions<Object>;
+  using ShapeMapOptions =
+      domain::creators::bco::ShapeMapOptions<IsCylindrical, Object>;
 
   using options =
       tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
@@ -297,16 +315,20 @@ struct TimeDependentMapOptions {
    * - Rotation: `Rotation<3>`
    * - ShapeA/B: `Shape` (with size FunctionOfTime)
    *
-   * If the inner/outer radii for an object are `std::nullopt`, this means that
-   * a Size map is not constructed for that object. An identity map will be used
-   * instead.
+   * If the radii for an object are `std::nullopt`, this means that a Shape map
+   * is not constructed for that object. An identity map will be used instead.
+   * If \p IsCylindrical is true, only pass two radii for the inner/outer radius
+   * of the object sphere. If it is false, pass three radii corresponding to the
+   * excision radius, the outer radius of the inner sphere, and the radius of
+   * the surrounding cube.
    */
-  void build_maps(const std::array<std::array<double, 3>, 2>& centers,
-                  const std::optional<std::pair<double, double>>&
-                      object_A_inner_outer_radii,
-                  const std::optional<std::pair<double, double>>&
-                      object_B_inner_outer_radii,
-                  double domain_outer_radius);
+  void build_maps(
+      const std::array<std::array<double, 3>, 2>& centers,
+      const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
+          object_A_radii,
+      const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
+          object_B_radii,
+      double domain_outer_radius);
 
   /*!
    * \brief Check whether options were specified in the constructor for the
@@ -315,40 +337,58 @@ struct TimeDependentMapOptions {
   bool has_distorted_frame_options(domain::ObjectLabel object) const;
 
   /*!
+   * \brief Type to pass to `grid_to_distorted_map()` and
+   * `grid_to_inertial_map()`.
+   *
+   * \details If \p IsCylindrical is true, pass a `bool` for whether to include
+   * a shape map or not. If it's false, pass a `std::optional<size_t>`. If this
+   * has a value, then it includes a shape map. The `size_t` represents the
+   * relative block number around each object in the BinaryCompactObject domain.
+   * It should go from 0 to 11 for the 12 blocks surrounding each object.
+   */
+  using IncludeDistortedMapType =
+      tmpl::conditional_t<IsCylindrical, bool, std::optional<size_t>>;
+
+  /*!
    * \brief This will construct the map from `Frame::Distorted` to
    * `Frame::Inertial`
    *
-   * If the argument `include_distorted_map` is true, then this will be a
-   * composition of an `CubicScale` and `Rotation` map. If it is false, this
-   * returns a `nullptr`.
+   * If we are including a shape map, then this will be a composition of an
+   * `CubicScale` and `Rotation` map. If we aren't, this returns a `nullptr`.
+   *
+   * \see IncludeDistortedMapType
    */
+  template <domain::ObjectLabel Object>
   MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
-      bool include_distorted_map) const;
+      const IncludeDistortedMapType& include_distorted_map) const;
 
   /*!
    * \brief This will construct the maps from the `Frame::Grid` to the
    * `Frame::Distorted`.
    *
-   * If the argument `include_distorted_map` is true, then this will be a
-   * `Shape` map (with size FunctionOfTime) for the templated `Object`. If it is
-   * false, then this returns a `nullptr`.
+   * If we are including a shape map, then this will be a `Shape` map (with size
+   * FunctionOfTime) for the templated `Object`. If we aren't, then this returns
+   * a `nullptr`.
+   *
+   * \see IncludeDistortedMapType
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Distorted> grid_to_distorted_map(
-      bool include_distorted_map) const;
+      const IncludeDistortedMapType& include_distorted_map) const;
 
   /*!
    * \brief This will construct the entire map from the `Frame::Grid` to the
    * `Frame::Inertial`.
    *
-   * If the argument `include_distorted_map` is true, then this map will have a
-   * composition of a `Shape` (with size FunctionOfTime), `CubicScale`, and
-   * `Rotation` map. If it is false, there will only be `CubicScale` and
-   * `Rotation` maps.
+   * If we are including a shape map, then this map will have a composition of a
+   * `Shape` (with size FunctionOfTime), `CubicScale`, and `Rotation` map. If
+   * not, there will only be `CubicScale` and `Rotation` maps.
+   *
+   * \see IncludeDistortedMapType
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      bool include_distorted_map) const;
+      const IncludeDistortedMapType& include_distorted_map) const;
 
   // Names are public because they need to be used when constructing maps in the
   // BCO domain creators themselves
@@ -372,7 +412,9 @@ struct TimeDependentMapOptions {
   // Maps
   std::optional<Expansion> expansion_map_{};
   std::optional<Rotation> rotation_map_{};
-  std::array<std::optional<Shape>, 2> shape_maps_{};
+  using ShapeMapType =
+      tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
+                          std::array<std::array<std::optional<Shape>, 6>, 2>>;
+  ShapeMapType shape_maps_{};
 };
-
 }  // namespace domain::creators::bco

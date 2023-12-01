@@ -134,6 +134,8 @@ namespace creators {
  * its options. Otherwise specify `None` for that map. You can also turn off
  * time dependent maps all together by specifying `None` for the
  * `TimeDependentMaps` option. See
+ * `domain::creators::bco::TimeDependentMapOptions`. This class must pass a
+ * template parameter of `false` to
  * `domain::creators::bco::TimeDependentMapOptions`.
  */
 class BinaryCompactObject : public DomainCreator<3> {
@@ -166,7 +168,7 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Translation>,
-      bco::TimeDependentMapOptions::maps_list>>;
+      bco::TimeDependentMapOptions<false>::maps_list>>;
 
   /// Options for an excision region in the domain
   struct Excision {
@@ -393,9 +395,10 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   // This is for optional time dependent maps
   struct TimeDependentMaps {
-    using type =
-        Options::Auto<bco::TimeDependentMapOptions, Options::AutoLabel::None>;
-    static constexpr Options::String help = bco::TimeDependentMapOptions::help;
+    using type = Options::Auto<bco::TimeDependentMapOptions<false>,
+                               Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        bco::TimeDependentMapOptions<false>::help;
   };
 
   template <typename Metavariables>
@@ -469,7 +472,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps == true),
   // with an additional parameter
   BinaryCompactObject(
-      std::optional<bco::TimeDependentMapOptions> time_dependent_options,
+      std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
       typename ObjectA::type object_A, typename ObjectB::type object_B,
       double envelope_radius, double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
@@ -555,7 +558,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool is_excised_b_ = false;
   bool use_single_block_a_ = false;
   bool use_single_block_b_ = false;
-  std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
+  std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_{};
   double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
 };
 }  // namespace creators

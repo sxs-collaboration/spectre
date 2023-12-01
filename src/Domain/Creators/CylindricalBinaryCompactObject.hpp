@@ -146,6 +146,8 @@ namespace domain::creators {
  * its options. Otherwise specify `None` for that map. You can also turn off
  * time dependent maps all together by specifying `None` for the
  * `TimeDependentMaps` option. See
+ * `domain::creators::bco::TimeDependentMapOptions`. This class must pass a
+ * template parameter of `true` to
  * `domain::creators::bco::TimeDependentMapOptions`.
  */
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
@@ -183,7 +185,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
                                                     CoordinateMaps::Interval>,
                      CoordinateMaps::UniformCylindricalSide,
                      CoordinateMaps::DiscreteRotation<3>>,
-                 bco::TimeDependentMapOptions::maps_list>>;
+                 bco::TimeDependentMapOptions<true>::maps_list>>;
 
   struct CenterA {
     using type = std::array<double, 3>;
@@ -279,9 +281,10 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   struct TimeDependentMaps {
-    using type =
-        Options::Auto<bco::TimeDependentMapOptions, Options::AutoLabel::None>;
-    static constexpr Options::String help = bco::TimeDependentMapOptions::help;
+    using type = Options::Auto<bco::TimeDependentMapOptions<true>,
+                               Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        bco::TimeDependentMapOptions<true>::help;
   };
 
   using time_independent_options =
@@ -329,7 +332,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       const Options::Context& context = {});
 
   CylindricalBinaryCompactObject(
-      std::optional<bco::TimeDependentMapOptions> time_dependent_options,
+      std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
       std::array<double, 3> center_A, std::array<double, 3> center_B,
       double radius_A, double radius_B, bool include_inner_sphere_A,
       bool include_inner_sphere_B, bool include_outer_sphere,
@@ -419,6 +422,6 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
       grid_anchors_{};
   // FunctionsOfTime options
-  std::optional<bco::TimeDependentMapOptions> time_dependent_options_{};
+  std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options_{};
 };
 }  // namespace domain::creators

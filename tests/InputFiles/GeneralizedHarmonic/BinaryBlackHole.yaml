@@ -82,9 +82,11 @@ DomainCreator:
       ShapeMapA:
         LMax: &LMax 10
         SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: true
       ShapeMapB:
         LMax: *LMax
         SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: true
 
 EventsAndDenseTriggers:
 

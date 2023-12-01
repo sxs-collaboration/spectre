@@ -76,9 +76,11 @@ DomainCreator:
       ShapeMapA:
         LMax: 8
         SizeInitialValues: [0., 0., 0.]
+        TransitionEndsAtCube: false
       ShapeMapB:
         LMax: 8
         SizeInitialValues: [0., 0., 0.]
+        TransitionEndsAtCube: false
 
 SpatialDiscretization:
   BoundaryCorrection:
