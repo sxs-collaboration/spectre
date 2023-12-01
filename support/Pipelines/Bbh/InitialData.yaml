@@ -5,6 +5,9 @@ Executable: SolveXcts
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 Background: &background
   Binary:
     XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]

@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DomainTags")
 
 set(LIBRARY_SOURCES
+  Test_ElementDistribution.cpp
   Test_Faces.cpp
   Test_SurfaceJacobian.cpp
   )
@@ -17,5 +18,6 @@ target_link_libraries(
   Domain
   DomainHelpers
   DomainStructure
+  Parallel
   Utilities
   )

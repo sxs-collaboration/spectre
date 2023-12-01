@@ -11,6 +11,9 @@ ExpectedOutput:
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 Amr:
   Criteria:
     - Random:

@@ -15,6 +15,9 @@ Description: |
 
 ---
 
+Parallelization:
+  ElementDistribution: NumGridPoints
+
 DomainCreator:
   Interval:
     LowerBound: [0]
@@ -47,6 +50,10 @@ Source:  # Unused
 BuildMatrix:
   Verbosity: Debug
   MatrixSubfileName: Matrix
+
+Discretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
 
 Observers:
   VolumeFileName: "Test_BuildMatrix_Volume"

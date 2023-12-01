@@ -27,6 +27,9 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseError.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -74,6 +77,19 @@ double get_num_points_and_grid_spacing_cost(
   return mesh.number_of_grid_points() / sqrt(min_grid_spacing);
 }
 }  //  namespace
+
+std::ostream& operator<<(std::ostream& os, ElementWeight weight) {
+  switch (weight) {
+    case ElementWeight::Uniform:
+      return os << "Uniform";
+    case ElementWeight::NumGridPoints:
+      return os << "NumGridPoints";
+    case ElementWeight::NumGridPointsAndGridSpacing:
+      return os << "NumGridPointsAndGridSpacing";
+    default:
+      ERROR("Unknown ElementWeight type");
+  }
+}
 
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, double> get_element_costs(
@@ -327,3 +343,20 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 }  // namespace domain
+
+template <>
+domain::ElementWeight
+Options::create_from_yaml<domain::ElementWeight>::create<void>(
+    const Options::Option& options) {
+  const auto ordering = options.parse_as<std::string>();
+  if (ordering == "Uniform") {
+    return domain::ElementWeight::Uniform;
+  } else if (ordering == "NumGridPoints") {
+    return domain::ElementWeight::NumGridPoints;
+  } else if (ordering == "NumGridPointsAndGridSpacing") {
+    return domain::ElementWeight::NumGridPointsAndGridSpacing;
+  }
+  PARSE_ERROR(options.context(),
+              "ElementWeight must be 'Uniform', 'NumGridPoints', or, "
+              "'NumGridPointsAndGridSpacing'");
+}

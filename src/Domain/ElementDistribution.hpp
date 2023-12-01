@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "Options/Options.hpp"
+
 /// \cond
 template <size_t Dim>
 class Block;
@@ -40,6 +42,8 @@ enum class ElementWeight {
   /// details)
   NumGridPointsAndGridSpacing
 };
+
+std::ostream& operator<<(std::ostream& os, ElementWeight weight);
 
 /// \brief Get the cost of each `Element` in a list of `Block`s where
 /// `element_weight` specifies which weight distribution scheme to use
@@ -133,6 +137,8 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
  */
 template <size_t Dim>
 struct BlockZCurveProcDistribution {
+  BlockZCurveProcDistribution() = default;
+
   /// The `number_of_procs_with_elements` argument represents how many procs
   /// will have elements. This is not necessarily equal to the total number of
   /// procs because some global procs may be ignored by the sixth argument
@@ -166,3 +172,16 @@ struct BlockZCurveProcDistribution {
       block_element_distribution_;
 };
 }  // namespace domain
+
+template <>
+struct Options::create_from_yaml<domain::ElementWeight> {
+  template <typename Metavariables>
+  static domain::ElementWeight create(const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+domain::ElementWeight
+Options::create_from_yaml<domain::ElementWeight>::create<void>(
+    const Options::Option& options);

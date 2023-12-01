@@ -45,6 +45,7 @@ target_link_libraries(
   LinearOperators
   INTERFACE
   Observer
+  Parallel
   SystemUtilities
   )
 
