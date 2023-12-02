@@ -1384,24 +1384,9 @@ struct PointerMutateApplyBase {
   }
 };
 
-void test_mutate_apply() {
-  INFO("test mutate apply");
-  auto box = db::create<
-      db::AddSimpleTags<
-          test_databox_tags::Tag0, test_databox_tags::Tag1,
-          test_databox_tags::Tag2,
-          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                     test_databox_tags::VectorTag>>,
-          test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::Tag4Compute,
-                         test_databox_tags::Tag5Compute,
-                         test_databox_tags::MultiplyScalarByTwoCompute,
-                         test_databox_tags::PointerToCounterCompute,
-                         test_databox_tags::PointerToSumCompute>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-      Variables<tmpl::list<test_databox_tags::ScalarTag,
-                           test_databox_tags::VectorTag>>(2, 3.),
-      std::make_unique<int>(3));
+template <typename T>
+void test_mutate_apply(T& box) {
+  constexpr bool using_db_access = std::is_same_v<std::decay_t<T>, db::Access>;
   CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
@@ -1417,7 +1402,9 @@ void test_mutate_apply() {
     // [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
     // [mutate_apply_struct_example_stateful]
-    db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
+    if constexpr (not using_db_access) {
+      db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
+    }
 
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
@@ -1444,14 +1431,16 @@ void test_mutate_apply() {
         },
         make_not_null(&box));
     // [mutate_apply_lambda_example]
-    db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
-                     tmpl::list<test_databox_tags::Tag2Base>>(
-        [](const gsl::not_null<Scalar<DataVector>*> scalar,
-           const std::string& tag2) {
-          CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
-          CHECK(tag2 == "My Sample String"s);
-        },
-        make_not_null(&box));
+    if constexpr (not using_db_access) {
+      db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
+                       tmpl::list<test_databox_tags::Tag2Base>>(
+          [](const gsl::not_null<Scalar<DataVector>*> scalar,
+             const std::string& tag2) {
+            CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
+            CHECK(tag2 == "My Sample String"s);
+          },
+          make_not_null(&box));
+    }
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 12.)));
@@ -1463,17 +1452,31 @@ void test_mutate_apply() {
     CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
     // check with a forwarded return value
-    size_t size_of_internal_string =
-        db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
-                         tmpl::list<test_databox_tags::Tag2Base>>(
-            [](const gsl::not_null<Scalar<DataVector>*> scalar,
-               const std::string& tag2) {
-              CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
-              CHECK(tag2 == "My Sample String"s);
-              return tag2.size();
-            },
-            make_not_null(&box));
-    CHECK(size_of_internal_string == 16_st);
+    if constexpr (not using_db_access) {
+      size_t size_of_internal_string =
+          db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
+                           tmpl::list<test_databox_tags::Tag2Base>>(
+              [](const gsl::not_null<Scalar<DataVector>*> scalar,
+                 const std::string& tag2) {
+                CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
+                CHECK(tag2 == "My Sample String"s);
+                return tag2.size();
+              },
+              make_not_null(&box));
+      CHECK(size_of_internal_string == 16_st);
+    } else {
+      size_t size_of_internal_string =
+          db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
+                           tmpl::list<test_databox_tags::Tag2>>(
+              [](const gsl::not_null<Scalar<DataVector>*> scalar,
+                 const std::string& tag2) {
+                CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
+                CHECK(tag2 == "My Sample String"s);
+                return tag2.size();
+              },
+              make_not_null(&box));
+      CHECK(size_of_internal_string == 16_st);
+    }
 
     db::mutate_apply<
         tmpl::list<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
@@ -1538,58 +1541,93 @@ void test_mutate_apply() {
     db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
         [](const gsl::not_null<std::unique_ptr<int>*> p) { **p = 6; },
         make_not_null(&box));
-    db::mutate_apply<tmpl::list<>,
-                     tmpl::list<test_databox_tags::PointerBase,
-                                test_databox_tags::PointerToCounterBase>>(
-        [](const int& simple_base, const int& compute_base) {
-          CHECK(simple_base == 6);
-          CHECK(compute_base == 7);
-        },
-        make_not_null(&box));
+    if constexpr (not using_db_access) {
+      db::mutate_apply<tmpl::list<>,
+                       tmpl::list<test_databox_tags::PointerBase,
+                                  test_databox_tags::PointerToCounterBase>>(
+          [](const int& simple_base, const int& compute_base) {
+            CHECK(simple_base == 6);
+            CHECK(compute_base == 7);
+          },
+          make_not_null(&box));
+    }
 
     db::mutate_apply<PointerMutateApply>(make_not_null(&box));
+    CHECK(db::get<test_databox_tags::Pointer>(box) == 7);
 
-    db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
-    CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
+    if constexpr (not using_db_access) {
+      db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
+      CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
+    }
   }
 
-  {
+  if constexpr (not using_db_access) {
     INFO("Tags::DataBox");
     db::mutate_apply<tmpl::list<>,
                      tmpl::list<::Tags::DataBox, test_databox_tags::Tag0>>(
-        [](const decltype(box)& /*box*/, const double& /*tag0*/) {},
-        make_not_null(&box));
+        [](const T& /*box*/, const double& /*tag0*/) {}, make_not_null(&box));
     db::mutate_apply<tmpl::list<::Tags::DataBox>,
                      tmpl::list<test_databox_tags::Tag0>>(
-        [](const gsl::not_null<decltype(box)*> /*box*/,
-           const double& /*tag0*/) {},
+        [](const gsl::not_null<T*> /*box*/, const double& /*tag0*/) {},
         make_not_null(&box));
 
     struct ReadApply {
-      using return_tags = tmpl::list<>;
-      using argument_tags = tmpl::list<::Tags::DataBox>;
-      static void apply(const decltype(box)& /*box*/) {}
+      using return_tags [[maybe_unused]] = tmpl::list<>;
+      using argument_tags [[maybe_unused]] = tmpl::list<::Tags::DataBox>;
+      static void apply(const T& /*box*/) {}
     };
     struct ReadCall {
-      using return_tags = tmpl::list<>;
-      using argument_tags = tmpl::list<::Tags::DataBox>;
-      void operator()(const decltype(box)& /*box*/) const {}
+      using return_tags [[maybe_unused]] = tmpl::list<>;
+      using argument_tags [[maybe_unused]] = tmpl::list<::Tags::DataBox>;
+      void operator()(const T& /*box*/) const {}
     };
     struct WriteApply {
-      using return_tags = tmpl::list<::Tags::DataBox>;
-      using argument_tags = tmpl::list<>;
-      static void apply(const gsl::not_null<decltype(box)*> /*box*/) {}
+      using return_tags [[maybe_unused]] = tmpl::list<::Tags::DataBox>;
+      using argument_tags [[maybe_unused]] = tmpl::list<>;
+      static void apply(const gsl::not_null<T*> /*box*/) {}
     };
     struct WriteCall {
-      using return_tags = tmpl::list<::Tags::DataBox>;
-      using argument_tags = tmpl::list<>;
-      void operator()(const gsl::not_null<decltype(box)*> /*box*/) const {}
+      using return_tags [[maybe_unused]] = tmpl::list<::Tags::DataBox>;
+      using argument_tags [[maybe_unused]] = tmpl::list<>;
+      void operator()(const gsl::not_null<T*> /*box*/) const {}
     };
 
     db::mutate_apply<ReadApply>(make_not_null(&box));
     db::mutate_apply<ReadCall>(make_not_null(&box));
     db::mutate_apply<WriteApply>(make_not_null(&box));
     db::mutate_apply<WriteCall>(make_not_null(&box));
+  }
+}
+
+void test_mutate_apply() {
+  INFO("test mutate apply");
+  const auto create_box = []() {
+    return db::create<
+        db::AddSimpleTags<
+            test_databox_tags::Tag0, test_databox_tags::Tag1,
+            test_databox_tags::Tag2,
+            Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                       test_databox_tags::VectorTag>>,
+            test_databox_tags::Pointer>,
+        db::AddComputeTags<test_databox_tags::Tag4Compute,
+                           test_databox_tags::Tag5Compute,
+                           test_databox_tags::MultiplyScalarByTwoCompute,
+                           test_databox_tags::PointerToCounterCompute,
+                           test_databox_tags::PointerToSumCompute>>(
+        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+        Variables<tmpl::list<test_databox_tags::ScalarTag,
+                             test_databox_tags::VectorTag>>(2, 3.),
+        std::make_unique<int>(3));
+  };
+  {
+    INFO("DataBox");
+    auto box = create_box();
+    test_mutate_apply(box);
+  }
+  {
+    INFO("Access");
+    auto box = create_box();
+    test_mutate_apply(db::as_access(box));
   }
 }
 

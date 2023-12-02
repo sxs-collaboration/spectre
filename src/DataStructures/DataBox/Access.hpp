@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/IsApplyCallable.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Utilities/CleanupRoutine.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -12,6 +14,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsCallable.hpp"
 
 namespace db {
 /*!
@@ -92,4 +95,101 @@ decltype(auto) mutate(Invokable&& invokable, const gsl::not_null<Access*> box,
   return invokable(box->template mutate<MutateTags>()...,
                    std::forward<Args>(args)...);
 }
+
+namespace detail {
+template <typename... ReturnTags, typename... ArgumentTags, typename F,
+          typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
+    F&& f, const gsl::not_null<Access*> box, tmpl::list<ReturnTags...> /*meta*/,
+    tmpl::list<ArgumentTags...> /*meta*/, Args&&... args) {
+  static_assert(not(... or std::is_same_v<ArgumentTags, Tags::DataBox>),
+                "Cannot pass Tags::DataBox to mutate_apply when mutating "
+                "since the db::get won't work inside mutate_apply.");
+  if constexpr (detail::is_apply_callable_v<
+                    F, const gsl::not_null<typename ReturnTags::type*>...,
+                    const_item_type<ArgumentTags, tmpl::list<>>..., Args...>) {
+    return ::db::mutate<ReturnTags...>(
+        [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
+           const_item_type<ArgumentTags, tmpl::list<>>... args_items,
+           decltype(std::forward<Args>(args))... l_args) {
+          return std::decay_t<F>::apply(mutated_items..., args_items...,
+                                        std::forward<Args>(l_args)...);
+        },
+        box, db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
+  } else if constexpr (::tt::is_callable_v<
+                           F,
+                           const gsl::not_null<typename ReturnTags::type*>...,
+                           const_item_type<ArgumentTags, tmpl::list<>>...,
+                           Args...>) {
+    return ::db::mutate<ReturnTags...>(f, box, db::get<ArgumentTags>(*box)...,
+                                       std::forward<Args>(args)...);
+  } else {
+    error_function_not_callable<F, gsl::not_null<typename ReturnTags::type*>...,
+                                const_item_type<ArgumentTags, tmpl::list<>>...,
+                                Args...>();
+  }
+}
+}  // namespace detail
+
+/// @{
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the invokable `f` mutating items `MutateTags` and taking as
+ * additional arguments `ArgumentTags` and `args`.
+ *
+ * \details
+ * `f` must either be invokable with the arguments of type
+ * `gsl::not_null<db::item_type<MutateTags>*>...,
+ * db::const_item_type<ArgumentTags>..., Args...`
+ * where the first two pack expansions are over the elements in the typelists
+ * `MutateTags` and `ArgumentTags`, or have a static `apply` function that is
+ * callable with the same types. If the type of `f` specifies `return_tags` and
+ * `argument_tags` typelists, these are used for the `MutateTags` and
+ * `ArgumentTags`, respectively.
+ *
+ * Any return values of the invokable `f` are forwarded as returns to the
+ * `mutate_apply` call.
+ *
+ * \example
+ * An example of using `mutate_apply` with a lambda:
+ * \snippet Test_DataBox.cpp mutate_apply_lambda_example
+ *
+ * An example of a class with a static `apply` function
+ * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
+ * and how to use `mutate_apply` with the above class
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateful
+ * Note that the class exposes `return_tags` and `argument_tags` typelists, so
+ * we don't specify the template parameters explicitly.
+ * If the class `F` has no state, like in this example,
+ * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
+ * you can also use the stateless overload of `mutate_apply`:
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateless
+ *
+ * \tparam MutateTags typelist of Tags to mutate
+ * \tparam ArgumentTags typelist of additional items to retrieve from the
+ * `Access`
+ * \tparam F The invokable to apply
+ */
+template <typename MutateTags, typename ArgumentTags, typename F,
+          typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
+    F&& f, const gsl::not_null<Access*> box, Args&&... args) {
+  return detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
+                              ArgumentTags{}, std::forward<Args>(args)...);
+}
+
+template <typename F, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
+    F&& f, const gsl::not_null<Access*> box, Args&&... args) {
+  return mutate_apply<typename std::decay_t<F>::return_tags,
+                      typename std::decay_t<F>::argument_tags>(
+      std::forward<F>(f), box, std::forward<Args>(args)...);
+}
+
+template <typename F, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
+    const gsl::not_null<Access*> box, Args&&... args) {
+  return mutate_apply(F{}, box, std::forward<Args>(args)...);
+}
+/// @}
 }  // namespace db
