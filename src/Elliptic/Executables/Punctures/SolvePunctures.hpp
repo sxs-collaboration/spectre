@@ -52,7 +52,7 @@ struct Metavariables {
       tmpl::list<Punctures::Tags::AdmMassIntegrandCompute>;
   using observe_fields = tmpl::append<
       typename system::primal_fields, typename system::background_fields,
-      observe_integral_fields,
+      typename solver::observe_fields, observe_integral_fields,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
                      volume_dim, Frame::Inertial>>>;

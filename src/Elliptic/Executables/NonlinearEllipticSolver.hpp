@@ -161,6 +161,11 @@ struct Solver {
   using correction_fluxes_tag =
       db::add_tag_prefix<NonlinearSolver::Tags::Correction, fluxes_tag>;
 
+  /// Fields that may be observed to monitor the state of the solver
+  using observe_fields = tmpl::append<
+      typename nonlinear_solver::linear_solver_fields_tag::tags_list,
+      typename nonlinear_solver::linear_solver_source_tag::tags_list>;
+
   /// Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<nonlinear_solver, linear_solver, multigrid, schwarz_smoother>>;
