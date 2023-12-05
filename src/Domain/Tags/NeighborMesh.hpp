@@ -11,7 +11,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
-namespace evolution::dg::Tags {
+namespace domain::Tags {
 /*!
  * \brief Holds the mesh of each neighboring element.
  *
@@ -21,6 +21,6 @@ namespace evolution::dg::Tags {
  */
 template <size_t Dim>
 struct NeighborMesh : db::SimpleTag {
-  using type = DirectionalIdMap<Dim, Mesh<Dim>>;
+  using type = DirectionalIdMap<Dim, ::Mesh<Dim>>;
 };
-}  // namespace evolution::dg::Tags
+}  // namespace domain::Tags

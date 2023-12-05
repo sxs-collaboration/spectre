@@ -86,10 +86,14 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                          neighbors),
                      generator)) {
               CAPTURE(neighbor_info);
-              const auto new_neighbors =
-                  Neighbors<Dim>{new_neighbor_ids(element_id, direction,
-                                                  neighbors, neighbor_info),
-                                 neighbors.orientation()};
+              const auto neighbor_ids_and_meshes = new_neighbor_ids(
+                  element_id, direction, neighbors, neighbor_info);
+              std::unordered_set<ElementId<Dim>> new_neighbor_ids;
+              for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
+                new_neighbor_ids.insert(id);
+              }
+              const auto new_neighbors = Neighbors<Dim>{
+                  std::move(new_neighbor_ids), neighbors.orientation()};
               CAPTURE(new_neighbors);
               TestHelpers::domain::check_neighbors(new_neighbors, element_id,
                                                    direction);
@@ -111,10 +115,14 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                        neighbors),
                    generator)) {
             CAPTURE(neighbor_info);
+            const auto neighbor_ids_and_meshes = new_neighbor_ids(
+                element_id, direction, neighbors, neighbor_info);
+            std::unordered_set<ElementId<Dim>> new_neighbor_ids;
+            for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
+              new_neighbor_ids.insert(id);
+            }
             const auto new_neighbors =
-                Neighbors<Dim>{new_neighbor_ids(element_id, direction,
-                                                neighbors, neighbor_info),
-                               neighbors.orientation()};
+                Neighbors<Dim>{new_neighbor_ids, neighbors.orientation()};
             CAPTURE(new_neighbors);
             TestHelpers::domain::check_neighbors(new_neighbors, element_id,
                                                  direction);

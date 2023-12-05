@@ -16,10 +16,12 @@
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
@@ -57,7 +59,6 @@ struct InitializeParent {
           ElementId<Metavariables::volume_dim>,
           tuples::tagged_tuple_from_typelist<
               typename db::DataBox<DbTagList>::mutable_item_creation_tags>>
-
           children_items) {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     std::vector<std::tuple<
@@ -71,7 +72,7 @@ struct InitializeParent {
     }
     auto parent_neighbors = amr::neighbors_of_parent(
         parent_id, children_elements_and_neighbor_info);
-    Element<volume_dim> parent(parent_id, std::move(parent_neighbors));
+    Element<volume_dim> parent(parent_id, std::move(parent_neighbors.first));
 
     std::vector<Mesh<volume_dim>> projected_children_meshes{};
     projected_children_meshes.reserve(children_items.size());
@@ -89,8 +90,10 @@ struct InitializeParent {
     // Default initialization of amr::Tags::Info and amr::Tags::NeighborInfo
     // is okay
     ::Initialization::mutate_assign<tmpl::list<
-        ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>>>(
-        make_not_null(&box), std::move(parent), std::move(parent_mesh));
+        ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
+        ::domain::Tags::NeighborMesh<volume_dim>>>(
+        make_not_null(&box), std::move(parent), std::move(parent_mesh),
+        std::move(parent_neighbors.second));
 
     tmpl::for_each<typename Metavariables::amr::projectors>(
         [&box, &children_items](auto projector_v) {

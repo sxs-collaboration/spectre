@@ -18,6 +18,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -39,12 +40,13 @@ bool overlapping_within_one_level(const SegmentId& segment1,
 
 namespace amr {
 template <size_t VolumeDim>
-std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
+std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
     const ElementId<VolumeDim>& my_id, const Direction<VolumeDim>& direction,
     const Neighbors<VolumeDim>& previous_neighbors_in_direction,
     const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&
         previous_neighbors_amr_info) {
-  std::unordered_set<ElementId<VolumeDim>> new_neighbors_in_direction;
+  std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>>
+      new_neighbors_in_direction;
 
   const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
       previous_neighbors_in_direction.orientation();
@@ -65,9 +67,10 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
                     ? previous_segment_id.id_of_child(
                           direction_to_me_in_neighbor_frame.side())
                     : previous_segment_id));
-    new_neighbors_in_direction.emplace(
-        previous_neighbor_id.block_id(),
-        std::array<SegmentId, 1>({{new_segment_id}}));
+    new_neighbors_in_direction.try_emplace(
+        {previous_neighbor_id.block_id(),
+         std::array<SegmentId, 1>({{new_segment_id}})},
+        previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh);
     return new_neighbors_in_direction;
   }
 
@@ -87,6 +90,8 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
     // or children if I am the result of h-refinement)
     bool there_is_no_neighbor = false;
     const auto neighbor_segment_ids = previous_neighbor_id.segment_ids();
+    const auto& new_neighbor_mesh =
+        previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh;
     for (size_t d = 0; d < VolumeDim; ++d) {
       const amr::Flag neighbor_flag =
           previous_neighbors_amr_info.at(previous_neighbor_id).flags.at(d);
@@ -155,16 +160,22 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
       if constexpr (VolumeDim > 1) {
         for (const auto segment_id_eta : valid_neighbor_segment_ids[1]) {
           if constexpr (VolumeDim == 2) {
-            new_neighbors_in_direction.emplace(
-                previous_neighbor_id.block_id(),
-                std::array{segment_id_xi, segment_id_eta},
-                previous_neighbor_id.grid_index());
+            // multiple previous neighbors may have joined to form a new
+            // neighbor; it is assumed they have the same new_mesh
+            new_neighbors_in_direction.try_emplace(
+                {previous_neighbor_id.block_id(),
+                 std::array{segment_id_xi, segment_id_eta},
+                 previous_neighbor_id.grid_index()},
+                new_neighbor_mesh);
           } else if constexpr (VolumeDim == 3) {
             for (const auto segment_id_zeta : valid_neighbor_segment_ids[2]) {
-              new_neighbors_in_direction.emplace(
-                  previous_neighbor_id.block_id(),
-                  std::array{segment_id_xi, segment_id_eta, segment_id_zeta},
-                  previous_neighbor_id.grid_index());
+              // multiple previous neighbors may have joined to form a new
+              // neighbor; it is assumed they have the same new_mesh
+              new_neighbors_in_direction.try_emplace(
+                  {previous_neighbor_id.block_id(),
+                   std::array{segment_id_xi, segment_id_eta, segment_id_zeta},
+                   previous_neighbor_id.grid_index()},
+                  new_neighbor_mesh);
             }
           }
         }
@@ -178,7 +189,8 @@ std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                           \
-  template std::unordered_set<ElementId<DIM(data)>> new_neighbor_ids(  \
+  template std::unordered_map<ElementId<DIM(data)>, Mesh<DIM(data)>>   \
+  new_neighbor_ids(                                                    \
       const ElementId<DIM(data)>& my_id,                               \
       const Direction<DIM(data)>& direction,                           \
       const Neighbors<DIM(data)>& previous_neighbors_in_direction,     \

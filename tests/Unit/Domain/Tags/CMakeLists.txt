@@ -6,6 +6,7 @@ set(LIBRARY "Test_DomainTags")
 set(LIBRARY_SOURCES
   Test_ElementDistribution.cpp
   Test_Faces.cpp
+  Test_NeighborMesh.cpp
   Test_SurfaceJacobian.cpp
   )
 
@@ -19,5 +20,6 @@ target_link_libraries(
   DomainHelpers
   DomainStructure
   Parallel
+  Spectral
   Utilities
   )

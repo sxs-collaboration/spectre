@@ -24,6 +24,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -39,7 +40,6 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -106,8 +106,7 @@ struct component {
           evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::TciDecision,
           evolution::dg::subcell::Tags::DataForRdmpTci,
-          evolution::dg::Tags::NeighborMesh<Dim>,
-          ::Tags::Variables<tmpl::list<Var1>>,
+          domain::Tags::NeighborMesh<Dim>, ::Tags::Variables<tmpl::list<Var1>>,
           ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<::Tags::Variables<tmpl::list<Var1>>>,
           evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,

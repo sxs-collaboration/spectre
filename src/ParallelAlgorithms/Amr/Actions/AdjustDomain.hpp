@@ -15,10 +15,12 @@
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -94,7 +96,8 @@ struct AdjustDomain {
             Metavariables, ElementId<volume_dim>>;
     using tags_mutated_by_this_action = tmpl::list<
         ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
-        amr::Tags::Info<volume_dim>, amr::Tags::NeighborInfo<volume_dim>>;
+        ::domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
+        amr::Tags::NeighborInfo<volume_dim>>;
     using mutated_tags =
         tmpl::append<distributed_object_tags, tags_mutated_by_this_action,
                      typename detail::GetMutatedTags<amr_projectors>::type>;
@@ -154,15 +157,26 @@ struct AdjustDomain {
 
       // Determine new neighbors and update the Element
       {  // avoid shadowing when mutating flags below
-        const auto& amr_flags_of_neighbors =
+        using NeighborMeshType =
+            DirectionalIdMap<volume_dim, ::Mesh<volume_dim>>;
+        const auto& amr_info_of_neighbors =
             db::get<amr::Tags::NeighborInfo<volume_dim>>(box);
-        db::mutate<::domain::Tags::Element<volume_dim>>(
-            [&element_id, &amr_flags_of_neighbors](
-                const gsl::not_null<Element<volume_dim>*> element) {
+        db::mutate<::domain::Tags::Element<volume_dim>,
+                   ::domain::Tags::NeighborMesh<volume_dim>>(
+            [&element_id, &amr_info_of_neighbors](
+                const gsl::not_null<Element<volume_dim>*> element,
+                const gsl::not_null<NeighborMeshType*> neighbor_meshes) {
               auto new_neighbors = element->neighbors();
+              neighbor_meshes->clear();
               for (auto& [direction, neighbors] : new_neighbors) {
-                neighbors.set_ids_to(amr::new_neighbor_ids(
-                    element_id, direction, neighbors, amr_flags_of_neighbors));
+                const auto new_neighbor_ids_and_meshes = amr::new_neighbor_ids(
+                    element_id, direction, neighbors, amr_info_of_neighbors);
+                std::unordered_set<ElementId<volume_dim>> new_neighbor_ids;
+                for (const auto& [id, mesh] : new_neighbor_ids_and_meshes) {
+                  neighbor_meshes->insert({{direction, id}, mesh});
+                  new_neighbor_ids.insert(id);
+                }
+                neighbors.set_ids_to(new_neighbor_ids);
               }
               *element = Element<volume_dim>(element_id, new_neighbors);
             },

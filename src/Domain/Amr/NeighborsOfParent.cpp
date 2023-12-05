@@ -17,22 +17,28 @@
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace amr {
 template <size_t VolumeDim>
-DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
+std::pair<DirectionMap<VolumeDim, Neighbors<VolumeDim>>,
+          DirectionalIdMap<VolumeDim, Mesh<VolumeDim>>>
+neighbors_of_parent(
     const ElementId<VolumeDim>& parent_id,
     const std::vector<std::tuple<
         const Element<VolumeDim>&,
         const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&>>&
         children_elements_and_neighbor_info) {
-  DirectionMap<VolumeDim, Neighbors<VolumeDim>> result;
+  std::pair<DirectionMap<VolumeDim, Neighbors<VolumeDim>>,
+            DirectionalIdMap<VolumeDim, Mesh<VolumeDim>>>
+      result;
 
   std::vector<ElementId<VolumeDim>> children_ids;
   children_ids.reserve(children_elements_and_neighbor_info.size());
@@ -51,15 +57,19 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
           is_child(*(child_neighbors.ids().begin()))) {
         continue;  // neighbor in this direction was joined sibling
       }
-      if (0 == result.count(direction)) {
-        result.emplace(direction, Neighbors<VolumeDim>{
-                                      amr::new_neighbor_ids(
-                                          parent_id, direction, child_neighbors,
-                                          child_neighbor_info),
-                                      child_neighbors.orientation()});
+      const auto new_neighbor_ids_and_meshes = amr::new_neighbor_ids(
+          parent_id, direction, child_neighbors, child_neighbor_info);
+      std::unordered_set<ElementId<VolumeDim>> new_neighbor_ids;
+      for (const auto& [id, mesh] : new_neighbor_ids_and_meshes) {
+        result.second.insert_or_assign({direction, id}, mesh);
+        new_neighbor_ids.insert(id);
+      }
+      if (0 == result.first.count(direction)) {
+        result.first.emplace(
+            direction, Neighbors<VolumeDim>{new_neighbor_ids,
+                                            child_neighbors.orientation()});
       } else {
-        result.at(direction).add_ids(amr::new_neighbor_ids(
-            parent_id, direction, child_neighbors, child_neighbor_info));
+        result.first.at(direction).add_ids(new_neighbor_ids);
       }
     }
   }
@@ -69,7 +79,9 @@ DirectionMap<VolumeDim, Neighbors<VolumeDim>> neighbors_of_parent(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template DirectionMap<DIM(data), Neighbors<DIM(data)>> neighbors_of_parent( \
+  template std::pair<DirectionMap<DIM(data), Neighbors<DIM(data)>>,           \
+                     DirectionalIdMap<DIM(data), Mesh<DIM(data)>>>            \
+  neighbors_of_parent(                                                        \
       const ElementId<DIM(data)>& parent_id,                                  \
       const std::vector<std::tuple<                                           \
           const Element<DIM(data)>&,                                          \

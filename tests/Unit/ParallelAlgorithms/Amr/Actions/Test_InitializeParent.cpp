@@ -45,10 +45,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags = tmpl::list<>;
-  using simple_tags =
-      tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
-                 amr::Tags::NeighborInfo<volume_dim>>;
+  using simple_tags = tmpl::list<
+      domain::Tags::Element<volume_dim>, domain::Tags::Mesh<volume_dim>,
+      domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
+      amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -264,22 +264,27 @@ void test() {
                           Parallel::Tags::ArrayIndexImpl<ElementId<3>>,
                           Parallel::Tags::GlobalCacheImpl<Metavariables>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-                          amr::Tags::Info<3>, amr::Tags::NeighborInfo<3>>;
+                          domain::Tags::NeighborMesh<3>, amr::Tags::Info<3>,
+                          amr::Tags::NeighborInfo<3>>;
   std::unordered_map<ElementId<3>, TaggedTupleType> children_items;
+  DirectionalIdMap<3, Mesh<3>> unused_child_neighbor_mesh{};
   children_items.emplace(
       child_1_id,
       TaggedTupleType{Metavariables{}, child_1_id, nullptr, std::move(child_1),
-                      std::move(child_1_mesh), std::move(child_1_info),
+                      std::move(child_1_mesh), unused_child_neighbor_mesh,
+                      std::move(child_1_info),
                       std::move(child_1_neighbor_info)});
   children_items.emplace(
       child_2_id,
       TaggedTupleType{Metavariables{}, child_2_id, nullptr, std::move(child_2),
-                      std::move(child_2_mesh), std::move(child_2_info),
+                      std::move(child_2_mesh), unused_child_neighbor_mesh,
+                      std::move(child_2_info),
                       std::move(child_2_neighbor_info)});
   children_items.emplace(
       child_3_id,
       TaggedTupleType{Metavariables{}, child_3_id, nullptr, std::move(child_3),
-                      std::move(child_3_mesh), std::move(child_3_info),
+                      std::move(child_3_mesh), unused_child_neighbor_mesh,
+                      std::move(child_3_info),
                       std::move(child_3_neighbor_info)});
 
   DirectionMap<3, Neighbors<3>> expected_parent_neighbors{};
@@ -299,6 +304,28 @@ void test() {
       Direction<3>::upper_eta(),
       Neighbors<3>{std::unordered_set{neighbor_5_id}, b2_orientation});
   Element<3> expected_parent{parent_id, std::move(expected_parent_neighbors)};
+
+  DirectionalIdMap<3, Mesh<3>> expected_parent_neighbor_mesh{};
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::lower_xi(), neighbor_6_id}, neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::lower_xi(), neighbor_12_id},
+      neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::upper_xi(), neighbor_10_id},
+      neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::upper_xi(), neighbor_11_id},
+      neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::lower_eta(), neighbor_3_id},
+      neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::lower_eta(), neighbor_9_id},
+      neighbor_mesh);
+  expected_parent_neighbor_mesh.emplace(
+      DirectionalId<3>{Direction<3>::upper_eta(), neighbor_5_id},
+      neighbor_mesh);
 
   const amr::Info<3> expected_parent_info{
       std::array{amr::Flag::Undefined, amr::Flag::Undefined,
@@ -324,6 +351,9 @@ void test() {
           runner, parent_id) == expected_parent);
   CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<3>>(
             runner, parent_id) == expected_parent_mesh);
+  CHECK(ActionTesting::get_databox_tag<array_component,
+                                       domain::Tags::NeighborMesh<3>>(
+            runner, parent_id) == expected_parent_neighbor_mesh);
   CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<3>>(
             runner, parent_id) == expected_parent_info);
   CHECK(ActionTesting::get_databox_tag<array_component,

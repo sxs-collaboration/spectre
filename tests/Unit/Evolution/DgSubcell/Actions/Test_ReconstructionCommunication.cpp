@@ -22,6 +22,7 @@
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -40,7 +41,6 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -97,7 +97,7 @@ struct component {
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
       ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
-      evolution::dg::Tags::NeighborMesh<Dim>,
+      domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
@@ -287,8 +287,8 @@ void test(const bool use_cell_centered_flux) {
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
            Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{},
-           typename evolution::dg::Tags::NeighborMesh<Dim>::type{},
-           cell_centered_flux, Interps{}, Interps{}});
+           typename domain::Tags::NeighborMesh<Dim>::type{}, cell_centered_flux,
+           Interps{}, Interps{}});
       ++neighbor_tci_decision;
     }
   }
@@ -303,7 +303,7 @@ void test(const bool use_cell_centered_flux) {
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
        self_tci_decision, neighbor_decision, evolved_vars, mortar_data,
-       mortar_next_id, typename evolution::dg::Tags::NeighborMesh<Dim>::type{},
+       mortar_next_id, typename domain::Tags::NeighborMesh<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
        neighbor_dg_to_fd_interpolants});
 
@@ -548,8 +548,7 @@ void test(const bool use_cell_centered_flux) {
   // Check that we got a neighbor mesh from all neighbors.
   size_t total_neighbors = 0;
   const auto& neighbor_meshes =
-      get_databox_tag<comp, ::evolution::dg::Tags::NeighborMesh<Dim>>(runner,
-                                                                      self_id);
+      get_databox_tag<comp, ::domain::Tags::NeighborMesh<Dim>>(runner, self_id);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
       const auto it =

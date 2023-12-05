@@ -324,8 +324,7 @@ struct Metavariables {
             Initialization::Tags::InitialSlabSize<local_time_stepping>,
             ::domain::Tags::InitialExtents<Dim>,
             ::domain::Tags::InitialRefinementLevels<Dim>,
-            evolution::dg::Tags::Quadrature,
-            evolution::dg::Tags::NeighborMesh<Dim>>>;
+            evolution::dg::Tags::Quadrature>>;
   };
 
   using dg_element_array = DgElementArray<

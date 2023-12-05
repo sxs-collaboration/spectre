@@ -408,7 +408,7 @@ struct component {
       domain::Tags::InverseJacobian<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::Quadrature,
-      evolution::dg::Tags::NeighborMesh<Metavariables::volume_dim>>;
+      domain::Tags::NeighborMesh<Metavariables::volume_dim>>;
   using compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
@@ -585,7 +585,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       {time_step_id, local_next_time_step_id, time_step,
        std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
        dt_evolved_vars, evolved_vars, mesh, element, inertial_coords, inv_jac,
-       quadrature, typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
+       quadrature, typename domain::Tags::NeighborMesh<Dim>::type{}});
 
   // Initialize both the mortars
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
@@ -978,7 +978,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   // Check neighbor meshes
   size_t total_neighbors = 0;
   const auto& neighbor_meshes =
-      get_tag<::evolution::dg::Tags::NeighborMesh<Dim>>(runner, self_id);
+      get_tag<::domain::Tags::NeighborMesh<Dim>>(runner, self_id);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
       const auto it =

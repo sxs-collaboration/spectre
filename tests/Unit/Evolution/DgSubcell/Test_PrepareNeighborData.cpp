@@ -24,6 +24,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -244,7 +245,7 @@ void test(const bool all_neighbors_are_doing_dg,
       Tags::Reconstructor, domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
       variables_tag, evolution::dg::subcell::Tags::DataForRdmpTci,
-      evolution::dg::Tags::NeighborMesh<Dim>,
+      domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::SubcellOptions<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>>>(

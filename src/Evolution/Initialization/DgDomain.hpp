@@ -30,9 +30,9 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
-#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/TagsDomain.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -81,7 +81,7 @@ struct Domain {
 
   /// Tags for simple DataBox items that are default initialized.
   using default_initialized_simple_tags =
-      tmpl::list<evolution::dg::Tags::NeighborMesh<Dim>>;
+      tmpl::list<::domain::Tags::NeighborMesh<Dim>>;
 
   /// Tags for items fetched by the DataBox and passed to the apply function
   using argument_tags =

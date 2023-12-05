@@ -15,6 +15,8 @@
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -45,10 +47,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags = tmpl::list<>;
-  using simple_tags =
-      tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
-                 amr::Tags::NeighborInfo<volume_dim>>;
+  using simple_tags = tmpl::list<
+      domain::Tags::Element<volume_dim>, domain::Tags::Mesh<volume_dim>,
+      domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
+      amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -127,6 +129,18 @@ void test() {
                    aligned});
   const Element<2> expected_child{child_id,
                                   std::move(expected_child_neighbors)};
+  DirectionalIdMap<2, Mesh<2>> expected_child_neighbor_mesh{};
+  expected_child_neighbor_mesh.emplace(
+      DirectionalId<2>{Direction<2>::lower_xi(), sibling_id},
+      expected_child_mesh);
+  expected_child_neighbor_mesh.emplace(
+      DirectionalId<2>{Direction<2>::upper_xi(),
+                       expected_child_upper_neighbor_id_0},
+      neighbor_mesh);
+  expected_child_neighbor_mesh.emplace(
+      DirectionalId<2>{Direction<2>::upper_xi(),
+                       expected_child_upper_neighbor_id_1},
+      neighbor_mesh);
 
   const amr::Info<2> expected_child_info{
       std::array{amr::Flag::Undefined, amr::Flag::Undefined}, Mesh<2>{}};
@@ -150,6 +164,9 @@ void test() {
           runner, child_id) == expected_child);
   CHECK(ActionTesting::get_databox_tag<array_component, domain::Tags::Mesh<2>>(
             runner, child_id) == expected_child_mesh);
+  CHECK(ActionTesting::get_databox_tag<array_component,
+                                       domain::Tags::NeighborMesh<2>>(
+            runner, child_id) == expected_child_neighbor_mesh);
   CHECK(ActionTesting::get_databox_tag<array_component, amr::Tags::Info<2>>(
             runner, child_id) == expected_child_info);
   CHECK(ActionTesting::get_databox_tag<array_component,

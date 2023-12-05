@@ -233,7 +233,6 @@ struct EvolutionMetavars {
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,
-            evolution::dg::Tags::NeighborMesh<volume_dim>,
             Tags::StepperError<typename system::variables_tag>,
             Tags::PreviousStepperError<typename system::variables_tag>,
             Tags::StepperErrorUpdated,

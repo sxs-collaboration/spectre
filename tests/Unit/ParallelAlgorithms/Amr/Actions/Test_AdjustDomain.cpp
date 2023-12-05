@@ -18,6 +18,7 @@
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -90,10 +91,10 @@ struct ArrayComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
   using const_global_cache_tags = tmpl::list<>;
-  using simple_tags =
-      tmpl::list<domain::Tags::Element<volume_dim>,
-                 domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
-                 amr::Tags::NeighborInfo<volume_dim>>;
+  using simple_tags = tmpl::list<
+      domain::Tags::Element<volume_dim>, domain::Tags::Mesh<volume_dim>,
+      domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
+      amr::Tags::NeighborInfo<volume_dim>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -127,13 +128,15 @@ struct Metavariables {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
-        Parallel::Tags::GlobalCacheImpl<Metavariables>>>;
+        Parallel::Tags::GlobalCacheImpl<Metavariables>,
+        domain::Tags::NeighborMesh<1>>>;
   };
 };
 
 void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
                const ElementId<1>& element_id,
                const Element<1>& expected_element, const Mesh<1>& expected_mesh,
+               const DirectionalIdMap<1, Mesh<1>>& expected_neighbor_meshes,
                const amr::Info<1>& expected_info,
                const std::unordered_map<ElementId<1>, amr::Info<1>>&
                    expected_neighbor_info) {
@@ -148,6 +151,13 @@ void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
   CHECK(ActionTesting::get_databox_tag<array_component,
                                        amr::Tags::NeighborInfo<1>>(
             runner, element_id) == expected_neighbor_info);
+  const auto& neighbor_meshes =
+      ActionTesting::get_databox_tag<array_component,
+                                     domain::Tags::NeighborMesh<1>>(runner,
+                                                                    element_id);
+  for (const auto& [direction_id, mesh] : neighbor_meshes) {
+    CHECK(mesh == expected_neighbor_meshes.at(direction_id));
+  }
 }
 
 void test() {
@@ -213,19 +223,25 @@ void test() {
   std::unordered_map<ElementId<1>, amr::Info<1>> element_4_neighbor_info{
       {element_3_id, element_3_info}};
 
+  using NeighborMeshes = DirectionalIdMap<1, Mesh<1>>;
+
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_1_id,
-      {element_1, element_1_mesh, element_1_info, element_1_neighbor_info});
+      {element_1, element_1_mesh, NeighborMeshes{}, element_1_info,
+       element_1_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_2_id,
-      {element_2, element_2_mesh, element_2_info, element_2_neighbor_info});
+      {element_2, element_2_mesh, NeighborMeshes{}, element_2_info,
+       element_2_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_3_id,
-      {element_3, element_3_mesh, element_3_info, element_3_neighbor_info});
+      {element_3, element_3_mesh, NeighborMeshes{}, element_3_info,
+       element_3_neighbor_info});
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_4_id,
-      {element_4, element_4_mesh, element_4_info, element_4_neighbor_info});
+      {element_4, element_4_mesh, NeighborMeshes{}, element_4_info,
+       element_4_neighbor_info});
   ActionTesting::emplace_component<singleton_component>(&runner, 0);
 
   const auto check_for_empty_queues_on_elements =
@@ -281,12 +297,12 @@ void test() {
   CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
             runner, 0) == 0);
 
-  check_box(runner, element_1_id, element_1, element_1_mesh, element_1_info,
-            element_1_neighbor_info);
-  check_box(runner, element_2_id, element_2, element_2_mesh, element_2_info,
-            element_2_neighbor_info);
-  check_box(runner, element_4_id, element_4, element_4_mesh, element_4_info,
-            element_4_neighbor_info);
+  check_box(runner, element_1_id, element_1, element_1_mesh, NeighborMeshes{},
+            element_1_info, element_1_neighbor_info);
+  check_box(runner, element_2_id, element_2, element_2_mesh, NeighborMeshes{},
+            element_2_info, element_2_neighbor_info);
+  check_box(runner, element_4_id, element_4, element_4_mesh, NeighborMeshes{},
+            element_4_info, element_4_neighbor_info);
   const ElementId<1> new_parent_id{
       ElementId<1>{0, std::array{SegmentId{2, 0}}}};
   const ElementId<1> new_lower_child_id{
@@ -298,8 +314,14 @@ void test() {
            Neighbors<1>{std::unordered_set{new_parent_id}, aligned}},
           {Direction<1>::upper_xi(),
            Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
+  DirectionalIdMap<1, Mesh<1>> expected_element_3_neighbor_meshes;
+  expected_element_3_neighbor_meshes.emplace(std::pair{
+      DirectionalId{Direction<1>::lower_xi(), new_parent_id}, element_2_mesh});
+  expected_element_3_neighbor_meshes.emplace(
+      std::pair{DirectionalId{Direction<1>::upper_xi(), new_lower_child_id},
+                element_4_mesh});
   check_box(runner, element_3_id, element_3_post_refinement,
-            element_3_mesh_post_refinement,
+            element_3_mesh_post_refinement, expected_element_3_neighbor_meshes,
             {std::array{amr::Flag::Undefined}, element_3_mesh_post_refinement},
             {});
 }

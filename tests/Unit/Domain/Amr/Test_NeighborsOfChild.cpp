@@ -17,6 +17,7 @@
 #include "Domain/Amr/NewNeighborIds.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -25,9 +26,13 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Amr/NeighborFlagHelpers.hpp"
 #include "Helpers/Domain/Structure/NeighborHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 
 namespace {
 template <size_t Dim>
@@ -88,37 +93,55 @@ std::vector<Element<Dim>> valid_elements(
 }
 
 template <size_t Dim>
-std::vector<std::array<amr::Flag, Dim>> valid_parent_flags();
+Mesh<Dim> make_lgl_mesh(const std::array<size_t, Dim>& extents) {
+  return {extents, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto};
+}
+
+template <size_t Dim>
+std::vector<amr::Info<Dim>> valid_parent_info();
 
 template <>
-std::vector<std::array<amr::Flag, 1>> valid_parent_flags<1>() {
-  return std::vector{std::array{amr::Flag::Split}};
+std::vector<amr::Info<1>> valid_parent_info<1>() {
+  return std::vector{
+      amr::Info<1>{std::array{amr::Flag::Split}, make_lgl_mesh<1>({{3}})}};
 }
 
 template <>
-std::vector<std::array<amr::Flag, 2>> valid_parent_flags<2>() {
+std::vector<amr::Info<2>> valid_parent_info<2>() {
   return std::vector{
-      std::array{amr::Flag::Split, amr::Flag::Split},
-      std::array{amr::Flag::IncreaseResolution, amr::Flag::Split},
-      std::array{amr::Flag::Split, amr::Flag::IncreaseResolution}};
+      amr::Info<2>{std::array{amr::Flag::Split, amr::Flag::Split},
+                   make_lgl_mesh<2>({{3, 3}})},
+      amr::Info<2>{std::array{amr::Flag::IncreaseResolution, amr::Flag::Split},
+                   make_lgl_mesh<2>({{4, 3}})},
+      amr::Info<2>{std::array{amr::Flag::Split, amr::Flag::IncreaseResolution},
+                   make_lgl_mesh<2>({{3, 4}})}};
 }
 
 template <>
-std::vector<std::array<amr::Flag, 3>> valid_parent_flags<3>() {
+std::vector<amr::Info<3>> valid_parent_info<3>() {
   return std::vector{
-      std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split},
-      std::array{amr::Flag::IncreaseResolution, amr::Flag::Split,
-                 amr::Flag::Split},
-      std::array{amr::Flag::Split, amr::Flag::IncreaseResolution,
-                 amr::Flag::Split},
-      std::array{amr::Flag::Split, amr::Flag::Split,
-                 amr::Flag::IncreaseResolution},
-      std::array{amr::Flag::Split, amr::Flag::IncreaseResolution,
-                 amr::Flag::IncreaseResolution},
-      std::array{amr::Flag::IncreaseResolution, amr::Flag::Split,
-                 amr::Flag::IncreaseResolution},
-      std::array{amr::Flag::IncreaseResolution, amr::Flag::IncreaseResolution,
-                 amr::Flag::Split}};
+      amr::Info<3>{
+          std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split},
+          make_lgl_mesh<3>({{3, 3, 3}})},
+      amr::Info<3>{std::array{amr::Flag::IncreaseResolution, amr::Flag::Split,
+                              amr::Flag::Split},
+                   make_lgl_mesh<3>({{4, 3, 3}})},
+      amr::Info<3>{std::array{amr::Flag::Split, amr::Flag::IncreaseResolution,
+                              amr::Flag::Split},
+                   make_lgl_mesh<3>({{3, 4, 3}})},
+      amr::Info<3>{std::array{amr::Flag::Split, amr::Flag::Split,
+                              amr::Flag::IncreaseResolution},
+                   make_lgl_mesh<3>({{3, 3, 4}})},
+      amr::Info<3>{std::array{amr::Flag::Split, amr::Flag::IncreaseResolution,
+                              amr::Flag::IncreaseResolution},
+                   make_lgl_mesh<3>({{3, 4, 4}})},
+      amr::Info<3>{std::array{amr::Flag::IncreaseResolution, amr::Flag::Split,
+                              amr::Flag::IncreaseResolution},
+                   make_lgl_mesh<3>({{4, 3, 4}})},
+      amr::Info<3>{std::array{amr::Flag::IncreaseResolution,
+                              amr::Flag::IncreaseResolution, amr::Flag::Split},
+                   make_lgl_mesh<3>({{4, 4, 3}})}};
 }
 
 template <size_t Dim>
@@ -154,17 +177,18 @@ void test(const gsl::not_null<std::mt19937*> generator) {
     for (const auto& parent :
          random_sample(3, valid_elements(generator, parent_id), generator)) {
       CAPTURE(parent);
-      for (const auto& parent_flags : valid_parent_flags<Dim>()) {
-        CAPTURE(parent_flags);
-        for (const auto& parent_neighbor_info :
-             random_sample(3, valid_parent_neighbor_info(parent, parent_flags),
-                           generator)) {
+      for (const auto& parent_info : valid_parent_info<Dim>()) {
+        CAPTURE(parent_info);
+        for (const auto& parent_neighbor_info : random_sample(
+                 3, valid_parent_neighbor_info(parent, parent_info.flags),
+                 generator)) {
           CAPTURE(parent_neighbor_info);
           for (const auto& child_id :
-               amr::ids_of_children(parent_id, parent_flags)) {
+               amr::ids_of_children(parent_id, parent_info.flags)) {
             CAPTURE(child_id);
-            const auto new_neighbors = amr::neighbors_of_child(
-                parent, parent_flags, parent_neighbor_info, child_id);
+            const auto [new_neighbors, new_neighbor_meshes] =
+                amr::neighbors_of_child(parent, parent_info,
+                                        parent_neighbor_info, child_id);
             for (const auto& direction : std::vector{
                      Direction<Dim>::lower_xi(), Direction<Dim>::upper_xi()}) {
               TestHelpers::domain::check_neighbors(new_neighbors.at(direction),
