@@ -68,6 +68,105 @@ std::pair<size_t, size_t> create_span_for_time_value(
 
   return std::make_pair(span_start, span_end);
 }
+
+std::string get_text_radius(const std::string& cce_data_filename) {
+  const size_t r_pos = cce_data_filename.find_last_of('R');
+  const size_t dot_pos = cce_data_filename.find_last_of('.');
+  return cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+}
+
+void set_time_buffer_and_lmax(const gsl::not_null<DataVector*> time_buffer,
+                              size_t& l_max, const h5::Dat& data) {
+  const auto data_table_dimensions = data.get_dimensions();
+  const Matrix time_matrix =
+      data.get_data_subset(std::vector<size_t>{0}, 0, data_table_dimensions[0]);
+  *time_buffer = DataVector{data_table_dimensions[0]};
+
+  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
+    (*time_buffer)[i] = time_matrix(i, 0);
+  }
+
+  // Avoid compiler warning
+  size_t l_plus_one_squared = data_table_dimensions[1] / 2;
+  l_max =
+      static_cast<size_t>(sqrt(static_cast<double>(l_plus_one_squared)) - 1);
+}
+
+void update_buffer_with_modal_data(
+    const gsl::not_null<ComplexModalVector*> buffer_to_update,
+    const h5::Dat& read_data, const size_t computation_l_max,
+    const size_t l_max, const size_t time_span_start,
+    const size_t time_span_end, const bool is_real) {
+  size_t number_of_columns = read_data.get_dimensions()[1];
+  if (UNLIKELY(buffer_to_update->size() !=
+               square(computation_l_max + 1) *
+                   (time_span_end - time_span_start))) {
+    ERROR("Incorrect storage size for the data to be loaded in.");
+  }
+  std::vector<size_t> cols(number_of_columns - 1);
+  std::iota(cols.begin(), cols.end(), 1);
+  Matrix data_matrix = read_data.get_data_subset(
+      cols, time_span_start, time_span_end - time_span_start);
+  *buffer_to_update = 0.0;
+  for (size_t time_row = 0; time_row < time_span_end - time_span_start;
+       ++time_row) {
+    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max));
+         ++l) {
+      for (int m = -l; m <= l; ++m) {
+        if (is_real) {
+          if (m == 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row, static_cast<size_t>(square(l))), 0.0);
+          } else if (m > 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * m - 1)),
+                    data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * m)));  // NOLINT
+          } else {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                (-m % 2 == 0 ? 1.0 : -1.0) *
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * -m - 1)),
+                    -data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * -m)));  // NOLINT
+          }
+        } else {
+          (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                  computation_l_max, static_cast<size_t>(l),
+                                  m) *
+                                  (time_span_end - time_span_start) +
+                              time_row] =
+              std::complex<double>(
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max, static_cast<size_t>(l), m)),
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max, static_cast<size_t>(l), m) +
+                                  1));
+        }
+      }
+    }
+  }
+}
 }  // namespace detail
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
@@ -101,13 +200,7 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
   // was an old one that had a particular normalization bug
   has_version_history_ = cce_data_file_.exists<h5::Version>("/VersionHist");
 
-  // We assume that the filename has the extraction radius encoded as an
-  // integer between the last occurrence of 'R' and the last occurrence of
-  // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find_last_of('R');
-  const size_t dot_pos = cce_data_filename.find_last_of('.');
-  const std::string text_radius =
-      cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  const std::string text_radius = detail::get_text_radius(cce_data_filename);
   try {
     extraction_radius_ = static_cast<bool>(extraction_radius)
                              ? *extraction_radius
@@ -119,15 +212,9 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
         "CCE filename format). Provided filename : "
         << cce_data_filename);
   }
-  const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
-  const auto data_table_dimensions = lapse_data.get_dimensions();
-  const Matrix time_matrix = lapse_data.get_data_subset(
-      std::vector<size_t>{0}, 0, data_table_dimensions[0]);
-  time_buffer_ = DataVector{data_table_dimensions[0]};
-  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
-    time_buffer_[i] = time_matrix(i, 0);
-  }
-  l_max_ = sqrt(data_table_dimensions[1] / 2) - 1;
+
+  detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
+                                   cce_data_file_.get<h5::Dat>("/Lapse"));
   cce_data_file_.close_current_object();
 }
 
@@ -291,13 +378,7 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
       Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>>(
       dataset_names_) = "DuR";
 
-  // We assume that the filename has the extraction radius encoded as an
-  // integer between the last occurrence of 'R' and the last occurrence of
-  // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find_last_of('R');
-  const size_t dot_pos = cce_data_filename.find_last_of('.');
-  const std::string text_radius =
-      cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  const std::string text_radius = detail::get_text_radius(cce_data_filename);
   try {
     extraction_radius_ = static_cast<bool>(extraction_radius)
                              ? *extraction_radius
@@ -309,15 +390,8 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
     // `get_extraction_radius`.
   }
 
-  const auto& u_data = cce_data_file_.get<h5::Dat>("/U");
-  const auto data_table_dimensions = u_data.get_dimensions();
-  const Matrix time_matrix = u_data.get_data_subset(std::vector<size_t>{0}, 0,
-                                                    data_table_dimensions[0]);
-  time_buffer_ = DataVector{data_table_dimensions[0]};
-  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
-    time_buffer_[i] = time_matrix(i, 0);
-  }
-  l_max_ = sqrt(data_table_dimensions[1] / 2) - 1;
+  detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
+                                   cce_data_file_.get<h5::Dat>("/U"));
   cce_data_file_.close_current_object();
 }
 
@@ -364,75 +438,9 @@ void BondiWorldtubeH5BufferUpdater::update_buffer(
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end,
     const bool is_real) const {
-  size_t number_of_columns = read_data.get_dimensions()[1];
-  if (UNLIKELY(buffer_to_update->size() !=
-               square(computation_l_max + 1) *
-                   (time_span_end - time_span_start))) {
-    ERROR("Incorrect storage size for the data to be loaded in.");
-  }
-  std::vector<size_t> cols(number_of_columns - 1);
-  std::iota(cols.begin(), cols.end(), 1);
-  Matrix data_matrix = read_data.get_data_subset(
-      cols, time_span_start, time_span_end - time_span_start);
-  *buffer_to_update = 0.0;
-  for (size_t time_row = 0; time_row < time_span_end - time_span_start;
-       ++time_row) {
-    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max_));
-         ++l) {
-      for (int m = -l; m <= l; ++m) {
-        if (is_real) {
-          if (m == 0) {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                std::complex<double>(
-                    data_matrix(time_row, static_cast<size_t>(square(l))), 0.0);
-          } else if (m > 0) {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                std::complex<double>(
-                    data_matrix(time_row,
-                                static_cast<size_t>(square(l) + 2 * m - 1)),
-                    data_matrix(
-                        time_row,
-                        static_cast<size_t>(square(l) + 2 * m)));  // NOLINT
-          } else {
-            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                    computation_l_max, static_cast<size_t>(l),
-                                    m) *
-                                    (time_span_end - time_span_start) +
-                                time_row] =
-                (-m % 2 == 0 ? 1.0 : -1.0) *
-                std::complex<double>(
-                    data_matrix(time_row,
-                                static_cast<size_t>(square(l) + 2 * -m - 1)),
-                    -data_matrix(
-                        time_row,
-                        static_cast<size_t>(square(l) + 2 * -m)));  // NOLINT
-          }
-        } else {
-          (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                  computation_l_max, static_cast<size_t>(l),
-                                  m) *
-                                  (time_span_end - time_span_start) +
-                              time_row] =
-              std::complex<double>(
-                  data_matrix(time_row,
-                              2 * Spectral::Swsh::goldberg_mode_index(
-                                      l_max_, static_cast<size_t>(l), m)),
-                  data_matrix(time_row,
-                              2 * Spectral::Swsh::goldberg_mode_index(
-                                      l_max_, static_cast<size_t>(l), m) +
-                                  1));
-        }
-      }
-    }
-  }
+  detail::update_buffer_with_modal_data(
+      buffer_to_update, read_data, computation_l_max, l_max_, time_span_start,
+      time_span_end, is_real);
 }
 
 void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) {

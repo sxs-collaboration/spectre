@@ -81,6 +81,22 @@ std::string dataset_name_for_component(std::string base_name,
 std::pair<size_t, size_t> create_span_for_time_value(
     double time, size_t pad, size_t interpolator_length, size_t lower_bound,
     size_t upper_bound, const DataVector& time_buffer);
+
+// retrieves the extraction radius from the specified file.
+// We assume that the filename has the extraction radius encoded as an
+// integer between the last occurrence of 'R' and the last occurrence of
+// '.'. This is the format provided by SpEC.
+std::string get_text_radius(const std::string& cce_data_filename);
+
+// retrieves time stamps and lmax the from the specified file.
+void set_time_buffer_and_lmax(gsl::not_null<DataVector*> time_buffer,
+                              size_t& l_max, const h5::Dat& data);
+
+// retrieves modal data from Bondi or Klein-Gordon worldtube H5 file.
+void update_buffer_with_modal_data(
+    gsl::not_null<ComplexModalVector*> buffer_to_update,
+    const h5::Dat& read_data, size_t computation_l_max, size_t l_max,
+    size_t time_span_start, size_t time_span_end, bool is_real);
 }  // namespace detail
 
 /// the full set of tensors to be extracted from the worldtube h5 file

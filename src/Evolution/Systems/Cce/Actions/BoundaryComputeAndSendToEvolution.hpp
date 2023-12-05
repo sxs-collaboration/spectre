@@ -103,7 +103,9 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                ::Tags::Variables<
                    typename Metavariables::cce_boundary_communication_tags>>(
         [&successfully_populated, &time, &hdf5_lock](
-            const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager>*>
+            const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager<
+                Tags::characteristic_worldtube_boundary_tags<
+                    Tags::BoundaryValue>>>*>
                 worldtube_data_manager,
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>

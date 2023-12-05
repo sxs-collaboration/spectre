@@ -788,7 +788,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
       Cce::WorldtubeBufferUpdater<cce_metric_input_tags>>();
   register_derived_classes_with_charm<
       Cce::WorldtubeBufferUpdater<cce_bondi_input_tags>>();
-  register_derived_classes_with_charm<Cce::WorldtubeDataManager>();
+  register_derived_classes_with_charm<Cce::WorldtubeDataManager<
+      Cce::Tags::characteristic_worldtube_boundary_tags<
+          Cce::Tags::BoundaryValue>>>();
   register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
   {
