@@ -474,6 +474,28 @@ void test_list_of_names() {
         "Type1Containing2Digits3");
   CHECK(pretty_type::list_of_names<three_element_list>() ==
         "TestType, Type1Containing2Digits3, UniqueNonTemplateWithName");
+
+  CHECK(pretty_type::vector_of_get_names(empty_list{}).empty());
+  {
+    const auto vector_of_names =
+        pretty_type::vector_of_get_names(one_element_list{});
+    CAPTURE(vector_of_names);
+    REQUIRE(vector_of_names.size() == 1);
+    CHECK(vector_of_names[0].find(std::string{"Type1Containing2Digits3"}) !=
+          std::string::npos);
+  }
+  {
+    const auto vector_of_names =
+        pretty_type::vector_of_get_names(three_element_list{});
+    CAPTURE(vector_of_names);
+    REQUIRE(vector_of_names.size() == 3);
+    CHECK(vector_of_names[0].find(std::string{"TestType"}) !=
+          std::string::npos);
+    CHECK(vector_of_names[1].find(std::string{"Type1Containing2Digits3"}) !=
+          std::string::npos);
+    CHECK(vector_of_names[2].find(std::string{"NonTemplateWithName"}) !=
+          std::string::npos);
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.name_and_short_name",

@@ -61,12 +61,12 @@
                                       TArgs...>;
 
 // Separate macros to avoid compiler warnings about unused variables
-#define CREATE_IS_CALLABLE_R_V(METHOD_NAME)                     \
-  template <typename ReturnType, typename T, typename... Args>  \
-  static constexpr const bool is_##METHOD_NAME##_callable_r_v = \
+#define CREATE_IS_CALLABLE_R_V(METHOD_NAME)                    \
+  template <typename ReturnType, typename T, typename... Args> \
+  constexpr bool is_##METHOD_NAME##_callable_r_v =             \
       is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::value;
-#define CREATE_IS_CALLABLE_V(METHOD_NAME)                     \
-  template <typename T, typename... Args>                     \
-  static constexpr const bool is_##METHOD_NAME##_callable_v = \
+#define CREATE_IS_CALLABLE_V(METHOD_NAME)        \
+  template <typename T, typename... Args>        \
+  constexpr bool is_##METHOD_NAME##_callable_v = \
       is_##METHOD_NAME##_callable<T, Args...>::value;
 /// @}
