@@ -86,6 +86,10 @@ struct CheckpointAndExitRequested {
  * the computation to be continued, while minimizing the disc space taken up by
  * checkpoint files.
  *
+ * When restarting from the checkpoint, this phase control sends the control
+ * flow to a UpdateOptionsAtRestartFromCheckpoint phase, allowing the user to
+ * update (some) simulation parameters for the continuation of the run.
+ *
  * Note that this phase control is not a trigger on wallclock time. Rather,
  * it checks the elapsed wallclock time when called, likely from a global sync
  * point triggered by some other mechanism, e.g., at some slab boundary.
@@ -226,6 +230,12 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
       return std::make_pair(Parallel::Phase::Exit,
                             ArbitrationStrategy::RunPhaseImmediately);
     } else {
+      // if current_phase is WriteCheckpoint, we follow with updating options
+      if (current_phase == Parallel::Phase::WriteCheckpoint) {
+        return std::make_pair(
+            Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
+            ArbitrationStrategy::PermitAdditionalJumps);
+      }
       // Reset restart_phase until it is needed for the next checkpoint
       const auto result = restart_phase;
       restart_phase.reset();
