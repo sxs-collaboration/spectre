@@ -54,10 +54,6 @@ struct Sources {
                     const Scalar<DataVector>& beta,
                     const Scalar<DataVector>& field,
                     const tnsr::I<DataVector, 3>& field_flux);
-  static void apply(
-      gsl::not_null<tnsr::i<DataVector, 3>*> equation_for_field_gradient,
-      const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,
-      const Scalar<DataVector>& field);
 };
 
 /// The linearization of the sources \f$S\f$ for the first-order formulation of
@@ -72,12 +68,6 @@ struct LinearizedSources {
       const Scalar<DataVector>& field,
       const Scalar<DataVector>& field_correction,
       const tnsr::I<DataVector, 3>& field_flux_correction);
-  static void apply(gsl::not_null<tnsr::i<DataVector, 3>*>
-                        equation_for_field_gradient_correction,
-                    const Scalar<DataVector>& alpha,
-                    const Scalar<DataVector>& beta,
-                    const Scalar<DataVector>& field,
-                    const Scalar<DataVector>& field_correction);
 };
 
 }  // namespace Punctures

@@ -244,10 +244,10 @@ struct PrepareAndSendMortarData<
     // These memory buffers will be discarded when the action returns so we
     // don't inflate the memory usage of the simulation when the element is
     // inactive.
-    Variables<typename System::auxiliary_fields> auxiliary_fields_buffer{
-        num_points};
-    Variables<typename System::auxiliary_fluxes> auxiliary_fluxes_buffer{
-        num_points};
+    Variables<db::wrap_tags_in<::Tags::deriv,
+                               typename PrimalFieldsTag::type::tags_list,
+                               tmpl::size_t<Dim>, Frame::Inertial>>
+        deriv_fields{num_points};
     using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
     using fluxes_args_volume_tags =
         typename System::fluxes_computer::volume_tags;
@@ -261,8 +261,7 @@ struct PrepareAndSendMortarData<
                          fluxes_args_volume_tags>(get_items, box, direction));
     }
     elliptic::dg::prepare_mortar_data<System, Linearized>(
-        make_not_null(&auxiliary_fields_buffer),
-        make_not_null(&auxiliary_fluxes_buffer), make_not_null(&primal_fluxes),
+        make_not_null(&deriv_fields), make_not_null(&primal_fluxes),
         make_not_null(&all_mortar_data), db::get<PrimalFieldsTag>(box), element,
         db::get<domain::Tags::Mesh<Dim>>(box),
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
@@ -274,7 +273,6 @@ struct PrepareAndSendMortarData<
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         temporal_id, apply_boundary_condition,
         std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),
-        std::forward_as_tuple(db::get<SourcesArgsTags>(box)...),
         fluxes_args_on_faces);
 
     // Move the mutated data back into the DataBox

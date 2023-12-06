@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
@@ -36,8 +37,7 @@ struct OperatorAppliedTo : db::SimpleTag, db::PrefixTag {
 
 template <typename System, typename SolutionType, typename... Maps,
           typename... FluxesArgs, typename... SourcesArgs,
-          typename... PrimalFields, typename... AuxiliaryFields,
-          typename... PrimalFluxes, typename... AuxiliaryFluxes>
+          typename... PrimalFields, typename... PrimalFluxes>
 void verify_solution_impl(
     const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
     const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Maps...>
@@ -45,11 +45,12 @@ void verify_solution_impl(
     const double tolerance, const std::tuple<FluxesArgs...>& fluxes_args,
     const std::tuple<SourcesArgs...>& sources_args,
     tmpl::list<PrimalFields...> /*meta*/,
-    tmpl::list<AuxiliaryFields...> /*meta*/,
-    tmpl::list<PrimalFluxes...> /*meta*/,
-    tmpl::list<AuxiliaryFluxes...> /*meta*/) {
-  using all_fields = tmpl::list<PrimalFields..., AuxiliaryFields...>;
-  using all_fluxes = tmpl::list<PrimalFluxes..., AuxiliaryFluxes...>;
+    tmpl::list<PrimalFluxes...> /*meta*/) {
+  static constexpr size_t Dim = System::volume_dim;
+  using all_fields = tmpl::list<PrimalFields...>;
+  using deriv_fields = tmpl::list<
+      ::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>...>;
+  using all_fluxes = tmpl::list<PrimalFluxes...>;
   using FluxesComputer = typename System::fluxes_computer;
   using SourcesComputer = typename System::sources_computer;
   CAPTURE(mesh);
@@ -57,48 +58,57 @@ void verify_solution_impl(
   const size_t num_points = mesh.number_of_grid_points();
   const auto logical_coords = logical_coordinates(mesh);
   const auto inertial_coords = coord_map(logical_coords);
-  const auto solution_fields = variables_from_tagged_tuple(
-      solution.variables(inertial_coords, all_fields{}));
+  const auto inv_jacobian = coord_map.inv_jacobian(logical_coords);
+  const auto solution_fields = variables_from_tagged_tuple(solution.variables(
+      inertial_coords, tmpl::append<all_fields, deriv_fields>{}));
+
+  {
+    INFO("Test partial derivatives");
+    const auto numeric_derivs =
+        partial_derivatives<all_fields>(solution_fields, mesh, inv_jacobian);
+    Approx custom_approx = Approx::custom().epsilon(1.).scale(tolerance);
+    tmpl::for_each<deriv_fields>([&solution_fields, &numeric_derivs,
+                                  &custom_approx](auto deriv_field_tag_v) {
+      using deriv_field_tag = tmpl::type_from<decltype(deriv_field_tag_v)>;
+      const auto& numeric_deriv = get<deriv_field_tag>(numeric_derivs);
+      const auto& analytic_deriv = get<deriv_field_tag>(solution_fields);
+      CHECK_ITERABLE_CUSTOM_APPROX(numeric_deriv, analytic_deriv,
+                                   custom_approx);
+    });
+  }
 
   // Apply operator to solution fields: -div(F) + S = f
   Variables<all_fluxes> fluxes{num_points};
   std::apply(
       [&fluxes, &solution_fields](const auto&... expanded_fluxes_args) {
-        FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(fluxes))...,
-                              expanded_fluxes_args...,
-                              get<AuxiliaryFields>(solution_fields)...);
-        FluxesComputer::apply(make_not_null(&get<AuxiliaryFluxes>(fluxes))...,
-                              expanded_fluxes_args...,
-                              get<PrimalFields>(solution_fields)...);
+        FluxesComputer::apply(
+            make_not_null(&get<PrimalFluxes>(fluxes))...,
+            expanded_fluxes_args..., get<PrimalFields>(solution_fields)...,
+            get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>,
+                              Frame::Inertial>>(solution_fields)...);
       },
       fluxes_args);
   Variables<db::wrap_tags_in<Tags::OperatorAppliedTo, all_fields>>
       operator_applied_to_fields{num_points};
   divergence(make_not_null(&operator_applied_to_fields), fluxes, mesh,
-             coord_map.inv_jacobian(logical_coords));
+             inv_jacobian);
   operator_applied_to_fields *= -1.;
-  std::apply(
-      [&operator_applied_to_fields, &solution_fields,
-       &fluxes](const auto&... expanded_sources_args) {
-        SourcesComputer::apply(
-            make_not_null(&get<Tags::OperatorAppliedTo<AuxiliaryFields>>(
-                operator_applied_to_fields))...,
-            expanded_sources_args..., get<PrimalFields>(solution_fields)...);
-        SourcesComputer::apply(
-            make_not_null(&get<Tags::OperatorAppliedTo<PrimalFields>>(
-                operator_applied_to_fields))...,
-            expanded_sources_args..., get<PrimalFields>(solution_fields)...,
-            get<PrimalFluxes>(fluxes)...);
-      },
-      sources_args);
+  if constexpr (not std::is_same_v<SourcesComputer, void>) {
+    std::apply(
+        [&operator_applied_to_fields, &solution_fields,
+         &fluxes](const auto&... expanded_sources_args) {
+          SourcesComputer::apply(
+              make_not_null(&get<Tags::OperatorAppliedTo<PrimalFields>>(
+                  operator_applied_to_fields))...,
+              expanded_sources_args..., get<PrimalFields>(solution_fields)...,
+              get<PrimalFluxes>(fluxes)...);
+        },
+        sources_args);
+  }
 
-  // Set RHS for auxiliary equations to minus auxiliary fields, and for primal
-  // equations to the solution's fixed sources f(x)
+  // Set RHS to the solution's fixed sources f(x)
   Variables<db::wrap_tags_in<::Tags::FixedSource, all_fields>> fixed_sources{
-      num_points, 0.};
-  expand_pack((get<::Tags::FixedSource<AuxiliaryFields>>(fixed_sources) =
-                   get<AuxiliaryFields>(solution_fields))...);
-  fixed_sources *= -1.;
+      num_points};
   fixed_sources.assign_subset(solution.variables(
       inertial_coords, tmpl::list<::Tags::FixedSource<PrimalFields>...>{}));
 
@@ -146,8 +156,7 @@ void verify_solution(
     const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
   detail::verify_solution_impl<System>(
       solution, mesh, coord_map, tolerance, fluxes_args, sources_args,
-      typename System::primal_fields{}, typename System::auxiliary_fields{},
-      typename System::primal_fluxes{}, typename System::auxiliary_fluxes{});
+      typename System::primal_fields{}, typename System::primal_fluxes{});
 }
 
 template <typename System, typename SolutionType, typename... Maps>

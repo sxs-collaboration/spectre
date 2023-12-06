@@ -27,20 +27,11 @@ namespace Punctures {
  */
 struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
- private:
-  using field = Tags::Field;
-  using field_gradient = ::Tags::deriv<field, tmpl::size_t<3>, Frame::Inertial>;
-
- public:
   static constexpr size_t volume_dim = 3;
 
-  using primal_fields = tmpl::list<field>;
-  using auxiliary_fields = tmpl::list<field_gradient>;
-
+  using primal_fields = tmpl::list<Tags::Field>;
   using primal_fluxes =
-      tmpl::list<::Tags::Flux<field, tmpl::size_t<3>, Frame::Inertial>>;
-  using auxiliary_fluxes = tmpl::list<
-      ::Tags::Flux<field_gradient, tmpl::size_t<3>, Frame::Inertial>>;
+      tmpl::list<::Tags::Flux<Tags::Field, tmpl::size_t<3>, Frame::Inertial>>;
 
   using background_fields = tmpl::list<Tags::Alpha, Tags::Beta>;
   using inv_metric_tag = void;
