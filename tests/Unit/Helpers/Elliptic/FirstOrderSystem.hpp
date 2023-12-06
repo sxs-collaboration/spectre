@@ -36,12 +36,15 @@ namespace TestHelpers {
 namespace elliptic {
 namespace detail {
 
-template <size_t Dim, typename FluxesComputer, typename... PrimalFields,
-          typename... PrimalFluxes, typename... FluxesArgsTags>
+template <typename System, typename... PrimalFields, typename... PrimalFluxes,
+          typename... FluxesArgsTags>
 void test_first_order_fluxes_computer_impl(
     const DataVector& used_for_size, tmpl::list<PrimalFields...> /*meta*/,
     tmpl::list<PrimalFluxes...> /*meta*/,
     tmpl::list<FluxesArgsTags...> /*meta*/) {
+  static constexpr size_t Dim = System::volume_dim;
+  using FluxesComputer = typename System::fluxes_computer;
+  using inv_metric_tag = typename System::inv_metric_tag;
   using vars_tag = ::Tags::Variables<tmpl::list<PrimalFields...>>;
   using VarsType = typename vars_tag::type;
   using deriv_vars_tag = db::add_tag_prefix<::Tags::deriv, vars_tag,
@@ -87,6 +90,37 @@ void test_first_order_fluxes_computer_impl(
                                             Frame::Inertial>...>>(
       FluxesComputer{}, make_not_null(&box));
   CHECK(expected_fluxes == get<fluxes_tag>(box));
+
+  {
+    INFO("Fluxes computer on face");
+    // Test that the two overloads are consistent: the one applied on the face
+    // just has the face normal "baked in".
+    const auto face_normal = make_with_random_values<tnsr::i<DataVector, Dim>>(
+        make_not_null(&generator), make_not_null(&dist), used_for_size);
+    tnsr::I<DataVector, Dim> face_normal_vector{used_for_size.size()};
+    if constexpr (std::is_same_v<inv_metric_tag, void>) {
+      for (size_t i = 0; i < Dim; ++i) {
+        face_normal_vector.get(i) = face_normal.get(i);
+      }
+    } else {
+      const auto& inv_metric = get<inv_metric_tag>(fluxes_args);
+      raise_or_lower_index(make_not_null(&face_normal_vector), face_normal,
+                           inv_metric);
+    }
+    DerivVarsType n_times_vars{used_for_size.size()};
+    normal_times_flux(make_not_null(&n_times_vars), face_normal, vars);
+    VarsType zero_vars{used_for_size.size(), 0.};
+    FluxesComputer::apply(
+        make_not_null(&get<PrimalFluxes>(expected_fluxes))...,
+        get<FluxesArgsTags>(fluxes_args)..., get<PrimalFields>(zero_vars)...,
+        get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
+            n_times_vars)...);
+    FluxesType fluxes_on_face{used_for_size.size()};
+    FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(fluxes_on_face))...,
+                          get<FluxesArgsTags>(fluxes_args)..., face_normal,
+                          face_normal_vector, get<PrimalFields>(vars)...);
+  CHECK_VARIABLES_APPROX(fluxes_on_face, expected_fluxes);
+  }
 }
 
 }  // namespace detail
@@ -103,8 +137,7 @@ void test_first_order_fluxes_computer_impl(
  */
 template <typename System>
 void test_first_order_fluxes_computer(const DataVector& used_for_size) {
-  detail::test_first_order_fluxes_computer_impl<
-      System::volume_dim, typename System::fluxes_computer>(
+  detail::test_first_order_fluxes_computer_impl<System>(
       used_for_size, typename System::primal_fields{},
       typename System::primal_fluxes{},
       typename System::fluxes_computer::argument_tags{});

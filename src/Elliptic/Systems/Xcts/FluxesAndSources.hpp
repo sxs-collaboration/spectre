@@ -48,6 +48,11 @@ struct Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian> {
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       const Scalar<DataVector>& conformal_factor,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor);
 };
 
 template <>
@@ -60,6 +65,12 @@ struct Fluxes<Equations::Hamiltonian, Geometry::Curved> {
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
       const Scalar<DataVector>& conformal_factor,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      const tnsr::II<DataVector, 3>& inv_conformal_metric,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor);
 };
 
 template <>
@@ -74,6 +85,14 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian> {
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      gsl::not_null<tnsr::I<DataVector, 3>*>
+          flux_for_lapse_times_conformal_factor,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor,
+      const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <>
@@ -90,6 +109,15 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved> {
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      gsl::not_null<tnsr::I<DataVector, 3>*>
+          flux_for_lapse_times_conformal_factor,
+      const tnsr::II<DataVector, 3>& inv_conformal_metric,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor,
+      const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <>
@@ -107,6 +135,16 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian> {
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
       const tnsr::iJ<DataVector, 3>& deriv_shift_excess);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      gsl::not_null<tnsr::I<DataVector, 3>*>
+          flux_for_lapse_times_conformal_factor,
+      gsl::not_null<tnsr::II<DataVector, 3>*> longitudinal_shift_excess,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor,
+      const Scalar<DataVector>& lapse_times_conformal_factor,
+      const tnsr::I<DataVector, 3>& shift_excess);
 };
 
 template <>
@@ -130,6 +168,19 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved> {
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
       const tnsr::iJ<DataVector, 3>& deriv_shift_excess);
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
+      gsl::not_null<tnsr::I<DataVector, 3>*>
+          flux_for_lapse_times_conformal_factor,
+      gsl::not_null<tnsr::II<DataVector, 3>*> longitudinal_shift_excess,
+      const tnsr::ii<DataVector, 3>& /*conformal_metric*/,
+      const tnsr::II<DataVector, 3>& inv_conformal_metric,
+      const tnsr::Ijj<DataVector, 3>& christoffel_second_kind,
+      const tnsr::i<DataVector, 3>& face_normal,
+      const tnsr::I<DataVector, 3>& face_normal_vector,
+      const Scalar<DataVector>& conformal_factor,
+      const Scalar<DataVector>& lapse_times_conformal_factor,
+      const tnsr::I<DataVector, 3>& shift_excess);
 };
 /// \endcond
 

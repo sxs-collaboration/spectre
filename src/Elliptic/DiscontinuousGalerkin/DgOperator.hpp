@@ -294,6 +294,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
+      const DirectionMap<Dim, tnsr::I<DataVector, Dim>>& face_normal_vectors,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
@@ -393,13 +394,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t face_num_points = face_mesh.number_of_grid_points();
       const auto& face_normal = face_normals.at(direction);
+      const auto& face_normal_vector = face_normal_vectors.at(direction);
       const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
       const auto& fluxes_args_on_face = fluxes_args_on_faces.at(direction);
       Variables<tmpl::list<PrimalFluxesVars...>> primal_fluxes_on_face{};
       Variables<tmpl::list<PrimalVars...>> vars_on_face{};
-      Variables<tmpl::list<
-          ::Tags::deriv<PrimalVars, tmpl::size_t<Dim>, Frame::Inertial>...>>
-          n_times_vars{};
       BoundaryData<tmpl::list<PrimalMortarVars...>,
                    tmpl::list<PrimalMortarFluxes...>>
           boundary_data{face_num_points};
@@ -410,25 +409,17 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       } else {
         primal_fluxes_on_face.initialize(face_num_points);
         vars_on_face.initialize(face_num_points);
-        n_times_vars.initialize(face_num_points);
         // Compute F^i(n_j u) on faces
         ::dg::project_contiguous_data_to_boundary(make_not_null(&vars_on_face),
                                                   primal_vars, mesh, direction);
-        // TODO: replace with FluxesComputer overload that just takes the
-        // vars on the face and has the normal baked in
-        normal_times_flux(make_not_null(&n_times_vars), face_normal,
-                          vars_on_face);
-        Variables<tmpl::list<PrimalVars...>> zero_vars{face_num_points, 0.};
         std::apply(
-            [&boundary_data, &zero_vars,
-             &n_times_vars](const auto&... expanded_fluxes_args_on_face) {
+            [&boundary_data, &face_normal, &face_normal_vector,
+             &vars_on_face](const auto&... expanded_fluxes_args_on_face) {
               FluxesComputer::apply(
                   make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarFluxes>>(
                       boundary_data.field_data))...,
-                  expanded_fluxes_args_on_face...,
-                  get<PrimalVars>(zero_vars)...,
-                  get<::Tags::deriv<PrimalVars, tmpl::size_t<Dim>,
-                                    Frame::Inertial>>(n_times_vars)...);
+                  expanded_fluxes_args_on_face..., face_normal,
+                  face_normal_vector, get<PrimalVars>(vars_on_face)...);
             },
             fluxes_args_on_face);
         // Compute n_i F^i on faces
@@ -516,20 +507,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // The n.F (Neumann-type conditions) are done, but we have to compute
         // fluxes from the Dirichlet fields on the face. We re-use the memory
         // buffer from above.
-        n_times_vars.initialize(face_num_points);
-        normal_times_flux(make_not_null(&n_times_vars), face_normal,
-                          vars_on_face);
-        Variables<tmpl::list<PrimalVars...>> zero_vars{face_num_points, 0.};
         std::apply(
-            [&boundary_data, &zero_vars,
-             &n_times_vars](const auto&... expanded_fluxes_args_on_face) {
+            [&boundary_data, &face_normal, &face_normal_vector,
+             &vars_on_face](const auto&... expanded_fluxes_args_on_face) {
               FluxesComputer::apply(
                   make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarFluxes>>(
                       boundary_data.field_data))...,
-                  expanded_fluxes_args_on_face...,
-                  get<PrimalVars>(zero_vars)...,
-                  get<::Tags::deriv<PrimalVars, tmpl::size_t<Dim>,
-                                    Frame::Inertial>>(n_times_vars)...);
+                  expanded_fluxes_args_on_face..., face_normal,
+                  face_normal_vector, get<PrimalVars>(vars_on_face)...);
             },
             fluxes_args_on_face);
 
@@ -911,6 +896,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                             Frame::Inertial>& inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
+      const DirectionMap<Dim, tnsr::I<DataVector, Dim>>& face_normal_vectors,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const DirectionMap<Dim, Scalar<DataVector>>& face_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
@@ -950,8 +936,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         make_not_null(&unused_deriv_vars_buffer),
         make_not_null(&primal_fluxes_buffer), make_not_null(&all_mortar_data),
         zero_primal_vars, element, mesh, inv_jacobian, face_normals,
-        face_normal_magnitudes, all_mortar_meshes, all_mortar_sizes,
-        temporal_id, apply_boundary_condition, fluxes_args,
+        face_normal_vectors, face_normal_magnitudes, all_mortar_meshes,
+        all_mortar_sizes, temporal_id, apply_boundary_condition, fluxes_args,
         fluxes_args_on_faces);
     apply_operator<true>(
         make_not_null(&operator_applied_to_zero_vars),

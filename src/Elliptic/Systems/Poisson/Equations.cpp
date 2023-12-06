@@ -33,6 +33,16 @@ void curved_fluxes(
 }
 
 template <size_t Dim>
+void fluxes_on_face(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::I<DataVector, Dim>& face_normal_vector,
+                    const Scalar<DataVector>& field) {
+  *flux_for_field = face_normal_vector;
+  for (size_t d = 0; d < Dim; d++) {
+    flux_for_field->get(d) *= get(field);
+  }
+}
+
+template <size_t Dim>
 void add_curved_sources(
     const gsl::not_null<Scalar<DataVector>*> source_for_field,
     const tnsr::i<DataVector, Dim>& christoffel_contracted,
@@ -50,12 +60,31 @@ void Fluxes<Dim, Geometry::FlatCartesian>::apply(
 }
 
 template <size_t Dim>
+void Fluxes<Dim, Geometry::FlatCartesian>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::i<DataVector, Dim>& /*face_normal*/,
+    const tnsr::I<DataVector, Dim>& face_normal_vector,
+    const Scalar<DataVector>& field) {
+  fluxes_on_face(flux_for_field, face_normal_vector, field);
+}
+
+template <size_t Dim>
 void Fluxes<Dim, Geometry::Curved>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
     const Scalar<DataVector>& /*field*/,
     const tnsr::i<DataVector, Dim>& field_gradient) {
   curved_fluxes(flux_for_field, inv_spatial_metric, field_gradient);
+}
+
+template <size_t Dim>
+void Fluxes<Dim, Geometry::Curved>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::II<DataVector, Dim>& /*inv_spatial_metric*/,
+    const tnsr::i<DataVector, Dim>& /*face_normal*/,
+    const tnsr::I<DataVector, Dim>& face_normal_vector,
+    const Scalar<DataVector>& field) {
+  fluxes_on_face(flux_for_field, face_normal_vector, field);
 }
 
 template <size_t Dim>

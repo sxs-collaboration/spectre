@@ -72,6 +72,13 @@ struct Fluxes {
                     const tnsr::I<DataVector, Dim>& coordinates,
                     const tnsr::I<DataVector, Dim>& displacement,
                     const tnsr::iJ<DataVector, Dim>& deriv_displacement);
+  static void apply(gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
+                    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
+                        constitutive_relation,
+                    const tnsr::I<DataVector, Dim>& coordinates,
+                    const tnsr::i<DataVector, Dim>& face_normal,
+                    const tnsr::I<DataVector, Dim>& face_normal_vector,
+                    const tnsr::I<DataVector, Dim>& displacement);
 };
 
 }  // namespace Elasticity

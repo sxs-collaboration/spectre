@@ -267,6 +267,8 @@ struct PrepareAndSendMortarData<
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
+        db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
+            box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         mortar_meshes,
@@ -592,6 +594,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                              Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
+        db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
+            box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         db::get<domain::Tags::Faces<

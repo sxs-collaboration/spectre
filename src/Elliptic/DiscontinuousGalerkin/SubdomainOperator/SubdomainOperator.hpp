@@ -148,6 +148,7 @@ struct SubdomainOperator
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+                 domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
                  domain::Tags::Faces<
                      Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
                  ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,

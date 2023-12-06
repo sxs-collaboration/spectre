@@ -66,6 +66,28 @@ void Fluxes<Dim>::apply(
                 coordinates);
 }
 
+template <size_t Dim>
+void Fluxes<Dim>::apply(
+    const gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
+    const ConstitutiveRelations::ConstitutiveRelation<Dim>&
+        constitutive_relation,
+    const tnsr::I<DataVector, Dim>& coordinates,
+    const tnsr::i<DataVector, Dim>& face_normal,
+    const tnsr::I<DataVector, Dim>& /*face_normal_vector*/,
+    const tnsr::I<DataVector, Dim>& displacement) {
+  tnsr::ii<DataVector, Dim> strain{displacement.begin()->size()};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      strain.get(i, j) = 0.5 * (face_normal.get(i) * displacement.get(j) +
+                                face_normal.get(j) * displacement.get(i));
+    }
+  }
+  constitutive_relation.stress(minus_stress, strain, coordinates);
+  for (auto& component : *minus_stress) {
+    component *= -1.;
+  }
+}
+
 }  // namespace Elasticity
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

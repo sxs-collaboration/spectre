@@ -46,6 +46,17 @@ void curved_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                    const tnsr::i<DataVector, Dim>& field_gradient);
 
 /*!
+ * \brief Compute the fluxes $F^i=\gamma^{ij} n_j u$ where $n_j$ is the
+ * `face_normal`.
+ *
+ * The `face_normal_vector` is $\gamma^{ij} n_j$.
+ */
+template <size_t Dim>
+void fluxes_on_face(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::I<DataVector, Dim>& face_normal_vector,
+                    const Scalar<DataVector>& field);
+
+/*!
  * \brief Add the sources \f$S=-\Gamma^i_{ij}v^j\f$
  * for the curved-space Poisson equation on a spatial metric \f$\gamma_{ij}\f$.
  *
@@ -70,6 +81,10 @@ struct Fluxes<Dim, Geometry::FlatCartesian> {
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const Scalar<DataVector>& field,
                     const tnsr::i<DataVector, Dim>& field_gradient);
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::i<DataVector, Dim>& face_normal,
+                    const tnsr::I<DataVector, Dim>& face_normal_vector,
+                    const Scalar<DataVector>& field);
 };
 
 /*!
@@ -87,6 +102,11 @@ struct Fluxes<Dim, Geometry::Curved> {
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
                     const Scalar<DataVector>& field,
                     const tnsr::i<DataVector, Dim>& field_gradient);
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
+                    const tnsr::i<DataVector, Dim>& face_normal,
+                    const tnsr::I<DataVector, Dim>& face_normal_vector,
+                    const Scalar<DataVector>& field);
 };
 
 /*!

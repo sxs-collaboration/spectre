@@ -16,6 +16,13 @@ template <size_t Dim, typename LocalFrame = Frame::Inertial>
 using FaceNormal =
     ::Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim, LocalFrame>>;
 
+/// The normalized face normal vector, i.e. the `FaceNormal` raised with the
+/// spatial metric.
+template <size_t Dim, typename LocalFrame = Frame::Inertial>
+struct FaceNormalVector : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim, LocalFrame>;
+};
+
 /// The magnitude of the _unnormalized_ face normal, see
 /// `::unnormalized_face_normal`
 template <size_t Dim, typename LocalFrame = Frame::Inertial>

@@ -100,10 +100,27 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   4. The partial derivatives of the `primal_fields`
  *
  *   The function can assume the output buffers are already correctly sized,
- *   but no guarantee is made on the values that the buffers hold at input. The
- *   class must have an additional `volume_tags` type alias that lists the
- *   subset of `argument_tags` that will be retrieved directly from the DataBox,
- *   instead of retrieving it from the face of an element.
+ *   but no guarantee is made on the values that the buffers hold at input.
+ *
+ *   The `fluxes_computer` must also have an `apply` function overload that is
+ *   evaluated on faces of DG elements. It computes the same fluxes
+ * \f$F_\alpha^i\f$, but with the field derivatives replaced by the the face
+ * normal times the fields, and with the non-principal (non-derivative) terms
+ * set to zero. Having this separate function is an optimization to take
+ * advantage of the face normal remaining constant throughout the solve, so it
+ * can be "baked in" to the flux. The function takes these arguments in this
+ * order:
+ *
+ *   1. The `primal_fluxes` as not-null pointer
+ *   2. The `argument_tags`
+ *   3. The `const tnsr::i<DataVector, Dim>& face_normal` ($n_i$)
+ *   4. The `const tnsr::I<DataVector, Dim>& face_normal_vector` ($n^i$)
+ *   5. The `primal_fields`
+ *
+ *   The `fluxes_computer` class must also have an additional `volume_tags` type
+ *   alias that lists the subset of `argument_tags` that will be retrieved
+ *   directly from the DataBox, instead of retrieving it from the face of an
+ *   element, when fluxes are applied on a face.
  *
  * - `sources_computer`: A class that defines the sources \f$S_\alpha\f$. Must
  *   have an `argument_tags` type alias and an `apply` function that adds the
