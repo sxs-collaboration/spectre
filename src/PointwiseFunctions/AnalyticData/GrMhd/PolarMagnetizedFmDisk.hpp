@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -18,7 +19,6 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/SphericalTorus.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

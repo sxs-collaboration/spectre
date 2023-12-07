@@ -7,11 +7,11 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 
 namespace {
 
@@ -21,8 +21,8 @@ DestTensorType tensor_transformed_by_python(
     const SrcTensorType& src_tensor, const DestTensorType& /*dest_tensor*/,
     const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>& jacobian,
     const std::string& suffix) {
-  return pypp::call<DestTensorType>("Transform", "to_different_frame" + suffix,
-                                    src_tensor, jacobian);
+  return pypp::call<DestTensorType>(
+      "FrameTransform", "to_different_frame" + suffix, src_tensor, jacobian);
 }
 
 template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
@@ -108,10 +108,10 @@ void test_transform_first_index_to_different_frame(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
-                  "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.FrameTransform",
+                  "[DataStructures][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
-      "PointwiseFunctions/GeneralRelativity/");
+      "DataStructures/Tensor/EagerMath/");
   const DataVector dv(5);
   test_transform_to_different_frame<1, Frame::Grid, Frame::Inertial>(double{});
   test_transform_to_different_frame<2, Frame::Grid, Frame::Inertial>(double{});

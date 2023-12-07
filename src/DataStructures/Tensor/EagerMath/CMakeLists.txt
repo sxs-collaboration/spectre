@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  FrameTransform.cpp
   OrthonormalOneform.cpp
   RaiseOrLowerIndex.cpp
   Trace.cpp
@@ -17,6 +18,7 @@ spectre_target_headers(
   Determinant.hpp
   DeterminantAndInverse.hpp
   DotProduct.hpp
+  FrameTransform.hpp
   Magnitude.hpp
   Norms.hpp
   OrthonormalOneform.hpp
