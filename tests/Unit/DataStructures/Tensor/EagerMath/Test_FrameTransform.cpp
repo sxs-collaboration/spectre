@@ -9,11 +9,20 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables/FrameTransform.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 
 namespace transform {
+namespace {
+
+struct Var1 : db::SimpleTag {
+  using type = tnsr::I<DataVector, 2, Frame::Inertial>;
+};
+struct Var2 : db::SimpleTag {
+  using type = tnsr::Ij<DataVector, 2, Frame::Inertial>;
+};
 
 template <typename SrcTensorType, typename DestTensorType, typename DataType,
           size_t Dim, typename DestFrame, typename SrcFrame>
@@ -160,7 +169,34 @@ void test_transform_first_index_to_different_frame() {
       CHECK(get<1, 1>(result) == 16.5);
     }
   }
+  {
+    INFO("Variables");
+    const size_t num_points = 3;
+    InverseJacobian<DataVector, 2, Frame::ElementLogical, Frame::Inertial>
+        inv_jacobian{num_points};
+    get<0, 0>(inv_jacobian) = 2.0;
+    get<1, 1>(inv_jacobian) = 3.0;
+    get<0, 1>(inv_jacobian) = 0.5;
+    get<1, 0>(inv_jacobian) = 1.5;
+    Variables<tmpl::list<Var1, Var2>> input{num_points};
+    std::iota(get<Var1>(input).begin(), get<Var1>(input).end(), 1.0);
+    std::iota(get<Var2>(input).begin(), get<Var2>(input).end(), 1.0);
+    CAPTURE(input);
+    const auto result = first_index_to_different_frame(input, inv_jacobian);
+    const auto& var1 =
+        get<Tags::TransformedFirstIndex<Var1, Frame::ElementLogical>>(result);
+    const auto& var2 =
+        get<Tags::TransformedFirstIndex<Var2, Frame::ElementLogical>>(result);
+    CHECK(get<0>(var1) == 3.);
+    CHECK(get<1>(var1) == 7.5);
+    CHECK(get<0, 0>(var2) == 3.);
+    CHECK(get<1, 0>(var2) == 7.5);
+    CHECK(get<0, 1>(var2) == 8.);
+    CHECK(get<1, 1>(var2) == 16.5);
+  }
 }
+
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.FrameTransform",
                   "[DataStructures][Unit]") {
