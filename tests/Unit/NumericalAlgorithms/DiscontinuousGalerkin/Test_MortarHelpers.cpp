@@ -39,10 +39,8 @@ Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) {
   return {extents, Spectral::Basis::Legendre,
           Spectral::Quadrature::GaussLobatto};
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_mesh",
-                  "[Unit][NumericalAlgorithms]") {
+void test_mortar_mesh() {
   CHECK(dg::mortar_mesh(lgl_mesh<0>({}), lgl_mesh<0>({})) == lgl_mesh<0>({}));
   CHECK(dg::mortar_mesh(lgl_mesh<1>({{3}}), lgl_mesh<1>({{5}})) ==
         lgl_mesh<1>({{5}}));
@@ -50,8 +48,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_mesh",
         lgl_mesh<2>({{3, 5}}));
 }
 
-SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
-                  "[Unit][NumericalAlgorithms]") {
+void test_mortar_size() {
   CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
                         ElementId<1>(0, {{{5, 2}}}), 0, {}) ==
         std::array<Spectral::MortarSize, 0>{});
@@ -135,7 +132,6 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
             {Spectral::MortarSize::UpperHalf, Spectral::MortarSize::Full}});
 }
 
-namespace {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -172,10 +168,8 @@ DataVector basis6(const DataVector& coords) {
          (-5. + square(coords) *
                     (105. + square(coords) * (-315. + square(coords) * 231.)));
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
-                  "[Unit][NumericalAlgorithms]") {
+void test_projections() {
   using Spectral::MortarSize;
   const auto all_mortar_sizes = {MortarSize::Full, MortarSize::LowerHalf,
                                  MortarSize::UpperHalf};
@@ -322,4 +316,12 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
       }
     }
   }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DG.MortarHelpers",
+                  "[Unit][NumericalAlgorithms]") {
+  test_mortar_mesh();
+  test_mortar_size();
+  test_projections();
 }
