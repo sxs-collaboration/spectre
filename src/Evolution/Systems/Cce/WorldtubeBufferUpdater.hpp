@@ -97,6 +97,20 @@ void update_buffer_with_modal_data(
     gsl::not_null<ComplexModalVector*> buffer_to_update,
     const h5::Dat& read_data, size_t computation_l_max, size_t l_max,
     size_t time_span_start, size_t time_span_end, bool is_real);
+
+// updates `time_span_start` and `time_span_end` based on the provided `time`,
+// and inserts the cooresponding modal data (for `InputTags`) from worldtube H5
+// file into `buffers`. The function is used by Bondi and Klein-Gordon systems.
+template <typename InputTags>
+double update_buffers_for_time(
+    gsl::not_null<Variables<InputTags>*> buffers,
+    gsl::not_null<size_t*> time_span_start,
+    gsl::not_null<size_t*> time_span_end, double time, size_t computation_l_max,
+    size_t l_max, size_t interpolator_length, size_t buffer_depth,
+    const DataVector& time_buffer,
+    const tuples::tagged_tuple_from_typelist<
+        db::wrap_tags_in<Tags::detail::InputDataSet, InputTags>>& dataset_names,
+    const h5::H5File<h5::AccessType::ReadOnly>& cce_data_file);
 }  // namespace detail
 
 /// the full set of tensors to be extracted from the worldtube h5 file
