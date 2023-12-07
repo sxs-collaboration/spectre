@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
@@ -23,10 +24,11 @@ namespace Elasticity::Solutions {
 namespace detail {
 template <typename DataType>
 struct BentBeamVariables {
-  using Cache =
-      CachedTempBuffer<Tags::Displacement<2>, Tags::Strain<2>,
-                       Tags::MinusStress<2>, Tags::PotentialEnergyDensity<2>,
-                       ::Tags::FixedSource<Tags::Displacement<2>>>;
+  using Cache = CachedTempBuffer<
+      Tags::Displacement<2>,
+      ::Tags::deriv<Tags::Displacement<2>, tmpl::size_t<2>, Frame::Inertial>,
+      Tags::Strain<2>, Tags::MinusStress<2>, Tags::PotentialEnergyDensity<2>,
+      ::Tags::FixedSource<Tags::Displacement<2>>>;
 
   const tnsr::I<DataType, 2>& x;
   const double length;
@@ -37,6 +39,10 @@ struct BentBeamVariables {
   void operator()(gsl::not_null<tnsr::I<DataType, 2>*> displacement,
                   gsl::not_null<Cache*> cache,
                   Tags::Displacement<2> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::iJ<DataType, 2>*> deriv_displacement,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<Tags::Displacement<2>, tmpl::size_t<2>,
+                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 2>*> strain,
                   gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, 2>*> minus_stress,

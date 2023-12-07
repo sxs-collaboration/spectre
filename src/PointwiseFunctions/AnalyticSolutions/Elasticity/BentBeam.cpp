@@ -35,14 +35,29 @@ void BentBeamVariables<DataType>::operator()(
 
 template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::ii<DataType, 2>*> strain,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Strain<2> /*meta*/) const {
+    const gsl::not_null<tnsr::iJ<DataType, 2>*> deriv_displacement,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<Tags::Displacement<2>, tmpl::size_t<2>,
+                  Frame::Inertial> /*meta*/) const {
   const double youngs_modulus = constitutive_relation.youngs_modulus();
   const double poisson_ratio = constitutive_relation.poisson_ratio();
   const double prefactor =
       12. * bending_moment / (youngs_modulus * cube(height));
-  get<0, 0>(*strain) = -prefactor * get<1>(x);
-  get<1, 1>(*strain) = prefactor * poisson_ratio * get<1>(x);
+  get<0, 0>(*deriv_displacement) = -prefactor * get<1>(x);
+  get<1, 0>(*deriv_displacement) = -prefactor * get<0>(x);
+  get<0, 1>(*deriv_displacement) = prefactor * get<0>(x);
+  get<1, 1>(*deriv_displacement) = prefactor * poisson_ratio * get<1>(x);
+}
+
+template <typename DataType>
+void BentBeamVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 2>*> strain,
+    const gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const {
+  const auto& deriv_displacement = cache->get_var(
+      *this,
+      ::Tags::deriv<Tags::Displacement<2>, tmpl::size_t<2>, Frame::Inertial>{});
+  get<0, 0>(*strain) = get<0, 0>(deriv_displacement);
+  get<1, 1>(*strain) = get<1, 1>(deriv_displacement);
   get<0, 1>(*strain) = 0.;
 }
 
