@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   OrthonormalOneform.cpp
   RaiseOrLowerIndex.cpp
+  Trace.cpp
   )
 
 spectre_target_headers(
@@ -21,6 +22,7 @@ spectre_target_headers(
   OrthonormalOneform.hpp
   OuterProduct.hpp
   RaiseOrLowerIndex.hpp
+  Trace.hpp
   )
 
 add_subdirectory(Python)
