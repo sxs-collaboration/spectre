@@ -190,51 +190,49 @@ struct has_upper_bound_on_size<
     S, std::void_t<decltype(std::declval<S>().upper_bound_on_size())>>
     : std::true_type {};
 
-template <typename OptionList>
-struct print {
-  using value_type = std::string;
-  template <typename Tag>
-  void operator()(tmpl::type_<Tag> /*meta*/);
-  std::string indent{"  "};
-  value_type value{};
-};
+template <typename Tag>
+std::string print_tag(const std::string& indent) {
+  const std::string new_line = "\n" + indent + "  ";
+  std::ostringstream ss;
+  ss << indent << pretty_type::name<Tag>() << ":" << new_line
+     << "type=" << yaml_type<typename Tag::type>::value();
+  if constexpr (has_suggested<Tag>::value) {
+    if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
+      call_with_dynamic_type<
+          void, typename Tag::type::element_type::creatable_classes>(
+          Tag::suggested_value().get(), [&new_line, &ss](const auto* derived) {
+            ss << new_line << "suggested=" << std::boolalpha
+               << pretty_type::short_name<decltype(*derived)>();
+          });
+    } else {
+      ss << new_line << "suggested="
+         << (MakeString{} << std::boolalpha << Tag::suggested_value());
+    }
+  }
+  if constexpr (has_lower_bound<Tag>::value) {
+    ss << new_line << "min=" << (MakeString{} << Tag::lower_bound());
+  }
+  if constexpr (has_upper_bound<Tag>::value) {
+    ss << new_line << "max=" << (MakeString{} << Tag::upper_bound());
+  }
+  if constexpr (has_lower_bound_on_size<Tag>::value) {
+    ss << new_line << "min size=" << Tag::lower_bound_on_size();
+  }
+  if constexpr (has_upper_bound_on_size<Tag>::value) {
+    ss << new_line << "max size=" << Tag::upper_bound_on_size();
+  }
+  ss << "\n" << wrap_text(Tag::help, 77, indent + "  ") << "\n\n";
+  return ss.str();
+}
+
+template <typename OptionList, typename TagsAndSubgroups>
+struct print;
 
 template <typename Tag, typename OptionList>
 struct print_impl {
   static std::string apply(const std::string& indent) {
     if constexpr (tmpl::list_contains_v<OptionList, Tag>) {
-      const std::string new_line = "\n" + indent + "  ";
-      std::ostringstream ss;
-      ss << indent << pretty_type::name<Tag>() << ":" << new_line
-         << "type=" << yaml_type<typename Tag::type>::value();
-      if constexpr (has_suggested<Tag>::value) {
-        if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
-          call_with_dynamic_type<
-              void, typename Tag::type::element_type::creatable_classes>(
-              Tag::suggested_value().get(),
-              [&new_line, &ss](const auto* derived) {
-                ss << new_line << "suggested=" << std::boolalpha
-                   << pretty_type::short_name<decltype(*derived)>();
-              });
-        } else {
-          ss << new_line << "suggested="
-             << (MakeString{} << std::boolalpha << Tag::suggested_value());
-        }
-      }
-      if constexpr (has_lower_bound<Tag>::value) {
-        ss << new_line << "min=" << (MakeString{} << Tag::lower_bound());
-      }
-      if constexpr (has_upper_bound<Tag>::value) {
-        ss << new_line << "max=" << (MakeString{} << Tag::upper_bound());
-      }
-      if constexpr (has_lower_bound_on_size<Tag>::value) {
-        ss << new_line << "min size=" << Tag::lower_bound_on_size();
-      }
-      if constexpr (has_upper_bound_on_size<Tag>::value) {
-        ss << new_line << "max size=" << Tag::upper_bound_on_size();
-      }
-      ss << "\n" << wrap_text(Tag::help, 77, indent + "  ") << "\n\n";
-      return ss.str();
+      return print_tag<Tag>(indent);
     } else {
       // A group
       std::ostringstream ss;
@@ -245,32 +243,31 @@ struct print_impl {
   }
 };
 
+template <typename... Alternatives>
+std::string print_alternatives(const std::string& header,
+                               const std::string& indent) {
+  return (
+      indent + header + "\n" + ... +
+      (print<tmpl::list<Alternatives...>, Alternatives>::apply(indent + "  ")));
+}
+
 template <typename FirstAlternative, typename... OtherAlternatives,
           typename OptionList>
 struct print_impl<Alternatives<FirstAlternative, OtherAlternatives...>,
                   OptionList> {
   static std::string apply(const std::string& indent) {
-    std::ostringstream ss;
-    const auto print_alternatives = [&indent, &ss](const std::string& header,
-                                                   auto alternatives) {
-      using AlternativeOptions = decltype(alternatives);
-      ss << indent << header << "\n"
-         << tmpl::for_each<AlternativeOptions>(
-                print<AlternativeOptions>{indent + "  "})
-                .value;
-    };
-
-    print_alternatives("EITHER", FirstAlternative{});
-    EXPAND_PACK_LEFT_TO_RIGHT(print_alternatives("OR", OtherAlternatives{}));
-    return ss.str();
+    return print_alternatives<FirstAlternative>("EITHER", indent) +
+           print_alternatives<OtherAlternatives...>("OR", indent);
   }
 };
 
-template <typename OptionList>
-template <typename Tag>
-void print<OptionList>::operator()(tmpl::type_<Tag> /*meta*/) {
-  value += print_impl<Tag, OptionList>::apply(indent);
-}
+template <typename OptionList, typename... TagsAndSubgroups>
+struct print<OptionList, tmpl::list<TagsAndSubgroups...>> {
+  static std::string apply(const std::string& indent) {
+    return ("" + ... +
+            (print_impl<TagsAndSubgroups, OptionList>::apply(indent)));
+  }
+};
 
 template <typename T, typename Metavariables>
 struct CreateWrapper {

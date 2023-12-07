@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ObserveAdaptiveSteppingDiagnostics.cpp
+  ObserveNorms.cpp
   )
 
 spectre_target_headers(
@@ -30,6 +31,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Charmxx::pup
+  LinearOperators
   Observer
   Options
   Parallel
@@ -44,6 +46,5 @@ target_link_libraries(
   EventsAndTriggers
   H5
   Interpolation
-  LinearOperators
   Spectral
   )
