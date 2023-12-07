@@ -12,12 +12,15 @@
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+template <typename StepperInterface>
+struct TimeStepper;
+}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
@@ -53,7 +56,7 @@ class Cfl : public StepChooser<StepChooserUse> {
 
   using argument_tags =
       tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
-                 ::Tags::TimeStepper<>,
+                 ::Tags::TimeStepper<TimeStepper>,
                  typename System::compute_largest_characteristic_speed>;
 
   using compute_tags = tmpl::list<

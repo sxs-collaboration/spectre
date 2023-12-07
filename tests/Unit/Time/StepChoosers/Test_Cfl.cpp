@@ -86,10 +86,11 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<Metavariables>, CharacteristicSpeed,
           domain::Tags::Coordinates<dim, frame>, domain::Tags::Mesh<dim>,
-          Tags::TimeStepper<TimeStepper>>,
-      db::AddComputeTags<domain::Tags::MinimumGridSpacingCompute<dim, frame>,
-                         typename Metavariables::system::
-                             compute_largest_characteristic_speed>>(
+          Tags::ConcreteTimeStepper<TimeStepper>>,
+      tmpl::push_back<time_stepper_ref_tags<TimeStepper>,
+                      domain::Tags::MinimumGridSpacingCompute<dim, frame>,
+                      typename Metavariables::system::
+                          compute_largest_characteristic_speed>>(
       Metavariables{}, characteristic_speed,
       tnsr::I<DataVector, dim, frame>{{{coordinates}}},
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,

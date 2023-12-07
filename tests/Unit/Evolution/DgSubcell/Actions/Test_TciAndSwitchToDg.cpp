@@ -90,15 +90,16 @@ struct component {
       evolution::dg::subcell::Tags::TciGridHistory,
       Tags::Variables<tmpl::list<Var1>>,
       Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
-      Tags::TimeStepper<TimeStepper>,
+      Tags::ConcreteTimeStepper<TimeStepper>,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
       domain::Tags::Element<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<
           typename metavariables::system::flux_variables, Dim>>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
+      tmpl::list<ActionTesting::InitializeDataBox<initial_tags, compute_tags>,
                  evolution::dg::subcell::Actions::TciAndSwitchToDg<
                      typename Metavariables::TciOnSubcellGrid>>>>;
 };

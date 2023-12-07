@@ -77,14 +77,16 @@ std::pair<double, bool> get_suggestion(
     ElementMap<Dim, Frame::Grid>&& element_map) {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
-                        CharacteristicSpeed, Tags::TimeStepper<TimeStepper>,
+                        CharacteristicSpeed,
+                        Tags::ConcreteTimeStepper<TimeStepper>,
                         domain::Tags::ElementMap<Dim, Frame::Grid>,
                         domain::CoordinateMaps::Tags::CoordinateMap<
                             Dim, Frame::Grid, Frame::Inertial>,
                         ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize>,
-      db::AddComputeTags<domain::Tags::SizeOfElementCompute<Dim>,
-                         typename Metavariables<Dim>::system::
-                             compute_largest_characteristic_speed>>(
+      tmpl::push_back<time_stepper_ref_tags<TimeStepper>,
+                      domain::Tags::SizeOfElementCompute<Dim>,
+                      typename Metavariables<Dim>::system::
+                          compute_largest_characteristic_speed>>(
       Metavariables<Dim>{}, characteristic_speed,
       std::unique_ptr<TimeStepper>{
           std::make_unique<TimeSteppers::AdamsBashforth>(2)},
@@ -104,7 +106,7 @@ std::pair<double, bool> get_suggestion(
       Dim>::system::compute_largest_characteristic_speed>(box);
   const std::array<double, Dim> element_size =
       db::get<domain::Tags::SizeOfElement<Dim>>(box);
-  const auto& time_stepper = get<Tags::TimeStepper<>>(box);
+  const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
 
   const double current_step = std::numeric_limits<double>::infinity();
   const std::pair<double, bool> result =

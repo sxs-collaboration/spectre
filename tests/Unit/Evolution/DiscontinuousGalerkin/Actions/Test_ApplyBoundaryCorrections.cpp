@@ -398,7 +398,7 @@ struct component {
 
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      Tags::TimeStepper<TimeSteppers::AdamsBashforth>,
+      Tags::ConcreteTimeStepper<LtsTimeStepper>,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       typename Metavariables::system::variables_tag,
@@ -409,7 +409,8 @@ struct component {
                                     Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::Quadrature,
       domain::Tags::NeighborMesh<Metavariables::volume_dim>>;
-  using compute_tags = tmpl::list<
+  using compute_tags = tmpl::push_back<
+      time_stepper_ref_tags<LtsTimeStepper>,
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::DetInvJacobianCompute<

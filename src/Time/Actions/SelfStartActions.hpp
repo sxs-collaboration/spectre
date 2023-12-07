@@ -21,7 +21,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStep.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,7 +37,10 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
+class TimeStepper;
 /// \endcond
 
 /// \ingroup TimeGroup
@@ -219,7 +221,7 @@ struct Initialize {
     const auto values_needed =
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0
             ? 0
-            : db::get<::Tags::TimeStepper<>>(box).order() - 1;
+            : db::get<::Tags::TimeStepper<TimeStepper>>(box).order() - 1;
 
     TimeDelta self_start_step = initial_step;
 
@@ -453,11 +455,11 @@ struct Cleanup {
     tmpl::for_each<history_tags>([&box](auto tag_v) {
       using tag = typename decltype(tag_v)::type;
       ASSERT(db::get<tag>(box).integration_order() ==
-                 db::get<::Tags::TimeStepper<>>(box).order(),
+                 db::get<::Tags::TimeStepper<TimeStepper>>(box).order(),
              "Volume history order is: "
                  << db::get<tag>(box).integration_order()
                  << " but time stepper requires order: "
-                 << db::get<::Tags::TimeStepper<>>(box).order()
+                 << db::get<::Tags::TimeStepper<TimeStepper>>(box).order()
                  << ". This may indicate that the step size has varied during "
                     "self-start, which should not be permitted.");
     });

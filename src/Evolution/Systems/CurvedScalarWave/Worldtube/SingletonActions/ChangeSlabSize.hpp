@@ -14,9 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,7 +22,10 @@
 namespace Tags {
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
+class TimeStepper;
 /// \endcond
 
 namespace CurvedScalarWave::Worldtube::Actions {
@@ -73,8 +74,8 @@ struct ChangeSlabSize {
           "different.");
       const auto new_step = inbox_slab.duration();
       const auto new_next_time_step_id =
-          db::get<::Tags::TimeStepper<>>(box).next_time_id(inbox_time_step_id,
-                                                           new_step);
+          db::get<::Tags::TimeStepper<TimeStepper>>(box).next_time_id(
+              inbox_time_step_id, new_step);
       db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
                  ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId>(
           [&new_next_time_step_id, &new_step, &inbox_time_step_id](

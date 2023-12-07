@@ -67,15 +67,16 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
-      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::TimeStep,
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
                  ::Tags::IsUsingTimeSteppingErrorControl, Var,
                  Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
                  Tags::HistoryEvolvedVariables<AlternativeVar>>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::UpdateU<
                                  typename metavariables::system_for_test>>>>;
@@ -101,12 +102,14 @@ void test_integration() {
     return 2. * t - 2. * (y - t * t);
   };
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::TimeStepper<TimeSteppers::Rk3HesthavenSsp>, Tags::TimeStep,
-      ::Tags::IsUsingTimeSteppingErrorControl, Var, history_tag, AlternativeVar,
-      alternative_history_tag>>(
-      std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, false, 1.,
-      typename history_tag::type{3}, 1.,
+  auto box = db::create<
+      db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
+                        ::Tags::IsUsingTimeSteppingErrorControl, Var,
+                        history_tag, AlternativeVar, alternative_history_tag>,
+      time_stepper_ref_tags<TimeStepper>>(
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::Rk3HesthavenSsp>()),
+      time_step, false, 1., typename history_tag::type{3}, 1.,
       typename alternative_history_tag::type{3});
 
   const std::array<Time, 3> substep_times{
@@ -180,13 +183,16 @@ void test_stepper_error() {
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::TimeStepper<TimeSteppers::Rk3HesthavenSsp>, Tags::TimeStep,
-      ::Tags::IsUsingTimeSteppingErrorControl, variables_tag, history_tag,
-      Tags::StepperError<variables_tag>,
-      Tags::PreviousStepperError<variables_tag>, Tags::StepperErrorUpdated>>(
-      std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, true, 1.,
-      history_tag::type{3}, 1234.5, 1234.5, false);
+  auto box = db::create<
+      db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
+                        ::Tags::IsUsingTimeSteppingErrorControl, variables_tag,
+                        history_tag, Tags::StepperError<variables_tag>,
+                        Tags::PreviousStepperError<variables_tag>,
+                        Tags::StepperErrorUpdated>,
+      time_stepper_ref_tags<TimeStepper>>(
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::Rk3HesthavenSsp>()),
+      time_step, true, 1., history_tag::type{3}, 1234.5, 1234.5, false);
 
   const std::array<TimeDelta, 3> substep_offsets{
       {0 * slab.duration(), time_step, time_step / 2}};

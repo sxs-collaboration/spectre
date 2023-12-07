@@ -10,9 +10,15 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace Tags {
+template <typename StepperInterface>
+struct TimeStepper;
+}  // namespace Tags
+/// \endcond
 
 namespace CurvedScalarWave::Worldtube::Initialization {
 /*!
@@ -36,7 +42,7 @@ struct InitializeEvolvedVariables {
   using simple_tags_from_options = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<::Tags::TimeStepper<>>;
+  using argument_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>>;
   static void apply(
       const gsl::not_null<Variables<tmpl::list<Tags::Psi0, Tags::dtPsi0>>*>
           evolved_vars,

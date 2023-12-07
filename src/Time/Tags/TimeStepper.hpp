@@ -13,18 +13,15 @@
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for a ::TimeStepper of type `StepperType`.
+/// The evolution TimeStepper.  The template parameter should be one
+/// of the time stepper base classes, such as `TimeStepper` or
+/// `LtsTimeStepper`.
 ///
-/// Leaving the template parameter unspecified gives a base tag.
-template <typename StepperType = void>
-struct TimeStepper;
-
-/// \cond
-template <>
-struct TimeStepper<> : db::BaseTag {};
-
+/// For the contained object to be used, the reference tags listed in
+/// `time_stepper_ref_tags<StepperType>` will also need to be added to
+/// the DataBox.
 template <typename StepperType>
-struct TimeStepper : TimeStepper<>, db::SimpleTag {
+struct ConcreteTimeStepper : db::SimpleTag {
   using type = std::unique_ptr<StepperType>;
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
 
@@ -34,5 +31,42 @@ struct TimeStepper : TimeStepper<>, db::SimpleTag {
     return deserialize<type>(serialize<type>(time_stepper).data());
   }
 };
-/// \endcond
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// Access to a time stepper through the `StepperInterface` interface
+/// (such as `TimeStepper` or `LtsTimeStepper`).
+///
+/// \details This tag cannot be added directly to the DataBox of
+/// GlobalCache because it contains an abstract type, but can only be
+/// used for retrieving the time stepper.  Instead, the
+/// `ConcreteTimeStepper` tag should be added, along with the
+/// reference tags given by `time_stepper_ref_tags`.
+template <typename StepperInterface>
+struct TimeStepper : db::SimpleTag {
+  using type = StepperInterface;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// Reference tag to provide access to the time stepper through its
+/// provided interfaces, such as `Tags::TimeStepper<TimeStepper>` and
+/// `Tags::TimeStepper<LtsTimeStepper>`.  Usually added through the
+/// `time_stepper_ref_tags` alias.
+template <typename StepperInterface, typename StepperType>
+struct TimeStepperRef : TimeStepper<StepperInterface>, db::ReferenceTag {
+  using base = TimeStepper<StepperInterface>;
+  using argument_tags = tmpl::list<ConcreteTimeStepper<StepperType>>;
+  static const StepperInterface& get(const StepperType& stepper) {
+    return stepper;
+  }
+};
 }  // namespace Tags
+
+/// \ingroup TimeGroup
+/// List of Tags::TimeStepperRef specializations needed when adding a
+/// Tags::ConcreteTimeStepper.
+template <typename StepperType>
+using time_stepper_ref_tags = tmpl::transform<
+    typename StepperType::provided_time_stepper_interfaces,
+    tmpl::bind<::Tags::TimeStepperRef, tmpl::_1, tmpl::pin<StepperType>>>;

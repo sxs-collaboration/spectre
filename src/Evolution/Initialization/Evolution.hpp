@@ -86,8 +86,9 @@ struct TimeStepping {
   /// initialized from input file options.
   using const_global_cache_tags = tmpl::conditional_t<
       TimeStepperBase::local_time_stepping,
-      tmpl::list<::Tags::TimeStepper<TimeStepperBase>, ::Tags::StepChoosers>,
-      tmpl::list<::Tags::TimeStepper<TimeStepperBase>>>;
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>,
+                 ::Tags::StepChoosers>,
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>>>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
@@ -97,7 +98,7 @@ struct TimeStepping {
   using argument_tags =
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>,
-                 ::Tags::TimeStepper<TimeStepperBase>>;
+                 ::Tags::ConcreteTimeStepper<TimeStepperBase>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options =
@@ -122,7 +123,7 @@ struct TimeStepping {
 
   /// Tags for immutable DataBox items (compute items or reference items) added
   /// to the DataBox.
-  using compute_tags = tmpl::list<>;
+  using compute_tags = time_stepper_ref_tags<TimeStepperBase>;
 
   /// Given the items fetched from a DataBox by the argument_tags when using
   /// LTS, mutate the items in the DataBox corresponding to return_tags
@@ -287,7 +288,7 @@ struct TimeStepperHistory {
   using compute_tags = tmpl::list<>;
 
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<>, domain::Tags::Mesh<dim>>;
+      tmpl::list<::Tags::TimeStepper<TimeStepper>, domain::Tags::Mesh<dim>>;
   using return_tags = simple_tags;
 
   static void apply(

@@ -60,18 +60,20 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
 
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>,
                  Tags::AdaptiveSteppingDiagnostics>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<
-                     Parallel::Phase::Initialization,
-                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-                 Parallel::PhaseActions<Parallel::Phase::Testing,
-                                        tmpl::list<Actions::ChangeSlabSize>>>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::ChangeSlabSize>>>;
 };
 }  // namespace
 
@@ -123,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           *next_id = stepper.next_time_id(*id, *step);
           *diags = AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5};
         },
-        make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
+        make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
     using ExpectedMessages =
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox;
@@ -135,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       CHECK(db::get<Tags::TimeStepId>(box) == id);
       CHECK(db::get<Tags::TimeStep>(box) == get_step(id));
       CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
-            db::get<Tags::TimeStepper<>>(box).next_time_id(
+            db::get<Tags::TimeStepper<TimeStepper>>(box).next_time_id(
                 db::get<Tags::TimeStepId>(box), db::get<Tags::TimeStep>(box)));
       CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
             AdaptiveSteppingDiagnostics{1, 2 + changes, 3, 4, 5});
@@ -212,7 +214,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
             *next_id = stepper.next_time_id(*id, step);
           },
           make_not_null(&box), db::get<Tags::TimeStep>(box),
-          db::get<Tags::TimeStepper<>>(box));
+          db::get<Tags::TimeStepper<TimeStepper>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
@@ -245,7 +247,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
             }
           },
           make_not_null(&box), db::get<Tags::TimeStep>(box),
-          db::get<Tags::TimeStepper<>>(box));
+          db::get<Tags::TimeStepper<TimeStepper>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
       get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});

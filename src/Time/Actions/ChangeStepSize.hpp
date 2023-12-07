@@ -15,7 +15,6 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -38,6 +37,8 @@ struct Next;
 struct StepChoosers;
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -53,7 +54,8 @@ struct TimeStepId;
 /// choosers that may not be compatible with all components.
 template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
 bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
-  const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(*box);
+  const LtsTimeStepper& time_stepper =
+      db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
 
   const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
@@ -144,7 +146,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
-///   - Tags::TimeStepper<>
+///   - Tags::TimeStepper<LtsTimeStepper>
 ///
 /// DataBox changes:
 /// - Adds: nothing

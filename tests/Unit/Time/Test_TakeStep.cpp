@@ -102,13 +102,15 @@ void test_gts() {
       },
       [](const auto y, const auto /*t*/) { return 1.0e-2 * y; }, time_step, 4);
 
-  auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
-      Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-      EvolvedVariable, Tags::dt<EvolvedVariable>,
-      Tags::HistoryEvolvedVariables<EvolvedVariable>,
-      Tags::TimeStepper<TimeStepper>,
-      ::Tags::IsUsingTimeSteppingErrorControl>>(
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                        Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+                        EvolvedVariable, Tags::dt<EvolvedVariable>,
+                        Tags::HistoryEvolvedVariables<EvolvedVariable>,
+                        Tags::ConcreteTimeStepper<TimeStepper>,
+                        ::Tags::IsUsingTimeSteppingErrorControl>,
+      time_stepper_ref_tags<TimeStepper>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
@@ -170,12 +172,13 @@ void test_lts() {
           Tags::dt<EvolvedVariable>, Tags::StepperError<EvolvedVariable>,
           Tags::PreviousStepperError<EvolvedVariable>,
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
-          Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
+          Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
           ::Tags::IsUsingTimeSteppingErrorControl, Tags::StepperErrorUpdated,
           Tags::AdaptiveSteppingDiagnostics>,
-      db::AddComputeTags<typename Metavariables::system::
-                             compute_largest_characteristic_speed>>(
+      tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>,
+                      typename Metavariables::system::
+                          compute_largest_characteristic_speed>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, DataVector{}, DataVector{},
@@ -219,7 +222,7 @@ void test_lts() {
         *next_time_step =
             local_time_step->with_slab(next_time_id->step_time().slab());
       },
-      make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
+      make_not_null(&box), db::get<Tags::TimeStepper<LtsTimeStepper>>(box));
 
   db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));

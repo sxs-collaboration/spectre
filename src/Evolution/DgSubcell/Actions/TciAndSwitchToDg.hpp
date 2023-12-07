@@ -37,7 +37,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/History.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -51,7 +50,10 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
+class TimeStepper;
 namespace tuples {
 template <typename...>
 class TaggedTuple;
@@ -246,7 +248,7 @@ struct TciAndSwitchToDg {
     //              the entire TCI history is `ActiveGrid::Dg`.
     // - Substep: the easiest is to restrict switching back to DG to step
     //            boundaries where there is no history.
-    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+    const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
     const bool is_substep_method = time_stepper.number_of_substeps() != 1;
     ASSERT(time_stepper.number_of_substeps() != 0,
            "Don't know how to handle a time stepper with zero substeps. This "

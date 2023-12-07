@@ -142,7 +142,8 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,
       typename metavariables::system::test_primitive_variables_tags,
@@ -155,7 +156,7 @@ struct Component {
       Tags::Next<Tags::TimeStep>, Tags::Time,
       Tags::IsUsingTimeSteppingErrorControl,
       Tags::AdaptiveSteppingDiagnostics>>;
-  using compute_tags = db::AddComputeTags<>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
