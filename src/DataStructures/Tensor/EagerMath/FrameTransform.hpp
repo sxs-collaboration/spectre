@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -183,45 +184,40 @@ auto to_different_frame(
  * \ingroup GeneralRelativityGroup
  * Transforms only the first index to different frame.
  *
- * Often used for derivatives: When representing derivatives as
- * tensors, the first index is typically the derivative index.
- * Numerical derivatives must be computed in the logical frame or
- * sometimes the grid frame (independent of the frame of the tensor
- * being differentiated), and then that derivative index must later
- * be transformed into the same frame as the other indices of the
- * tensor.
+ * ## Examples for transforming some tensors
  *
- * The formula for transforming \f$T_{i\bar{\jmath}\bar{k}}\f$ is
+ * ### Flux vector to logical coordinates
+ *
+ * A common example is taking the divergence of a flux vector $F^i$, where the
+ * index $i$ is in inertial coordinates $x^i$ and the divergence is taken in
+ * logical coordinates $\xi^\hat{i}$. So to transform the flux vector to logical
+ * coordinates before taking the divergence we do this:
+ *
  * \f{align}
- *   T_{\bar{\imath}\bar{\jmath}\bar{k}} &= T_{i\bar{\jmath}\bar{k}}
- *      \frac{\partial x^i}{\partial x^{\bar{\imath}}},
+ *   F^\hat{i} &= F^i \frac{\partial x^\hat{i}}{\partial x^i}
  * \f}
- * where \f$x^i\f$ are the source coordinates and
- * \f$x^{\bar{\imath}}\f$ are the destination coordinates.
  *
- * Note that `Jacobian<DestFrame,SrcFrame>` is the same type as
- * `InverseJacobian<SrcFrame,DestFrame>` and represents
- * \f$\partial x^i/\partial x^{\bar{\jmath}}\f$.
+ * Here, $\frac{\partial x^\hat{i}}{\partial x^i}$ is the inverse Jacobian (see
+ * definitions in TypeAliases.hpp).
  *
- * In principle `first_index_to_different_frame` can be
- * extended/generalized to other tensor types if needed.
+ * Currently, this function is tested for any tensor with a first upper spatial
+ * index. It can be extended/generalized to other tensor types if needed.
  */
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
+template <typename ResultTensor, typename InputTensor, typename DataType,
+          size_t Dim, typename SourceFrame, typename TargetFrame>
 void first_index_to_different_frame(
-    const gsl::not_null<tnsr::ijj<DataVector, VolumeDim, DestFrame>*> dest,
-    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                 index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian);
+    gsl::not_null<ResultTensor*> result, const InputTensor& input,
+    const InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+        inv_jacobian);
 
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
-auto first_index_to_different_frame(
-    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                 index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
-    -> tnsr::ijj<DataVector, VolumeDim, DestFrame>;
+template <typename InputTensor, typename DataType, size_t Dim,
+          typename SourceFrame, typename TargetFrame,
+          typename ResultTensor = TensorMetafunctions::prepend_spatial_index<
+              TensorMetafunctions::remove_first_index<InputTensor>, Dim,
+              UpLo::Up, SourceFrame>>
+ResultTensor first_index_to_different_frame(
+    const InputTensor& input,
+    const InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+        inv_jacobian);
 /// @}
 }  // namespace transform
