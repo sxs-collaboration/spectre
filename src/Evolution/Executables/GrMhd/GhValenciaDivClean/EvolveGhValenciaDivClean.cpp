@@ -16,8 +16,7 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
-using metavariables =
-    EvolutionMetavars<INITIAL_DATA, USE_CONTROL_SYSTEMS, BondiSachs>;
+using metavariables = EvolutionMetavars<USE_CONTROL_SYSTEMS, BondiSachs>;
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();

@@ -39,12 +39,11 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename InitialData, bool UseControlSystems,
-          typename... InterpolationTargetTags>
-struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
-                               EvolutionMetavars<InitialData, UseControlSystems,
-                                                 InterpolationTargetTags...>,
-                               false, false> {
+template <bool UseControlSystems, typename... InterpolationTargetTags>
+struct EvolutionMetavars
+    : public GhValenciaDivCleanTemplateBase<
+          EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>,
+          false, false> {
   static_assert(not UseControlSystems,
                 "GhValenciaWithHorizon doesn't support control systems yet.");
   static constexpr bool use_dg_subcell = false;
@@ -113,14 +112,11 @@ struct EvolutionMetavars : public GhValenciaDivCleanTemplateBase<
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using initial_data = typename base::initial_data;
   using initial_data_tag = typename base::initial_data_tag;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
-      gh::gauges::Tags::GaugeCondition,
-      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          tmpl::list<>, initial_data_tag>,
+      gh::gauges::Tags::GaugeCondition, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       typename base::equation_of_state_tag,
       gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,

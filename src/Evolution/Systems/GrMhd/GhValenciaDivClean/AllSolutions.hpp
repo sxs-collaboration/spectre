@@ -15,13 +15,23 @@ using SpecInitialDataList = tmpl::list<grmhd::AnalyticData::SpecInitialData<1>,
 using SpecInitialDataList = NoSuchType;
 #endif
 
+// Check if FUKA is linked and therefore we can load FUKA initial data
+#ifdef HAS_FUKA_EXPORTER
+#include "PointwiseFunctions/AnalyticData/GrMhd/FukaInitialData.hpp"
+using FukaInitialDataList = tmpl::list<grmhd::AnalyticData::FukaInitialData>;
+#else
+using FukaInitialDataList = NoSuchType;
+#endif
+
 namespace ghmhd::GhValenciaDivClean::InitialData {
 // These are solutions that can be used for analytic prescriptions
-using analytic_solutions_and_data_list = gh::solutions_including_matter<3>;
+using analytic_solutions_and_data_list = gh::ghmhd_solutions;
 using initial_data_list = tmpl::flatten<tmpl::list<
     analytic_solutions_and_data_list,
     tmpl::flatten<tmpl::list<
         grmhd::GhValenciaDivClean::NumericInitialData,
         tmpl::conditional_t<std::is_same_v<SpecInitialDataList, NoSuchType>,
-                            tmpl::list<>, SpecInitialDataList>>>>>;
+                            tmpl::list<>, SpecInitialDataList>,
+        tmpl::conditional_t<std::is_same_v<FukaInitialDataList, NoSuchType>,
+                            tmpl::list<>, FukaInitialDataList>>>>>;
 }  // namespace ghmhd::GhValenciaDivClean::InitialData

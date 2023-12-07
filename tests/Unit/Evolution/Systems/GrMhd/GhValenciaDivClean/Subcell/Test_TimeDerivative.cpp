@@ -99,7 +99,7 @@ struct DummyEvolutionMetaVars {
     using factory_classes = tmpl::map<
         tmpl::pair<
             BoundaryConditions::BoundaryCondition,
-            tmpl::push_back<BoundaryConditions::standard_fd_boundary_conditions,
+            tmpl::push_back<BoundaryConditions::standard_boundary_conditions,
                             BoundaryConditions::DirichletAnalytic>>,
         tmpl::pair<evolution::initial_data::InitialData,
                    ghmhd::GhValenciaDivClean::InitialData::

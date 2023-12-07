@@ -15,8 +15,8 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
-using metavariables =
-    EvolutionMetavars<INITIAL_DATA, tmpl::list<INTERPOLATION_TARGET>>;
+using metavariables = EvolutionMetavars<tmpl::list<INTERPOLATION_TARGET>,
+                                        USE_PARAMETRIZED_DELEPTONIZATION>;
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();

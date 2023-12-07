@@ -212,6 +212,7 @@
 #include "PointwiseFunctions/Hydro/MassWeightedFluidItems.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -238,24 +239,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// Check if SpEC is linked and therefore we can load SpEC initial data
-#ifdef HAS_SPEC_EXPORTER
-#include "PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp"
-template <size_t ThermodynamicDim>
-using SpecInitialData = grmhd::AnalyticData::SpecInitialData<ThermodynamicDim>;
-#else
-template <size_t ThermodynamicDim>
-using SpecInitialData = NoSuchType;
-#endif
-
-// Check if FUKA is linked and therefore we can load FUKA initial data
-#ifdef HAS_FUKA_EXPORTER
-#include "PointwiseFunctions/AnalyticData/GrMhd/FukaInitialData.hpp"
-using FukaInitialData = grmhd::AnalyticData::FukaInitialData;
-#else
-using FukaInitialData = NoSuchType;
-#endif
-
 /// \cond
 namespace Frame {
 // IWYU pragma: no_forward_declare MathFunction
@@ -269,25 +252,6 @@ template <typename Metavariables>
 class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
-
-namespace detail {
-template <typename InitialData,
-          bool IsNumericInitialData =
-              evolution::is_numeric_initial_data_v<InitialData>>
-struct get_thermodynamic_dim;
-
-template <typename InitialData>
-struct get_thermodynamic_dim<InitialData, true> {
-  // Controls the thermodynamic dim used for numeric initial data.
-  static constexpr size_t value = 2;
-};
-
-template <typename InitialData>
-struct get_thermodynamic_dim<InitialData, false> {
-  static constexpr size_t value =
-      InitialData::equation_of_state_type::thermodynamic_dim;
-};
-}  // namespace detail
 
 template <bool UseDgSubcell>
 struct GhValenciaDivCleanDefaults {
@@ -367,40 +331,15 @@ template <typename EvolutionMetavarsDerived, bool UseDgSubcell,
           bool UseControlSystems>
 struct GhValenciaDivCleanTemplateBase;
 
-namespace detail {
-template <typename InitialData>
-constexpr auto make_default_phase_order() {
-  if constexpr (evolution::is_numeric_initial_data_v<InitialData>) {
-    return std::array<Parallel::Phase, 8>{
-        {Parallel::Phase::Initialization,
-         Parallel::Phase::RegisterWithElementDataReader,
-         Parallel::Phase::ImportInitialData,
-         Parallel::Phase::InitializeInitialDataDependentQuantities,
-         Parallel::Phase::InitializeTimeStepperHistory,
-         Parallel::Phase::Register, Parallel::Phase::Evolve,
-         Parallel::Phase::Exit}};
-  } else {
-    return std::array<Parallel::Phase, 6>{
-        {Parallel::Phase::Initialization,
-         Parallel::Phase::InitializeInitialDataDependentQuantities,
-         Parallel::Phase::InitializeTimeStepperHistory,
-         Parallel::Phase::Register, Parallel::Phase::Evolve,
-         Parallel::Phase::Exit}};
-  }
-}
-}  // namespace detail
-
 template <bool UseDgSubcell, bool UseControlSystems,
-          template <typename, bool, typename...> class EvolutionMetavarsDerived,
-          typename InitialData, typename... InterpolationTargetTags>
+          template <bool, typename...> class EvolutionMetavarsDerived,
+          typename... InterpolationTargetTags>
 struct GhValenciaDivCleanTemplateBase<
-    EvolutionMetavarsDerived<InitialData, UseControlSystems,
-                             InterpolationTargetTags...>,
+    EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>,
     UseDgSubcell, UseControlSystems>
     : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
   using derived_metavars =
-      EvolutionMetavarsDerived<InitialData, UseControlSystems,
-                               InterpolationTargetTags...>;
+      EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>;
   using defaults = GhValenciaDivCleanDefaults<UseDgSubcell>;
   static constexpr size_t volume_dim = defaults::volume_dim;
   using domain = typename defaults::domain;
@@ -421,37 +360,11 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_dg_subcell = UseDgSubcell;
   static constexpr bool use_control_systems = UseControlSystems;
 
-  using initial_data = InitialData;
-  static constexpr bool use_numeric_initial_data =
-      evolution::is_numeric_initial_data_v<initial_data>;
-  static_assert(
-      is_analytic_data_v<initial_data> xor
-          is_analytic_solution_v<initial_data> xor use_numeric_initial_data,
-      "initial_data must be either an analytic_data, an "
-      "analytic_solution, or externally provided numerical initial data");
+  using initial_data_list =
+      ghmhd::GhValenciaDivClean::InitialData::initial_data_list;
 
-  static constexpr size_t thermodynamic_dim =
-      detail::get_thermodynamic_dim<initial_data>::value;
-  // Get the EOS from options for numeric ID, or else from the analytic
-  // solution/data.
-  using equation_of_state_tag = std::conditional_t<
-      use_numeric_initial_data,
-      hydro::Tags::EquationOfStateFromOptions<true, thermodynamic_dim>,
-      hydro::Tags::EquationOfState<std::unique_ptr<
-          EquationsOfState::EquationOfState<true, thermodynamic_dim>>>>;
-  // Currently we need to register all analytic solutions and data together,
-  // (including ValenciaDivClean initial data which is needed for product
-  // boundary conditions)
-  // This will likely change once we use runtime initial data.
-  using analytic_solutions_and_data_to_register =
-      tmpl::append<gh::solutions_including_matter<3>,
-                   grmhd::ValenciaDivClean::InitialData::initial_data_list>;
-
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
-
+  using initial_data_tag = evolution::initial_data::Tags::InitialData;
+  using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
   using measurement = control_system::measurements::BothNSCenters;
   using control_systems = tmpl::conditional_t<
       use_control_systems,
@@ -464,13 +377,12 @@ struct GhValenciaDivCleanTemplateBase<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
-      volume_dim, analytic_solution_fields, use_dg_subcell>;
+      volume_dim, analytic_solution_fields, use_dg_subcell, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::append<
       typename system::variables_tag::tags_list,
-      typename system::primitive_variables_tag::tags_list,
-      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>, error_tags>,
+      typename system::primitive_variables_tag::tags_list, error_tags,
       tmpl::list<
           hydro::Tags::TildeDInHalfPlaneCompute<
               DataVector, volume_dim,
@@ -575,8 +487,8 @@ struct GhValenciaDivCleanTemplateBase<
           gh::Tags::TimeDerivShiftCompute<volume_dim, Frame::Inertial>,
           ::Tags::dt<gh::Tags::Phi<DataVector, volume_dim, Frame::Inertial>>,
           ::Tags::dt<gh::Tags::Pi<DataVector, volume_dim, Frame::Inertial>>,
-          gh::Tags::SecondTimeDerivOfSpacetimeMetricCompute<
-              volume_dim, Frame::Inertial>,
+          gh::Tags::SecondTimeDerivOfSpacetimeMetricCompute<volume_dim,
+                                                            Frame::Inertial>,
           ::Tags::DerivTensorCompute<
               gr::Tags::ExtrinsicCurvature<DataVector, 3>,
               ::Events::Tags::ObserverInverseJacobian<
@@ -600,9 +512,7 @@ struct GhValenciaDivCleanTemplateBase<
                      ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
                                                                 Frame::Grid>,
                      ::Events::Tags::ObserverCoordinatesCompute<
-                         volume_dim, Frame::Inertial>>>
-
-      >;
+                         volume_dim, Frame::Inertial>>>>;
   using integrand_fields = tmpl::append<
       typename system::variables_tag::tags_list,
       tmpl::list<
@@ -658,8 +568,7 @@ struct GhValenciaDivCleanTemplateBase<
                          volume_dim, Frame::ElementLogical, Frame::Inertial>,
                      ::Events::Tags::ObserverDetInvJacobianCompute<
                          Frame::ElementLogical, Frame::Inertial>>>,
-      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
-                          tmpl::list<analytic_compute, error_compute>>,
+      tmpl::list<analytic_compute, error_compute>,
       tmpl::list<::Tags::DerivCompute<
                      typename system::variables_tag,
                      ::Events::Tags::ObserverMesh<volume_dim>,
@@ -671,19 +580,8 @@ struct GhValenciaDivCleanTemplateBase<
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
    private:
-    using boundary_conditions = tmpl::conditional_t<
-        use_dg_subcell,
-        tmpl::append<
-            grmhd::GhValenciaDivClean::BoundaryConditions::
-                standard_fd_boundary_conditions,
-            tmpl::conditional_t<
-                use_numeric_initial_data, tmpl::list<>,
-                tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
-                               DirichletAnalytic,
-                           grmhd::GhValenciaDivClean::BoundaryConditions::
-                               DirichletFreeOutflow>>>,
-        grmhd::GhValenciaDivClean::BoundaryConditions::
-            standard_boundary_conditions>;
+    using boundary_conditions = grmhd::GhValenciaDivClean::BoundaryConditions::
+        standard_boundary_conditions;
 
    public:
     using factory_classes = tmpl::map<
@@ -714,20 +612,7 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
-        tmpl::pair<
-            evolution::initial_data::InitialData,
-            tmpl::conditional_t<
-                use_numeric_initial_data,
-                tmpl::flatten<tmpl::list<
-                    grmhd::GhValenciaDivClean::NumericInitialData,
-                    tmpl::conditional_t<
-                        std::is_same_v<SpecInitialData<thermodynamic_dim>,
-                                       NoSuchType>,
-                        tmpl::list<>, SpecInitialData<thermodynamic_dim>>,
-                    tmpl::conditional_t<
-                        std::is_same_v<FukaInitialData, NoSuchType>,
-                        tmpl::list<>, FukaInitialData>>>,
-                analytic_solutions_and_data_to_register>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -759,9 +644,7 @@ struct GhValenciaDivCleanTemplateBase<
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions,
-      gh::gauges::Tags::GaugeCondition,
-      tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
-                          initial_data_tag>,
+      gh::gauges::Tags::GaugeCondition, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       equation_of_state_tag,
       gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
@@ -775,8 +658,13 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
                  observers::Actions::RegisterEventsWithObservers>;
 
-  static constexpr auto default_phase_order =
-      detail::make_default_phase_order<initial_data>();
+  static constexpr auto default_phase_order = std::array<Parallel::Phase, 8>{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::RegisterWithElementDataReader,
+       Parallel::Phase::ImportInitialData,
+       Parallel::Phase::InitializeInitialDataDependentQuantities,
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
+       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   struct SubcellOptions {
     using evolved_vars_tags = typename system::variables_tag::tags_list;
@@ -852,8 +740,7 @@ struct GhValenciaDivCleanTemplateBase<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::LimitLorentzFactor>,
+      VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
@@ -885,8 +772,7 @@ struct GhValenciaDivCleanTemplateBase<
               ordered_list_of_primitive_recovery_schemes>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::LimitLorentzFactor>,
+      VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
@@ -901,16 +787,16 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::dg::Initialization::Domain<3, use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
+      // This conditional is untested and probably doesn't work if
+      // `use_dg_subcell` is `false`
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<evolution::dg::subcell::Actions::SetSubcellGrid<
-                         volume_dim, system, use_numeric_initial_data>,
+                         volume_dim, system, true>,
                      Actions::MutateApply<
                          evolution::dg::subcell::SetInterpolators<volume_dim>>>,
-          tmpl::conditional_t<use_numeric_initial_data, tmpl::list<>,
-                              evolution::Initialization::Actions::SetVariables<
-                                  ::domain::Tags::Coordinates<
-                                      volume_dim, Frame::ElementLogical>>>>,
+          evolution::Initialization::Actions::SetVariables<
+              ::domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase, local_time_stepping>>,
@@ -942,8 +828,7 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::flatten<tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          tmpl::conditional_t<use_numeric_initial_data,
-                              import_initial_data_action_lists, tmpl::list<>>,
+          import_initial_data_action_lists,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
@@ -979,9 +864,7 @@ struct GhValenciaDivCleanTemplateBase<
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<derived_metavars>,
       observers::ObserverWriter<derived_metavars>,
-      std::conditional_t<use_numeric_initial_data,
-                         importers::ElementDataReader<derived_metavars>,
-                         tmpl::list<>>,
+      importers::ElementDataReader<derived_metavars>,
       control_system::control_components<derived_metavars, control_systems>,
       intrp::Interpolator<derived_metavars>,
       intrp::InterpolationTarget<derived_metavars, InterpolationTargetTags>...,

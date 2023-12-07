@@ -9,10 +9,16 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/TypeTraits.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
-
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to hydrodynamic systems.
 namespace hydro {
@@ -26,6 +32,16 @@ struct EquationOfState {
   using type = std::unique_ptr<
       EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
   static constexpr Options::String help = {"The equation of state to use"};
+};
+struct GrmhdEquationOfState {
+  struct FromInitialData {};
+  using type =
+      Options::Auto<std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>,
+                    FromInitialData>;
+  static std::string name() { return "EquationOfState"; }
+  static constexpr Options::String help = {
+      "Options for the equation of state used for relativistic"
+      "hydro simulations using GRMHD executables."};
 };
 }  // namespace OptionTags
 
@@ -280,6 +296,49 @@ template <typename DataType, size_t Dim, typename Fr>
 struct MassFlux : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
   static std::string name() { return Frame::prefix<Fr>() + "MassFlux"; }
+};
+
+/// The equation of state retrieved from the analytic solution / data in the
+/// input file
+struct GrmhdEquationOfState : ::hydro::Tags::EquationOfStateBase,
+                              db::SimpleTag {
+  using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>;
+
+  template <typename Metavariables>
+  using option_tags =
+      tmpl::list<OptionTags::GrmhdEquationOfState,
+                 ::evolution::initial_data::OptionTags::InitialData>;
+  static constexpr bool pass_metavariables = true;
+
+  template <typename Metavariables>
+  static type create_from_options(
+      const std::optional<type>& eos,
+      const std::unique_ptr<::evolution::initial_data::InitialData>&
+          initial_data) {
+    if (eos.has_value()) {
+      return eos.value()->get_clone();
+    } else {
+      return call_with_dynamic_type<
+          type,
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   ::evolution::initial_data::InitialData>>(
+          initial_data.get(), [](const auto* const derived_initial_data) {
+            if constexpr (::evolution::is_numeric_initial_data_v<
+                              std::decay_t<decltype(*derived_initial_data)>>) {
+              ERROR(
+                  "Equation of State cannot currently be parsed from numeric"
+                  "initial data, please explicitly specify the equation of "
+                  "state for the evolution in the input file.");
+              return std::make_unique<EquationsOfState::Barotropic3D<
+                  EquationsOfState::PolytropicFluid<true>>>(
+                  EquationsOfState::PolytropicFluid<true>(100.0, 2.0));
+            } else {
+              return (derived_initial_data->equation_of_state()
+                          .promote_to_3d_eos());
+            }
+          });
+    }
+  }
 };
 }  // namespace Tags
 

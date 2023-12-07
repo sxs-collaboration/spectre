@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveGhValenciaDivCleanBondiMichel
+Executable: EvolveGhValenciaDivCleanWithHorizon
 Testing:
   Check: parse;execute
   Timeout: 8
@@ -35,7 +35,7 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - VisitAndReturn(LoadBalancing)
 
-AnalyticSolution: &InitialData
+InitialData: &InitialData
   GeneralizedHarmonic(BondiMichel):
     Mass: 1.0
     SonicRadius: 6.0
@@ -43,23 +43,17 @@ AnalyticSolution: &InitialData
     PolytropicExponent: 1.4
     MagFieldStrength: 1.0e-2
 
+EquationOfState:
+  FromInitialData
+
 DomainCreator:
   Sphere:
     InnerRadius: 1.9
     OuterRadius: 20.0
     Interior:
       ExciseWithBoundaryCondition:
-        ProductDirichletAnalyticAndDirichletAnalytic:
-          GeneralizedHarmonicDirichletAnalytic:
+        DirichletAnalytic:
             AnalyticPrescription: *InitialData
-          ValenciaDirichletAnalytic:
-            AnalyticPrescription:
-              BondiMichel:
-                Mass: 1.0
-                SonicRadius: 6.0
-                SonicDensity: 1.0e-5
-                PolytropicExponent: 1.4
-                MagFieldStrength: 1.0e-2
     InitialRefinement: 1
     InitialGridPoints: 2
     UseEquiangularMap: true
@@ -69,17 +63,8 @@ DomainCreator:
     RadialDistribution: [Logarithmic]
     TimeDependentMaps: None
     OuterBoundaryCondition:
-      ProductDirichletAnalyticAndDirichletAnalytic:
-        GeneralizedHarmonicDirichletAnalytic:
+      DirichletAnalytic:
           AnalyticPrescription: *InitialData
-        ValenciaDirichletAnalytic:
-          AnalyticPrescription:
-            BondiMichel:
-              Mass: 1.0
-              SonicRadius: 6.0
-              SonicDensity: 1.0e-5
-              PolytropicExponent: 1.4
-              MagFieldStrength: 1.0e-2
 
 VariableFixing:
   FixConservatives:

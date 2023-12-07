@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveGhValenciaDivCleanTovStar
+Executable: EvolveGhValenciaDivClean
 Testing:
   Check: parse;execute
   Timeout: 8
@@ -35,7 +35,7 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - VisitAndReturn(LoadBalancing)
 
-AnalyticSolution: &InitialData
+InitialData: &InitialData
   GeneralizedHarmonic(TovStar):
     CentralDensity: 1.28e-3
     EquationOfState:
@@ -44,6 +44,8 @@ AnalyticSolution: &InitialData
             PolytropicExponent: 2.0
     Coordinates: Schwarzschild
 
+EquationOfState:
+  FromInitialData
 # Note: this domain is chosen so that we only need to simulate the interior
 # of the star
 DomainCreator:

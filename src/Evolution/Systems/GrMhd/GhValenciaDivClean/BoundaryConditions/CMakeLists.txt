@@ -19,5 +19,4 @@ spectre_target_headers(
   DirichletAnalytic.hpp
   DirichletFreeOutflow.hpp
   Factory.hpp
-  ProductOfConditions.hpp
   )
