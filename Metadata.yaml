@@ -9,13 +9,13 @@ Homepage: https://spectre-code.org
 
 GitHub: sxs-collaboration/spectre
 
-Version: 2023.10.11
+Version: 2023.12.08
 
-PublicationDate: 2023-10-11
+PublicationDate: 2023-12-08
 
-Doi: 10.5281/zenodo.8431874
+Doi: 10.5281/zenodo.10309520
 
-ZenodoId: 8431874
+ZenodoId: 10309520
 
 Description: |
   SpECTRE is an open-source code for multi-scale, multi-physics problems
