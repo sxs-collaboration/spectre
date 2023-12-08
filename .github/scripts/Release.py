@@ -501,7 +501,7 @@ def prepare(
                 latest_version_id=latest_version_id
             )
     new_version_draft = zenodo.get_deposition(id=new_version_id)
-    new_version_doi = new_version_draft["doi"]
+    new_version_doi = new_version_draft["metadata"]["prereserve_doi"]["doi"]
     assert new_version_doi, (
         "Zenodo did not return a reserved DOI for the new version draft. "
         "You may want to visit {} to reserve one, save the draft and re-run "
@@ -711,11 +711,11 @@ def prepare(
         content = replace_badge_in_readme(
             content,
             "DOI",
-            new_version_draft["links"]["badge"],
-            new_version_draft["links"]["doi"],
+            f"https://zenodo.org/badge/doi/{new_version_doi}.svg",
+            f"https://doi.org/{new_version_doi}",
         )
         content = replace_doi_in_readme(
-            content, new_version_doi, new_version_draft["links"]["doi"]
+            content, new_version_doi, f"https://doi.org/{new_version_doi}"
         )
         # We don't currently link to the Zenodo BibTeX entry because it isn't
         # very good. Instead, we generate our own.
