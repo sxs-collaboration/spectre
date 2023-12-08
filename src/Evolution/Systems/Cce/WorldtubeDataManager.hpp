@@ -35,6 +35,18 @@ void initialize_buffers(
     gsl::not_null<size_t*> buffer_depth,
     gsl::not_null<Variables<InputTags>*> coefficients_buffers,
     size_t buffer_size, size_t interpolator_length, size_t l_max);
+
+template <typename InputTags, typename OutputTags>
+void populate_hypersurface_boundary_data(
+    gsl::not_null<Variables<OutputTags>*> boundary_data_variables,
+    gsl::not_null<Variables<InputTags>*> interpolated_coefficients,
+    gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    gsl::not_null<size_t*> time_span_start,
+    gsl::not_null<size_t*> time_span_end,
+    gsl::not_null<Parallel::NodeLock*> hdf5_lock, double time,
+    const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
+    const std::unique_ptr<WorldtubeBufferUpdater<InputTags>>& buffer_updater,
+    size_t l_max, size_t buffer_depth);
 }  // namespace detail
 
 /// \cond
