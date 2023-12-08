@@ -48,10 +48,11 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
-  GeneralRelativity
   H5
   Options
   Serialization
+  INTERFACE
+  GeneralRelativity
   )
 
 add_subdirectory(EquationsOfState)

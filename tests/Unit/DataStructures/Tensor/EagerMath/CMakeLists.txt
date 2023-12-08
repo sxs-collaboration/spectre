@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Norms.cpp
   Test_OrthonormalOneform.cpp
   Test_OuterProduct.cpp
+  Test_RaiseOrLowerIndex.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

@@ -36,9 +36,10 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
-  GeneralRelativity
   Serialization
   Utilities
+  INTERFACE
+  GeneralRelativity
   )
 
 add_subdirectory(BoundaryConditions)

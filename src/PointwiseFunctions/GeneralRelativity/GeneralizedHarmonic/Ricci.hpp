@@ -9,8 +9,8 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 
 /// \cond
 namespace gsl {

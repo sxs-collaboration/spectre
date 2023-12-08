@@ -12,7 +12,6 @@ spectre_target_sources(
   DerivativeSpatialMetric.cpp
   DerivativesOfSpacetimeMetric.cpp
   ExtrinsicCurvature.cpp
-  IndexManipulation.cpp
   InterfaceNullNormal.cpp
   InverseSpacetimeMetric.cpp
   KerrSchildCoords.cpp
@@ -44,7 +43,6 @@ spectre_target_headers(
   DerivativesOfSpacetimeMetric.hpp
   DetAndInverseSpatialMetric.hpp
   ExtrinsicCurvature.hpp
-  IndexManipulation.hpp
   InterfaceNullNormal.hpp
   InverseSpacetimeMetric.hpp
   KerrSchildCoords.hpp

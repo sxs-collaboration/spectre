@@ -6,10 +6,10 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <boost/preprocessor/arithmetic/dec.hpp>
@@ -33,7 +33,7 @@ void test_raise_or_lower_first_index(const DataType& used_for_size) {
                    index_list<change_index_up_lo<Index0>,
                               change_index_up_lo<Index0>>>&) =
       &raise_or_lower_first_index<DataType, Index0, Index1>;
-  pypp::check_with_random_values<1>(f, "IndexManipulation",
+  pypp::check_with_random_values<1>(f, "RaiseOrLowerIndex",
                                     "raise_or_lower_first_index",
                                     {{{-10., 10.}}}, used_for_size);
 }
@@ -82,10 +82,10 @@ void test_trace(const DataType& used_for_size) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
-                  "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.RaiseOrLowerIndex",
+                  "[DataStructures][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
-      "PointwiseFunctions/GeneralRelativity/");
+      "DataStructures/Tensor/EagerMath/");
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
 
