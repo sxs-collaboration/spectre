@@ -73,7 +73,6 @@ jobs:
           version_hashes = spack.stage.get_checksums_for_versions(
               url_dict,
               pkg.name,
-              batch=True,
               fetch_options=pkg.fetch_options,
           )
           version_lines = spack.util.format.get_version_lines(
