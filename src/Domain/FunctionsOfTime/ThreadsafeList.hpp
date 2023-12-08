@@ -131,12 +131,18 @@ class ThreadsafeList {
   const Interval& find_interval(double time,
                                 bool interval_after_boundary) const;
 
-  double initial_time_ = std::numeric_limits<double>::signaling_NaN();
+  alignas(64) std::atomic<double> initial_time_ =
+      std::numeric_limits<double>::signaling_NaN();
+  // Pad memory to avoid false-sharing when accessing initial_time_
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+  char unused_padding_initial_time_[64 - (sizeof(initial_time_) % 64)] = {};
   std::unique_ptr<Interval> interval_list_{};
   alignas(64) std::atomic<const Interval*> most_recent_interval_{};
   // Pad memory to avoid false-sharing when accessing most_recent_interval_
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  char unused_padding_[64 - (sizeof(std::atomic<const Interval*>) % 64)] = {};
+  char
+      unused_padding_most_recent_interval_[64 - (sizeof(most_recent_interval_) %
+                                                 64)] = {};
 };
 
 template <typename T>

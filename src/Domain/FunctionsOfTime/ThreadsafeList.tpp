@@ -13,6 +13,7 @@
 
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Serialization/PupStlCpp11.hpp"
 
 namespace domain::FunctionsOfTime::FunctionOfTimeHelpers {
 namespace ThreadsafeList_detail {
@@ -51,7 +52,8 @@ auto ThreadsafeList<T>::operator=(ThreadsafeList&& other) -> ThreadsafeList& {
   if (this == &other) {
     return *this;
   }
-  initial_time_ = other.initial_time_;
+  initial_time_.store(other.initial_time_.load(std::memory_order_acquire),
+                      std::memory_order_release);
   interval_list_ = std::move(other.interval_list_);
   most_recent_interval_.store(interval_list_.get(), std::memory_order_release);
   other.most_recent_interval_.store(nullptr, std::memory_order_release);
@@ -64,7 +66,8 @@ auto ThreadsafeList<T>::operator=(const ThreadsafeList& other)
   if (this == &other) {
     return *this;
   }
-  initial_time_ = other.initial_time_;
+  initial_time_.store(other.initial_time_.load(std::memory_order_acquire),
+                      std::memory_order_release);
 
   std::unique_ptr<Interval>* previous_pointer = &interval_list_;
   for (auto&& entry : other) {
@@ -91,7 +94,8 @@ void ThreadsafeList<T>::insert(const double update_time, T data,
   const auto* old_interval =
       most_recent_interval_.load(std::memory_order_acquire);
   const double old_expiration =
-      old_interval != nullptr ? old_interval->expiration : initial_time_;
+      old_interval != nullptr ? old_interval->expiration
+                              : initial_time_.load(std::memory_order_acquire);
   if (old_expiration != update_time) {
     ERROR("Tried to insert at time "
           << update_time << ", which is not the old expiration time "
@@ -119,22 +123,24 @@ auto ThreadsafeList<T>::operator()(const double time) const -> IntervalInfo {
     return {interval.previous->expiration, interval.data, interval.expiration};
   }
 
-  if (time < initial_time_ and not equal_within_roundoff(time, initial_time_)) {
+  const double initial_time = initial_time_.load(std::memory_order_acquire);
+  if (time < initial_time and not equal_within_roundoff(time, initial_time)) {
     ERROR("Requested time " << time << " precedes earliest time "
-                            << initial_time_);
+                            << initial_time);
   }
-  return {initial_time_, interval.data, interval.expiration};
+  return {initial_time, interval.data, interval.expiration};
 }
 
 template <typename T>
 double ThreadsafeList<T>::initial_time() const {
-  return initial_time_;
+  return initial_time_.load(std::memory_order_acquire);
 }
 
 template <typename T>
 double ThreadsafeList<T>::expiration_time() const {
   auto* interval = most_recent_interval_.load(std::memory_order_acquire);
-  return interval != nullptr ? interval->expiration : initial_time_;
+  return interval != nullptr ? interval->expiration
+                             : initial_time_.load(std::memory_order_acquire);
 }
 
 template <typename T>
