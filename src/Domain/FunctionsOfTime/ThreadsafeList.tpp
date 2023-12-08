@@ -114,15 +114,16 @@ void ThreadsafeList<T>::insert(const double update_time, T data,
 
 template <typename T>
 auto ThreadsafeList<T>::operator()(const double time) const -> IntervalInfo {
+  const auto& interval = find_interval(time, false);
+  if (interval.previous != nullptr) {
+    return {interval.previous->expiration, interval.data, interval.expiration};
+  }
+
   if (time < initial_time_ and not equal_within_roundoff(time, initial_time_)) {
     ERROR("Requested time " << time << " precedes earliest time "
                             << initial_time_);
   }
-  const auto& interval = find_interval(time, false);
-  const double start = interval.previous != nullptr
-                           ? interval.previous->expiration
-                           : initial_time_;
-  return {start, interval.data, interval.expiration};
+  return {initial_time_, interval.data, interval.expiration};
 }
 
 template <typename T>
@@ -191,7 +192,7 @@ auto ThreadsafeList<T>::iterator::operator++(int) -> iterator {
 template <typename T>
 auto ThreadsafeList<T>::iterator::operator*() const -> reference {
   return {interval_->previous != nullptr ? interval_->previous->expiration
-                                         : initial_time_,
+                                         : parent_->initial_time(),
           interval_->data, interval_->expiration};
 }
 
@@ -201,13 +202,13 @@ auto ThreadsafeList<T>::iterator::operator->() const -> pointer {
 }
 
 template <typename T>
-ThreadsafeList<T>::iterator::iterator(const double initial_time,
+ThreadsafeList<T>::iterator::iterator(const ThreadsafeList* parent,
                                       const Interval* const interval)
-    : initial_time_(initial_time), interval_(interval) {}
+    : parent_(parent), interval_(interval) {}
 
 template <typename T>
 auto ThreadsafeList<T>::begin() const -> iterator {
-  return {initial_time_, most_recent_interval_.load(std::memory_order_acquire)};
+  return {this, most_recent_interval_.load(std::memory_order_acquire)};
 }
 
 template <typename T>

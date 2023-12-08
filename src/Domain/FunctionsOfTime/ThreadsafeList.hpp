@@ -111,9 +111,9 @@ class ThreadsafeList {
    private:
     friend class ThreadsafeList;
 
-    iterator(double initial_time, const Interval* interval);
+    iterator(const ThreadsafeList* parent, const Interval* interval);
 
-    double initial_time_ = std::numeric_limits<double>::signaling_NaN();
+    const ThreadsafeList* parent_ = nullptr;
     const Interval* interval_ = nullptr;
   };
 
