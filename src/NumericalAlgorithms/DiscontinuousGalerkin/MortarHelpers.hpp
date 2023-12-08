@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -127,5 +128,38 @@ Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
                       mortar_size);
   return result;
 }
+/// @}
+
+/// @{
+/// \brief Performs a perfect hash of the mortars into $2^{d-1}$ slots on the
+/// range $[0, 2^{d-1})$.
+///
+/// This is particularly useful when hashing into statically-sized maps based
+/// on the number of dimensions.
+template <size_t DimMinusOne>
+size_t hash(const std::array<Spectral::ChildSize, DimMinusOne>& mortar_size) {
+  if constexpr (DimMinusOne == 2) {
+    return static_cast<size_t>(mortar_size[0]) % 2 +
+           2 * (static_cast<size_t>(mortar_size[1]) % 2);
+  } else if constexpr (DimMinusOne == 1) {
+    return static_cast<size_t>(mortar_size[0]) % 2;
+  } else if constexpr (DimMinusOne == 0) {
+    (void)mortar_size;
+    return 0;
+  } else {
+    static_assert(DimMinusOne == 2 or DimMinusOne == 1 or DimMinusOne == 0);
+  }
+}
+
+template <size_t Dim>
+struct MortarSizeHash {
+  template <size_t MaxSize>
+  static constexpr bool is_perfect = MaxSize == two_to_the(Dim);
+
+  size_t operator()(
+      const std::array<Spectral::ChildSize, Dim - 1>& mortar_size) {
+    return hash(mortar_size);
+  }
+};
 /// @}
 }  // namespace dg
