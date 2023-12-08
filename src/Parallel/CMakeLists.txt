@@ -55,6 +55,7 @@ spectre_target_headers(
   ReductionDeclare.hpp
   ResourceInfo.hpp
   Section.hpp
+  StaticSpscQueue.hpp
   TypeTraits.hpp
   )
 

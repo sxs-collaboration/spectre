@@ -167,6 +167,7 @@ set(LIBRARY_SOURCES
   Test_ParallelComponentHelpers.cpp
   Test_Phase.cpp
   Test_ResourceInfo.cpp
+  Test_StaticSpscQueue.cpp
   Test_TypeTraits.cpp
   )
 
