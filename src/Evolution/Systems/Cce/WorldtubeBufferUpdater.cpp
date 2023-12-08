@@ -167,6 +167,50 @@ void update_buffer_with_modal_data(
     }
   }
 }
+
+template <typename InputTags>
+double update_buffers_for_time(
+    const gsl::not_null<Variables<InputTags>*> buffers,
+    const gsl::not_null<size_t*> time_span_start,
+    const gsl::not_null<size_t*> time_span_end, const double time,
+    const size_t computation_l_max, const size_t l_max,
+    const size_t interpolator_length, const size_t buffer_depth,
+    const DataVector& time_buffer,
+    const tuples::tagged_tuple_from_typelist<
+        db::wrap_tags_in<Tags::detail::InputDataSet, InputTags>>& dataset_names,
+    const h5::H5File<h5::AccessType::ReadOnly>& cce_data_file) {
+  if (*time_span_end >= time_buffer.size()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  if (*time_span_end > interpolator_length and
+      time_buffer[*time_span_end - interpolator_length] > time) {
+    // the next time an update will be required
+    return time_buffer[*time_span_end - interpolator_length + 1];
+  }
+  // find the time spans that are needed
+  auto new_span_pair = detail::create_span_for_time_value(
+      time, buffer_depth, interpolator_length, 0, time_buffer.size(),
+      time_buffer);
+  *time_span_start = new_span_pair.first;
+  *time_span_end = new_span_pair.second;
+  // load the desired time spans into the buffers
+  tmpl::for_each<InputTags>([&buffers, &time_span_start, &time_span_end,
+                             &computation_l_max, &l_max, &cce_data_file,
+                             &dataset_names](auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    update_buffer_with_modal_data(
+        make_not_null(&get(get<tag>(*buffers)).data()),
+        cce_data_file.get<h5::Dat>(
+            "/" + get<Tags::detail::InputDataSet<tag>>(dataset_names)),
+        computation_l_max, l_max, *time_span_start, *time_span_end,
+        tag::type::type::spin == 0);
+    cce_data_file.close_current_object();
+  });
+  // the next time an update will be required
+  return time_buffer[std::min(*time_span_end - interpolator_length + 1,
+                              time_buffer.size() - 1)];
+}
+
 }  // namespace detail
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
@@ -401,36 +445,10 @@ double BondiWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
     const size_t buffer_depth) const {
-  if (*time_span_end >= time_buffer_.size()) {
-    return std::numeric_limits<double>::quiet_NaN();
-  }
-  if (*time_span_end > interpolator_length and
-      time_buffer_[*time_span_end - interpolator_length] > time) {
-    // the next time an update will be required
-    return time_buffer_[*time_span_end - interpolator_length + 1];
-  }
-  // find the time spans that are needed
-  auto new_span_pair = detail::create_span_for_time_value(
-      time, buffer_depth, interpolator_length, 0, time_buffer_.size(),
-      time_buffer_);
-  *time_span_start = new_span_pair.first;
-  *time_span_end = new_span_pair.second;
-  // load the desired time spans into the buffers
-  tmpl::for_each<cce_bondi_input_tags>(
-      [this, &buffers, &time_span_start, &time_span_end,
-       &computation_l_max](auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        this->update_buffer(
-            make_not_null(&get(get<tag>(*buffers)).data()),
-            cce_data_file_.get<h5::Dat>(
-                "/" + get<Tags::detail::InputDataSet<tag>>(dataset_names_)),
-            computation_l_max, *time_span_start, *time_span_end,
-            tag::type::type::spin == 0);
-        cce_data_file_.close_current_object();
-      });
-  // the next time an update will be required
-  return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
-                               time_buffer_.size() - 1)];
+  return detail::update_buffers_for_time<cce_bondi_input_tags>(
+      buffers, time_span_start, time_span_end, time, computation_l_max, l_max_,
+      interpolator_length, buffer_depth, time_buffer_, dataset_names_,
+      cce_data_file_);
 }
 
 void BondiWorldtubeH5BufferUpdater::update_buffer(
@@ -454,6 +472,68 @@ void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) {
   }
 }
 
+KleinGordonWorldtubeH5BufferUpdater::KleinGordonWorldtubeH5BufferUpdater(
+    const std::string& cce_data_filename,
+    const std::optional<double> extraction_radius)
+    : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPsi>>>(
+      dataset_names_) = "KGPsi";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPi>>>(
+      dataset_names_) = "dtKGPsi";
+
+  const std::string text_radius = detail::get_text_radius(cce_data_filename);
+  try {
+    extraction_radius_ = extraction_radius.has_value() ? *extraction_radius
+                                                       : std::stod(text_radius);
+  } catch (const std::invalid_argument&) {
+    // the extraction radius is typically not used in the Klein-Gordon system,
+    // so we don't error if it isn't parsed from the filename. Instead, we'll
+    // just error if the invalid extraction radius value is ever retrieved using
+    // `get_extraction_radius`.
+  }
+
+  detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
+                                   cce_data_file_.get<h5::Dat>("/KGPsi"));
+  cce_data_file_.close_current_object();
+}
+
+double KleinGordonWorldtubeH5BufferUpdater::update_buffers_for_time(
+    const gsl::not_null<Variables<klein_gordon_input_tags>*> buffers,
+    const gsl::not_null<size_t*> time_span_start,
+    const gsl::not_null<size_t*> time_span_end, const double time,
+    const size_t computation_l_max, const size_t interpolator_length,
+    const size_t buffer_depth) const {
+
+  return detail::update_buffers_for_time<klein_gordon_input_tags>(
+      buffers, time_span_start, time_span_end, time, computation_l_max, l_max_,
+      interpolator_length, buffer_depth, time_buffer_, dataset_names_,
+      cce_data_file_);
+}
+
+void KleinGordonWorldtubeH5BufferUpdater::update_buffer(
+    const gsl::not_null<ComplexModalVector*> buffer_to_update,
+    const h5::Dat& read_data, const size_t computation_l_max,
+    const size_t time_span_start, const size_t time_span_end) const {
+  // We assume the scalar field is real-valued
+  detail::update_buffer_with_modal_data(
+      buffer_to_update, read_data, computation_l_max, l_max_, time_span_start,
+      time_span_end, true);
+}
+
+void KleinGordonWorldtubeH5BufferUpdater::pup(PUP::er& p) {
+  p | time_buffer_;
+  p | filename_;
+  p | l_max_;
+  p | extraction_radius_;
+  p | dataset_names_;
+  if (p.isUnpacking()) {
+    cce_data_file_ = h5::H5File<h5::AccessType::ReadOnly>{filename_};
+  }
+}
+
 PUP::able::PUP_ID MetricWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 PUP::able::PUP_ID BondiWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID KleinGordonWorldtubeH5BufferUpdater::my_PUP_ID = 0;  // NOLINT
 }  // namespace Cce

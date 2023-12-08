@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_Equations.cpp
   Test_GaugeTransformBoundaryData.cpp
   Test_InitializeCce.cpp
+  Test_KleinGordonWorldtubeData.cpp
   Test_LinearOperators.cpp
   Test_LinearSolve.cpp
   Test_NewmanPenrose.cpp
