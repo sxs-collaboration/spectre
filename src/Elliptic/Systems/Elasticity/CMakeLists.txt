@@ -29,8 +29,6 @@ target_link_libraries(
   Utilities
   INTERFACE
   LinearOperators
-  PRIVATE
-  GeneralRelativity
   )
 
 add_subdirectory(BoundaryConditions)

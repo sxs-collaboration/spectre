@@ -4,8 +4,8 @@
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 
 namespace hydro::Tags {
 void LowerSpatialFourVelocityCompute::function(
