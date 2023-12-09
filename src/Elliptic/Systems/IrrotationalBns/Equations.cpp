@@ -35,11 +35,11 @@ void curved_potential_fluxes(
 
 void add_flat_potential_sources(
     const gsl::not_null<Scalar<DataVector>*> source_for_potential,
-    const tnsr::i<DataVector, 3>& auxiliary_velocity,
+    const tnsr::I<DataVector, 3>& upper_auxiliary_velocity,
     const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy) {
   for (size_t i = 0; i < 3; i++) {
     source_for_potential->get() -=
-        auxiliary_velocity.get(i) *
+        upper_auxiliary_velocity.get(i) *
         log_deriv_of_lapse_over_specific_enthalpy.get(i);
   }
 }
@@ -76,20 +76,18 @@ void auxiliary_fluxes(
 void add_auxiliary_sources_without_flux_christoffels(
     gsl::not_null<tnsr::i<DataVector, 3>*> auxiliary_sources,
     const Scalar<DataVector>& velocity_potential,
-    const tnsr::i<DataVector, 3>& auxiliary_velocity,
     const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
     const tnsr::i<DataVector, 3>& fixed_sources) {
-  ::tenex::evaluate<ti::i>(
-      auxiliary_sources,
-      auxiliary_velocity(ti::i) -
-          velocity_potential() * div_rotational_shift_stress(ti::i) / 2 -
-          fixed_sources(ti::i));
+  ::tenex::update<ti::i>(auxiliary_sources,
+                         (*auxiliary_sources)(ti::i)-velocity_potential() *
+                                 div_rotational_shift_stress(ti::i) / 2 -
+                             fixed_sources(ti::i));
 }
 void add_auxiliary_source_flux_christoffels(
     gsl::not_null<tnsr::i<DataVector, 3>*> auxiliary_sources,
     const Scalar<DataVector>& velocity_potential,
     const tnsr::i<DataVector, 3>& christoffel_contracted,
-    const tnsr::Ijk<DataVector, 3>& christoffel,
+    const tnsr::Ijj<DataVector, 3>& christoffel,
     const tnsr::Ij<DataVector, 3>& rotational_shift_stress) {
   ::tenex::update<ti::i>(auxiliary_sources,
                          (*auxiliary_sources)(ti::i)-velocity_potential() *
@@ -141,25 +139,24 @@ void Fluxes<Geometry::Curved>::apply(
 void Sources<Geometry::FlatCartesian>::apply(
     const gsl::not_null<Scalar<DataVector>*> equation_for_potential,
     const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
-    const tnsr::i<DataVector, 3>& auxiliary_velocity,
     const tnsr::i<DataVector, 3>& /*div_rotational_shift_stress*/,
     const tnsr::i<DataVector, 3>& /*fixed_sources*/,
     const Scalar<DataVector>& /*velocity_potential*/,
-    const tnsr::I<DataVector, 3>& /*flux_for_potential*/) {
-  add_flat_potential_sources(equation_for_potential, auxiliary_velocity,
+    const tnsr::I<DataVector, 3>& flux_for_potential) {
+  add_flat_potential_sources(equation_for_potential, flux_for_potential,
                              log_deriv_of_lapse_over_specific_enthalpy);
 }
 
+// Need auxiliary velocity here (since don't have fluxes)
 void Sources<Geometry::FlatCartesian>::apply(
     const gsl::not_null<tnsr::i<DataVector, 3>*>
         equation_for_auxiliary_velocity,
     const tnsr::i<DataVector, 3>& /*log_deriv_of_lapse_over_specific_enthalpy*/,
-    const tnsr::i<DataVector, 3>& auxiliary_velocity,
     const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
     const tnsr::i<DataVector, 3>& fixed_sources,
     const Scalar<DataVector>& velocity_potential) {
   add_auxiliary_sources_without_flux_christoffels(
-      equation_for_auxiliary_velocity, velocity_potential, auxiliary_velocity,
+      equation_for_auxiliary_velocity, velocity_potential,
       div_rotational_shift_stress, fixed_sources);
 }
 
@@ -167,9 +164,8 @@ void Sources<Geometry::Curved>::apply(
     const gsl::not_null<Scalar<DataVector>*> equation_for_potential,
     const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
     const tnsr::i<DataVector, 3>& christoffel_contracted,
-    const tnsr::Ijk<DataVector, 3>& /*christoffel*/,
+    const tnsr::Ijj<DataVector, 3>& /*christoffel*/,
     const tnsr::i<DataVector, 3>& /*div_rotational_shift_stress*/,
-    const tnsr::i<DataVector, 3>& /*auxiliary_velocity*/,
     const tnsr::Ij<DataVector, 3>& /*rotational_shift_stress*/,
     const tnsr::i<DataVector, 3>& /*fixed_sources*/,
     const Scalar<DataVector>& /*velocity_potential*/,
@@ -179,19 +175,19 @@ void Sources<Geometry::Curved>::apply(
                                christoffel_contracted, flux_for_potential);
 }
 
+// Need auxiliary velocity here (again because we don't have fluxes)
 void Sources<Geometry::Curved>::apply(
     const gsl::not_null<tnsr::i<DataVector, 3>*>
         equation_for_auxiliary_velocity,
     const tnsr::i<DataVector, 3>& /*log_deriv_of_lapse_over_specific_enthalpy*/,
     const tnsr::i<DataVector, 3>& christoffel_contracted,
-    const tnsr::Ijk<DataVector, 3>& christoffel,
+    const tnsr::Ijj<DataVector, 3>& christoffel,
     const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
-    const tnsr::i<DataVector, 3>& auxiliary_velocity,
     const tnsr::Ij<DataVector, 3>& rotational_shift_stress,
     const tnsr::i<DataVector, 3>& fixed_sources,
     const Scalar<DataVector>& velocity_potential) {
   add_auxiliary_sources_without_flux_christoffels(
-      equation_for_auxiliary_velocity, velocity_potential, auxiliary_velocity,
+      equation_for_auxiliary_velocity, velocity_potential,
       div_rotational_shift_stress, fixed_sources);
   add_auxiliary_source_flux_christoffels(
       equation_for_auxiliary_velocity, velocity_potential,

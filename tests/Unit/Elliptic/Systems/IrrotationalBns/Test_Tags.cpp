@@ -13,5 +13,5 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.IrrotationalBns.Tags",
   TestHelpers::db::test_simple_tag<IrrotationalBns::Tags::VelocityPotential>(
       "VelocityPotential");
   TestHelpers::db::test_simple_tag<IrrotationalBns::Tags::AuxiliaryVelocity>(
-      "AuxialliaryVelocity");
+      "AuxiliaryVelocity");
 }

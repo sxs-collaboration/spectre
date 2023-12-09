@@ -20,6 +20,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace IrrotationalBns::BoundaryConditions {
@@ -29,7 +30,7 @@ template <bool Linearized>
 void apply_neumann_boundary_condition(
     const gsl::not_null<Scalar<DataVector>*> n_dot_auxilliary_velocity) {
   const Neumann boundary_condition{{}};
-  const Scalar<DataVector> field{DataVector{1.0, 2.0, 3.0, 4.0}};
+  Scalar<DataVector> field{DataVector{1.0, 2.0, 3.0, 4.0}};
   const auto box = db::create<db::AddSimpleTags<>>();
   elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Neumann>>(
       boundary_condition, box, Direction<3>::lower_xi(), make_not_null(&field),
@@ -54,18 +55,20 @@ SPECTRE_TEST_CASE("Unit.IrrotationalBns.BoundaryConditions.Neumann",
                           boundary_condition);
     }
     {
-      INFO("Random-value tests");
-      pypp::SetupLocalPythonEnvironment local_python_env(
-          "Elliptic/Systems/Poisson/BoundaryConditions/");
-      pypp::check_with_random_values<4>(
-          &apply_neumann_boundary_condition<false>, "Neumann",
-          {"neumann_normal_dot_auxilliary_velocity"},
-          {{{-1., 1.}, {0.5, 2.}, {-1., 1.}, {-1., 1.}}}, DataVector{3});
-      pypp::check_with_random_values<4>(
-          &apply_neumann_boundary_condition<true>, "Neumann",
-          {"neumann_normal_dot_auxillary_velocity_linearized"},
-          {{{-1., 1.}, {0.5, 2.}, {-1., 1.}, {-1., 1.}}}, DataVector{3});
+      Scalar<DataVector> n_dot_auxilliary_velocity{};
+      Scalar<DataVector> n_dot_auxilliary_velocity_for_linearized{};
+      {
+        apply_neumann_boundary_condition<true>(
+            make_not_null(&n_dot_auxilliary_velocity_for_linearized));
+        CHECK(get(n_dot_auxilliary_velocity_for_linearized) ==
+              DataVector{4, 0.0});
+      }
+      {
+        apply_neumann_boundary_condition<false>(
+            make_not_null(&n_dot_auxilliary_velocity));
+        CHECK(get(n_dot_auxilliary_velocity) == DataVector{4, 0.0});
+      }
     }
   }
-
-}  // namespace Poisson::BoundaryConditions
+}
+}  // namespace IrrotationalBns::BoundaryConditions

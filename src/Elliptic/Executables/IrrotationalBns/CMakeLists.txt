@@ -20,6 +20,9 @@ set(LIBS_TO_LINK
   Events
   EventsAndTriggers
   Informer
+  IrrotationalBns
+  IrrotationalBnsBoundaryConditions
+  IrrotationalBnsSolutions
   LinearOperators
   MathFunctions
   Observer
@@ -28,9 +31,6 @@ set(LIBS_TO_LINK
   ParallelLinearSolver
   ParallelMultigrid
   ParallelSchwarz
-  Poisson
-  PoissonBoundaryConditions
-  PoissonSolutions
   Utilities
 )
 

@@ -54,7 +54,7 @@ class Neumann : public elliptic::BoundaryConditions::BoundaryCondition<3> {
     return std::make_unique<Neumann>(*this);
   }
 
-  explicit Neumann(const Options::Context& context = {});
+  explicit Neumann(const Options::Context& context);
 
   std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
       const override {
@@ -76,14 +76,10 @@ class Neumann : public elliptic::BoundaryConditions::BoundaryCondition<3> {
       const;
 
   void pup(PUP::er& p) override;
-
- private:
 };
 
-template <size_t Dim>
 bool operator==(const Neumann& lhs, const Neumann& rhs);
 
-template <size_t Dim>
 bool operator!=(const Neumann& lhs, const Neumann& rhs);
 
 }  // namespace IrrotationalBns::BoundaryConditions

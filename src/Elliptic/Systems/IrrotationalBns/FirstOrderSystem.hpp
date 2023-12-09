@@ -26,16 +26,17 @@ namespace IrrotationalBns {
  * \brief The Irrotational Bns equations From Baumgarte and Shapiro Chapter 15
  *  formulated as a set of coupled first-order PDEs.
  *
- * \details This system formulates the Poisson equation \f$-\Delta_\gamma u(x) =
- * f(x)\f$ on a background metric \f$\gamma_{ij}\f$ as the set of coupled
- * first-order PDEs
+ * \details This system formulates the Irrotational Bns HSE equations for the
+ *  velocity potential \f$\Phi\f$. For a background matter distribution (given
+ *  by the specific enthalpy h) and a background metric \f$\gamma_{ij}\f$.
  *
  * \f{align*}
- * -\partial_i \gamma^{ij} v_j(x) - \Gamma^i_{ij}\gamma^{jk}v_k &= f(x) \\
- * -\partial_i u(x) + v_i(x) &= 0
+ * D_i U^i = -U^i D_i \ln \left(\frac{\alpha}{h}) \\
+
  * \f}
  *
- * where we have chosen the field gradient as an auxiliary variable \f$v_i\f$
+ * where we have chosen the velocity potential gradient as an auxiliary
+ * variable \f$D_i \Phi = U_i \equiv h u_i\f$ with \f$u_i\f$ the four velocity
  * and where \f$\Gamma^i_{jk}=\frac{1}{2}\gamma^{il}\left(\partial_j\gamma_{kl}
  * +\partial_k\gamma_{jl}-\partial_l\gamma_{jk}\right)\f$ are the Christoffel
  * symbols of the second kind of the background metric \f$\gamma_{ij}\f$. The
@@ -83,6 +84,7 @@ struct FirstOrderSystem
 
   using background_fields = tmpl::list<
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
       gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::int_<3>,
