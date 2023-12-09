@@ -141,6 +141,14 @@ struct BoundaryDataFilename {
   using group = Cce;
 };
 
+struct KleinGordonBoundaryDataFilename {
+  using type = std::string;
+  static constexpr Options::String help{
+      "H5 file to read the Klein-Gordon wordltube data from. It could be the "
+      "same as/different from `BoundaryDataFilename`."};
+  using group = Cce;
+};
+
 struct H5LookaheadTimes {
   using type = size_t;
   static constexpr Options::String help{
@@ -279,7 +287,8 @@ struct CceEvolutionPrefix : Tag {
   }
 };
 
-/// A tag that constructs a `MetricWorldtubeDataManager` from options
+/// A tag that constructs a `MetricWorldtubeDataManager` or
+/// `BondiWorldtubeDataManager` from options
 struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = std::unique_ptr<WorldtubeDataManager<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>;
@@ -317,6 +326,28 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
           l_max, number_of_lookahead_times, interpolator->get_clone(),
           fix_spec_normalization);
     }
+  }
+};
+
+/// A tag that constructs a `KleinGordonWorldtubeDataManager` from options
+struct KleinGordonH5WorldtubeBoundaryDataManager : db::SimpleTag {
+  using type = std::unique_ptr<
+      WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags>>;
+  using option_tags =
+      tmpl::list<OptionTags::LMax, OptionTags::KleinGordonBoundaryDataFilename,
+                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
+                 OptionTags::StandaloneExtractionRadius>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const size_t l_max, const std::string& filename,
+      const size_t number_of_lookahead_times,
+      const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
+      const std::optional<double> extraction_radius) {
+    return std::make_unique<KleinGordonWorldtubeDataManager>(
+        std::make_unique<KleinGordonWorldtubeH5BufferUpdater>(
+            filename, extraction_radius),
+        l_max, number_of_lookahead_times, interpolator->get_clone());
   }
 };
 
