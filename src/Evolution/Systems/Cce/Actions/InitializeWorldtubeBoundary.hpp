@@ -45,13 +45,13 @@ namespace Actions {
 
 namespace detail {
 template <typename Initializer, typename ManagerTags,
-          typename BoundaryCommunicationTagsList>
+          typename... BoundaryCommunicationTagsList>
 struct InitializeWorldtubeBoundaryBase {
   using simple_tags_from_options = ManagerTags;
   using const_global_cache_tags = tmpl::list<Tags::LMax>;
 
   using simple_tags =
-      tmpl::list<::Tags::Variables<BoundaryCommunicationTagsList>>;
+      tmpl::list<::Tags::Variables<BoundaryCommunicationTagsList>...>;
 
   template <typename DataBoxTagsList, typename... InboxTags,
             typename ArrayIndex, typename Metavariables, typename ActionList,
@@ -78,11 +78,11 @@ struct InitializeWorldtubeBoundaryBase {
       }
     }
     const size_t l_max = db::get<Tags::LMax>(box);
-    Variables<BoundaryCommunicationTagsList> boundary_variables{
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                               std::move(boundary_variables));
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box),
+        Variables<BoundaryCommunicationTagsList>{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)}...);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
