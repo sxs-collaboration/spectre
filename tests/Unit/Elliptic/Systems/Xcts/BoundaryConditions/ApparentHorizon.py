@@ -63,8 +63,8 @@ def projected_normal_gradient(
 # This function implements the apparent-horizon boundary condition, Eq. 7.12 in
 # Harald's thesis https://arxiv.org/abs/gr-qc/0510016
 def normal_dot_conformal_factor_gradient(
-    conformal_factor,
-    lapse_times_conformal_factor,
+    conformal_factor_minus_one,
+    lapse_times_conformal_factor_minus_one,
     n_dot_longitudinal_shift_excess,
     center,
     spin,
@@ -84,7 +84,9 @@ def normal_dot_conformal_factor_gradient(
         inv_conformal_metric,
         conformal_christoffel_second_kind,
     )
-    lapse = lapse_times_conformal_factor / conformal_factor
+    lapse = (lapse_times_conformal_factor_minus_one + 1.0) / (
+        conformal_factor_minus_one + 1.0
+    )
     n_dot_longitudinal_shift = n_dot_longitudinal_shift_excess + np.einsum(
         "i,ij", -conformal_unit_normal, longitudinal_shift_background
     )
@@ -93,8 +95,11 @@ def normal_dot_conformal_factor_gradient(
     )
     return (
         0.25
-        * conformal_factor
-        * (local_projected_normal_gradient - conformal_factor**2 * J)
+        * (conformal_factor_minus_one + 1.0)
+        * (
+            local_projected_normal_gradient
+            - (conformal_factor_minus_one + 1.0) ** 2 * J
+        )
     )
 
 
@@ -116,8 +121,8 @@ def normal_dot_conformal_factor_gradient_correction(
     x,
     extrinsic_curvature_trace,
     longitudinal_shift_background,
-    conformal_factor,
-    lapse_times_conformal_factor,
+    conformal_factor_minus_one,
+    lapse_times_conformal_factor_minus_one,
     n_dot_longitudinal_shift_excess,
     inv_conformal_metric,
     conformal_christoffel_second_kind,
@@ -131,7 +136,9 @@ def normal_dot_conformal_factor_gradient_correction(
         inv_conformal_metric,
         conformal_christoffel_second_kind,
     )
-    lapse = lapse_times_conformal_factor / conformal_factor
+    lapse = (lapse_times_conformal_factor_minus_one + 1.0) / (
+        conformal_factor_minus_one + 1.0
+    )
     n_dot_longitudinal_shift = n_dot_longitudinal_shift_excess + np.einsum(
         "i,ij", -conformal_unit_normal, longitudinal_shift_background
     )
@@ -140,9 +147,10 @@ def normal_dot_conformal_factor_gradient_correction(
     )
     J_correction = -0.5 * (
         (
-            conformal_factor_correction / lapse_times_conformal_factor
-            - conformal_factor
-            / lapse_times_conformal_factor**2
+            conformal_factor_correction
+            / (lapse_times_conformal_factor_minus_one + 1.0)
+            - (conformal_factor_minus_one + 1.0)
+            / (lapse_times_conformal_factor_minus_one + 1.0) ** 2
             * lapse_times_conformal_factor_correction
         )
         * np.einsum("i,i", -conformal_unit_normal, n_dot_longitudinal_shift)
@@ -156,8 +164,11 @@ def normal_dot_conformal_factor_gradient_correction(
     )
     return 0.25 * (
         conformal_factor_correction * local_projected_normal_gradient
-        - 3.0 * conformal_factor**2 * conformal_factor_correction * J
-        - conformal_factor**3 * J_correction
+        - 3.0
+        * (conformal_factor_minus_one + 1.0) ** 2
+        * conformal_factor_correction
+        * J
+        - (conformal_factor_minus_one + 1.0) ** 3 * J_correction
     )
 
 
@@ -180,8 +191,8 @@ def normal_dot_lapse_times_conformal_factor_gradient(*args, **kwargs):
 # This function implements the quasi-equilibrium condition on the shift, i.e.
 # Eq. 7.14 in Harald's thesis https://arxiv.org/abs/gr-qc/0510016
 def shift_excess(
-    conformal_factor,
-    lapse_times_conformal_factor,
+    conformal_factor_minus_one,
+    lapse_times_conformal_factor_minus_one,
     n_dot_longitudinal_shift_excess,
     center,
     spin,
@@ -198,7 +209,9 @@ def shift_excess(
     conformal_unit_normal_raised = np.einsum(
         "ij,j", inv_conformal_metric, conformal_unit_normal
     )
-    shift_orthogonal = lapse_times_conformal_factor / conformal_factor**3
+    shift_orthogonal = (lapse_times_conformal_factor_minus_one + 1.0) / (
+        conformal_factor_minus_one + 1.0
+    ) ** 3
     shift_parallel = np.cross(spin, x)
     return (
         shift_orthogonal * conformal_unit_normal_raised
@@ -225,8 +238,8 @@ def shift_excess_correction(
     x,
     extrinsic_curvature_trace,
     longitudinal_shift_background,
-    conformal_factor,
-    lapse_times_conformal_factor,
+    conformal_factor_minus_one,
+    lapse_times_conformal_factor_minus_one,
     n_dot_longitudinal_shift_excess,
     inv_conformal_metric,
     conformal_christoffel_second_kind,
@@ -238,10 +251,11 @@ def shift_excess_correction(
         "ij,j", inv_conformal_metric, conformal_unit_normal
     )
     shift_orthogonal_correction = (
-        lapse_times_conformal_factor_correction / conformal_factor**3
+        lapse_times_conformal_factor_correction
+        / (conformal_factor_minus_one + 1.0) ** 3
         - 3.0
-        * lapse_times_conformal_factor
-        / conformal_factor**4
+        * (lapse_times_conformal_factor_minus_one + 1.0)
+        / (conformal_factor_minus_one + 1.0) ** 4
         * conformal_factor_correction
     )
     return shift_orthogonal_correction * conformal_unit_normal_raised

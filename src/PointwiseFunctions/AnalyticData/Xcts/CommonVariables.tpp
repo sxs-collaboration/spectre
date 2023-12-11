@@ -100,7 +100,8 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*>
         fixed_source_for_hamiltonian_constraint,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/) const {
+    ::Tags::FixedSource<Tags::ConformalFactorMinusOne<DataType>> /*meta*/)
+    const {
   std::fill(fixed_source_for_hamiltonian_constraint->begin(),
             fixed_source_for_hamiltonian_constraint->end(), 0.);
 }
@@ -109,8 +110,8 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-    const {
+    ::Tags::FixedSource<
+        Tags::LapseTimesConformalFactorMinusOne<DataType>> /*meta*/) const {
   std::fill(fixed_source_for_lapse_equation->begin(),
             fixed_source_for_lapse_equation->end(), 0.);
 }

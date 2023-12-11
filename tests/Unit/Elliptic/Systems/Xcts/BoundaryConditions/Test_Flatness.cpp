@@ -30,7 +30,7 @@ template <Xcts::Equations EnabledEquations, bool Linearized>
 void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
   const size_t num_points = 3;
   const auto box = db::create<db::AddSimpleTags<>>();
-  Scalar<DataVector> conformal_factor{
+  Scalar<DataVector> conformal_factor_minus_one{
       num_points, std::numeric_limits<double>::signaling_NaN()};
   Scalar<DataVector> n_dot_conformal_factor_gradient{
       num_points, std::numeric_limits<double>::signaling_NaN()};
@@ -38,10 +38,10 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
     elliptic::apply_boundary_condition<Linearized, void,
                                        tmpl::list<Flatness<EnabledEquations>>>(
         boundary_condition, box, Direction<3>::lower_xi(),
-        make_not_null(&conformal_factor),
+        make_not_null(&conformal_factor_minus_one),
         make_not_null(&n_dot_conformal_factor_gradient));
   } else {
-    Scalar<DataVector> lapse_times_conformal_factor{
+    Scalar<DataVector> lapse_times_conformal_factor_minus_one{
         num_points, std::numeric_limits<double>::signaling_NaN()};
     Scalar<DataVector> n_dot_lapse_times_conformal_factor_gradient{
         num_points, std::numeric_limits<double>::signaling_NaN()};
@@ -49,8 +49,8 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
       elliptic::apply_boundary_condition<
           Linearized, void, tmpl::list<Flatness<EnabledEquations>>>(
           boundary_condition, box, Direction<3>::lower_xi(),
-          make_not_null(&conformal_factor),
-          make_not_null(&lapse_times_conformal_factor),
+          make_not_null(&conformal_factor_minus_one),
+          make_not_null(&lapse_times_conformal_factor_minus_one),
           make_not_null(&n_dot_conformal_factor_gradient),
           make_not_null(&n_dot_lapse_times_conformal_factor_gradient));
     } else {
@@ -61,8 +61,8 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
       elliptic::apply_boundary_condition<
           Linearized, void, tmpl::list<Flatness<EnabledEquations>>>(
           boundary_condition, box, Direction<3>::lower_xi(),
-          make_not_null(&conformal_factor),
-          make_not_null(&lapse_times_conformal_factor),
+          make_not_null(&conformal_factor_minus_one),
+          make_not_null(&lapse_times_conformal_factor_minus_one),
           make_not_null(&shift_excess),
           make_not_null(&n_dot_conformal_factor_gradient),
           make_not_null(&n_dot_lapse_times_conformal_factor_gradient),
@@ -71,10 +71,10 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
       CHECK(get<1>(shift_excess) == DataVector(num_points, 0.));
       CHECK(get<2>(shift_excess) == DataVector(num_points, 0.));
     }
-    CHECK(get(lapse_times_conformal_factor) ==
-          DataVector(num_points, Linearized ? 0. : 1.));
+    CHECK(get(lapse_times_conformal_factor_minus_one) ==
+          DataVector(num_points, 0.));
   }
-  CHECK(get(conformal_factor) == DataVector(num_points, Linearized ? 0. : 1.));
+  CHECK(get(conformal_factor_minus_one) == DataVector(num_points, 0.));
 }
 
 template <Xcts::Equations EnabledEquations>

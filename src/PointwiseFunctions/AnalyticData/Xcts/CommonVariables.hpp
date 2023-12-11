@@ -37,8 +37,8 @@ using common_tags = tmpl::list<
     Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelContracted<DataType, 3, Frame::Inertial>,
     // Fixed sources
-    ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
-    ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
+    ::Tags::FixedSource<Tags::ConformalFactorMinusOne<DataType>>,
+    ::Tags::FixedSource<Tags::LapseTimesConformalFactorMinusOne<DataType>>,
     ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
     // These tags require numerical differentiation
     ::Tags::deriv<
@@ -142,12 +142,13 @@ struct CommonVariables {
   void operator()(
       gsl::not_null<Scalar<DataType>*> fixed_source_for_hamiltonian_constraint,
       gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/) const;
+      ::Tags::FixedSource<Tags::ConformalFactorMinusOne<DataType>> /*meta*/)
+      const;
   void operator()(
       gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
       gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-      const;
+      ::Tags::FixedSource<
+          Tags::LapseTimesConformalFactorMinusOne<DataType>> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
       gsl::not_null<Cache*> cache,

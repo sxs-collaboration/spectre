@@ -15,28 +15,30 @@ namespace Xcts::BoundaryConditions {
 
 template <>
 void Flatness<Xcts::Equations::Hamiltonian>::apply(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_conformal_factor_gradient*/) {
-  get(*conformal_factor) = 1.;
+  get(*conformal_factor_minus_one) = 0.;
 }
 
 template <>
 void Flatness<Xcts::Equations::HamiltonianAndLapse>::apply(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
-    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+    const gsl::not_null<Scalar<DataVector>*>
+        lapse_times_conformal_factor_minus_one,
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_conformal_factor_gradient*/,
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_lapse_times_conformal_factor_gradient*/) {
-  get(*conformal_factor) = 1.;
-  get(*lapse_times_conformal_factor) = 1.;
+  get(*conformal_factor_minus_one) = 0.;
+  get(*lapse_times_conformal_factor_minus_one) = 0.;
 }
 
 template <>
 void Flatness<Xcts::Equations::HamiltonianLapseAndShift>::apply(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
-    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+    const gsl::not_null<Scalar<DataVector>*>
+        lapse_times_conformal_factor_minus_one,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_conformal_factor_gradient*/,
@@ -44,8 +46,8 @@ void Flatness<Xcts::Equations::HamiltonianLapseAndShift>::apply(
     /*n_dot_lapse_times_conformal_factor_gradient*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*>
     /*n_dot_longitudinal_shift_excess*/) {
-  get(*conformal_factor) = 1.;
-  get(*lapse_times_conformal_factor) = 1.;
+  get(*conformal_factor_minus_one) = 0.;
+  get(*lapse_times_conformal_factor_minus_one) = 0.;
   std::fill(shift_excess->begin(), shift_excess->end(), 0.);
 }
 

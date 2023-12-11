@@ -103,7 +103,7 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
   const auto& conformal_factor =
       cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
   const auto& deriv_conformal_factor = cache->get_var(
-      *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+      *this, ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
                            tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& conformal_metric = cache->get_var(
       *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
@@ -152,10 +152,18 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+    const gsl::not_null<Cache*> /*cache*/,
+    Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
+  get(*conformal_factor_minus_one) = 0.;
+}
+
+template <typename DataType, bool HasMhd>
+void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*> conformal_factor_gradient,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                  Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   std::fill(conformal_factor_gradient->begin(),
             conformal_factor_gradient->end(), 0.);
 }
@@ -182,15 +190,26 @@ void WrappedGrVariables<DataType, HasMhd>::operator()(
 
 template <typename DataType, bool HasMhd>
 void WrappedGrVariables<DataType, HasMhd>::operator()(
+    const gsl::not_null<Scalar<DataType>*>
+        lapse_times_conformal_factor_minus_one,
+    const gsl::not_null<Cache*> cache,
+    Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
+  *lapse_times_conformal_factor_minus_one =
+      cache->get_var(*this, Xcts::Tags::LapseTimesConformalFactor<DataType>{});
+  get(*lapse_times_conformal_factor_minus_one) -= 1.;
+}
+
+template <typename DataType, bool HasMhd>
+void WrappedGrVariables<DataType, HasMhd>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*>
         lapse_times_conformal_factor_gradient,
     const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
+    ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor =
       cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
   const auto& deriv_conformal_factor = cache->get_var(
-      *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+      *this, ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
                            tmpl::size_t<Dim>, Frame::Inertial>{});
   *lapse_times_conformal_factor_gradient =
       get<::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,

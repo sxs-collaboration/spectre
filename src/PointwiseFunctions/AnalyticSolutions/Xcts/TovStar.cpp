@@ -131,9 +131,24 @@ void TovVariables<DataType>::operator()(
 
 template <typename DataType>
 void TovVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+    const gsl::not_null<Cache*> cache,
+    Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
+  if (tov_star.radial_solution().coordinate_system() ==
+      TovCoordinates::Isotropic) {
+    const auto& conformal_factor =
+        get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
+    get(*conformal_factor_minus_one) = conformal_factor - 1.;
+  } else {
+    get(*conformal_factor_minus_one) = 0.;
+  }
+}
+
+template <typename DataType>
+void TovVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*> deriv_conformal_factor,
     const gsl::not_null<Cache*> /* cache */,
-    ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+    ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<3>,
                   Frame::Inertial> /*meta*/) const {
   if (tov_star.radial_solution().coordinate_system() ==
       TovCoordinates::Isotropic) {
@@ -196,17 +211,29 @@ void TovVariables<DataType>::operator()(
 
 template <typename DataType>
 void TovVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*>
+        lapse_times_conformal_factor_minus_one,
+    const gsl::not_null<Cache*> cache,
+    Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
+  const auto& lapse_times_conformal_factor =
+      get(cache->get_var(*this, Tags::LapseTimesConformalFactor<DataType>{}));
+  get(*lapse_times_conformal_factor_minus_one) =
+      lapse_times_conformal_factor - 1.;
+}
+
+template <typename DataType>
+void TovVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*>
         deriv_lapse_times_conformal_factor,
     const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                  Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor =
       get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
   const auto& lapse = get(cache->get_var(*this, gr::Tags::Lapse<DataType>{}));
-  const auto& deriv_conformal_factor =
-      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataType>,
-                                          tmpl::size_t<3>, Frame::Inertial>{});
+  const auto& deriv_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
   const auto& deriv_lapse =
       cache->get_var(*this, ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                           tmpl::size_t<3>, Frame::Inertial>{});

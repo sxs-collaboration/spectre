@@ -35,6 +35,8 @@ struct LongitudinalShiftMinusDtConformalMetric : db::SimpleTag {
 
 /// General-relativistic 3+1 quantities computed from XCTS variables.
 using SpacetimeQuantities = CachedTempBuffer<
+    Tags::ConformalFactor<DataVector>,
+    Tags::LapseTimesConformalFactor<DataVector>,
     // Derivatives of XCTS variables
     ::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
                   Frame::Inertial>,
@@ -60,6 +62,13 @@ using SpacetimeQuantities = CachedTempBuffer<
 struct SpacetimeQuantitiesComputer {
   using Cache = SpacetimeQuantities;
 
+  void operator()(gsl::not_null<Scalar<DataVector>*> conformal_factor,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ConformalFactor<DataVector> /*meta*/) const;
+  void operator()(
+      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+      gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactor<DataVector> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::SpatialMetric<DataVector, 3> /*meta*/) const;
@@ -123,8 +132,8 @@ struct SpacetimeQuantitiesComputer {
                   gr::Tags::MomentumConstraint<DataVector, 3> /*meta*/) const;
 
   // XCTS variables
-  const Scalar<DataVector>& conformal_factor;
-  const Scalar<DataVector>& lapse_times_conformal_factor;
+  const Scalar<DataVector>& conformal_factor_minus_one;
+  const Scalar<DataVector>& lapse_times_conformal_factor_minus_one;
   const tnsr::I<DataVector, 3>& shift_excess;
   // Background
   const tnsr::ii<DataVector, 3>& conformal_metric;
@@ -156,8 +165,8 @@ template <typename Tags>
 struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
   using base = ::Tags::Variables<Tags>;
   using argument_tags = tmpl::list<
-      domain::Tags::Mesh<3>, ConformalFactor<DataVector>,
-      LapseTimesConformalFactor<DataVector>,
+      domain::Tags::Mesh<3>, ConformalFactorMinusOne<DataVector>,
+      LapseTimesConformalFactorMinusOne<DataVector>,
       ShiftExcess<DataVector, 3, Frame::Inertial>,
       ConformalMetric<DataVector, 3, Frame::Inertial>,
       InverseConformalMetric<DataVector, 3, Frame::Inertial>,

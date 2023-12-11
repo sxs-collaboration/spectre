@@ -231,8 +231,8 @@ class ApparentHorizon
   using volume_tags = tmpl::list<>;
 
   void apply(
-      gsl::not_null<Scalar<DataVector>*> conformal_factor,
-      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor_minus_one,
       gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
@@ -247,8 +247,8 @@ class ApparentHorizon
       const tnsr::II<DataVector, 3>& longitudinal_shift_background) const;
 
   void apply(
-      gsl::not_null<Scalar<DataVector>*> conformal_factor,
-      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor_minus_one,
       gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
@@ -275,8 +275,8 @@ class ApparentHorizon
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                               Frame::Inertial>,
-      Tags::ConformalFactor<DataVector>,
-      Tags::LapseTimesConformalFactor<DataVector>,
+      Tags::ConformalFactorMinusOne<DataVector>,
+      Tags::LapseTimesConformalFactorMinusOne<DataVector>,
       ::Tags::NormalDotFlux<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>,
       tmpl::conditional_t<ConformalGeometry == Xcts::Geometry::Curved,
                           tmpl::list<Tags::InverseConformalMetric<
@@ -303,8 +303,8 @@ class ApparentHorizon
       const tnsr::I<DataVector, 3>& x,
       const Scalar<DataVector>& extrinsic_curvature_trace,
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-      const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor,
+      const Scalar<DataVector>& conformal_factor_minus_one,
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) const;
 
   void apply_linearized(
@@ -324,8 +324,8 @@ class ApparentHorizon
       const tnsr::I<DataVector, 3>& x,
       const Scalar<DataVector>& extrinsic_curvature_trace,
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-      const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor,
+      const Scalar<DataVector>& conformal_factor_minus_one,
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
       const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
       const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const;

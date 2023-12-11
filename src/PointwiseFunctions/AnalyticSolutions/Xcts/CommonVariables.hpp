@@ -19,7 +19,9 @@ template <typename DataType>
 using common_tags = tmpl::push_back<
     AnalyticData::common_tags<DataType>,
     // Solved variables
-    Tags::ConformalFactor<DataType>, Tags::LapseTimesConformalFactor<DataType>,
+    Tags::ConformalFactorMinusOne<DataType>, Tags::ConformalFactor<DataType>,
+    Tags::LapseTimesConformalFactorMinusOne<DataType>,
+    Tags::LapseTimesConformalFactor<DataType>,
     Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
     // ADM variables
     gr::Tags::Lapse<DataType>, gr::Tags::Shift<DataType, 3>,
@@ -29,18 +31,18 @@ using common_tags = tmpl::push_back<
                   Frame::Inertial>,
     gr::Tags::ExtrinsicCurvature<DataType, 3>,
     // Derivatives of solved variables
-    ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+    ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<3>,
                   Frame::Inertial>,
-    ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                  Frame::Inertial>,
+    ::Tags::deriv<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                  tmpl::size_t<3>, Frame::Inertial>,
     ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
                   tmpl::size_t<3>, Frame::Inertial>,
     Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
     // Fluxes
-    ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+    ::Tags::Flux<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<3>,
                  Frame::Inertial>,
-    ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                 Frame::Inertial>,
+    ::Tags::Flux<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                 tmpl::size_t<3>, Frame::Inertial>,
     Tags::LongitudinalShiftExcess<DataType, 3, Frame::Inertial>,
     // Background quantities for subsets of the XCTS equations
     Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataType>,
@@ -59,13 +61,21 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
   using Base::Base;
   using Base::operator();
 
+  virtual void operator()(
+      gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Tags::ConformalFactorMinusOne<DataType> /*meta*/) const = 0;
   virtual void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
                           gsl::not_null<Cache*> cache,
-                          Tags::ConformalFactor<DataType> /*meta*/) const = 0;
+                          Tags::ConformalFactor<DataType> /*meta*/) const;
+  virtual void operator()(
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const = 0;
   virtual void operator()(
       gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
-      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const = 0;
+      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const;
   virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
       gsl::not_null<Cache*> cache,
@@ -89,12 +99,12 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
   virtual void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> deriv_conformal_factor,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
+      ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<Dim>,
                     Frame::Inertial> /*meta*/) const = 0;
   virtual void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> deriv_lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
+      ::Tags::deriv<Tags::LapseTimesConformalFactorMinusOne<DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const = 0;
   virtual void operator()(
       gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_excess,
@@ -108,13 +118,13 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
   virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> conformal_factor_flux,
       gsl::not_null<Cache*> cache,
-      ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
+      ::Tags::Flux<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<Dim>,
                    Frame::Inertial> /*meta*/) const;
   virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> lapse_times_conformal_factor_flux,
       gsl::not_null<Cache*> cache,
-      ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<Dim>,
-                   Frame::Inertial> /*meta*/) const;
+      ::Tags::Flux<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   virtual void operator()(
       gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_excess,
       gsl::not_null<Cache*> cache,

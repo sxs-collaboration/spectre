@@ -313,14 +313,43 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+    const gsl::not_null<Cache*> cache,
+    Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
+  switch (coordinate_system) {
+    case SchwarzschildCoordinates::Isotropic: {
+      const auto& r =
+          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
+      get(*conformal_factor_minus_one) = 0.5 * mass / r;
+      break;
+    }
+    case SchwarzschildCoordinates::PainleveGullstrand: {
+      get(*conformal_factor_minus_one) = 0.;
+      break;
+    }
+    case SchwarzschildCoordinates::KerrSchildIsotropic: {
+      const auto& conformal_factor =
+          get(cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{}));
+      get(*conformal_factor_minus_one) = conformal_factor - 1.;
+      break;
+    }
+      // LCOV_EXCL_START
+    default:
+      ERROR("Missing case for SchwarzschildCoordinates");
+      // LCOV_EXCL_END
+  }
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_factor,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalFactor<DataType> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
-      const auto& r =
-          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
-      get(*conformal_factor) = 1. + 0.5 * mass / r;
+      const auto& conformal_factor_minus_one = get(cache->get_var(
+          *this, Xcts::Tags::ConformalFactorMinusOne<DataType>{}));
+      get(*conformal_factor) = conformal_factor_minus_one + 1.;
       break;
     }
     case SchwarzschildCoordinates::PainleveGullstrand: {
@@ -345,8 +374,8 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*> conformal_factor_gradient,
     const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                  Frame::Inertial> /*meta*/) const {
+    ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
       const auto& r =
@@ -387,14 +416,46 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*>
+        lapse_times_conformal_factor_minus_one,
+    const gsl::not_null<Cache*> cache,
+    Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
+  switch (coordinate_system) {
+    case SchwarzschildCoordinates::Isotropic: {
+      const auto& r =
+          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
+      get(*lapse_times_conformal_factor_minus_one) = -0.5 * mass / r;
+      break;
+    }
+    case SchwarzschildCoordinates::PainleveGullstrand: {
+      get(*lapse_times_conformal_factor_minus_one) = 0.;
+      break;
+    }
+    case SchwarzschildCoordinates::KerrSchildIsotropic: {
+      const auto& lapse_times_conformal_factor = get(cache->get_var(
+          *this, Xcts::Tags::LapseTimesConformalFactor<DataType>{}));
+      get(*lapse_times_conformal_factor_minus_one) =
+          lapse_times_conformal_factor - 1.;
+      break;
+    }
+      // LCOV_EXCL_START
+    default:
+      ERROR("Missing case for SchwarzschildCoordinates");
+      // LCOV_EXCL_END
+  }
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::LapseTimesConformalFactor<DataType> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
-      const auto& r =
-          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
-      get(*lapse_times_conformal_factor) = 1. - 0.5 * mass / r;
+      const auto& lapse_times_conformal_factor_minus_one = get(cache->get_var(
+          *this, Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>{}));
+      get(*lapse_times_conformal_factor) =
+          lapse_times_conformal_factor_minus_one + 1.;
       break;
     }
     case SchwarzschildCoordinates::PainleveGullstrand: {
@@ -496,12 +557,12 @@ void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*>
         lapse_times_conformal_factor_gradient,
     const gsl::not_null<Cache*> cache,
-    ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
+    ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
                   tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   switch (coordinate_system) {
     case SchwarzschildCoordinates::Isotropic: {
       *lapse_times_conformal_factor_gradient = cache->get_var(
-          *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+          *this, ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
                                tmpl::size_t<3>, Frame::Inertial>{});
       get<0>(*lapse_times_conformal_factor_gradient) *= -1.;
       get<1>(*lapse_times_conformal_factor_gradient) *= -1.;
@@ -521,7 +582,7 @@ void SchwarzschildVariables<DataType>::operator()(
       const auto& conformal_factor =
           get(cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{}));
       const auto& conformal_factor_gradient = cache->get_var(
-          *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+          *this, ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
                                tmpl::size_t<3>, Frame::Inertial>{});
       const auto& lapse =
           get(cache->get_var(*this, gr::Tags::Lapse<DataType>{}));

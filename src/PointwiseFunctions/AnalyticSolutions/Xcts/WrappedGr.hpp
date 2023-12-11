@@ -126,22 +126,33 @@ struct WrappedGrVariables
       gsl::not_null<Cache*> cache,
       Xcts::Tags::ConformalFactor<DataType> /*meta*/) const override;
   void operator()(
+      gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const override;
+  void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                    Frame::Inertial> /*meta*/) const override;
+      ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataType> /*meta*/) const override;
   void operator()(
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/)
+      const override;
+  void operator()(
       gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
       Xcts::Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
-  void operator()(gsl::not_null<tnsr::i<DataType, Dim>*>
-                      lapse_times_conformal_factor_gradient,
-                  gsl::not_null<Cache*> cache,
-                  ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
-                                tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, Dim>*>
+          lapse_times_conformal_factor_gradient,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,

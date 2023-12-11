@@ -24,6 +24,16 @@ struct ConformalFactor : db::SimpleTag {
 };
 
 /*!
+ * \brief The conformal factor minus one \f$\psi(x) - 1\f$. Useful as dynamic
+ * variable in formulations of the XCTS equations because it approaches zero at
+ * spatial infinity rather than one, hence derivatives may be more accurate.
+ */
+template <typename DataType>
+struct ConformalFactorMinusOne : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The conformally scaled spatial metric
  * \f$\bar{\gamma}_{ij}=\psi^{-4}\gamma_{ij}\f$, where \f$\psi\f$ is the
  * `Xcts::Tags::ConformalFactor` and \f$\gamma_{ij}\f$ is the
@@ -52,6 +62,16 @@ using InverseConformalMetric =
  */
 template <typename DataType>
 struct LapseTimesConformalFactor : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The lapse times the conformal factor minus one \f$\alpha \psi - 1\f$.
+ *
+ * \see `Xcts::Tags::ConformalFactorMinusOne`
+ */
+template <typename DataType>
+struct LapseTimesConformalFactorMinusOne : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 

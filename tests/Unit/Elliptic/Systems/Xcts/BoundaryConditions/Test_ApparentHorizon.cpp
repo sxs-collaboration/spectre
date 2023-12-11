@@ -146,8 +146,8 @@ void apply_boundary_condition(
     const gsl::not_null<Scalar<DataVector>*>
         n_dot_lapse_times_conformal_factor_gradient,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
     const tnsr::I<DataVector, 3>& x,
@@ -162,7 +162,7 @@ void apply_boundary_condition(
   apply_boundary_condition_impl<Xcts::Geometry::Curved, false>(
       n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient, shift_excess,
-      conformal_factor, lapse_times_conformal_factor,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
       n_dot_longitudinal_shift_excess, center, rotation, std::move(face_normal),
       std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
@@ -175,8 +175,8 @@ void apply_boundary_condition_flat_cartesian(
     const gsl::not_null<Scalar<DataVector>*>
         n_dot_lapse_times_conformal_factor_gradient,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
     const tnsr::I<DataVector, 3>& x,
@@ -188,7 +188,7 @@ void apply_boundary_condition_flat_cartesian(
   apply_boundary_condition_impl<Xcts::Geometry::FlatCartesian, false>(
       n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient, shift_excess,
-      conformal_factor, lapse_times_conformal_factor,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
       n_dot_longitudinal_shift_excess, center, rotation, std::move(face_normal),
       std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
@@ -208,8 +208,8 @@ void apply_boundary_condition_linearized(
     const tnsr::I<DataVector, 3>& x,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     tnsr::II<DataVector, 3> inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) {
@@ -224,8 +224,8 @@ void apply_boundary_condition_linearized(
       n_dot_longitudinal_shift_excess_correction, center, rotation,
       std::move(face_normal), std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
-      longitudinal_shift_background, conformal_factor,
-      lapse_times_conformal_factor, n_dot_longitudinal_shift_excess,
+      longitudinal_shift_background, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, n_dot_longitudinal_shift_excess,
       std::move(inv_conformal_metric), conformal_christoffel_second_kind);
 }
 
@@ -242,8 +242,8 @@ void apply_boundary_condition_linearized_flat_cartesian(
     const tnsr::I<DataVector, 3>& x,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) {
   auto [face_normal, deriv_unnormalized_face_normal, face_normal_magnitude] =
       make_spherical_face_normal_flat_cartesian(x, center);
@@ -255,8 +255,8 @@ void apply_boundary_condition_linearized_flat_cartesian(
       n_dot_longitudinal_shift_excess_correction, center, rotation,
       std::move(face_normal), std::move(deriv_unnormalized_face_normal),
       std::move(face_normal_magnitude), x, extrinsic_curvature_trace,
-      longitudinal_shift_background, conformal_factor,
-      lapse_times_conformal_factor, n_dot_longitudinal_shift_excess);
+      longitudinal_shift_background, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, n_dot_longitudinal_shift_excess);
 }
 
 struct FactoryMetavars {
@@ -325,8 +325,8 @@ void test_with_random_values() {
       &apply_boundary_condition, "ApparentHorizon",
       {"normal_dot_conformal_factor_gradient",
        "normal_dot_lapse_times_conformal_factor_gradient", "shift_excess"},
-      {{{0.5, 2.},
-        {0.5, 2.},
+      {{{-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
@@ -342,8 +342,8 @@ void test_with_random_values() {
       {"normal_dot_conformal_factor_gradient_flat_cartesian",
        "normal_dot_lapse_times_conformal_factor_gradient",
        "shift_excess_flat_cartesian"},
-      {{{0.5, 2.},
-        {0.5, 2.},
+      {{{-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
@@ -357,16 +357,16 @@ void test_with_random_values() {
       {"normal_dot_conformal_factor_gradient_correction",
        "normal_dot_lapse_times_conformal_factor_gradient",
        "shift_excess_correction"},
-      {{{0.5, 2.},
-        {0.5, 2.},
+      {{{-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.}}},
@@ -376,16 +376,16 @@ void test_with_random_values() {
       {"normal_dot_conformal_factor_gradient_correction_flat_cartesian",
        "normal_dot_lapse_times_conformal_factor_gradient",
        "shift_excess_correction_flat_cartesian"},
-      {{{0.5, 2.},
-        {0.5, 2.},
+      {{{-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.}}},
       DataVector{3});
 }
@@ -487,21 +487,23 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   // Retrieve the expected surface vars and fluxes from the solution
   const auto surface_vars_expected =
       variables_from_tagged_tuple(solution.variables(
-          x, tmpl::list<Tags::ConformalFactor<DataVector>,
-                        Tags::LapseTimesConformalFactor<DataVector>,
+          x, tmpl::list<Tags::ConformalFactorMinusOne<DataVector>,
+                        Tags::LapseTimesConformalFactorMinusOne<DataVector>,
                         Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>{}));
   const auto surface_fluxes_expected =
       variables_from_tagged_tuple(solution.variables(
           x,
-          tmpl::list<::Tags::Flux<Tags::ConformalFactor<DataVector>,
-                                  tmpl::size_t<3>, Frame::Inertial>,
-                     ::Tags::Flux<Tags::LapseTimesConformalFactor<DataVector>,
-                                  tmpl::size_t<3>, Frame::Inertial>,
-                     Tags::LongitudinalShiftExcess<DataVector, 3,
-                                                   Frame::Inertial>>{}));
+          tmpl::list<
+              ::Tags::Flux<Tags::ConformalFactorMinusOne<DataVector>,
+                           tmpl::size_t<3>, Frame::Inertial>,
+              ::Tags::Flux<Tags::LapseTimesConformalFactorMinusOne<DataVector>,
+                           tmpl::size_t<3>, Frame::Inertial>,
+              Tags::LongitudinalShiftExcess<DataVector, 3,
+                                            Frame::Inertial>>{}));
   Variables<tmpl::list<
-      ::Tags::NormalDotFlux<Tags::ConformalFactor<DataVector>>,
-      ::Tags::NormalDotFlux<Tags::LapseTimesConformalFactor<DataVector>>,
+      ::Tags::NormalDotFlux<Tags::ConformalFactorMinusOne<DataVector>>,
+      ::Tags::NormalDotFlux<
+          Tags::LapseTimesConformalFactorMinusOne<DataVector>>,
       ::Tags::NormalDotFlux<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>>>
       n_dot_surface_fluxes_expected{num_points};
   normal_dot_flux(make_not_null(&n_dot_surface_fluxes_expected), face_normal,
@@ -510,7 +512,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   // boundary conditions are expected to fill
   auto surface_vars = surface_vars_expected;
   auto n_dot_surface_fluxes = n_dot_surface_fluxes_expected;
-  get(get<::Tags::NormalDotFlux<Tags::ConformalFactor<DataVector>>>(
+  get(get<::Tags::NormalDotFlux<Tags::ConformalFactorMinusOne<DataVector>>>(
       n_dot_surface_fluxes)) = std::numeric_limits<double>::signaling_NaN();
   get<0>(get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(surface_vars)) =
       std::numeric_limits<double>::signaling_NaN();
@@ -519,16 +521,18 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   get<2>(get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(surface_vars)) =
       std::numeric_limits<double>::signaling_NaN();
   kerr_horizon.apply(
-      make_not_null(&get<Tags::ConformalFactor<DataVector>>(surface_vars)),
       make_not_null(
-          &get<Tags::LapseTimesConformalFactor<DataVector>>(surface_vars)),
+          &get<Tags::ConformalFactorMinusOne<DataVector>>(surface_vars)),
+      make_not_null(&get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+          surface_vars)),
       make_not_null(&get<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>(
           surface_vars)),
       make_not_null(
-          &get<::Tags::NormalDotFlux<Tags::ConformalFactor<DataVector>>>(
+          &get<
+              ::Tags::NormalDotFlux<Tags::ConformalFactorMinusOne<DataVector>>>(
               n_dot_surface_fluxes)),
       make_not_null(&get<::Tags::NormalDotFlux<
-                        Tags::LapseTimesConformalFactor<DataVector>>>(
+                        Tags::LapseTimesConformalFactorMinusOne<DataVector>>>(
           n_dot_surface_fluxes)),
       make_not_null(&get<::Tags::NormalDotFlux<
                         Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>>(

@@ -25,9 +25,26 @@
 namespace Xcts {
 
 void SpacetimeQuantitiesComputer::operator()(
-    const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
     const gsl::not_null<Cache*> /*cache*/,
+    Tags::ConformalFactor<DataVector> /*meta*/) const {
+  get(*conformal_factor) = get(conformal_factor_minus_one) + 1.;
+}
+
+void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::LapseTimesConformalFactor<DataVector> /*meta*/) const {
+  get(*lapse_times_conformal_factor) =
+      get(lapse_times_conformal_factor_minus_one) + 1.;
+}
+
+void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
+    const gsl::not_null<Cache*> cache,
     gr::Tags::SpatialMetric<DataVector, 3> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
   *spatial_metric = conformal_metric;
   for (auto& spatial_metric_component : *spatial_metric) {
     spatial_metric_component *= pow<4>(get(conformal_factor));
@@ -36,8 +53,10 @@ void SpacetimeQuantitiesComputer::operator()(
 
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     gr::Tags::InverseSpatialMetric<DataVector, 3> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
   *inv_spatial_metric = inv_conformal_metric;
   for (auto& inv_spatial_metric_component : *inv_spatial_metric) {
     inv_spatial_metric_component /= pow<4>(get(conformal_factor));
@@ -49,7 +68,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
                   Frame::Inertial> /*meta*/) const {
-  partial_derivative(deriv_conformal_factor, conformal_factor, mesh,
+  partial_derivative(deriv_conformal_factor, conformal_factor_minus_one, mesh,
                      inv_jacobian);
 }
 
@@ -78,13 +97,18 @@ void SpacetimeQuantitiesComputer::operator()(
     ::Tags::deriv<Tags::LapseTimesConformalFactor<DataVector>, tmpl::size_t<3>,
                   Frame::Inertial> /*meta*/) const {
   partial_derivative(deriv_lapse_times_conformal_factor,
-                     lapse_times_conformal_factor, mesh, inv_jacobian);
+                     lapse_times_conformal_factor_minus_one, mesh,
+                     inv_jacobian);
 }
 
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*> lapse,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     gr::Tags::Lapse<DataVector> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
+  const auto& lapse_times_conformal_factor =
+      cache->get_var(*this, Tags::LapseTimesConformalFactor<DataVector>{});
   get(*lapse) = get(lapse_times_conformal_factor) / get(conformal_factor);
 }
 
@@ -171,6 +195,8 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
     gr::Tags::ExtrinsicCurvature<DataVector, 3> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
   const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataVector>{});
   const auto& longitudinal_shift_minus_dt_conformal_metric = cache->get_var(
       *this, detail::LongitudinalShiftMinusDtConformalMetric<DataVector>{});
@@ -183,6 +209,8 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const gsl::not_null<Cache*> cache,
     gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
   const auto& conformal_laplacian_of_conformal_factor = cache->get_var(
       *this, detail::ConformalLaplacianOfConformalFactor<DataVector>{});
   const auto& inv_spatial_metric =
@@ -206,6 +234,10 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3>*> momentum_constraint,
     const gsl::not_null<Cache*> cache,
     gr::Tags::MomentumConstraint<DataVector, 3> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
+  const auto& lapse_times_conformal_factor =
+      cache->get_var(*this, Tags::LapseTimesConformalFactor<DataVector>{});
   const auto& deriv_conformal_factor =
       cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
                                           tmpl::size_t<3>, Frame::Inertial>{});
