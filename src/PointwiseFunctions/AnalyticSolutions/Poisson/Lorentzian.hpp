@@ -30,6 +30,7 @@ struct LorentzianVariables {
       ::Tags::FixedSource<Tags::Field>>;
 
   const tnsr::I<DataType, Dim>& x;
+  const double constant;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
                   gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const;
@@ -66,7 +67,12 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
       "This solution is currently implemented in 3 spatial dimensions only");
 
  public:
-  using options = tmpl::list<>;
+  struct PlusConstant {
+    using type = double;
+    static constexpr Options::String help{"Constant added to the solution."};
+  };
+
+  using options = tmpl::list<PlusConstant>;
   static constexpr Options::String help{
       "A Lorentzian solution to the Poisson equation."};
 
@@ -76,6 +82,11 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   Lorentzian(Lorentzian&&) = default;
   Lorentzian& operator=(Lorentzian&&) = default;
   ~Lorentzian() override = default;
+
+  explicit Lorentzian(const double constant) : constant_(constant) {}
+
+  double constant() const { return constant_; }
+
   std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
       const override {
     return std::make_unique<Lorentzian>(*this);
@@ -94,9 +105,17 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::LorentzianVariables<DataType, Dim>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const VarsComputer computer{x};
+    const VarsComputer computer{x, constant_};
     return {cache.get_var(computer, RequestedTags{})...};
   }
+
+  void pup(PUP::er& p) override {
+    elliptic::analytic_data::AnalyticSolution::pup(p);
+    p | constant_;
+  }
+
+ private:
+  double constant_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 /// \cond
@@ -105,9 +124,9 @@ PUP::able::PUP_ID Lorentzian<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 template <size_t Dim>
-bool operator==(const Lorentzian<Dim>& /*lhs*/,
-                const Lorentzian<Dim>& /*rhs*/) {
-  return true;
+bool operator==(const Lorentzian<Dim>& lhs,
+                const Lorentzian<Dim>& rhs) {
+  return lhs.constant() == rhs.constant();
 }
 
 template <size_t Dim>

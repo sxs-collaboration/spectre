@@ -54,7 +54,7 @@ struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
 
 template <size_t Dim>
 void test_solution() {
-  const LorentzianProxy<Dim> solution{};
+  const LorentzianProxy<Dim> solution{1.5};
   pypp::check_with_random_values<1>(
       &LorentzianProxy<Dim>::field_variables, solution, "Lorentzian",
       {"field", "field_gradient", "field_flux"}, {{{-5., 5.}}},
@@ -63,9 +63,10 @@ void test_solution() {
       &LorentzianProxy<Dim>::source_variables, solution, "Lorentzian",
       {"source"}, {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
 
-  const Poisson::Solutions::Lorentzian<Dim> check_solution{};
+  const Poisson::Solutions::Lorentzian<Dim> check_solution{1.2};
   const auto created_solution =
-      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>("");
+      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>(
+          "PlusConstant: 1.2");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
   test_copy_semantics(check_solution);
@@ -86,7 +87,7 @@ SPECTRE_TEST_CASE(
     // discretization error decreases exponentially with polynomial order
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    const Poisson::Solutions::Lorentzian<3> solution{};
+    const Poisson::Solutions::Lorentzian<3> solution{1.0};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -103,7 +104,7 @@ SPECTRE_TEST_CASE(
     // Verify that the solution also solves the non-euclidean system with a
     // Euclidean metric. This is more a test of the system than of the solution.
     using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
-    const Poisson::Solutions::Lorentzian<3> solution{};
+    const Poisson::Solutions::Lorentzian<3> solution{1.0};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;

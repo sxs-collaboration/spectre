@@ -21,7 +21,7 @@ template <typename DataType, size_t Dim>
 void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> field,
     const gsl::not_null<Cache*> /*cache*/, Tags::Field /*meta*/) const {
-  get(*field) = 1. / sqrt(1. + get(dot_product(x, x)));
+  get(*field) = 1. / sqrt(1. + get(dot_product(x, x))) + constant;
 }
 
 template <typename DataType, size_t Dim>
