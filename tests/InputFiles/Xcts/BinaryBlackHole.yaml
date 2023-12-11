@@ -117,7 +117,7 @@ Discretization:
     PenaltyParameter: 1.
     Massive: True
     Quadrature: GaussLobatto
-    Formulation: StrongInertial
+    Formulation: WeakInertial
 
 Observers:
   VolumeFileName: "BbhVolume"

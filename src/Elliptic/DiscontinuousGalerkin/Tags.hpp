@@ -108,12 +108,7 @@ struct Formulation : db::SimpleTag {
   using type = ::dg::Formulation;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::Formulation>;
-  static type create_from_options(const type value) {
-    if (not(value == ::dg::Formulation::StrongInertial)) {
-      ERROR_NO_TRACE("Only the strong formulation is currently supported.");
-    }
-    return value;
-  }
+  static type create_from_options(const type value) { return value; }
 };
 
 }  // namespace Tags

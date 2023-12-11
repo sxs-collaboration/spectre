@@ -4,52 +4,41 @@
 Executable: SolvePoisson3D
 Testing:
   Check: parse;execute_check_output
-  Timeout: 10
+  Timeout: 40
   Priority: High
 ExpectedOutput:
-  - PoissonProductOfSinusoids3DReductions.h5
-  - PoissonProductOfSinusoids3DVolume0.h5
+  - LorentzianReductions.h5
+  - LorentzianVolume0.h5
 OutputFileChecks:
   - Label: Discretization error
     Subfile: /ErrorNorms.dat
-    FileGlob: PoissonProductOfSinusoids3DReductions.h5
+    FileGlob: LorentzianReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.005
+    AbsoluteTolerance: 0.05
 
 ---
 
-Parallelization:
-  ElementDistribution: NumGridPoints
+Background: &solution Lorentzian
 
-ResourceInfo:
-  AvoidGlobalProc0: false
-  Singletons: Auto
-
-Background: &solution
-  ProductOfSinusoids:
-    WaveNumbers: [1, 1, 1]
-
-InitialGuess:
-  Zero:
+InitialGuess: Zero
 
 RandomizeInitialGuess: None
 
 DomainCreator:
-  Brick:
-    LowerBound: [-1.570796326794896, 0., 0.]
-    UpperBound: [3.141592653589793, 1.570796326794896, 3.141592653589793]
-    InitialRefinement: [1, 0, 0]
-    InitialGridPoints: [4, 3, 5]
-    TimeDependence: None
-    BoundaryConditionInX:
-      AnalyticSolution:
-        Solution: *solution
-        Field: Dirichlet
-    BoundaryConditionInY:
-      AnalyticSolution:
-        Solution: *solution
-        Field: Dirichlet
-    BoundaryConditionInZ:
+  Sphere:
+    InnerRadius: 10
+    OuterRadius: &outer_radius 1e9
+    Interior:
+      FillWithSphericity: 0.
+    InitialRefinement: 0
+    InitialGridPoints: 6
+    UseEquiangularMap: True
+    EquatorialCompression: None
+    RadialPartitioning: [&outer_shell_inner_radius 20.]
+    RadialDistribution: [Linear, &outer_shell_distribution Inverse]
+    WhichWedges: All
+    TimeDependentMaps: None
+    OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
         Field: Dirichlet
@@ -57,39 +46,42 @@ DomainCreator:
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
-    Massive: False
+    Massive: True
     Quadrature: GaussLobatto
     Formulation: WeakInertial
 
 Observers:
-  VolumeFileName: "PoissonProductOfSinusoids3DVolume"
-  ReductionFileName: "PoissonProductOfSinusoids3DReductions"
+  VolumeFileName: "LorentzianVolume"
+  ReductionFileName: "LorentzianReductions"
 
 LinearSolver:
   ConvergenceCriteria:
-    MaxIterations: 1
-    RelativeResidual: 1.e-6
-    AbsoluteResidual: 1.e-6
-  Verbosity: Verbose
+    MaxIterations: 10
+    RelativeResidual: 0.
+    AbsoluteResidual: 1.e-3
+  Verbosity: Quiet
 
   Multigrid:
     Iterations: 1
     MaxLevels: Auto
     PreSmoothing: True
     PostSmoothingAtBottom: False
-    Verbosity: Verbose
-    OutputVolumeData: False
+    Verbosity: Silent
+    OutputVolumeData: True
 
   SchwarzSmoother:
     Iterations: 3
     MaxOverlap: 2
-    Verbosity: Quiet
+    Verbosity: Silent
     SubdomainSolver:
       ExplicitInverse:
         WriteMatrixToFile: None
     ObservePerCoreReductions: False
 
-RadiallyCompressedCoordinates: None
+RadiallyCompressedCoordinates:
+  InnerRadius: *outer_shell_inner_radius
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
 
 EventsAndTriggers:
   - Trigger: HasConverged
@@ -102,7 +94,11 @@ EventsAndTriggers:
               Components: Sum
       - ObserveFields:
           SubfileName: VolumeData
-          VariablesToObserve: [Field]
+          VariablesToObserve:
+            - Field
+            - Error(Field)
+            - RadiallyCompressedCoordinates
+            - FixedSource(Field)
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
@@ -112,3 +108,10 @@ PhaseChangeAndTriggers:
 BuildMatrix:
   MatrixSubfileName: Matrix
   Verbosity: Verbose
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

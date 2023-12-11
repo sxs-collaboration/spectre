@@ -158,6 +158,9 @@ struct SubdomainOperator
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<

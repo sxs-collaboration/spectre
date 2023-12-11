@@ -403,6 +403,11 @@ struct ReceiveMortarDataAndApplyOperator<
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                              Frame::Inertial>>(box),
+        db::get<
+            domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>>(
+            box),
+        db::get<domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                  Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         db::get<domain::Tags::Faces<
@@ -597,6 +602,11 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                              Frame::Inertial>>(box),
+        db::get<
+            domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>>(
+            box),
+        db::get<domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                  Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
             box),
