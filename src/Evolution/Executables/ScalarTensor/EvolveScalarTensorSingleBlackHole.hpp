@@ -95,24 +95,12 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
     using temporal_id = ::Tags::Time;
     using tags_to_observe =
         tmpl::list<gr::Tags::Lapse<DataVector>,
-                   gh::ConstraintDamping::Tags::ConstraintGamma1,
-                   gh::CharacteristicSpeedsOnStrahlkorper<Frame::Grid>>;
+                   gr::Tags::Shift<DataVector, 3, Frame::Grid>>;
     using compute_vars_to_interpolate =
         ah::ComputeExcisionBoundaryVolumeQuantities;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>,
-                   gr::Tags::Shift<DataVector, volume_dim, Frame::Grid>,
-                   gr::Tags::SpatialMetric<DataVector, volume_dim, Frame::Grid>,
-                   gh::ConstraintDamping::Tags::ConstraintGamma1>;
+    using vars_to_interpolate_to_target = tags_to_observe;
     using compute_items_on_source = tmpl::list<>;
-    using compute_items_on_target = tmpl::append<
-        tmpl::list<gr::Tags::DetAndInverseSpatialMetricCompute<
-                       DataVector, volume_dim, Frame::Grid>,
-                   ylm::Tags::OneOverOneFormMagnitudeCompute<
-                       DataVector, volume_dim, Frame::Grid>,
-                   ylm::Tags::UnitNormalOneFormCompute<Frame::Grid>,
-                   gh::CharacteristicSpeedsOnStrahlkorperCompute<volume_dim,
-                                                                 Frame::Grid>>>;
+    using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<ExcisionBoundaryA, ::Frame::Grid>;
     using post_interpolation_callbacks =

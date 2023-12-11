@@ -25,8 +25,7 @@ using source_vars =
     tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>,
                ::Tags::deriv<gh::Tags::Phi<DataVector, Dim>, tmpl::size_t<Dim>,
-                             Frame::Inertial>,
-               gh::ConstraintDamping::Tags::ConstraintGamma1>;
+                             Frame::Inertial>>;
 
 template <size_t Dim, typename Frame>
 using vars_to_interpolate_to_target =
