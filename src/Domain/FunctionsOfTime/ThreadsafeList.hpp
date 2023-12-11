@@ -85,6 +85,46 @@ class ThreadsafeList {
   /// interval boundary, the one after it is returned.
   double expiration_after(double time) const;
 
+  /// Remove the oldest data in the list, leaving at least \p length
+  /// entries.
+  ///
+  /// If the list is truncated to zero length, the caller must ensure
+  /// that no concurrent access or modification is performed.  The
+  /// list is guaranteed to be empty afterwards.
+  ///
+  /// Otherwise, it is the caller's responsibility to ensure that
+  /// there are no concurrent truncations and that, during this call,
+  /// no reader attempts to look up what will become the new oldest
+  /// interval.  Storing references to that interval's data is safe,
+  /// and lookups of that interval are safe if they are sequenced
+  /// after this call.  Concurrent insertions are safe.
+  ///
+  /// If the list is initially shorter than \p length, it is left
+  /// unchanged.  Otherwise, if concurrent insertions occur, the
+  /// amount of removed data is approximate, but will not leave the
+  /// list shorter than the requested value.  In the absence of
+  /// concurrent modifications, the list will be left with exactly the
+  /// requested length.
+  void truncate_to_length(size_t length);
+
+  /// Remove the oldest data in the list, retaining access to data
+  /// back to at least the interval containing \p time.
+  ///
+  /// If \p time is before `initial_time()`, the list is not modified.
+  /// If \p time is after `expiration_time()`, the amount of removed
+  /// data is unspecified.
+  ///
+  /// The amount of removed data is approximate.  There may be
+  /// slightly more data remaining after a call than requested.
+  ///
+  /// It is the caller's responsibility to ensure that there are no
+  /// concurrent truncations.  Concurrent insertions are safe.
+  void truncate_at_time(double time);
+
+  /// Empty the list.  Equivalent to `truncate_to_length(0)`.  See
+  /// that method for details.
+  void clear();
+
   void pup(PUP::er& p);
 
   class iterator {
@@ -137,7 +177,7 @@ class ThreadsafeList {
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   char unused_padding_initial_time_[64 - (sizeof(initial_time_) % 64)] = {};
   std::unique_ptr<Interval> interval_list_{};
-  alignas(64) std::atomic<const Interval*> most_recent_interval_{};
+  alignas(64) std::atomic<Interval*> most_recent_interval_{};
   // Pad memory to avoid false-sharing when accessing most_recent_interval_
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   char

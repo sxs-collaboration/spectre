@@ -91,8 +91,7 @@ ThreadsafeList<T>::ThreadsafeList(const double initial_time)
 template <typename T>
 void ThreadsafeList<T>::insert(const double update_time, T data,
                                const double expiration_time) {
-  const auto* old_interval =
-      most_recent_interval_.load(std::memory_order_acquire);
+  auto* old_interval = most_recent_interval_.load(std::memory_order_acquire);
   const double old_expiration =
       old_interval != nullptr ? old_interval->expiration
                               : initial_time_.load(std::memory_order_acquire);
@@ -108,7 +107,7 @@ void ThreadsafeList<T>::insert(const double update_time, T data,
   // make_unique doesn't work on aggregates until C++20
   std::unique_ptr<Interval> new_interval(new Interval{
       expiration_time, std::move(data), std::move(interval_list_)});
-  const auto* const new_interval_p = new_interval.get();
+  auto* const new_interval_p = new_interval.get();
   interval_list_ = std::move(new_interval);
   if (not most_recent_interval_.compare_exchange_strong(
           old_interval, new_interval_p, std::memory_order_acq_rel)) {
@@ -146,6 +145,66 @@ double ThreadsafeList<T>::expiration_time() const {
 template <typename T>
 double ThreadsafeList<T>::expiration_after(const double time) const {
   return find_interval(time, true).expiration;
+}
+
+template <typename T>
+void ThreadsafeList<T>::truncate_to_length(const size_t length) {
+  if (length == 0) {
+    clear();
+    return;
+  }
+
+  auto* last_interval = most_recent_interval_.load(std::memory_order_acquire);
+  if (last_interval == nullptr or last_interval->previous == nullptr) {
+    return;
+  }
+  for (size_t i = 1; i < length; ++i) {
+    last_interval = last_interval->previous.get();
+    if (last_interval->previous == nullptr) {
+      return;
+    }
+  }
+
+  initial_time_.store(last_interval->previous->expiration);
+  last_interval->previous.reset();
+}
+
+template <typename T>
+void ThreadsafeList<T>::truncate_at_time(const double time) {
+  auto* last_interval = most_recent_interval_.load(std::memory_order_acquire);
+  // For simplicity, never empty the list.  We don't guarantee exactness.
+  if (last_interval == nullptr or last_interval->previous == nullptr) {
+    return;
+  }
+  for (;;) {
+    last_interval = last_interval->previous.get();
+    if (last_interval->previous == nullptr) {
+      return;
+    }
+    // Keep one extra interval by checking the current interval's
+    // expiration time rather than it's update time, so that the
+    // expiration time of the previous interval can be accessed.
+    // Removing it and setting the initial_time would violate the
+    // thread-safety guarantees.
+    if (last_interval->expiration <= time) {
+      break;
+    }
+  }
+
+  initial_time_.store(last_interval->previous->expiration);
+  last_interval->previous.reset();
+}
+
+template <typename T>
+void ThreadsafeList<T>::clear() {
+  // This method has no thread-safety guarantees, so we don't have to
+  // be careful with modification sequencing.
+  if (interval_list_ == nullptr) {
+    return;
+  }
+  initial_time_.store(interval_list_->expiration);
+  most_recent_interval_.store(nullptr, std::memory_order_release);
+  interval_list_.reset();
 }
 
 template <typename T>
@@ -240,7 +299,7 @@ auto ThreadsafeList<T>::find_interval(const double time,
   // Loop over the intervals until we find the one containing `time`,
   // possibly at the endpoint determined by `interval_after_boundary`.
   for (;;) {
-    const auto* const previous_interval = interval->previous.get();
+    auto* const previous_interval = interval->previous.get();
     if (previous_interval == nullptr or time > previous_interval->expiration or
         (interval_after_boundary and time == previous_interval->expiration)) {
       return *interval;
