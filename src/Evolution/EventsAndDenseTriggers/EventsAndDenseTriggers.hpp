@@ -51,6 +51,29 @@ struct PreviousTriggerTime : db::SimpleTag {
 };
 }  // namespace Tags
 
+/*!
+ * \brief Struct for holding a single DenseTrigger and Event%s to be run on that
+ * trigger.
+ */
+struct DenseTriggerAndEventsConstruction {
+  struct Trigger {
+    using type = std::unique_ptr<::DenseTrigger>;
+    static constexpr Options::String help = "Determines when the Events run.";
+  };
+  struct Events {
+    using type = std::vector<std::unique_ptr<::Event>>;
+    static constexpr Options::String help =
+        "These events run when the Trigger fires.";
+  };
+  static constexpr Options::String help =
+      "Events that run when the Trigger fires.";
+  using options = tmpl::list<Trigger, Events>;
+  void pup(PUP::er& p);
+
+  std::unique_ptr<::DenseTrigger> trigger;
+  std::vector<std::unique_ptr<::Event>> events;
+};
+
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks dense triggers and runs events
 class EventsAndDenseTriggers {
@@ -61,28 +84,7 @@ class EventsAndDenseTriggers {
   };
 
  public:
-  struct TriggerAndEvents {
-    struct Trigger {
-      using type = std::unique_ptr<::DenseTrigger>;
-      static constexpr Options::String help = "Determines when the Events run.";
-    };
-    struct Events {
-      using type = std::vector<std::unique_ptr<::Event>>;
-      static constexpr Options::String help =
-          "These events run when the Trigger fires.";
-    };
-    static constexpr Options::String help =
-        "Events that run when the Trigger fires.";
-    using options = tmpl::list<Trigger, Events>;
-    void pup(PUP::er& p) {
-      p | trigger;
-      p | events;
-    }
-    std::unique_ptr<::DenseTrigger> trigger;
-    std::vector<std::unique_ptr<::Event>> events;
-  };
-
-  using ConstructionType = std::vector<TriggerAndEvents>;
+  using ConstructionType = std::vector<DenseTriggerAndEventsConstruction>;
 
  private:
   struct TriggerRecord {

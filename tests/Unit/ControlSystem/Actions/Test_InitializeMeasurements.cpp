@@ -222,8 +222,11 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   functions.emplace("B", timescale->get_clone());
   functions.emplace("C", timescale->get_clone());
 
-  MockRuntimeSystem runner{{::Verbosity::Silent, measurements_per_update},
-                           {std::move(functions), std::move(timescales)}};
+  MockRuntimeSystem runner{
+      {::Verbosity::Silent, measurements_per_update},
+      {std::move(functions),
+       std::vector<evolution::DenseTriggerAndEventsConstruction>{},
+       std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0,

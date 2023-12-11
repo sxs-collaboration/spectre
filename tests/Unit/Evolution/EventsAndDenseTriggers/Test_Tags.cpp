@@ -12,4 +12,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.Tags",
                   "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<evolution::Tags::EventsAndDenseTriggers>(
       "EventsAndDenseTriggers");
+  TestHelpers::db::test_simple_tag<
+      evolution::Tags::EventsAndDenseTriggersOptions>(
+      "EventsAndDenseTriggersOptions");
 }

@@ -390,7 +390,7 @@ struct MutatingMetavariables {
 
 void test_mutating_trigger() {
   evolution::EventsAndDenseTriggers events_and_dense_triggers(
-      make_vector(evolution::EventsAndDenseTriggers::TriggerAndEvents{
+      make_vector(evolution::DenseTriggerAndEventsConstruction{
           std::make_unique<MutatingTrigger>(),
           make_vector<std::unique_ptr<Event>>(
               std::make_unique<TestEvent<EventLabels::A>>())}));

@@ -300,6 +300,8 @@ struct InitializeRunEventsAndDenseTriggers {
   using simple_tags_from_options =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
   using simple_tags = tmpl::list<Tags::PreviousTriggerTime>;
+  using mutable_global_cache_tags =
+      tmpl::list<evolution::Tags::EventsAndDenseTriggersOptions>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

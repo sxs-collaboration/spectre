@@ -10,6 +10,11 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 namespace evolution {
+void DenseTriggerAndEventsConstruction::pup(PUP::er& p) {
+  p | trigger;
+  p | events;
+}
+
 void EventsAndDenseTriggers::TriggerRecord::pup(PUP::er& p) {
   p | next_check;
   p | is_triggered;
