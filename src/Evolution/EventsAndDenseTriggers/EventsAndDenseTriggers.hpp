@@ -329,7 +329,7 @@ struct Options::create_from_yaml<evolution::EventsAndDenseTriggers> {
   using type = evolution::EventsAndDenseTriggers;
   template <typename Metavariables>
   static type create(const Options::Option& options) {
-    return type(options.parse_as<typename type::ConstructionType,
-                                 Metavariables>());
+    return type(
+        options.parse_as<typename type::ConstructionType, Metavariables>());
   }
 };
