@@ -21,6 +21,7 @@ spectre_target_sources(
   Psi4Real.cpp
   Ricci.cpp
   Shift.cpp
+  SpacetimeDerivativeOfGothG.cpp
   SpacetimeMetric.cpp
   SpacetimeNormalOneForm.cpp
   SpacetimeNormalVector.cpp
@@ -51,6 +52,7 @@ spectre_target_headers(
   Psi4.hpp
   Psi4Real.hpp
   Shift.hpp
+  SpacetimeDerivativeOfGothG.hpp
   SpacetimeMetric.hpp
   SpacetimeNormalOneForm.hpp
   SpacetimeNormalVector.hpp
