@@ -45,8 +45,3 @@ def to_different_frame_II(src, jacobian):
 def to_different_frame_ijj(src, jacobian):
     # Jacobian here is d^x_src/d^x_dest
     return np.einsum("abe,ac,bd,ef", src, jacobian, jacobian, jacobian)
-
-
-def first_index_to_different_frame(src, jacobian):
-    # Jacobian here is d^x_src/d^x_dest
-    return np.einsum("abc,ad->dbc", src, jacobian)

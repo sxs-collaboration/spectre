@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
+#include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 
 #include <limits>
 
@@ -275,38 +275,48 @@ auto to_different_frame(
   return dest;
 }
 
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
+template <typename ResultTensor, typename InputTensor, typename DataType,
+          size_t Dim, typename SourceFrame, typename TargetFrame>
 void first_index_to_different_frame(
-    const gsl::not_null<tnsr::ijj<DataVector, VolumeDim, DestFrame>*> dest,
-    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                 index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian) {
-  for (size_t i = 0; i < VolumeDim; ++i) {
-    for (size_t j = i; j < VolumeDim; ++j) {  // symmetry
-      for (size_t k = 0; k < VolumeDim; ++k) {
-        dest->get(k, i, j) = jacobian.get(0, k) * src.get(0, i, j);
-        for (size_t p = 1; p < VolumeDim; ++p) {
-          dest->get(k, i, j) += jacobian.get(p, k) * src.get(p, i, j);
-        }
-      }
+    const gsl::not_null<ResultTensor*> result, const InputTensor& input,
+    const InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+        inv_jacobian) {
+  static_assert(InputTensor::rank() > 0,
+                "Cannot transform scalar to different frame");
+  static_assert(
+      std::is_same_v<TensorMetafunctions::remove_first_index<ResultTensor>,
+                     TensorMetafunctions::remove_first_index<InputTensor>>,
+      "The input and result tensors must be the same except for the first "
+      "index");
+  using first_index = tmpl::front<typename InputTensor::index_list>;
+  static_assert(
+      std::is_same_v<first_index, SpatialIndex<Dim, UpLo::Up, TargetFrame>>,
+      "This function is currently only tested for transforming an upper "
+      "spatial index but can be generalized.");
+  for (size_t storage_index = 0; storage_index < ResultTensor::size();
+       ++storage_index) {
+    const auto result_index = ResultTensor::get_tensor_index(storage_index);
+    auto input_index = result_index;
+    input_index[0] = 0;
+    result->get(result_index) =
+        input.get(input_index) * inv_jacobian.get(result_index[0], 0);
+    for (size_t d = 1; d < Dim; ++d) {
+      input_index[0] = d;
+      result->get(result_index) +=
+          input.get(input_index) * inv_jacobian.get(result_index[0], d);
     }
   }
 }
 
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
-auto first_index_to_different_frame(
-    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                 index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
-                            SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
-    -> tnsr::ijj<DataVector, VolumeDim, DestFrame> {
-  auto dest = make_with_value<tnsr::ijj<DataVector, VolumeDim, DestFrame>>(
-      src, std::numeric_limits<double>::signaling_NaN());
-  first_index_to_different_frame(make_not_null(&dest), src, jacobian);
-  return dest;
+template <typename InputTensor, typename DataType, size_t Dim,
+          typename SourceFrame, typename TargetFrame, typename ResultTensor>
+ResultTensor first_index_to_different_frame(
+    const InputTensor& input,
+    const InverseJacobian<DataType, Dim, SourceFrame, TargetFrame>&
+        inv_jacobian) {
+  ResultTensor result{};
+  first_index_to_different_frame(make_not_null(&result), input, inv_jacobian);
+  return result;
 }
 
 }  // namespace transform
@@ -385,36 +395,32 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
 
 #undef INSTANTIATE
 
-#undef TENSOR
-#undef DTYPE
-
-#define INSTANTIATE(_, data)                                                  \
-  template void transform::first_index_to_different_frame(                    \
-      const gsl::not_null<tnsr::ijj<DataVector, DIM(data), DESTFRAME(data)>*> \
-          dest,                                                               \
-      const Tensor<                                                           \
-          DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,             \
-          index_list<SpatialIndex<DIM(data), UpLo::Lo, SRCFRAME(data)>,       \
-                     SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>,      \
-                     SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>>>&    \
-          src,                                                                \
-      const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian);                                                          \
-  template auto transform::first_index_to_different_frame(                    \
-      const Tensor<                                                           \
-          DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,             \
-          index_list<SpatialIndex<DIM(data), UpLo::Lo, SRCFRAME(data)>,       \
-                     SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>,      \
-                     SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>>>&    \
-          src,                                                                \
-      const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian)                                                           \
-      ->tnsr::ijj<DataVector, DIM(data), DESTFRAME(data)>;
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (Frame::BlockLogical, Frame::ElementLogical),
-                        (Frame::Grid, Frame::Distorted))
+#define INSTANTIATE(_, data)                                                   \
+  template void transform::first_index_to_different_frame(                     \
+      const gsl::not_null<TensorMetafunctions::prepend_spatial_index<          \
+                              TensorMetafunctions::remove_first_index<         \
+                                  tnsr::TENSOR(data) < DTYPE(data), DIM(data), \
+                                  DESTFRAME(data)>>,                           \
+                          DIM(data), UpLo::Up, SRCFRAME(data)>* > result,      \
+      const tnsr::TENSOR(data) < DTYPE(data), DIM(data),                       \
+      DESTFRAME(data) > &input,                                                \
+      const InverseJacobian<DTYPE(data), DIM(data), SRCFRAME(data),            \
+                            DESTFRAME(data)>& inv_jacobian);                   \
+  template auto transform::first_index_to_different_frame(                     \
+      const tnsr::TENSOR(data) < DTYPE(data), DIM(data),                       \
+      DESTFRAME(data) > &input,                                                \
+      const InverseJacobian<DTYPE(data), DIM(data), SRCFRAME(data),            \
+                            DESTFRAME(data)>& inv_jacobian)                    \
+      ->TensorMetafunctions::prepend_spatial_index<                            \
+          TensorMetafunctions::remove_first_index<                             \
+              tnsr::TENSOR(data) < DTYPE(data), DIM(data), DESTFRAME(data)>>,  \
+      DIM(data), UpLo::Up, SRCFRAME(data) > ;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::ElementLogical),
+                        (Frame::Inertial), (double, DataVector), (I, II, Ij))
 
 #undef DIM
 #undef SRCFRAME
 #undef DESTFRAME
+#undef TENSOR
+#undef DTYPE
 #undef INSTANTIATE

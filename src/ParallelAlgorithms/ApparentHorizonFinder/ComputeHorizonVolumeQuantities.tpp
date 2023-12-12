@@ -13,6 +13,7 @@
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/TempBuffer.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -28,7 +29,6 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -199,11 +199,6 @@ void ComputeHorizonVolumeQuantities::apply(
   using inertial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   using inertial_inv_metric_tag = gr::Tags::InverseSpatialMetric<DataVector, 3>;
   using inertial_ex_curvature_tag = gr::Tags::ExtrinsicCurvature<DataVector, 3>;
-  using logical_deriv_metric_tag = ::Tags::TempTensor<
-      6, Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                index_list<SpatialIndex<3, UpLo::Lo, Frame::ElementLogical>,
-                           SpatialIndex<3, UpLo::Lo, TargetFrame>,
-                           SpatialIndex<3, UpLo::Lo, TargetFrame>>>>;
   using deriv_metric_tag = ::Tags::Tempijj<7, 3, TargetFrame, DataVector>;
   using inertial_spatial_ricci_tag = gr::Tags::SpatialRicci<DataVector, 3>;
 
@@ -213,7 +208,7 @@ void ComputeHorizonVolumeQuantities::apply(
       tmpl::list<metric_tag, inv_metric_tag, lapse_tag, shift_tag,
                  spacetime_normal_vector_tag, inertial_metric_tag,
                  inertial_inv_metric_tag, inertial_ex_curvature_tag,
-                 logical_deriv_metric_tag, deriv_metric_tag>;
+                 deriv_metric_tag>;
   using full_temp_tags_list = std::conditional_t<
       tmpl::list_contains_v<DestTagList,
                             gr::Tags::SpatialRicci<DataVector, 3, TargetFrame>>,
@@ -236,7 +231,6 @@ void ComputeHorizonVolumeQuantities::apply(
   auto& lapse = get<lapse_tag>(buffer);
   auto& shift = get<shift_tag>(buffer);
   auto& spacetime_normal_vector = get<spacetime_normal_vector_tag>(buffer);
-  auto& logical_deriv_metric = get<logical_deriv_metric_tag>(buffer);
   auto& deriv_metric = get<deriv_metric_tag>(buffer);
 
   // These may or may not be temporaries, depending on if they are asked for
@@ -278,11 +272,8 @@ void ComputeHorizonVolumeQuantities::apply(
                           metric);
 
   // Differentiate 3-metric.
-  logical_partial_derivative(make_not_null(&logical_deriv_metric), metric,
-                             mesh);
-  transform::first_index_to_different_frame(make_not_null(&deriv_metric),
-                                            logical_deriv_metric,
-                                            invjac_logical_to_target);
+  partial_derivative(make_not_null(&deriv_metric), metric, mesh,
+                     invjac_logical_to_target);
   gr::christoffel_second_kind(make_not_null(&spatial_christoffel_second_kind),
                               deriv_metric, inv_metric);
 

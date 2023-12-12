@@ -7,13 +7,22 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/FrameTransform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables/FrameTransform.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 
+namespace transform {
 namespace {
+
+struct Var1 : db::SimpleTag {
+  using type = tnsr::I<DataVector, 2, Frame::Inertial>;
+};
+struct Var2 : db::SimpleTag {
+  using type = tnsr::Ij<DataVector, 2, Frame::Inertial>;
+};
 
 template <typename SrcTensorType, typename DestTensorType, typename DataType,
           size_t Dim, typename DestFrame, typename SrcFrame>
@@ -21,8 +30,8 @@ DestTensorType tensor_transformed_by_python(
     const SrcTensorType& src_tensor, const DestTensorType& /*dest_tensor*/,
     const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>& jacobian,
     const std::string& suffix) {
-  return pypp::call<DestTensorType>("Transform", "to_different_frame" + suffix,
-                                    src_tensor, jacobian);
+  return pypp::call<DestTensorType>(
+      "FrameTransform", "to_different_frame" + suffix, src_tensor, jacobian);
 }
 
 template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
@@ -92,26 +101,107 @@ void test_transform_to_different_frame(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX(dest_scalar, src_scalar);
 }
 
-template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
-void test_transform_first_index_to_different_frame(
-    const DataType& used_for_size) {
-  tnsr::ijj<DataType, Dim, DestFrame> (*f)(
-      const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                   index_list<SpatialIndex<Dim, UpLo::Lo, SrcFrame>,
-                              SpatialIndex<Dim, UpLo::Lo, DestFrame>,
-                              SpatialIndex<Dim, UpLo::Lo, DestFrame>>>&,
-      const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
-      transform::first_index_to_different_frame<Dim, SrcFrame, DestFrame>;
-  pypp::check_with_random_values<1>(f, "Transform",
-                                    "first_index_to_different_frame",
-                                    {{{-10., 10.}}}, used_for_size);
+void test_transform_first_index_to_different_frame() {
+  INFO("Transform first index");
+  {
+    INFO("1D");
+    InverseJacobian<double, 1, Frame::ElementLogical, Frame::Inertial>
+        inv_jacobian{};
+    get<0, 0>(inv_jacobian) = 2.0;
+    {
+      INFO("Vector");
+      const tnsr::I<double, 1, Frame::Inertial> input{1.0};
+      const auto result = first_index_to_different_frame(input, inv_jacobian);
+      static_assert(std::is_same_v<std::decay_t<decltype(result)>,
+                                   tnsr::I<double, 1, Frame::ElementLogical>>);
+      CHECK(get<0>(result) == 2.0);
+    }
+    {
+      INFO("Rank 2 tensor");
+      tnsr::Ij<double, 1, Frame::Inertial> input{};
+      get<0, 0>(input) = 1.0;
+      const auto result = first_index_to_different_frame(input, inv_jacobian);
+      static_assert(
+          std::is_same_v<
+              std::decay_t<decltype(result)>,
+              Tensor<
+                  double, Symmetry<1, 2>,
+                  index_list<SpatialIndex<1, UpLo::Up, Frame::ElementLogical>,
+                             SpatialIndex<1, UpLo::Lo, Frame::Inertial>>>>);
+      CHECK(get<0, 0>(result) == 2.0);
+    }
+  }
+  {
+    INFO("2D");
+    InverseJacobian<double, 2, Frame::ElementLogical, Frame::Inertial>
+        inv_jacobian{};
+    get<0, 0>(inv_jacobian) = 2.0;
+    get<1, 1>(inv_jacobian) = 3.0;
+    get<0, 1>(inv_jacobian) = 0.5;
+    get<1, 0>(inv_jacobian) = 1.5;
+    {
+      INFO("Vector");
+      const tnsr::I<double, 2, Frame::Inertial> input{{1.0, 2.0}};
+      const auto result = first_index_to_different_frame(input, inv_jacobian);
+      static_assert(std::is_same_v<std::decay_t<decltype(result)>,
+                                   tnsr::I<double, 2, Frame::ElementLogical>>);
+      CHECK(get<0>(result) == 3.);
+      CHECK(get<1>(result) == 7.5);
+    }
+    {
+      INFO("Rank 2 tensor");
+      tnsr::Ij<double, 2, Frame::Inertial> input{};
+      get<0, 0>(input) = 1.0;
+      get<1, 0>(input) = 2.0;
+      get<0, 1>(input) = 3.0;
+      get<1, 1>(input) = 4.0;
+      const auto result = first_index_to_different_frame(input, inv_jacobian);
+      static_assert(
+          std::is_same_v<
+              std::decay_t<decltype(result)>,
+              Tensor<
+                  double, Symmetry<1, 2>,
+                  index_list<SpatialIndex<2, UpLo::Up, Frame::ElementLogical>,
+                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>>>>);
+      CHECK(get<0, 0>(result) == 3.);
+      CHECK(get<1, 0>(result) == 7.5);
+      CHECK(get<0, 1>(result) == 8.);
+      CHECK(get<1, 1>(result) == 16.5);
+    }
+  }
+  {
+    INFO("Variables");
+    const size_t num_points = 3;
+    InverseJacobian<DataVector, 2, Frame::ElementLogical, Frame::Inertial>
+        inv_jacobian{num_points};
+    get<0, 0>(inv_jacobian) = 2.0;
+    get<1, 1>(inv_jacobian) = 3.0;
+    get<0, 1>(inv_jacobian) = 0.5;
+    get<1, 0>(inv_jacobian) = 1.5;
+    Variables<tmpl::list<Var1, Var2>> input{num_points};
+    std::iota(get<Var1>(input).begin(), get<Var1>(input).end(), 1.0);
+    std::iota(get<Var2>(input).begin(), get<Var2>(input).end(), 1.0);
+    CAPTURE(input);
+    const auto result = first_index_to_different_frame(input, inv_jacobian);
+    const auto& var1 =
+        get<Tags::TransformedFirstIndex<Var1, Frame::ElementLogical>>(result);
+    const auto& var2 =
+        get<Tags::TransformedFirstIndex<Var2, Frame::ElementLogical>>(result);
+    CHECK(get<0>(var1) == 3.);
+    CHECK(get<1>(var1) == 7.5);
+    CHECK(get<0, 0>(var2) == 3.);
+    CHECK(get<1, 0>(var2) == 7.5);
+    CHECK(get<0, 1>(var2) == 8.);
+    CHECK(get<1, 1>(var2) == 16.5);
+  }
 }
+
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
-                  "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.Tensor.EagerMath.FrameTransform",
+                  "[DataStructures][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
-      "PointwiseFunctions/GeneralRelativity/");
+      "DataStructures/Tensor/EagerMath/");
   const DataVector dv(5);
   test_transform_to_different_frame<1, Frame::Grid, Frame::Inertial>(double{});
   test_transform_to_different_frame<2, Frame::Grid, Frame::Inertial>(double{});
@@ -128,16 +218,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
   test_transform_to_different_frame<1, Frame::Inertial, Frame::Distorted>(dv);
   test_transform_to_different_frame<2, Frame::Inertial, Frame::Distorted>(dv);
   test_transform_to_different_frame<3, Frame::Inertial, Frame::Distorted>(dv);
-  test_transform_first_index_to_different_frame<1, Frame::ElementLogical,
-                                                Frame::Grid>(dv);
-  test_transform_first_index_to_different_frame<2, Frame::ElementLogical,
-                                                Frame::Grid>(dv);
-  test_transform_first_index_to_different_frame<3, Frame::ElementLogical,
-                                                Frame::Grid>(dv);
-  test_transform_first_index_to_different_frame<1, Frame::ElementLogical,
-                                                Frame::Distorted>(dv);
-  test_transform_first_index_to_different_frame<2, Frame::ElementLogical,
-                                                Frame::Distorted>(dv);
-  test_transform_first_index_to_different_frame<3, Frame::ElementLogical,
-                                                Frame::Distorted>(dv);
+  test_transform_first_index_to_different_frame();
 }
+
+}  // namespace transform
