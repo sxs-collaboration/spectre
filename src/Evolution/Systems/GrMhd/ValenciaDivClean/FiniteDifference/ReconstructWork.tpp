@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -24,6 +26,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -119,11 +122,12 @@ void compute_conservatives_for_reconstruction(
 }
 
 template <typename PrimTagsForReconstruction, typename PrimsTags,
-          typename TagsList, size_t ThermodynamicDim, typename F,
-          typename PrimsTagsSentByNeighbor>
+          size_t ThermodynamicDim, typename F, typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
-    const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
-    const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_lower_face,
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_upper_face,
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
@@ -232,10 +236,9 @@ void reconstruct_prims_work(
 }
 
 template <typename PrimTagsForReconstruction, typename PrimsTagsSentByNeighbor,
-          typename TagsList, typename PrimsTags, size_t ThermodynamicDim,
-          typename F0, typename F1>
+          typename PrimsTags, size_t ThermodynamicDim, typename F0, typename F1>
 void reconstruct_fd_neighbor_work(
-    const gsl::not_null<Variables<TagsList>*> vars_on_face,
+    const gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,
     const F0& reconstruct_lower_neighbor, const F1& reconstruct_upper_neighbor,
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,

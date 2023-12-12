@@ -41,11 +41,11 @@ void MonotonisedCentralPrim::pup(PUP::er& p) { Reconstructor::pup(p); }
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
 
-template <size_t ThermodynamicDim, typename TagsList>
+template <size_t ThermodynamicDim>
 void MonotonisedCentralPrim::reconstruct(
-    const gsl::not_null<std::array<Variables<TagsList>, dim>*>
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
         vars_on_lower_face,
-    const gsl::not_null<std::array<Variables<TagsList>, dim>*>
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
         vars_on_upper_face,
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
@@ -70,9 +70,9 @@ void MonotonisedCentralPrim::reconstruct(
       ghost_zone_size(), true);
 }
 
-template <size_t ThermodynamicDim, typename TagsList>
+template <size_t ThermodynamicDim>
 void MonotonisedCentralPrim::reconstruct_fd_neighbor(
-    const gsl::not_null<Variables<TagsList>*> vars_on_face,
+    const gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
@@ -123,38 +123,12 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
 }
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define TAGS_LIST(data)                                                      \
-  tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau,                    \
-             Tags::TildeS<Frame::Inertial>, Tags::TildeB<Frame::Inertial>,   \
-             Tags::TildePhi, hydro::Tags::RestMassDensity<DataVector>,       \
-             hydro::Tags::ElectronFraction<DataVector>,                      \
-             hydro::Tags::SpecificInternalEnergy<DataVector>,                \
-             hydro::Tags::SpatialVelocity<DataVector, 3>,                    \
-             hydro::Tags::MagneticField<DataVector, 3>,                      \
-             hydro::Tags::DivergenceCleaningField<DataVector>,               \
-             hydro::Tags::LorentzFactor<DataVector>,                         \
-             hydro::Tags::Pressure<DataVector>,                              \
-             hydro::Tags::Temperature<DataVector>,                           \
-             hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,  \
-             ::Tags::Flux<Tags::TildeD, tmpl::size_t<3>, Frame::Inertial>,   \
-             ::Tags::Flux<Tags::TildeYe, tmpl::size_t<3>, Frame::Inertial>,  \
-             ::Tags::Flux<Tags::TildeTau, tmpl::size_t<3>, Frame::Inertial>, \
-             ::Tags::Flux<Tags::TildeS<Frame::Inertial>, tmpl::size_t<3>,    \
-                          Frame::Inertial>,                                  \
-             ::Tags::Flux<Tags::TildeB<Frame::Inertial>, tmpl::size_t<3>,    \
-                          Frame::Inertial>,                                  \
-             ::Tags::Flux<Tags::TildePhi, tmpl::size_t<3>, Frame::Inertial>, \
-             gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,    \
-             gr::Tags::SpatialMetric<DataVector, 3>,                         \
-             gr::Tags::SqrtDetSpatialMetric<DataVector>,                     \
-             gr::Tags::InverseSpatialMetric<DataVector, 3>,                  \
-             evolution::dg::Actions::detail::NormalVector<3>>
 
 #define INSTANTIATION(r, data)                                              \
   template void MonotonisedCentralPrim::reconstruct(                        \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
           vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>             \
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
           vars_on_upper_face,                                               \
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
@@ -163,7 +137,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh) const;                                   \
   template void MonotonisedCentralPrim::reconstruct_fd_neighbor(            \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,              \
+      gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,    \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
       const Element<3>& element,                                            \
@@ -175,6 +149,5 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
-#undef TAGS_LIST
 #undef THERMO_DIM
 }  // namespace grmhd::ValenciaDivClean::fd

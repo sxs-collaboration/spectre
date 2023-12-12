@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -106,8 +107,7 @@ void test_prim_reconstructor_impl(
 
   using prims_tags = hydro::grmhd_tags<DataVector>;
   using cons_tags = typename mhd::System::variables_tag::tags_list;
-  using flux_tags = db::wrap_tags_in<::Tags::Flux, cons_tags, tmpl::size_t<3>,
-                                     Frame::Inertial>;
+
   using prim_tags_for_reconstruction =
       tmpl::list<Rho, ElectronFraction, Temperature, VelocityW, MagField, Phi>;
 
@@ -157,18 +157,9 @@ void test_prim_reconstructor_impl(
       (subcell_mesh.extents(0) + 1) *
       subcell_mesh.extents().slice_away(0).product();
 
-  using dg_package_data_argument_tags = tmpl::append<
-      cons_tags,
-      tmpl::push_back<
-          prims_tags,
-          hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
-      flux_tags,
-      tmpl::remove_duplicates<tmpl::push_back<tmpl::list<
-          gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-          gr::Tags::SpatialMetric<DataVector, 3>,
-          gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<DataVector, 3>,
-          evolution::dg::Actions::detail::NormalVector<3>>>>>;
+  using dg_package_data_argument_tags =
+      ::grmhd::ValenciaDivClean::fd::tags_list_for_reconstruct;
+
   tnsr::ii<DataVector, 3, Frame::Inertial> lower_face_spatial_metric{
       reconstructed_num_pts, 0.0};
   tnsr::ii<DataVector, 3, Frame::Inertial> upper_face_spatial_metric{

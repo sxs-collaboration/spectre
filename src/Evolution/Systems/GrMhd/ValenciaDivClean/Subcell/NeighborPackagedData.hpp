@@ -36,6 +36,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
@@ -70,10 +71,6 @@ struct NeighborPackagedData {
       const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
-    using prim_tags = typename System::primitive_variables_tag::tags_list;
-    using recons_prim_tags = tmpl::push_back<
-        prim_tags,
-        hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>;
     using fluxes_tags = db::wrap_tags_in<::Tags::Flux, evolved_vars_tags,
                                          tmpl::size_t<3>, Frame::Inertial>;
 
@@ -122,14 +119,7 @@ struct NeighborPackagedData {
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
         using dg_package_data_temporary_tags =
             typename DerivedCorrection::dg_package_data_temporary_tags;
-        using dg_package_data_argument_tags =
-            tmpl::append<evolved_vars_tags, recons_prim_tags, fluxes_tags,
-                         tmpl::remove_duplicates<tmpl::push_back<
-                             dg_package_data_temporary_tags,
-                             gr::Tags::SpatialMetric<DataVector, 3>,
-                             gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                             gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                             evolution::dg::Actions::detail::NormalVector<3>>>>;
+        using dg_package_data_argument_tags = fd::tags_list_for_reconstruct;
 
         const auto& element = db::get<domain::Tags::Element<3>>(box);
         const auto& eos = get<hydro::Tags::EquationOfStateBase>(box);
