@@ -15,6 +15,8 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  ElasticityPointwiseFunctions
+  GeneralRelativityHelpers
   Spectral
   Utilities
   XctsPointwiseFunctions

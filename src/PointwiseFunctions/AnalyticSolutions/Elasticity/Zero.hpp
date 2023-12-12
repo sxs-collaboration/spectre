@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -53,8 +54,11 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
       const tnsr::I<DataType, Dim>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using supported_tags =
-        tmpl::list<Tags::Displacement<Dim>, Tags::Strain<Dim>,
-                   Tags::MinusStress<Dim>, Tags::PotentialEnergyDensity<Dim>,
+        tmpl::list<Tags::Displacement<Dim>,
+                   ::Tags::deriv<Tags::Displacement<Dim>, tmpl::size_t<Dim>,
+                                 Frame::Inertial>,
+                   Tags::Strain<Dim>, Tags::MinusStress<Dim>,
+                   Tags::PotentialEnergyDensity<Dim>,
                    ::Tags::FixedSource<Tags::Displacement<Dim>>>;
     static_assert(tmpl::size<tmpl::list_difference<tmpl::list<RequestedTags...>,
                                                    supported_tags>>::value == 0,

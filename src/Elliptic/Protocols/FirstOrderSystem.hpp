@@ -15,27 +15,13 @@
 namespace elliptic::protocols {
 
 namespace FirstOrderSystem_detail {
-template <size_t Dim, typename PrimalFields, typename AuxiliaryFields,
-          typename PrimalFluxes, typename AuxiliaryFluxes>
-struct test_primal_and_auxiliary_fields_and_fluxes;
-template <size_t Dim, typename... PrimalFields, typename... AuxiliaryFields,
-          typename... PrimalFluxes, typename... AuxiliaryFluxes>
-struct test_primal_and_auxiliary_fields_and_fluxes<
-    Dim, tmpl::list<PrimalFields...>, tmpl::list<AuxiliaryFields...>,
-    tmpl::list<PrimalFluxes...>, tmpl::list<AuxiliaryFluxes...>>
-    : std::true_type {
-  static_assert(sizeof...(PrimalFields) == sizeof...(AuxiliaryFields) and
-                    sizeof...(PrimalFluxes) == sizeof...(PrimalFields) and
-                    sizeof...(AuxiliaryFluxes) == sizeof...(PrimalFields),
-                "The system must have the same number of primal and auxiliary "
-                "fields and fluxes.");
-  static_assert(
-      ((tmpl::size<typename AuxiliaryFields::type::index_list>::value ==
-        tmpl::size<typename PrimalFields::type::index_list>::value + 1) and
-       ...),
-      "Auxiliary fields and primal fields must correspond to each "
-      "other. In particular, each auxiliary field must have one "
-      "index more than its corresponding primal field.");
+template <size_t Dim, typename PrimalFields, typename PrimalFluxes>
+struct test_fields_and_fluxes;
+template <size_t Dim, typename... PrimalFields, typename... PrimalFluxes>
+struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
+                              tmpl::list<PrimalFluxes...>> : std::true_type {
+  static_assert(sizeof...(PrimalFields) == sizeof...(PrimalFluxes),
+                "The system must have the same number of fields and fluxes.");
   static_assert(
       ((tmpl::size<typename PrimalFluxes::type::index_list>::value ==
         tmpl::size<typename PrimalFields::type::index_list>::value + 1) and
@@ -46,18 +32,6 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
       "Primal fluxes and primal fields must correspond to each "
       "other. In particular, each primal flux must have one "
       "index more than its corresponding primal field and an upper-spatial "
-      "first index.");
-  static_assert(
-      ((tmpl::size<typename AuxiliaryFluxes::type::index_list>::value ==
-        tmpl::size<typename AuxiliaryFields::type::index_list>::value + 1) and
-       ...) and
-          (std::is_same_v<
-               tmpl::front<typename AuxiliaryFluxes::type::index_list>,
-               SpatialIndex<Dim, UpLo::Up, Frame::Inertial>> and
-           ...),
-      "Auxiliary fluxes and auxiliary fields must correspond to each "
-      "other. In particular, each auxiliary flux must have one "
-      "index more than its corresponding auxiliary field and an upper-spatial "
       "first index.");
 };
 }  // namespace FirstOrderSystem_detail
@@ -76,15 +50,17 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
  * \f$f_\alpha(x)\f$ \cite Fischer2021voj.
  * It resembles closely formulations of hyperbolic
  * conservation laws but allows the fluxes \f$F_\alpha^i\f$ to be higher-rank
- * tensor fields. The fluxes and sources are functionals of the "primal" system
- * variables \f$u_A(x)\f$ and their corresponding "auxiliary" variables
- * \f$v_A(x)\f$. The fixed-sourced \f$f_\alpha(x)\f$ are independent of the
- * system variables. We enumerate the variables with uppercase letters such that
- * \f$v_A\f$ is the auxiliary variable corresponding to \f$u_A\f$. Greek letters
- * enumerate _all_ variables. In documentation related to particular elliptic
- * systems we generally use the canonical system-specific symbols for the fields
- * in place of these indices. See the `Poisson::FirstOrderSystem` and the
- * `Elasticity::FirstOrderSystem` for examples.
+ * tensor fields. The fluxes and sources are functionals of the system
+ * variables \f$u_\alpha(x)\f$ and their derivatives. The fixed-sources
+ * \f$f_\alpha(x)\f$ are independent of the system variables. See the
+ * `Poisson::FirstOrderSystem` and the `Elasticity::FirstOrderSystem` for
+ * examples.
+ *
+ * Note that this formulation has been simplified since \cite Fischer2021voj :
+ * We assume that the fluxes are linear in the fields and their derivatives and
+ * removed the notion of "auxiliary variables" from the formulation altogether.
+ * In the language of \cite Fischer2021voj we always just choose the partial
+ * derivatives of the fields as auxiliary variables.
  *
  * Conforming classes must have these static member variables:
  *
@@ -94,24 +70,15 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
  *
  * - `primal_fields`: A list of tags representing the primal fields. These are
  *   the fields we solve for, e.g. \f$u\f$ for a Poisson equation.
- *
- * - `auxiliary_fields`: A list of tags representing the auxiliary fields, which
- *   are typically gradients of the primal fields, e.g. \f$v_i = \partial_i u\f$
- *   for a Poisson equation. These must follow the order of the `primal_fields`.
- *   Specifically, each auxiliary field must have one rank higher than its
- *   corresponding primal field.
+ *   (we may rename this to just "fields" since we removed the notion of
+ *   "auxiliary fields")
  *
  * - `primal_fluxes`: A list of tags representing the primal fluxes
- *   \f$F_{u_A}^i\f$. These are typically some linear combination of the
- *   auxiliary fields with raised indices, e.g. \f$v^i = g^{ij}v_j\f$ for a
- *   curved-space Poisson equation on a background metric \f$g_{ij}\f$. They
- *   must have the same rank as the `auxiliary_fields` but with an upper-spatial
- *   first index, because their divergence defines the elliptic equation.
- *
- * - `auxiliary_fluxes`: A list of tags representing the auxiliary fluxes
- *   \f$F_{v_A}^i\f$, e.g. \f$\delta^i_j u\f$ for a Poisson equation. These must
- *   have one rank higher than the `auxiliary_fields` and have an upper-spatial
- *   first index because their divergence defines the auxiliary fields.
+ *   \f$F_\alpha^i\f$. These are typically some linear combination of the
+ *   derivatives of the system fields with raised indices, e.g. \f$v^i = g^{ij}
+ *   \partial_j u\f$ for a curved-space Poisson equation on a background metric
+ *   \f$g_{ij}\f$. They must have an upper-spatial first index, because their
+ *   divergence defines the elliptic equation.
  *
  * - `background_fields`: A list of tags representing the variable-independent
  *   background fields in the equations. Examples are a background metric,
@@ -123,33 +90,41 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
  *   the geometry that the elliptic equations are formulated on. This is the
  *   metric responsible for normalizing one-forms, such as face normals.
  *
- * - `fluxes_computer`: A class that defines the primal and auxiliary fluxes
- *   \f$F_\alpha^i\f$. Must have an `argument_tags` type alias and two `apply`
- *   function overloads: One that computes the primal fluxes and another that
- *   computes the auxiliary fluxes. The first `apply` function takes these
+ * - `fluxes_computer`: A class that defines the fluxes \f$F_\alpha^i\f$. Must
+ *   have an `argument_tags` type alias and an `apply` function that takes these
  *   arguments in this order:
  *
  *   1. The `primal_fluxes` as not-null pointer
  *   2. The `argument_tags`
- *   3. The `auxiliary_fields`
- *
- *   The second `apply` function takes these arguments in this order:
- *
- *   1. The `auxiliary_fluxes` as not-null pointer
- *   2. The `argument_tags`
  *   3. The `primal_fields`
+ *   4. The partial derivatives of the `primal_fields`
  *
- *   The functions can assume the output buffers are already correctly sized,
- *   but no guarantee is made on the values that the buffers hold at input. The
- *   class must have an additional `volume_tags` type alias that lists the
- *   subset of `argument_tags` that will be retrieved directly from the DataBox,
- *   instead of retrieving it from the face of an element.
+ *   The function can assume the output buffers are already correctly sized,
+ *   but no guarantee is made on the values that the buffers hold at input.
  *
- * - `sources_computer`: A class that defines the primal and auxiliary sources
- *   \f$S_\alpha\f$. Must have an `argument_tags` type alias and two `apply`
- *   function overloads: One that adds the primal sources and another that adds
- *   the auxiliary sources to the equations. The first `apply` function takes
- *   these arguments in this order:
+ *   The `fluxes_computer` must also have an `apply` function overload that is
+ *   evaluated on faces of DG elements. It computes the same fluxes
+ * \f$F_\alpha^i\f$, but with the field derivatives replaced by the the face
+ * normal times the fields, and with the non-principal (non-derivative) terms
+ * set to zero. Having this separate function is an optimization to take
+ * advantage of the face normal remaining constant throughout the solve, so it
+ * can be "baked in" to the flux. The function takes these arguments in this
+ * order:
+ *
+ *   1. The `primal_fluxes` as not-null pointer
+ *   2. The `argument_tags`
+ *   3. The `const tnsr::i<DataVector, Dim>& face_normal` ($n_i$)
+ *   4. The `const tnsr::I<DataVector, Dim>& face_normal_vector` ($n^i$)
+ *   5. The `primal_fields`
+ *
+ *   The `fluxes_computer` class must also have an additional `volume_tags` type
+ *   alias that lists the subset of `argument_tags` that will be retrieved
+ *   directly from the DataBox, instead of retrieving it from the face of an
+ *   element, when fluxes are applied on a face.
+ *
+ * - `sources_computer`: A class that defines the sources \f$S_\alpha\f$. Must
+ *   have an `argument_tags` type alias and an `apply` function that adds the
+ *   sources to the equations. It takes these arguments in this order:
  *
  *   1. The types of the `primal_fields` as not-null pointer. These are the
  *      primal equations.
@@ -157,15 +132,9 @@ struct test_primal_and_auxiliary_fields_and_fluxes<
  *   3. The `primal_fields`
  *   4. The `primal_fluxes`
  *
- *   The second `apply` function takes these arguments in this order:
- *
- *   1. The types of the `auxiliary_fields` as not-null pointer. These are the
- *      auxiliary equations.
- *   2. The `argument_tags`
- *   3. The `primal_fields`
- *
- *   The functions are expected to _add_ the sources \f$S_\alpha\f$ to the
+ *   The function is expected to _add_ the sources \f$S_\alpha\f$ to the
  *   output buffers.
+ *   The `sources_computer` may also be `void`, in which case \f$S_\alpha=0\f$.
  *
  * - `boundary_conditions_base`: A base class representing the supported
  *   boundary conditions. Boundary conditions can be factory-created from this
@@ -178,13 +147,9 @@ struct FirstOrderSystem {
     static constexpr size_t volume_dim = ConformingType::volume_dim;
 
     using primal_fields = typename ConformingType::primal_fields;
-    using auxiliary_fields = typename ConformingType::auxiliary_fields;
     using primal_fluxes = typename ConformingType::primal_fluxes;
-    using auxiliary_fluxes = typename ConformingType::auxiliary_fluxes;
-    static_assert(
-        FirstOrderSystem_detail::test_primal_and_auxiliary_fields_and_fluxes<
-            volume_dim, primal_fields, auxiliary_fields, primal_fluxes,
-            auxiliary_fluxes>::value);
+    static_assert(FirstOrderSystem_detail::test_fields_and_fluxes<
+                  volume_dim, primal_fields, primal_fluxes>::value);
 
     using background_fields = typename ConformingType::background_fields;
     static_assert(tt::is_a_v<tmpl::list, background_fields>);
@@ -195,9 +160,7 @@ struct FirstOrderSystem {
     using fluxes_computer = typename ConformingType::fluxes_computer;
     using sources_computer = typename ConformingType::sources_computer;
     using fluxes_argument_tags = typename fluxes_computer::argument_tags;
-    using sources_argument_tags = typename sources_computer::argument_tags;
     static_assert(tt::is_a_v<tmpl::list, fluxes_argument_tags>);
-    static_assert(tt::is_a_v<tmpl::list, sources_argument_tags>);
 
     using boundary_conditions_base =
         typename ConformingType::boundary_conditions_base;

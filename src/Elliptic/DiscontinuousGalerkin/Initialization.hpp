@@ -12,6 +12,7 @@
 
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -134,6 +135,7 @@ struct InitializeFacesAndMortars {
           tmpl::list<domain::Tags::Direction<Dim>,
                      domain::Tags::Coordinates<Dim, Frame::Inertial>,
                      domain::Tags::FaceNormal<Dim>,
+                     domain::Tags::FaceNormalVector<Dim>,
                      domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>,
                      domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                       Frame::Inertial>,
@@ -160,6 +162,8 @@ struct InitializeFacesAndMortars {
           faces_inertial_coords,
       const gsl::not_null<DirectionMap<Dim, tnsr::i<DataVector, Dim>>*>
           face_normals,
+      const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
+          face_normal_vectors,
       const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
           face_normal_magnitudes,
       const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
@@ -214,6 +218,7 @@ struct InitializeFacesAndMortars {
       face_inertial_coords =
           element_map(face_logical_coords, 0., functions_of_time);
       auto& face_normal = (*face_normals)[direction];
+      auto& face_normal_vector = (*face_normal_vectors)[direction];
       auto& face_normal_magnitude = (*face_normal_magnitudes)[direction];
       unnormalized_face_normal(
           make_not_null(&face_normal), face_mesh,
@@ -221,13 +226,19 @@ struct InitializeFacesAndMortars {
           direction);
       if constexpr (std::is_same_v<InvMetricTag, void>) {
         magnitude(make_not_null(&face_normal_magnitude), face_normal);
+        for (size_t d = 0; d < Dim; ++d) {
+          face_normal.get(d) /= get(face_normal_magnitude);
+          face_normal_vector.get(d) = face_normal.get(d);
+        }
       } else {
         const auto inv_metric_on_face = get_inv_metric(face_inertial_coords);
         magnitude(make_not_null(&face_normal_magnitude), face_normal,
                   inv_metric_on_face);
-      }
-      for (size_t d = 0; d < Dim; ++d) {
-        face_normal.get(d) /= get(face_normal_magnitude);
+        for (size_t d = 0; d < Dim; ++d) {
+          face_normal.get(d) /= get(face_normal_magnitude);
+        }
+        raise_or_lower_index(make_not_null(&face_normal_vector), face_normal,
+                             inv_metric_on_face);
       }
       get((*face_jacobians)[direction]) =
           get(determinant(element_map.jacobian(face_logical_coords, 0.,

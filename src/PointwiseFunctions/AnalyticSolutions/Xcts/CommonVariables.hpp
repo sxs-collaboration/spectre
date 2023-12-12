@@ -33,6 +33,8 @@ using common_tags = tmpl::push_back<
                   Frame::Inertial>,
     ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
                   Frame::Inertial>,
+    ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
     Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
     // Fluxes
     ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
@@ -95,9 +97,14 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
       ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const = 0;
   virtual void operator()(
+      gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_excess,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
+      Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const;
   virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> conformal_factor_flux,
       gsl::not_null<Cache*> cache,

@@ -16,12 +16,15 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,20 +36,21 @@ namespace TestHelpers {
 namespace elliptic {
 namespace detail {
 
-template <typename FluxesComputer, typename... PrimalFields,
-          typename... AuxiliaryFields, typename... PrimalFluxes,
-          typename... AuxiliaryFluxes, typename... FluxesArgsTags>
+template <typename System, typename... PrimalFields, typename... PrimalFluxes,
+          typename... FluxesArgsTags>
 void test_first_order_fluxes_computer_impl(
     const DataVector& used_for_size, tmpl::list<PrimalFields...> /*meta*/,
-    tmpl::list<AuxiliaryFields...> /*meta*/,
     tmpl::list<PrimalFluxes...> /*meta*/,
-    tmpl::list<AuxiliaryFluxes...> /*meta*/,
     tmpl::list<FluxesArgsTags...> /*meta*/) {
-  using vars_tag =
-      ::Tags::Variables<tmpl::list<PrimalFields..., AuxiliaryFields...>>;
+  static constexpr size_t Dim = System::volume_dim;
+  using FluxesComputer = typename System::fluxes_computer;
+  using inv_metric_tag = typename System::inv_metric_tag;
+  using vars_tag = ::Tags::Variables<tmpl::list<PrimalFields...>>;
   using VarsType = typename vars_tag::type;
-  using fluxes_tag =
-      ::Tags::Variables<tmpl::list<PrimalFluxes..., AuxiliaryFluxes...>>;
+  using deriv_vars_tag = db::add_tag_prefix<::Tags::deriv, vars_tag,
+                                            tmpl::size_t<Dim>, Frame::Inertial>;
+  using DerivVarsType = typename deriv_vars_tag::type;
+  using fluxes_tag = ::Tags::Variables<tmpl::list<PrimalFluxes...>>;
   using FluxesType = typename fluxes_tag::type;
 
   MAKE_GENERATOR(generator);
@@ -54,6 +58,8 @@ void test_first_order_fluxes_computer_impl(
 
   // Generate random variables
   const auto vars = make_with_random_values<VarsType>(
+      make_not_null(&generator), make_not_null(&dist), used_for_size);
+  const auto deriv_vars = make_with_random_values<DerivVarsType>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
 
   // Generate fluxes from the variables with random arguments
@@ -63,29 +69,58 @@ void test_first_order_fluxes_computer_impl(
   // Silence unused variable warning when fluxes args is empty
   (void)fluxes_args;
   FluxesType expected_fluxes{used_for_size.size()};
-  FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(expected_fluxes))...,
-                        get<FluxesArgsTags>(fluxes_args)...,
-                        get<AuxiliaryFields>(vars)...);
   FluxesComputer::apply(
-      make_not_null(&get<AuxiliaryFluxes>(expected_fluxes))...,
-      get<FluxesArgsTags>(fluxes_args)..., get<PrimalFields>(vars)...);
+      make_not_null(&get<PrimalFluxes>(expected_fluxes))...,
+      get<FluxesArgsTags>(fluxes_args)..., get<PrimalFields>(vars)...,
+      get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
+          deriv_vars)...);
 
   // Create a DataBox
-  auto box =
-      db::create<db::AddSimpleTags<vars_tag, fluxes_tag, FluxesArgsTags...>>(
-          vars,
-          make_with_value<typename fluxes_tag::type>(
-              used_for_size, std::numeric_limits<double>::signaling_NaN()),
-          get<FluxesArgsTags>(fluxes_args)...);
+  auto box = db::create<db::AddSimpleTags<vars_tag, deriv_vars_tag, fluxes_tag,
+                                          FluxesArgsTags...>>(
+      vars, deriv_vars,
+      make_with_value<typename fluxes_tag::type>(
+          used_for_size, std::numeric_limits<double>::signaling_NaN()),
+      get<FluxesArgsTags>(fluxes_args)...);
 
   // Apply the fluxes computer to the DataBox
   db::mutate_apply<tmpl::list<PrimalFluxes...>,
-                   tmpl::list<FluxesArgsTags..., AuxiliaryFields...>>(
-      FluxesComputer{}, make_not_null(&box));
-  db::mutate_apply<tmpl::list<AuxiliaryFluxes...>,
-                   tmpl::list<FluxesArgsTags..., PrimalFields...>>(
+                   tmpl::list<FluxesArgsTags..., PrimalFields...,
+                              ::Tags::deriv<PrimalFields, tmpl::size_t<Dim>,
+                                            Frame::Inertial>...>>(
       FluxesComputer{}, make_not_null(&box));
   CHECK(expected_fluxes == get<fluxes_tag>(box));
+
+  {
+    INFO("Fluxes computer on face");
+    // Test that the two overloads are consistent: the one applied on the face
+    // just has the face normal "baked in".
+    const auto face_normal = make_with_random_values<tnsr::i<DataVector, Dim>>(
+        make_not_null(&generator), make_not_null(&dist), used_for_size);
+    tnsr::I<DataVector, Dim> face_normal_vector{used_for_size.size()};
+    if constexpr (std::is_same_v<inv_metric_tag, void>) {
+      for (size_t i = 0; i < Dim; ++i) {
+        face_normal_vector.get(i) = face_normal.get(i);
+      }
+    } else {
+      const auto& inv_metric = get<inv_metric_tag>(fluxes_args);
+      raise_or_lower_index(make_not_null(&face_normal_vector), face_normal,
+                           inv_metric);
+    }
+    DerivVarsType n_times_vars{used_for_size.size()};
+    normal_times_flux(make_not_null(&n_times_vars), face_normal, vars);
+    VarsType zero_vars{used_for_size.size(), 0.};
+    FluxesComputer::apply(
+        make_not_null(&get<PrimalFluxes>(expected_fluxes))...,
+        get<FluxesArgsTags>(fluxes_args)..., get<PrimalFields>(zero_vars)...,
+        get<::Tags::deriv<PrimalFields, tmpl::size_t<Dim>, Frame::Inertial>>(
+            n_times_vars)...);
+    FluxesType fluxes_on_face{used_for_size.size()};
+    FluxesComputer::apply(make_not_null(&get<PrimalFluxes>(fluxes_on_face))...,
+                          get<FluxesArgsTags>(fluxes_args)..., face_normal,
+                          face_normal_vector, get<PrimalFields>(vars)...);
+  CHECK_VARIABLES_APPROX(fluxes_on_face, expected_fluxes);
+  }
 }
 
 }  // namespace detail
@@ -102,26 +137,21 @@ void test_first_order_fluxes_computer_impl(
  */
 template <typename System>
 void test_first_order_fluxes_computer(const DataVector& used_for_size) {
-  detail::test_first_order_fluxes_computer_impl<
-      typename System::fluxes_computer>(
+  detail::test_first_order_fluxes_computer_impl<System>(
       used_for_size, typename System::primal_fields{},
-      typename System::auxiliary_fields{}, typename System::primal_fluxes{},
-      typename System::auxiliary_fluxes{},
+      typename System::primal_fluxes{},
       typename System::fluxes_computer::argument_tags{});
 }
 
 namespace detail {
 
 template <typename SourcesComputer, typename... PrimalFields,
-          typename... AuxiliaryFields, typename... PrimalFluxes,
-          typename... SourcesArgsTags>
+          typename... PrimalFluxes, typename... SourcesArgsTags>
 void test_first_order_sources_computer_impl(
     const DataVector& used_for_size, tmpl::list<PrimalFields...> /*meta*/,
-    tmpl::list<AuxiliaryFields...> /*meta*/,
     tmpl::list<PrimalFluxes...> /*meta*/,
     tmpl::list<SourcesArgsTags...> /*meta*/) {
-  using vars_tag =
-      ::Tags::Variables<tmpl::list<PrimalFields..., AuxiliaryFields...>>;
+  using vars_tag = ::Tags::Variables<tmpl::list<PrimalFields...>>;
   using VarsType = typename vars_tag::type;
   using fluxes_tag = ::Tags::Variables<tmpl::list<PrimalFluxes...>>;
   using FluxesType = typename fluxes_tag::type;
@@ -148,9 +178,6 @@ void test_first_order_sources_computer_impl(
   (void)sources_args;
   SourcesType expected_sources{used_for_size.size(), 0.};
   SourcesComputer::apply(
-      make_not_null(&get<::Tags::Source<AuxiliaryFields>>(expected_sources))...,
-      get<SourcesArgsTags>(sources_args)..., get<PrimalFields>(vars)...);
-  SourcesComputer::apply(
       make_not_null(&get<::Tags::Source<PrimalFields>>(expected_sources))...,
       get<SourcesArgsTags>(sources_args)..., get<PrimalFields>(vars)...,
       get<PrimalFluxes>(fluxes)...);
@@ -163,9 +190,6 @@ void test_first_order_sources_computer_impl(
       get<SourcesArgsTags>(sources_args)...);
 
   // Apply the sources computer to the DataBox
-  db::mutate_apply<tmpl::list<::Tags::Source<AuxiliaryFields>...>,
-                   tmpl::list<SourcesArgsTags..., PrimalFields...>>(
-      SourcesComputer{}, make_not_null(&box));
   db::mutate_apply<
       tmpl::list<::Tags::Source<PrimalFields>...>,
       tmpl::list<SourcesArgsTags..., PrimalFields..., PrimalFluxes...>>(
@@ -188,24 +212,21 @@ void test_first_order_sources_computer_impl(
 template <typename System, bool Linearized = false>
 void test_first_order_sources_computer(const DataVector& used_for_size) {
   using sources_computer = ::elliptic::get_sources_computer<System, Linearized>;
-  using primal_fields =
-      tmpl::conditional_t<Linearized,
-                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
-                                           typename System::primal_fields>,
-                          typename System::primal_fields>;
-  using auxiliary_fields =
-      tmpl::conditional_t<Linearized,
-                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
-                                           typename System::auxiliary_fields>,
-                          typename System::auxiliary_fields>;
-  using primal_fluxes =
-      tmpl::conditional_t<Linearized,
-                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
-                                           typename System::primal_fluxes>,
-                          typename System::primal_fluxes>;
-  detail::test_first_order_sources_computer_impl<sources_computer>(
-      used_for_size, primal_fields{}, auxiliary_fields{}, primal_fluxes{},
-      typename sources_computer::argument_tags{});
+  if constexpr (not std::is_same_v<sources_computer, void>) {
+    using primal_fields =
+        tmpl::conditional_t<Linearized,
+                            db::wrap_tags_in<NonlinearSolver::Tags::Correction,
+                                             typename System::primal_fields>,
+                            typename System::primal_fields>;
+    using primal_fluxes =
+        tmpl::conditional_t<Linearized,
+                            db::wrap_tags_in<NonlinearSolver::Tags::Correction,
+                                             typename System::primal_fluxes>,
+                            typename System::primal_fluxes>;
+    detail::test_first_order_sources_computer_impl<sources_computer>(
+        used_for_size, primal_fields{}, primal_fluxes{},
+        typename sources_computer::argument_tags{});
+  }
 }
 
 }  // namespace elliptic

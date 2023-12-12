@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ConstitutiveRelation.cpp
   CubicCrystal.cpp
   IsotropicHomogeneous.cpp
   )

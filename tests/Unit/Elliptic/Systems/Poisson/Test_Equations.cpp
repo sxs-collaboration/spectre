@@ -33,10 +33,6 @@ void test_equations(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       &Poisson::add_curved_sources<Dim>, "Equations", {"add_curved_sources"},
       {{{0., 1.}}}, used_for_size, 1.e-12, {}, 0.);
-  pypp::check_with_random_values<1>(
-      &Poisson::auxiliary_fluxes<Dim>, "Equations",
-      {MakeString{} << "auxiliary_fluxes_" << Dim << "d"}, {{{0., 1.}}},
-      used_for_size);
 }
 
 template <size_t Dim, Poisson::Geometry BackgroundGeometry>

@@ -9,6 +9,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts {
+/// @{
 /*!
  * \brief The longitudinal operator, or vector gradient, \f$(L\beta)^{ij}\f$
  *
@@ -40,6 +41,15 @@ void longitudinal_operator(gsl::not_null<tnsr::II<DataType, 3>*> result,
                            const tnsr::ii<DataType, 3>& strain,
                            const tnsr::II<DataType, 3>& inv_metric);
 
+template <typename DataType>
+void longitudinal_operator(
+    gsl::not_null<tnsr::II<DataType, 3>*> result,
+    const tnsr::I<DataType, 3>& shift, const tnsr::iJ<DataType, 3>& deriv_shift,
+    const tnsr::II<DataType, 3>& inv_metric,
+    const tnsr::Ijj<DataType, 3>& christoffel_second_kind);
+/// @}
+
+/// @{
 /*!
  * \brief The conformal longitudinal operator \f$(L\beta)^{ij}\f$ on a flat
  * conformal metric in Cartesian coordinates \f$\gamma_{ij}=\delta_{ij}\f$
@@ -50,4 +60,10 @@ template <typename DataType>
 void longitudinal_operator_flat_cartesian(
     gsl::not_null<tnsr::II<DataType, 3>*> result,
     const tnsr::ii<DataType, 3>& strain);
+
+template <typename DataType>
+void longitudinal_operator_flat_cartesian(
+    gsl::not_null<tnsr::II<DataType, 3>*> result,
+    const tnsr::iJ<DataType, 3>& deriv_shift);
+/// @}
 }  // namespace Xcts

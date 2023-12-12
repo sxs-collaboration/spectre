@@ -37,12 +37,6 @@ void Sources::apply(const gsl::not_null<Scalar<DataVector>*> puncture_equation,
   add_sources(puncture_equation, alpha, beta, field);
 }
 
-void Sources::apply(
-    const gsl::not_null<
-        tnsr::i<DataVector, 3>*> /*equation_for_field_gradient*/,
-    const Scalar<DataVector>& /*alpha*/, const Scalar<DataVector>& /*beta*/,
-    const Scalar<DataVector>& /*field*/) {}
-
 void LinearizedSources::apply(
     const gsl::not_null<Scalar<DataVector>*> linearized_puncture_equation,
     const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,
@@ -51,12 +45,5 @@ void LinearizedSources::apply(
   add_linearized_sources(linearized_puncture_equation, alpha, beta, field,
                          field_correction);
 }
-
-void LinearizedSources::apply(
-    const gsl::not_null<
-        tnsr::i<DataVector, 3>*> /*equation_for_field_gradient_correction*/,
-    const Scalar<DataVector>& /*alpha*/, const Scalar<DataVector>& /*beta*/,
-    const Scalar<DataVector>& /*field*/,
-    const Scalar<DataVector>& /*field_correction*/) {}
 
 }  // namespace Punctures

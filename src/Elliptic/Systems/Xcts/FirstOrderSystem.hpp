@@ -25,24 +25,12 @@ namespace Xcts {
  * Einstein constraint equations, formulated as a set of coupled first-order
  * partial differential equations
  *
- * See \ref Xcts for details on the XCTS equations. This system introduces as
- * auxiliary variables the conformal factor gradient \f$v_i=\partial_i\psi\f$,
- * the gradient of the lapse times the conformal factor
- * \f$w_i=\partial_i\left(\alpha\psi\right)\f$, and the symmetric shift strain
- * \f$B_{ij}=\bar{D}_{(i}\beta_{j)}\f$. Note that \f$B_{ij}\f$ is the
- * symmetrized covariant gradient of the shift vector field and analogous to the
- * "strain" in an elasticity equation (see `Elasticity::FirstOrderSystem` and
- * `Xcts::Tags::ShiftStrain` for details). From the strain we can compute the
- * longitudinal operator by essentially removing its trace (see
- * `Xcts::longitudinal_operator`).
- *
+ * See \ref Xcts for details on the XCTS equations.
  * The system can be formulated in terms of these fluxes and sources (see
  * `elliptic::protocols::FirstOrderSystem`):
  *
  * \f{align}
- * F^i_{v_j} ={} &\delta^i_j \psi \\
- * S_{v_j} ={} &v_j \\
- * F^i_\psi ={} &\bar{\gamma}^{ij} v_j \\
+ * F^i_\psi ={} &\bar{\gamma}^{ij} \partial_j \psi \\
  * S_\psi ={} &-\bar{\Gamma}^i_{ij} F^j_\psi
  * + \frac{1}{8}\psi\bar{R} + \frac{1}{12}\psi^5 K^2
  * - \frac{1}{8}\psi^{-7}\bar{A}^2 - 2\pi\psi^5\rho
@@ -51,9 +39,7 @@ namespace Xcts {
  * for the Hamiltonian constraint,
  *
  * \f{align}
- * F^i_{w_j} ={} &\delta^i_j \alpha\psi \\
- * S_{w_j} ={} &w_j \\
- * F^i_{\alpha\psi} ={} &\bar{\gamma}^{ij} w_j \\
+ * F^i_{\alpha\psi} ={} &\bar{\gamma}^{ij} \partial_j \alpha\psi \\
  * S_{\alpha\psi} ={} &-\bar{\Gamma}^i_{ij} F^j_{\alpha\psi}
  * + \alpha\psi \left(\frac{7}{8}\psi^{-8} \bar{A}^2
  * + \frac{5}{12} \psi^4 K^2 + \frac{1}{8}\bar{R}
@@ -65,13 +51,12 @@ namespace Xcts {
  * for the lapse equation, and
  *
  * \f{align}
- * F^i_{B_{jk}} ={} &\delta^i_{(j} \gamma_{k)l} \beta^l \\
- * S_{B_{jk}} ={} &B_{jk} + \bar{\Gamma}_{ijk}\beta^i \\
- * F^i_{\beta^j} ={} &2\left(\gamma^{ik}\gamma^{jl}
- * - \frac{1}{3} \gamma^{ij}\gamma^{kl}\right) B_{kl} \\
- * S_{\beta^i} ={} &-\bar{\Gamma}^j_{jk} F^i_{\beta^k}
- * - \bar{\Gamma}^i_{jk} F^j_{\beta^k}
- * + \left(F^i_{\beta^j}
+ * F^{ij}_\beta ={} &\left(\bar{L}\beta\right)^{ij} = \bar{\nabla}^i \beta^j
+ * + \bar{\nabla}^j \beta^i
+ * - \frac{2}{3} \bar{\gamma}^{ij} \bar{\nabla}_k \beta^k \\
+ * S^i_\beta ={} &-\bar{\Gamma}^j_{jk} F^{ik}_\beta
+ * - \bar{\Gamma}^i_{jk} F^{jk}_\beta
+ * + \left(F^{ij}_\beta
  * + \left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij}\right)
  * \bar{\gamma}_{jk} \left(\frac{F^k_{\alpha\psi}}{\alpha\psi}
  * - 7 \frac{F^k_\psi}{\psi}\right) \\
@@ -86,14 +71,10 @@ namespace Xcts {
  * \f{align}
  * \bar{A}^{ij} ={} &\frac{\psi^7}{2\alpha\psi}\left(
  * \left(\bar{L}\beta\right)^{ij} +
- * \left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij} \right) \\
- * \text{and} \quad \left(\bar{L}\beta\right)^{ij} ={} &\bar{\nabla}^i \beta^j +
- * \bar{\nabla}^j \beta^i - \frac{2}{3}\gamma^{ij}\bar{\nabla}_k\beta^k \\
- * ={} &2\left(\bar{\gamma}^{ik}\bar{\gamma}^{jl} - \frac{1}{3}
- * \bar{\gamma}^{ij}\bar{\gamma}^{kl}\right) B_{kl}
+ * \left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij} \right)
  * \f}
  *
- * and all \f$f_A=0\f$.
+ * and all \f$f_\alpha=0\f$.
  *
  * Note that the symbol \f$\beta\f$ in the equations above means
  * \f$\beta_\mathrm{excess}\f$. The full shift is \f$\beta_\mathrm{excess} +
@@ -136,46 +117,20 @@ template <Equations EnabledEquations, Geometry ConformalGeometry,
           int ConformalMatterScale>
 struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
- public:
   static constexpr Equations enabled_equations = EnabledEquations;
   static constexpr Geometry conformal_geometry = ConformalGeometry;
   static constexpr int conformal_matter_scale = ConformalMatterScale;
-
- private:
-  using conformal_factor = Tags::ConformalFactor<DataVector>;
-  using conformal_factor_gradient =
-      ::Tags::deriv<conformal_factor, tmpl::size_t<3>, Frame::Inertial>;
-  using lapse_times_conformal_factor =
-      Tags::LapseTimesConformalFactor<DataVector>;
-  using lapse_times_conformal_factor_gradient =
-      ::Tags::deriv<lapse_times_conformal_factor, tmpl::size_t<3>,
-                    Frame::Inertial>;
-  using shift_excess = Tags::ShiftExcess<DataVector, 3, Frame::Inertial>;
-  using shift_strain = Tags::ShiftStrain<DataVector, 3, Frame::Inertial>;
-  using longitudinal_shift_excess =
-      Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial>;
-
- public:
   static constexpr size_t volume_dim = 3;
 
   using primal_fields = tmpl::flatten<tmpl::list<
-      conformal_factor,
-      tmpl::conditional_t<EnabledEquations == Equations::HamiltonianAndLapse or
-                              EnabledEquations ==
-                                  Equations::HamiltonianLapseAndShift,
-                          lapse_times_conformal_factor, tmpl::list<>>,
-      tmpl::conditional_t<EnabledEquations ==
-                              Equations::HamiltonianLapseAndShift,
-                          shift_excess, tmpl::list<>>>>;
-  using auxiliary_fields = tmpl::flatten<tmpl::list<
-      conformal_factor_gradient,
-      tmpl::conditional_t<EnabledEquations == Equations::HamiltonianAndLapse or
-                              EnabledEquations ==
-                                  Equations::HamiltonianLapseAndShift,
-                          lapse_times_conformal_factor_gradient, tmpl::list<>>,
-      tmpl::conditional_t<EnabledEquations ==
-                              Equations::HamiltonianLapseAndShift,
-                          shift_strain, tmpl::list<>>>>;
+      Tags::ConformalFactor<DataVector>,
+      tmpl::conditional_t<
+          EnabledEquations == Equations::HamiltonianAndLapse or
+              EnabledEquations == Equations::HamiltonianLapseAndShift,
+          Tags::LapseTimesConformalFactor<DataVector>, tmpl::list<>>,
+      tmpl::conditional_t<
+          EnabledEquations == Equations::HamiltonianLapseAndShift,
+          Tags::ShiftExcess<DataVector, 3, Frame::Inertial>, tmpl::list<>>>>;
 
   // As fluxes we use the gradients with raised indices for the Hamiltonian and
   // lapse equation, and the longitudinal shift excess for the momentum
@@ -183,18 +138,18 @@ struct FirstOrderSystem
   // meaning so we use the standard `Flux` tags, but for the symmetric
   // longitudinal shift we use the corresponding symmetric tag.
   using primal_fluxes = tmpl::flatten<tmpl::list<
-      ::Tags::Flux<conformal_factor, tmpl::size_t<3>, Frame::Inertial>,
-      tmpl::conditional_t<EnabledEquations == Equations::HamiltonianAndLapse or
-                              EnabledEquations ==
-                                  Equations::HamiltonianLapseAndShift,
-                          ::Tags::Flux<lapse_times_conformal_factor,
-                                       tmpl::size_t<3>, Frame::Inertial>,
-                          tmpl::list<>>,
-      tmpl::conditional_t<EnabledEquations ==
-                              Equations::HamiltonianLapseAndShift,
-                          longitudinal_shift_excess, tmpl::list<>>>>;
-  using auxiliary_fluxes = db::wrap_tags_in<::Tags::Flux, auxiliary_fields,
-                                            tmpl::size_t<3>, Frame::Inertial>;
+      ::Tags::Flux<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
+                   Frame::Inertial>,
+      tmpl::conditional_t<
+          EnabledEquations == Equations::HamiltonianAndLapse or
+              EnabledEquations == Equations::HamiltonianLapseAndShift,
+          ::Tags::Flux<Tags::LapseTimesConformalFactor<DataVector>,
+                       tmpl::size_t<3>, Frame::Inertial>,
+          tmpl::list<>>,
+      tmpl::conditional_t<
+          EnabledEquations == Equations::HamiltonianLapseAndShift,
+          Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial>,
+          tmpl::list<>>>>;
 
   using background_fields = tmpl::flatten<tmpl::list<
       // Quantities for Hamiltonian constraint

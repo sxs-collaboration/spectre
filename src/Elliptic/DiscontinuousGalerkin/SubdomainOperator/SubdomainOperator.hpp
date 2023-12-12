@@ -148,6 +148,7 @@ struct SubdomainOperator
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+                 domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
                  domain::Tags::Faces<
                      Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
                  ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
@@ -169,8 +170,7 @@ struct SubdomainOperator
       elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>;
   using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
   using sources_args_tags =
-      typename elliptic::get_sources_computer<System,
-                                              linearized>::argument_tags;
+      elliptic::get_sources_argument_tags<System, linearized>;
 
   // We need the fluxes args also on interfaces (internal and external). The
   // volume tags are the subset that don't have to be taken from interfaces.
@@ -392,14 +392,13 @@ struct SubdomainOperator
     db::apply<prepare_args_tags>(
         [this, &operand](const auto&... args) {
           elliptic::dg::prepare_mortar_data<System, linearized>(
-              make_not_null(&central_auxiliary_vars_),
-              make_not_null(&central_auxiliary_fluxes_),
+              make_not_null(&central_deriv_vars_),
               make_not_null(&central_primal_fluxes_),
               make_not_null(&central_mortar_data_), operand.element_data,
               args...);
         },
         box, temporal_id, apply_boundary_condition_center, fluxes_args,
-        sources_args, fluxes_args_on_faces, data_is_zero);
+        fluxes_args_on_faces, data_is_zero);
     // Prepare neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -486,10 +485,6 @@ struct SubdomainOperator
             elliptic::util::apply_at<fluxes_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id);
-        const auto sources_args_on_overlap =
-            elliptic::util::apply_at<sources_args_tags_overlap,
-                                     args_tags_from_center>(get_items, box,
-                                                            overlap_id);
         DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
         for (const auto& neighbor_direction :
              Direction<Dim>::all_directions()) {
@@ -505,15 +500,13 @@ struct SubdomainOperator
                                  args_tags_from_center>(
             [this, &overlap_id](const auto&... args) {
               elliptic::dg::prepare_mortar_data<System, linearized>(
-                  make_not_null(&neighbors_auxiliary_vars_[overlap_id]),
-                  make_not_null(&neighbors_auxiliary_fluxes_[overlap_id]),
+                  make_not_null(&neighbors_deriv_vars_[overlap_id]),
                   make_not_null(&neighbors_primal_fluxes_[overlap_id]),
                   make_not_null(&neighbors_mortar_data_[overlap_id]),
                   extended_operand_vars_[overlap_id], args...);
             },
             box, overlap_id, temporal_id, apply_boundary_condition_neighbor,
-            fluxes_args_on_overlap, sources_args_on_overlap,
-            fluxes_args_on_overlap_faces, data_is_zero);
+            fluxes_args_on_overlap, fluxes_args_on_overlap_faces, data_is_zero);
 
         // Copy this neighbor's mortar data to the other side of the mortars. On
         // the other side we either have the central element, or another element
@@ -704,25 +697,22 @@ struct SubdomainOperator
  private:
   // Memory buffers for repeated operator applications
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable Variables<typename System::auxiliary_fields>
-      central_auxiliary_vars_{};
+  mutable Variables<
+      db::wrap_tags_in<::Tags::deriv, typename System::primal_fields,
+                       tmpl::size_t<Dim>, Frame::Inertial>>
+      central_deriv_vars_{};
   // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<typename System::primal_fluxes> central_primal_fluxes_{};
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable Variables<typename System::auxiliary_fluxes>
-      central_auxiliary_fluxes_{};
-  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
-      Dim, Variables<typename System::auxiliary_fields>>
-      neighbors_auxiliary_vars_{};
+      Dim,
+      Variables<db::wrap_tags_in<::Tags::deriv, typename System::primal_fields,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>>
+      neighbors_deriv_vars_{};
   // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::primal_fluxes>>
       neighbors_primal_fluxes_{};
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable LinearSolver::Schwarz::OverlapMap<
-      Dim, Variables<typename System::auxiliary_fluxes>>
-      neighbors_auxiliary_fluxes_{};
   // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::primal_fields>>

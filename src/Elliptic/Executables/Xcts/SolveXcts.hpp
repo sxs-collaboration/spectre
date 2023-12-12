@@ -80,6 +80,7 @@ struct Metavariables {
       analytic_solution_fields, typename system::background_fields,
       typename spacetime_quantities_compute::tags_list,
       typename hydro_quantities_compute::tags_list, error_tags,
+      typename solver::observe_fields,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
                      volume_dim, Frame::Inertial>,
