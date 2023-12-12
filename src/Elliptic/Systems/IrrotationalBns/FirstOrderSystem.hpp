@@ -1,3 +1,4 @@
+
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
@@ -66,8 +67,8 @@ template <Geometry BackgroundGeometry>
 struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
  private:
-  using velocity_potential = Tags::VelocityPotential;
-  using auxiliary_velocity = Tags::AuxiliaryVelocity;
+  using velocity_potential = Tags::VelocityPotential<DataVector>;
+  using auxiliary_velocity = Tags::AuxiliaryVelocity<DataVector>;
 
  public:
   static constexpr size_t volume_dim = 3;
@@ -92,11 +93,12 @@ struct FirstOrderSystem
       gr::Tags::Shift<DataVector, 3>,
       ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::int_<3>,
                     Frame::Inertial>,
-      Tags::EulerEnthalpyConstant, Tags::RotationalShift,
-      Tags::DerivLogLapseOverSpecificEnthalpy, Tags::FixedSources,
-      Tags::RotationalShiftStress, Tags::DivergenceRotationalShiftStress,
-      Tags::SpatialRotationalKillingVector,
-      Tags::DerivSpatialRotationalKillingVector>;
+      Tags::EulerEnthalpyConstant, Tags::RotationalShift<DataVector>,
+      Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
+      Tags::FixedSources<DataVector>, Tags::RotationalShiftStress<DataVector>,
+      Tags::DivergenceRotationalShiftStress<DataVector>,
+      Tags::SpatialRotationalKillingVector<DataVector>,
+      Tags::DerivSpatialRotationalKillingVector<DataVector>>;
   using inv_metric_tag =
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
                           gr::Tags::InverseSpatialMetric<DataVector, 3>>;

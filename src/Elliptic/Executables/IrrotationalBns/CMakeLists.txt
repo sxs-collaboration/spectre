@@ -17,12 +17,13 @@ set(LIBS_TO_LINK
   Elliptic
   EllipticDg
   EllipticDgSubdomainOperator
+  EllipticSubdomainPreconditioners
   Events
   EventsAndTriggers
   Informer
   IrrotationalBns
+  IrrotationalBnsAnalyticData
   IrrotationalBnsBoundaryConditions
-  IrrotationalBnsSolutions
   LinearOperators
   MathFunctions
   Observer
@@ -31,6 +32,7 @@ set(LIBS_TO_LINK
   ParallelLinearSolver
   ParallelMultigrid
   ParallelSchwarz
+  RelativisticEulerSolutions
   Utilities
 )
 

@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Elliptic/Systems/Xcts/Tags.hpp"
+#include "Elliptic/Systems/IrrotationalBns/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
@@ -18,6 +18,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/InitialData/IrrotationalBns.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -34,23 +36,35 @@ namespace IrrotationalBns::InitialData {
 namespace tov_detail {
 
 using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
+using StarRegion = RelativisticEuler::Solutions::tov_detail::StarRegion;
 
 template <typename DataType>
-using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::push_back<
-    common_tags<DataType>,
+using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
+    IrrotationalBns::Tags::VelocityPotential<DataType>,
+    IrrotationalBns::Tags::AuxiliaryVelocity<DataType>,
+    gr::Tags::Lapse<DataType>,
     ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::Inertial>,
-    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-    gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
-    hydro::Tags::MagneticFieldDotSpatialVelocity<DataType>,
-    hydro::Tags::ComovingMagneticFieldSquared<DataType>>>;
+    gr::Tags::Shift<DataType, 3, Frame::Inertial>,
+    ::Tags::deriv<gr::Tags::Shift<DataType, 3>, tmpl::size_t<3>,
+                  Frame::Inertial>,
+    IrrotationalBns::Tags::RotationalShift<DataType>,
+    IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<DataType>,
+    IrrotationalBns::Tags::DivergenceRotationalShiftStress<DataType>,
+    IrrotationalBns::Tags::RotationalShiftStress<DataType>,
+    gr::Tags::SpatialMetric<DataType, 3>>>;
 
-template <typename DataType>
-struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
+template <typename DataType, StarRegion Region>
+struct TovVariables
+    : RelativisticEuler::Solutions::tov_detail::TovVariables<DataType, Region> {
   static constexpr size_t Dim = 3;
+
+  using Base =
+      RelativisticEuler::Solutions::tov_detail::TovVariables<DataType, Region>;
   using Cache = TovVariablesCache<DataType>;
-  using Base = CommonVariables<DataType, TovVariablesCache<DataType>>;
   using Base::operator();
+  using Base::coords;
+  using Base::eos;
+  using Base::radial_solution;
 
   const std::array<double, 3> star_center;
   const double euler_enthalpy_constant;
@@ -61,72 +75,67 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
   const DataType& radius;
   const RelativisticEuler::Solutions::TovStar& tov_star;
 
-  TovVariables(
-      std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
-      std::optional<std::reference_wrapper<const InverseJacobian<
-          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
-          local_inv_jacobian,
-      const tnsr::I<DataType, 3>& local_x, const DataType& local_radius,
-      const RelativisticEuler::Solutions::TovStar& local_tov_star)
-      : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
+  TovVariables(const tnsr::I<DataType, 3>& local_x,
+               const DataType& local_radius,
+               const RelativisticEuler::Solutions::TovStar& local_tov_star,
+               const EquationsOfState::EquationOfState<true, 1>& local_eos,
+               std::array<double, 3> local_star_center,
+               const double local_euler_enthalpy_constant,
+               const double local_orbital_angular_velocity)
+      : Base(local_x, local_radius, local_tov_star.radial_solution(),
+             local_eos),
+        star_center(std::move(local_star_center)),
         x(local_x),
         radius(local_radius),
-        tov_star(local_tov_star) {}
+        tov_star(local_tov_star),
+        euler_enthalpy_constant(local_euler_enthalpy_constant),
+        orbital_angular_velocity(local_orbital_angular_velocity){};
 
   void operator()(
       gsl::not_null<Scalar<DataType>*> velocity_potential,
       gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::VelocityPotential /*meta*/) const override;
+      IrrotationalBns::Tags::VelocityPotential<DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> auxiliary_velocity,
       gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::VelocityPotential /*meta*/) const override;
+      IrrotationalBns::Tags::AuxiliaryVelocity<DataType> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Lapse<DataType> /*meta*/) const override;
+                  gr::Tags::Lapse<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::i<DataType, 3>*> deriv_lapse,
                   gsl::not_null<Cache*> cache,
                   ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
                                 Frame::Inertial> /*meta*/) const;
 
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::Shift<DataType, 3, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<gr::Tags::Shift<DataType, 3>, tmpl::size_t<3>,
+                                Frame::Inertial> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::I<DataType, 3>*> shift, gsl::not_null<Cache*> cache,
-      gr::Tags::Shift<DataType, 3, Frame::Inertial> /*meta*/) const override;
-  void operator()(
-      gsl::not_null<tnsr::iJ<DataType, 3>*> deriv_shift,
+      gsl::not_null<tnsr::I<DataType, 3>*> rotational_shift,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<gr::Tags::Shift<DataType, 3, Frame::Inertial>> /*meta*/)
-      const override;
-  void operator()(
-      gsl::not_null<tnsr::i<DataType, 3>*> RotationalShift,
-      gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::VelocityPotential /*meta*/) const override;
-  void operator()(
-      gsl::not_null<tnsr::i<DataType, 3>*>
-          log_deriv_lapse_over_specific_enthalpy,
-      gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::LogDerivLapseOverSpecificEnthalpy /*meta*/)
-      const override;
-  void operator()(
-      gsl::not_null<tnsr::i<DataType, 3>*>
-          deriv_log_lapse_over_specific_enthalpy,
-      gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::DerivLogLapseOverSpecificEnthalpy /*meta*/)
-      const override;
+      IrrotationalBns::Tags::RotationalShift<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::i<DataType, 3>*>
+                      deriv_log_lapse_over_specific_enthalpy,
+                  gsl::not_null<Cache*> cache,
+                  IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<
+                      DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> divergence_rotational_shift_stress,
       gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::DivergenceRotationalShiftStress /*meta*/)
-      const override;
+      IrrotationalBns::Tags::DivergenceRotationalShiftStress<DataType> /*meta*/)
+      const;
   void operator()(
       gsl::not_null<tnsr::Ij<DataType, 3>*> rotational_shift_stress,
       gsl::not_null<Cache*> cache,
-      hydro::initial_data::Tags::RotationalShiftStress /*meta*/) const override;
+      IrrotationalBns::Tags::RotationalShiftStress<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::SpatialMetric<DataType, 3> /*meta*/) const override;
+                  gr::Tags::SpatialMetric<DataType, 3> /*meta*/) const;
 
-  )
  private:
   template <typename Tag>
   typename Tag::type get_tov_var(Tag /*meta*/) const {
@@ -149,6 +158,14 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
 class TovStar : public elliptic::analytic_data::AnalyticSolution {
  private:
   using RelEulerTovStar = RelativisticEuler::Solutions::TovStar;
+  std::array<double, 3> star_center_{};
+  double euler_enthalpy_constant_ =
+      std::numeric_limits<double>::signaling_NaN();
+  // Note this is not the angular velocity of the star around its axis, that
+  // is zero in this case.
+  double orbital_angular_velocity_ =
+      std::numeric_limits<double>::signaling_NaN();
+  RelEulerTovStar tov_star_;
 
  public:
   using options = RelEulerTovStar::options;
@@ -161,20 +178,28 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   TovStar& operator=(TovStar&&) = default;
   ~TovStar() = default;
 
-  TovStar(double central_rest_mass_density,
+  // We do not a priori know what the central density will be, a (likely poor)
+  // guess we use here is that the central enthalpy is equal to the constant
+  // A better approxumation would include some guess for the central lapse and
+  // set h = C / alpha
+  TovStar(double euler_enthalpy_constant,
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
               equation_of_state,
-          std::optional<std::array<double, 3>> spatial_velocity,
-          const RelativisticEuler::Solutions::TovCoordinates coordinate_system)
-      : tov_star(central_rest_mass_density, std::move(equation_of_state),
-                 std::move(spatial_velocity), coordinate_system) {}
+          const RelativisticEuler::Solutions::TovCoordinates coordinate_system,
+          std::array<double, 3> star_center, double orbital_angular_velocity)
+      : star_center_(std::move(star_center)),
+        euler_enthalpy_constant_(euler_enthalpy_constant),
+        orbital_angular_velocity_(orbital_angular_velocity),
+        tov_star_(get(equation_of_state->rest_mass_density_from_enthalpy(
+                      Scalar<double>(euler_enthalpy_constant))),
+                  std::move(equation_of_state), coordinate_system){};
 
   const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
-    return tov_star.equation_of_state();
+    return tov_star_.equation_of_state();
   }
 
   const RelativisticEuler::Solutions::TovSolution& radial_solution() const {
-    return tov_star.radial_solution();
+    return tov_star_.radial_solution();
   }
 
   /// \cond
@@ -182,8 +207,7 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
       : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TovStar);
-  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
-      const override {
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone() const {
     return std::make_unique<TovStar>(*this);
   }
   /// \endcond
@@ -212,11 +236,15 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     elliptic::analytic_data::AnalyticSolution::pup(p);
-    p | tov_star;
+    p | tov_star_;
+    p | euler_enthalpy_constant_;
+    p | star_center_;
+    p | orbital_angular_velocity_;
   }
 
  private:
-  template <typename DataType, typename... RequestedTags>
+  template <typename DataType, tov_detail::StarRegion Region,
+            typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
@@ -224,47 +252,20 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
           DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = tov_detail::TovVariables<DataType>;
+    using VarsComputer = tov_detail::TovVariables<DataType, Region>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
     const DataType radius = get(magnitude(x));
     const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
-                                radius, tov_star};
-    using unrequested_hydro_tags =
-        tmpl::list_difference<hydro_tags<DataType>,
-                              tmpl::list<RequestedTags...>>;
-    using requested_hydro_tags =
-        tmpl::list_difference<hydro_tags<DataType>, unrequested_hydro_tags>;
-    tuples::tagged_tuple_from_typelist<requested_hydro_tags> hydro_vars;
-    if constexpr (not std::is_same_v<requested_hydro_tags, tmpl::list<>>) {
-      hydro_vars =
-          tov_star.variables(x, std::numeric_limits<double>::signaling_NaN(),
-                             requested_hydro_tags{});
-    }
-    const auto get_var = [&cache, &computer, &hydro_vars](auto tag_v) {
-      using tag = std::decay_t<decltype(tag_v)>;
-      if constexpr (tmpl::list_contains_v<hydro_tags<DataType>, tag>) {
-        (void)cache;
-        (void)computer;
-        return get<tag>(hydro_vars);
-      } else {
-        (void)hydro_vars;
-        return cache.get_var(computer, tag{});
-      }
-    };
-    return {get_var(RequestedTags{})...};
+                                radius, tov_star_};
   }
 
   friend bool operator==(const TovStar& lhs, const TovStar& rhs) {
-    return lhs.tov_star == rhs.tov_star;
+    return lhs.tov_star_ == rhs.tov_star_;
   }
 
-  // Instead of inheriting from the RelEuler::TovStar we use an aggregate
-  // pattern to avoid multiple-inheritance issues.
-  RelativisticEuler::Solutions::TovStar tov_star{};
 };
 
 inline bool operator!=(const TovStar& lhs, const TovStar& rhs) {
   return not(lhs == rhs);
 }
-
 }  // namespace IrrotationalBns::InitialData

@@ -95,7 +95,6 @@ struct MultigridGroup {
 }  // namespace SolveIrrotationalBns::OptionTags
 
 /// \cond
-template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
   using system = IrrotationalBns::FirstOrderSystem<
@@ -225,7 +224,7 @@ struct Metavariables {
           tmpl::append<typename system::primal_fields,
                        typename system::primal_fluxes>,
           elliptic::analytic_data::AnalyticSolution>,
-      elliptic::dg::Actions::initialize_operator<system>,
+      elliptic::dg::Actions::initialize_operator<system, background_tag>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
@@ -295,8 +294,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &register_derived_classes_with_charm<
-        metavariables::schwarz_smoother::subdomain_solver>,
-    &register_factory_classes_with_charm<metavariables>};
+        Metavariables::schwarz_smoother::subdomain_solver>,
+    &register_factory_classes_with_charm<Metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions, &enable_segfault_handler};
 /// \endcond

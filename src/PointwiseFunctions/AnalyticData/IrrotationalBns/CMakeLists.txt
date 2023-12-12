@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY PuncturesAnalyticData)
+set(LIBRARY IrrotationalBnsAnalyticData)
 
 add_spectre_library(${LIBRARY})
 
@@ -23,6 +23,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  GeneralRelativity
   Options
+  RelativisticEulerSolutions
   Utilities
   )

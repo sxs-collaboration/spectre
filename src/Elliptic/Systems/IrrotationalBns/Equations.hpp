@@ -116,7 +116,7 @@ void add_auxiliary_source_flux_christoffels(
  */
 template <>
 struct Fluxes<Geometry::FlatCartesian> {
-  using argument_tags = tmpl::list<Tags::RotationalShiftStress>;
+  using argument_tags = tmpl::list<Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
   // Order is prmal
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
@@ -137,7 +137,7 @@ template <>
 struct Fluxes<Geometry::Curved> {
   using argument_tags =
       tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                 Tags::RotationalShiftStress>;
+                 Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& inv_spatial_metric,
@@ -158,8 +158,9 @@ struct Fluxes<Geometry::Curved> {
 template <>
 struct Sources<Geometry::FlatCartesian> {
   using argument_tags =
-      tmpl::list<Tags::DerivLogLapseOverSpecificEnthalpy,
-                 Tags::DivergenceRotationalShiftStress, Tags::FixedSources>;
+      tmpl::list<Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
+                 Tags::DivergenceRotationalShiftStress<DataVector>,
+                 Tags::FixedSources<DataVector>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_potential,
       const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
@@ -185,11 +186,11 @@ struct Sources<Geometry::FlatCartesian> {
 template <>
 struct Sources<Geometry::Curved> {
   using argument_tags = tmpl::list<
-      Tags::DerivLogLapseOverSpecificEnthalpy,
+      Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
       gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
-      Tags::DivergenceRotationalShiftStress, Tags::RotationalShiftStress,
-      Tags::FixedSources>;
+      Tags::DivergenceRotationalShiftStress<DataVector>,
+      Tags::RotationalShiftStress<DataVector>, Tags::FixedSources<DataVector>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_potential,
       const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,

@@ -15,7 +15,7 @@ extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_init_node_and_proc(
       {&domain::creators::register_derived_with_charm,
        &register_derived_classes_with_charm<
-           Metavariables::solver::schwarz_smoother::subdomain_solver>,
+           Metavariables::schwarz_smoother::subdomain_solver>,
        &elliptic::subdomain_preconditioners::register_derived_with_charm,
        &register_factory_classes_with_charm<Metavariables>},
       {});
