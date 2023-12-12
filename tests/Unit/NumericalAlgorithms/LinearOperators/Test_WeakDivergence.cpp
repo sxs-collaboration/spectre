@@ -15,8 +15,10 @@
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables/FrameTransform.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
@@ -152,6 +154,20 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
       }
     }
   });
+
+  {
+    INFO("Test logical weak divergence");
+    Variables<div_tags> logical_divergence_result{mesh.number_of_grid_points()};
+    auto logical_fluxes = transform::first_index_to_different_frame(
+        fluxes, det_jac_times_inverse_jacobian);
+    ::dg::apply_mass_matrix(make_not_null(&logical_fluxes), mesh);
+    logical_weak_divergence(make_not_null(&logical_divergence_result),
+                            logical_fluxes, mesh);
+    ::dg::apply_inverse_mass_matrix(make_not_null(&logical_divergence_result),
+                                    mesh);
+    CHECK_VARIABLES_CUSTOM_APPROX(logical_divergence_result, divergence_result,
+                                  local_approx);
+  }
 }
 
 template <size_t Dim>
