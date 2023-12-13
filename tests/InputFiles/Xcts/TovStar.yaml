@@ -14,7 +14,7 @@ OutputFileChecks:
     Subfile: /ErrorNorms.dat
     FileGlob: TovStarReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 1e-6
+    AbsoluteTolerance: 2.e-6
 
 ---
 

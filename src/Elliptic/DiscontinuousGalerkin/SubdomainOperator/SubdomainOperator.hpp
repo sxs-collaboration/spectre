@@ -162,6 +162,9 @@ struct SubdomainOperator
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<
                                    Frame::ElementLogical, Frame::Inertial>>,
+      domain::Tags::Faces<
+          Dim, domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                 Frame::Inertial>>,
       ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
       ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
       ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
