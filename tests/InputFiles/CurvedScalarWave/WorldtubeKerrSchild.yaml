@@ -131,7 +131,7 @@ EventsAndTriggers:
 
 Worldtube:
   ExcisionSphere: ExcisionSphereA
-  ExpansionOrder: 2
+  ExpansionOrder: 1
   ObserveCoefficientsTrigger:
     Slabs:
       EvenlySpaced:

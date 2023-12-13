@@ -60,17 +60,14 @@ struct ObserveWorldtubeSolution {
       const auto& dt_psi_monopole =
           db::get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
                                        Frame::Grid>>(box);
-      const auto& psi_0 = db::get<Tags::Psi0>(box);
-      const auto& dt_psi_0 = db::get<Tags::dtPsi0>(box);
 
       // number of components in Taylor series
       const size_t num_coefs = ((expansion_order + 3) * (expansion_order + 2) *
                                 (expansion_order + 1)) /
                                6;
       std::vector<double> psi_coefs(2 * num_coefs);
-      psi_coefs[0] = expansion_order < 2 ? get(psi_monopole) : get(psi_0)[0];
-      psi_coefs[num_coefs] =
-          expansion_order < 2 ? get(dt_psi_monopole) : get(dt_psi_0)[0];
+      psi_coefs[0] = get(psi_monopole);
+      psi_coefs[num_coefs] = get(dt_psi_monopole);
 
       if (expansion_order > 0) {
         const auto& psi_dipole = db::get<
@@ -83,33 +80,6 @@ struct ObserveWorldtubeSolution {
           psi_coefs[num_coefs + 1 + i] = dt_psi_dipole.get(i);
         }
       }
-      // at second order we need to identify the trace of the second order
-      // coefficient and add it back to the quadrupole (which is trace-less)
-      if (expansion_order > 1) {
-        const auto& psi_quadrupole = db::get<
-            Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>>(box);
-        const auto& dt_psi_quadrupole =
-            db::get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
-                                         Frame::Grid>>(box);
-        const double wt_radius =
-            db::get<Tags::ExcisionSphere<Dim>>(box).radius();
-        const double trace_psi_2 =
-            3. * (get(psi_monopole) - get(psi_0).at(0)) / square(wt_radius);
-        const double trace_dt_psi_2 =
-            3. * (get(dt_psi_monopole) - get(dt_psi_0).at(0)) /
-            square(wt_radius);
-        size_t offset = 4;
-        for (size_t i = 0; i < Dim; ++i) {
-          for (size_t j = i; j < Dim; ++j, ++offset) {
-            psi_coefs[offset] = i == j ? psi_quadrupole.get(i, j) + trace_psi_2
-                                       : psi_quadrupole.get(i, j);
-            psi_coefs[num_coefs + offset] =
-                i == j ? dt_psi_quadrupole.get(i, j) + trace_dt_psi_2
-                       : dt_psi_quadrupole.get(i, j);
-          }
-        }
-        ASSERT(offset == num_coefs, "Internal indexing error");
-      }
       const auto legend = [&expansion_order]() -> std::vector<std::string> {
         switch (expansion_order) {
           case (0):
@@ -118,13 +88,6 @@ struct ObserveWorldtubeSolution {
           case (1):
             return {"Time",   "Psi0",   "Psix",   "Psiy",  "Psiz",
                     "dtPsi0", "dtPsix", "dtPsiy", "dtPsiz"};
-            break;
-          case (2):
-            return {"Time",    "Psi0",    "Psix",    "Psiy",    "Psiz",
-                    "Psixx",   "Psixy",   "Psixz",   "Psiyy",   "Psiyz",
-                    "Psizz",   "dtPsi0",  "dtPsix",  "dtPsiy",  "dtPsiz",
-                    "dtPsixx", "dtPsixy", "dtPsixz", "dtPsiyy", "dtPsiyz",
-                    "dtPsizz"};
             break;
           default:
             ERROR("requested invalid expansion order");
