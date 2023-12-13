@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -212,6 +213,43 @@ void lift_boundary_terms_gauss_points_impl(
   }
 }
 
+template <size_t Dim>
+void lift_boundary_terms_gauss_points_impl(
+    const gsl::not_null<double*> volume_data,
+    const size_t num_independent_components, const Mesh<Dim>& volume_mesh,
+    const Direction<Dim>& direction,
+    const gsl::span<const double>& boundary_corrections) {
+  const size_t dimension = direction.dimension();
+  const auto& lower_and_upper_lifting_matrix =
+      Spectral::boundary_interpolation_matrices(
+          volume_mesh.slice_through(dimension));
+  // One row of values: \ell_{\breve{\imath}}(\xi=\pm1)
+  const Matrix& lifting_matrix = direction.side() == Side::Lower
+                                     ? lower_and_upper_lifting_matrix.first
+                                     : lower_and_upper_lifting_matrix.second;
+  // Loop over each stripe in this logical direction. This is effectively
+  // looping over each boundary grid point.
+  const size_t stripe_size = volume_mesh.extents(dimension);
+  size_t boundary_index = 0;
+  const size_t num_volume_pts = volume_mesh.number_of_grid_points();
+  const size_t num_boundary_pts =
+      volume_mesh.slice_away(dimension).number_of_grid_points();
+  for (StripeIterator si{volume_mesh.extents(), dimension}; si;
+       (void)++si, (void)++boundary_index) {
+    for (size_t component_index = 0;
+         component_index < num_independent_components; ++component_index) {
+      for (size_t index_on_stripe = 0; index_on_stripe < stripe_size;
+           ++index_on_stripe) {
+        const size_t volume_index = si.offset() + si.stride() * index_on_stripe;
+        volume_data.get()[component_index * num_volume_pts + volume_index] +=
+            lifting_matrix(0, index_on_stripe) *
+            boundary_corrections[component_index * num_boundary_pts +
+                                 boundary_index];
+      }
+    }
+  }
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(r, data)                                                 \
@@ -236,7 +274,12 @@ void lift_boundary_terms_gauss_points_impl(
       const gsl::span<const double>& lower_boundary_corrections,             \
       const DataVector& lower_boundary_lifting_term,                         \
       const Scalar<DataVector>& lower_magnitude_of_face_normal,              \
-      const Scalar<DataVector>& lower_face_det_jacobian);
+      const Scalar<DataVector>& lower_face_det_jacobian);                    \
+  template void lift_boundary_terms_gauss_points_impl(                       \
+      gsl::not_null<double*> volume_data, size_t num_independent_components, \
+      const Mesh<DIM(data)>& volume_mesh,                                    \
+      const Direction<DIM(data)>& direction,                                 \
+      const gsl::span<const double>& boundary_corrections);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -26,6 +26,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
@@ -152,10 +153,15 @@ void test(const double eps) {
       weak_div_fluxes{volume_mesh.number_of_grid_points()};
   weak_divergence(make_not_null(&weak_div_fluxes), volume_fluxes, volume_mesh,
                   det_jac_times_inverse_jacobian);
+  weak_div_fluxes *= get(volume_det_inv_jacobian);
 
   Variables<db::wrap_tags_in<Tags::dt, tags>> dt_vars_lifted_one_at_a_time{
       volume_mesh.number_of_grid_points(), 0.0};
   Variables<db::wrap_tags_in<Tags::dt, tags>> dt_vars_lifted_two_at_a_time{
+      volume_mesh.number_of_grid_points()};
+  Variables<db::wrap_tags_in<Tags::dt, tags>> dt_vars_lifted_separately{
+      volume_mesh.number_of_grid_points(), 0.};
+  Variables<db::wrap_tags_in<Tags::dt, tags>> dt_vars_buffer{
       volume_mesh.number_of_grid_points()};
   std::copy(weak_div_fluxes.data(),
             weak_div_fluxes.data() + weak_div_fluxes.size(),
@@ -163,9 +169,9 @@ void test(const double eps) {
   std::copy(weak_div_fluxes.data(),
             weak_div_fluxes.data() + weak_div_fluxes.size(),
             dt_vars_lifted_two_at_a_time.data());
-
-  dt_vars_lifted_one_at_a_time *= get(volume_det_inv_jacobian);
-  dt_vars_lifted_two_at_a_time *= get(volume_det_inv_jacobian);
+  std::copy(weak_div_fluxes.data(),
+            weak_div_fluxes.data() + weak_div_fluxes.size(),
+            dt_vars_lifted_separately.data());
 
   for (const auto& direction : Direction<Dim>::all_directions()) {
     // compute geometric terms
@@ -192,6 +198,20 @@ void test(const double eps) {
         make_not_null(&dt_vars_lifted_one_at_a_time), volume_det_inv_jacobian,
         volume_mesh, direction, boundary_corrections, face_normal_magnitude,
         face_det_jacobian);
+
+    auto boundary_corrections_times_face_jacobian = boundary_corrections;
+    boundary_corrections_times_face_jacobian *= get(face_det_jacobian);
+    boundary_corrections_times_face_jacobian *= get(face_normal_magnitude);
+    ::dg::apply_mass_matrix(
+        make_not_null(&boundary_corrections_times_face_jacobian), face_mesh);
+    dt_vars_buffer.initialize(volume_mesh.number_of_grid_points(), 0.0);
+    ::dg::lift_boundary_terms_gauss_points(
+        make_not_null(&dt_vars_buffer),
+        boundary_corrections_times_face_jacobian, volume_mesh, direction);
+    ::dg::apply_inverse_mass_matrix(make_not_null(&dt_vars_buffer),
+                                    volume_mesh);
+    dt_vars_buffer *= get(volume_det_inv_jacobian);
+    dt_vars_lifted_separately -= dt_vars_buffer;
 
     if (direction.side() == Side::Upper) {
       // Test lifting both upper and lower correction at the same time
@@ -238,11 +258,14 @@ void test(const double eps) {
   Approx local_approx = Approx::custom().epsilon(eps).scale(1.0);
   tmpl::for_each<typename decltype(expected_dt_vars)::tags_list>(
       [&dt_vars_lifted_one_at_a_time, &dt_vars_lifted_two_at_a_time,
-       &expected_dt_vars, &local_approx](auto tag_v) {
+       &dt_vars_lifted_separately, &expected_dt_vars,
+       &local_approx](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         CHECK_ITERABLE_CUSTOM_APPROX(get<tag>(dt_vars_lifted_one_at_a_time),
                                      get<tag>(expected_dt_vars), local_approx);
         CHECK_ITERABLE_CUSTOM_APPROX(get<tag>(dt_vars_lifted_two_at_a_time),
+                                     get<tag>(expected_dt_vars), local_approx);
+        CHECK_ITERABLE_CUSTOM_APPROX(get<tag>(dt_vars_lifted_separately),
                                      get<tag>(expected_dt_vars), local_approx);
       });
 }

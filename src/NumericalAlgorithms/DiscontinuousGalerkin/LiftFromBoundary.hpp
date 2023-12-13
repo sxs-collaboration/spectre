@@ -41,6 +41,12 @@ void lift_boundary_terms_gauss_points_impl(
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian);
+
+template <size_t Dim>
+void lift_boundary_terms_gauss_points_impl(
+    gsl::not_null<double*> volume_data, size_t num_independent_components,
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
+    const gsl::span<const double>& boundary_corrections);
 }  // namespace detail
 
 /*!
@@ -187,5 +193,26 @@ void lift_boundary_terms_gauss_points(
                      lower_boundary_corrections.size()),
       Spectral::boundary_lifting_term(volume_stripe_mesh).first,
       lower_magnitude_of_face_normal, lower_face_det_jacobian);
+}
+
+/*!
+ * \brief Lift the boundary corrections from the face to the volume for Gauss
+ * points in the direction perpendicular to the face
+ *
+ * This function doesn't apply any Jacobians or quadrature weights. It only
+ * applies the lifting matrix $\ell_{\breve{\imath}}(\xi=\pm1)$ to the
+ * `boundary_corrections` and adds the result to the `volume_data`.
+ */
+template <size_t Dim, typename... VolumeTags,
+          typename... BoundaryCorrectionTags>
+void lift_boundary_terms_gauss_points(
+    const gsl::not_null<Variables<tmpl::list<VolumeTags...>>*> volume_data,
+    const Variables<tmpl::list<BoundaryCorrectionTags...>>&
+        boundary_corrections,
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
+  detail::lift_boundary_terms_gauss_points_impl(
+      make_not_null(volume_data->data()),
+      volume_data->number_of_independent_components, volume_mesh, direction,
+      gsl::make_span(boundary_corrections.data(), boundary_corrections.size()));
 }
 }  // namespace dg
