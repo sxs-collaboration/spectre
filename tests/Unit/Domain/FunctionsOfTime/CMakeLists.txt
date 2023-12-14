@@ -26,5 +26,6 @@ target_link_libraries(
   H5
   Informer
   Options
+  SerializationHelpers
   Utilities
   )

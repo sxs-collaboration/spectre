@@ -274,6 +274,7 @@ long_lines() {
               '.min.js$' \
               '.mplstyle$' \
               '.patch' \
+              '.serializations' \
               '.travis.yml$' \
               '.xml$' \
               '.xmf$' \
@@ -423,6 +424,7 @@ license() {
               '.json' \
               '.nojekyll' \
               '.png' \
+              '.serializations' \
               '.svg' \
               '.patch' \
               '.xmf' \

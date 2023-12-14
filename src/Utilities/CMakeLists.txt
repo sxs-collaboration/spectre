@@ -10,6 +10,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Base64.cpp
   Blas.cpp
   FileSystem.cpp
   Formaline.cpp
@@ -26,6 +27,7 @@ spectre_target_headers(
   HEADERS
   Algorithm.hpp
   Array.hpp
+  Base64.hpp
   Blas.hpp
   CachedFunction.hpp
   CallWithDynamicType.hpp

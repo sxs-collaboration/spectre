@@ -6,6 +6,7 @@ set(LIBRARY "Test_Utilities")
 set(LIBRARY_SOURCES
   Test_Algorithm.cpp
   Test_Array.cpp
+  Test_Base64.cpp
   Test_Blas.cpp
   Test_CachedFunction.cpp
   Test_CallWithDynamicType.cpp
