@@ -33,7 +33,6 @@
 #include "Time/ChangeSlabSize.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -47,6 +46,8 @@
 namespace Tags {
 struct DataBox;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -127,7 +128,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
-///   - Tags::TimeStepper<>
+///   - Tags::TimeStepper<TimeStepper>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -195,7 +196,8 @@ struct ChangeSlabSize {
         *alg::min_element(new_slab_size_inbox.begin()->second);
     new_slab_size_inbox.erase(new_slab_size_inbox.begin());
 
-    const TimeStepper& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+    const TimeStepper& time_stepper =
+        db::get<::Tags::TimeStepper<TimeStepper>>(box);
 
     // Sometimes time steppers need to run with a fixed step size.
     // This is generally at the start of an evolution when the history

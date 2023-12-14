@@ -260,7 +260,10 @@ struct GhValenciaDivCleanDefaults {
   using domain_frame = Frame::Inertial;
   static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   using system = grmhd::GhValenciaDivClean::System;
   using analytic_variables_tags =
@@ -347,6 +350,7 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;
   using temporal_id = typename defaults::temporal_id;
+  using TimeStepperBase = typename defaults::TimeStepperBase;
   static constexpr bool local_time_stepping = defaults::local_time_stepping;
   using system = typename defaults::system;
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
@@ -783,7 +787,7 @@ struct GhValenciaDivCleanTemplateBase<
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, local_time_stepping>,
+          Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<3, use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,

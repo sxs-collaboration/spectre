@@ -16,7 +16,7 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/PreviousStepperError.hpp"
 #include "Time/Tags/StepperError.hpp"
-#include "Time/Tags/TimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,6 +34,8 @@ namespace Tags {
 struct IsUsingTimeSteppingErrorControl;
 struct StepperErrorUpdated;
 struct TimeStep;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -59,7 +61,7 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
              const gsl::not_null<typename previous_error_tag::type*>
                  previous_error,
              const gsl::not_null<typename history_tag::type*> history,
-             const ::TimeDelta& time_step, const auto& time_stepper) {
+             const ::TimeDelta& time_step, const TimeStepper& time_stepper) {
             using std::swap;
             set_number_of_grid_points(previous_error, *vars);
             swap(*error, *previous_error);
@@ -70,7 +72,7 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
             }
           },
           box, db::get<Tags::TimeStep>(*box),
-          db::get<Tags::TimeStepper<>>(*box));
+          db::get<Tags::TimeStepper<TimeStepper>>(*box));
     } else {
       ERROR(
           "Cannot update the stepper error measure -- "
@@ -80,10 +82,11 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
     db::mutate<VariablesTag, history_tag>(
         [](const gsl::not_null<typename VariablesTag::type*> vars,
            const gsl::not_null<typename history_tag::type*> history,
-           const ::TimeDelta& time_step, const auto& time_stepper) {
+           const ::TimeDelta& time_step, const TimeStepper& time_stepper) {
           time_stepper.update_u(vars, history, time_step);
         },
-        box, db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
+        box, db::get<Tags::TimeStep>(*box),
+        db::get<Tags::TimeStepper<TimeStepper>>(*box));
   }
 }
 }  // namespace update_u_detail
@@ -121,7 +124,7 @@ namespace Actions {
 ///   - system::variables_tag
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
-///   - Tags::TimeStepper<>
+///   - Tags::TimeStepper<TimeStepper>
 ///   - Tags::IsUsingTimeSteppingErrorControl
 ///
 /// DataBox changes:

@@ -915,8 +915,9 @@ struct component {
       ::Tags::IsUsingTimeSteppingErrorControl,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<LtsTimeStepper>>,
-          tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
+          tmpl::list<::Tags::StepChoosers,
+                     ::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
+          tmpl::list<::Tags::ConcreteTimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
@@ -946,8 +947,9 @@ struct component {
           boundary_directions_interior,
           domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
       domain::Tags::Slice<internal_directions, Var1>,
-      domain::Tags::Slice<internal_directions,
-                          Var2<Metavariables::volume_dim>>>;
+      domain::Tags::Slice<internal_directions, Var2<Metavariables::volume_dim>>,
+      time_stepper_ref_tags<tmpl::conditional_t<
+          Metavariables::local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using compute_tags = tmpl::conditional_t<
       Metavariables::system::has_primitive_and_conservative_vars,
       tmpl::push_front<common_compute_tags,

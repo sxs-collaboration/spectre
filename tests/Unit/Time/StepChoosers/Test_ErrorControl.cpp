@@ -108,20 +108,19 @@ std::pair<double, bool> get_suggestion(
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, step_values,
                  0.1 * step_values);
   history.discard_value(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}});
-  auto box =
-      db::create<db::AddSimpleTags<
-                     Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
-                     Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
-                     Tags::StepperError<EvolvedVariablesTag>,
-                     Tags::PreviousStepperError<EvolvedVariablesTag>,
-                     Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>>,
-                 db::AddComputeTags<>>(
-          Metavariables<true>{}, history, error, previous_error,
-          false,
-          std::unique_ptr<TimeStepper>{
-              std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
+                        Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
+                        Tags::StepperError<EvolvedVariablesTag>,
+                        Tags::PreviousStepperError<EvolvedVariablesTag>,
+                        Tags::StepperErrorUpdated,
+                        Tags::ConcreteTimeStepper<TimeStepper>>,
+      time_stepper_ref_tags<TimeStepper>>(
+      Metavariables<true>{}, history, error, previous_error, false,
+      std::unique_ptr<TimeStepper>{
+          std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
 
-  const auto& time_stepper = get<Tags::TimeStepper<>>(box);
+  const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
   const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
       error_control_base = std::make_unique<LtsErrorControl>(error_control);
 

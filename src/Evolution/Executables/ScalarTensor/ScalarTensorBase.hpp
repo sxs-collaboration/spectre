@@ -379,7 +379,10 @@ struct ScalarTensorTemplateBase {
 
   static constexpr size_t volume_dim = 3_st;
   using system = ScalarTensor::System;
-  static constexpr bool local_time_stepping = true;
+  using TimeStepperBase = LtsTimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -459,7 +462,7 @@ struct ScalarTensorTemplateBase {
   template <bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, local_time_stepping>,
+          Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,

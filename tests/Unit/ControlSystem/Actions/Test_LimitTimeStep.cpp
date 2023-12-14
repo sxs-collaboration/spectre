@@ -82,10 +82,10 @@ struct Component {
   using simple_tags = db::AddSimpleTags<
       control_system::Tags::FutureMeasurements<systemsA>,
       control_system::Tags::FutureMeasurements<systemsB>,
-      Tags::TimeStepper<TimeStepper>, Tags::TimeStepId,
+      Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
       Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::Next<Tags::TimeStep>,
       Tags::AdaptiveSteppingDiagnostics, Tags::HistoryEvolvedVariables<Var>>;
-  using compute_tags = db::AddComputeTags<>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<

@@ -13,7 +13,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -32,6 +31,8 @@ struct Next;
 struct Time;
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -48,7 +49,7 @@ namespace Actions {
 /// - DataBox:
 ///   - Tags::Next<Tags::TimeStep>
 ///   - Tags::Next<Tags::TimeStepId>
-///   - Tags::TimeStepper<>
+///   - Tags::TimeStepper<TimeStepper>
 ///
 /// DataBox changes:
 ///   - Tags::Next<Tags::TimeStepId>
@@ -110,7 +111,7 @@ struct AdvanceTime {
               time_step->with_slab(next_time_id->step_time().slab());
           *time = time_id->substep_time();
         },
-        make_not_null(&box), db::get<Tags::TimeStepper<>>(box),
+        make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box),
         is_using_error_control);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

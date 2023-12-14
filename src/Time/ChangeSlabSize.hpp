@@ -7,7 +7,6 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -21,7 +20,10 @@ template <typename Tag>
 struct Next;
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
+class TimeStepper;
 /// \endcond
 
 /// \ingroup TimeGroup
@@ -61,8 +63,8 @@ void change_slab_size(const gsl::not_null<db::DataBox<DbTags>*> box,
   const auto new_time_step = old_time_step.with_slab(new_slab);
 
   const auto new_next_time_step_id =
-      db::get<Tags::TimeStepper<>>(*box).next_time_id(new_time_step_id,
-                                                      new_time_step);
+      db::get<Tags::TimeStepper<TimeStepper>>(*box).next_time_id(
+          new_time_step_id, new_time_step);
 
   db::mutate_apply<
       tmpl::push_front<Tags::get_all_history_tags<DbTags>,

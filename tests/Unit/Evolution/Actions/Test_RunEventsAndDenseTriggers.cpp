@@ -274,11 +274,16 @@ struct Component {
                        Tags::HistoryEvolvedVariables<variables_tag>,
                        evolution::Tags::EventsAndDenseTriggers,
                        domain::Tags::NeighborMesh<1>, domain::Tags::Element<1>>;
+  using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Parallel::Phase::Testing,
-      tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
-          typename Metavariables::postprocessors>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 tmpl::list<>, compute_tags>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
+              typename Metavariables::postprocessors>>>>;
 };
 
 template <typename Postprocessors>
@@ -286,7 +291,8 @@ struct Metavariables {
   using postprocessors = Postprocessors;
   using system = System;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -368,9 +374,9 @@ void test(const bool time_runs_forward) {
         }
 
         tmpl::as_pack<extra_data>([&](auto... tags_v) {
-          ActionTesting::emplace_array_component<component>(
+          ActionTesting::emplace_array_component_and_initialize<component>(
               runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
-              0, time_step_id, exact_step_size, start_time,
+              0, {}, time_step_id, exact_step_size, start_time,
               std::optional<double>{}, stored_vars, std::move(history),
               evolution::EventsAndDenseTriggers(
                   std::move(events_and_dense_triggers)),
@@ -510,7 +516,7 @@ void test(const bool time_runs_forward) {
                         time_step_id.step_time().slab().duration() / 4),
                 initial_vars, deriv_vars);
           },
-          make_not_null(&box), db::get<Tags::TimeStepper<>>(box));
+          make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
     }
     if (data_needed) {
       TestCase::check_dense(&runner, true, {});

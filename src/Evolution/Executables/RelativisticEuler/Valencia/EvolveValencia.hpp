@@ -122,7 +122,10 @@ struct EvolutionMetavars {
   using system = RelativisticEuler::Valencia::System<Dim>;
 
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   using initial_data_tag =
       tmpl::conditional_t<is_analytic_solution_v<initial_data>,
@@ -227,7 +230,7 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<Dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<

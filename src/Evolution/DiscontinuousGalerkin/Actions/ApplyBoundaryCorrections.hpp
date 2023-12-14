@@ -41,7 +41,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -59,6 +58,8 @@ namespace Tags {
 struct Time;
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -361,7 +362,8 @@ struct ApplyBoundaryCorrections {
       domain::Tags::Mesh<volume_dim>, Tags::MortarMesh<volume_dim>,
       Tags::MortarSize<volume_dim>, ::dg::Tags::Formulation,
       evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
-      ::Tags::TimeStepper<>, evolution::Tags::BoundaryCorrection<system>,
+      ::Tags::TimeStepper<TimeStepperType>,
+      evolution::Tags::BoundaryCorrection<system>,
       tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           domain::Tags::DetInvJacobian<Frame::ElementLogical,

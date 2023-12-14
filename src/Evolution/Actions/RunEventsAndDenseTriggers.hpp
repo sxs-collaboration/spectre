@@ -18,7 +18,6 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/Time.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,6 +40,8 @@ class GlobalCache;
 namespace Tags {
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -269,7 +270,8 @@ struct RunEventsAndDenseTriggers {
                 dense_output_succeeded =
                     stepper.dense_update_u(vars, history, next_trigger);
               },
-              make_not_null(&box), db::get<::Tags::TimeStepper<>>(box),
+              make_not_null(&box),
+              db::get<::Tags::TimeStepper<TimeStepper>>(box),
               db::get<history_tag>(box));
           if (not dense_output_succeeded) {
             // Need to take another time step

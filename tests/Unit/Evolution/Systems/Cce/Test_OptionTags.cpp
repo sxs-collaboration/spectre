@@ -81,8 +81,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::OutputNoninertialNews>(
       "OutputNoninertialNews");
   TestHelpers::db::test_simple_tag<
-      Cce::Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
-      "TimeStepper");
+      Cce::Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<TimeStepper>>>(
+      "ConcreteTimeStepper");
 
   CHECK(
       TestHelpers::test_option_tag<Cce::OptionTags::BondiSachsOutputFilePrefix>(

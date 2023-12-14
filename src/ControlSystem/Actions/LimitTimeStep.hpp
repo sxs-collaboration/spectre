@@ -16,7 +16,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/ChangeSlabSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -26,7 +25,10 @@
 namespace Tags {
 struct TimeStep;
 struct TimeStepId;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
+class TimeStepper;
 namespace control_system::Tags {
 template <typename ControlSystems>
 struct FutureMeasurements;
@@ -93,7 +95,7 @@ struct LimitTimeStep {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+    const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
     if (time_stepper.number_of_substeps() == 1) {
       // If there are no substeps, there is no reason to limit the
       // step size so substeps can be evaluated.  Single-substep FSAL

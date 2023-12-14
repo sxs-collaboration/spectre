@@ -24,10 +24,12 @@ SPECTRE_TEST_CASE(
   auto box = db::create<
       db::AddSimpleTags<variables_tag, dt_variables_tag,
                         ::Tags::HistoryEvolvedVariables<variables_tag>,
-                        ::Tags::TimeStepper<TimeSteppers::AdamsBashforth>>>(
+                        ::Tags::ConcreteTimeStepper<TimeStepper>>,
+      time_stepper_ref_tags<TimeStepper>>(
       variables_tag::type{}, dt_variables_tag::type{},
       TimeSteppers::History<variables_tag::type>{},
-      std::make_unique<TimeSteppers::AdamsBashforth>(4));
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(4)));
 
   db::mutate_apply<Initialization::InitializeEvolvedVariables>(
       make_not_null(&box));

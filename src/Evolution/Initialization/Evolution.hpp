@@ -80,36 +80,36 @@ void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
 /// Since the evolution has not started yet, initialize the state
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
 /// and `Tags::Next<Tags::TimeStepId>` is the initial time.
-template <typename Metavariables, bool UsingLts>
+template <typename Metavariables, typename TimeStepperBase>
 struct TimeStepping {
-  using TimeStepperType =
-      tmpl::conditional_t<UsingLts, LtsTimeStepper, TimeStepper>;
-
   /// Tags for constant items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using const_global_cache_tags = tmpl::conditional_t<
-      UsingLts,
-      tmpl::list<::Tags::TimeStepper<TimeStepperType>, ::Tags::StepChoosers>,
-      tmpl::list<::Tags::TimeStepper<TimeStepperType>>>;
+      TimeStepperBase::local_time_stepping,
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>,
+                 ::Tags::StepChoosers>,
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepperBase>>>;
 
   /// Tags for mutable items added to the GlobalCache.  These items are
   /// initialized from input file options.
   using mutable_global_cache_tags = tmpl::list<>;
 
   /// Tags for items fetched by the DataBox and passed to the apply function
-  using argument_tags = tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                                   Tags::InitialSlabSize<UsingLts>,
-                                   ::Tags::TimeStepper<TimeStepperType>>;
+  using argument_tags =
+      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
+                 Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>,
+                 ::Tags::ConcreteTimeStepper<TimeStepperBase>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options =
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<UsingLts>>;
+                 Tags::InitialSlabSize<TimeStepperBase::local_time_stepping>>;
 
   /// Tags for simple DataBox items that are default initialized.
-  using default_initialized_simple_tags = tmpl::push_back<
-      StepChoosers::step_chooser_simple_tags<Metavariables, UsingLts>,
-      ::Tags::TimeStepId, ::Tags::AdaptiveSteppingDiagnostics>;
+  using default_initialized_simple_tags =
+      tmpl::push_back<StepChoosers::step_chooser_simple_tags<
+                          Metavariables, TimeStepperBase::local_time_stepping>,
+                      ::Tags::TimeStepId, ::Tags::AdaptiveSteppingDiagnostics>;
 
   /// Tags for items in the DataBox that are mutated by the apply function
   using return_tags =
@@ -123,10 +123,10 @@ struct TimeStepping {
 
   /// Tags for immutable DataBox items (compute items or reference items) added
   /// to the DataBox.
-  using compute_tags = tmpl::list<>;
+  using compute_tags = time_stepper_ref_tags<TimeStepperBase>;
 
-  /// Given the items fetched from a DataBox by the argument_tags when UsingLts
-  /// is true, mutate the items in the DataBox corresponding to return_tags
+  /// Given the items fetched from a DataBox by the argument_tags when using
+  /// LTS, mutate the items in the DataBox corresponding to return_tags
   static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
                     const gsl::not_null<TimeDelta*> next_time_step,
@@ -143,8 +143,8 @@ struct TimeStepping {
     *next_time_step = *time_step;
   }
 
-  /// Given the items fetched from a DataBox by the argument_tags, when UsingLts
-  /// is false, mutate the items in the DataBox corresponding to return_tags
+  /// Given the items fetched from a DataBox by the argument_tags, when not
+  /// using LTS, mutate the items in the DataBox corresponding to return_tags
   static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
                     const gsl::not_null<TimeDelta*> next_time_step,
@@ -288,7 +288,7 @@ struct TimeStepperHistory {
   using compute_tags = tmpl::list<>;
 
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<>, domain::Tags::Mesh<dim>>;
+      tmpl::list<::Tags::TimeStepper<TimeStepper>, domain::Tags::Mesh<dim>>;
   using return_tags = simple_tags;
 
   static void apply(

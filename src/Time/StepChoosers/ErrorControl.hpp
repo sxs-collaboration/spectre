@@ -26,7 +26,6 @@
 #include "Time/Tags/PreviousStepperError.hpp"
 #include "Time/Tags/StepperError.hpp"
 #include "Time/Tags/StepperErrorUpdated.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -38,6 +37,8 @@ namespace Tags {
 template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute;
 struct StepChoosers;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -193,7 +194,7 @@ class ErrorControl : public StepChooser<StepChooserUse>,
       tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
                  ::Tags::StepperError<EvolvedVariableTag>,
                  ::Tags::PreviousStepperError<EvolvedVariableTag>,
-                 ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
+                 ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<TimeStepper>>;
 
   std::pair<double, bool> operator()(
       const TimeSteppers::History<evolved_variable_type>& history,

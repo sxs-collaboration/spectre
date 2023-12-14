@@ -84,17 +84,19 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ConcreteTimeStepper<LtsTimeStepper>>;
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  Tags::Next<Tags::TimeStep>, ::Tags::StepChoosers,
                  Tags::IsUsingTimeSteppingErrorControl,
                  Tags::AdaptiveSteppingDiagnostics, history_tag,
                  typename System::variables_tag>;
+  using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<Actions::ChangeStepSize<

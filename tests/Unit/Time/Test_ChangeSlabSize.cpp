@@ -48,13 +48,16 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     TimeSteppers::History<Vars2::type> history2{};
     history2.insert(initial_id, 1.23, 4.56);
 
-    auto box = db::create<db::AddSimpleTags<
-        Tags::TimeStepper<TimeSteppers::AdamsBashforth>, Tags::TimeStepId,
-        Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-        Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
-        Tags::HistoryEvolvedVariables<Vars1>,
-        Tags::HistoryEvolvedVariables<Vars2>>>(
-        std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
+    auto box = db::create<
+        db::AddSimpleTags<
+            Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+            Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
+            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::HistoryEvolvedVariables<Vars1>,
+            Tags::HistoryEvolvedVariables<Vars2>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        static_cast<std::unique_ptr<TimeStepper>>(
+            std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics,
         std::move(history1), std::move(history2));
 
@@ -98,13 +101,16 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     TimeSteppers::History<Vars2::type> history2{};
     history2.insert(initial_id, 1.23, 4.56);
 
-    auto box = db::create<db::AddSimpleTags<
-        Tags::TimeStepper<TimeSteppers::Rk3HesthavenSsp>, Tags::TimeStepId,
-        Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-        Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
-        Tags::HistoryEvolvedVariables<Vars1>,
-        Tags::HistoryEvolvedVariables<Vars2>>>(
-        std::make_unique<TimeSteppers::Rk3HesthavenSsp>(time_stepper),
+    auto box = db::create<
+        db::AddSimpleTags<
+            Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+            Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
+            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::HistoryEvolvedVariables<Vars1>,
+            Tags::HistoryEvolvedVariables<Vars2>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        static_cast<std::unique_ptr<TimeStepper>>(
+            std::make_unique<TimeSteppers::Rk3HesthavenSsp>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics,
         std::move(history1), std::move(history2));
 
@@ -148,13 +154,16 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     TimeSteppers::History<Vars2::type> history2{};
     history2.insert(initial_id, 1.23, 4.56);
 
-    auto box = db::create<db::AddSimpleTags<
-        Tags::TimeStepper<TimeSteppers::AdamsBashforth>, Tags::TimeStepId,
-        Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-        Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
-        Tags::HistoryEvolvedVariables<Vars1>,
-        Tags::HistoryEvolvedVariables<Vars2>>>(
-        std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
+    auto box = db::create<
+        db::AddSimpleTags<
+            Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+            Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
+            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::HistoryEvolvedVariables<Vars1>,
+            Tags::HistoryEvolvedVariables<Vars2>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        static_cast<std::unique_ptr<TimeStepper>>(
+            std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics, history1,
         history2);
 

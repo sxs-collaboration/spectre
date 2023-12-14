@@ -227,7 +227,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
   using initial_data_tag = evolution::initial_data::Tags::InitialData;
   using system = grmhd::ValenciaDivClean::System;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
+
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
@@ -506,7 +510,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<3>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<

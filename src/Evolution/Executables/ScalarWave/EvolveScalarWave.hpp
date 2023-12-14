@@ -129,7 +129,10 @@ struct EvolutionMetavars {
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -274,7 +277,7 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
           ::amr::Initialization::Initialize<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,

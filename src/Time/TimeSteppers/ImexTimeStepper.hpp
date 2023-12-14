@@ -62,6 +62,10 @@
  */
 class ImexTimeStepper : public virtual TimeStepper {
  public:
+  static constexpr bool imex = true;
+  using provided_time_stepper_interfaces =
+      tmpl::list<ImexTimeStepper, TimeStepper>;
+
   WRAPPED_PUPable_abstract(ImexTimeStepper);  // NOLINT
 
 /// \cond

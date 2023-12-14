@@ -54,8 +54,8 @@ struct MockWorldtubeSingleton {
               db::AddSimpleTags<
                   ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
                   ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>,
-                  ::Tags::TimeStepper<TimeStepper>>,
-              db::AddComputeTags<>>>>,
+                  ::Tags::ConcreteTimeStepper<TimeStepper>>,
+              time_stepper_ref_tags<TimeStepper>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::ChangeSlabSize>>>;
   using component_being_mocked = WorldtubeSingleton<Metavariables>;

@@ -26,6 +26,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -68,11 +69,11 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using simple_tags_from_options = tmpl::flatten<
-      tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
-                 Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
-                 Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-                 ::Initialization::Tags::InitialTimeDelta>>;
+  using simple_tags_from_options = tmpl::flatten<tmpl::list<
+      Initialization::Tags::InitialSlabSize<local_time_stepping>,
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
+      Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
+      ::Initialization::Tags::InitialTimeDelta>>;
 
   using const_global_cache_tags = tmpl::list<>;
 
@@ -83,7 +84,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
-  using compute_tags = tmpl::list<>;
+  using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -113,7 +114,7 @@ struct InitializeCharacteristicEvolutionTime {
       initial_time_step = initial_time.slab().duration();
     }
 
-    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
+    const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
 
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;

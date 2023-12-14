@@ -12,12 +12,15 @@
 #include "Domain/SizeOfElement.hpp"
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+template <typename StepperInterface>
+struct TimeStepper;
+}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t Dim>
@@ -60,7 +63,8 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
       : safety_factor_(safety_factor) {}
 
   using argument_tags =
-      tmpl::list<::Tags::TimeStepper<>, domain::Tags::SizeOfElement<Dim>,
+      tmpl::list<::Tags::TimeStepper<TimeStepper>,
+                 domain::Tags::SizeOfElement<Dim>,
                  typename System::compute_largest_characteristic_speed>;
   using compute_tags =
       tmpl::list<domain::Tags::SizeOfElementCompute<Dim>,

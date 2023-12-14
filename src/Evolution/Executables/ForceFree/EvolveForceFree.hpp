@@ -100,7 +100,10 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   using system = ForceFree::System;
   using temporal_id = Tags::TimeStepId;
-  static constexpr bool local_time_stepping = false;
+  using TimeStepperBase = TimeStepper;
+
+  static constexpr bool local_time_stepping =
+      TimeStepperBase::local_time_stepping;
 
   using initial_data_list = tmpl::append<ForceFree::Solutions::all_solutions,
                                          ForceFree::AnalyticData::all_data>;
@@ -201,7 +204,7 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>,
+          Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
