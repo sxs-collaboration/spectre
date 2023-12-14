@@ -479,8 +479,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
   TestHelpers::db::test_simple_tag<
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
-  TestHelpers::db::test_simple_tag<Tags::RegularFieldAdvectiveTerm<3>>(
-      "RegularFieldAdvectiveTerm");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
       "ObserveCoefficientsTrigger");
   test_excision_sphere_tag();
