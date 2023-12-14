@@ -32,21 +32,15 @@ struct TimeStepId;
 
 namespace CurvedScalarWave::Worldtube::Actions {
 /*!
- * \brief Sends the regular field to each element abutting the worldtube,
- * evaluated at the grid coordinates of each face
- *
- * \details h-refinement could be accounted for by sending the
- * coefficients of the internal solution directly and have each element evaluate
- * it for themselves.
+ * \brief Sends the regular field coefficients to each element abutting the
+ * worldtube.
  */
 template <typename Metavariables>
 struct SendToElements {
   static constexpr size_t Dim = Metavariables::volume_dim;
   using psi_tag = CurvedScalarWave::Tags::Psi;
   using dt_psi_tag = ::Tags::dt<CurvedScalarWave::Tags::Psi>;
-  using di_psi_tag = ::Tags::deriv<CurvedScalarWave::Tags::Psi,
-                                   tmpl::size_t<Dim>, Frame::Grid>;
-  using tags_to_send = tmpl::list<psi_tag, dt_psi_tag, di_psi_tag>;
+  using tags_to_send = tmpl::list<psi_tag, dt_psi_tag>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
@@ -62,31 +56,26 @@ struct SendToElements {
     const auto& faces_grid_coords =
         get<Tags::ElementFacesGridCoordinates<Dim>>(box);
     const auto& psi_l0 =
-        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(box);
+        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Inertial>>(
+            box);
     const auto& dt_psi_l0 =
         get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
-                                 Frame::Grid>>(box);
+                                 Frame::Inertial>>(box);
     const auto& psi_l1 =
-        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>>(box);
+        get<Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>>(
+            box);
     const auto& dt_psi_l1 =
         get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
-                                 Frame::Grid>>(box);
-    for (const auto& [element_id, grid_coords] : faces_grid_coords) {
-      const size_t grid_size = get<0>(grid_coords).size();
-      Variables<tags_to_send> vars_to_send(grid_size);
-      get(get<psi_tag>(vars_to_send)) = get(psi_l0);
-      get(get<dt_psi_tag>(vars_to_send)) = get(dt_psi_l0);
+                                 Frame::Inertial>>(box);
+    const size_t num_coefs = order == 0 ? 1 : 4;
+    for (const auto& [element_id, _] : faces_grid_coords) {
+      Variables<tags_to_send> vars_to_send(num_coefs);
+      get(get<psi_tag>(vars_to_send))[0] = get(psi_l0);
+      get(get<dt_psi_tag>(vars_to_send))[0] = get(dt_psi_l0);
       if (order > 0) {
         for (size_t i = 0; i < Dim; ++i) {
-          get(get<psi_tag>(vars_to_send)) += psi_l1.get(i) * grid_coords.get(i);
-          get(get<dt_psi_tag>(vars_to_send)) +=
-              dt_psi_l1.get(i) * grid_coords.get(i);
-          get<di_psi_tag>(vars_to_send).get(i) = psi_l1.get(i);
-        }
-      } else {
-        for (size_t i = 0; i < Dim; ++i) {
-          // at 0th order the spatial derivative is just zero
-          get<di_psi_tag>(vars_to_send).get(i) = 0.;
+          get(get<psi_tag>(vars_to_send))[i + 1] = psi_l1.get(i);
+          get(get<dt_psi_tag>(vars_to_send))[i + 1] = dt_psi_l1.get(i);
         }
       }
       Parallel::receive_data<Tags::RegularFieldInbox<Dim>>(

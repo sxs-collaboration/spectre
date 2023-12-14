@@ -50,12 +50,14 @@ struct MockWorldtubeSingleton {
               db::AddSimpleTags<
                   ::Tags::Time, Tags::ObserveCoefficientsTrigger, Tags::Psi0,
                   Tags::dtPsi0,
-                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>,
+                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim,
+                                       Frame::Inertial>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
-                                       Frame::Grid>,
-                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>,
+                                       Frame::Inertial>,
+                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim,
+                                       Frame::Inertial>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
-                                       Frame::Grid>,
+                                       Frame::Inertial>,
                   Tags::ExcisionSphere<Dim>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
@@ -97,11 +99,11 @@ void check_observe_worldtube_solution(
   const auto dt_psi_monopole =
       make_with_random_values<Scalar<double>>(generator, dist, 1);
   const auto psi_dipole =
-      make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(generator,
-                                                                 dist, 1);
+      make_with_random_values<tnsr::i<double, Dim, Frame::Inertial>>(generator,
+                                                                     dist, 1);
   const auto dt_psi_dipole =
-      make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(generator,
-                                                                 dist, 1);
+      make_with_random_values<tnsr::i<double, Dim, Frame::Inertial>>(generator,
+                                                                     dist, 1);
   const double wt_radius = 1.5;
   const ExcisionSphere<Dim> excision_sphere(
       wt_radius, tnsr::I<double, Dim, Frame::Grid>{{0., 0., 0.}}, {});
