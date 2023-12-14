@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
-#include "ControlSystem/Event.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
@@ -63,30 +63,10 @@ struct Submeasurement
   template <typename ControlSystems>
   using interpolation_target_tag = void;
 
-  using compute_tags_for_observation_box = tmpl::list<>;
-
-  using argument_tags = tmpl::list<>;
-
-  template <typename Metavariables, typename ParallelComponent,
-            typename ControlSystems>
-  static void apply(const LinkedMessageId<double>& /*measurement_id*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const int& /*array_index*/,
-                    const ParallelComponent* /*meta*/,
-                    ControlSystems /*meta*/) {
-    // Test cases have either one or two systems, so this covers all
-    // permutations.
-    static_assert(
-        std::is_same_v<ControlSystems, ExpectedSystems> or
-        std::is_same_v<ControlSystems, tmpl::reverse<ExpectedSystems>>);
-    ++call_count;
-  }
-
-  static size_t call_count;
+  template <typename ControlSystems>
+  using event = control_system::TestHelpers::TestEvent<ExpectedSystems,
+                                                       ExpectedSystems, false>;
 };
-
-template <typename ExpectedSystems>
-size_t Submeasurement<ExpectedSystems>::call_count = 0;
 
 template <typename ExpectedSystems>
 struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
@@ -179,8 +159,8 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<Event,
-                   control_system::control_system_events<control_systems>>,
+        tmpl::pair<Event, control_system::metafunctions::control_system_events<
+                              control_systems>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>>;
   };
@@ -273,13 +253,15 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
                    NeedsEvolvedVariables
              : evolution::EventsAndDenseTriggers::TriggeringState::Ready));
 
-  Submeasurement<tmpl::list<SystemA, SystemB>>::call_count = 0;
-  Submeasurement<tmpl::list<SystemC>>::call_count = 0;
+  using ListAB = tmpl::list<SystemA, SystemB>;
+  using ListC = tmpl::list<SystemC>;
+  Submeasurement<ListAB>::event<ListAB>::call_count = 0;
+  Submeasurement<ListC>::event<ListC>::call_count = 0;
   events_and_dense_triggers.run_events(box, cache, 0, component_p);
 
-  CHECK(Submeasurement<tmpl::list<SystemA, SystemB>>::call_count ==
+  CHECK(Submeasurement<ListAB>::event<ListAB>::call_count ==
         (ab_active ? 1 : 0));
-  CHECK(Submeasurement<tmpl::list<SystemC>>::call_count == (c_active ? 1 : 0));
+  CHECK(Submeasurement<ListC>::event<ListC>::call_count == (c_active ? 1 : 0));
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",

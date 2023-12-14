@@ -28,7 +28,6 @@ spectre_target_headers(
   Component.hpp
   Controller.hpp
   DataVectorHelpers.hpp
-  Event.hpp
   ExpirationTimes.hpp
   FutureMeasurements.hpp
   IsSize.hpp

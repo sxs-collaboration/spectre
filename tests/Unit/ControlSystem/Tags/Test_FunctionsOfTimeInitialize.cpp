@@ -56,6 +56,7 @@ struct FakeControlSystem
   using simple_tags = tmpl::list<>;
   using control_error = control_system::TestHelpers::ControlError<1>;
   struct process_measurement {
+    template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
   };
 };

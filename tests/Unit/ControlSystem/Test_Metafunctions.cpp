@@ -20,6 +20,9 @@ struct LabelB;
 struct LabelC;
 struct Metavariables;
 
+template <typename Label, typename ControlSystems>
+struct SomeEvent {};
+
 namespace Measurements {
 using MeasurementA = control_system::TestHelpers::Measurement<LabelA>;
 using MeasurementB = control_system::TestHelpers::Measurement<LabelB>;
@@ -63,13 +66,6 @@ static_assert(
 static_assert(std::is_same_v<
               control_systems_with_measurement_t<test_systems, MeasurementB>,
               tmpl::list<SystemB0>>);
-
-static_assert(std::is_same_v<compute_tags_for_observation_box_t<MeasurementA>,
-                             tmpl::list<>>);
-static_assert(
-    std::is_same_v<
-        compute_tags_for_observation_box_t<TestHelpers::ExampleMeasurement>,
-        tmpl::list<TestHelpers::SomeOtherTagOnElementCompute>>);
 
 static_assert(
     std::is_same_v<
@@ -126,7 +122,8 @@ struct SubmeasurementTarget
   template <typename ControlSystems>
   using interpolation_target_tag = Target<ControlSystems>;
 
-  using argument_tags = tmpl::list<>;
+  template <typename ControlSystems>
+  using event = SomeEvent<LabelA, ControlSystems>;
 };
 
 struct SubmeasurementVoid
@@ -134,7 +131,8 @@ struct SubmeasurementVoid
   template <typename ControlSystems>
   using interpolation_target_tag = void;
 
-  using argument_tags = tmpl::list<>;
+  template <typename ControlSystems>
+  using event = SomeEvent<LabelA, ControlSystems>;
 };
 
 struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
@@ -181,5 +179,36 @@ static_assert(
         tmpl::list<
             Target<tmpl::list<ControlSystem<LabelA>, ControlSystem<LabelB>>>>>);
 }  // namespace InterpolationTargetTags
+
+namespace Events {
+template <typename Label>
+struct Submeasurement
+    : tt::ConformsTo<control_system::protocols::Submeasurement> {
+  template <typename ControlSystems>
+  using interpolation_target_tag = void;
+  template <typename ControlSystems>
+  using event = SomeEvent<Label, ControlSystems>;
+};
+template <typename... Labels>
+struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
+  using submeasurements = tmpl::list<Submeasurement<Labels>...>;
+};
+
+using MeasurementA = Measurement<LabelA>;
+using MeasurementBC = Measurement<LabelB, LabelC>;
+using SystemA = control_system::TestHelpers::System<2, LabelA, MeasurementA>;
+using SystemBC = control_system::TestHelpers::System<2, LabelB, MeasurementBC>;
+
+using expected_events = tmpl::list<SomeEvent<LabelA, tmpl::list<SystemA>>,
+                                   SomeEvent<LabelB, tmpl::list<SystemBC>>,
+                                   SomeEvent<LabelC, tmpl::list<SystemBC>>>;
+
+using events = control_system_events<tmpl::list<SystemA, SystemBC>>;
+
+static_assert(
+    tmpl::size<tmpl::list_difference<expected_events, events>>::value == 0);
+static_assert(
+    tmpl::size<tmpl::list_difference<events, expected_events>>::value == 0);
+}  // namespace Events
 }  // namespace
 }  // namespace control_system::metafunctions

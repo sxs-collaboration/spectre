@@ -10,8 +10,8 @@
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
-#include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Size.hpp"
 #include "ControlSystem/Trigger.hpp"
@@ -175,7 +175,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
                    tmpl::flatten<tmpl::list<
                        intrp::Events::Interpolate<3, ApparentHorizon,
                                                   interpolator_source_vars>,
-                       control_system::control_system_events<control_systems>,
+                       control_system::metafunctions::control_system_events<
+                           control_systems>,
                        intrp::Events::InterpolateWithoutInterpComponent<
                            3, BondiSachs, source_vars_no_deriv>,
                        intrp::Events::InterpolateWithoutInterpComponent<

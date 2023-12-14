@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ControlSystem/Event.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,8 +34,6 @@ constexpr bool check() {
   return true;
 }
 
-static_assert(
-    check<control_system::control_system_events, control_system::Event>());
 static_assert(
     check<control_system::control_system_triggers, control_system::Trigger>());
 }  // namespace

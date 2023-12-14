@@ -62,6 +62,7 @@ struct FakeControlSystem
   using measurement = control_system::TestHelpers::Measurement<LabelA>;
   using simple_tags = tmpl::list<>;
   struct process_measurement {
+    template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
   };
 };
@@ -79,6 +80,7 @@ struct FakeQuatControlSystem
   using measurement = control_system::TestHelpers::Measurement<LabelA>;
   using simple_tags = tmpl::list<>;
   struct process_measurement {
+    template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
   };
 };

@@ -72,6 +72,9 @@ struct SomeControlSystemUpdater {
   }
 };
 
+template <typename ControlSystems>
+struct SomeEvent {};
+
 /// [Submeasurement]
 struct ExampleSubmeasurement
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
@@ -79,29 +82,8 @@ struct ExampleSubmeasurement
   template <typename ControlSystems>
   using interpolation_target_tag = void;
 
-  using compute_tags_for_observation_box =
-      tmpl::list<SomeOtherTagOnElementCompute>;
-
-  using argument_tags = tmpl::list<SomeTagOnElement>;
-
-  template <typename Metavariables, typename ParallelComponent,
-            typename ControlSystems>
-  static void apply(const double data_from_element,
-                    const LinkedMessageId<double>& measurement_id,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const int& /*array_index*/,
-                    const ParallelComponent* /*meta*/,
-                    ControlSystems /*meta*/) {
-    // In real cases, we would generally do a reduction to a single
-    // chare here and have the below code in the reduction action, but
-    // the action testing framework doesn't support reductions, so
-    // this example is for a control system running on a singleton and
-    // we just pass the data through.
-    const auto box =
-        db::create<db::AddSimpleTags<MeasurementResultTag>>(data_from_element);
-    control_system::RunCallbacks<ExampleSubmeasurement, ControlSystems>::apply(
-        box, cache, measurement_id);
-  }
+  template <typename ControlSystems>
+  using event = SomeEvent<ControlSystems>;
 };
 /// [Submeasurement]
 
