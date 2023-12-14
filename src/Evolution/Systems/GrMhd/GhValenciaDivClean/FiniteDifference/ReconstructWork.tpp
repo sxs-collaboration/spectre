@@ -15,13 +15,14 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
@@ -38,14 +39,15 @@
 namespace grmhd::GhValenciaDivClean::fd {
 template <typename SpacetimeTagsToReconstruct,
           typename PrimTagsForReconstruction, typename PrimsTags,
-          typename SpacetimeAndConsTags, typename TagsList,
-          size_t ThermodynamicDim, typename HydroReconstructor,
-          typename SpacetimeReconstructor,
+          typename SpacetimeAndConsTags, size_t ThermodynamicDim,
+          typename HydroReconstructor, typename SpacetimeReconstructor,
           typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags,
           typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
-    const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
-    const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_lower_face,
+    const gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_upper_face,
     const HydroReconstructor& hydro_reconstructor,
     const SpacetimeReconstructor& spacetime_reconstructor,
     const ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags&
@@ -231,13 +233,14 @@ void reconstruct_prims_work(
 
 template <
     typename SpacetimeTagsToReconstruct, typename PrimTagsForReconstruction,
-    typename PrimsTagsSentByNeighbor, typename TagsList, typename PrimsTags,
+    typename PrimsTagsSentByNeighbor, typename PrimsTags,
     size_t ThermodynamicDim, typename LowerHydroReconstructor,
     typename LowerSpacetimeReconstructor, typename UpperHydroReconstructor,
     typename UpperSpacetimeReconstructor,
     typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
 void reconstruct_fd_neighbor_work(
-    const gsl::not_null<Variables<TagsList>*> vars_on_face,
+    const gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>
+        vars_on_face,
     const LowerHydroReconstructor& reconstruct_lower_neighbor_hydro,
     const LowerSpacetimeReconstructor& reconstruct_lower_neighbor_spacetime,
     const UpperHydroReconstructor& reconstruct_upper_neighbor_hydro,

@@ -7,10 +7,16 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
@@ -35,9 +41,34 @@ class EquationOfState;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell
+namespace evolution::dg::Actions::detail {
+template <size_t Dim>
+struct NormalVector;
+}  // namespace evolution::dg::Actions::detail
+namespace gh::ConstraintDamping::Tags {
+struct ConstraintGamma1;
+struct ConstraintGamma2;
+}  // namespace gh::ConstraintDamping::Tags
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::fd {
+using tags_list_for_reconstruct =
+    tmpl::push_front<grmhd::ValenciaDivClean::fd::tags_list_for_reconstruct,
+                     gr::Tags::SpacetimeMetric<DataVector, 3>,
+                     gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
+
+namespace detail {
+using tags_list_for_reconstruct_split_lapse =
+    tmpl::split<tags_list_for_reconstruct, gr::Tags::Lapse<DataVector>>;
+}  // namespace detail
+
+using tags_list_for_reconstruct_fd_neighbor = tmpl::append<
+    tmpl::front<detail::tags_list_for_reconstruct_split_lapse>,
+    tmpl::push_front<tmpl::back<detail::tags_list_for_reconstruct_split_lapse>,
+                     gh::ConstraintDamping::Tags::ConstraintGamma1,
+                     gh::ConstraintDamping::Tags::ConstraintGamma2,
+                     gr::Tags::Lapse<DataVector>>>;
+
 /*!
  * \brief Reconstructs \f$\rho, p, Wv^i, B^i\f$, \f$\Phi\f$, and the spacetime
  * metric, then computes the Lorentz factor, upper spatial velocity, specific
@@ -46,14 +77,15 @@ namespace grmhd::GhValenciaDivClean::fd {
  */
 template <typename SpacetimeTagsToReconstruct,
           typename PrimTagsForReconstruction, typename PrimsTags,
-          typename SpacetimeAndConsTags, typename TagsList,
-          size_t ThermodynamicDim, typename HydroReconstructor,
-          typename SpacetimeReconstructor,
+          typename SpacetimeAndConsTags, size_t ThermodynamicDim,
+          typename HydroReconstructor, typename SpacetimeReconstructor,
           typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags,
           typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
-    gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
-    gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
+    gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_lower_face,
+    gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>
+        vars_on_upper_face,
     const HydroReconstructor& hydro_reconstructor,
     const SpacetimeReconstructor& spacetime_reconstructor,
     const ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags&
@@ -78,13 +110,14 @@ void reconstruct_prims_work(
  */
 template <
     typename SpacetimeTagsToReconstruct, typename PrimTagsForReconstruction,
-    typename PrimsTagsSentByNeighbor, typename TagsList, typename PrimsTags,
+    typename PrimsTagsSentByNeighbor, typename PrimsTags,
     size_t ThermodynamicDim, typename LowerHydroReconstructor,
     typename LowerSpacetimeReconstructor, typename UpperHydroReconstructor,
     typename UpperSpacetimeReconstructor,
     typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
 void reconstruct_fd_neighbor_work(
-    gsl::not_null<Variables<TagsList>*> vars_on_face,
+    gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>
+        vars_on_face,
     const LowerHydroReconstructor& reconstruct_lower_neighbor_hydro,
     const LowerSpacetimeReconstructor& reconstruct_lower_neighbor_spacetime,
     const UpperHydroReconstructor& reconstruct_upper_neighbor_hydro,
