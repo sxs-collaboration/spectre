@@ -133,6 +133,72 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ThreadsafeList",
   }
 
   {
+    ThreadsafeList<int> truncate_list(1.0);
+    truncate_list.insert(1.0, 0, 3.0);
+    truncate_list.insert(3.0, 0, 5.0);
+    const auto untruncated = truncate_list;
+    truncate_list.truncate_to_length(10);
+    CHECK(truncate_list == untruncated);
+    truncate_list.truncate_to_length(2);
+    CHECK(truncate_list == untruncated);
+    truncate_list.truncate_to_length(1);
+    CHECK(std::distance(truncate_list.begin(), truncate_list.end()) == 1);
+    CHECK(truncate_list.initial_time() == 3.0);
+  }
+  {
+    ThreadsafeList<int> truncate_list(1.0);
+    truncate_list.insert(1.0, 0, 3.0);
+    truncate_list.insert(3.0, 0, 5.0);
+    truncate_list.truncate_to_length(0);
+    CHECK(truncate_list.initial_time() == 5.0);
+    CHECK(truncate_list.begin() == truncate_list.end());
+    truncate_list.truncate_to_length(1);
+    CHECK(truncate_list.initial_time() == 5.0);
+    CHECK(truncate_list.begin() == truncate_list.end());
+  }
+  {
+    ThreadsafeList<int> truncate_list(1.0);
+    truncate_list.insert(1.0, 0, 3.0);
+    truncate_list.insert(3.0, 0, 5.0);
+    truncate_list.clear();
+    CHECK(truncate_list.initial_time() == 5.0);
+    CHECK(truncate_list.begin() == truncate_list.end());
+    truncate_list.clear();
+    CHECK(truncate_list.initial_time() == 5.0);
+    CHECK(truncate_list.begin() == truncate_list.end());
+  }
+  {
+    ThreadsafeList<int> truncate_list(1.0);
+    truncate_list.insert(1.0, 0, 3.0);
+    truncate_list.insert(3.0, 0, 5.0);
+    truncate_list.insert(5.0, 0, 7.0);
+    const auto untruncated = truncate_list;
+    truncate_list.truncate_at_time(0.0);
+    CHECK(truncate_list == untruncated);
+    truncate_list.truncate_at_time(1.0);
+    CHECK(truncate_list == untruncated);
+    truncate_list.truncate_at_time(2.0);
+    CHECK(truncate_list == untruncated);
+    // These keep more data than obviously necessary to keep the
+    // non-thread-safe truncation of the internal list away from the
+    // area used by lookups.
+    truncate_list.truncate_at_time(4.0);
+    CHECK(truncate_list == untruncated);
+    truncate_list.truncate_at_time(6.0);
+    CHECK(std::distance(truncate_list.begin(), truncate_list.end()) == 2);
+    CHECK(truncate_list.initial_time() == 3.0);
+  }
+  {
+    ThreadsafeList<int> truncate_list(1.0);
+    truncate_list.insert(1.0, 0, 3.0);
+    truncate_list.insert(3.0, 0, 5.0);
+    truncate_list.insert(5.0, 0, 7.0);
+    truncate_list.truncate_at_time(5.0);
+    CHECK(std::distance(truncate_list.begin(), truncate_list.end()) == 2);
+    CHECK(truncate_list.initial_time() == 3.0);
+  }
+
+  {
     ThreadsafeList<int> infinite_list(0.0);
     infinite_list.insert(0.0, 1, std::numeric_limits<double>::infinity());
     CHECK(infinite_list.expiration_after(
