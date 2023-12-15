@@ -55,9 +55,10 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(ErrorHandling)
-add_subdirectory(TypeTraits)
 add_subdirectory(Serialization)
+add_subdirectory(StdHelpers)
 add_subdirectory(System)
+add_subdirectory(TypeTraits)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 

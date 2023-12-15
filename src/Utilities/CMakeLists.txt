@@ -109,6 +109,7 @@ if (NOT ENABLE_SPECTRE_DEBUG
 endif()
 
 add_subdirectory(ErrorHandling)
+add_subdirectory(StdHelpers)
 add_subdirectory(System)
 add_subdirectory(Serialization)
 add_subdirectory(TypeTraits)
