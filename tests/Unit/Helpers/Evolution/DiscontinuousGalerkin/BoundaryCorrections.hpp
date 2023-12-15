@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
@@ -91,7 +92,8 @@ double call_dg_package_data(
   const double max_speed = correction.dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
       get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
-      mesh_velocity, normal_dot_mesh_velocity, get<VolumeTags>(volume_data)...);
+      mesh_velocity, normal_dot_mesh_velocity,
+      StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
   return max_speed;
 }
 
@@ -117,7 +119,7 @@ double call_dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
       get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
       unit_normal_vector, mesh_velocity, normal_dot_mesh_velocity,
-      get<VolumeTags>(volume_data)...);
+      StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
   return max_speed;
 }
 
@@ -663,7 +665,7 @@ void test_with_python(
                             function_name_index),
                     get<FaceTags>(fields_on_face)..., unit_normal_covector,
                     unit_normal_vector, mesh_velocity, normal_dot_mesh_velocity,
-                    get<VolumeTags>(volume_data)...);
+                    StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
             CHECK_ITERABLE_CUSTOM_APPROX(
                 get<package_data_tag>(package_data), python_result,
                 Approx::custom().epsilon(epsilon).scale(1.0));
@@ -676,7 +678,7 @@ void test_with_python(
                             function_name_index),
                     get<FaceTags>(fields_on_face)..., unit_normal_covector,
                     mesh_velocity, normal_dot_mesh_velocity,
-                    get<VolumeTags>(volume_data)...);
+                    StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
             CHECK_ITERABLE_CUSTOM_APPROX(
                 get<package_data_tag>(package_data), python_result,
                 Approx::custom().epsilon(epsilon).scale(1.0));
