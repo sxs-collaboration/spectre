@@ -503,12 +503,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       OperatorVars expected_operator_vars_rnd_left{4};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd_left)) =
-          DataVector{1785.7616039198579, 41.55242721423977, -41.54933376905333,
-                     -80.83628748342855};
+          DataVector{1384.5953530154895, 41.55242721423977, -41.54933376905333,
+                     -32.40787768105913};
       OperatorVars expected_operator_vars_rnd_right{4};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd_right)) =
-          DataVector{-299.00214422311404, -37.924582769790135,
+          DataVector{-215.34463496424186, -37.924582769790135,
                      2.1993037260176997, 51.85418137198471};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
@@ -621,8 +621,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       OperatorVars expected_operator_vars_rnd{6};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd)) =
-          DataVector{203.56354715945108, 9.40868981828554,  -2.818657740285368,
-                     111.70107437132107, 35.80427083086546, 65.53029015630551};
+          DataVector{164.82044058319110, 9.68580366789113,  -2.370110768729976,
+                     91.310963425225239, 30.31342257245155, 56.03237239864831};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -746,14 +746,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       OperatorVars expected_operator_vars_rnd{24};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd)) = DataVector{
-          618.6142450194411,  269.8213716601356,   49.33225265133292,
-          103.71967654882658, 219.4353476547795,   -14.237023651828594,
-          731.9842766450536,  490.9303825979318,   32.18932195031287,
-          13.87090223491767,  -13.954381736466516, 130.61721549991918,
-          331.75024822120696, 55.511704965231125,  17.52350289937635,
-          23.878697549520762, -183.34493489042083, -171.66677910143915,
-          390.19201603025016, 410.25585855100763,  53.690124372228034,
-          82.23683297149915,  53.091014251828675,  117.36921898587735};
+          490.4639148694344,  218.0462676038626,   40.25819450876480,
+          83.251427119123945, 176.2577516255026,   -15.624072102187602,
+          586.8311752841304,  391.1570577346553,   30.26559434437542,
+          13.73062841146597,  -15.356914932182377, 100.25724641399877,
+          266.84155600862254, 48.507637035283153,  15.93132587805462,
+          23.036282532293448, -149.02371403160321, -142.12061361346408,
+          314.95846885876898, 329.52673640830761,  46.245499085300622,
+          70.51403818198222,  45.264231133848220,  90.061981328724073};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -882,13 +882,13 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       OperatorVars expected_operator_vars_rnd_lowerleft{6};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd_lowerleft)) = DataVector{
-          16.79306542717521111, 7.74239738894839835, 0.12965837830820104,
-          5.52397488236783918,  0.6884385606128971,  0.92375936190340657};
+          13.52385143255982491, 6.82929107083524833, 0.04527695301629676,
+          4.39834760568600736,  0.65041277314590373, 0.78222246779709226};
       OperatorVars expected_operator_vars_rnd_right{6};
       get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
           expected_operator_vars_rnd_right)) = DataVector{
-          2.08951711777856541, 5.07404320722327817, 19.63622686309961551,
-          5.16363816253272567, 6.36875690348678791, 18.87810118239165291};
+          1.60618450837350557, 4.71949148249203443, 15.72408761869980509,
+          4.06376669069456398, 5.88578668691303086, 15.11012286654655945};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers

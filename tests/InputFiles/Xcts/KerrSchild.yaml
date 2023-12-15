@@ -14,7 +14,7 @@ OutputFileChecks:
     Subfile: /ErrorNorms.dat
     FileGlob: KerrSchildReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.08
+    AbsoluteTolerance: 0.04
 
 ---
 
@@ -83,7 +83,7 @@ NonlinearSolver:
       # Stop after 2 iteration so this test runs quickly. Set MaxIterations to
       # ~20 for runs at higher resolution (most nonlinear problems need ~5
       # iterations, so 20 is a safe setting).
-      MaxIterations: 2
+      MaxIterations: 20
       RelativeResidual: 0.
       AbsoluteResidual: 1.e-10
     SufficientDecrease: 1.e-4

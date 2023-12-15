@@ -192,6 +192,7 @@ const DataVector& quadrature_weights(size_t num_points);
  */
 const DataVector& quadrature_weights(const Mesh<1>& mesh);
 
+/// @{
 /*!
  * \brief %Matrix used to compute the derivative of a function.
  *
@@ -209,16 +210,29 @@ const DataVector& quadrature_weights(const Mesh<1>& mesh);
  */
 template <Basis BasisType, Quadrature QuadratureType>
 const Matrix& differentiation_matrix(size_t num_points);
+template <Basis BasisType, Quadrature QuadratureType>
+const Matrix& differentiation_matrix_transpose(size_t num_points);
+/// @}
 
+/// @{
 /*!
  * \brief Differentiation matrix for a one-dimensional mesh.
  *
  * \see differentiation_matrix(size_t)
  */
 const Matrix& differentiation_matrix(const Mesh<1>& mesh);
+const Matrix& differentiation_matrix_transpose(const Mesh<1>& mesh);
+/// @}
 
 /*!
  * \brief %Matrix used to compute the divergence of the flux in weak form.
+ *
+ * This is the transpose of the differentiation matrix multiplied by quadrature
+ * weights that appear in DG integrals:
+ *
+ * \begin{equation}
+ * \frac{D^T_{ij}} \frac{w_j}{w_i}
+ * \end{equation}
  *
  * \param num_points The number of collocation points
  */

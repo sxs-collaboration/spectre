@@ -17,6 +17,7 @@ spectre_target_sources(
   PartialDerivatives.cpp
   MeanValue.cpp
   PowerMonitors.cpp
+  WeakDivergence.cpp
   )
 
 spectre_target_headers(

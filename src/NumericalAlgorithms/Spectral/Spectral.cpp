@@ -448,6 +448,17 @@ struct DifferentiationMatrixGenerator {
 };
 
 template <Basis BasisType, Quadrature QuadratureType>
+struct DifferentiationMatrixTransposeGenerator {
+  Matrix operator()(const size_t num_points) const {
+    Matrix diff_matrix_transpose =
+        DifferentiationMatrixGenerator<BasisType, QuadratureType>{}.operator()(
+            num_points);
+    blaze::transpose(diff_matrix_transpose);
+    return diff_matrix_transpose;
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
 struct WeakFluxDifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points) const {
     if (BasisType != Basis::Legendre) {
@@ -595,6 +606,8 @@ const DataVector& quadrature_weights(const size_t num_points) {
 
 PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
                               DifferentiationMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix_transpose, Matrix,
+                              DifferentiationMatrixTransposeGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(weak_flux_differentiation_matrix, Matrix,
                               WeakFluxDifferentiationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(integration_matrix, Matrix,
@@ -852,6 +865,7 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
 SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix_transpose, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(weak_flux_differentiation_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(integration_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(modal_to_nodal_matrix, Matrix)

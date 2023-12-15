@@ -22,7 +22,7 @@ struct DiscontinuousGalerkinGroup {
       "Options controlling the discontinuous Galerkin spatial discretization "
       "of the PDE system.\n\n"
       "Contains options such as whether to use the strong or weak form, what "
-      "boundary correction/numerical flud to use, and which quadrature rule to "
+      "boundary correction/numerical flux to use, and which quadrature rule to "
       "use."};
   using group = SpatialDiscretization::OptionTags::SpatialDiscretizationGroup;
 };

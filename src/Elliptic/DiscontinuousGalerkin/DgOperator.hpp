@@ -14,6 +14,7 @@
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables/FrameTransform.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -32,6 +33,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
+#include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -595,11 +597,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const Scalar<DataVector>& det_inv_jacobian,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const DirectionMap<Dim, Scalar<DataVector>>& face_jacobians,
+      const DirectionMap<Dim,
+                         InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                         Frame::Inertial>>&
+          face_jacobian_times_inv_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
       const double penalty_parameter, const bool massive,
-      const TemporalId& temporal_id,
+      const TemporalId& /*temporal_id*/,
       const std::tuple<SourcesArgs...>& sources_args,
       const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
@@ -651,26 +657,40 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // into the DataBox to keep them around permanently. The latter should be
     // informed by profiling.
 
-    // Add boundary corrections to the auxiliary variables _before_ computing
-    // the second derivative. This is called the "flux" formulation. It is
-    // equivalent to discretizing the system in first-order form, i.e. treating
-    // the primal and auxiliary variables on the same footing, and then taking a
-    // Schur complement of the operator. The Schur complement is possible
-    // because the auxiliary equations are essentially the definition of the
-    // auxiliary variables and can therefore always be solved for the auxiliary
-    // variables by just inverting the mass matrix. This Schur-complement
-    // formulation avoids inflating the DG operator with the DOFs of the
-    // auxiliary variables. In this form it is very similar to the "primal"
-    // formulation where we get rid of the auxiliary variables through a DG
-    // theorem and thus add the auxiliary boundary corrections _after_ computing
-    // the second derivative. This involves a slightly different lifting
-    // operation with differentiation matrices, which we avoid to implement for
-    // now by using the flux-formulation.
-    auto primal_fluxes_corrected = primal_fluxes;
+    // Compute volume terms: -div(F) + S
+    if (local_data_is_zero) {
+      operator_applied_to_vars->initialize(num_points, 0.);
+    } else {
+      divergence(operator_applied_to_vars, primal_fluxes, mesh, inv_jacobian);
+      // This is the sign flip that makes the operator _minus_ the Laplacian for
+      // a Poisson system
+      *operator_applied_to_vars *= -1.;
+      if constexpr (not std::is_same_v<SourcesComputer, void>) {
+        std::apply(
+            [&operator_applied_to_vars, &primal_vars,
+             &primal_fluxes](const auto&... expanded_sources_args) {
+              SourcesComputer::apply(
+                  make_not_null(
+                      &get<OperatorTags>(*operator_applied_to_vars))...,
+                  expanded_sources_args..., get<PrimalVars>(primal_vars)...,
+                  get<PrimalFluxesVars>(primal_fluxes)...);
+            },
+            sources_args);
+      }
+      if (massive) {
+        *operator_applied_to_vars /= get(det_inv_jacobian);
+        ::dg::apply_mass_matrix(operator_applied_to_vars, mesh);
+      }
+    }
+
+    // Add boundary corrections
     // Keeping track if any corrections were applied here, for an optimization
     // below
     bool has_any_boundary_corrections = false;
-    for (const auto& [mortar_id, mortar_data] : *all_mortar_data) {
+    Variables<tmpl::list<transform::Tags::TransformedFirstIndex<
+        PrimalFluxesVars, Frame::ElementLogical>...>>
+        lifted_logical_aux_boundary_corrections{num_points, 0.};
+    for (auto& [mortar_id, mortar_data] : *all_mortar_data) {
       const auto& [direction, neighbor_id] = mortar_id;
       const bool is_internal =
           (neighbor_id != ElementId<Dim>::external_boundary_id());
@@ -691,15 +711,18 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       has_any_boundary_corrections = true;
 
       const auto face_mesh = mesh.slice_away(direction.dimension());
-      const auto& local_data = mortar_data.local_data(temporal_id);
-      const auto& remote_data = mortar_data.remote_data(temporal_id);
+      const auto [local_data, remote_data] = mortar_data.extract();
       const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
+      const auto& face_jacobian = face_jacobians.at(direction);
+      const auto& face_jacobian_times_inv_jacobian =
+          face_jacobian_times_inv_jacobians.at(direction);
       const auto& mortar_mesh =
           is_internal ? all_mortar_meshes.at(mortar_id) : face_mesh;
       const auto& mortar_size =
           is_internal ? all_mortar_sizes.at(mortar_id) : full_mortar_size;
 
-      // This is the _strong_ auxiliary boundary correction avg(n.F_v) - n.F_v
+      // This is the strong auxiliary boundary correction:
+      //   G^i = F^i(n_j (avg(u) - u))
       auto auxiliary_boundary_corrections_on_mortar =
           Variables<tmpl::list<PrimalMortarFluxes...>>(
               local_data.field_data.template extract_subset<
@@ -716,100 +739,40 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       auxiliary_boundary_corrections_on_mortar *= -0.5;
 
       // Project from the mortar back down to the face if needed
-      auto auxiliary_boundary_corrections =
+      const auto auxiliary_boundary_corrections =
           Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
               ? mass_conservative_restriction(
                     std::move(auxiliary_boundary_corrections_on_mortar),
                     mortar_mesh, mortar_size, mortar_jacobians.at(mortar_id),
-                    face_mesh, face_jacobians.at(direction))
+                    face_mesh, face_jacobian)
               : std::move(auxiliary_boundary_corrections_on_mortar);
-      // The `dg::lift_flux` function contains an extra minus sign (for
-      // evolution systems)
-      auxiliary_boundary_corrections *= -1.;
 
+      // Lifting for the auxiliary boundary correction:
+      //   \int_face G^i \partial_i \phi
+      // We first transform the flux index to the logical frame, apply the
+      // quadrature weights and the Jacobian for the face integral, then take
+      // the logical weak divergence in the volume after lifting (below the loop
+      // over faces).
+      auto logical_aux_boundary_corrections =
+          transform::first_index_to_different_frame(
+              auxiliary_boundary_corrections, face_jacobian_times_inv_jacobian);
+      ::dg::apply_mass_matrix(make_not_null(&logical_aux_boundary_corrections),
+                              face_mesh);
       if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
-        // Lift the boundary correction to the volume, but still only provide
-        // the data only on the face because it is zero everywhere else. This is
-        // the "massless" lifting operation, i.e. it involves an inverse mass
-        // matrix. The mass matrix is diagonally approximated ("mass lumping")
-        // so it reduces to a division by quadrature weights.
-        ::dg::lift_flux(make_not_null(&auxiliary_boundary_corrections),
-                        mesh.extents(direction.dimension()),
-                        face_normal_magnitude);
-
-        // Add the boundary corrections to the auxiliary variables
-        add_slice_to_data(make_not_null(&primal_fluxes_corrected),
-                          auxiliary_boundary_corrections, mesh.extents(),
-                          direction.dimension(),
-                          index_to_slice_at(mesh.extents(), direction));
+        add_slice_to_data(
+            make_not_null(&lifted_logical_aux_boundary_corrections),
+            logical_aux_boundary_corrections, mesh.extents(),
+            direction.dimension(),
+            index_to_slice_at(mesh.extents(), direction));
       } else {
-        // We already have the `face_jacobians = det(J) * magnitude(n)` here, so
-        // just pass a constant 1 for `magnitude(n)`. This could be optimized to
-        // avoid allocating the vector of ones.
         ::dg::lift_boundary_terms_gauss_points(
-            make_not_null(&primal_fluxes_corrected), det_inv_jacobian, mesh,
-            direction, auxiliary_boundary_corrections,
-            Scalar<DataVector>{face_mesh.number_of_grid_points(), 1.},
-            face_jacobians.at(direction));
-      }
-    }  // apply auxiliary boundary corrections on all mortars
-
-    // Compute the primal equation, i.e. the actual DG operator, by taking the
-    // second derivative: -div(F_u(v)) + S_u = f(x)
-    if (local_data_is_zero and not has_any_boundary_corrections) {
-      operator_applied_to_vars->initialize(num_points, 0.);
-      // We can return here already, since the operator is zero and no boundary
-      // corrections will be added
-      return;
-    } else {
-      divergence(operator_applied_to_vars, primal_fluxes_corrected, mesh,
-                 inv_jacobian);
-      // This is the sign flip that makes the operator _minus_ the Laplacian for
-      // a Poisson system
-      *operator_applied_to_vars *= -1.;
-    }
-    if constexpr (not std::is_same_v<SourcesComputer, void>) {
-      if (not local_data_is_zero) {
-        std::apply(
-            [&operator_applied_to_vars, &primal_vars,
-             &primal_fluxes](const auto&... expanded_sources_args) {
-              SourcesComputer::apply(
-                  make_not_null(
-                      &get<OperatorTags>(*operator_applied_to_vars))...,
-                  expanded_sources_args..., get<PrimalVars>(primal_vars)...,
-                  get<PrimalFluxesVars>(primal_fluxes)...);
-            },
-            sources_args);
-      }
-    }
-
-    // Add boundary corrections to primal equation
-    for (auto& [mortar_id, mortar_data] : *all_mortar_data) {
-      const auto& [direction, neighbor_id] = mortar_id;
-      const bool is_internal =
-          (neighbor_id != ElementId<Dim>::external_boundary_id());
-      if constexpr (AllDataIsZero) {
-        if (is_internal) {
-          continue;
-        }
-      }
-      // When the data on both sides of the mortar is zero then we don't need to
-      // handle this mortar at all.
-      if (local_data_is_zero and
-          (not is_internal or data_is_zero(neighbor_id))) {
-        continue;
+            make_not_null(&lifted_logical_aux_boundary_corrections),
+            logical_aux_boundary_corrections, mesh, direction);
       }
 
-      const auto face_mesh = mesh.slice_away(direction.dimension());
-      const auto [local_data, remote_data] = mortar_data.extract();
-      const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
-      const auto& mortar_mesh =
-          is_internal ? all_mortar_meshes.at(mortar_id) : face_mesh;
-      const auto& mortar_size =
-          is_internal ? all_mortar_sizes.at(mortar_id) : full_mortar_size;
-
-      // This is the _strong_ primal boundary correction avg(n.F_u) - penalty *
-      // jump(n.F_v) - n.F_u. Note that the "internal penalty" numerical flux
+      // This is the strong primal boundary correction:
+      //   n.H = avg(n.F) - n.F - penalty * n.F(n_j jump(u)).
+      // Note that the "internal penalty" numerical flux
       // (as opposed to the LLF flux) uses the raw field derivatives without
       // boundary corrections in the average, which is why we can communicate
       // the data so early together with the auxiliary boundary data. In this
@@ -848,7 +811,6 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
           get<::Tags::NormalDotFlux<PrimalMortarVars>>(
               remote_data.field_data)));
-      primal_boundary_corrections_on_mortar *= -1.;
 
       // Project from the mortar back down to the face if needed, lift and add
       // to operator. See auxiliary boundary corrections above for details.
@@ -857,28 +819,81 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
               ? mass_conservative_restriction(
                     std::move(primal_boundary_corrections_on_mortar),
                     mortar_mesh, mortar_size, mortar_jacobians.at(mortar_id),
-                    face_mesh, face_jacobians.at(direction))
+                    face_mesh, face_jacobian)
               : std::move(primal_boundary_corrections_on_mortar);
-      if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
-        ::dg::lift_flux(make_not_null(&primal_boundary_corrections),
-                        mesh.extents(direction.dimension()),
-                        face_normal_magnitude);
-        add_slice_to_data(operator_applied_to_vars, primal_boundary_corrections,
-                          mesh.extents(), direction.dimension(),
-                          index_to_slice_at(mesh.extents(), direction));
+
+      // Lifting for the primal boundary correction:
+      //   \int_face n.H \phi
+      if (massive) {
+        // We apply the quadrature weights and Jacobian for the face integral,
+        // then lift to the volume
+        primal_boundary_corrections *= get(face_jacobian);
+        ::dg::apply_mass_matrix(make_not_null(&primal_boundary_corrections),
+                                face_mesh);
+        if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+          add_slice_to_data(operator_applied_to_vars,
+                            primal_boundary_corrections, mesh.extents(),
+                            direction.dimension(),
+                            index_to_slice_at(mesh.extents(), direction));
+        } else {
+          ::dg::lift_boundary_terms_gauss_points(operator_applied_to_vars,
+                                                 primal_boundary_corrections,
+                                                 mesh, direction);
+        }
       } else {
-        ::dg::lift_boundary_terms_gauss_points(
-            operator_applied_to_vars, det_inv_jacobian, mesh, direction,
-            primal_boundary_corrections,
-            Scalar<DataVector>{face_mesh.number_of_grid_points(), 1.},
-            face_jacobians.at(direction));
+        // Apply an extra inverse mass matrix to the boundary corrections (with
+        // mass lumping, so it's diagonal).
+        // For Gauss-Lobatto grids this divides out the quadrature weights and
+        // Jacobian on the face, leaving only factors perpendicular to the face.
+        // Those are handled by `dg::lift_flux` (with an extra minus sign since
+        // the function was written for evolution systems).
+        // For Gauss grids the quadrature weights and Jacobians are handled
+        // by `::dg::lift_boundary_terms_gauss_points` (which was also written
+        // for evolution systems, hence the extra minus sign).
+        primal_boundary_corrections *= -1.;
+        if (mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
+          ::dg::lift_flux(make_not_null(&primal_boundary_corrections),
+                          mesh.extents(direction.dimension()),
+                          face_normal_magnitude);
+          add_slice_to_data(operator_applied_to_vars,
+                            primal_boundary_corrections, mesh.extents(),
+                            direction.dimension(),
+                            index_to_slice_at(mesh.extents(), direction));
+        } else {
+          // We already have the `face_jacobian = det(J) * magnitude(n)` here,
+          // so just pass a constant 1 for `magnitude(n)`. This could be
+          // optimized to avoid allocating the vector of ones.
+          ::dg::lift_boundary_terms_gauss_points(
+              operator_applied_to_vars, det_inv_jacobian, mesh, direction,
+              primal_boundary_corrections,
+              Scalar<DataVector>{face_mesh.number_of_grid_points(), 1.},
+              face_jacobian);
+        }
       }
     }  // loop over all mortars
 
-    // Apply DG mass matrix
+    if (not has_any_boundary_corrections) {
+      // No need to handle auxiliary boundary corrections; return early
+      return;
+    }
+
+    // Apply weak divergence to lifted auxiliary boundary corrections and add to
+    // operator
     if (massive) {
-      *operator_applied_to_vars /= get(det_inv_jacobian);
-      ::dg::apply_mass_matrix(operator_applied_to_vars, mesh);
+      logical_weak_divergence(operator_applied_to_vars,
+                              lifted_logical_aux_boundary_corrections, mesh,
+                              true);
+    } else {
+      // Possible optimization: eliminate this allocation by building the
+      // inverse mass matrix into `logical_weak_divergence`
+      Variables<tmpl::list<OperatorTags...>> massless_aux_boundary_corrections{
+          num_points};
+      logical_weak_divergence(make_not_null(&massless_aux_boundary_corrections),
+                              lifted_logical_aux_boundary_corrections, mesh);
+      massless_aux_boundary_corrections *= get(det_inv_jacobian);
+      ::dg::apply_inverse_mass_matrix(
+          make_not_null(&massless_aux_boundary_corrections), mesh);
+      *operator_applied_to_vars += massless_aux_boundary_corrections;
     }
   }
 
@@ -899,6 +914,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const DirectionMap<Dim, tnsr::I<DataVector, Dim>>& face_normal_vectors,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const DirectionMap<Dim, Scalar<DataVector>>& face_jacobians,
+      const DirectionMap<Dim,
+                         InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                         Frame::Inertial>>&
+          face_jacobian_times_inv_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const double penalty_parameter, const bool massive,
@@ -939,12 +958,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         face_normal_vectors, face_normal_magnitudes, all_mortar_meshes,
         all_mortar_sizes, temporal_id, apply_boundary_condition, fluxes_args,
         fluxes_args_on_faces);
-    apply_operator<true>(
-        make_not_null(&operator_applied_to_zero_vars),
-        make_not_null(&all_mortar_data), zero_primal_vars, primal_fluxes_buffer,
-        element, mesh, inv_jacobian, det_inv_jacobian, face_normal_magnitudes,
-        face_jacobians, all_mortar_meshes, all_mortar_sizes, {},
-        penalty_parameter, massive, temporal_id, sources_args);
+    apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
+                         make_not_null(&all_mortar_data), zero_primal_vars,
+                         primal_fluxes_buffer, element, mesh, inv_jacobian,
+                         det_inv_jacobian, face_normal_magnitudes,
+                         face_jacobians, face_jacobian_times_inv_jacobians,
+                         all_mortar_meshes, all_mortar_sizes, {},
+                         penalty_parameter, massive, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;

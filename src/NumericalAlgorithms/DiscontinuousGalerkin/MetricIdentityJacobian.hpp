@@ -35,7 +35,7 @@ namespace dg {
  * We want to compute \f$J\partial\xi^{\hat{\imath}}/\partial x^i\f$ in such a
  * way that the above metric identity is satisfied numerically/discretely. We
  * refer to the inverse Jacobian computed this way as the "metric
- * indentity-satisfying inverse Jacobian".
+ * identity-satisfying inverse Jacobian".
  *
  * The discretized form, with the Jacobian determinant \f$J\f$ expanded, is
  * given by

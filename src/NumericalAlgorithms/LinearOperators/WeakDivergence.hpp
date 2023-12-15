@@ -52,8 +52,8 @@
  * This function computes the volume term:
  *
  * \f{align*}{
- * \int_{\Omega}d^n x\,F^i_{\breve{\jmath}} \phi_{\breve{\jmath}} \partial_i
- *    \phi_{\breve{\imath}}
+ * \frac{1}{w_\breve{\imath}} \int_{\Omega}d^n x \,
+ *   F^i_{\breve{\jmath}} \phi_{\breve{\jmath}} \partial_i \phi_{\breve{\imath}}
  * \f}
  *
  * \note When using Gauss-Lobatto points the numerical values of the
@@ -246,3 +246,52 @@ void weak_divergence(
     }
   }
 }
+
+/// @{
+/*!
+ * \brief Compute the weak divergence of fluxes in logical coordinates
+ *
+ * Applies the transpose logical differentiation matrix to the fluxes in each
+ * dimension and sums over dimensions.
+ *
+ * \see weak_divergence
+ */
+template <typename ResultTensor, typename FluxTensor, size_t Dim>
+void logical_weak_divergence(gsl::not_null<ResultTensor*> div_flux,
+                             const FluxTensor& flux, const Mesh<Dim>& mesh);
+
+/*!
+ * \param divergence_of_fluxes Result buffer. Will be resized if necessary.
+ * \param fluxes The fluxes to take the divergence of. Their first index must be
+ * an upper spatial index in element-logical coordinates.
+ * \param mesh The element mesh.
+ * \param add_to_buffer If `true`, add the divergence to the existing values in
+ * `divergence_of_fluxes`. Otherwise, overwrite the existing values.
+ */
+template <typename... ResultTags, typename... FluxTags, size_t Dim>
+void logical_weak_divergence(
+    const gsl::not_null<Variables<tmpl::list<ResultTags...>>*>
+        divergence_of_fluxes,
+    const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
+    const bool add_to_buffer = false) {
+  static_assert(
+      (... and
+       std::is_same_v<tmpl::front<typename FluxTags::type::index_list>,
+                      SpatialIndex<Dim, UpLo::Up, Frame::ElementLogical>>),
+      "The first index of each flux must be an upper spatial index in "
+      "element-logical coordinates.");
+  static_assert(
+      (... and
+       std::is_same_v<
+           typename ResultTags::type,
+           TensorMetafunctions::remove_first_index<typename FluxTags::type>>),
+      "The result tensors must have the same type as the flux tensors with "
+      "their first index removed.");
+  if (not add_to_buffer) {
+    divergence_of_fluxes->initialize(mesh.number_of_grid_points(), 0.);
+  }
+  EXPAND_PACK_LEFT_TO_RIGHT(logical_weak_divergence(
+      make_not_null(&get<ResultTags>(*divergence_of_fluxes)),
+      get<FluxTags>(fluxes), mesh));
+}
+/// @}

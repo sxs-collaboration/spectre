@@ -6,6 +6,9 @@ Testing:
   Check: parse
   Timeout: 30
   Priority: High
+ExpectedOutput:
+  - BbhReductions.h5
+  - BbhVolume0.h5
 
 ---
 

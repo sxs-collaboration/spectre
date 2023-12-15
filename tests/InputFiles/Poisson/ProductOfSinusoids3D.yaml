@@ -14,7 +14,7 @@ OutputFileChecks:
     Subfile: /ErrorNorms.dat
     FileGlob: PoissonProductOfSinusoids3DReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.004
+    AbsoluteTolerance: 0.005
 
 ---
 
@@ -57,7 +57,7 @@ DomainCreator:
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
-    Massive: True
+    Massive: False
     Quadrature: GaussLobatto
 
 Observers:

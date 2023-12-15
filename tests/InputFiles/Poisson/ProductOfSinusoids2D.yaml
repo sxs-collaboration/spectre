@@ -13,7 +13,7 @@ OutputFileChecks:
     Subfile: /ErrorNorms.dat
     FileGlob: PoissonProductOfSinusoids2DReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.007
+    AbsoluteTolerance: 0.005
 
 ---
 

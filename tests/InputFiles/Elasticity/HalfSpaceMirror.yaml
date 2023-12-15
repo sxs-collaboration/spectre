@@ -14,7 +14,7 @@ OutputFileChecks:
     Subfile: /ErrorNorms.dat
     FileGlob: ElasticHalfSpaceMirrorReductions.h5
     SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 5.e-4
+    AbsoluteTolerance: 6.e-4
 
 ---
 

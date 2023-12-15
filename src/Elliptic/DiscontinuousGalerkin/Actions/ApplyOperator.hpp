@@ -408,6 +408,9 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                   Frame::Inertial>>>(box),
+        db::get<domain::Tags::Faces<
+            Dim, domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                   Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
@@ -601,6 +604,9 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                   Frame::Inertial>>>(box),
+        db::get<domain::Tags::Faces<
+            Dim, domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                   Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         db::get<elliptic::dg::Tags::PenaltyParameter>(box),

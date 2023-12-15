@@ -213,6 +213,34 @@ struct DetInvJacobianCompute : db::ComputeTag,
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// \brief The determinant of the Jacobian from the source frame to the target
+/// frame.
+template <typename SourceFrame, typename TargetFrame>
+struct DetJacobian : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() {
+    return "DetJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The inverse Jacobian times the determinant of the Jacobian.
+///
+/// This quantity is divergence-free analytically. See
+/// `::dg::metric_identity_det_jac_times_inv_jac` for more information.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct DetTimesInvJacobian : db::SimpleTag {
+  using type = ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+  static std::string name() {
+    return "DetTimesInvJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// Base tag for boundary data needed for updating the variables.
 struct VariablesBoundaryData : db::BaseTag {};
 

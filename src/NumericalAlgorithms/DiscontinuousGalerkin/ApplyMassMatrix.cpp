@@ -13,6 +13,14 @@
 namespace dg::detail {
 
 template <>
+void apply_mass_matrix_impl<0>(const gsl::not_null<double*> /*data*/,
+                               const Mesh<0>& /*mesh*/) {}
+
+template <>
+void apply_inverse_mass_matrix_impl<0>(const gsl::not_null<double*> /*data*/,
+                                       const Mesh<0>& /*mesh*/) {}
+
+template <>
 void apply_mass_matrix_impl<1>(const gsl::not_null<double*> data,
                                const Mesh<1>& mesh) {
   const size_t x_size = mesh.extents(0);
