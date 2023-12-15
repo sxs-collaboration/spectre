@@ -22,8 +22,7 @@ void test_compute_spacetime_deriv_of_goth_g(const DataType& used_for_size) {
           const tnsr::AA<DataType, SpatialDim, Frame::Inertial>&,
           const tnsr::abb<DataType, SpatialDim, Frame::Inertial>&,
           const Scalar<DataType>&,
-          const Scalar<DataType>&,
-          const tnsr::i<DataType, SpatialDim, Frame::Inertial>&,
+          const tnsr::a<DataType, SpatialDim, Frame::Inertial>&,
           const Scalar<DataType>&,
           const tnsr::a<DataType, SpatialDim, Frame::Inertial>&)>(
           &spacetime_deriv_of_goth_g<DataType, SpatialDim, Frame::Inertial>),

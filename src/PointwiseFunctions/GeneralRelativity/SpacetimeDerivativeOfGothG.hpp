@@ -35,8 +35,7 @@ void spacetime_deriv_of_goth_g(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::abb<DataType, SpatialDim, Frame>& da_spacetime_metric,
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& dt_lapse,
-    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::a<DataType, SpatialDim, Frame>& da_lapse,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& da_det_spatial_metric);
 
@@ -45,8 +44,7 @@ tnsr::aBB<DataType, SpatialDim, Frame> spacetime_deriv_of_goth_g(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::abb<DataType, SpatialDim, Frame>& da_spacetime_metric,
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& dt_lapse,
-    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::a<DataType, SpatialDim, Frame>& da_lapse,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& da_det_spatial_metric);
 /// @}
