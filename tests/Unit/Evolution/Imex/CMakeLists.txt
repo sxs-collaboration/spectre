@@ -5,7 +5,11 @@ set(LIBRARY "Test_Imex")
 
 set(LIBRARY_SOURCES
   Test_GuessResult.cpp
+  Test_Mode.cpp
+  Test_SolveImplicitSector.cpp
   )
+
+add_subdirectory(Tags)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
@@ -13,8 +17,10 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DataStructuresHelpers
   Framework
   Imex
+  ImexHelpers
   Utilities
   )
 

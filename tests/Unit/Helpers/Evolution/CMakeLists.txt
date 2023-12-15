@@ -4,4 +4,5 @@
 add_subdirectory(EventsAndDenseTriggers)
 add_subdirectory(DgSubcell)
 add_subdirectory(DiscontinuousGalerkin)
+add_subdirectory(Imex)
 add_subdirectory(Systems)
