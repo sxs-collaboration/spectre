@@ -267,8 +267,8 @@ struct EvolutionMetavars {
     }
   };
 
-  using AhA = Ah<::domain::ObjectLabel::A, ::Frame::Grid>;
-  using AhB = Ah<::domain::ObjectLabel::B, ::Frame::Grid>;
+  using AhA = Ah<::domain::ObjectLabel::A, ::Frame::Distorted>;
+  using AhB = Ah<::domain::ObjectLabel::B, ::Frame::Distorted>;
   using AhC = Ah<::domain::ObjectLabel::C, ::Frame::Inertial>;
 
   template <::domain::ObjectLabel Excision>
