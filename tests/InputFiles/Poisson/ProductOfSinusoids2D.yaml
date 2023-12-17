@@ -50,6 +50,7 @@ Discretization:
     PenaltyParameter: 1.
     Massive: True
     Quadrature: Gauss
+    Formulation: StrongInertial
 
 Observers:
   VolumeFileName: "PoissonProductOfSinusoids2DVolume"

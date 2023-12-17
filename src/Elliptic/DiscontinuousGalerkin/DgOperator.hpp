@@ -24,6 +24,7 @@
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -595,6 +596,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
+      const Scalar<DataVector>& det_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& det_times_inv_jacobian,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const DirectionMap<Dim, Scalar<DataVector>>& face_jacobians,
       const DirectionMap<Dim,
@@ -605,7 +609,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
       const double penalty_parameter, const bool massive,
-      const TemporalId& /*temporal_id*/,
+      const ::dg::Formulation formulation, const TemporalId& /*temporal_id*/,
       const std::tuple<SourcesArgs...>& sources_args,
       const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
@@ -661,26 +665,48 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     if (local_data_is_zero) {
       operator_applied_to_vars->initialize(num_points, 0.);
     } else {
-      divergence(operator_applied_to_vars, primal_fluxes, mesh, inv_jacobian);
-      // This is the sign flip that makes the operator _minus_ the Laplacian for
-      // a Poisson system
-      *operator_applied_to_vars *= -1.;
+      // "Massive" operators retain the factors from the volume integral:
+      //   \int_volume div(F) \phi_p = w_p det(J)_p div(F)_p
+      // Here, `w` are the quadrature weights (the diagonal logical mass matrix
+      // with mass-lumping) and det(J) is the Jacobian determinant. The
+      // quantities are evaluated at the grid point `p`.
+      if (formulation == ::dg::Formulation::StrongInertial) {
+        // Compute strong divergence:
+        //   div(F) = (J^\hat{i}_i)_p \sum_q (D_\hat{i})_pq (F^i)_q.
+        divergence(operator_applied_to_vars, primal_fluxes, mesh,
+                   massive ? det_times_inv_jacobian : inv_jacobian);
+        // This is the sign flip that makes the operator _minus_ the Laplacian
+        // for a Poisson system
+        *operator_applied_to_vars *= -1.;
+      } else {
+        // Compute weak divergence:
+        //   F^i \partial_i \phi = 1/w_p \sum_q
+        //     (D^T_\hat{i})_pq (w det(J) J^\hat{i}_i F^i)_q
+        weak_divergence(operator_applied_to_vars, primal_fluxes, mesh,
+                        det_times_inv_jacobian);
+        if (not massive) {
+          *operator_applied_to_vars *= get(det_inv_jacobian);
+        }
+      }
       if constexpr (not std::is_same_v<SourcesComputer, void>) {
+        Variables<tmpl::list<OperatorTags...>> sources{num_points, 0.};
         std::apply(
-            [&operator_applied_to_vars, &primal_vars,
+            [&sources, &primal_vars,
              &primal_fluxes](const auto&... expanded_sources_args) {
               SourcesComputer::apply(
-                  make_not_null(
-                      &get<OperatorTags>(*operator_applied_to_vars))...,
+                  make_not_null(&get<OperatorTags>(sources))...,
                   expanded_sources_args..., get<PrimalVars>(primal_vars)...,
                   get<PrimalFluxesVars>(primal_fluxes)...);
             },
             sources_args);
+        if (massive) {
+          sources *= get(det_jacobian);
+        }
+        *operator_applied_to_vars += sources;
       }
-      if (massive) {
-        *operator_applied_to_vars /= get(det_inv_jacobian);
-        ::dg::apply_mass_matrix(operator_applied_to_vars, mesh);
-      }
+    }
+    if (massive) {
+      ::dg::apply_mass_matrix(operator_applied_to_vars, mesh);
     }
 
     // Add boundary corrections
@@ -799,18 +825,20 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           get<Tags::NormalDotFluxForJump<PrimalMortarVars>>(
               remote_data.field_data)));
       primal_boundary_corrections_on_mortar *= penalty;
-      const auto add_remote_avg_contribution = [](auto& lhs, const auto& rhs) {
+      const auto add_avg_contribution = [](auto& lhs, const auto& rhs,
+                                           const double prefactor) {
         for (size_t i = 0; i < lhs.size(); ++i) {
-          lhs[i] += 0.5 * rhs[i];
+          lhs[i] += prefactor * rhs[i];
         }
       };
-      EXPAND_PACK_LEFT_TO_RIGHT(add_remote_avg_contribution(
+      EXPAND_PACK_LEFT_TO_RIGHT(add_avg_contribution(
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
-          get<::Tags::NormalDotFlux<PrimalMortarVars>>(local_data.field_data)));
-      EXPAND_PACK_LEFT_TO_RIGHT(add_remote_avg_contribution(
+          get<::Tags::NormalDotFlux<PrimalMortarVars>>(local_data.field_data),
+          formulation == ::dg::Formulation::StrongInertial ? 0.5 : -0.5));
+      EXPAND_PACK_LEFT_TO_RIGHT(add_avg_contribution(
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
-          get<::Tags::NormalDotFlux<PrimalMortarVars>>(
-              remote_data.field_data)));
+          get<::Tags::NormalDotFlux<PrimalMortarVars>>(remote_data.field_data),
+          0.5));
 
       // Project from the mortar back down to the face if needed, lift and add
       // to operator. See auxiliary boundary corrections above for details.
@@ -910,6 +938,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
+      const Scalar<DataVector>& det_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& det_times_inv_jacobian,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
       const DirectionMap<Dim, tnsr::I<DataVector, Dim>>& face_normal_vectors,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
@@ -921,6 +952,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const double penalty_parameter, const bool massive,
+      const ::dg::Formulation formulation,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
@@ -958,13 +990,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         face_normal_vectors, face_normal_magnitudes, all_mortar_meshes,
         all_mortar_sizes, temporal_id, apply_boundary_condition, fluxes_args,
         fluxes_args_on_faces);
-    apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
-                         make_not_null(&all_mortar_data), zero_primal_vars,
-                         primal_fluxes_buffer, element, mesh, inv_jacobian,
-                         det_inv_jacobian, face_normal_magnitudes,
-                         face_jacobians, face_jacobian_times_inv_jacobians,
-                         all_mortar_meshes, all_mortar_sizes, {},
-                         penalty_parameter, massive, temporal_id, sources_args);
+    apply_operator<true>(
+        make_not_null(&operator_applied_to_zero_vars),
+        make_not_null(&all_mortar_data), zero_primal_vars, primal_fluxes_buffer,
+        element, mesh, inv_jacobian, det_inv_jacobian, det_jacobian,
+        det_times_inv_jacobian, face_normal_magnitudes, face_jacobians,
+        face_jacobian_times_inv_jacobians, all_mortar_meshes, all_mortar_sizes,
+        {}, penalty_parameter, massive, formulation, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;

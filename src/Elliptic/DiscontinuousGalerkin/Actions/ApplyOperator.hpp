@@ -356,7 +356,7 @@ struct ReceiveMortarDataAndApplyOperator<
  public:
   using const_global_cache_tags =
       tmpl::list<elliptic::dg::Tags::PenaltyParameter,
-                 elliptic::dg::Tags::Massive>;
+                 elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>;
   using inbox_tags = tmpl::list<mortar_data_inbox_tag>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -403,6 +403,11 @@ struct ReceiveMortarDataAndApplyOperator<
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                              Frame::Inertial>>(box),
+        db::get<
+            domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>>(
+            box),
+        db::get<domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                  Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         db::get<domain::Tags::Faces<
@@ -417,7 +422,8 @@ struct ReceiveMortarDataAndApplyOperator<
                                     Frame::ElementLogical, Frame::Inertial>,
                                 Dim>>(box),
         db::get<elliptic::dg::Tags::PenaltyParameter>(box),
-        db::get<elliptic::dg::Tags::Massive>(box), temporal_id,
+        db::get<elliptic::dg::Tags::Massive>(box),
+        db::get<elliptic::dg::Tags::Formulation>(box), temporal_id,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -526,7 +532,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
  public:
   using const_global_cache_tags =
       tmpl::list<elliptic::dg::Tags::PenaltyParameter,
-                 elliptic::dg::Tags::Massive,
+                 elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation,
                  domain::Tags::ExternalBoundaryConditions<Dim>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -596,6 +602,11 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                              Frame::Inertial>>(box),
+        db::get<
+            domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>>(
+            box),
+        db::get<domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                                  Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
             box),
@@ -610,7 +621,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         db::get<elliptic::dg::Tags::PenaltyParameter>(box),
-        db::get<elliptic::dg::Tags::Massive>(box), apply_boundary_condition,
+        db::get<elliptic::dg::Tags::Massive>(box),
+        db::get<elliptic::dg::Tags::Formulation>(box), apply_boundary_condition,
         std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...),
         fluxes_args_on_faces);

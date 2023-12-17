@@ -158,6 +158,9 @@ struct SubdomainOperator
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<
@@ -170,7 +173,8 @@ struct SubdomainOperator
       ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                        Frame::Inertial>,
                       Dim>,
-      elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>;
+      elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
+      elliptic::dg::Tags::Formulation>;
   using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
   using sources_args_tags =
       elliptic::get_sources_argument_tags<System, linearized>;
@@ -181,9 +185,9 @@ struct SubdomainOperator
 
   // These tags can be taken directly from the central element's DataBox, even
   // when evaluating neighbors
-  using args_tags_from_center = tmpl::remove_duplicates<
-      tmpl::push_back<ArgsTagsFromCenter, elliptic::dg::Tags::PenaltyParameter,
-                      elliptic::dg::Tags::Massive>>;
+  using args_tags_from_center = tmpl::remove_duplicates<tmpl::push_back<
+      ArgsTagsFromCenter, elliptic::dg::Tags::PenaltyParameter,
+      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>>;
 
   // Data on neighbors is stored in the central element's DataBox in
   // `LinearSolver::Schwarz::Tags::Overlaps` maps, so we wrap the argument tags

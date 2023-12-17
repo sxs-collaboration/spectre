@@ -61,14 +61,13 @@
  * points. When using Gauss points they are only the same at the central grid
  * point and only when an odd number of grid points is used.
  */
-template <typename... FluxTags, size_t Dim>
+template <typename... ResultTags, typename... FluxTags, size_t Dim>
 void weak_divergence(
-    const gsl::not_null<Variables<tmpl::list<Tags::div<FluxTags>...>>*>
+    const gsl::not_null<Variables<tmpl::list<ResultTags...>>*>
         divergence_of_fluxes,
     const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          Frame::Inertial>&
-        det_jac_times_inverse_jacobian) {
+                          Frame::Inertial>& det_jac_times_inverse_jacobian) {
   if (UNLIKELY(divergence_of_fluxes->number_of_grid_points() !=
                fluxes.number_of_grid_points())) {
     divergence_of_fluxes->initialize(fluxes.number_of_grid_points());
@@ -104,12 +103,12 @@ void weak_divergence(
     // Multiplies the flux by det_jac_time_inverse_jacobian.
     const auto transform_to_logical_frame =
         [&det_jac_times_inverse_jacobian, &fluxes](
-            auto flux_tag_v,
-            const gsl::not_null<Variables<tmpl::list<Tags::div<FluxTags>...>>*>
+            auto flux_tag_v, auto div_tag_v,
+            const gsl::not_null<Variables<tmpl::list<ResultTags...>>*>
                 result_buffer,
             auto logical_index_of_jacobian) {
           using flux_tag = tmpl::type_from<decltype(flux_tag_v)>;
-          using div_tag = Tags::div<flux_tag>;
+          using div_tag = tmpl::type_from<decltype(div_tag_v)>;
 
           auto& result = get<div_tag>(*result_buffer);
           const auto& flux = get<flux_tag>(fluxes);
@@ -146,7 +145,7 @@ void weak_divergence(
         };
 
     if constexpr (Dim == 2) {
-      Variables<tmpl::list<Tags::div<FluxTags>...>> data_buffer{
+      Variables<tmpl::list<ResultTags...>> data_buffer{
           divergence_of_fluxes->number_of_grid_points()};
 
       const Matrix& eta_weak_div_matrix =
@@ -157,8 +156,8 @@ void weak_divergence(
       // Compute the eta divergence term. Since that also needs a transpose,
       // copy into result, then transpose into `data_buffer`
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
-          tmpl::type_<FluxTags>{}, make_not_null(&data_buffer),
-          std::integral_constant<size_t, 1>{}));
+          tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+          make_not_null(&data_buffer), std::integral_constant<size_t, 1>{}));
       double* div_ptr = divergence_of_fluxes->data();
       raw_transpose(make_not_null(div_ptr), data_buffer.data(),
                     xi_weak_div_matrix.rows(),
@@ -175,15 +174,15 @@ void weak_divergence(
 
       // Now compute xi divergence and *add* to eta divergence
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
-          tmpl::type_<FluxTags>{}, make_not_null(&data_buffer),
-          std::integral_constant<size_t, 0>{}));
+          tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+          make_not_null(&data_buffer), std::integral_constant<size_t, 0>{}));
       apply_matrix_in_first_dim(divergence_of_fluxes->data(),
                                 data_buffer.data(), xi_weak_div_matrix,
                                 data_buffer.size(), true);
     } else if constexpr (Dim == 3) {
-      Variables<tmpl::list<Tags::div<FluxTags>...>> data_buffer0{
+      Variables<tmpl::list<ResultTags...>> data_buffer0{
           divergence_of_fluxes->number_of_grid_points()};
-      Variables<tmpl::list<Tags::div<FluxTags>...>> data_buffer1{
+      Variables<tmpl::list<ResultTags...>> data_buffer1{
           divergence_of_fluxes->number_of_grid_points()};
       constexpr size_t number_of_independent_components =
           decltype(data_buffer1)::number_of_independent_components;
@@ -198,8 +197,8 @@ void weak_divergence(
       // Compute the zeta divergence term. Since that also needs a transpose,
       // copy into data_buffer0, then transpose into `data_buffer1`.
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
-          tmpl::type_<FluxTags>{}, make_not_null(&data_buffer0),
-          std::integral_constant<size_t, 2>{}));
+          tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+          make_not_null(&data_buffer0), std::integral_constant<size_t, 2>{}));
       size_t chunk_size =
           xi_weak_div_matrix.rows() * eta_weak_div_matrix.rows();
       double* result_ptr = data_buffer1.data();
@@ -217,8 +216,8 @@ void weak_divergence(
       // Compute the eta divergence term. Since that also needs a transpose,
       // copy into data_buffer0, then transpose into `data_buffer1`.
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
-          tmpl::type_<FluxTags>{}, make_not_null(&data_buffer0),
-          std::integral_constant<size_t, 1>{}));
+          tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+          make_not_null(&data_buffer0), std::integral_constant<size_t, 1>{}));
       chunk_size = xi_weak_div_matrix.rows();
       result_ptr = data_buffer1.data();
       raw_transpose(make_not_null(result_ptr), data_buffer0.data(), chunk_size,
@@ -235,8 +234,8 @@ void weak_divergence(
 
       // Now compute xi divergence and *add* to eta divergence
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
-          tmpl::type_<FluxTags>{}, make_not_null(&data_buffer0),
-          std::integral_constant<size_t, 0>{}));
+          tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
+          make_not_null(&data_buffer0), std::integral_constant<size_t, 0>{}));
       apply_matrix_in_first_dim(divergence_of_fluxes->data(),
                                 data_buffer0.data(), xi_weak_div_matrix,
                                 data_buffer0.size(), true);

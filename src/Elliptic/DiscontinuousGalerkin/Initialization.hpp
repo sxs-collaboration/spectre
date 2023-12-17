@@ -72,7 +72,10 @@ struct InitializeGeometry {
       domain::Tags::Coordinates<Dim, Frame::Inertial>,
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                     Frame::Inertial>,
-      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>;
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>>;
   using argument_tags =
       tmpl::list<domain::Tags::InitialExtents<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>,
@@ -88,6 +91,10 @@ struct InitializeGeometry {
                                     Frame::Inertial>*>
           inv_jacobian,
       gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+      gsl::not_null<Scalar<DataVector>*> det_jacobian,
+      gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                    Frame::Inertial>*>
+          det_times_inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Domain<Dim>& domain,

@@ -108,6 +108,7 @@ Discretization:
     PenaltyParameter: 1.
     Massive: True
     Quadrature: GaussLobatto
+    Formulation: WeakInertial
 
 Observers:
   VolumeFileName: "BnsVolume"
