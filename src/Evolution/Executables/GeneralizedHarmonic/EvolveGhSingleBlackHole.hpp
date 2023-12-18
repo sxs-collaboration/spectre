@@ -4,9 +4,11 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
+#include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
@@ -14,16 +16,22 @@
 #include "ControlSystem/Systems/Size.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
+#include "Domain/FunctionsOfTime/OutputTimeBounds.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/Deadlock/PrintDgElementArray.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
+#include "Parallel/GlobalCache.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
@@ -57,7 +65,9 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
@@ -243,13 +253,40 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
         tmpl::map<tmpl::pair<gh_dg_element_array, dg_registration_list>>;
   };
 
+  using control_components =
+      control_system::control_components<EvolutionMetavars, control_systems>;
+
+  static void run_deadlock_analysis_simple_actions(
+      Parallel::GlobalCache<EvolutionMetavars>& cache,
+      const std::vector<std::string>& deadlocked_components) {
+    const auto& functions_of_time =
+        Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
+
+    const std::string time_bounds =
+        ::domain::FunctionsOfTime::ouput_time_bounds(functions_of_time);
+
+    Parallel::printf("%s\n", time_bounds);
+
+    if (alg::count(deadlocked_components,
+                   pretty_type::name<gh_dg_element_array>()) == 1) {
+      tmpl::for_each<control_components>([&cache](auto component_v) {
+        using component = tmpl::type_from<decltype(component_v)>;
+        Parallel::simple_action<
+            control_system::Actions::PrintCurrentMeasurement>(
+            Parallel::get_parallel_component<component>(cache));
+      });
+
+      Parallel::simple_action<deadlock::PrintElementInfo>(
+          Parallel::get_parallel_component<gh_dg_element_array>(cache));
+    }
+  }
+
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
       importers::ElementDataReader<EvolutionMetavars>, gh_dg_element_array,
-      intrp::Interpolator<EvolutionMetavars>,
-      control_system::control_components<EvolutionMetavars, control_systems>,
+      intrp::Interpolator<EvolutionMetavars>, control_components,
       tmpl::transform<interpolation_target_tags,
                       tmpl::bind<intrp::InterpolationTarget,
                                  tmpl::pin<EvolutionMetavars>, tmpl::_1>>>>;
