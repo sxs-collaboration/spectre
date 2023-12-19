@@ -49,6 +49,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "ScriOutputDensity");
   TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
       "H5WorldtubeBoundaryDataManager");
+  TestHelpers::db::test_simple_tag<
+      Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager>(
+      "KleinGordonH5WorldtubeBoundaryDataManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::FilePrefix>("FilePrefix");
   TestHelpers::db::test_simple_tag<Cce::Tags::LMax>("LMax");
   TestHelpers::db::test_simple_tag<Cce::Tags::NumberOfRadialPoints>(
@@ -110,6 +113,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
         Options::Auto<double>{});
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::BoundaryDataFilename>(
             "OptionTagsCceR0100.h5") == "OptionTagsCceR0100.h5");
+  CHECK(TestHelpers::test_option_tag<
+            Cce::OptionTags::KleinGordonBoundaryDataFilename>(
+            "OptionTagsKleinGordonCceR0100.h5") ==
+        "OptionTagsKleinGordonCceR0100.h5");
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::H5LookaheadTimes>("5") ==
         5_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriInterpolationOrder>(

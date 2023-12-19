@@ -35,11 +35,24 @@ void initialize_buffers(
     gsl::not_null<size_t*> buffer_depth,
     gsl::not_null<Variables<InputTags>*> coefficients_buffers,
     size_t buffer_size, size_t interpolator_length, size_t l_max);
+
+template <typename InputTags, typename OutputTags>
+void populate_hypersurface_boundary_data(
+    gsl::not_null<Variables<OutputTags>*> boundary_data_variables,
+    gsl::not_null<Variables<InputTags>*> interpolated_coefficients,
+    gsl::not_null<Variables<InputTags>*> coefficients_buffers,
+    gsl::not_null<size_t*> time_span_start,
+    gsl::not_null<size_t*> time_span_end,
+    gsl::not_null<Parallel::NodeLock*> hdf5_lock, double time,
+    const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
+    const std::unique_ptr<WorldtubeBufferUpdater<InputTags>>& buffer_updater,
+    size_t l_max, size_t buffer_depth);
 }  // namespace detail
 
 /// \cond
 class MetricWorldtubeDataManager;
 class BondiWorldtubeDataManager;
+class KleinGordonWorldtubeDataManager;
 /// \endcond
 
 /*!
@@ -69,7 +82,8 @@ template <typename BoundaryTags>
 class WorldtubeDataManager : public PUP::able {
  public:
   using creatable_classes =
-      tmpl::list<MetricWorldtubeDataManager, BondiWorldtubeDataManager>;
+      tmpl::list<MetricWorldtubeDataManager, BondiWorldtubeDataManager,
+                 KleinGordonWorldtubeDataManager>;
 
   WRAPPED_PUPable_abstract(WorldtubeDataManager);  // NOLINT
 
@@ -260,6 +274,77 @@ class BondiWorldtubeDataManager
   // note: buffers store data in an 'time-varies-fastest' manner
   // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<cce_bondi_input_tags> coefficients_buffers_;
+
+  size_t buffer_depth_ = 0;
+
+  std::unique_ptr<intrp::SpanInterpolator> interpolator_;
+};
+
+class KleinGordonWorldtubeDataManager
+    : public WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags> {
+ public:
+  // charm needs an empty constructor.
+  KleinGordonWorldtubeDataManager() = default;
+
+  KleinGordonWorldtubeDataManager(
+      std::unique_ptr<WorldtubeBufferUpdater<klein_gordon_input_tags>>
+          buffer_updater,
+      size_t l_max, size_t buffer_depth,
+      std::unique_ptr<intrp::SpanInterpolator> interpolator);
+
+  WRAPPED_PUPable_decl_template(KleinGordonWorldtubeDataManager);  // NOLINT
+
+  explicit KleinGordonWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
+
+  /*!
+   * \brief Update the `boundary_data_box` entries for all tags in
+   * `Tags::klein_gordon_worldtube_boundary_tags` to the boundary data at
+   * `time`.
+   *
+   * \details First, if the stored buffer requires updating, it will be updated
+   * via the `buffer_updater_` supplied in the constructor. Then, each of the
+   * 2 spin-weighted scalars in `Tags::klein_gordon_worldtube_boundary_tags`
+   * are interpolated across buffer points to the requested time value (via the
+   * `Interpolator` provided in the constructor).
+   *
+   * Returns `true` if the time can be supplied from the `buffer_updater_`, and
+   * `false` otherwise. No tags are updated if `false` is returned.
+   */
+  bool populate_hypersurface_boundary_data(
+      gsl::not_null<Variables<Tags::klein_gordon_worldtube_boundary_tags>*>
+          boundary_data_variables,
+      double time, gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
+
+  std::unique_ptr<WorldtubeDataManager> get_clone() const override;
+
+  /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
+  /// `populate_hypersurface_boundary_data()`
+  size_t get_l_max() const override { return l_max_; }
+
+  /// retrieves the current time span associated with the `buffer_updater_` for
+  /// diagnostics
+  std::pair<size_t, size_t> get_time_span() const override;
+
+  /// Serialization for Charm++.
+  void pup(PUP::er& p) override;  // NOLINT
+
+ private:
+  std::unique_ptr<WorldtubeBufferUpdater<klein_gordon_input_tags>>
+      buffer_updater_;
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable size_t time_span_start_ = 0;
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable size_t time_span_end_ = 0;
+  size_t l_max_ = 0;
+
+  // These buffers are just kept around to avoid allocations; they're
+  // updated every time a time is requested
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable Variables<klein_gordon_input_tags> interpolated_coefficients_;
+
+  // note: buffers store data in an 'time-varies-fastest' manner
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable Variables<klein_gordon_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 
