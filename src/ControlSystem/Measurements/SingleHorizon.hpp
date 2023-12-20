@@ -105,14 +105,13 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
         const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
         const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
-        const Scalar<DataVector>& constraint_gamma1,
         const LinkedMessageId<double>& measurement_id,
         Parallel::GlobalCache<Metavariables>& cache,
         const ElementId<3>& array_index,
         const ParallelComponent* const /*meta*/, ControlSystems /*meta*/) {
       intrp::interpolate<interpolation_target_tag<ControlSystems>>(
           measurement_id, mesh, cache, array_index, spacetime_metric, pi, phi,
-          deriv_phi, constraint_gamma1);
+          deriv_phi);
     }
   };
 

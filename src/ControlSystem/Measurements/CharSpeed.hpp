@@ -14,7 +14,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
@@ -82,8 +81,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
           tmpl::list<gr::Tags::Lapse<DataVector>,
                      gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
                      gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
-                     gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
-                     gh::ConstraintDamping::Tags::ConstraintGamma1>;
+                     gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>>;
       using compute_vars_to_interpolate =
           ah::ComputeExcisionBoundaryVolumeQuantities;
       using compute_items_on_source = tmpl::list<>;
@@ -122,7 +120,6 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
         const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
         const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
-        const Scalar<DataVector>& constraint_gamma1,
         const LinkedMessageId<double>& measurement_id,
         Parallel::GlobalCache<Metavariables>& cache,
         const ElementId<3>& array_index,
@@ -134,8 +131,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
       // ObservationValue unused
       event(measurement_id, point_infos, mesh, grid_coords, spacetime_metric,
-            pi, phi, deriv_phi, constraint_gamma1, cache, array_index,
-            component, ::Event::ObservationValue{});
+            pi, phi, deriv_phi, cache, array_index, component,
+            ::Event::ObservationValue{});
     }
   };
 
@@ -195,14 +192,13 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
         const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
         const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
-        const Scalar<DataVector>& constraint_gamma1,
         const LinkedMessageId<double>& measurement_id,
         Parallel::GlobalCache<Metavariables>& cache,
         const ElementId<3>& array_index,
         const ParallelComponent* const /*meta*/, ControlSystems /*meta*/) {
       intrp::interpolate<interpolation_target_tag<ControlSystems>>(
           measurement_id, mesh, cache, array_index, spacetime_metric, pi, phi,
-          deriv_phi, constraint_gamma1);
+          deriv_phi);
     }
   };
 

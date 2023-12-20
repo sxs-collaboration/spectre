@@ -81,8 +81,7 @@ struct ComputeHorizonVolumeQuantities
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                               Frame::Inertial>,
-                 gh::ConstraintDamping::Tags::ConstraintGamma1>;
+                               Frame::Inertial>>;
 
   using required_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
