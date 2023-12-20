@@ -184,12 +184,20 @@ ApparentHorizons:
   ControlSystemCharSpeedAh: *Ah
 
 InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
   ExcisionBoundary: &ExBdry
     LMax: *LMax
     Center: [0., 0., 0.]
     Radius: *InnerRadius
     AngularOrdering: "Strahlkorper"
   ControlSystemCharSpeedExcision: *ExBdry
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
 
 ControlSystems:
   WriteDataToDisk: false

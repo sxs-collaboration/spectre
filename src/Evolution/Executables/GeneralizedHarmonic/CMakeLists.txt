@@ -61,7 +61,9 @@ target_link_libraries(
   PRIVATE
   ${LIBS_TO_LINK}
   ApparentHorizonFinder
+  Cce
   ControlSystem
+  Deadlock
   )
 
 # BBH
