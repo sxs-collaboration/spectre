@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_InitializeWorldtubeBoundary.cpp
   Test_Psi0Matching.cpp
   Test_RequestBoundaryData.cpp
+  Test_RequestKleinGordonBoundaryData.cpp
   Test_SendGhVarsToCce.cpp
   Test_ScriObserveInterpolated.cpp
   Test_TimeManagement.cpp
