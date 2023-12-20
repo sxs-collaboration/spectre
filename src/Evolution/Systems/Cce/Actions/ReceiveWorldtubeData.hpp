@@ -32,7 +32,7 @@ namespace Actions {
  * `Cce::Tags::BoundaryTime` accordingly.
  *
  * \details The boundary data is computed by a separate component, and packaged
- * into a `Variables<tmpl::list<BoundaryTags...>>` which is sent in the argument
+ * into a `Variables<TagList>` which is sent in the argument
  * of the simple action invocation. The `TimeStepId` is also provided to confirm
  * the time associated with the passed boundary data.
  *
@@ -40,13 +40,11 @@ namespace Actions {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - All tags in `BoundaryTags`
- *   - `Cce::Tags::BoundaryTime`
+ *   - All tags in `TagList`
  */
-template <typename Metavariables>
+template <typename Metavariables, typename TagList>
 struct ReceiveWorldtubeData {
-  using inbox_tags = tmpl::list<Cce::ReceiveTags::BoundaryData<
-      typename Metavariables::cce_boundary_communication_tags>>;
+  using inbox_tags = tmpl::list<Cce::ReceiveTags::BoundaryData<TagList>>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
@@ -55,14 +53,13 @@ struct ReceiveWorldtubeData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<
-        typename Metavariables::cce_boundary_communication_tags>>(inboxes);
+    auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<TagList>>(inboxes);
     if (inbox.count(db::get<::Tags::TimeStepId>(box)) != 1) {
       return {Parallel::AlgorithmExecution::Pause,
               tmpl::index_of<ActionList, ReceiveWorldtubeData>::value};
     }
 
-    tmpl::for_each<typename Metavariables::cce_boundary_communication_tags>(
+    tmpl::for_each<TagList>(
         [&inbox, &box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(

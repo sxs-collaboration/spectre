@@ -93,7 +93,10 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::AdvanceTime, Actions::ReceiveWorldtubeData<Metavariables>,
+      ::Actions::AdvanceTime,
+      Actions::ReceiveWorldtubeData<
+          Metavariables,
+          typename Metavariables::cce_boundary_communication_tags>,
       Actions::InitializeFirstHypersurface<false, DummyBoundary<Metavariables>>,
       ::Actions::MutateApply<InitializeGauge>,
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<

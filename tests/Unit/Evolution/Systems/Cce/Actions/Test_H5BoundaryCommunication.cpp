@@ -125,7 +125,9 @@ struct mock_characteristic_evolution {
           tmpl::list<Actions::RequestBoundaryData<
                          H5WorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>,
-                     Actions::ReceiveWorldtubeData<Metavariables>,
+                     Actions::ReceiveWorldtubeData<
+                         Metavariables, typename Metavariables::
+                                            cce_boundary_communication_tags>,
                      Actions::RequestNextBoundaryData<
                          H5WorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>>>>;
