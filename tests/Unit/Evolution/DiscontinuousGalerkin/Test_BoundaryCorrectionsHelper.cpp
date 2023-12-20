@@ -286,14 +286,8 @@ void test_impl(const gsl::not_null<std::mt19937*> gen) {
       CurvedBackground ? std::string{"_curved"} : std::string{""};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       System<Dim, CurvedBackground>, tmpl::list<VolumeDoubleConversion>>(
-      gen, "BoundaryCorrectionsHelper",
-      {{"dg_package_data_var1" + curved_suffix,
-        "dg_package_data_var1_normal_dot_flux" + curved_suffix,
-        "dg_package_data_var2" + curved_suffix,
-        "dg_package_data_var2_normal_dot_flux" + curved_suffix,
-        "dg_package_data_abs_char_speed" + curved_suffix}},
-      {{"dg_boundary_terms_var1", "dg_boundary_terms_var2"}}, correction,
-      face_mesh,
+      gen, "BoundaryCorrectionsHelper", "dg_package_data" + curved_suffix,
+      "dg_boundary_terms", correction, face_mesh,
       tuples::TaggedTuple<Tags::VolumeDouble<VolumeDoubleType>>{
           VolumeDoubleType{2.3}},
       tuples::TaggedTuple<>{});

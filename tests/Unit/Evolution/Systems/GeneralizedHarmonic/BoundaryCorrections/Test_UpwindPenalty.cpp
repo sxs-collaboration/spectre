@@ -29,17 +29,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
                        {}, {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
-      gh::System<Dim>>(gen, "UpwindPenalty",
-                       {{"dg_package_data_char_speed_v_spacetime_metric",
-                         "dg_package_data_char_speed_v_zero",
-                         "dg_package_data_char_speed_v_plus",
-                         "dg_package_data_char_speed_v_minus",
-                         "dg_package_data_char_speed_v_plus_times_normal",
-                         "dg_package_data_char_speed_v_minus_times_normal",
-                         "dg_package_data_char_speed_gamma2_v_spacetime_metric",
-                         "dg_package_data_char_speeds"}},
-                       {{"dg_boundary_terms_spacetime_metric",
-                         "dg_boundary_terms_pi", "dg_boundary_terms_phi"}},
+      gh::System<Dim>>(gen, "UpwindPenalty", "dg_package_data",
+                       "dg_boundary_terms",
                        gh::BoundaryCorrections::UpwindPenalty<Dim>{},
                        Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                                      Spectral::Quadrature::Gauss},
@@ -51,17 +42,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       gh::System<Dim>>(
-      gen, "UpwindPenalty",
-      {{"dg_package_data_char_speed_v_spacetime_metric",
-        "dg_package_data_char_speed_v_zero",
-        "dg_package_data_char_speed_v_plus",
-        "dg_package_data_char_speed_v_minus",
-        "dg_package_data_char_speed_v_plus_times_normal",
-        "dg_package_data_char_speed_v_minus_times_normal",
-        "dg_package_data_char_speed_gamma2_v_spacetime_metric",
-        "dg_package_data_char_speeds"}},
-      {{"dg_boundary_terms_spacetime_metric", "dg_boundary_terms_pi",
-        "dg_boundary_terms_phi"}},
+      gen, "UpwindPenalty", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const gh::BoundaryCorrections::UpwindPenalty<Dim>&>(
           *upwind_penalty),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,

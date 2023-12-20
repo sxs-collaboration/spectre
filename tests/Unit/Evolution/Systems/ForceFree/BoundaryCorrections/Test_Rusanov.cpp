@@ -34,18 +34,7 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
       {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_tilde_e", "dg_package_data_tilde_b",
-        "dg_package_data_tilde_psi", "dg_package_data_tilde_phi",
-        "dg_package_data_tilde_q", "dg_package_data_normal_dot_flux_tilde_e",
-        "dg_package_data_normal_dot_flux_tilde_b",
-        "dg_package_data_normal_dot_flux_tilde_psi",
-        "dg_package_data_normal_dot_flux_tilde_phi",
-        "dg_package_data_normal_dot_flux_tilde_q",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_tilde_e", "dg_boundary_terms_tilde_b",
-        "dg_boundary_terms_tilde_psi", "dg_boundary_terms_tilde_phi",
-        "dg_boundary_terms_tilde_q"}},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
       BoundaryCorrections::Rusanov{},
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
@@ -54,18 +43,7 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection>>("Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_tilde_e", "dg_package_data_tilde_b",
-        "dg_package_data_tilde_psi", "dg_package_data_tilde_phi",
-        "dg_package_data_tilde_q", "dg_package_data_normal_dot_flux_tilde_e",
-        "dg_package_data_normal_dot_flux_tilde_b",
-        "dg_package_data_normal_dot_flux_tilde_psi",
-        "dg_package_data_normal_dot_flux_tilde_phi",
-        "dg_package_data_normal_dot_flux_tilde_q",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_tilde_e", "dg_boundary_terms_tilde_b",
-        "dg_boundary_terms_tilde_psi", "dg_boundary_terms_tilde_phi",
-        "dg_boundary_terms_tilde_q"}},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const BoundaryCorrections::Rusanov&>(*rusanov),
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});

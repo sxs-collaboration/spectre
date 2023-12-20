@@ -36,20 +36,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Rusanov",
       {});
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_tilde_d", "dg_package_data_tilde_ye",
-        "dg_package_data_tilde_tau", "dg_package_data_tilde_s",
-        "dg_package_data_tilde_b", "dg_package_data_tilde_phi",
-        "dg_package_data_normal_dot_flux_tilde_d",
-        "dg_package_data_normal_dot_flux_tilde_ye",
-        "dg_package_data_normal_dot_flux_tilde_tau",
-        "dg_package_data_normal_dot_flux_tilde_s",
-        "dg_package_data_normal_dot_flux_tilde_b",
-        "dg_package_data_normal_dot_flux_tilde_phi",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_tilde_d", "dg_boundary_terms_tilde_ye",
-        "dg_boundary_terms_tilde_tau", "dg_boundary_terms_tilde_s",
-        "dg_boundary_terms_tilde_b", "dg_boundary_terms_tilde_phi"}},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
       grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{},
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
@@ -59,20 +46,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Rusanov",
       "Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_tilde_d", "dg_package_data_tilde_ye",
-        "dg_package_data_tilde_tau", "dg_package_data_tilde_s",
-        "dg_package_data_tilde_b", "dg_package_data_tilde_phi",
-        "dg_package_data_normal_dot_flux_tilde_d",
-        "dg_package_data_normal_dot_flux_tilde_ye",
-        "dg_package_data_normal_dot_flux_tilde_tau",
-        "dg_package_data_normal_dot_flux_tilde_s",
-        "dg_package_data_normal_dot_flux_tilde_b",
-        "dg_package_data_normal_dot_flux_tilde_phi",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_tilde_d", "dg_boundary_terms_tilde_ye",
-        "dg_boundary_terms_tilde_tau", "dg_boundary_terms_tilde_s",
-        "dg_boundary_terms_tilde_b", "dg_boundary_terms_tilde_phi"}},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<
           const grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov&>(
           *rusanov),

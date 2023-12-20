@@ -32,10 +32,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Rusanov",
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_u"}}, Burgers::BoundaryCorrections::Rusanov{},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
+      Burgers::BoundaryCorrections::Rusanov{},
       Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
 
@@ -45,10 +43,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Rusanov",
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      make_not_null(&gen), "Rusanov",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_u"}},
+      make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const Burgers::BoundaryCorrections::Rusanov&>(*rusanov),
       Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});

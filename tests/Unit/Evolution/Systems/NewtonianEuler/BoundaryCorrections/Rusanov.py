@@ -4,109 +4,7 @@
 import numpy as np
 
 
-def dg_package_data_mass_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return mass_density
-
-
-def dg_package_data_momentum_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return momentum_density
-
-
-def dg_package_data_energy_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return energy_density
-
-
-def dg_package_data_normal_dot_flux_mass_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return np.einsum("i,i", normal_covector, flux_mass_density)
-
-
-def dg_package_data_normal_dot_flux_momentum_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return np.einsum("i,ij->j", normal_covector, flux_momentum_density)
-
-
-def dg_package_data_normal_dot_flux_energy_density(
-    mass_density,
-    momentum_density,
-    energy_density,
-    flux_mass_density,
-    flux_momentum_density,
-    flux_energy_density,
-    velocity,
-    specific_internal_energy,
-    normal_covector,
-    mesh_velocity,
-    normal_dot_mesh_velocity,
-    use_polytropic_fluid,
-):
-    return np.einsum("i,i", normal_covector, flux_energy_density)
-
-
-def dg_package_data_abs_char_speed(
+def dg_package_data(
     mass_density,
     momentum_density,
     energy_density,
@@ -137,23 +35,34 @@ def dg_package_data_abs_char_speed(
         ) ** 2 * specific_internal_energy
         sound_speed = np.sqrt(chi + kappa_times_p_over_rho_squared)
 
-    if normal_dot_mesh_velocity is None:
-        return np.maximum(
-            np.abs(velocity_dot_normal - sound_speed),
-            np.abs(velocity_dot_normal + sound_speed),
-        )
-    else:
-        return np.maximum(
-            np.abs(
-                velocity_dot_normal - sound_speed - normal_dot_mesh_velocity
-            ),
-            np.abs(
-                velocity_dot_normal + sound_speed - normal_dot_mesh_velocity
-            ),
-        )
+    return (
+        mass_density,
+        momentum_density,
+        energy_density,
+        np.asarray(np.einsum("i,i", normal_covector, flux_mass_density)),
+        np.asarray(
+            np.einsum("i,ij->j", normal_covector, flux_momentum_density)
+        ),
+        np.asarray(np.einsum("i,i", normal_covector, flux_energy_density)),
+        np.asarray(
+            np.maximum(
+                np.abs(velocity_dot_normal - sound_speed),
+                np.abs(velocity_dot_normal + sound_speed),
+            )
+            if normal_dot_mesh_velocity is None
+            else np.maximum(
+                np.abs(
+                    velocity_dot_normal - sound_speed - normal_dot_mesh_velocity
+                ),
+                np.abs(
+                    velocity_dot_normal + sound_speed - normal_dot_mesh_velocity
+                ),
+            )
+        ),
+    )
 
 
-def dg_boundary_terms_mass_density(
+def dg_boundary_terms(
     interior_mass_density,
     interior_momentum_density,
     interior_energy_density,
@@ -170,95 +79,31 @@ def dg_boundary_terms_mass_density(
     exterior_abs_char_speed,
     use_strong_form,
 ):
-    if use_strong_form:
-        return -0.5 * (
-            interior_normal_dot_flux_mass_density
-            + exterior_normal_dot_flux_mass_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_mass_density - interior_mass_density
-        )
-    else:
-        return 0.5 * (
-            interior_normal_dot_flux_mass_density
-            - exterior_normal_dot_flux_mass_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_mass_density - interior_mass_density
+    sign_for_form = 1.0 if use_strong_form else -1.0
+
+    # Use scope and locals() to get arguments into the eval context below
+    scope = locals()
+
+    def impl(var_name):
+        return np.asarray(
+            (
+                -0.5
+                * (
+                    sign_for_form
+                    * eval("interior_normal_dot_flux_" + var_name, scope)
+                    + eval("exterior_normal_dot_flux_" + var_name, scope)
+                )
+                - 0.5
+                * np.maximum(interior_abs_char_speed, exterior_abs_char_speed)
+                * (
+                    eval("exterior_" + var_name, scope)
+                    - eval("interior_" + var_name, scope)
+                )
+            )
         )
 
-
-def dg_boundary_terms_momentum_density(
-    interior_mass_density,
-    interior_momentum_density,
-    interior_energy_density,
-    interior_normal_dot_flux_mass_density,
-    interior_normal_dot_flux_momentum_density,
-    interior_normal_dot_flux_energy_density,
-    interior_abs_char_speed,
-    exterior_mass_density,
-    exterior_momentum_density,
-    exterior_energy_density,
-    exterior_normal_dot_flux_mass_density,
-    exterior_normal_dot_flux_momentum_density,
-    exterior_normal_dot_flux_energy_density,
-    exterior_abs_char_speed,
-    use_strong_form,
-):
-    if use_strong_form:
-        return -0.5 * (
-            interior_normal_dot_flux_momentum_density
-            + exterior_normal_dot_flux_momentum_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_momentum_density - interior_momentum_density
-        )
-    else:
-        return 0.5 * (
-            interior_normal_dot_flux_momentum_density
-            - exterior_normal_dot_flux_momentum_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_momentum_density - interior_momentum_density
-        )
-
-
-def dg_boundary_terms_energy_density(
-    interior_mass_density,
-    interior_momentum_density,
-    interior_energy_density,
-    interior_normal_dot_flux_mass_density,
-    interior_normal_dot_flux_momentum_density,
-    interior_normal_dot_flux_energy_density,
-    interior_abs_char_speed,
-    exterior_mass_density,
-    exterior_momentum_density,
-    exterior_energy_density,
-    exterior_normal_dot_flux_mass_density,
-    exterior_normal_dot_flux_momentum_density,
-    exterior_normal_dot_flux_energy_density,
-    exterior_abs_char_speed,
-    use_strong_form,
-):
-    if use_strong_form:
-        return -0.5 * (
-            interior_normal_dot_flux_energy_density
-            + exterior_normal_dot_flux_energy_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_energy_density - interior_energy_density
-        )
-    else:
-        return 0.5 * (
-            interior_normal_dot_flux_energy_density
-            - exterior_normal_dot_flux_energy_density
-        ) - 0.5 * np.maximum(
-            interior_abs_char_speed, exterior_abs_char_speed
-        ) * (
-            exterior_energy_density - interior_energy_density
-        )
+    return (
+        impl("mass_density"),
+        impl("momentum_density"),
+        impl("energy_density"),
+    )

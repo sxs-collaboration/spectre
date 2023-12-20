@@ -32,10 +32,7 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
       {}, {});
 
   helpers::test_boundary_correction_with_python<ScalarAdvection::System<Dim>>(
-      gen, "Rusanov",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux_u",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_u"}},
+      gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       ScalarAdvection::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
@@ -46,10 +43,7 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
       "Rusanov:");
 
   helpers::test_boundary_correction_with_python<ScalarAdvection::System<Dim>>(
-      gen, "Rusanov",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux_u",
-        "dg_package_data_abs_char_speed"}},
-      {{"dg_boundary_terms_u"}},
+      gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const ScalarAdvection::BoundaryCorrections::Rusanov<Dim>&>(
           *rusanov),
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,

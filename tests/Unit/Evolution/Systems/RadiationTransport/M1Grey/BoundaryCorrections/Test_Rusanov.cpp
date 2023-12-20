@@ -38,16 +38,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       {}, {});
 
   helpers::test_boundary_correction_with_python<system>(
-      gen, "Rusanov",
-      {{"dg_package_data_tilde_e_nue", "dg_package_data_tilde_e_bar_nue",
-        "dg_package_data_tilde_s_nue", "dg_package_data_tilde_s_bar_nue",
-        "dg_package_data_normal_dot_flux_tilde_e_nue",
-        "dg_package_data_normal_dot_flux_tilde_e_bar_nue",
-        "dg_package_data_normal_dot_flux_tilde_s_nue",
-        "dg_package_data_normal_dot_flux_tilde_s_bar_nue"}},
-      {{"dg_boundary_terms_tilde_e_nue", "dg_boundary_terms_tilde_e_bar_nue",
-        "dg_boundary_terms_tilde_s_nue", "dg_boundary_terms_tilde_s_bar_nue"}},
-      rusanov{},
+      gen, "Rusanov", "dg_package_data", "dg_boundary_terms", rusanov{},
       Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       {}, {});
 
@@ -56,15 +47,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
                           BoundaryCorrection<neutrino_species>>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<system>(
-      gen, "Rusanov",
-      {{"dg_package_data_tilde_e_nue", "dg_package_data_tilde_e_bar_nue",
-        "dg_package_data_tilde_s_nue", "dg_package_data_tilde_s_bar_nue",
-        "dg_package_data_normal_dot_flux_tilde_e_nue",
-        "dg_package_data_normal_dot_flux_tilde_e_bar_nue",
-        "dg_package_data_normal_dot_flux_tilde_s_nue",
-        "dg_package_data_normal_dot_flux_tilde_s_bar_nue"}},
-      {{"dg_boundary_terms_tilde_e_nue", "dg_boundary_terms_tilde_e_bar_nue",
-        "dg_boundary_terms_tilde_s_nue", "dg_boundary_terms_tilde_s_bar_nue"}},
+      gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const rusanov&>(*rusanov_from_factory),
       Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       {}, {});
