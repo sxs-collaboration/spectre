@@ -3,9 +3,10 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Rusanov.hpp"
 
+#include <pup.h>
+
 #include <memory>
 #include <optional>
-#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -58,12 +59,21 @@ double Rusanov::dg_package_data(
 
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, 3,
+                  Frame::Inertial>& /*spatial_velocity_one_form*/,
+
+    const Scalar<DataVector>& /*rest_mass_density*/,
+    const Scalar<DataVector>& /*electron_fraction*/,
+    const Scalar<DataVector>& /*temperature*/,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& /*spatial_velocity*/,
 
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_covector,
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+    const EquationsOfState::EquationOfState<true, 3>&
+    /*equation_of_state*/) {
   {
     // Compute max abs char speed
     Scalar<DataVector>& shift_dot_normal = *packaged_tilde_d;

@@ -3,6 +3,11 @@
 
 import numpy as np
 
+_atmosphere_density_cutoff = 1.0e-8
+_magnetic_field_magnitude_for_hydro = 1.0e-30
+_polytropic_constant = 100.0
+_polytropic_gamma = 2.0
+
 
 def dg_package_data(
     tilde_d,
@@ -19,21 +24,90 @@ def dg_package_data(
     flux_tilde_phi,
     lapse,
     shift,
+    spatial_velocity_one_form,
+    rest_mass_density,
+    electron_fraction,
+    temperature,
+    spatial_velocity,
     normal_covector,
     normal_vector,
     mesh_velocity,
     normal_dot_mesh_velocity,
+    equation_of_state,
 ):
     def compute_char(lapse_sign):
-        return np.asarray(
-            (lapse_sign * lapse - np.dot(shift, normal_covector))
-            if normal_dot_mesh_velocity is None
-            else (
-                lapse_sign * lapse
-                - np.dot(shift, normal_covector)
-                - normal_dot_mesh_velocity
+        magnetic_field_magnitude = np.sqrt(np.einsum("i,i->", tilde_b, tilde_b))
+        if (
+            magnetic_field_magnitude < _magnetic_field_magnitude_for_hydro
+            and rest_mass_density > _atmosphere_density_cutoff
+        ):
+            # Sound speeds
+            pressure = (
+                _polytropic_constant * rest_mass_density**_polytropic_gamma
             )
-        )
+            sound_speed_squared = min(
+                max(
+                    (
+                        _polytropic_gamma
+                        * (_polytropic_gamma - 1.0)
+                        * pressure
+                        / (
+                            rest_mass_density * (_polytropic_gamma - 1.0)
+                            + _polytropic_gamma * pressure
+                        )
+                    ),
+                    0.0,
+                ),
+                1.0,
+            )
+            velocity_dot_normal = min(
+                max(np.einsum("i,i->", spatial_velocity, normal_covector), 0.0),
+                1.0 - 1.0e-8,
+            )
+            velocity_squared = np.einsum(
+                "i,i->", spatial_velocity, spatial_velocity_one_form
+            )
+            one_over_lorentz_factor_squared = 1.0 - velocity_squared
+            d = np.sqrt(
+                max(
+                    0.0,
+                    sound_speed_squared
+                    * one_over_lorentz_factor_squared
+                    * (
+                        1.0
+                        - velocity_squared * sound_speed_squared
+                        - velocity_dot_normal**2 * (1.0 - sound_speed_squared)
+                    ),
+                )
+            )
+            Lambda = (
+                lapse
+                / (1.0 - velocity_squared * sound_speed_squared)
+                * (
+                    velocity_dot_normal * (1.0 - sound_speed_squared)
+                    + lapse_sign * d
+                )
+            )
+            return np.asarray(
+                (Lambda - np.dot(shift, normal_covector))
+                if normal_dot_mesh_velocity is None
+                else (
+                    Lambda
+                    - np.dot(shift, normal_covector)
+                    - normal_dot_mesh_velocity
+                )
+            )
+        else:
+            # Light speeds
+            return np.asarray(
+                (lapse_sign * lapse - np.dot(shift, normal_covector))
+                if normal_dot_mesh_velocity is None
+                else (
+                    lapse_sign * lapse
+                    - np.dot(shift, normal_covector)
+                    - normal_dot_mesh_velocity
+                )
+            )
 
     return (
         tilde_d,

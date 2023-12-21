@@ -119,34 +119,35 @@ class HydroFreeOutflow final : public BoundaryCondition {
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::Pressure<DataVector>>;
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::Temperature<DataVector>>;
   using dg_interior_temporary_tags = tmpl::list<Shift, Lapse, InvSpatialMetric>;
   using dg_gridless_tags = tmpl::list<>;
 
   static std::optional<std::string> dg_ghost(
-      const gsl::not_null<Scalar<DataVector>*> tilde_d,
-      const gsl::not_null<Scalar<DataVector>*> tilde_ye,
-      const gsl::not_null<Scalar<DataVector>*> tilde_tau,
-      const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
-      const gsl::not_null<Scalar<DataVector>*> tilde_phi,
+      gsl::not_null<Scalar<DataVector>*> tilde_d,
+      gsl::not_null<Scalar<DataVector>*> tilde_ye,
+      gsl::not_null<Scalar<DataVector>*> tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
+      gsl::not_null<Scalar<DataVector>*> tilde_phi,
 
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          tilde_d_flux,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          tilde_ye_flux,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          tilde_tau_flux,
-      const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*>
-          tilde_s_flux,
-      const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*>
-          tilde_b_flux,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          tilde_phi_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
+      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
+      gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
 
-      const gsl::not_null<Scalar<DataVector>*> lapse,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
-      const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+      gsl::not_null<Scalar<DataVector>*> lapse,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+          spatial_velocity_one_form,
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> temperature,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
+      gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
           inv_spatial_metric,
 
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
@@ -163,6 +164,7 @@ class HydroFreeOutflow final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
       const Scalar<DataVector>& interior_lorentz_factor,
       const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_temperature,
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
       const Scalar<DataVector>& interior_lapse,

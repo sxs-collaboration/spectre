@@ -76,6 +76,7 @@ using tags_list_for_reconstruct = tmpl::list<
     ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildePhi, tmpl::size_t<3>,
                  Frame::Inertial>,
     gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+    hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
     gr::Tags::SpatialMetric<DataVector, 3>,
     gr::Tags::SqrtDetSpatialMetric<DataVector>,
     gr::Tags::InverseSpatialMetric<DataVector, 3>,

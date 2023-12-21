@@ -109,6 +109,12 @@ def soln_mass_density(coords, time):
     )
 
 
+def soln_temperature(coords, time):
+    return (_soln_adiabatic_index - 1) * soln_specific_internal_energy(
+        coords, time
+    )
+
+
 def soln_magnetic_field(coords, time):
     return np.array([0.0, 0.0, 0.0])
 
@@ -127,6 +133,50 @@ def soln_spatial_metric(coords, time):
 
 def soln_inverse_spatial_metric(coords, time):
     return np.identity(3)
+
+
+def soln_spatial_velocity(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return soln_velocity(coords, time)
+
+
+def soln_rest_mass_density(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return soln_mass_density(coords, time)
+
+
+def soln_electron_fraction_long(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return soln_electron_fraction(coords, time)
+
+
+def soln_temperature_long(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return soln_temperature(coords, time)
 
 
 def soln_tilde_d(
@@ -858,6 +908,50 @@ def data_magnetic_field(coords):
         _data_magnetic_field,
         _data_adiabatic_index,
     )
+
+
+def data_temperature(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return (_data_adiabatic_index - 1) * data_specific_internal_energy(coords)
+
+
+def data_electron_fraction_long(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return _data_electron_fraction
+
+
+def data_rest_mass_density(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return data_mass_density(coords)
+
+
+def data_spatial_velocity(
+    face_mesh_velocity,
+    outward_directed_normal_covector,
+    outward_directed_normal_vector,
+    coords,
+    time,
+    dim,
+):
+    return data_velocity(coords)
 
 
 def data_tilde_d(

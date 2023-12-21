@@ -19,10 +19,16 @@ def dg_package_data(
     flux_tilde_phi,
     lapse,
     shift,
+    spatial_velocity_one_form,
+    rest_mass_density,
+    electron_fraction,
+    temperature,
+    spatial_velocity,
     normal_covector,
     normal_vector,
     mesh_velocity,
     normal_dot_mesh_velocity,
+    equation_of_state,
 ):
     def compute_char(lapse_sign):
         return np.abs(
