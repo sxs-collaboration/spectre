@@ -18,6 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryCorrections {
@@ -73,7 +74,9 @@ struct ProductOfCorrectionsImpl<
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
       const typename GhVolumeTags::type&... gh_volume_quantities,
-      const typename ValenciaVolumeTags::type&... valencia_volume_quantities,
+      decltype(StdHelpers::retrieve(
+          std::declval<typename ValenciaVolumeTags::
+                           type>()))... valencia_volume_quantities,
 
       const DerivedGhCorrection& gh_correction,
       const DerivedValenciaCorrection& valencia_correction) {
@@ -94,7 +97,7 @@ struct ProductOfCorrectionsImpl<
                 shuffle_refs)...,
             valencia_primitives..., normal_covector, normal_vector,
             mesh_velocity, normal_dot_mesh_velocity,
-            valencia_volume_quantities...));
+            StdHelpers::retrieve(valencia_volume_quantities)...));
   }
 
   static void dg_boundary_terms(
