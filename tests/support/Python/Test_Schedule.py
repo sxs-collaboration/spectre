@@ -41,6 +41,7 @@ echo $@ > out.txt
         self.input_file_template = self.test_dir / "InputFile.yaml"
         self.input_file_template.write_text("""
 Executable: TestExec
+MetadataOption: {{ metadata_option }}
 ---
 Option: {{ extra_option }}
 """)
@@ -71,11 +72,15 @@ NUM_NODES={{ num_nodes | default(1) }}
             executable=self.executable,
             run_dir=self.test_dir / "Run",
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
         )
         self.assertEqual(proc.returncode, 0)
         with open(self.test_dir / "Run/InputFile.yaml", "r") as open_input_file:
-            _, rendered_input_file = yaml.safe_load_all(open_input_file)
+            rendered_metadata, rendered_input_file = yaml.safe_load_all(
+                open_input_file
+            )
             self.assertEqual(rendered_input_file["Option"], "TestOpt")
+            self.assertEqual(rendered_metadata["MetadataOption"], "MetaOpt")
         args = (self.test_dir / "Run/out.txt").read_text().split()
         self.assertEqual(
             args,
@@ -94,6 +99,7 @@ NUM_NODES={{ num_nodes | default(1) }}
             run_dir=self.test_dir / "Lev{{ lev }}",
             lev=range(1, 3),
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
         )
         self.assertEqual(
             sorted(self.test_dir.glob("Lev*")),
@@ -114,6 +120,7 @@ NUM_NODES={{ num_nodes | default(1) }}
             executable=self.executable,
             segments_dir=self.test_dir,
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
         )
         self.assertEqual(
             sorted(self.test_dir.glob("Segment*")),
@@ -133,6 +140,7 @@ NUM_NODES={{ num_nodes | default(1) }}
                 executable=self.executable,
                 segments_dir=self.test_dir,
                 extra_option="TestOpt",
+                metadata_option="MetaOpt",
             )
         # - Can't continue from an earlier checkpoint than the last
         earlier_checkpoint = Checkpoint.match(
@@ -151,6 +159,7 @@ NUM_NODES={{ num_nodes | default(1) }}
                 segments_dir=self.test_dir,
                 from_checkpoint=earlier_checkpoint,
                 extra_option="TestOpt",
+                metadata_option="MetaOpt",
             )
         # - Continue from last checkpoint
         schedule(
@@ -160,6 +169,7 @@ NUM_NODES={{ num_nodes | default(1) }}
             segments_dir=self.test_dir,
             from_checkpoint=last_checkpoint,
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
         )
 
     def test_schedule(self):
@@ -171,6 +181,7 @@ NUM_NODES={{ num_nodes | default(1) }}
             executable=self.executable,
             segments_dir=self.test_dir / "Segments",
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
             submit=True,
         )
         self.assertEqual(
@@ -214,6 +225,7 @@ NUM_NODES={{ num_nodes | default(1) }}
                 executable=str(self.test_dir / "Segments/TestExec"),
                 executable_name="TestExec",
                 extra_option="TestOpt",
+                metadata_option="MetaOpt",
                 force=False,
                 input_file="InputFile.yaml",
                 input_file_name="InputFile.yaml",
@@ -260,6 +272,7 @@ NUM_NODES=1
             segments_dir=self.test_dir / "Segments",
             from_checkpoint=checkpoint,
             extra_option="TestOpt",
+            metadata_option="MetaOpt",
             submit=True,
         )
         self.assertEqual(
@@ -290,6 +303,8 @@ NUM_NODES=1
                 str(self.test_dir / "Run"),
                 "-p",
                 "extra_option=TestOpt",
+                "-p",
+                "metadata_option=MetaOpt",
             ],
             catch_exceptions=False,
         )
@@ -303,6 +318,8 @@ NUM_NODES=1
                 str(self.test_dir / "Segments"),
                 "-p",
                 "extra_option=TestOpt",
+                "-p",
+                "metadata_option=MetaOpt",
                 "--scheduler",
                 "cat",
                 "--submit-script-template",

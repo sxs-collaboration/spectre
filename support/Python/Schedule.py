@@ -363,7 +363,18 @@ def schedule(
 
     # Resolve executable
     if not executable:
-        metadata = next(yaml.safe_load_all(input_file_contents))
+        # Can't parse the full input file yet because we haven't collected all
+        # parameters yet. Instead, just parse the metadata. We use the YAML
+        # document start indicator '---' to drop the rest of the input file.
+        # Note that the document start indicator is optional for the first
+        # document in the file and there may be comments or a version directive
+        # before it, so we drop the last document in the file rather than split
+        # on the first '---'.
+        metadata_template = input_file_contents.rpartition("---")[0]
+        metadata_yaml = template_env.from_string(metadata_template).render(
+            context
+        )
+        metadata = yaml.safe_load(metadata_yaml)
         try:
             executable = metadata["Executable"]
         except KeyError as err:
