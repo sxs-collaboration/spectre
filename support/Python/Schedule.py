@@ -21,6 +21,7 @@ from spectre.support.DirectoryStructure import (
     list_checkpoints,
     list_segments,
 )
+from spectre.support.RunNext import run_next
 from spectre.tools.ValidateInputFile import validate_input_file
 from spectre.Visualization.ReadInputFile import find_phase_change
 
@@ -530,7 +531,7 @@ def schedule(
     )
     # - If the input file may request resubmissions, make sure we have a
     #   segments directory
-    _, input_file = yaml.safe_load_all(rendered_input_file)
+    metadata, input_file = yaml.safe_load_all(rendered_input_file)
     wallclock_exit_phase_change = find_phase_change(
         "CheckpointAndExitAfterWallclock", input_file
     )
@@ -587,6 +588,16 @@ def schedule(
         # doesn't seem to work reliably, so we just let the process stream
         # directly to the console and wait for it to complete.
         process.wait()
+        # Raise errors on non-zero exit codes
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(
+                returncode=process.returncode, cmd=run_command
+            )
+        # Run the 'Next' entrypoint listed in the input file metadata
+        if "Next" in metadata:
+            run_next(
+                metadata["Next"], input_file_path=input_file_path, cwd=run_dir
+            )
         return process
 
     # Copy executable to segments directory
