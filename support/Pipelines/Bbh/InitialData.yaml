@@ -2,6 +2,21 @@
 # See LICENSE.txt for details.
 
 Executable: SolveXcts
+{% if evolve %}
+Next:
+  Run: spectre.Pipelines.Bbh.Inspiral:start_inspiral
+  With:
+    id_input_file_path: __file__
+    id_run_dir: ./
+    pipeline_dir: {{ pipeline_dir }}
+    refinement_level: {{ L }}
+    polynomial_order: {{ P }}
+    continue_with_ringdown: True
+    scheduler: {{ scheduler | default("None") }}
+    copy_executable: {{ copy_executable | default("None") }}
+    submit_script_template: {{ submit_script_template | default("None") }}
+    submit: True
+{% endif %}
 
 ---
 

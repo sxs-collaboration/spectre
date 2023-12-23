@@ -6,6 +6,7 @@ import shutil
 import unittest
 from pathlib import Path
 
+import yaml
 from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path
@@ -51,33 +52,71 @@ class TestInitialData(unittest.TestCase):
         )
 
     def test_cli(self):
+        common_args = [
+            "--mass-ratio",
+            "1.5",
+            "--separation",
+            "20",
+            "--orbital-angular-velocity",
+            "0.01",
+            "--radial-expansion-velocity",
+            "-1.0e-5",
+            "--refinement-level",
+            "1",
+            "--polynomial-order",
+            "5",
+            "-e",
+            str(self.bin_dir / "SolveXcts"),
+        ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
         try:
             generate_id_command(
-                [
-                    "--mass-ratio",
-                    "1.5",
-                    "--separation",
-                    "20",
-                    "--orbital-angular-velocity",
-                    "0.01",
-                    "--radial-expansion-velocity",
-                    "-1.0e-5",
-                    "--refinement-level",
-                    "1",
-                    "--polynomial-order",
-                    "5",
+                common_args
+                + [
                     "-o",
                     str(self.test_dir),
                     "--no-submit",
-                    "-e",
-                    str(self.bin_dir / "SolveXcts"),
                 ]
             )
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         self.assertTrue((self.test_dir / "InitialData.yaml").exists())
+        # Test with pipeline directory
+        try:
+            generate_id_command(
+                common_args
+                + [
+                    "-d",
+                    str(self.test_dir / "Pipeline"),
+                    "--evolve",
+                    "--no-submit",
+                ]
+            )
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+        with open(
+            self.test_dir / "Pipeline/001_InitialData/InitialData.yaml", "r"
+        ) as open_input_file:
+            metadata = next(yaml.safe_load_all(open_input_file))
+        self.assertEqual(
+            metadata["Next"],
+            {
+                "Run": "spectre.Pipelines.Bbh.Inspiral:start_inspiral",
+                "With": {
+                    "id_input_file_path": "__file__",
+                    "id_run_dir": "./",
+                    "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "refinement_level": 1,
+                    "polynomial_order": 5,
+                    "continue_with_ringdown": True,
+                    "scheduler": "None",
+                    "copy_executable": "None",
+                    "submit_script_template": "None",
+                    "submit": True,
+                },
+            },
+        )
 
 
 if __name__ == "__main__":

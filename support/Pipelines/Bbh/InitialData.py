@@ -3,7 +3,7 @@
 
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import click
 from rich.pretty import pretty_repr
@@ -67,6 +67,10 @@ def generate_id(
     refinement_level: int,
     polynomial_order: int,
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
+    evolve: bool = False,
+    pipeline_dir: Optional[Union[str, Path]] = None,
+    run_dir: Optional[Union[str, Path]] = None,
+    segments_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
 ):
     """Generate initial data for a BBH simulation.
@@ -80,6 +84,28 @@ def generate_id(
         " generated input files."
     )
 
+    # Resolve directories
+    if pipeline_dir:
+        pipeline_dir = Path(pipeline_dir).resolve()
+    assert segments_dir is None, (
+        "Initial data generation doesn't use segments at the moment. Specify"
+        " '--run-dir' / '-o' or '--pipeline-dir' / '-d' instead."
+    )
+    if evolve:
+        assert pipeline_dir is not None, (
+            "Specify a '--pipeline-dir' / '-d' to evolve the initial data."
+            " Don't specify a '--run-dir' / '-o' because it will be created in"
+            " the 'pipeline_dir' automatically."
+        )
+        assert run_dir is None, (
+            "Specify the '--pipeline-dir' / '-d' rather than '--run-dir' / '-o'"
+            " when evolving the initial data. Directories for the initial data,"
+            " evolution, etc will be created in the 'pipeline_dir'"
+            " automatically."
+        )
+    if pipeline_dir and not run_dir:
+        run_dir = pipeline_dir / "001_InitialData"
+
     # Determine initial data parameters from options
     id_params = id_parameters(
         mass_ratio=mass_ratio,
@@ -92,7 +118,15 @@ def generate_id(
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
 
     # Schedule!
-    return schedule(id_input_file_template, **id_params, **scheduler_kwargs)
+    return schedule(
+        id_input_file_template,
+        **id_params,
+        **scheduler_kwargs,
+        evolve=evolve,
+        pipeline_dir=pipeline_dir,
+        run_dir=run_dir,
+        segments_dir=segments_dir,
+    )
 
 
 @click.command(name="generate-id", help=generate_id.__doc__)
@@ -154,6 +188,20 @@ def generate_id(
     default=ID_INPUT_FILE_TEMPLATE,
     help="Input file template for the initial data.",
     show_default=True,
+)
+@click.option(
+    "--evolve",
+    is_flag=True,
+    help="Evolve the initial data after generation.",
+)
+@click.option(
+    "--pipeline-dir",
+    "-d",
+    type=click.Path(
+        writable=True,
+        path_type=Path,
+    ),
+    help="Directory where steps in the pipeline are created.",
 )
 @scheduler_options
 def generate_id_command(**kwargs):

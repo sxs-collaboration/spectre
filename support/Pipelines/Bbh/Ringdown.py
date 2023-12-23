@@ -53,6 +53,9 @@ def start_ringdown(
     ringdown_input_file_template: Union[
         str, Path
     ] = RINGDOWN_INPUT_FILE_TEMPLATE,
+    pipeline_dir: Optional[Union[str, Path]] = None,
+    run_dir: Optional[Union[str, Path]] = None,
+    segments_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
 ):
     """Schedule a ringdown simulation from the inspiral.
@@ -82,9 +85,20 @@ def start_ringdown(
     )
     logger.debug(f"Ringdown parameters: {pretty_repr(ringdown_params)}")
 
+    # Resolve directories
+    if pipeline_dir:
+        pipeline_dir = Path(pipeline_dir).resolve()
+    if pipeline_dir and not segments_dir and not run_dir:
+        segments_dir = pipeline_dir / "003_Ringdown"
+
     # Schedule!
     return schedule(
-        ringdown_input_file_template, **ringdown_params, **scheduler_kwargs
+        ringdown_input_file_template,
+        **ringdown_params,
+        **scheduler_kwargs,
+        pipeline_dir=pipeline_dir,
+        run_dir=run_dir,
+        segments_dir=segments_dir,
     )
 
 
@@ -143,6 +157,15 @@ def start_ringdown(
     help="p-refinement level.",
     default=5,
     show_default=True,
+)
+@click.option(
+    "--pipeline-dir",
+    "-d",
+    type=click.Path(
+        writable=True,
+        path_type=Path,
+    ),
+    help="Directory where steps in the pipeline are created.",
 )
 @scheduler_options
 def start_ringdown_command(**kwargs):
