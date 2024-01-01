@@ -77,6 +77,11 @@ def start_inspiral(
     determined from the initial data and inserted into the
     'inspiral_input_file_template'. The remaining options are forwarded to the
     'schedule' command. See 'schedule' docs for details.
+
+    ## Resource allocation
+
+    Runs on 4 nodes by default when scheduled on a cluster. Set 'num_nodes' to
+    adjust.
     """
     logger.warning(
         "The BBH pipeline is still experimental. Please review the"
@@ -114,6 +119,16 @@ def start_inspiral(
         )
     if pipeline_dir and not run_dir and not segments_dir:
         segments_dir = pipeline_dir / "002_Inspiral"
+
+    # Determine resource allocation
+    if (
+        scheduler_kwargs.get("scheduler") is not None
+        and scheduler_kwargs.get("num_procs") is None
+        and scheduler_kwargs.get("num_nodes") is None
+    ):
+        # Just run on 4 nodes for now, because 1 is surely not enough. We can
+        # make this smarter later (e.g. scale with the number of elements).
+        scheduler_kwargs["num_nodes"] = 4
 
     # Schedule!
     return schedule(
