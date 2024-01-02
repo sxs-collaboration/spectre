@@ -580,7 +580,7 @@ template <typename... Symms, typename... Indices>
 struct FromPyObject<std::tuple<Tensor<double, Symms, Indices>...>,
                     std::nullptr_t> {
   static std::tuple<Tensor<double, Symms, Indices>...> convert(PyObject* p) {
-    if (PyTuple_Check(p) == 0) {
+    if (PyTuple_CheckExact(p) == 0) {
       const std::string python_type{Py_TYPE(p)->tp_name};
       throw std::runtime_error{"Expected a Python tuple but got " +
                                python_type};
