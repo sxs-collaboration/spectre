@@ -126,7 +126,7 @@ void derivatives_of_spacetime_metric(
 }  // namespace gr
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial))
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef DIM
 #undef DTYPE
