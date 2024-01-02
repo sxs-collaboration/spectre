@@ -82,9 +82,9 @@ struct ConvertClassForConservionTestB {
 void test_none() {
   pypp::call<pypp::None>("PyppPyTests", "test_none");
   CHECK_THROWS_WITH(pypp::call<pypp::None>("PyppPyTests", "test_numeric", 1, 2),
-                    "Cannot convert non-None type to void.");
+                    "Cannot convert non-None type to void. Got int");
   CHECK_THROWS_WITH(pypp::call<std::string>("PyppPyTests", "test_none"),
-                    "Cannot convert non-string type to string.");
+                    "Cannot convert non-string type to string. Got NoneType");
 }
 
 void test_std_string() {
@@ -97,7 +97,7 @@ void test_std_string() {
   //                   "Failed string test");
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_string",
                                        std::string("test string")),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got str");
 }
 
 void test_int() {
@@ -106,20 +106,20 @@ void test_int() {
   CHECK(ret == 3 * 4);
   // [pypp_int_test]
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3, 4),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got int");
   CHECK_THROWS_WITH(pypp::call<void*>("PyppPyTests", "test_numeric", 3, 4),
-                    "Cannot convert non-None type to void.");
+                    "Cannot convert non-None type to void. Got int");
   CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_none"),
-                    "Cannot convert non-long/int type to long.");
+                    "Cannot convert non-long/int type to long. Got NoneType");
 }
 
 void test_long() {
   const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3L, 4L);
   CHECK(ret == 3L * 4L);
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3L, 4L),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got int");
   CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_numeric", 3.0, 3.74),
-                    "Cannot convert non-long/int type to long.");
+                    "Cannot convert non-long/int type to long. Got float");
 }
 
 void test_unsigned_long() {
@@ -127,10 +127,10 @@ void test_unsigned_long() {
       pypp::call<unsigned long>("PyppPyTests", "test_numeric", 3ul, 4ul);
   CHECK(ret == 3ul * 4ul);
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 4ul),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got int");
   CHECK_THROWS_WITH(
       pypp::call<unsigned long>("PyppPyTests", "test_numeric", 3.0, 3.74),
-      "Cannot convert non-long/int type to long.");
+      "Cannot convert non-long/int type to long. Got float");
 }
 
 void test_double() {
@@ -138,9 +138,9 @@ void test_double() {
       pypp::call<double>("PyppPyTests", "test_numeric", 3.49582, 3);
   CHECK(ret == 3.0 * 3.49582);
   CHECK_THROWS_WITH(pypp::call<long>("PyppPyTests", "test_numeric", 3.8, 3.9),
-                    "Cannot convert non-long/int type to long.");
+                    "Cannot convert non-long/int type to long. Got float");
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_numeric", 3ul, 3ul),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got int");
 }
 
 void test_std_vector() {
@@ -154,7 +154,7 @@ void test_std_vector() {
   CHECK_THROWS_WITH(pypp::call<std::string>("PyppPyTests", "test_vector",
                                             std::vector<double>{1.3, 4.9},
                                             std::vector<double>{4.2, 6.8}),
-                    "Cannot convert non-string type to string.");
+                    "Cannot convert non-string type to string. Got list");
 }
 
 void test_std_array() {
@@ -168,7 +168,7 @@ void test_std_array() {
   CHECK_THROWS_WITH(pypp::call<double>("PyppPyTests", "test_vector",
                                        std::array<double, 2>{{1.3, 4.9}},
                                        std::array<double, 2>{{4.2, 6.8}}),
-                    "Cannot convert non-double type to double.");
+                    "Cannot convert non-double type to double. Got list");
 
   std::array<DataVector, 3> expected_array{
       {DataVector{2, 3.}, DataVector{2, 1.}, DataVector{2, 2.}}};
@@ -194,7 +194,7 @@ void test_datavector() {
   CHECK_THROWS_WITH(
       pypp::call<std::string>("numpy", "multiply", DataVector{1.3, 4.9},
                               DataVector{4.2, 6.8}),
-      "Cannot convert non-string type to string.");
+      "Cannot convert non-string type to string. Got numpy.ndarray");
   CHECK_THROWS_WITH(pypp::call<DataVector>("PyppPyTests", "two_dim_ndarray"),
                     "Cannot convert array of ndim != 1 to DataVector.");
   CHECK_THROWS_WITH(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"),
@@ -215,7 +215,7 @@ void test_complex_datavector() {
       pypp::call<std::string>("numpy", "multiply",
                               ComplexDataVector{test_value_0, test_value_1},
                               ComplexDataVector{test_value_2, test_value_3}),
-      "Cannot convert non-string type to string.");
+      "Cannot convert non-string type to string. Got numpy.ndarray");
   CHECK_THROWS_WITH(
       pypp::call<ComplexDataVector>("PyppPyTests", "two_dim_ndarray"),
       "Cannot convert array of non-complex type to ComplexDataVector.");
