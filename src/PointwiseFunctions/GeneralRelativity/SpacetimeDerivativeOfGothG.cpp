@@ -20,27 +20,10 @@ void spacetime_deriv_of_goth_g(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::abb<DataType, SpatialDim, Frame>& da_spacetime_metric,
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& dt_lapse,
-    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::a<DataType, SpatialDim, Frame>& da_lapse,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& da_det_spatial_metric) {
   set_number_of_grid_points(da_goth_g, da_spacetime_metric);
-
-  tnsr::a<DataType, SpatialDim, Frame> da_lapse{};
-  if constexpr (std::is_same_v<DataType, DataVector>) {
-    make_const_view(make_not_null(&std::as_const(da_lapse.get(0))),
-                                     get(dt_lapse), 0, get(dt_lapse).size());
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      make_const_view(make_not_null(&std::as_const(da_lapse.get(i + 1))),
-                              deriv_lapse.get(i), 0, deriv_lapse.get(0).size());
-    }
-  }
-  else {
-    da_lapse.get(0) = get(dt_lapse);
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      da_lapse.get(i + 1) = deriv_lapse.get(i);
-    }
-  }
 
   tenex::evaluate<ti::a, ti::B, ti::C>(da_goth_g,
     (da_lapse(ti::a) * sqrt_det_spatial_metric()
@@ -57,14 +40,13 @@ tnsr::aBB<DataType, SpatialDim, Frame> spacetime_deriv_of_goth_g(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::abb<DataType, SpatialDim, Frame>& da_spacetime_metric,
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& dt_lapse,
-    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::a<DataType, SpatialDim, Frame>& da_lapse,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& da_det_spatial_metric) {
   tnsr::aBB<DataType, SpatialDim, Frame> da_goth_g{};
   gr::spacetime_deriv_of_goth_g(make_not_null(&da_goth_g),
-          inverse_spacetime_metric, da_spacetime_metric, lapse, dt_lapse,
-                   deriv_lapse, sqrt_det_spatial_metric, da_det_spatial_metric);
+          inverse_spacetime_metric, da_spacetime_metric, lapse, da_lapse,
+                   sqrt_det_spatial_metric, da_det_spatial_metric);
   return da_goth_g;
 }
 }  // namespace gr
@@ -82,8 +64,7 @@ tnsr::aBB<DataType, SpatialDim, Frame> spacetime_deriv_of_goth_g(
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>&               \
           da_spacetime_metric,                                            \
       const Scalar<DTYPE(data)>& lapse,                                   \
-      const Scalar<DTYPE(data)>& dt_lapse,                                \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,    \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& da_lapse,       \
       const Scalar<DTYPE(data)>& sqrt_det_spatial_metric,                 \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                 \
           da_det_spatial_metric);                                         \
@@ -94,8 +75,7 @@ tnsr::aBB<DataType, SpatialDim, Frame> spacetime_deriv_of_goth_g(
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>&               \
           da_spacetime_metric,                                            \
       const Scalar<DTYPE(data)>& lapse,                                   \
-      const Scalar<DTYPE(data)>& dt_lapse,                                \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,    \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& da_lapse,       \
       const Scalar<DTYPE(data)>& sqrt_det_spatial_metric,                 \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                 \
           da_det_spatial_metric);
