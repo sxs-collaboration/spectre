@@ -16,7 +16,9 @@
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -754,6 +756,41 @@ KerrSchild::IntermediateVars<DataType, Frame>::get_var(
   return trace_last_indices<DataType, SpatialIndex<3, UpLo::Up, Frame>,
                             SpatialIndex<3, UpLo::Lo, Frame>>(
       spatial_christoffel_second_kind, inverse_spatial_metric);
+}
+
+template <typename DataType, typename Frame>
+tnsr::Abb<DataType, 3, Frame>
+KerrSchild::IntermediateVars<DataType, Frame>::get_var(
+    const IntermediateComputer<DataType, Frame>& computer,
+    gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame> /*meta*/) {
+  const auto& lapse = get_var(computer, gr::Tags::Lapse<DataType>{});
+  const auto& shift = get_var(computer, gr::Tags::Shift<DataType, 3, Frame>{});
+  const auto& spatial_metric =
+      get_var(computer, gr::Tags::SpatialMetric<DataType, 3, Frame>{});
+  const auto& inverse_spatial_metric =
+      get_var(computer, gr::Tags::InverseSpatialMetric<DataType, 3, Frame>{});
+  const auto& dt_lapse =
+      get_var(computer, ::Tags::dt<gr::Tags::Lapse<DataType>>{});
+  const auto& di_lapse = get_var(
+      computer,
+      ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame>{});
+  const auto& dt_shift =
+      get_var(computer, ::Tags::dt<gr::Tags::Shift<DataType, 3, Frame>>{});
+  const auto& di_shift =
+      get_var(computer, ::Tags::deriv<gr::Tags::Shift<DataType, 3, Frame>,
+                                      tmpl::size_t<3>, Frame>{});
+  const auto& dt_spatial_metric = get_var(
+      computer, ::Tags::dt<gr::Tags::SpatialMetric<DataType, 3, Frame>>{});
+  const auto& di_spatial_metric = get_var(
+      computer, ::Tags::deriv<gr::Tags::SpatialMetric<DataType, 3, Frame>,
+                              tmpl::size_t<3>, Frame>{});
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+  const auto d_spacetime_metric = gr::derivatives_of_spacetime_metric(
+      lapse, dt_lapse, di_lapse, shift, dt_shift, di_shift, spatial_metric,
+      dt_spatial_metric, di_spatial_metric);
+  return gr::christoffel_second_kind(d_spacetime_metric,
+                                     inverse_spacetime_metric);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

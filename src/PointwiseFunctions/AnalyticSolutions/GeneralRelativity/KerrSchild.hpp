@@ -250,7 +250,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
       gr::Tags::TraceExtrinsicCurvature<DataType>,
       gr::Tags::SpatialChristoffelFirstKind<DataType, 3, Frame>,
       gr::Tags::SpatialChristoffelSecondKind<DataType, 3, Frame>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3, Frame>>>;
+      gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3, Frame>,
+      gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>>>;
 
   KerrSchild() = default;
   KerrSchild(const KerrSchild& /*rhs*/) = default;
@@ -552,6 +553,9 @@ class KerrSchild : public AnalyticSolution<3_st>,
         const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::TraceSpatialChristoffelSecondKind<DataType, 3,
                                                     Frame> /*meta*/);
+    tnsr::Abb<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
+        gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame> /*meta*/);
 
    private:
     // Here null_vector_0 is simply -1, but if you have a boosted solution,
