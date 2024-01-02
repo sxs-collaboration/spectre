@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -200,9 +201,6 @@ void test_prim_reconstructor_impl(
 
   using prims_tags = hydro::grmhd_tags<DataVector>;
   using cons_tags = typename ghmhd::System::variables_tag::tags_list;
-  using flux_tags =
-      db::wrap_tags_in<::Tags::Flux, typename ghmhd::System::flux_variables,
-                       tmpl::size_t<3>, Frame::Inertial>;
   using spacetime_tags =
       ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
@@ -223,25 +221,10 @@ void test_prim_reconstructor_impl(
       (subcell_mesh.extents(0) + 1) *
       subcell_mesh.extents().slice_away(0).product();
 
-  using fd_package_data_argument_tags = tmpl::remove_duplicates<tmpl::append<
-      cons_tags,
-      tmpl::push_back<
-          prims_tags,
-          hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
-      flux_tags,
-      tmpl::list<Lapse, Shift, SpatialMetric, SqrtDetSpatialMetric,
-                 InverseSpatialMetric,
-                 evolution::dg::Actions::detail::NormalVector<3>>>>;
-  using dg_package_data_argument_tags = tmpl::remove_duplicates<tmpl::append<
-      cons_tags,
-      tmpl::push_back<
-          prims_tags,
-          hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
-      flux_tags,
-      tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gh::ConstraintDamping::Tags::ConstraintGamma2, Lapse, Shift,
-                 SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
-                 evolution::dg::Actions::detail::NormalVector<3>>>>;
+  using fd_package_data_argument_tags =
+      ::grmhd::GhValenciaDivClean::fd::tags_list_for_reconstruct;
+  using dg_package_data_argument_tags =
+      ::grmhd::GhValenciaDivClean::fd::tags_list_for_reconstruct_fd_neighbor;
 
   std::array<Variables<fd_package_data_argument_tags>, 3> vars_on_lower_face =
       make_array<3>(

@@ -14,6 +14,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "Options/String.hpp"
@@ -132,10 +133,12 @@ class Wcns5zPrim : public Reconstructor {
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
                  evolution::dg::subcell::Tags::Mesh<dim>>;
 
-  template <size_t ThermodynamicDim, typename TagsList>
+  template <size_t ThermodynamicDim>
   void reconstruct(
-      gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_lower_face,
-      gsl::not_null<std::array<Variables<TagsList>, dim>*> vars_on_upper_face,
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
+          vars_on_lower_face,
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, dim>*>
+          vars_on_upper_face,
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
@@ -143,9 +146,9 @@ class Wcns5zPrim : public Reconstructor {
           ghost_data,
       const Mesh<dim>& subcell_mesh) const;
 
-  template <size_t ThermodynamicDim, typename TagsList>
+  template <size_t ThermodynamicDim>
   void reconstruct_fd_neighbor(
-      gsl::not_null<Variables<TagsList>*> vars_on_face,
+      gsl::not_null<Variables<tags_list_for_reconstruct>*> vars_on_face,
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
