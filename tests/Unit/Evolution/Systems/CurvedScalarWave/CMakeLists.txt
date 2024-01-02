@@ -41,6 +41,7 @@ target_link_libraries(
   DomainBoundaryConditions
   DomainBoundaryConditionsHelpers
   DomainCreators
+  GeneralRelativity
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   MathFunctions

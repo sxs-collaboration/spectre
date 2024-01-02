@@ -219,6 +219,31 @@ struct ParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
 
 /// @{
 /*!
+ * \brief Computes the coordinate geodesic acceleration of the particle in the
+ * inertial frame in Kerr-Schild coordinates.
+ */
+template <size_t Dim>
+struct GeodesicAcceleration : db::SimpleTag {
+  using type = tnsr::I<double, Dim, Frame::Inertial>;
+};
+
+template <size_t Dim>
+struct GeodesicAccelerationCompute : GeodesicAcceleration<Dim>, db::ComputeTag {
+  using base = GeodesicAcceleration<Dim>;
+  using return_type = tnsr::I<double, Dim, Frame::Inertial>;
+  using argument_tags = tmpl::list<
+      ParticlePositionVelocity<Dim>,
+      CurvedScalarWave::Tags::BackgroundSpacetime<gr::Solutions::KerrSchild>>;
+  static void function(
+      gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> acceleration,
+      const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>&
+          position_velocity,
+      const gr::Solutions::KerrSchild& background_spacetime);
+};
+/// @}
+
+/// @{
+/*!
  * \brief An optional that holds the coordinates of an element face abutting the
  * worldtube excision sphere. If the element does not abut the worldtube, this
  * holds std::nullopt. This tag should be in the databox of element chares. The
