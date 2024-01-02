@@ -28,6 +28,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/SpinWeighted.hpp"
@@ -36,6 +37,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
@@ -610,6 +612,41 @@ struct FromPyObject<std::tuple<Tensor<double, Symms, Indices>...>,
             std::to_string(Is) +
             " of the tuple. Conversion error: " + std::string{e.what()}};
       }
+    }());
+    return result;
+  }
+};
+
+template <typename... Tags>
+struct FromPyObject<tuples::TaggedTuple<Tags...>, std::nullptr_t> {
+  static tuples::TaggedTuple<Tags...> convert(PyObject* p) {
+    if (PyDict_CheckExact(p) == 0) {
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{"Expected a Python dictionary but got " +
+                               python_type};
+    }
+    tuples::TaggedTuple<Tags...> result{};
+    EXPAND_PACK_LEFT_TO_RIGHT([&result, &p]() {
+      const std::string tag_name = db::tag_name<Tags>();
+      PyObject* python_tag_name = PyUnicode_FromString(tag_name.c_str());
+      PyObject* tag_value = PyDict_GetItemWithError(p, python_tag_name);
+      if (tag_value == nullptr) {
+        PyObject* python_keys = PyDict_Keys(p);
+        const auto keys = from_py_object<std::vector<std::string>>(python_keys);
+        Py_DECREF(python_keys);
+        throw std::runtime_error("Could not find tag " + tag_name +
+                                 " in dictionary. Known keys are " +
+                                 std::string{MakeString{} << keys});
+      }
+      try {
+        get<Tags>(result) = from_py_object<typename Tags::type>(tag_value);
+      } catch (const std::exception& e) {
+        throw std::runtime_error{
+            std::string{"TaggedTuple conversion failed for tag name "} +
+            tag_name + ". Conversion error: " + std::string{e.what()}};
+      }
+      Py_DECREF(python_tag_name);
+      // tag_value is a borrowed reference, so no need to DECREF.
     }());
     return result;
   }

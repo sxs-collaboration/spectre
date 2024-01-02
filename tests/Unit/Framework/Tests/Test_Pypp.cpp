@@ -559,6 +559,76 @@ void test_tuple_of_tensors_of_data_vector() {
                         (DataVector{5.0, 6.0, 7.5}));
 }
 
+namespace Tags {
+struct Var1 {
+  using type = Scalar<DataVector>;
+};
+
+struct Var2 {
+  using type = tnsr::I<DataVector, 1, Frame::Inertial>;
+};
+
+struct Var3 {
+  using type = long;
+};
+}  // namespace Tags
+
+void test_tagged_tuple() {
+  using ResultType = tuples::TaggedTuple<Tags::Var1, Tags::Var2, Tags::Var3>;
+  CHECK_THROWS_WITH(
+      pypp::call<ResultType>("PyppPyTests", "tagged_tuple_of_tensor_wrong_type",
+                             Scalar<DataVector>{3_st, 1.0}),
+      Catch::Matchers::ContainsSubstring(
+          "Expected a Python dictionary but got"));
+
+  CHECK_THROWS_WITH(
+      pypp::call<ResultType>("PyppPyTests",
+                             "tagged_tuple_of_tensor_missing_tag_too_small",
+                             Scalar<DataVector>{3_st, 1.0}),
+      Catch::Matchers::ContainsSubstring(
+          "Could not find tag Var2 in dictionary. Known keys are "
+          "(Var1,Var3)"));
+  CHECK_THROWS_WITH(
+      pypp::call<ResultType>("PyppPyTests", "tagged_tuple_of_tensor_missing",
+                             Scalar<DataVector>{3_st, 1.0}),
+      Catch::Matchers::ContainsSubstring(
+          "Could not find tag Var2 in dictionary. Known keys are "
+          "(Var1,Var2b,Var3)"));
+  CHECK_THROWS_WITH(pypp::call<ResultType>(
+                        "PyppPyTests", "tagged_tuple_of_tensor_convert_var1",
+                        Scalar<DataVector>{3_st, 1.0}),
+                    Catch::Matchers::ContainsSubstring(
+                        "TaggedTuple conversion failed for tag name Var1."));
+  CHECK_THROWS_WITH(pypp::call<ResultType>(
+                        "PyppPyTests", "tagged_tuple_of_tensor_convert_var2",
+                        Scalar<DataVector>{3_st, 1.0}),
+                    Catch::Matchers::ContainsSubstring(
+                        "TaggedTuple conversion failed for tag name Var2."));
+  CHECK_THROWS_WITH(pypp::call<ResultType>(
+                        "PyppPyTests", "tagged_tuple_of_tensor_convert_var3",
+                        Scalar<DataVector>{3_st, 1.0}),
+                    Catch::Matchers::ContainsSubstring(
+                        "TaggedTuple conversion failed for tag name Var3."));
+
+  const auto result =
+      pypp::call<ResultType>("PyppPyTests", "tagged_tuple_of_tensor_works",
+                             Scalar<DataVector>{DataVector{1.0, 1.2, 1.5}});
+  CHECK_ITERABLE_APPROX(get(tuples::get<Tags::Var1>(result)),
+                        (DataVector{2.0, 2.4, 3.0}));
+  CHECK_ITERABLE_APPROX(get<0>(tuples::get<Tags::Var2>(result)),
+                        (DataVector{5.0, 6.0, 7.5}));
+  CHECK(tuples::get<Tags::Var3>(result) == 10);
+
+  const auto result2 = pypp::call<ResultType>(
+      "PyppPyTests", "tagged_tuple_of_tensor_works_extra_dict",
+      Scalar<DataVector>{DataVector{1.0, 1.2, 1.5}});
+  CHECK_ITERABLE_APPROX(get(tuples::get<Tags::Var1>(result2)),
+                        (DataVector{2.0, 2.4, 3.0}));
+  CHECK_ITERABLE_APPROX(get<0>(tuples::get<Tags::Var2>(result2)),
+                        (DataVector{5.0, 6.0, 7.5}));
+  CHECK(tuples::get<Tags::Var3>(result2) == 10);
+}
+
 void test_custom_conversion() {
   const Scalar<DataVector> t{DataVector{5, 2.5}};
   {
@@ -604,5 +674,6 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_function_of_time();
   test_optional<std::optional>();
   test_tuple_of_tensors_of_data_vector();
+  test_tagged_tuple();
   test_custom_conversion();
 }
