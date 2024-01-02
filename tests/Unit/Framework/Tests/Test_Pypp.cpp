@@ -24,6 +24,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -525,6 +526,39 @@ void test_optional() {
   impl(scalar_datavector_a, scalar_datavector_b);
 }
 
+void test_tuple_of_tensors_of_data_vector() {
+  using ResultType =
+      std::tuple<Scalar<DataVector>, tnsr::I<DataVector, 1, Frame::Inertial>>;
+  CHECK_THROWS_WITH(
+      pypp::call<ResultType>("PyppPyTests", "tuple_of_tensor_not_tuple",
+                             Scalar<DataVector>{3_st, 1.0}),
+      Catch::Matchers::ContainsSubstring("Expected a Python tuple but got"));
+  CHECK_THROWS_WITH(
+      pypp::call<ResultType>("PyppPyTests", "tuple_of_tensor_wrong_size",
+                             Scalar<DataVector>{3_st, 1.0}),
+      Catch::Matchers::ContainsSubstring(
+          "Python tuple has size 3 but we expected size 2"));
+  CHECK_THROWS_WITH(pypp::call<ResultType>("PyppPyTests",
+                                           "tuple_of_tensor_failed_to_convert0",
+                                           Scalar<DataVector>{3_st, 1.0}),
+                    Catch::Matchers::ContainsSubstring(
+                        "std::tuple conversion failed for zero-based entry "
+                        "number 0 of the tuple."));
+  CHECK_THROWS_WITH(pypp::call<ResultType>("PyppPyTests",
+                                           "tuple_of_tensor_failed_to_convert1",
+                                           Scalar<DataVector>{3_st, 1.0}),
+                    Catch::Matchers::ContainsSubstring(
+                        "std::tuple conversion failed for zero-based entry "
+                        "number 1 of the tuple."));
+
+  const auto result =
+      pypp::call<ResultType>("PyppPyTests", "tuple_of_tensor_works",
+                             Scalar<DataVector>{DataVector{1.0, 1.2, 1.5}});
+  CHECK_ITERABLE_APPROX(get(std::get<0>(result)), (DataVector{2.0, 2.4, 3.0}));
+  CHECK_ITERABLE_APPROX(get<0>(std::get<1>(result)),
+                        (DataVector{5.0, 6.0, 7.5}));
+}
+
 void test_custom_conversion() {
   const Scalar<DataVector> t{DataVector{5, 2.5}};
   {
@@ -569,5 +603,6 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_einsum<DataVector>(DataVector(5));
   test_function_of_time();
   test_optional<std::optional>();
+  test_tuple_of_tensors_of_data_vector();
   test_custom_conversion();
 }

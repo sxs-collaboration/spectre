@@ -34,6 +34,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
@@ -552,6 +553,45 @@ template <typename T>
 struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
                                 std::is_same_v<typename T::type, double>>> {
   static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
+};
+
+template <typename... Symms, typename... Indices>
+struct FromPyObject<std::tuple<Tensor<double, Symms, Indices>...>,
+                    std::nullptr_t> {
+  static std::tuple<Tensor<double, Symms, Indices>...> convert(PyObject* p) {
+    if (PyTuple_Check(p) == 0) {
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{"Expected a Python tuple but got " +
+                               python_type};
+    }
+    if (PyTuple_Size(p) != sizeof...(Symms)) {
+      throw std::runtime_error{
+          "Python tuple has size " + std::to_string(PyTuple_Size(p)) +
+          " but we expected size " + std::to_string(sizeof...(Symms))};
+    }
+    return convert(p, std::make_index_sequence<sizeof...(Symms)>{});
+  }
+
+ private:
+  template <size_t... Is>
+  static std::tuple<Tensor<double, Symms, Indices>...> convert(
+      PyObject* p, std::index_sequence<Is...> /*meta*/) {
+    std::tuple<Tensor<double, Symms, Indices>...> result{};
+    EXPAND_PACK_LEFT_TO_RIGHT([&result, &p]() {
+      try {
+        std::get<Is>(result) =
+            tensor_conversion_impl<Tensor<double, Symms, Indices>>(
+                PyTuple_GetItem(p, static_cast<ssize_t>(Is)));
+      } catch (const std::exception& e) {
+        throw std::runtime_error{
+            std::string{
+                "std::tuple conversion failed for zero-based entry number "} +
+            std::to_string(Is) +
+            " of the tuple. Conversion error: " + std::string{e.what()}};
+      }
+    }());
+    return result;
+  }
 };
 
 template <>

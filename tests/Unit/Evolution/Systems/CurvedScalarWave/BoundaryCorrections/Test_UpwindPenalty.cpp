@@ -34,12 +34,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       CurvedScalarWave::System<Dim>>(
       gen,
       "Evolution.Systems.CurvedScalarWave.BoundaryCorrections.UpwindPenalty",
-      {{"dg_package_data_v_psi", "dg_package_data_v_zero",
-        "dg_package_data_v_plus", "dg_package_data_v_minus",
-        "dg_package_data_gamma2", "dg_package_data_interface_unit_normal",
-        "dg_package_data_char_speeds"}},
-      {{"dg_boundary_terms_psi", "dg_boundary_terms_pi",
-        "dg_boundary_terms_phi"}},
+      "dg_package_data", "dg_boundary_terms",
       CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
@@ -53,12 +48,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       CurvedScalarWave::System<Dim>>(
       gen,
       "Evolution.Systems.CurvedScalarWave.BoundaryCorrections.UpwindPenalty",
-      {{"dg_package_data_v_psi", "dg_package_data_v_zero",
-        "dg_package_data_v_plus", "dg_package_data_v_minus",
-        "dg_package_data_gamma2", "dg_package_data_interface_unit_normal",
-        "dg_package_data_char_speeds"}},
-      {{"dg_boundary_terms_psi", "dg_boundary_terms_pi",
-        "dg_boundary_terms_phi"}},
+      "dg_package_data", "dg_boundary_terms",
       dynamic_cast<
           const CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>&>(
           *upwind_penalty),

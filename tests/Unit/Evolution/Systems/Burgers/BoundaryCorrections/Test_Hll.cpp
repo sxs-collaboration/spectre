@@ -31,10 +31,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      make_not_null(&gen), "Hll",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_char_speed"}},
-      {{"dg_boundary_terms_u"}}, Burgers::BoundaryCorrections::Hll{},
+      make_not_null(&gen), "Hll", "dg_package_data", "dg_boundary_terms",
+      Burgers::BoundaryCorrections::Hll{},
       Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
 
@@ -44,10 +42,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(
-      make_not_null(&gen), "Hll",
-      {{"dg_package_data_u", "dg_package_data_normal_dot_flux",
-        "dg_package_data_char_speed"}},
-      {{"dg_boundary_terms_u"}},
+      make_not_null(&gen), "Hll", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const Burgers::BoundaryCorrections::Hll&>(*Hll),
       Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});

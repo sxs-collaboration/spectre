@@ -4,29 +4,22 @@
 import numpy as np
 
 
-def dg_package_data_u(
-    u, flux_u, normal_covector, mesh_velocity, normal_dot_mesh_velocity
-):
-    return u
-
-
-def dg_package_data_normal_dot_flux(
-    u, flux_u, normal_covector, mesh_velocity, normal_dot_mesh_velocity
-):
-    return np.einsum("i,i", normal_covector, flux_u)
-
-
-def dg_package_data_char_speed(
+def dg_package_data(
     u, flux_u, normal_covector, mesh_velocity, normal_dot_mesh_velocity
 ):
     result = u if normal_covector[0] > 0.0 else -u
-    if normal_dot_mesh_velocity is None:
-        return result
-    else:
-        return result - normal_dot_mesh_velocity
+    return (
+        u,
+        np.asarray(np.einsum("i,i", normal_covector, flux_u)),
+        np.asarray(
+            result
+            if normal_dot_mesh_velocity is None
+            else (result - normal_dot_mesh_velocity)
+        ),
+    )
 
 
-def dg_boundary_terms_u(
+def dg_boundary_terms(
     interior_u,
     interior_normal_dot_flux_u,
     interior_char_speed,
@@ -51,4 +44,4 @@ def dg_boundary_terms_u(
 
     if use_strong_form:
         result -= interior_normal_dot_flux_u
-    return result
+    return (np.asarray(result),)

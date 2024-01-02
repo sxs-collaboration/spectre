@@ -13,6 +13,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -146,6 +147,65 @@ struct ContainerPackAndUnpack<Tensor<T, Ts...>, ConversionClassList,
 
   static inline size_t get_size(const packed_container& packed) {
     return ContainerPackAndUnpack<T, ConversionClassList>::get_size(packed[0]);
+  }
+};
+
+template <typename T, typename... Symm, typename... Indices,
+          typename ConversionClassList>
+struct ContainerPackAndUnpack<std::tuple<Tensor<T, Symm, Indices>...>,
+                              ConversionClassList, std::nullptr_t> {
+  using unpacked_container =
+      std::tuple<Tensor<typename ContainerPackAndUnpack<
+                            T, ConversionClassList>::unpacked_container,
+                        Symm, Indices>...>;
+  using packed_container = std::tuple<Tensor<
+      typename ContainerPackAndUnpack<T, ConversionClassList>::packed_container,
+      Symm, Indices>...>;
+  using packed_type =
+      typename ContainerPackAndUnpack<T, ConversionClassList>::packed_type;
+
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
+    return unpack_impl(packed, grid_point_index,
+                       std::make_index_sequence<sizeof...(Indices)>{});
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    pack_impl(packed, unpacked, grid_point_index,
+              std::make_index_sequence<sizeof...(Indices)>{});
+  }
+
+  static inline size_t get_size(const packed_container& packed) {
+    return ContainerPackAndUnpack<T, ConversionClassList>::get_size(
+        std::get<0>(packed)[0]);
+  }
+
+ private:
+  template <size_t... Is>
+  static unpacked_container unpack_impl(const packed_container& packed,
+                                        const size_t grid_point_index,
+                                        std::index_sequence<Is...> /*meta*/) {
+    unpacked_container unpacked{};
+    EXPAND_PACK_LEFT_TO_RIGHT([&unpacked, &packed, &grid_point_index]() {
+      std::get<Is>(unpacked) = ContainerPackAndUnpack<
+          Tensor<T, Symm, Indices>,
+          ConversionClassList>::unpack(std::get<Is>(packed), grid_point_index);
+    }());
+    return unpacked;
+  }
+
+  template <size_t... Is>
+  static void pack_impl(const gsl::not_null<packed_container*> packed,
+                        const unpacked_container& unpacked,
+                        const size_t grid_point_index,
+                        std::index_sequence<Is...> /*meta*/) {
+    EXPAND_PACK_LEFT_TO_RIGHT([&unpacked, &packed, &grid_point_index]() {
+      ContainerPackAndUnpack<Tensor<T, Symm, Indices>, ConversionClassList>::
+          pack(make_not_null(&std::get<Is>(*packed)), std::get<Is>(unpacked),
+               grid_point_index);
+    }());
   }
 };
 
@@ -338,17 +398,39 @@ struct CallImpl {
   }
 };
 
+template <typename T>
+struct is_tuple_of_tensors_of_vectors : std::false_type {
+  template <typename ConversionClassList>
+  static T make_zero(const size_t npts) {
+    return make_with_value<typename ContainerPackAndUnpack<
+        T, ConversionClassList>::packed_container>(npts, 0.0);
+  }
+};
+
+template <typename T, typename... Symms, typename... Indices>
+struct is_tuple_of_tensors_of_vectors<std::tuple<Tensor<T, Symms, Indices>...>>
+    : std::bool_constant<std::is_same_v<DataVector, T> or
+                         std::is_same_v<ComplexDataVector, T>> {
+  template <typename ConversionClassList>
+  static std::tuple<Tensor<T, Symms, Indices>...> make_zero(const size_t npts) {
+    return {make_with_value<typename ContainerPackAndUnpack<
+        Tensor<T, Symms, Indices>, ConversionClassList>::packed_container>(
+        npts, 0.0)...};
+  }
+};
+
 template <typename ReturnType, typename ConversionClassList>
 struct CallImpl<
     ReturnType, ConversionClassList,
     Requires<
-        (tt::is_a_v<Tensor, ReturnType> or tt::is_std_array_v<ReturnType>)and(
+        ((tt::is_a_v<Tensor, ReturnType> or tt::is_std_array_v<ReturnType>)and(
             std::is_same_v<typename ContainerPackAndUnpack<
                                ReturnType, ConversionClassList>::packed_type,
                            DataVector> or
             std::is_same_v<typename ContainerPackAndUnpack<
                                ReturnType, ConversionClassList>::packed_type,
-                           ComplexDataVector>)>> {
+                           ComplexDataVector>)) or
+        is_tuple_of_tensors_of_vectors<ReturnType>::value>> {
   template <typename... Args>
   static ReturnType call(const std::string& module_name,
                          const std::string& function_name, const Args&... t) {
@@ -383,8 +465,9 @@ struct CallImpl<
             << i << " has size " << gsl::at(arg_sizes, i));
       }
     }
-    auto return_container = make_with_value<typename ContainerPackAndUnpack<
-        ReturnType, ConversionClassList>::packed_container>(npts, 0.0);
+
+    auto return_container = is_tuple_of_tensors_of_vectors<
+        ReturnType>::template make_zero<ConversionClassList>(npts);
 
     for (size_t s = 0; s < npts; ++s) {
       PyObject* args = pypp::make_py_tuple(

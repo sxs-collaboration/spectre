@@ -291,5 +291,25 @@ def add_scalars(a, b):
     return a + b
 
 
+def tuple_of_tensor_not_tuple(a):
+    return np.asarray([a])
+
+
+def tuple_of_tensor_wrong_size(a):
+    return (np.asarray([a]), np.asarray([a]), np.asarray([a]))
+
+
+def tuple_of_tensor_failed_to_convert0(a):
+    return (np.asarray([a]), np.asarray([a]))
+
+
+def tuple_of_tensor_failed_to_convert1(a):
+    return (np.asarray(a), np.asarray(a))
+
+
+def tuple_of_tensor_works(a):
+    return (np.asarray(2.0 * a), np.asarray([5.0 * a]))
+
+
 def custom_conversion(t, a):
     return t * a

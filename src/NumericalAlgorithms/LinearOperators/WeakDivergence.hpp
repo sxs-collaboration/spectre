@@ -109,16 +109,22 @@ void weak_divergence(
             auto logical_index_of_jacobian) {
           using flux_tag = tmpl::type_from<decltype(flux_tag_v)>;
           using div_tag = tmpl::type_from<decltype(div_tag_v)>;
+          using TensorIndexType =
+              std::array<size_t, div_tag::type::num_tensor_indices>;
+          using FluxIndexType =
+              std::array<size_t, flux_tag::type::num_tensor_indices>;
 
           auto& result = get<div_tag>(*result_buffer);
           const auto& flux = get<flux_tag>(fluxes);
 
           for (size_t result_storage_index = 0;
                result_storage_index < result.size(); ++result_storage_index) {
-            const auto result_tensor_index =
+            const TensorIndexType result_tensor_index =
                 result.get_tensor_index(result_storage_index);
-            const auto flux_x_tensor_index = prepend(result_tensor_index, 0_st);
-            const auto flux_y_tensor_index = prepend(result_tensor_index, 1_st);
+            const FluxIndexType flux_x_tensor_index =
+                prepend(result_tensor_index, 0_st);
+            const FluxIndexType flux_y_tensor_index =
+                prepend(result_tensor_index, 1_st);
             if constexpr (Dim == 2) {
               result[result_storage_index] =
                   get<std::decay_t<decltype(logical_index_of_jacobian)>::value,
@@ -128,7 +134,7 @@ void weak_divergence(
                       1>(det_jac_times_inverse_jacobian) *
                       flux.get(flux_y_tensor_index);
             } else {
-              const auto flux_z_tensor_index =
+              const FluxIndexType flux_z_tensor_index =
                   prepend(result_tensor_index, 2_st);
               result[result_storage_index] =
                   get<std::decay_t<decltype(logical_index_of_jacobian)>::value,
