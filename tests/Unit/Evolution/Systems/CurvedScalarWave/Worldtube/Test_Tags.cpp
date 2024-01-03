@@ -379,24 +379,27 @@ void test_puncture_field() {
       "PunctureField");
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(-1., 1.);
-  tnsr::I<double, Dim, Frame::Grid> charge_pos{{7.1, 0., 0.}};
-  const ::ExcisionSphere excision_sphere{1., charge_pos, {}};
-  const double orbital_radius = get(magnitude(charge_pos));
+  const tnsr::I<double, Dim, Frame::Inertial> charge_pos{{7.1, 0., 0.}};
+  const tnsr::I<double, Dim, Frame::Inertial> charge_vel{{0.1, 0.2, 0.}};
+  const tnsr::I<double, Dim, Frame::Inertial> charge_acc{{0.1, 0.2, 0.}};
+  const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2> pos_vel{
+      {charge_pos, charge_vel}};
+
   auto random_points =
       make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           make_not_null(&gen), dist, DataVector(50));
   random_points.get(0) += charge_pos.get(0);
 
-  const double time = 1.;
-  const size_t order = 0;
+  const size_t order = 1;
   const auto box_abutting = db::create<
-      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, false>,
-                        Tags::ExcisionSphere<Dim>, ::Tags::Time,
-                        Tags::ExpansionOrder>,
+      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
+                        Tags::ParticlePositionVelocity<Dim>,
+                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder>,
       db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
       std::make_optional<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           random_points),
-      excision_sphere, time, order);
+      pos_vel, charge_acc, order);
+
   const auto singular_field = get<Tags::PunctureField<Dim>>(box_abutting);
 
   CHECK(singular_field.has_value());
@@ -405,16 +408,16 @@ void test_puncture_field() {
                        ::Tags::deriv<CurvedScalarWave::Tags::Psi,
                                      tmpl::size_t<3>, Frame::Inertial>>>
       expected{};
-  puncture_field(make_not_null(&expected), random_points, time, orbital_radius,
-                 time, order);
+  puncture_field(make_not_null(&expected), random_points, charge_pos,
+                 charge_vel, charge_acc, 1., order);
   CHECK_VARIABLES_APPROX(singular_field.value(), expected);
   std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> nullopt{};
   const auto box_not_abutting = db::create<
-      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, false>,
-                        Tags::ExcisionSphere<Dim>, ::Tags::Time,
-                        Tags::ExpansionOrder>,
-      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
-      nullopt, excision_sphere, time, order);
+      db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
+                        Tags::ParticlePositionVelocity<Dim>,
+                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder>,
+      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(nullopt, pos_vel,
+                                                           charge_acc, order);
   const auto puncture_field_nullopt =
       get<Tags::PunctureField<Dim>>(box_not_abutting);
   CHECK(not puncture_field_nullopt.has_value());

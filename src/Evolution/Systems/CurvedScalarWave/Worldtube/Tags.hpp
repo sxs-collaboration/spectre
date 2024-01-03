@@ -300,8 +300,9 @@ struct ExpansionOrder : db::SimpleTag {
 
 /// @{
 /*!
- * Computes the puncture field on an element face abutting the worldtube.
- * If the current element does not abut the worldtube this holds a std::nullopt.
+ * Computes the puncture field on an element face abutting the worldtube
+ * assuming geodesic acceleration. If the current element does not abut the
+ * worldtube this holds a std::nullopt.
  */
 template <size_t Dim>
 struct PunctureField : db::SimpleTag {
@@ -314,9 +315,9 @@ struct PunctureField : db::SimpleTag {
 template <size_t Dim>
 struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
   using base = PunctureField<Dim>;
-  using argument_tags =
-      tmpl::list<FaceCoordinates<Dim, Frame::Inertial, false>,
-                 ExcisionSphere<Dim>, ::Tags::Time, ExpansionOrder>;
+  using argument_tags = tmpl::list<FaceCoordinates<Dim, Frame::Inertial, true>,
+                                   ParticlePositionVelocity<Dim>,
+                                   GeodesicAcceleration<Dim>, ExpansionOrder>;
   using return_type = std::optional<Variables<tmpl::list<
       CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
       ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
@@ -324,8 +325,10 @@ struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
   static void function(
       const gsl::not_null<return_type*> result,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-          inertial_face_coords,
-      const ::ExcisionSphere<Dim>& excision_sphere, const double time,
+          inertial_face_coords_centered,
+      const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
+          particle_position_velocity,
+      const tnsr::I<double, Dim>& particle_acceleration,
       const size_t expansion_order);
 };
 /// @}

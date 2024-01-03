@@ -16,7 +16,7 @@
 namespace CurvedScalarWave::Worldtube {
 /*!
  * \brief Computes the puncture/singular field \f$\Psi^\mathcal{P}\f$ of a
- * scalar charge in circular orbit around a Schwarzschild black hole as
+ * scalar charge on a generic orbit in Schwarzschild spacetime.
  * described in \cite Detweiler2003.
  *
  * \details The field is computed using a Detweiler-Whiting singular
@@ -32,50 +32,57 @@ namespace CurvedScalarWave::Worldtube {
  * distance and transformed to Kerr-Schild coordinates.
  *
  * The function given here assumes that the particle has scalar charge \f$q=1\f$
- * and is on a fixed geodesic orbit  with
- * \f$z(t) = (R \cos{\omega t}, R \sin{\omega t}, 0)\f$ around a Schwarzschild
- * black hole, where \f$R\f$ is the orbital radius and
- * \f$ \omega = R^{-3/2} \f$. It returns the singular field at the requested
- * coordinates as well as its time and spatial derivative.
+ * and is on a fixed geodesic orbit. It returns the
+ * singular field at the requested coordinates as well as its time and spatial
+ * derivative. For non-geodesic orbits, corresponding acceleration terms have to
+ * be added to the puncture field.
  *
  * \note The expressions were computed with Mathematica and optimized by
  * applying common subexpression elimination with sympy. The memory allocations
  * of temporaries were optimized manually.
  */
 void puncture_field(
-    const gsl::not_null<Variables<tmpl::list<
+    gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
         result,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-    const double orbital_radius, const double bh_mass, size_t order);
+
+    const tnsr::I<DataVector, 3, Frame::Inertial>& centered_coords,
+    const tnsr::I<double, 3>& particle_position,
+    const tnsr::I<double, 3>& particle_velocity,
+    const tnsr::I<double, 3>& particle_acceleration, double bh_mass,
+    size_t order);
 
 /*!
  * \brief Computes the puncture/singular field \f$\Psi^\mathcal{P}\f$ of a
- * scalar charge in circular orbit around a Schwarzschild black hole as
- * described in \cite Detweiler2003 expanded to order 0 in geodesic distance.
+ * scalar charge on a generic orbit in Schwarzschild spacetime.
+ * described in \cite Detweiler2003.
  */
 void puncture_field_0(
-    const gsl::not_null<Variables<tmpl::list<
+    gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
         result,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-    const double orbital_radius, const double bh_mass);
+    const tnsr::I<DataVector, 3, Frame::Inertial>& centered_coords,
+    const tnsr::I<double, 3>& particle_position,
+    const tnsr::I<double, 3>& particle_velocity,
+    const tnsr::I<double, 3>& particle_acceleration, double bh_mass);
 
 /*!
  * \brief Computes the puncture/singular field \f$\Psi^\mathcal{P}\f$ of a
- * scalar charge in circular orbit around a Schwarzschild black hole as
- * described in \cite Detweiler2003 expanded to order 1 in geodesic distance.
+ * scalar charge on a generic orbit in Schwarzschild spacetime.
+ * described in \cite Detweiler2003.
  */
 void puncture_field_1(
-    const gsl::not_null<Variables<tmpl::list<
+    gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
         result,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-    const double orbital_radius, const double bh_mass);
+    const tnsr::I<DataVector, 3, Frame::Inertial>& centered_coords,
+    const tnsr::I<double, 3>& particle_position,
+    const tnsr::I<double, 3>& particle_velocity,
+    const tnsr::I<double, 3>& particle_acceleration, double bh_mass);
 }  // namespace CurvedScalarWave::Worldtube

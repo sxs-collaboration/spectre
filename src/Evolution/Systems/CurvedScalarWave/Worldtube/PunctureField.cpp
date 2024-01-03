@@ -16,17 +16,22 @@
 namespace CurvedScalarWave::Worldtube {
 
 void puncture_field(
-    const gsl::not_null<Variables<tmpl::list<
+    gsl::not_null<Variables<tmpl::list<
         CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
         ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
                       Frame::Inertial>>>*>
         result,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-    const double orbital_radius, const double bh_mass, const size_t order) {
+    const tnsr::I<DataVector, 3, Frame::Inertial>& centered_coords,
+    const tnsr::I<double, 3>& particle_position,
+    const tnsr::I<double, 3>& particle_velocity,
+    const tnsr::I<double, 3>& particle_acceleration, const double bh_mass,
+    const size_t order) {
   if (order == 0) {
-    puncture_field_0(result, coords, time, orbital_radius, bh_mass);
+    puncture_field_0(result, centered_coords, particle_position,
+                     particle_velocity, particle_acceleration, bh_mass);
   } else if (order == 1) {
-    puncture_field_1(result, coords, time, orbital_radius, bh_mass);
+    puncture_field_1(result, centered_coords, particle_position,
+                     particle_velocity, particle_acceleration, bh_mass);
   } else {
     ERROR(
         "The puncture field is only implemented up to expansion order 1 but "
