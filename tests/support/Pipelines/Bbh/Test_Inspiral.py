@@ -29,6 +29,7 @@ class TestInspiral(unittest.TestCase):
             mass_ratio=1.5,
             separation=20.0,
             orbital_angular_velocity=0.01,
+            radial_expansion_velocity=-1.0e-5,
             refinement_level=1,
             polynomial_order=5,
             run_dir=self.test_dir / "ID",
@@ -59,6 +60,7 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["XCoordA"], 8.0)
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
+        self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
 

@@ -22,7 +22,7 @@ Background: &background
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
-    Expansion: 0.
+    Expansion: {{ RadialExpansionVelocity }}
     LinearVelocity: [0., 0., 0.]
     FalloffWidths: [4.8, 4.8]
 

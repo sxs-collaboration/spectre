@@ -62,7 +62,7 @@ DomainCreator:
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
-        InitialValues: [1.0, 0.0]
+        InitialValues: [1.0, {{ RadialExpansionVelocity }}]
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:

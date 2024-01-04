@@ -48,6 +48,7 @@ def inspiral_parameters(
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
         # Initial functions of time
         "InitialAngularVelocity": id_binary["AngularVelocity"],
+        "RadialExpansionVelocity": float(id_binary["Expansion"]),
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
