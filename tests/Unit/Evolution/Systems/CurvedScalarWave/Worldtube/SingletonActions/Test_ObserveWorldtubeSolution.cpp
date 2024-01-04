@@ -56,9 +56,6 @@ struct MockWorldtubeSingleton {
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                        Frame::Grid>,
-                  Stf::Tags::StfTensor<Tags::PsiWorldtube, 2, Dim, Frame::Grid>,
-                  Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 2, Dim,
-                                       Frame::Grid>,
                   Tags::ExcisionSphere<Dim>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
@@ -105,12 +102,6 @@ void check_observe_worldtube_solution(
   const auto dt_psi_dipole =
       make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(generator,
                                                                  dist, 1);
-  const auto psi_quadrupole =
-      make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(generator,
-                                                                  dist, 1);
-  const auto dt_psi_quadrupole =
-      make_with_random_values<tnsr::ii<double, Dim, Frame::Grid>>(generator,
-                                                                  dist, 1);
   const double wt_radius = 1.5;
   const ExcisionSphere<Dim> excision_sphere(
       wt_radius, tnsr::I<double, Dim, Frame::Grid>{{0., 0., 0.}}, {});
@@ -123,8 +114,7 @@ void check_observe_worldtube_solution(
   ActionTesting::emplace_component_and_initialize<worldtube_chare>(
       make_not_null(&runner), 0,
       {initial_time, std::move(trigger), psi0, dt_psi0, psi_monopole,
-       dt_psi_monopole, psi_dipole, dt_psi_dipole, psi_quadrupole,
-       dt_psi_quadrupole, excision_sphere});
+       dt_psi_monopole, psi_dipole, dt_psi_dipole, excision_sphere});
   ActionTesting::emplace_nodegroup_component_and_initialize<
       mock_observer_writer>(make_not_null(&runner), {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
@@ -178,51 +168,6 @@ void check_observe_worldtube_solution(
     CHECK(data.at(0, 6) == get<0>(dt_psi_dipole));
     CHECK(data.at(0, 7) == get<1>(dt_psi_dipole));
     CHECK(data.at(0, 8) == get<2>(dt_psi_dipole));
-  } else if (expansion_order == 2) {
-    const std::vector<std::string> legend_2{
-        {"Time",    "Psi0",    "Psix",   "Psiy",    "Psiz",    "Psixx",
-         "Psixy",   "Psixz",   "Psiyy",  "Psiyz",   "Psizz",   "dtPsi0",
-         "dtPsix",  "dtPsiy",  "dtPsiz", "dtPsixx", "dtPsixy", "dtPsixz",
-         "dtPsiyy", "dtPsiyz", "dtPsizz"}};
-    CHECK(legend_2 == dat_file.get_legend());
-    const auto& data = dat_file.get_data();
-    CHECK(data.rows() == 1);
-    CHECK(data.columns() == 21);
-    CHECK(data.at(0, 0) == new_time);
-    CHECK(data.at(0, 1) == get(psi0).at(0));
-    CHECK(data.at(0, 2) == get<0>(psi_dipole));
-    CHECK(data.at(0, 3) == get<1>(psi_dipole));
-    CHECK(data.at(0, 4) == get<2>(psi_dipole));
-    Approx custom_approx = Approx::custom().epsilon(1.e-14).scale(1.0);
-
-    const double trace_psi_2 =
-        3. * (get(psi_monopole) - get(psi0).at(0)) / square(wt_radius);
-    CHECK(data.at(0, 5) ==
-          custom_approx(get<0, 0>(psi_quadrupole) + trace_psi_2));
-    CHECK(data.at(0, 6) == get<0, 1>(psi_quadrupole));
-    CHECK(data.at(0, 7) == get<0, 2>(psi_quadrupole));
-    CHECK(data.at(0, 8) ==
-          custom_approx(get<1, 1>(psi_quadrupole) + trace_psi_2));
-    CHECK(data.at(0, 9) == get<1, 2>(psi_quadrupole));
-    CHECK(data.at(0, 10) ==
-          custom_approx(get<2, 2>(psi_quadrupole) + trace_psi_2));
-
-    CHECK(data.at(0, 11) == get(dt_psi0).at(0));
-    CHECK(data.at(0, 12) == get<0>(dt_psi_dipole));
-    CHECK(data.at(0, 13) == get<1>(dt_psi_dipole));
-    CHECK(data.at(0, 14) == get<2>(dt_psi_dipole));
-
-    const double trace_dt_psi_2 =
-        3. * (get(dt_psi_monopole) - get(dt_psi0).at(0)) / square(wt_radius);
-    CHECK(data.at(0, 15) ==
-          custom_approx(get<0, 0>(dt_psi_quadrupole) + trace_dt_psi_2));
-    CHECK(data.at(0, 16) == get<0, 1>(dt_psi_quadrupole));
-    CHECK(data.at(0, 17) == get<0, 2>(dt_psi_quadrupole));
-    CHECK(data.at(0, 18) ==
-          custom_approx(get<1, 1>(dt_psi_quadrupole) + trace_dt_psi_2));
-    CHECK(data.at(0, 19) == get<1, 2>(dt_psi_quadrupole));
-    CHECK(data.at(0, 20) ==
-          custom_approx(get<2, 2>(dt_psi_quadrupole) + trace_dt_psi_2));
   }
 }
 
@@ -236,8 +181,6 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ObserveWorldtubeSolution",
                                    make_not_null(&dist), 0);
   check_observe_worldtube_solution(make_not_null(&generator),
                                    make_not_null(&dist), 1);
-  check_observe_worldtube_solution(make_not_null(&generator),
-                                   make_not_null(&dist), 2);
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube

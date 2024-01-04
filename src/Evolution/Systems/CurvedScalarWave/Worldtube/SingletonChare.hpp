@@ -10,11 +10,9 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ChangeSlabSize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeEvolvedVariables.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeSpacetimeTags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ObserveWorldtubeSolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/TimeDerivative.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -69,7 +67,6 @@ struct WorldtubeSingleton {
       ::Initialization::Actions::InitializeItems<
           ::Initialization::TimeStepping<Metavariables, TimeStepperBase>,
           Initialization::InitializeEvolvedVariables,
-          Initialization::InitializeSpacetimeTags,
           Initialization::InitializeElementFacesGridCoordinates<Dim>>,
       Parallel::Actions::TerminatePhase>;
 
@@ -81,7 +78,6 @@ struct WorldtubeSingleton {
   };
   using step_actions =
       tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
-                 Actions::ComputeTimeDerivative,
                  ::Actions::RecordTimeStepperData<worldtube_system>,
                  ::Actions::UpdateU<worldtube_system>,
                  Actions::SendToElements<Metavariables>>;

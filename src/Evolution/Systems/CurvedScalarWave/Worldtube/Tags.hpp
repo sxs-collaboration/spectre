@@ -78,8 +78,8 @@ struct ExpansionOrder {
   using type = size_t;
   static constexpr Options::String help{
       "The internal expansion order of the worldtube solution. Currently "
-      "orders 0, 1 and 2 are implemented"};
-  static size_t upper_bound() { return 2; }
+      "orders 0 and 1 are implemented"};
+  static size_t upper_bound() { return 1; }
   using group = Worldtube;
 };
 }  // namespace OptionTags
