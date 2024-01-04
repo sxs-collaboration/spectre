@@ -112,9 +112,4 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 PointerAlignment: Left
 DerivePointerAlignment: false
-IncludeCategories:
-  - Regex:           '^<.*'
-    Priority:        1
-  - Regex:           '.*'
-    Priority:        2
 ...
