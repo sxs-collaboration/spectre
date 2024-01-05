@@ -103,7 +103,7 @@ struct InitializeWorldtubeBoundary;
  * \brief Initializes a H5WorldtubeBoundary
  *
  * \details Uses:
- * - initialization tag
+ * - simple tags from options
  * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
  * - const global cache tag `Cce::Tags::LMax`.
  *
@@ -137,7 +137,7 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
  * \brief Initializes a GhWorldtubeBoundary
  *
  * \details Uses:
- * - initialization tags
+ * - simple tags from options
  * `Cce::Tags::GhWorldtubeBoundaryDataManager`, `Tags::GhInterfaceManager`
  * - const global cache tags `Tags::LMax`, `Tags::ExtractionRadius`.
  *
@@ -173,7 +173,7 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
  * \brief Initializes an AnalyticWorldtubeBoundary
  *
  * \details Uses:
- * - initialization tag
+ * - simple tags from options
  * `Cce::Tags::AnalyticBoundaryDataManager`,
  * - const global cache tags `Tags::LMax`,
  * `Tags::ExtractionRadius`.
