@@ -19,7 +19,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = "SpECTRE Python interface"
-copyright = "2017-2023, SXS Collaboration"
+copyright = "2017-2024, SXS Collaboration"
 author = "SXS Collaboration"
 
 # -- General configuration ---------------------------------------------------
