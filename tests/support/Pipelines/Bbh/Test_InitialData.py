@@ -29,6 +29,7 @@ class TestInitialData(unittest.TestCase):
             mass_ratio=1.5,
             separation=20.0,
             orbital_angular_velocity=0.01,
+            radial_expansion_velocity=-1.0e-5,
             refinement_level=1,
             polynomial_order=5,
         )
@@ -39,6 +40,7 @@ class TestInitialData(unittest.TestCase):
         self.assertAlmostEqual(params["ExcisionRadiusRight"], 1.068)
         self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.712)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
+        self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # COM is zero
@@ -60,6 +62,8 @@ class TestInitialData(unittest.TestCase):
                     "20",
                     "--orbital-angular-velocity",
                     "0.01",
+                    "--radial-expansion-velocity",
+                    "-1.0e-5",
                     "--refinement-level",
                     "1",
                     "--polynomial-order",
