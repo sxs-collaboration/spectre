@@ -80,7 +80,7 @@
  * u^* &= \frac{1}{2} \left(u^\mathrm{int} + u^\mathrm{ext}\right) \\
  * (n_i F^i)^* &= \frac{1}{2} n_i \left(
  * F^i_\mathrm{int} + F^i_\mathrm{ext} \right)
- * - \sigma n_i F^i(n_j (u^\mathrm{int} - u^\mathrm{ext})) \right)
+ * - \sigma n_i F^i(n_j (u^\mathrm{int} - u^\mathrm{ext}))
  * \f}
  *
  * Note that \f$n_i\f$ denotes the face normal on the "interior" side of the
