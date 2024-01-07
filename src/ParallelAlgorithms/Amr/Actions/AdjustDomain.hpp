@@ -37,6 +37,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -223,8 +224,14 @@ struct AdjustDomain {
       tmpl::for_each<amr_projectors>(
           [&box, &old_mesh_and_element](auto projector_v) {
             using projector = typename decltype(projector_v)::type;
-            db::mutate_apply<projector>(make_not_null(&box),
-                                        old_mesh_and_element);
+            try {
+              db::mutate_apply<projector>(make_not_null(&box),
+                                          old_mesh_and_element);
+            } catch (std::exception& e) {
+              ERROR("Error in AMR projector '"
+                    << pretty_type::short_name<projector>() << "':\n"
+                    << e.what());
+            }
           });
 
       // Reset the AMR flags
