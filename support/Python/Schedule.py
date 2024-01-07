@@ -279,9 +279,9 @@ def schedule(
         When set to 'False': Never copy.
       job_name: Optional. A string describing the job.
         Can be a Jinja template (see above). (Default: executable name)
-      submit_script_template: Optional only when 'scheduler' is 'None'. Path to
-        a submit script. It will be copied to the 'run_dir'.
-        Can be a Jinja template (see above).
+      submit_script_template: Optional. Path to a submit script. It will be
+        copied to the 'run_dir' if a 'scheduler' is set. Can be a Jinja template
+        (see above). (Default: value of 'default_submit_script_template')
       from_checkpoint: Optional. Path to a checkpoint directory.
       input_file_name: Optional. Filename of the input file in the 'run_dir'.
         (Default: basename of the 'input_file_template')
@@ -312,6 +312,8 @@ def schedule(
         input_file_name = input_file_template.resolve().name
     if no_schedule:
         scheduler = None
+    if scheduler and not submit_script_template:
+        submit_script_template = default_submit_script_template
     if isinstance(from_checkpoint, Checkpoint):
         from_checkpoint = from_checkpoint.path
     if from_checkpoint:
@@ -601,9 +603,6 @@ def schedule(
         context.update(spectre_cli=spectre_cli)
 
     # Configure submit script
-    assert (
-        submit_script_template
-    ), "Please specify the 'submit_script_template'."
     submit_script_template = Path(submit_script_template).resolve()
     if segments_dir:
         submit_script_template = _copy_submit_script_template(
@@ -842,8 +841,8 @@ def scheduler_options(f):
     )
     @click.option(
         "--submit-script-template",
-        default=default_submit_script_template,
-        show_default=True,
+        default=None,
+        show_default=str(default_submit_script_template),
         # No `type=click.Path` because this can be a Jinja template
         help=(
             "Path to a submit script. "
