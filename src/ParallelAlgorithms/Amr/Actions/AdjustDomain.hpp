@@ -178,7 +178,8 @@ struct AdjustDomain {
                 }
                 neighbors.set_ids_to(new_neighbor_ids);
               }
-              *element = Element<volume_dim>(element_id, new_neighbors);
+              *element =
+                  Element<volume_dim>(element_id, std::move(new_neighbors));
             },
             make_not_null(&box));
       }
