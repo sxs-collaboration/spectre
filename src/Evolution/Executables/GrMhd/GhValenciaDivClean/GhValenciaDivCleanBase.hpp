@@ -9,8 +9,8 @@
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Component.hpp"
-#include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Trigger.hpp"
@@ -608,7 +608,8 @@ struct GhValenciaDivCleanTemplateBase<
                        Events::ObserveAtExtremum<observe_fields,
                                                  non_tensor_compute_tags>,
                        Events::time_events<system>,
-                       control_system::control_system_events<control_systems>,
+                       control_system::metafunctions::control_system_events<
+                           control_systems>,
                        intrp::Events::InterpolateWithoutInterpComponent<
                            volume_dim, InterpolationTargetTags,
                            interpolator_source_vars>...>>>,

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "ControlSystem/CombinedName.hpp"
-#include "ControlSystem/Event.hpp"
 #include "ControlSystem/FutureMeasurements.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Tags/FutureMeasurements.hpp"
@@ -99,16 +98,24 @@ struct InitializeMeasurements {
                events_and_dense_triggers) {
           tmpl::for_each<metafunctions::measurements_t<ControlSystems>>(
               [&events_and_dense_triggers](auto measurement_v) {
+                using measurement = tmpl::type_from<decltype(measurement_v)>;
                 using control_system_group =
                     metafunctions::control_systems_with_measurement_t<
-                        ControlSystems,
-                        typename tmpl::type_from<decltype(measurement_v)>>;
+                        ControlSystems, measurement>;
+                using events = tmpl::transform<
+                    typename measurement::submeasurements,
+                    metafunctions::event_from_submeasurement<
+                        tmpl::pin<control_system_group>, tmpl::_1>>;
+                std::vector<std::unique_ptr<::Event>> vector_of_events =
+                    tmpl::as_pack<events>([](auto... events_v) {
+                      return make_vector<std::unique_ptr<::Event>>(
+                          std::make_unique<
+                              tmpl::type_from<decltype(events_v)>>()...);
+                    });
                 events_and_dense_triggers->add_trigger_and_events(
                     std::make_unique<
                         control_system::Trigger<control_system_group>>(),
-                    make_vector<std::unique_ptr<::Event>>(
-                        std::make_unique<
-                            control_system::Event<control_system_group>>()));
+                    std::move(vector_of_events));
               });
         },
         make_not_null(&box));

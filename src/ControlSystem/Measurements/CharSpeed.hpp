@@ -9,21 +9,16 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/LinkedMessageId.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
-#include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
-#include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
@@ -84,7 +79,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
                      gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>>;
       using compute_vars_to_interpolate =
           ah::ComputeExcisionBoundaryVolumeQuantities;
-      using compute_items_on_source = tmpl::list<>;
+      using compute_items_on_source =
+          tmpl::list<::Tags::TimeAndPreviousCompute<1>>;
       using compute_items_on_target =
           tmpl::list<gr::Tags::DetAndInverseSpatialMetricCompute<
               DataVector, 3, Frame::Distorted>>;
@@ -102,38 +98,9 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
 
-    using compute_tags_for_observation_box = tmpl::list<>;
-
-    using argument_tags =
-        tmpl::push_front<::ah::source_vars<3>, intrp::Tags::InterpPointInfoBase,
-                         domain::Tags::Mesh<3>,
-                         domain::Tags::Coordinates<3, ::Frame::Grid>>;
-
-    template <typename Metavariables, typename ParallelComponent,
-              typename ControlSystems>
-    static void apply(
-        const typename intrp::Tags::InterpPointInfo<Metavariables>::type&
-            point_infos,
-        const Mesh<3>& mesh,
-        const tnsr::I<DataVector, 3, ::Frame::Grid>& grid_coords,
-        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
-        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
-        const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
-        const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
-        const LinkedMessageId<double>& measurement_id,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const ElementId<3>& array_index,
-        const ParallelComponent* const component, ControlSystems /*meta*/) {
-      using Event = typename intrp::Events::InterpolateWithoutInterpComponent<
-          3, InterpolationTarget<ControlSystems>, ::ah::source_vars<3>>;
-
-      Event event{};
-
-      // ObservationValue unused
-      event(measurement_id, point_infos, mesh, grid_coords, spacetime_metric,
-            pi, phi, deriv_phi, cache, array_index, component,
-            ::Event::ObservationValue{});
-    }
+    template <typename ControlSystems>
+    using event = intrp::Events::InterpolateWithoutInterpComponent<
+        3, InterpolationTarget<ControlSystems>, ::ah::source_vars<3>>;
   };
 
   /*!
@@ -148,18 +115,23 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     struct InterpolationTarget
         : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+     private:
+      static constexpr size_t index =
+          Object == ::domain::ObjectLabel::A ? 1_st : 2_st;
+
+     public:
       static std::string name() {
         return "ControlSystemCharSpeedAh" + ::domain::name(Object);
       }
 
       // Separate temporal IDs for each object
-      using temporal_id =
-          ::Tags::TimeAndPrevious<Object == ::domain::ObjectLabel::A ? 1_st
-                                                                     : 2_st>;
+      using temporal_id = ::Tags::TimeAndPrevious<index>;
 
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
+      using compute_items_on_source =
+          tmpl::list<::Tags::TimeAndPreviousCompute<index>>;
       using compute_items_on_target = tmpl::push_back<
           ::ah::compute_items_on_target<3, Frame::Distorted>,
           ylm::Tags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
@@ -179,27 +151,10 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
 
-    using compute_tags_for_observation_box = tmpl::list<>;
-
-    using argument_tags =
-        tmpl::push_front<::ah::source_vars<3>, domain::Tags::Mesh<3>>;
-
-    template <typename Metavariables, typename ParallelComponent,
-              typename ControlSystems>
-    static void apply(
-        const Mesh<3>& mesh,
-        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
-        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
-        const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
-        const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
-        const LinkedMessageId<double>& measurement_id,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const ElementId<3>& array_index,
-        const ParallelComponent* const /*meta*/, ControlSystems /*meta*/) {
-      intrp::interpolate<interpolation_target_tag<ControlSystems>>(
-          measurement_id, mesh, cache, array_index, spacetime_metric, pi, phi,
-          deriv_phi);
-    }
+    template <typename ControlSystems>
+    using event =
+        intrp::Events::Interpolate<3, InterpolationTarget<ControlSystems>,
+                                   ::ah::source_vars<3>>;
   };
 
   using submeasurements = tmpl::list<Horizon, Excision>;

@@ -64,27 +64,6 @@ template <typename Measurement>
 using submeasurements_t = typename submeasurements<Measurement>::type;
 /// @}
 
-template <typename Submeasurement>
-struct compute_tags_for_observation_box_from_submeasurements {
-  using type = typename Submeasurement::compute_tags_for_observation_box;
-};
-
-/// Given a measurement, obtain a list of compute tags for the ObservationBox
-/// from the `compute_tags_for_observation_box` type alias of all
-/// submeasurements of that measurement.
-/// @{
-template <typename Measurement>
-struct compute_tags_for_observation_box {
-  using type = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-      submeasurements_t<Measurement>,
-      compute_tags_for_observation_box_from_submeasurements<tmpl::_1>>>>;
-};
-
-template <typename Measurement>
-using compute_tags_for_observation_box_t =
-    typename compute_tags_for_observation_box<Measurement>::type;
-/// @}
-
 namespace detail {
 template <typename Submeasurement, typename ControlSystems>
 struct interpolation_target_tags_for_submeasurement {
@@ -130,5 +109,39 @@ template <typename Metavariables>
 using all_control_components =
     tmpl::filter<detail::all_not_mocked_components<Metavariables>,
                  tt::is_a<ControlComponent, tmpl::_1>>;
+
+template <typename ControlSystems, typename Submeasurement>
+struct event_from_submeasurement {
+  using type = typename Submeasurement::template event<ControlSystems>;
+};
+
+template <typename ControlSystems, typename Submeasurement>
+using event_from_submeasurement_t =
+    typename event_from_submeasurement<ControlSystems, Submeasurement>::type;
+
+namespace detail {
+template <typename AllControlSystems, typename Measurement>
+struct events_from_measurement {
+  using submeasurements = submeasurements_t<Measurement>;
+  using control_systems_with_measurement =
+      control_systems_with_measurement_t<AllControlSystems, Measurement>;
+
+  using type = tmpl::transform<
+      submeasurements,
+      event_from_submeasurement<tmpl::pin<control_systems_with_measurement>,
+                                tmpl::_1>>;
+};
+template <typename AllControlSystems, typename Measurement>
+using events_from_measurement_t =
+    typename events_from_measurement<AllControlSystems, Measurement>::type;
+}  // namespace detail
+
+/// \ingroup ControlSystemGroup
+/// The list of events needed for measurements for a list of control
+/// systems.
+template <typename ControlSystems>
+using control_system_events = tmpl::flatten<tmpl::transform<
+    metafunctions::measurements_t<ControlSystems>,
+    detail::events_from_measurement<tmpl::pin<ControlSystems>, tmpl::_1>>>;
 }  // namespace metafunctions
 }  // namespace control_system

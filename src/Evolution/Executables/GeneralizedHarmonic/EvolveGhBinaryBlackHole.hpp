@@ -10,8 +10,8 @@
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
-#include "ControlSystem/Event.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
+#include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
@@ -445,7 +445,8 @@ struct EvolutionMetavars {
                 Events::MonitorMemory<3>, Events::Completion,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>,
-                control_system::control_system_events<control_systems>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
                 Events::time_events<system>>>>,
         tmpl::pair<
             gh::BoundaryConditions::BoundaryCondition<volume_dim>,

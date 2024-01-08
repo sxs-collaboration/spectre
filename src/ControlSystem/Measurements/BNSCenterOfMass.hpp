@@ -12,17 +12,24 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -47,25 +54,18 @@ struct Coordinates;
 }  // namespace domain::Tags
 namespace grmhd::ValenciaDivClean::Tags {
 struct TildeD;
-}
+}  // namespace grmhd::ValenciaDivClean::Tags
+namespace evolution::Tags {
+struct PreviousTriggerTime;
+}  // namespace evolution::Tags
 /// \endcond
 
-namespace control_system::measurements {
-
+namespace control_system {
+namespace measurements {
+/// \cond
 template <typename ControlSystems>
 struct PostReductionSendBNSStarCentersToControlSystem;
-
-namespace Tags {
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ControlSystemGroup
-/// DataBox tag for location of neutron star center (or more accurately, center
-/// of mass of the matter in the x>0 (label A) or x<0 (label B) region, in grid
-/// coordinates).
-template <::domain::ObjectLabel Center>
-struct NeutronStarCenter : db::SimpleTag {
-  using type = std::array<double, 3>;
-};
-}  // namespace Tags
+/// \endcond
 
 /*!
  * \brief  Factored Center of Mass calculation (for easier testing)
@@ -91,6 +91,120 @@ void center_of_mass_integral_on_element(
     const Mesh<3>& mesh, const Scalar<DataVector>& inv_det_jacobian,
     const Scalar<DataVector>& tilde_d,
     const tnsr::I<DataVector, 3, Frame::Grid>& x_grid);
+}  // namespace measurements
+
+/*!
+ * \brief An `::Event` that computes the center of mass for $x > 0$ and $x < 0$
+ * where $x$ is the in the `Frame::Grid`.
+ *
+ * \details See
+ * `control_system::measurements::center_of_mass_integral_on_element` for the
+ * calculation of the CoM. This event then does a reduction and calls
+ * `control_system::PostReductionSendBNSStarCentersToControlSystem` as a post
+ * reduction callback.
+ *
+ * \tparam ControlSystems `tmpl::list` of all control systems that use this
+ * event.
+ */
+template <typename ControlSystems>
+class BNSEvent : public ::Event {
+ public:
+  /// \cond
+  // LCOV_EXCL_START
+  explicit BNSEvent(CkMigrateMessage* /*unused*/) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BNSEvent);  // NOLINT
+  // LCOV_EXCL_STOP
+  /// \endcond
+
+  // This event is created during control system initialization, not
+  // from the input file.
+  static constexpr bool factory_creatable = false;
+  BNSEvent() = default;
+
+  using compute_tags_for_observation_box = tmpl::list<>;
+
+  using return_tags = tmpl::list<>;
+  using argument_tags =
+      tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime,
+                 ::Events::Tags::ObserverMesh<3>,
+                 ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                                        Frame::Inertial>,
+                 grmhd::ValenciaDivClean::Tags::TildeD,
+                 ::Events::Tags::ObserverCoordinates<3, Frame::Grid>>;
+
+  template <typename Metavariables, typename ArrayIndex,
+            typename ParallelComponent>
+  void operator()(const double time, const std::optional<double>& previous_time,
+                  const Mesh<3>& mesh,
+                  const Scalar<DataVector>& inv_det_jacobian,
+                  const Scalar<DataVector>& tilde_d,
+                  const tnsr::I<DataVector, 3, Frame::Grid>& x_grid,
+                  Parallel::GlobalCache<Metavariables>& cache,
+                  const ArrayIndex& array_index,
+                  const ParallelComponent* const /*meta*/,
+                  const ObservationValue& /*observation_value*/) const {
+    const LinkedMessageId<double> measurement_id{time, previous_time};
+
+    // Initialize integrals and perform local calculations
+    double mass_a = 0.;
+    double mass_b = 0.;
+    std::array<double, 3> first_moment_a = {0., 0., 0.};
+    std::array<double, 3> first_moment_b = {0., 0., 0.};
+    measurements::center_of_mass_integral_on_element(
+        &mass_a, &mass_b, &first_moment_a, &first_moment_b, mesh,
+        inv_det_jacobian, tilde_d, x_grid);
+
+    // Reduction
+    auto my_proxy =
+        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index];
+    // We need a place to run RunCallback on... this does not need to be
+    // the control system using the CoM data.
+    auto& reduction_target_proxy = Parallel::get_parallel_component<
+        ControlComponent<Metavariables, tmpl::front<ControlSystems>>>(cache);
+    Parallel::ReductionData<
+        Parallel::ReductionDatum<LinkedMessageId<double>, funcl::AssertEqual<>>,
+        Parallel::ReductionDatum<double, funcl::Plus<>>,
+        Parallel::ReductionDatum<double, funcl::Plus<>>,
+        Parallel::ReductionDatum<std::array<double, 3>, funcl::Plus<>>,
+        Parallel::ReductionDatum<std::array<double, 3>, funcl::Plus<>>>
+        reduction_data{measurement_id, mass_a, mass_b, first_moment_a,
+                       first_moment_b};
+    Parallel::contribute_to_reduction<
+        measurements::PostReductionSendBNSStarCentersToControlSystem<
+            ControlSystems>>(std::move(reduction_data), my_proxy,
+                             reduction_target_proxy);
+  }
+
+  using is_ready_argument_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*component*/) const {
+    return true;
+  }
+
+  bool needs_evolved_variables() const override { return true; }
+};
+
+/// \cond
+template <typename ControlSystems>
+PUP::able::PUP_ID BNSEvent<ControlSystems>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
+
+namespace measurements {
+namespace Tags {
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag for location of neutron star center (or more accurately, center
+/// of mass of the matter in the x>0 (label A) or x<0 (label B) region, in grid
+/// coordinates).
+template <::domain::ObjectLabel Center>
+struct NeutronStarCenter : db::SimpleTag {
+  using type = std::array<double, 3>;
+};
+}  // namespace Tags
 
 /*!
  * \brief Measurement providing the location of the center of mass of the matter
@@ -107,58 +221,8 @@ struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
     template <typename ControlSystems>
     using interpolation_target_tag = void;
 
-    using compute_tags_for_observation_box = tmpl::list<>;
-
-    /// Tags for the arguments to the apply function.
-    using argument_tags =
-        tmpl::list<Events::Tags::ObserverMesh<3>,
-                   Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
-                                                        Frame::Inertial>,
-                   grmhd::ValenciaDivClean::Tags::TildeD,
-                   Events::Tags::ObserverCoordinates<3, Frame::Grid>>;
-
-    /// Calculate integrals needed for CoM computation on each element,
-    /// then reduce the data.
-    template <typename Metavariables, typename ParallelComponent,
-              typename ControlSystems>
-    static void apply(const Mesh<3>& mesh,
-                      const Scalar<DataVector>& inv_det_jacobian,
-                      const Scalar<DataVector>& tilde_d,
-                      const tnsr::I<DataVector, 3, Frame::Grid> x_grid,
-                      const LinkedMessageId<double>& measurement_id,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const ElementId<3>& array_index,
-                      const ParallelComponent* const /*meta*/,
-                      ControlSystems /*meta*/) {
-      // Initialize integrals and perform local calculations
-      double mass_a = 0.;
-      double mass_b = 0.;
-      std::array<double, 3> first_moment_a = {0., 0., 0.};
-      std::array<double, 3> first_moment_b = {0., 0., 0.};
-      center_of_mass_integral_on_element(&mass_a, &mass_b, &first_moment_a,
-                                         &first_moment_b, mesh,
-                                         inv_det_jacobian, tilde_d, x_grid);
-
-      // Reduction
-      auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(
-          cache)[array_index];
-      // We need a place to run RunCallback on... this does not need to be
-      // the control system using the CoM data.
-      auto& reduction_target_proxy = Parallel::get_parallel_component<
-          ControlComponent<Metavariables, tmpl::front<ControlSystems>>>(cache);
-      Parallel::ReductionData<
-          Parallel::ReductionDatum<LinkedMessageId<double>,
-                                   funcl::AssertEqual<>>,
-          Parallel::ReductionDatum<double, funcl::Plus<>>,
-          Parallel::ReductionDatum<double, funcl::Plus<>>,
-          Parallel::ReductionDatum<std::array<double, 3>, funcl::Plus<>>,
-          Parallel::ReductionDatum<std::array<double, 3>, funcl::Plus<>>>
-          reduction_data{measurement_id, mass_a, mass_b, first_moment_a,
-                         first_moment_b};
-      Parallel::contribute_to_reduction<
-          PostReductionSendBNSStarCentersToControlSystem<ControlSystems>>(
-          std::move(reduction_data), my_proxy, reduction_target_proxy);
-    }
+    template <typename ControlSystems>
+    using event = BNSEvent<ControlSystems>;
   };
   /// List of submeasurements used by this measurement -- only FindTwoCenters
   /// here.
@@ -231,5 +295,5 @@ struct PostReductionSendBNSStarCentersToControlSystem {
       "Center_B_x", "Center_B_y", "Center_B_z"};
   const static inline std::string subfile_path_{"/ControlSystems/BnsCenters"};
 };
-
-}  // namespace control_system::measurements
+}  // namespace measurements
+}  // namespace control_system
