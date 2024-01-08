@@ -39,19 +39,21 @@ struct H5WorldtubeBoundary;
 template <typename Metavariables>
 struct AnalyticWorldtubeBoundary;
 template <typename Metavariables>
+struct KleinGordonH5WorldtubeBoundary;
+template <typename Metavariables>
 struct GhWorldtubeBoundary;
 /// \endcond
 namespace Actions {
 
 namespace detail {
 template <typename Initializer, typename ManagerTags,
-          typename BoundaryCommunicationTagsList>
+          typename... BoundaryCommunicationTagsList>
 struct InitializeWorldtubeBoundaryBase {
   using simple_tags_from_options = ManagerTags;
   using const_global_cache_tags = tmpl::list<Tags::LMax>;
 
   using simple_tags =
-      tmpl::list<::Tags::Variables<BoundaryCommunicationTagsList>>;
+      tmpl::list<::Tags::Variables<BoundaryCommunicationTagsList>...>;
 
   template <typename DataBoxTagsList, typename... InboxTags,
             typename ArrayIndex, typename Metavariables, typename ActionList,
@@ -78,11 +80,11 @@ struct InitializeWorldtubeBoundaryBase {
       }
     }
     const size_t l_max = db::get<Tags::LMax>(box);
-    Variables<BoundaryCommunicationTagsList> boundary_variables{
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                               std::move(boundary_variables));
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box),
+        Variables<BoundaryCommunicationTagsList>{
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max)}...);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -103,7 +105,7 @@ struct InitializeWorldtubeBoundary;
  * \brief Initializes a H5WorldtubeBoundary
  *
  * \details Uses:
- * - initialization tag
+ * - simple tags from options
  * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
  * - const global cache tag `Cce::Tags::LMax`.
  *
@@ -134,10 +136,55 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
 
 /*!
  * \ingroup ActionsGroup
+ * \brief Initializes a KleinGordonH5WorldtubeBoundary
+ *
+ * \details Uses:
+ * - simple tags from options
+ * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
+ * `Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager`.
+ * - const global cache tag `Cce::Tags::LMax`.
+ *
+ * Databox changes:
+ * - Adds:
+ *   - `Cce::Tags::H5WorldtubeBoundaryDataManager`
+ *   - `Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager`
+ *   - `Tags::Variables<typename
+ * Metavariables::cce_boundary_communication_tags>`
+ *   - `Tags::Variables<typename
+ * Metavariables::klein_gordon_boundary_communication_tags>`
+ * - Removes: nothing
+ * - Modifies: nothing
+ */
+template <typename Metavariables>
+struct InitializeWorldtubeBoundary<
+    KleinGordonH5WorldtubeBoundary<Metavariables>>
+    : public detail::InitializeWorldtubeBoundaryBase<
+          InitializeWorldtubeBoundary<
+              KleinGordonH5WorldtubeBoundary<Metavariables>>,
+          tmpl::list<Tags::H5WorldtubeBoundaryDataManager,
+                     Tags::KleinGordonH5WorldtubeBoundaryDataManager>,
+          typename Metavariables::cce_boundary_communication_tags,
+          typename Metavariables::klein_gordon_boundary_communication_tags> {
+  using base_type = detail::InitializeWorldtubeBoundaryBase<
+      InitializeWorldtubeBoundary<
+          KleinGordonH5WorldtubeBoundary<Metavariables>>,
+      tmpl::list<Tags::H5WorldtubeBoundaryDataManager,
+                 Tags::KleinGordonH5WorldtubeBoundaryDataManager>,
+      typename Metavariables::cce_boundary_communication_tags,
+      typename Metavariables::klein_gordon_boundary_communication_tags>;
+  using base_type::apply;
+  using typename base_type::simple_tags;
+  using const_global_cache_tags =
+      tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
+  using typename base_type::simple_tags_from_options;
+};
+
+/*!
+ * \ingroup ActionsGroup
  * \brief Initializes a GhWorldtubeBoundary
  *
  * \details Uses:
- * - initialization tags
+ * - simple tags from options
  * `Cce::Tags::GhWorldtubeBoundaryDataManager`, `Tags::GhInterfaceManager`
  * - const global cache tags `Tags::LMax`, `Tags::ExtractionRadius`.
  *
@@ -173,7 +220,7 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
  * \brief Initializes an AnalyticWorldtubeBoundary
  *
  * \details Uses:
- * - initialization tag
+ * - simple tags from options
  * `Cce::Tags::AnalyticBoundaryDataManager`,
  * - const global cache tags `Tags::LMax`,
  * `Tags::ExtractionRadius`.

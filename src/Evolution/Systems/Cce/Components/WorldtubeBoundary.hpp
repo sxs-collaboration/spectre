@@ -93,6 +93,50 @@ struct H5WorldtubeBoundary
 };
 
 /*!
+ * \brief Component that supplies scalar-tensor worldtube boundary data.
+ *
+ * \details The \ref DataBoxGroup associated with the worldtube boundary
+ * component contains two data managers (`WorldtubeDataManager`) linked to
+ * one or two H5 files (scalar and tensor sectors, respectively). The data
+ * managers handle buffering and interpolating to desired target time points
+ * when requested via the simple action `BoundaryComputeAndSendToEvolution`, at
+ * which point they will send the required collection of boundary quantities to
+ * the identified `KleinGordonCharacteristicEvolution` component. It is assumed
+ * that the simple action `BoundaryComputeAndSendToEvolution` will only be
+ * called during the `Evolve` phase.
+ *
+ * Uses const global tags:
+ * - `Tags::LMax`
+ *
+ * `Metavariables` must contain:
+ * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.
+ * - a type alias `cce_boundary_communication_tags` for the set of tensor tags
+ * to send from the worldtube to the evolution component. This will typically be
+ * `Cce::Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>`.
+ * - a type alias `klein_gordon_boundary_communication_tags` for the set of
+ * scalar tags to send from the worldtube to the evolution component. This will
+ * typically be `Cce::Tags::klein_gordon_worldtube_boundary_tags`.
+ */
+template <class Metavariables>
+struct KleinGordonH5WorldtubeBoundary
+    : public WorldtubeComponentBase<
+          KleinGordonH5WorldtubeBoundary<Metavariables>, Metavariables> {
+  using base_type =
+      WorldtubeComponentBase<KleinGordonH5WorldtubeBoundary<Metavariables>,
+                             Metavariables>;
+  using base_type::execute_next_phase;
+  using base_type::initialize;
+  using typename base_type::chare_type;
+  using const_global_cache_tags =
+      tmpl::list<Tags::InitializeJ<Metavariables::evolve_ccm>>;
+  using typename base_type::metavariables;
+  using typename base_type::options;
+  using typename base_type::phase_dependent_action_list;
+  using typename base_type::simple_tags_from_options;
+  using end_time_tag = Tags::EndTimeFromFile;
+};
+
+/*!
  * \brief Component that supplies CCE worldtube boundary data sourced from an
  * analytic solution.
  *

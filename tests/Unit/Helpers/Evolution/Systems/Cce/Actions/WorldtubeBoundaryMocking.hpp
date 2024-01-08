@@ -91,4 +91,26 @@ struct mock_gh_worldtube_boundary {
       Parallel::get_const_global_cache_tags_from_actions<
     phase_dependent_action_list>;
 };
+
+template <typename Metavariables>
+struct mock_klein_gordon_h5_worldtube_boundary {
+  using component_being_mocked = KleinGordonH5WorldtubeBoundary<Metavariables>;
+
+  using initialize_action_list =
+      tmpl::list<Actions::InitializeWorldtubeBoundary<
+                     KleinGordonH5WorldtubeBoundary<Metavariables>>,
+                 Parallel::Actions::TerminatePhase>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
+
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using simple_tags = tmpl::list<>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
+};
 }  // namespace Cce
