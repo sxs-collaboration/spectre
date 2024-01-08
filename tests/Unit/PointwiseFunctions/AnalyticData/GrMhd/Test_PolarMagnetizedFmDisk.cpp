@@ -126,6 +126,7 @@ void test_variables(const DataType& used_for_size) {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.PolarMagFmDisk",
                   "[Unit][PointwiseFunctions]") {
   test_create_from_options();
