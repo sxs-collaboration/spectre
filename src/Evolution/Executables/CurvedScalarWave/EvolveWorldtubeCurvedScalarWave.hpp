@@ -288,7 +288,7 @@ struct EvolutionMetavars {
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
       Initialization::Actions::AddComputeTags<tmpl::list<
-          CurvedScalarWave::Worldtube::Tags::InertialParticlePositionCompute<
+          CurvedScalarWave::Worldtube::Tags::ParticlePositionVelocityCompute<
               volume_dim>,
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
               volume_dim, Frame::Grid, true>,

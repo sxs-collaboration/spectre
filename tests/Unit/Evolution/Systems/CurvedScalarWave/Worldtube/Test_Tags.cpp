@@ -207,7 +207,7 @@ void test_compute_face_coordinates() {
                           ::domain::CoordinateMaps::Tags::CoordinateMap<
                               Dim, Frame::Grid, Frame::Inertial>>,
         db::AddComputeTags<
-            Tags::InertialParticlePositionCompute<3>,
+            Tags::ParticlePositionVelocityCompute<3>,
             ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
                 ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                               Frame::Inertial>>,
@@ -273,7 +273,7 @@ void test_compute_face_coordinates() {
       CHECK_ITERABLE_APPROX(uncentered_grid_2.value(),
                             uncentered_grid_1.value());
       const auto& inertial_particle_position =
-          db::get<Tags::InertialParticlePosition<Dim>>(box);
+          db::get<Tags::ParticlePositionVelocity<Dim>>(box).at(0);
       const auto& grid_to_inertial_map =
           db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
               Dim, Frame::Grid, Frame::Inertial>>(box);
@@ -296,31 +296,49 @@ void test_compute_face_coordinates() {
   }
 }
 
-void test_inertial_particle_position_compute() {
+void test_particle_position_velocity_compute() {
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> dist(-10., 10.);
-  const tnsr::I<double, Dim, Frame::Grid> grid_coords_center{
-      {dist(gen), dist(gen), 0.}};
-  const double orbit_radius = get(magnitude(grid_coords_center));
+  const double orbit_radius = 9.;
   const double angular_velocity = 1. / (sqrt(orbit_radius) * orbit_radius);
-  const ::ExcisionSphere<Dim> excision_sphere{2., grid_coords_center, {}};
+  const auto domain_creator =
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
+          orbit_radius, 0.2, angular_velocity);
   const double initial_time = 0.;
-  auto box = db::create<
-      db::AddSimpleTags<Tags::ExcisionSphere<Dim>, ::Tags::Time>,
-      db::AddComputeTags<Tags::InertialParticlePositionCompute<Dim>>>(
-      excision_sphere, initial_time);
+  auto domain = domain_creator->create_domain();
+  const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
+  std::uniform_real_distribution<> time_dist(0., 10.);
+  auto box =
+      db::create<db::AddSimpleTags<::Tags::Time, Tags::ExcisionSphere<3>,
+                                   domain::Tags::FunctionsOfTimeInitialize>,
+                 db::AddComputeTags<Tags::ParticlePositionVelocityCompute<3>>>(
+          initial_time, excision_sphere, domain_creator->functions_of_time());
+  const auto get_position_velocity_circular = [orbit_radius, angular_velocity](
+                                                  const double time) {
+    tnsr::I<double, Dim> position{{orbit_radius * cos(angular_velocity * time),
+                                   orbit_radius * sin(angular_velocity * time),
+                                   0.}};
+    tnsr::I<double, Dim> velocity{
+        {-orbit_radius * angular_velocity * sin(angular_velocity * time),
+         orbit_radius * angular_velocity * cos(angular_velocity * time), 0.}};
+    return std::array<tnsr::I<double, Dim>, 2>{std::move(position),
+                                               std::move(velocity)};
+  };
+  // There is an error introduced here which comes from the
+  // quaternion function of time integrating the orbit
+  Approx apprx = Approx::custom().epsilon(1e-10).scale(1.0);
   for (size_t i = 0; i < 100; ++i) {
-    const double random_time = dist(gen);
+    const double random_time = time_dist(gen);
     ::Initialization::mutate_assign<tmpl::list<::Tags::Time>>(
         make_not_null(&box), random_time);
-    const auto coordinate_map =
-        domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
-            domain::CoordinateMaps::Rotation<Dim>(
-                angular_velocity * random_time, 0., 0.));
-    const auto& inertial_pos =
-        db::get<Tags::InertialParticlePosition<Dim>>(box);
-    CHECK_ITERABLE_APPROX(inertial_pos, coordinate_map(grid_coords_center));
+    const auto& position_velocity =
+        db::get<Tags::ParticlePositionVelocity<Dim>>(box);
+    const auto position_velocity_circular =
+        get_position_velocity_circular(random_time);
+    CHECK_ITERABLE_CUSTOM_APPROX(position_velocity.at(0),
+                                 position_velocity_circular.at(0), apprx);
+    CHECK_ITERABLE_CUSTOM_APPROX(position_velocity.at(1),
+                                 position_velocity_circular.at(1), apprx);
   }
 }
 
@@ -456,8 +474,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       Tags::FaceCoordinates<3, Frame::Inertial, true>>("FaceCoordinates");
   TestHelpers::db::test_simple_tag<
       Tags::FaceCoordinates<3, Frame::Inertial, false>>("FaceCoordinates");
-  TestHelpers::db::test_simple_tag<Tags::InertialParticlePosition<3>>(
-      "InertialParticlePosition");
+  TestHelpers::db::test_simple_tag<Tags::ParticlePositionVelocity<3>>(
+      "ParticlePositionVelocity");
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
   TestHelpers::db::test_simple_tag<
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
@@ -468,7 +486,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   test_excision_sphere_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
-  test_inertial_particle_position_compute();
+  test_particle_position_velocity_compute();
   test_puncture_field();
   test_check_input_file();
 }

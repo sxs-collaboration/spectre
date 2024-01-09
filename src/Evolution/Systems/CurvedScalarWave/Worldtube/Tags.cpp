@@ -69,7 +69,8 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
         result,
     const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
     const tnsr::I<DataVector, Dim, ::Frame::Inertial>& inertial_coords,
-    const Mesh<Dim>& mesh, const tnsr::I<double, Dim>& particle_position) {
+    const Mesh<Dim>& mesh,
+    const std::array<tnsr::I<double, Dim>, 2>& particle_position_velocity) {
   if constexpr (not(Centered and std::is_same_v<Frame, ::Frame::Inertial>)) {
     ERROR("Should be centered in inertial frame");
   }
@@ -91,7 +92,7 @@ void FaceCoordinatesCompute<Dim, Frame, Centered>::function(
                   mesh.extents(), direction.value().dimension(),
                   index_to_slice_at(mesh.extents(), direction.value()));
     for (size_t i = 0; i < Dim; ++i) {
-      result->value().get(i) -= particle_position.get(i);
+      result->value().get(i) -= particle_position_velocity.at(0).get(i);
     }
   } else {
     result->reset();
@@ -121,23 +122,24 @@ void PunctureFieldCompute<Dim>::function(
 }
 
 template <size_t Dim>
-void InertialParticlePositionCompute<Dim>::function(
-    gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> inertial_position,
-    const ::ExcisionSphere<Dim>& excision_sphere, const double time) {
-  const auto& grid_position = excision_sphere.center();
-  const double orbital_radius = get(magnitude(grid_position));
-
-  // assume circular orbit around black hole with mass 1
-  const double angular_velocity = 1. / (sqrt(orbital_radius) * orbital_radius);
-  const double angle = angular_velocity * time;
-  inertial_position->get(0) =
-      cos(angle) * grid_position.get(0) - sin(angle) * grid_position.get(1);
-  inertial_position->get(1) =
-      sin(angle) * grid_position.get(0) + cos(angle) * grid_position.get(1);
-  inertial_position->get(2) = grid_position.get(2);
+void ParticlePositionVelocityCompute<Dim>::function(
+    gsl::not_null<std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>*>
+        position_and_velocity,
+    const ::ExcisionSphere<Dim>& excision_sphere, const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  ASSERT(excision_sphere.is_time_dependent(),
+         "The worldtube simulation requires time-dependent maps.");
+  const auto& grid_to_inertial_map =
+      excision_sphere.moving_mesh_grid_to_inertial_map();
+  auto mapped_tuple = grid_to_inertial_map.coords_frame_velocity_jacobians(
+      excision_sphere.center(), time, functions_of_time);
+  (*position_and_velocity)[0] = std::move(std::get<0>(mapped_tuple));
+  (*position_and_velocity)[1] = std::move(std::get<3>(mapped_tuple));
 }
 
-template struct InertialParticlePositionCompute<3>;
+template struct ParticlePositionVelocityCompute<3>;
 template struct PunctureFieldCompute<3>;
 
 template struct FaceCoordinatesCompute<3, Frame::Grid, true>;

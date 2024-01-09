@@ -18,6 +18,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -190,29 +191,29 @@ struct ObserveCoefficientsTrigger : db::SimpleTag {
 
 /// @{
 /*!
- * \brief The position of the scalar charge particle orbiting a central black
- * hole given in inertial coordinates. We currently assume a circular orbit in
- * the xy-plane with radius \f$R\f$ and angular velocity \f$\omega =
- * R^{-3/2}\f$, where grid and inertial coordinates are equal at t = 0.
- *
- * Coordinate maps are only saved in Blocks at the moment. More generic
- * orbits will probably require injecting the grid-to-inertial coordinate map
- * into the ExcisionSpheres as well.
+ * \brief The position and velocity of the scalar charge particle orbiting a
+ * central black hole given in inertial coordinates.
  */
 template <size_t Dim>
-struct InertialParticlePosition : db::SimpleTag {
-  using type = tnsr::I<double, Dim, Frame::Inertial>;
+struct ParticlePositionVelocity : db::SimpleTag {
+  using type = std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>;
 };
 
 template <size_t Dim>
-struct InertialParticlePositionCompute : InertialParticlePosition<Dim>,
+struct ParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
                                          db::ComputeTag {
-  using base = InertialParticlePosition<Dim>;
-  using return_type = tnsr::I<double, Dim, Frame::Inertial>;
-  using argument_tags = tmpl::list<ExcisionSphere<Dim>, ::Tags::Time>;
+  using base = ParticlePositionVelocity<Dim>;
+  using return_type = std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>;
+  using argument_tags = tmpl::list<ExcisionSphere<Dim>, ::Tags::Time,
+                                   domain::Tags::FunctionsOfTime>;
   static void function(
-      gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> position,
-      const ::ExcisionSphere<Dim>& excision_sphere, const double time);
+      gsl::not_null<std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>*>
+          position,
+      const ::ExcisionSphere<Dim>& excision_sphere, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time);
 };
 /// @}
 
@@ -240,7 +241,7 @@ struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
       tmpl::list<ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::Coordinates<Dim, Frame>, domain::Tags::Mesh<Dim>,
                  tmpl::conditional_t<needs_inertial_wt_coords,
-                                     tmpl::list<InertialParticlePosition<Dim>>,
+                                     tmpl::list<ParticlePositionVelocity<Dim>>,
                                      tmpl::list<>>>>;
 
   using return_type = std::optional<tnsr::I<DataVector, Dim, Frame>>;
@@ -257,7 +258,8 @@ struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
       const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
       const tnsr::I<DataVector, Dim, ::Frame::Inertial>& coords,
       const Mesh<Dim>& mesh,
-      const tnsr::I<double, Dim, ::Frame::Inertial>& particle_position);
+      const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
+          particle_position_velocity);
 };
 /// @}
 
