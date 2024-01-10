@@ -35,6 +35,7 @@ class Cli(click.MultiCommand):
             "render-1d",
             "render-3d",
             "resubmit",
+            "run-next",
             "schedule",
             "simplify-traces",
             "status",
@@ -113,6 +114,10 @@ class Cli(click.MultiCommand):
             from spectre.support.Resubmit import resubmit_command
 
             return resubmit_command
+        elif name == "run-next":
+            from spectre.support.RunNext import run_next_command
+
+            return run_next_command
         elif name in ["schedule", "run"]:
             from spectre.support.Schedule import schedule_command
 

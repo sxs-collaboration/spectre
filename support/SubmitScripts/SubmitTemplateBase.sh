@@ -64,15 +64,24 @@ mpirun -n ${SLURM_NTASKS} \
   ${SPECTRE_CHECKPOINT:+ +restart "${SPECTRE_CHECKPOINT}"}
 {% endblock %}
 
+exit_code=$?
+
 {% if segments_dir is defined %}
 # Resubmit
-exit_code=$?
 if [ $exit_code -eq 2 ]; then
   sleep 10s
   ${SPECTRE_CLI} resubmit . \
     --context-file-name {{ context_file_name }} \
     --submit
-else
-  exit $exit_code
+  exit $?
 fi
 {% endif %}
+
+# Run next entrypoint listed in input file
+if [ $exit_code -eq 0 ]; then
+  sleep 10s
+  ${SPECTRE_CLI} run-next ${SPECTRE_INPUT_FILE} -i .
+  exit $?
+fi
+
+exit $exit_code

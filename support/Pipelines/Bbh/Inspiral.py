@@ -63,6 +63,10 @@ def start_inspiral(
     inspiral_input_file_template: Union[
         str, Path
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
+    continue_with_ringdown: bool = False,
+    pipeline_dir: Optional[Union[str, Path]] = None,
+    run_dir: Optional[Union[str, Path]] = None,
+    segments_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
 ):
     """Schedule an inspiral simulation from initial data.
@@ -73,6 +77,11 @@ def start_inspiral(
     determined from the initial data and inserted into the
     'inspiral_input_file_template'. The remaining options are forwarded to the
     'schedule' command. See 'schedule' docs for details.
+
+    ## Resource allocation
+
+    Runs on 4 nodes by default when scheduled on a cluster. Set 'num_nodes' to
+    adjust.
     """
     logger.warning(
         "The BBH pipeline is still experimental. Please review the"
@@ -92,9 +101,44 @@ def start_inspiral(
     )
     logger.debug(f"Inspiral parameters: {pretty_repr(inspiral_params)}")
 
+    # Resolve directories
+    if pipeline_dir:
+        pipeline_dir = Path(pipeline_dir).resolve()
+    if continue_with_ringdown:
+        assert pipeline_dir is not None, (
+            "Specify a '--pipeline-dir' / '-d' to continue with the ringdown"
+            " simulation automatically. Don't specify a '--run-dir' / '-o' or"
+            " '--segments-dir' / '-O' because it will be created in the"
+            " 'pipeline_dir' automatically."
+        )
+        assert run_dir is None and segments_dir is None, (
+            "Specify the '--pipeline-dir' / '-d' rather than '--run-dir' / '-o'"
+            " or '--segments-dir' / '-O' when continuing with the ringdown"
+            " simulation. Directories for the evolution will be created in the"
+            " 'pipeline_dir' automatically."
+        )
+    if pipeline_dir and not run_dir and not segments_dir:
+        segments_dir = pipeline_dir / "002_Inspiral"
+
+    # Determine resource allocation
+    if (
+        scheduler_kwargs.get("scheduler") is not None
+        and scheduler_kwargs.get("num_procs") is None
+        and scheduler_kwargs.get("num_nodes") is None
+    ):
+        # Just run on 4 nodes for now, because 1 is surely not enough. We can
+        # make this smarter later (e.g. scale with the number of elements).
+        scheduler_kwargs["num_nodes"] = 4
+
     # Schedule!
     return schedule(
-        inspiral_input_file_template, **inspiral_params, **scheduler_kwargs
+        inspiral_input_file_template,
+        **inspiral_params,
+        **scheduler_kwargs,
+        continue_with_ringdown=continue_with_ringdown,
+        pipeline_dir=pipeline_dir,
+        run_dir=run_dir,
+        segments_dir=segments_dir,
     )
 
 
@@ -153,6 +197,23 @@ def start_inspiral(
     help="p-refinement level.",
     default=5,
     show_default=True,
+)
+@click.option(
+    "--continue-with-ringdown",
+    is_flag=True,
+    help=(
+        "Continue with the ringdown simulation once a common horizon has"
+        " formed."
+    ),
+)
+@click.option(
+    "--pipeline-dir",
+    "-d",
+    type=click.Path(
+        writable=True,
+        path_type=Path,
+    ),
+    help="Directory where steps in the pipeline are created.",
 )
 @scheduler_options
 def start_inspiral_command(**kwargs):

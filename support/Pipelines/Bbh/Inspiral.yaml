@@ -2,6 +2,20 @@
 # See LICENSE.txt for details.
 
 Executable: EvolveGhBinaryBlackHole
+{% if continue_with_ringdown %}
+Next:
+  Run: spectre.Pipelines.Bbh.Ringdown:start_ringdown
+  With:
+    inspiral_input_file_path: __file__
+    inspiral_run_dir: ./
+    refinement_level: {{ L }}
+    polynomial_order: {{ P }}
+    pipeline_dir: {{ pipeline_dir }}
+    scheduler: {{ scheduler | default("None") }}
+    copy_executable: {{ copy_executable | default("None") }}
+    submit_script_template: {{ submit_script_template | default("None") }}
+    submit: True
+{% endif %}
 
 ---
 

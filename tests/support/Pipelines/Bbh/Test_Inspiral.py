@@ -65,27 +65,65 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["P"], 5)
 
     def test_cli(self):
+        common_args = [
+            str(self.id_dir / "InitialData.yaml"),
+            "--refinement-level",
+            "1",
+            "--polynomial-order",
+            "5",
+            "-e",
+            str(self.bin_dir / "EvolveGhBinaryBlackHole"),
+        ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
         try:
             start_inspiral_command(
-                [
-                    str(self.id_dir / "InitialData.yaml"),
-                    "--refinement-level",
-                    "1",
-                    "--polynomial-order",
-                    "5",
+                common_args
+                + [
                     "-O",
                     str(self.test_dir / "Inspiral"),
                     "--no-submit",
-                    "-e",
-                    str(self.bin_dir / "EvolveGhBinaryBlackHole"),
                 ]
             )
         except SystemExit as e:
             self.assertEqual(e.code, 0)
         self.assertTrue(
             (self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml").exists()
+        )
+        # Test with pipeline directory
+        try:
+            start_inspiral_command(
+                common_args
+                + [
+                    "-d",
+                    str(self.test_dir / "Pipeline"),
+                    "--continue-with-ringdown",
+                    "--no-submit",
+                ]
+            )
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+        with open(
+            self.test_dir / "Pipeline/002_Inspiral/Segment_0000/Inspiral.yaml",
+            "r",
+        ) as open_input_file:
+            metadata = next(yaml.safe_load_all(open_input_file))
+        self.assertEqual(
+            metadata["Next"],
+            {
+                "Run": "spectre.Pipelines.Bbh.Ringdown:start_ringdown",
+                "With": {
+                    "inspiral_input_file_path": "__file__",
+                    "inspiral_run_dir": "./",
+                    "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "refinement_level": 1,
+                    "polynomial_order": 5,
+                    "scheduler": "None",
+                    "copy_executable": "None",
+                    "submit_script_template": "None",
+                    "submit": True,
+                },
+            },
         )
 
 
