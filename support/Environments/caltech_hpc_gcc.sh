@@ -28,6 +28,7 @@ spectre_load_modules() {
     module load catch/3.4.0
     module load ccache/4.8.2
     module load gsl/2.4
+    module load jemalloc/5.3.0
     module load libsharp/1.0.0
     module load libxsmm/1.16.1
     module load yaml-cpp/0.6.2
@@ -57,6 +58,7 @@ spectre_unload_modules() {
     module unload catch/3.4.0
     module unload ccache/4.8.2
     module unload gsl/2.4
+    module unload jemalloc/5.3.0
     module unload libsharp/1.0.0
     module unload libxsmm/1.16.1
     module unload yaml-cpp/0.6.2
@@ -74,12 +76,18 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
+
+    # Note that choosing the memory allocator to be JEMALLOC is important. When
+    # using the SYSTEM allocator, during BBH runs dumping volume data too often
+    # would result in memory corruption errors. Switching to JEMALLOC fixed
+    # these issues. It is still unclear *why* the SYSTEM allocator caused these
+    # issues. --Kyle Nelli
     cmake -D CMAKE_C_COMPILER=gcc \
           -D CMAKE_CXX_COMPILER=g++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
-          -D MEMORY_ALLOCATOR=SYSTEM \
+          -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=CaltechHpc \
           -D OVERRIDE_ARCH=skylake-avx512 \
