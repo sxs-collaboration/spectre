@@ -6,7 +6,8 @@ import re
 
 from .EvolveGhBinaryBlackHole import EvolveGhBinaryBlackHole
 from .EvolveGhSingleBlackHole import EvolveGhSingleBlackHole
-from .ExecutableStatus import EvolutionStatus, ExecutableStatus
+from .ExecutableStatus import EllipticStatus, EvolutionStatus, ExecutableStatus
+from .SolveXcts import SolveXcts
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,8 @@ executable_status_subclasses = [
     EvolveGhBinaryBlackHole,
     EvolveGhSingleBlackHole,
     EvolutionStatus,
+    SolveXcts,
+    EllipticStatus,
 ]
 
 
