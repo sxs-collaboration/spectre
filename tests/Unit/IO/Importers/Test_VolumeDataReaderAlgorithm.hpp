@@ -396,6 +396,7 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using metavariables = Metavariables;
   using simple_tags_from_options = tmpl::list<>;
+  using array_allocation_tags = tmpl::list<>;
 
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
@@ -423,6 +424,9 @@ struct ElementArray {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
+      const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
+      /*array_allocation_items*/
+      = {},
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& element_array =

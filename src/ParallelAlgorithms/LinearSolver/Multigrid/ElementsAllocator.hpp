@@ -86,6 +86,10 @@ struct ElementsAllocator
   static void apply(Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
                     const tuples::TaggedTuple<InitializationTags...>&
                         original_initialization_items,
+                    const tuples::tagged_tuple_from_typelist<
+                        typename ElementArray::
+                            array_allocation_tags>& /*array_allocation_items*/
+                    = {},
                     const std::unordered_set<size_t>& procs_to_ignore = {}) {
     // Copy the initialization items so we can adjust them on each refinement
     // level

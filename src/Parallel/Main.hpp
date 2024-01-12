@@ -668,6 +668,8 @@ void Main<Metavariables>::
         global_cache_proxy_,
         Parallel::create_from_options<Metavariables>(
             options_, typename parallel_component::simple_tags_from_options{}),
+        Parallel::create_from_options<Metavariables>(
+            options_, typename parallel_component::array_allocation_tags{}),
         resource_info_.procs_to_ignore());
   });
 
