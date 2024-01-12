@@ -45,7 +45,7 @@ void add_hamiltonian_sources(
     gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const Scalar<DataVector>& conformal_energy_density,
     const Scalar<DataVector>& extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor);
+    const Scalar<DataVector>& conformal_factor_minus_one);
 
 /// The linearization of `add_hamiltonian_sources`
 template <int ConformalMatterScale>
@@ -53,7 +53,7 @@ void add_linearized_hamiltonian_sources(
     gsl::not_null<Scalar<DataVector>*> linearized_hamiltonian_constraint,
     const Scalar<DataVector>& conformal_energy_density,
     const Scalar<DataVector>& extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction);
 
 /*!
@@ -68,7 +68,7 @@ void add_distortion_hamiltonian_sources(
     gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-    const Scalar<DataVector>& conformal_factor);
+    const Scalar<DataVector>& conformal_factor_minus_one);
 
 /*!
  * \brief The linearization of `add_distortion_hamiltonian_sources`
@@ -79,7 +79,7 @@ void add_linearized_distortion_hamiltonian_sources(
     gsl::not_null<Scalar<DataVector>*> linearized_hamiltonian_constraint,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction);
 
 /*!
@@ -97,7 +97,7 @@ void add_linearized_distortion_hamiltonian_sources(
 void add_curved_hamiltonian_or_lapse_sources(
     gsl::not_null<Scalar<DataVector>*> hamiltonian_or_lapse_equation,
     const Scalar<DataVector>& conformal_ricci_scalar,
-    const Scalar<DataVector>& field);
+    const Scalar<DataVector>& field, double add_constant = 0.);
 
 /*!
  * \brief Add the nonlinear source to the lapse equation on a flat conformal
@@ -121,8 +121,8 @@ void add_lapse_sources(
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const Scalar<DataVector>& dt_extrinsic_curvature_trace,
     const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor);
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one);
 
 /*!
  * \brief The linearization of `add_lapse_sources`
@@ -140,8 +140,8 @@ void add_linearized_lapse_sources(
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const Scalar<DataVector>& dt_extrinsic_curvature_trace,
     const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction,
     const Scalar<DataVector>& lapse_times_conformal_factor_correction);
 
@@ -161,8 +161,8 @@ void add_distortion_hamiltonian_and_lapse_sources(
     gsl::not_null<Scalar<DataVector>*> lapse_equation,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_square,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor);
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one);
 
 /*!
  * \brief The linearization of `add_distortion_hamiltonian_and_lapse_sources`
@@ -174,8 +174,8 @@ void add_linearized_distortion_hamiltonian_and_lapse_sources(
     gsl::not_null<Scalar<DataVector>*> lapse_equation,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_square,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction,
     const Scalar<DataVector>& lapse_times_conformal_factor_correction);
 
@@ -216,8 +216,8 @@ void add_curved_momentum_sources(
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
@@ -231,8 +231,8 @@ void add_flat_cartesian_momentum_sources(
     const tnsr::I<DataVector, 3>& conformal_momentum_density,
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
     const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
@@ -249,8 +249,8 @@ void add_curved_linearized_momentum_sources(
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>& longitudinal_shift_minus_dt_conformal_metric,
@@ -269,8 +269,8 @@ void add_flat_cartesian_linearized_momentum_sources(
     gsl::not_null<tnsr::I<DataVector, 3>*> linearized_momentum_constraint,
     const tnsr::I<DataVector, 3>& conformal_momentum_density,
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>& longitudinal_shift_minus_dt_conformal_metric,

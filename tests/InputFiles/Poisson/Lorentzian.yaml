@@ -18,7 +18,9 @@ OutputFileChecks:
 
 ---
 
-Background: &solution Lorentzian
+Background: &solution
+  Lorentzian:
+    PlusConstant: 0.
 
 InitialGuess: Zero
 

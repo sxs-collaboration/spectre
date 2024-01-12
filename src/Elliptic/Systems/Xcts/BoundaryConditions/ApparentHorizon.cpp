@@ -190,8 +190,9 @@ void negative_expansion_quantities(
 
 template <Xcts::Geometry ConformalGeometry>
 void apparent_horizon_impl(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
-    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+    const gsl::not_null<Scalar<DataVector>*>
+        lapse_times_conformal_factor_minus_one,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
     const gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
     const gsl::not_null<Scalar<DataVector>*>
@@ -259,12 +260,13 @@ void apparent_horizon_impl(
   // Shift
   {
     if (solution_for_negative_expansion.has_value()) {
-      get(beta_orthogonal) /= square(get(*conformal_factor));
+      get(beta_orthogonal) /= square(get(*conformal_factor_minus_one) + 1.);
     } else {
       get(beta_orthogonal) = 0.;
     }
     get(beta_orthogonal) +=
-        get(*lapse_times_conformal_factor) / cube(get(*conformal_factor));
+        (get(*lapse_times_conformal_factor_minus_one) + 1.) /
+        cube(get(*conformal_factor_minus_one) + 1.);
     for (size_t i = 0; i < 3; ++i) {
       shift_excess->get(i) = -get(beta_orthogonal) * face_normal_raised.get(i) -
                              shift_background.get(i);
@@ -292,10 +294,12 @@ void apparent_horizon_impl(
   }
   // At this point we're done with `face_normal_raised`, so we can re-purpose
   // the memory buffer.
-  get(*n_dot_conformal_factor_gradient) *= -0.25 * get(*conformal_factor);
+  get(*n_dot_conformal_factor_gradient) *=
+      -0.25 * (get(*conformal_factor_minus_one) + 1.);
   if (solution_for_negative_expansion.has_value()) {
     get(*n_dot_conformal_factor_gradient) -=
-        0.25 * cube(get(*conformal_factor)) * get(expansion_of_solution);
+        0.25 * cube(get(*conformal_factor_minus_one) + 1.) *
+        get(expansion_of_solution);
   }
   {
     tnsr::I<DataVector, 3>& n_dot_longitudinal_shift =
@@ -311,21 +315,23 @@ void apparent_horizon_impl(
     normal_dot_flux(make_not_null(&nn_dot_longitudinal_shift), face_normal,
                     n_dot_longitudinal_shift);
     get(*n_dot_conformal_factor_gradient) +=
-        -get(extrinsic_curvature_trace) * cube(get(*conformal_factor)) / 6. +
-        pow<4>(get(*conformal_factor)) / 8. /
-            get(*lapse_times_conformal_factor) * get(nn_dot_longitudinal_shift);
+        -get(extrinsic_curvature_trace) *
+            cube(get(*conformal_factor_minus_one) + 1.) / 6. +
+        pow<4>(get(*conformal_factor_minus_one) + 1.) / 8. /
+            (get(*lapse_times_conformal_factor_minus_one) + 1.) *
+            get(nn_dot_longitudinal_shift);
   }
 
   // Lapse
   if (solution_for_lapse.has_value()) {
-    *lapse_times_conformal_factor = call_with_dynamic_type<
+    *lapse_times_conformal_factor_minus_one = call_with_dynamic_type<
         Scalar<DataVector>, Xcts::Solutions::all_analytic_solutions>(
         solution_for_lapse.value().get(),
         [&x](const auto* const local_solution) {
-          return get<Xcts::Tags::LapseTimesConformalFactor<DataVector>>(
+          return get<Xcts::Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
               local_solution->variables(
-                  x, tmpl::list<
-                         Xcts::Tags::LapseTimesConformalFactor<DataVector>>{}));
+                  x, tmpl::list<Xcts::Tags::LapseTimesConformalFactorMinusOne<
+                         DataVector>>{}));
         });
   } else {
     get(*n_dot_lapse_times_conformal_factor_gradient) = 0.;
@@ -357,8 +363,8 @@ void linearized_apparent_horizon_impl(
     const tnsr::I<DataVector, 3>& x_offcenter,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     [[maybe_unused]] const std::optional<
         std::reference_wrapper<const tnsr::II<DataVector, 3>>>
@@ -404,14 +410,16 @@ void linearized_apparent_horizon_impl(
   {
     if (solution_for_negative_expansion.has_value()) {
       get(beta_orthogonal_correction) *=
-          -2. * get(*conformal_factor_correction) / cube(get(conformal_factor));
+          -2. * get(*conformal_factor_correction) /
+          cube(get(conformal_factor_minus_one) + 1.);
     } else {
       get(beta_orthogonal_correction) = 0.;
     }
     get(beta_orthogonal_correction) +=
         get(*lapse_times_conformal_factor_correction) /
-            cube(get(conformal_factor)) -
-        3. * get(lapse_times_conformal_factor) / pow<4>(get(conformal_factor)) *
+            cube(get(conformal_factor_minus_one) + 1.) -
+        3. * (get(lapse_times_conformal_factor_minus_one) + 1.) /
+            pow<4>(get(conformal_factor_minus_one) + 1.) *
             get(*conformal_factor_correction);
     for (size_t i = 0; i < 3; ++i) {
       shift_correction->get(i) =
@@ -440,8 +448,8 @@ void linearized_apparent_horizon_impl(
       -0.25 * get(*conformal_factor_correction);
   if (solution_for_negative_expansion.has_value()) {
     get(*n_dot_conformal_factor_gradient_correction) -=
-        0.75 * square(get(conformal_factor)) * get(expansion_of_solution) *
-        get(*conformal_factor_correction);
+        0.75 * square(get(conformal_factor_minus_one) + 1.) *
+        get(expansion_of_solution) * get(*conformal_factor_correction);
   }
   {
     tnsr::I<DataVector, 3>& n_dot_longitudinal_shift =
@@ -456,13 +464,14 @@ void linearized_apparent_horizon_impl(
     normal_dot_flux(make_not_null(&nn_dot_longitudinal_shift), face_normal,
                     n_dot_longitudinal_shift);
     get(*n_dot_conformal_factor_gradient_correction) +=
-        -0.5 * get(extrinsic_curvature_trace) * square(get(conformal_factor)) *
+        -0.5 * get(extrinsic_curvature_trace) *
+            square(get(conformal_factor_minus_one) + 1.) *
             get(*conformal_factor_correction) +
-        0.5 * pow<3>(get(conformal_factor)) /
-            get(lapse_times_conformal_factor) * get(nn_dot_longitudinal_shift) *
-            get(*conformal_factor_correction) -
-        0.125 * pow<4>(get(conformal_factor)) /
-            square(get(lapse_times_conformal_factor)) *
+        0.5 * pow<3>(get(conformal_factor_minus_one) + 1.) /
+            (get(lapse_times_conformal_factor_minus_one) + 1.) *
+            get(nn_dot_longitudinal_shift) * get(*conformal_factor_correction) -
+        0.125 * pow<4>(get(conformal_factor_minus_one) + 1.) /
+            square(get(lapse_times_conformal_factor_minus_one) + 1.) *
             get(nn_dot_longitudinal_shift) *
             get(*lapse_times_conformal_factor_correction);
   }
@@ -472,8 +481,8 @@ void linearized_apparent_horizon_impl(
     normal_dot_flux(make_not_null(&nn_dot_longitudinal_shift_correction),
                     face_normal, *n_dot_longitudinal_shift_correction);
     get(*n_dot_conformal_factor_gradient_correction) +=
-        0.125 * pow<4>(get(conformal_factor)) /
-        get(lapse_times_conformal_factor) *
+        0.125 * pow<4>(get(conformal_factor_minus_one) + 1.) /
+        (get(lapse_times_conformal_factor_minus_one) + 1.) *
         get(nn_dot_longitudinal_shift_correction);
   }
 
@@ -488,8 +497,9 @@ void linearized_apparent_horizon_impl(
 
 template <Xcts::Geometry ConformalGeometry>
 void ApparentHorizon<ConformalGeometry>::apply(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
-    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+    const gsl::not_null<Scalar<DataVector>*>
+        lapse_times_conformal_factor_minus_one,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
     const gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
     const gsl::not_null<Scalar<DataVector>*>
@@ -504,8 +514,8 @@ void ApparentHorizon<ConformalGeometry>::apply(
     const tnsr::I<DataVector, 3>& shift_background,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background) const {
   apparent_horizon_impl<ConformalGeometry>(
-      conformal_factor, lapse_times_conformal_factor, shift_excess,
-      n_dot_conformal_factor_gradient,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      shift_excess, n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient,
       n_dot_longitudinal_shift_excess, center_, rotation_, solution_for_lapse_,
       solution_for_negative_expansion_, face_normal,
@@ -516,8 +526,9 @@ void ApparentHorizon<ConformalGeometry>::apply(
 
 template <Xcts::Geometry ConformalGeometry>
 void ApparentHorizon<ConformalGeometry>::apply(
-    const gsl::not_null<Scalar<DataVector>*> conformal_factor,
-    const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+    const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+    const gsl::not_null<Scalar<DataVector>*>
+        lapse_times_conformal_factor_minus_one,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
     const gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
     const gsl::not_null<Scalar<DataVector>*>
@@ -534,8 +545,8 @@ void ApparentHorizon<ConformalGeometry>::apply(
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const {
   apparent_horizon_impl<ConformalGeometry>(
-      conformal_factor, lapse_times_conformal_factor, shift_excess,
-      n_dot_conformal_factor_gradient,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      shift_excess, n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient,
       n_dot_longitudinal_shift_excess, center_, rotation_, solution_for_lapse_,
       solution_for_negative_expansion_, face_normal,
@@ -563,8 +574,8 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
     const tnsr::I<DataVector, 3>& x,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) const {
   linearized_apparent_horizon_impl<ConformalGeometry>(
       conformal_factor_correction, lapse_times_conformal_factor_correction,
@@ -574,7 +585,7 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
       solution_for_negative_expansion_, face_normal,
       deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, longitudinal_shift_background,
-      conformal_factor, lapse_times_conformal_factor,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
       n_dot_longitudinal_shift_excess, std::nullopt, std::nullopt);
 }
 
@@ -596,8 +607,8 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
     const tnsr::I<DataVector, 3>& x,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const {
@@ -609,7 +620,7 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
       solution_for_negative_expansion_, face_normal,
       deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, longitudinal_shift_background,
-      conformal_factor, lapse_times_conformal_factor,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
       n_dot_longitudinal_shift_excess, inv_conformal_metric,
       conformal_christoffel_second_kind);
 }

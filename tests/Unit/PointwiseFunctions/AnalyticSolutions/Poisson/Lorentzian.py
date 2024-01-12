@@ -3,9 +3,11 @@
 
 import numpy as np
 
+constant = 1.5
+
 
 def field(x):
-    return 1.0 / np.sqrt(1.0 + np.dot(x, x))
+    return 1.0 / np.sqrt(1.0 + np.dot(x, x)) + constant
 
 
 def field_gradient(x):

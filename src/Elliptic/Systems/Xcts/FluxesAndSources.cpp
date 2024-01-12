@@ -21,7 +21,7 @@ namespace Xcts {
 
 void Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian>::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
-    const Scalar<DataVector>& /*conformal_factor*/,
+    const Scalar<DataVector>& /*conformal_factor_minus_one*/,
     const tnsr::i<DataVector, 3>& conformal_factor_gradient) {
   Poisson::flat_cartesian_fluxes(flux_for_conformal_factor,
                                  conformal_factor_gradient);
@@ -31,9 +31,9 @@ void Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian>::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
     const tnsr::i<DataVector, 3>& /*face_normal*/,
     const tnsr::I<DataVector, 3>& face_normal_vector,
-    const Scalar<DataVector>& conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one) {
   Poisson::fluxes_on_face(flux_for_conformal_factor, face_normal_vector,
-                          conformal_factor);
+                          conformal_factor_minus_one);
 }
 
 void Fluxes<Equations::Hamiltonian, Geometry::Curved>::apply(
@@ -50,21 +50,22 @@ void Fluxes<Equations::Hamiltonian, Geometry::Curved>::apply(
     const tnsr::II<DataVector, 3>& /*inv_conformal_metric*/,
     const tnsr::i<DataVector, 3>& /*face_normal*/,
     const tnsr::I<DataVector, 3>& face_normal_vector,
-    const Scalar<DataVector>& conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one) {
   Poisson::fluxes_on_face(flux_for_conformal_factor, face_normal_vector,
-                          conformal_factor);
+                          conformal_factor_minus_one);
 }
 
 void Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian>::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         flux_for_lapse_times_conformal_factor,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& /*lapse_times_conformal_factor*/,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& /*lapse_times_conformal_factor_minus_one*/,
     const tnsr::i<DataVector, 3>& conformal_factor_gradient,
     const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient) {
   Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian>::apply(
-      flux_for_conformal_factor, conformal_factor, conformal_factor_gradient);
+      flux_for_conformal_factor, conformal_factor_minus_one,
+      conformal_factor_gradient);
   Poisson::flat_cartesian_fluxes(flux_for_lapse_times_conformal_factor,
                                  lapse_times_conformal_factor_gradient);
 }
@@ -75,13 +76,14 @@ void Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian>::apply(
         flux_for_lapse_times_conformal_factor,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::I<DataVector, 3>& face_normal_vector,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one) {
   Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian>::apply(
       flux_for_conformal_factor, face_normal, face_normal_vector,
-      conformal_factor);
+      conformal_factor_minus_one);
   Poisson::fluxes_on_face(flux_for_lapse_times_conformal_factor,
-                          face_normal_vector, lapse_times_conformal_factor);
+                          face_normal_vector,
+                          lapse_times_conformal_factor_minus_one);
 }
 
 void Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved>::apply(
@@ -89,13 +91,13 @@ void Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved>::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         flux_for_lapse_times_conformal_factor,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& /*lapse_times_conformal_factor*/,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& /*lapse_times_conformal_factor_minus_one*/,
     const tnsr::i<DataVector, 3>& conformal_factor_gradient,
     const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient) {
   Fluxes<Equations::Hamiltonian, Geometry::Curved>::apply(
-      flux_for_conformal_factor, inv_conformal_metric, conformal_factor,
-      conformal_factor_gradient);
+      flux_for_conformal_factor, inv_conformal_metric,
+      conformal_factor_minus_one, conformal_factor_gradient);
   Poisson::curved_fluxes(flux_for_lapse_times_conformal_factor,
                          inv_conformal_metric,
                          lapse_times_conformal_factor_gradient);
@@ -108,13 +110,14 @@ void Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved>::apply(
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::I<DataVector, 3>& face_normal_vector,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one) {
   Fluxes<Equations::Hamiltonian, Geometry::Curved>::apply(
       flux_for_conformal_factor, inv_conformal_metric, face_normal,
-      face_normal_vector, conformal_factor);
+      face_normal_vector, conformal_factor_minus_one);
   Poisson::fluxes_on_face(flux_for_lapse_times_conformal_factor,
-                          face_normal_vector, lapse_times_conformal_factor);
+                          face_normal_vector,
+                          lapse_times_conformal_factor_minus_one);
 }
 
 void Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian>::
@@ -123,16 +126,16 @@ void Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian>::
         const gsl::not_null<tnsr::I<DataVector, 3>*>
             flux_for_lapse_times_conformal_factor,
         const gsl::not_null<tnsr::II<DataVector, 3>*> longitudinal_shift_excess,
-        const Scalar<DataVector>& conformal_factor,
-        const Scalar<DataVector>& lapse_times_conformal_factor,
+        const Scalar<DataVector>& conformal_factor_minus_one,
+        const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
         const tnsr::I<DataVector, 3>& /*shift_excess*/,
         const tnsr::i<DataVector, 3>& conformal_factor_gradient,
         const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
         const tnsr::iJ<DataVector, 3>& deriv_shift_excess) {
   Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian>::apply(
       flux_for_conformal_factor, flux_for_lapse_times_conformal_factor,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_gradient,
-      lapse_times_conformal_factor_gradient);
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_gradient, lapse_times_conformal_factor_gradient);
   Xcts::longitudinal_operator_flat_cartesian(longitudinal_shift_excess,
                                              deriv_shift_excess);
 }
@@ -145,13 +148,13 @@ void Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian>::
         const gsl::not_null<tnsr::II<DataVector, 3>*> longitudinal_shift_excess,
         const tnsr::i<DataVector, 3>& face_normal,
         const tnsr::I<DataVector, 3>& face_normal_vector,
-        const Scalar<DataVector>& conformal_factor,
-        const Scalar<DataVector>& lapse_times_conformal_factor,
+        const Scalar<DataVector>& conformal_factor_minus_one,
+        const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
         const tnsr::I<DataVector, 3>& shift_excess) {
   Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian>::apply(
       flux_for_conformal_factor, flux_for_lapse_times_conformal_factor,
-      face_normal, face_normal_vector, conformal_factor,
-      lapse_times_conformal_factor);
+      face_normal, face_normal_vector, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < i; ++j) {
       longitudinal_shift_excess->get(i, j) =
@@ -175,16 +178,17 @@ void Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved>::apply(
     const tnsr::ii<DataVector, 3>& /*conformal_metric*/,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& shift_excess,
     const tnsr::i<DataVector, 3>& conformal_factor_gradient,
     const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
     const tnsr::iJ<DataVector, 3>& deriv_shift_excess) {
   Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved>::apply(
       flux_for_conformal_factor, flux_for_lapse_times_conformal_factor,
-      inv_conformal_metric, conformal_factor, lapse_times_conformal_factor,
-      conformal_factor_gradient, lapse_times_conformal_factor_gradient);
+      inv_conformal_metric, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, conformal_factor_gradient,
+      lapse_times_conformal_factor_gradient);
   Xcts::longitudinal_operator(longitudinal_shift_excess, shift_excess,
                               deriv_shift_excess, inv_conformal_metric,
                               conformal_christoffel_second_kind);
@@ -200,13 +204,13 @@ void Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved>::apply(
     const tnsr::Ijj<DataVector, 3>& /*conformal_christoffel_second_kind*/,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::I<DataVector, 3>& face_normal_vector,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& shift_excess) {
   Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved>::apply(
       flux_for_conformal_factor, flux_for_lapse_times_conformal_factor,
-      inv_conformal_metric, face_normal, face_normal_vector, conformal_factor,
-      lapse_times_conformal_factor);
+      inv_conformal_metric, face_normal, face_normal_vector,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one);
   // Buffer n_k \beta^k in the (2, 2) component of the result, which is filled
   // last in the loop below
   auto& n_dot_shift = get<2, 2>(*longitudinal_shift_excess);
@@ -231,15 +235,15 @@ void Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
           const Scalar<DataVector>& extrinsic_curvature_trace,
           const Scalar<DataVector>&
               longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-          const Scalar<DataVector>& conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& /*conformal_factor_flux*/) {
   add_hamiltonian_sources<ConformalMatterScale>(
       hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor);
+      extrinsic_curvature_trace, conformal_factor_minus_one);
   add_distortion_hamiltonian_sources(
       hamiltonian_constraint,
       longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-      conformal_factor);
+      conformal_factor_minus_one);
 }
 
 template <int ConformalMatterScale>
@@ -251,16 +255,17 @@ void Sources<Equations::Hamiltonian, Geometry::Curved, ConformalMatterScale>::
               longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& conformal_factor_flux) {
   Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
           ConformalMatterScale>::
       apply(hamiltonian_constraint, conformal_energy_density,
             extrinsic_curvature_trace,
             longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-            conformal_factor, conformal_factor_flux);
-  add_curved_hamiltonian_or_lapse_sources(
-      hamiltonian_constraint, conformal_ricci_scalar, conformal_factor);
+            conformal_factor_minus_one, conformal_factor_flux);
+  add_curved_hamiltonian_or_lapse_sources(hamiltonian_constraint,
+                                          conformal_ricci_scalar,
+                                          conformal_factor_minus_one, 1.);
   Poisson::add_curved_sources(hamiltonian_constraint,
                               conformal_christoffel_contracted,
                               conformal_factor_flux);
@@ -278,23 +283,23 @@ void Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
           const Scalar<DataVector>&
               longitudinal_shift_minus_dt_conformal_metric_square,
           const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& /*conformal_factor_flux*/,
           const tnsr::I<DataVector, 3>&
           /*lapse_times_conformal_factor_flux*/) {
   add_hamiltonian_sources<ConformalMatterScale>(
       hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor);
+      extrinsic_curvature_trace, conformal_factor_minus_one);
   add_lapse_sources<ConformalMatterScale>(
       lapse_equation, conformal_energy_density, conformal_stress_trace,
       extrinsic_curvature_trace, dt_extrinsic_curvature_trace,
-      shift_dot_deriv_extrinsic_curvature_trace, conformal_factor,
-      lapse_times_conformal_factor);
+      shift_dot_deriv_extrinsic_curvature_trace, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one);
   add_distortion_hamiltonian_and_lapse_sources(
       hamiltonian_constraint, lapse_equation,
-      longitudinal_shift_minus_dt_conformal_metric_square, conformal_factor,
-      lapse_times_conformal_factor);
+      longitudinal_shift_minus_dt_conformal_metric_square,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one);
 }
 
 template <int ConformalMatterScale>
@@ -311,8 +316,8 @@ void Sources<Equations::HamiltonianAndLapse, Geometry::Curved,
           const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& conformal_factor_flux,
           const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux) {
   Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
@@ -321,16 +326,18 @@ void Sources<Equations::HamiltonianAndLapse, Geometry::Curved,
             conformal_stress_trace, extrinsic_curvature_trace,
             dt_extrinsic_curvature_trace,
             longitudinal_shift_minus_dt_conformal_metric_square,
-            shift_dot_deriv_extrinsic_curvature_trace, conformal_factor,
-            lapse_times_conformal_factor, conformal_factor_flux,
-            lapse_times_conformal_factor_flux);
-  add_curved_hamiltonian_or_lapse_sources(
-      hamiltonian_constraint, conformal_ricci_scalar, conformal_factor);
+            shift_dot_deriv_extrinsic_curvature_trace,
+            conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+            conformal_factor_flux, lapse_times_conformal_factor_flux);
+  add_curved_hamiltonian_or_lapse_sources(hamiltonian_constraint,
+                                          conformal_ricci_scalar,
+                                          conformal_factor_minus_one, 1.);
   Poisson::add_curved_sources(hamiltonian_constraint,
                               conformal_christoffel_contracted,
                               conformal_factor_flux);
   add_curved_hamiltonian_or_lapse_sources(
-      lapse_equation, conformal_ricci_scalar, lapse_times_conformal_factor);
+      lapse_equation, conformal_ricci_scalar,
+      lapse_times_conformal_factor_minus_one, 1.);
   Poisson::add_curved_sources(lapse_equation, conformal_christoffel_contracted,
                               lapse_times_conformal_factor_flux);
 }
@@ -352,8 +359,8 @@ void Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
               longitudinal_shift_background_minus_dt_conformal_metric,
           const tnsr::I<DataVector, 3>&
               div_longitudinal_shift_background_minus_dt_conformal_metric,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& shift_excess,
           const tnsr::I<DataVector, 3>& conformal_factor_flux,
           const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
@@ -372,18 +379,18 @@ void Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
   }
   add_hamiltonian_sources<ConformalMatterScale>(
       hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor);
+      extrinsic_curvature_trace, conformal_factor_minus_one);
   add_lapse_sources<ConformalMatterScale>(
       lapse_equation, conformal_energy_density, conformal_stress_trace,
       extrinsic_curvature_trace, dt_extrinsic_curvature_trace,
-      dot_product(shift, extrinsic_curvature_trace_gradient), conformal_factor,
-      lapse_times_conformal_factor);
+      dot_product(shift, extrinsic_curvature_trace_gradient),
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one);
   add_flat_cartesian_momentum_sources<ConformalMatterScale>(
       hamiltonian_constraint, lapse_equation, momentum_constraint,
       conformal_momentum_density, extrinsic_curvature_trace_gradient,
       div_longitudinal_shift_background_minus_dt_conformal_metric,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_flux,
-      lapse_times_conformal_factor_flux,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_flux, lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric);
 }
 
@@ -410,8 +417,8 @@ void Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
           const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& shift_excess,
           const tnsr::I<DataVector, 3>& conformal_factor_flux,
           const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
@@ -430,19 +437,21 @@ void Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
   }
   add_hamiltonian_sources<ConformalMatterScale>(
       hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor);
-  add_curved_hamiltonian_or_lapse_sources(
-      hamiltonian_constraint, conformal_ricci_scalar, conformal_factor);
+      extrinsic_curvature_trace, conformal_factor_minus_one);
+  add_curved_hamiltonian_or_lapse_sources(hamiltonian_constraint,
+                                          conformal_ricci_scalar,
+                                          conformal_factor_minus_one, 1.);
   Poisson::add_curved_sources(hamiltonian_constraint,
                               conformal_christoffel_contracted,
                               conformal_factor_flux);
   add_lapse_sources<ConformalMatterScale>(
       lapse_equation, conformal_energy_density, conformal_stress_trace,
       extrinsic_curvature_trace, dt_extrinsic_curvature_trace,
-      dot_product(shift, extrinsic_curvature_trace_gradient), conformal_factor,
-      lapse_times_conformal_factor);
+      dot_product(shift, extrinsic_curvature_trace_gradient),
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one);
   add_curved_hamiltonian_or_lapse_sources(
-      lapse_equation, conformal_ricci_scalar, lapse_times_conformal_factor);
+      lapse_equation, conformal_ricci_scalar,
+      lapse_times_conformal_factor_minus_one, 1.);
   Poisson::add_curved_sources(lapse_equation, conformal_christoffel_contracted,
                               lapse_times_conformal_factor_flux);
   add_curved_momentum_sources<ConformalMatterScale>(
@@ -450,8 +459,8 @@ void Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       conformal_momentum_density, extrinsic_curvature_trace_gradient,
       conformal_metric, inv_conformal_metric,
       div_longitudinal_shift_background_minus_dt_conformal_metric,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_flux,
-      lapse_times_conformal_factor_flux,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_flux, lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric);
   Elasticity::add_curved_sources(momentum_constraint,
                                  conformal_christoffel_second_kind,
@@ -468,17 +477,18 @@ void LinearizedSources<Equations::Hamiltonian, Geometry::FlatCartesian,
           const Scalar<DataVector>& extrinsic_curvature_trace,
           const Scalar<DataVector>&
               longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-          const Scalar<DataVector>& conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
           const Scalar<DataVector>& conformal_factor_correction,
           const tnsr::I<DataVector, 3>&
           /*conformal_factor_flux_correction*/) {
   add_linearized_hamiltonian_sources<ConformalMatterScale>(
       linearized_hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor, conformal_factor_correction);
+      extrinsic_curvature_trace, conformal_factor_minus_one,
+      conformal_factor_correction);
   add_linearized_distortion_hamiltonian_sources(
       linearized_hamiltonian_constraint,
       longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-      conformal_factor, conformal_factor_correction);
+      conformal_factor_minus_one, conformal_factor_correction);
 }
 
 template <int ConformalMatterScale>
@@ -492,7 +502,7 @@ void LinearizedSources<Equations::Hamiltonian, Geometry::Curved,
               longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
           const Scalar<DataVector>& conformal_factor_correction,
           const tnsr::I<DataVector, 3>& conformal_factor_flux_correction) {
   LinearizedSources<Equations::Hamiltonian, Geometry::FlatCartesian,
@@ -500,7 +510,7 @@ void LinearizedSources<Equations::Hamiltonian, Geometry::Curved,
       apply(linearized_hamiltonian_constraint, conformal_energy_density,
             extrinsic_curvature_trace,
             longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-            conformal_factor, conformal_factor_correction,
+            conformal_factor_minus_one, conformal_factor_correction,
             conformal_factor_flux_correction);
   add_curved_hamiltonian_or_lapse_sources(linearized_hamiltonian_constraint,
                                           conformal_ricci_scalar,
@@ -523,8 +533,8 @@ void LinearizedSources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
           const Scalar<DataVector>&
               longitudinal_shift_minus_dt_conformal_metric_square,
           const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const Scalar<DataVector>& conformal_factor_correction,
           const Scalar<DataVector>& lapse_times_conformal_factor_correction,
           const tnsr::I<DataVector, 3>& /*conformal_factor_flux_correction*/,
@@ -532,18 +542,19 @@ void LinearizedSources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
           /*lapse_times_conformal_factor_flux_correction*/) {
   add_linearized_hamiltonian_sources<ConformalMatterScale>(
       linearized_hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor, conformal_factor_correction);
+      extrinsic_curvature_trace, conformal_factor_minus_one,
+      conformal_factor_correction);
   add_linearized_lapse_sources<ConformalMatterScale>(
       linearized_lapse_equation, conformal_energy_density,
       conformal_stress_trace, extrinsic_curvature_trace,
       dt_extrinsic_curvature_trace, shift_dot_deriv_extrinsic_curvature_trace,
-      conformal_factor, lapse_times_conformal_factor,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
       conformal_factor_correction, lapse_times_conformal_factor_correction);
   add_linearized_distortion_hamiltonian_and_lapse_sources(
       linearized_hamiltonian_constraint, linearized_lapse_equation,
-      longitudinal_shift_minus_dt_conformal_metric_square, conformal_factor,
-      lapse_times_conformal_factor, conformal_factor_correction,
-      lapse_times_conformal_factor_correction);
+      longitudinal_shift_minus_dt_conformal_metric_square,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_correction, lapse_times_conformal_factor_correction);
 }
 
 template <int ConformalMatterScale>
@@ -561,8 +572,8 @@ void LinearizedSources<Equations::HamiltonianAndLapse, Geometry::Curved,
           const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const Scalar<DataVector>& conformal_factor_correction,
           const Scalar<DataVector>& lapse_times_conformal_factor_correction,
           const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
@@ -574,8 +585,9 @@ void LinearizedSources<Equations::HamiltonianAndLapse, Geometry::Curved,
             conformal_energy_density, conformal_stress_trace,
             extrinsic_curvature_trace, dt_extrinsic_curvature_trace,
             longitudinal_shift_minus_dt_conformal_metric_square,
-            shift_dot_deriv_extrinsic_curvature_trace, conformal_factor,
-            lapse_times_conformal_factor, conformal_factor_correction,
+            shift_dot_deriv_extrinsic_curvature_trace,
+            conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+            conformal_factor_correction,
             lapse_times_conformal_factor_correction,
             conformal_factor_flux_correction,
             lapse_times_conformal_factor_flux_correction);
@@ -612,8 +624,8 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift,
               longitudinal_shift_background_minus_dt_conformal_metric,
           const tnsr::I<DataVector, 3>&
           /*div_longitudinal_shift_background_minus_dt_conformal_metric*/,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& shift_excess,
           const tnsr::I<DataVector, 3>& conformal_factor_flux,
           const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
@@ -639,19 +651,20 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift,
   }
   add_linearized_hamiltonian_sources<ConformalMatterScale>(
       linearized_hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor, conformal_factor_correction);
+      extrinsic_curvature_trace, conformal_factor_minus_one,
+      conformal_factor_correction);
   add_linearized_lapse_sources<ConformalMatterScale>(
       linearized_lapse_equation, conformal_energy_density,
       conformal_stress_trace, extrinsic_curvature_trace,
       dt_extrinsic_curvature_trace,
-      dot_product(shift, extrinsic_curvature_trace_gradient), conformal_factor,
-      lapse_times_conformal_factor, conformal_factor_correction,
-      lapse_times_conformal_factor_correction);
+      dot_product(shift, extrinsic_curvature_trace_gradient),
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_correction, lapse_times_conformal_factor_correction);
   add_flat_cartesian_linearized_momentum_sources<ConformalMatterScale>(
       linearized_hamiltonian_constraint, linearized_lapse_equation,
       linearized_momentum_constraint, conformal_momentum_density,
-      extrinsic_curvature_trace_gradient, conformal_factor,
-      lapse_times_conformal_factor, conformal_factor_flux,
+      extrinsic_curvature_trace_gradient, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, conformal_factor_flux,
       lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric, conformal_factor_correction,
       lapse_times_conformal_factor_correction, shift_excess_correction,
@@ -685,8 +698,8 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
           const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind,
           const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
           const Scalar<DataVector>& conformal_ricci_scalar,
-          const Scalar<DataVector>& conformal_factor,
-          const Scalar<DataVector>& lapse_times_conformal_factor,
+          const Scalar<DataVector>& conformal_factor_minus_one,
+          const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
           const tnsr::I<DataVector, 3>& shift_excess,
           const tnsr::I<DataVector, 3>& conformal_factor_flux,
           const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
@@ -712,7 +725,8 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
   }
   add_linearized_hamiltonian_sources<ConformalMatterScale>(
       linearized_hamiltonian_constraint, conformal_energy_density,
-      extrinsic_curvature_trace, conformal_factor, conformal_factor_correction);
+      extrinsic_curvature_trace, conformal_factor_minus_one,
+      conformal_factor_correction);
   add_curved_hamiltonian_or_lapse_sources(linearized_hamiltonian_constraint,
                                           conformal_ricci_scalar,
                                           conformal_factor_correction);
@@ -723,9 +737,9 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       linearized_lapse_equation, conformal_energy_density,
       conformal_stress_trace, extrinsic_curvature_trace,
       dt_extrinsic_curvature_trace,
-      dot_product(shift, extrinsic_curvature_trace_gradient), conformal_factor,
-      lapse_times_conformal_factor, conformal_factor_correction,
-      lapse_times_conformal_factor_correction);
+      dot_product(shift, extrinsic_curvature_trace_gradient),
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_correction, lapse_times_conformal_factor_correction);
   add_curved_hamiltonian_or_lapse_sources(
       linearized_lapse_equation, conformal_ricci_scalar,
       lapse_times_conformal_factor_correction);
@@ -736,8 +750,9 @@ void LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       linearized_hamiltonian_constraint, linearized_lapse_equation,
       linearized_momentum_constraint, conformal_momentum_density,
       extrinsic_curvature_trace_gradient, conformal_metric,
-      inv_conformal_metric, conformal_factor, lapse_times_conformal_factor,
-      conformal_factor_flux, lapse_times_conformal_factor_flux,
+      inv_conformal_metric, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, conformal_factor_flux,
+      lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric, conformal_factor_correction,
       lapse_times_conformal_factor_correction, shift_excess_correction,
       conformal_factor_flux_correction,

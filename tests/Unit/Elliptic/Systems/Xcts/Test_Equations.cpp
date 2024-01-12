@@ -39,35 +39,36 @@ void test_equations(const DataVector& used_for_size) {
   const double fill_result_tensors = 0.;
   pypp::check_with_random_values<3>(
       &Xcts::add_hamiltonian_sources<0>, "Equations", {"hamiltonian_sources"},
-      {{{0., 1.}, {-1., 1.}, {0.5, 2.}}}, used_for_size, eps, seed,
+      {{{0., 1.}, {-1., 1.}, {-0.5, 0.5}}}, used_for_size, eps, seed,
       fill_result_tensors);
   pypp::check_with_random_values<3>(
       &Xcts::add_hamiltonian_sources<6>, "Equations",
-      {"hamiltonian_sources_conf"}, {{{0., 1.}, {-1., 1.}, {0.5, 2.}}},
+      {"hamiltonian_sources_conf"}, {{{0., 1.}, {-1., 1.}, {-0.5, 0.5}}},
       used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<4>(
       &Xcts::add_linearized_hamiltonian_sources<0>, "Equations",
       {"linearized_hamiltonian_sources"},
-      {{{0., 1.}, {-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      {{{0., 1.}, {-1., 1.}, {-0.5, 0.5}, {-1., 1.}}}, used_for_size, eps, seed,
       fill_result_tensors);
   pypp::check_with_random_values<4>(
       &Xcts::add_linearized_hamiltonian_sources<6>, "Equations",
       {"linearized_hamiltonian_sources_conf"},
-      {{{0., 1.}, {-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      {{{0., 1.}, {-1., 1.}, {-0.5, 0.5}, {-1., 1.}}}, used_for_size, eps, seed,
       fill_result_tensors);
   pypp::check_with_random_values<2>(
       &Xcts::add_distortion_hamiltonian_sources, "Equations",
-      {"distortion_hamiltonian_sources"}, {{{-1., 1.}, {0.5, 2.}}},
+      {"distortion_hamiltonian_sources"}, {{{-1., 1.}, {-0.5, 0.5}}},
       used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<3>(
       &Xcts::add_linearized_distortion_hamiltonian_sources, "Equations",
       {"linearized_distortion_hamiltonian_sources"},
-      {{{-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      {{{-1., 1.}, {-0.5, 0.5}, {-1., 1.}}}, used_for_size, eps, seed,
       fill_result_tensors);
-  pypp::check_with_random_values<2>(
+  pypp::check_with_random_values<3>(
       &Xcts::add_curved_hamiltonian_or_lapse_sources, "Equations",
-      {"curved_hamiltonian_or_lapse_sources"}, {{{-1., 1.}, {0.5, 2.}}},
-      used_for_size, eps, seed, fill_result_tensors);
+      {"curved_hamiltonian_or_lapse_sources"},
+      {{{-1., 1.}, {-0.5, 0.5}, {0., 1.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
   pypp::check_with_random_values<7>(
       &Xcts::add_lapse_sources<0>, "Equations", {"lapse_sources"},
       {{{0., 1.},
@@ -75,8 +76,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.}}},
+        {-0.5, 0.5},
+        {-0.5, 0.5}}},
       used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<7>(
       &Xcts::add_lapse_sources<6>, "Equations", {"lapse_sources_conf"},
@@ -85,8 +86,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.}}},
+        {-0.5, 0.5},
+        {-0.5, 0.5}}},
       used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<9>(&Xcts::add_linearized_lapse_sources<0>,
                                     "Equations", {"linearized_lapse_sources"},
@@ -95,8 +96,8 @@ void test_equations(const DataVector& used_for_size) {
                                       {-1., 1.},
                                       {-1., 1.},
                                       {-1., 1.},
-                                      {0.5, 2.},
-                                      {0.5, 2.},
+                                      {-0.5, 0.5},
+                                      {-0.5, 0.5},
                                       {-1., 1.},
                                       {-1., 1.}}},
                                     used_for_size, eps, seed,
@@ -109,23 +110,23 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.}}},
       used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<3>(
       &Xcts::add_distortion_hamiltonian_and_lapse_sources, "Equations",
       {"distortion_hamiltonian_sources_with_lapse", "distortion_lapse_sources"},
-      {{{-1., 1.}, {0.5, 2.}, {0.5, 2.}}}, used_for_size, eps, seed,
+      {{{-1., 1.}, {-0.5, 0.5}, {-0.5, 0.5}}}, used_for_size, eps, seed,
       fill_result_tensors);
   pypp::check_with_random_values<5>(
       &Xcts::add_linearized_distortion_hamiltonian_and_lapse_sources,
       "Equations",
       {"linearized_distortion_hamiltonian_sources_with_lapse",
        "linearized_distortion_lapse_sources"},
-      {{{-1., 1.}, {0.5, 2.}, {0.5, 2.}, {-1., 1.}, {-1., 1.}}}, used_for_size,
-      eps, seed, fill_result_tensors);
+      {{{-1., 1.}, {-0.5, 0.5}, {-0.5, 0.5}, {-1., 1.}, {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
   pypp::check_with_random_values<8>(
       &Xcts::add_flat_cartesian_momentum_sources<0>, "Equations",
       {"flat_cartesian_distortion_hamiltonian_sources_full",
@@ -134,8 +135,8 @@ void test_equations(const DataVector& used_for_size) {
       {{{-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.}}},
@@ -148,8 +149,8 @@ void test_equations(const DataVector& used_for_size) {
       {{{-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.}}},
@@ -163,8 +164,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.}}},
@@ -178,8 +179,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.}}},
@@ -191,8 +192,8 @@ void test_equations(const DataVector& used_for_size) {
        "flat_cartesian_linearized_momentum_sources"},
       {{{-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
@@ -210,8 +211,8 @@ void test_equations(const DataVector& used_for_size) {
        "flat_cartesian_linearized_momentum_sources_conf"},
       {{{-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
@@ -231,8 +232,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
@@ -252,8 +253,8 @@ void test_equations(const DataVector& used_for_size) {
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},
-        {0.5, 2.},
-        {0.5, 2.},
+        {-0.5, 0.5},
+        {-0.5, 0.5},
         {-1., 1.},
         {-1., 1.},
         {-1., 1.},

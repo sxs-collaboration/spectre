@@ -62,7 +62,9 @@ struct Metavariables {
   using analytic_solution_fields = tmpl::append<typename system::primal_fields,
                                                 typename system::primal_fluxes>;
   using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
-      tmpl::list<gr::Tags::HamiltonianConstraint<DataVector>,
+      tmpl::list<Xcts::Tags::ConformalFactor<DataVector>,
+                 Xcts::Tags::LapseTimesConformalFactor<DataVector>,
+                 gr::Tags::HamiltonianConstraint<DataVector>,
                  gr::Tags::MomentumConstraint<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,

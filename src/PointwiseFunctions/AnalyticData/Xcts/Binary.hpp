@@ -51,8 +51,8 @@ using BinaryVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
         // For initial guesses
-        Tags::ConformalFactor<DataType>,
-        Tags::LapseTimesConformalFactor<DataType>,
+        Tags::ConformalFactorMinusOne<DataType>,
+        Tags::LapseTimesConformalFactorMinusOne<DataType>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
     hydro_tags<DataType>>>;
 
@@ -74,8 +74,8 @@ struct BinaryVariables
           gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
           gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
           gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0>,
-          Tags::ConformalFactor<DataType>,
-          Tags::LapseTimesConformalFactor<DataType>,
+          Tags::ConformalFactorMinusOne<DataType>,
+          Tags::LapseTimesConformalFactorMinusOne<DataType>,
           Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>,
       hydro_tags<DataType>>;
 
@@ -198,16 +198,18 @@ struct BinaryVariables
       const {
     superposition<false>(conformal_momentum_density, cache, meta);
   }
-  void operator()(const gsl::not_null<Scalar<DataType>*> conformal_factor,
-                  const gsl::not_null<Cache*> cache,
-                  Tags::ConformalFactor<DataType> meta) const {
-    superposition(conformal_factor, cache, meta);
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+      const gsl::not_null<Cache*> cache,
+      Tags::ConformalFactorMinusOne<DataType> meta) const {
+    superposition(conformal_factor_minus_one, cache, meta);
   }
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+      const gsl::not_null<Scalar<DataType>*>
+          lapse_times_conformal_factor_minus_one,
       const gsl::not_null<Cache*> cache,
-      Tags::LapseTimesConformalFactor<DataType> meta) const {
-    superposition(lapse_times_conformal_factor, cache, meta);
+      Tags::LapseTimesConformalFactorMinusOne<DataType> meta) const {
+    superposition(lapse_times_conformal_factor_minus_one, cache, meta);
   }
   void operator()(
       const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,

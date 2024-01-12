@@ -23,13 +23,34 @@ namespace Xcts::Solutions {
 
 template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor,
+    const gsl::not_null<Cache*> cache,
+    Tags::ConformalFactor<DataType> /*meta*/) const {
+  const auto& conformal_factor_minus_one =
+      cache->get_var(*this, Tags::ConformalFactorMinusOne<DataType>{});
+  get(*conformal_factor) = get(conformal_factor_minus_one) + 1.;
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+    const gsl::not_null<Cache*> cache,
+    Tags::LapseTimesConformalFactor<DataType> /*meta*/) const {
+  const auto& lapse_times_conformal_factor_minus_one = cache->get_var(
+      *this, Tags::LapseTimesConformalFactorMinusOne<DataType>{});
+  get(*lapse_times_conformal_factor) =
+      get(lapse_times_conformal_factor_minus_one) + 1.;
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_factor_flux,
     const gsl::not_null<Cache*> cache,
-    ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
+    ::Tags::Flux<Tags::ConformalFactorMinusOne<DataType>, tmpl::size_t<Dim>,
                  Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor_gradient = cache->get_var(
-      *this, ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                           Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
       *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
   raise_or_lower_index(conformal_factor_flux, conformal_factor_gradient,
@@ -65,10 +86,10 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*>
         lapse_times_conformal_factor_flux,
     const gsl::not_null<Cache*> cache,
-    ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<Dim>,
-                 Frame::Inertial> /*meta*/) const {
+    ::Tags::Flux<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                 tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   const auto& lapse_times_conformal_factor_gradient = cache->get_var(
-      *this, ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
+      *this, ::Tags::deriv<Tags::LapseTimesConformalFactorMinusOne<DataType>,
                            tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
       *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
@@ -152,8 +173,8 @@ void CommonVariables<DataType, Cache>::operator()(
   const auto& conformal_factor =
       cache->get_var(*this, Tags::ConformalFactor<DataType>{});
   const auto& deriv_conformal_factor = cache->get_var(
-      *this, ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                           Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::ConformalFactorMinusOne<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
   *deriv_spatial_metric = cache->get_var(
       *this,
       ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,

@@ -43,8 +43,8 @@ DomainCreator:
       ExciseWithBoundaryCondition:
         AnalyticSolution:
           Solution: *solution
-          ConformalFactor: Dirichlet
-          LapseTimesConformalFactor: Dirichlet
+          ConformalFactorMinusOne: Dirichlet
+          LapseTimesConformalFactorMinusOne: Dirichlet
           ShiftExcess: Dirichlet
     InitialRefinement: 0
     InitialGridPoints: 4
@@ -63,8 +63,8 @@ DomainCreator:
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
-        ConformalFactor: Dirichlet
-        LapseTimesConformalFactor: Dirichlet
+        ConformalFactorMinusOne: Dirichlet
+        LapseTimesConformalFactorMinusOne: Dirichlet
         ShiftExcess: Dirichlet
 
 Discretization:
@@ -137,19 +137,19 @@ EventsAndTriggers:
       - ObserveNorms:
           SubfileName: ErrorNorms
           TensorsToObserve:
-            - Name: Error(ConformalFactor)
+            - Name: Error(ConformalFactorMinusOne)
               NormType: L2Norm
               Components: Sum
-            - Name: Error(LapseTimesConformalFactor)
+            - Name: Error(LapseTimesConformalFactorMinusOne)
               NormType: L2Norm
               Components: Sum
             - Name: Error(ShiftExcess)
               NormType: L2Norm
               Components: Sum
-            - Name: Error(Flux(ConformalFactor))
+            - Name: Error(Flux(ConformalFactorMinusOne))
               NormType: L2Norm
               Components: Sum
-            - Name: Error(Flux(LapseTimesConformalFactor))
+            - Name: Error(Flux(LapseTimesConformalFactorMinusOne))
               NormType: L2Norm
               Components: Sum
             - Name: Error(LongitudinalShiftExcess)
@@ -174,8 +174,8 @@ EventsAndTriggers:
             - ExtrinsicCurvature
             - HamiltonianConstraint
             - MomentumConstraint
-            - Error(ConformalFactor)
-            - Error(LapseTimesConformalFactor)
+            - Error(ConformalFactorMinusOne)
+            - Error(LapseTimesConformalFactorMinusOne)
             - Error(ShiftExcess)
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double

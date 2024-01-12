@@ -83,19 +83,19 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   using volume_tags = tmpl::list<>;
 
   static void apply(
-      gsl::not_null<Scalar<DataVector>*> conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient);
 
   static void apply(
-      gsl::not_null<Scalar<DataVector>*> conformal_factor,
-      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor_minus_one,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
           n_dot_lapse_times_conformal_factor_gradient);
 
   static void apply(
-      gsl::not_null<Scalar<DataVector>*> conformal_factor,
-      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
+      gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor_minus_one,
       gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>

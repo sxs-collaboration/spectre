@@ -53,6 +53,7 @@ void verify_adm_constraints(const Solution& solution,
 
   // Retrieve analytic variables
   using analytic_tags = tmpl::list<
+      ::Xcts::Tags::ConformalFactorMinusOne<DataVector>,
       ::Xcts::Tags::ConformalFactor<DataVector>,
       ::Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
@@ -69,6 +70,7 @@ void verify_adm_constraints(const Solution& solution,
       ::Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
       gr::Tags::Shift<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+      ::Xcts::Tags::LapseTimesConformalFactorMinusOne<DataVector>,
       ::Xcts::Tags::LapseTimesConformalFactor<DataVector>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
@@ -88,6 +90,8 @@ void verify_adm_constraints(const Solution& solution,
       gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>, 0>>;
   const auto analytic_vars =
       solution.variables(x, mesh, inv_jacobian, analytic_tags{});
+  const auto& conformal_factor_minus_one =
+      get<::Xcts::Tags::ConformalFactorMinusOne<DataVector>>(analytic_vars);
   const auto& conformal_factor =
       get<::Xcts::Tags::ConformalFactor<DataVector>>(analytic_vars);
   const auto& conformal_metric =
@@ -113,6 +117,9 @@ void verify_adm_constraints(const Solution& solution,
           analytic_vars);
   const auto& conformal_ricci_scalar =
       get<::Xcts::Tags::ConformalRicciScalar<DataVector>>(analytic_vars);
+  const auto& lapse_times_conformal_factor_minus_one =
+      get<::Xcts::Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+          analytic_vars);
   const auto& lapse_times_conformal_factor =
       get<::Xcts::Tags::LapseTimesConformalFactor<DataVector>>(analytic_vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
@@ -225,8 +232,8 @@ void verify_adm_constraints(const Solution& solution,
   // solution
   ::Xcts::SpacetimeQuantities spacetime_quantities{num_points};
   const ::Xcts::SpacetimeQuantitiesComputer computer{
-      conformal_factor,
-      lapse_times_conformal_factor,
+      conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one,
       shift_excess,
       conformal_metric,
       inv_conformal_metric,

@@ -61,13 +61,13 @@ void add_hamiltonian_sources(
     const gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const Scalar<DataVector>& conformal_energy_density,
     const Scalar<DataVector>& extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one) {
   // See BaumgarteShapiro, Eq. (3.110)
   get(*hamiltonian_constraint) +=
       (square(get(extrinsic_curvature_trace)) / 12. -
        2. * M_PI * get(conformal_energy_density) /
-           pow<ConformalMatterScale>(get(conformal_factor))) *
-      pow<5>(get(conformal_factor));
+           pow<ConformalMatterScale>(get(conformal_factor_minus_one) + 1.)) *
+      pow<5>(get(conformal_factor_minus_one) + 1.);
 }
 
 template <int ConformalMatterScale>
@@ -75,23 +75,24 @@ void add_linearized_hamiltonian_sources(
     const gsl::not_null<Scalar<DataVector>*> linearized_hamiltonian_constraint,
     const Scalar<DataVector>& conformal_energy_density,
     const Scalar<DataVector>& extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction) {
   get(*linearized_hamiltonian_constraint) +=
       ((5. / 12.) * square(get(extrinsic_curvature_trace)) -
        2. * (5. - ConformalMatterScale) * M_PI * get(conformal_energy_density) /
-           pow<ConformalMatterScale>(get(conformal_factor))) *
-      pow<4>(get(conformal_factor)) * get(conformal_factor_correction);
+           pow<ConformalMatterScale>(get(conformal_factor_minus_one) + 1.)) *
+      pow<4>(get(conformal_factor_minus_one) + 1.) *
+      get(conformal_factor_correction);
 }
 
 void add_distortion_hamiltonian_sources(
     const gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-    const Scalar<DataVector>& conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one) {
   // See BaumgarteShapiro, Eq. (3.110) and (3.112). Note: 0.03125 = 1 / 32
   get(*hamiltonian_constraint) -=
-      0.03125 * pow<5>(get(conformal_factor)) *
+      0.03125 * pow<5>(get(conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_over_lapse_square);
 }
 
@@ -99,11 +100,11 @@ void add_linearized_distortion_hamiltonian_sources(
     const gsl::not_null<Scalar<DataVector>*> linearized_hamiltonian_constraint,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction) {
   // Note: 0.15625 = 5 / 32
   get(*linearized_hamiltonian_constraint) -=
-      0.15625 * pow<4>(get(conformal_factor)) *
+      0.15625 * pow<4>(get(conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_over_lapse_square) *
       get(conformal_factor_correction);
 }
@@ -111,10 +112,10 @@ void add_linearized_distortion_hamiltonian_sources(
 void add_curved_hamiltonian_or_lapse_sources(
     const gsl::not_null<Scalar<DataVector>*> hamiltonian_or_lapse_equation,
     const Scalar<DataVector>& conformal_ricci_scalar,
-    const Scalar<DataVector>& field) {
+    const Scalar<DataVector>& field, const double add_constant) {
   // See BaumgarteShapiro, Eq. (3.110) and (3.111). Note: 0.125 = 1 / 8
   get(*hamiltonian_or_lapse_equation) +=
-      0.125 * get(conformal_ricci_scalar) * get(field);
+      0.125 * get(conformal_ricci_scalar) * (get(field) + add_constant);
 }
 
 template <int ConformalMatterScale>
@@ -125,17 +126,19 @@ void add_lapse_sources(
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const Scalar<DataVector>& dt_extrinsic_curvature_trace,
     const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one) {
   // See BaumgarteShapiro, Eq. (3.111)
   get(*lapse_equation) +=
-      get(lapse_times_conformal_factor) * pow<4>(get(conformal_factor)) *
+      (get(lapse_times_conformal_factor_minus_one) + 1.) *
+          pow<4>(get(conformal_factor_minus_one) + 1.) *
           ((5. / 12.) * square(get(extrinsic_curvature_trace)) +
            2. * M_PI *
                (get(conformal_energy_density) +
                 2. * get(conformal_stress_trace)) /
-               pow<ConformalMatterScale>(get(conformal_factor))) +
-      pow<5>(get(conformal_factor)) *
+               pow<ConformalMatterScale>(get(conformal_factor_minus_one) +
+                                         1.)) +
+      pow<5>(get(conformal_factor_minus_one) + 1.) *
           (get(shift_dot_deriv_extrinsic_curvature_trace) -
            get(dt_extrinsic_curvature_trace));
 }
@@ -148,26 +151,29 @@ void add_linearized_lapse_sources(
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const Scalar<DataVector>& dt_extrinsic_curvature_trace,
     const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction,
     const Scalar<DataVector>& lapse_times_conformal_factor_correction) {
   get(*linearized_lapse_equation) +=
-      pow<3>(get(conformal_factor)) *
-          ((get(conformal_factor) *
+      pow<3>(get(conformal_factor_minus_one) + 1.) *
+          (((get(conformal_factor_minus_one) + 1.) *
                 get(lapse_times_conformal_factor_correction) +
-            4. * get(lapse_times_conformal_factor) *
+            4. * (get(lapse_times_conformal_factor_minus_one) + 1.) *
                 get(conformal_factor_correction)) *
                5. / 12. * square(get(extrinsic_curvature_trace)) +
-           (get(conformal_factor) *
+           ((get(conformal_factor_minus_one) + 1.) *
                 get(lapse_times_conformal_factor_correction) +
-            (4. - ConformalMatterScale) * get(lapse_times_conformal_factor) *
+            (4. - ConformalMatterScale) *
+                (get(lapse_times_conformal_factor_minus_one) + 1.) *
                 get(conformal_factor_correction)) *
                2. * M_PI *
                (get(conformal_energy_density) +
                 2 * get(conformal_stress_trace)) /
-               pow<ConformalMatterScale>(get(conformal_factor))) +
-      5. * pow<4>(get(conformal_factor)) * get(conformal_factor_correction) *
+               pow<ConformalMatterScale>(get(conformal_factor_minus_one) +
+                                         1.)) +
+      5. * pow<4>(get(conformal_factor_minus_one) + 1.) *
+          get(conformal_factor_correction) *
           (get(shift_dot_deriv_extrinsic_curvature_trace) -
            get(dt_extrinsic_curvature_trace));
 }
@@ -177,17 +183,17 @@ void add_distortion_hamiltonian_and_lapse_sources(
     gsl::not_null<Scalar<DataVector>*> lapse_equation,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_square,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor) {
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one) {
   // See BaumgarteShapiro, Eq. (3.110--3.112). Note: 0.03125 = 1 / 32 and
   // 0.21875 = 7 / 32
   get(*hamiltonian_constraint) -=
-      0.03125 * pow<7>(get(conformal_factor)) /
-      square(get(lapse_times_conformal_factor)) *
+      0.03125 * pow<7>(get(conformal_factor_minus_one) + 1.) /
+      square(get(lapse_times_conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_square);
   get(*lapse_equation) +=
-      0.21875 * pow<6>(get(conformal_factor)) /
-      get(lapse_times_conformal_factor) *
+      0.21875 * pow<6>(get(conformal_factor_minus_one) + 1.) /
+      (get(lapse_times_conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_square);
 }
 
@@ -196,24 +202,26 @@ void add_linearized_distortion_hamiltonian_and_lapse_sources(
     gsl::not_null<Scalar<DataVector>*> lapse_equation,
     const Scalar<DataVector>&
         longitudinal_shift_minus_dt_conformal_metric_square,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const Scalar<DataVector>& conformal_factor_correction,
     const Scalar<DataVector>& lapse_times_conformal_factor_correction) {
   // Note: 0.03125 = 1 / 32 and 0.21875 = 7 / 32
   get(*hamiltonian_constraint) -=
-      0.03125 * pow<6>(get(conformal_factor)) *
+      0.03125 * pow<6>(get(conformal_factor_minus_one) + 1.) *
       (7. * get(conformal_factor_correction) -
-       2. * get(conformal_factor) / get(lapse_times_conformal_factor) *
+       2. * (get(conformal_factor_minus_one) + 1.) /
+           (get(lapse_times_conformal_factor_minus_one) + 1.) *
            get(lapse_times_conformal_factor_correction)) /
-      square(get(lapse_times_conformal_factor)) *
+      square(get(lapse_times_conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_square);
   get(*lapse_equation) +=
-      0.21875 * pow<5>(get(conformal_factor)) *
+      0.21875 * pow<5>(get(conformal_factor_minus_one) + 1.) *
       (6. * get(conformal_factor_correction) -
-       get(conformal_factor) / get(lapse_times_conformal_factor) *
+       (get(conformal_factor_minus_one) + 1.) /
+           (get(lapse_times_conformal_factor_minus_one) + 1.) *
            get(lapse_times_conformal_factor_correction)) /
-      get(lapse_times_conformal_factor) *
+      (get(lapse_times_conformal_factor_minus_one) + 1.) *
       get(longitudinal_shift_minus_dt_conformal_metric_square);
 }
 
@@ -229,8 +237,8 @@ void add_momentum_sources_impl(
     const std::optional<std::reference_wrapper<const tnsr::II<DataVector, 3>>>
         inv_conformal_metric,
     const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
@@ -246,7 +254,7 @@ void add_momentum_sources_impl(
            "You must pass a conformal metric to this function when it is "
            "specialized for a curved conformal geometry.");
   }
-  const size_t num_points = get(conformal_factor).size();
+  const size_t num_points = get(conformal_factor_minus_one).size();
   TempBuffer<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3>,
                         ::Tags::Tempi<2, 3>>>
       buffer{num_points};
@@ -268,11 +276,13 @@ void add_momentum_sources_impl(
     }
     // Add shift terms to Hamiltonian and lapse equations, see BaumgarteShapiro,
     // Eq. (3.110--3.112). Note: 0.03125 = 1 / 32 and 0.21875 = 7 / 32
-    get(*hamiltonian_constraint) -= 0.03125 * pow<7>(get(conformal_factor)) /
-                                    square(get(lapse_times_conformal_factor)) *
-                                    get(longitudinal_shift_square);
-    get(*lapse_equation) += 0.21875 * pow<6>(get(conformal_factor)) /
-                            get(lapse_times_conformal_factor) *
+    get(*hamiltonian_constraint) -=
+        0.03125 * pow<7>(get(conformal_factor_minus_one) + 1.) /
+        square(get(lapse_times_conformal_factor_minus_one) + 1.) *
+        get(longitudinal_shift_square);
+    get(*lapse_equation) += 0.21875 *
+                            pow<6>(get(conformal_factor_minus_one) + 1.) /
+                            (get(lapse_times_conformal_factor_minus_one) + 1.) *
                             get(longitudinal_shift_square);
   }
   // Add sources to momentum constraint, see BaumgarteShapiro, Eq. (3.109)
@@ -294,7 +304,8 @@ void add_momentum_sources_impl(
     }
     for (size_t i = 0; i < 3; ++i) {
       extrinsic_curvature_trace_gradient_term.get(i) *=
-          4. / 3. * get(lapse_times_conformal_factor) / get(conformal_factor);
+          4. / 3. * (get(lapse_times_conformal_factor_minus_one) + 1.) /
+          (get(conformal_factor_minus_one) + 1.);
       momentum_constraint->get(i) +=
           extrinsic_curvature_trace_gradient_term.get(i);
     }
@@ -305,8 +316,9 @@ void add_momentum_sources_impl(
     for (size_t i = 0; i < 3; ++i) {
       lapse_deriv_term.get(i) =
           (lapse_times_conformal_factor_flux.get(i) /
-               get(lapse_times_conformal_factor) -
-           7. * conformal_factor_flux.get(i) / get(conformal_factor));
+               (get(lapse_times_conformal_factor_minus_one) + 1.) -
+           7. * conformal_factor_flux.get(i) /
+               (get(conformal_factor_minus_one) + 1.));
     }
     auto& lapse_deriv_term_lo = get<::Tags::Tempi<2, 3>>(buffer);
     if constexpr (ConformalGeometry == Geometry::FlatCartesian) {
@@ -320,8 +332,8 @@ void add_momentum_sources_impl(
     for (size_t i = 0; i < 3; ++i) {
       // Add momentum density term
       momentum_constraint->get(i) +=
-          16. * M_PI * get(lapse_times_conformal_factor) *
-          pow<3 - ConformalMatterScale>(get(conformal_factor)) *
+          16. * M_PI * (get(lapse_times_conformal_factor_minus_one) + 1.) *
+          pow<3 - ConformalMatterScale>(get(conformal_factor_minus_one) + 1.) *
           conformal_momentum_density.get(i);
       // Add longitudinal shift term
       for (size_t j = 0; j < 3; ++j) {
@@ -344,8 +356,8 @@ void add_curved_momentum_sources(
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
@@ -354,8 +366,8 @@ void add_curved_momentum_sources(
       hamiltonian_constraint, lapse_equation, momentum_constraint,
       conformal_momentum_density, extrinsic_curvature_trace_gradient,
       conformal_metric, inv_conformal_metric, minus_div_dt_conformal_metric,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_flux,
-      lapse_times_conformal_factor_flux,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_flux, lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric);
 }
 
@@ -367,8 +379,8 @@ void add_flat_cartesian_momentum_sources(
     const tnsr::I<DataVector, 3>& conformal_momentum_density,
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
     const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>&
@@ -377,8 +389,8 @@ void add_flat_cartesian_momentum_sources(
       hamiltonian_constraint, lapse_equation, momentum_constraint,
       conformal_momentum_density, extrinsic_curvature_trace_gradient,
       std::nullopt, std::nullopt, minus_div_dt_conformal_metric,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_flux,
-      lapse_times_conformal_factor_flux,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_flux, lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric);
 }
 
@@ -393,8 +405,8 @@ void add_linearized_momentum_sources_impl(
         conformal_metric,
     const std::optional<std::reference_wrapper<const tnsr::II<DataVector, 3>>>
         inv_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>& longitudinal_shift_minus_dt_conformal_metric,
@@ -415,7 +427,7 @@ void add_linearized_momentum_sources_impl(
            "You must pass a conformal metric to this function when it is "
            "specialized for a curved conformal geometry.");
   }
-  const size_t num_points = get(conformal_factor).size();
+  const size_t num_points = get(conformal_factor_minus_one).size();
   TempBuffer<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3>,
                         ::Tags::Tempi<2, 3>>>
       buffer{num_points};
@@ -438,19 +450,19 @@ void add_linearized_momentum_sources_impl(
     }
     // Note: 0.21875 = 7 / 32, 0.0625 = 1 / 16 and 1.3125 = 21 / 16
     get(*linearized_hamiltonian_constraint) +=
-        -0.21875 * pow<6>(get(conformal_factor)) /
-            square(get(lapse_times_conformal_factor)) *
+        -0.21875 * pow<6>(get(conformal_factor_minus_one) + 1.) /
+            square(get(lapse_times_conformal_factor_minus_one) + 1.) *
             get(longitudinal_shift_square) * get(conformal_factor_correction) +
-        0.0625 * pow<7>(get(conformal_factor)) /
-            pow<3>(get(lapse_times_conformal_factor)) *
+        0.0625 * pow<7>(get(conformal_factor_minus_one) + 1.) /
+            pow<3>(get(lapse_times_conformal_factor_minus_one) + 1.) *
             get(longitudinal_shift_square) *
             get(lapse_times_conformal_factor_correction);
     get(*linearized_lapse_equation) +=
-        1.3125 * pow<5>(get(conformal_factor)) /
-            get(lapse_times_conformal_factor) * get(longitudinal_shift_square) *
-            get(conformal_factor_correction) -
-        0.21875 * pow<6>(get(conformal_factor)) /
-            square(get(lapse_times_conformal_factor)) *
+        1.3125 * pow<5>(get(conformal_factor_minus_one) + 1.) /
+            (get(lapse_times_conformal_factor_minus_one) + 1.) *
+            get(longitudinal_shift_square) * get(conformal_factor_correction) -
+        0.21875 * pow<6>(get(conformal_factor_minus_one) + 1.) /
+            square(get(lapse_times_conformal_factor_minus_one) + 1.) *
             get(longitudinal_shift_square) *
             get(lapse_times_conformal_factor_correction);
   }
@@ -475,12 +487,13 @@ void add_linearized_momentum_sources_impl(
     }
     // Note: 0.0625 = 1 / 16 and 0.4375 = 7 / 16
     get(*linearized_hamiltonian_constraint) -=
-        0.0625 * pow<7>(get(conformal_factor)) /
-        square(get(lapse_times_conformal_factor)) *
+        0.0625 * pow<7>(get(conformal_factor_minus_one) + 1.) /
+        square(get(lapse_times_conformal_factor_minus_one) + 1.) *
         get(longitudinal_shift_dot_correction);
-    get(*linearized_lapse_equation) += 0.4375 * pow<6>(get(conformal_factor)) /
-                                       get(lapse_times_conformal_factor) *
-                                       get(longitudinal_shift_dot_correction);
+    get(*linearized_lapse_equation) +=
+        0.4375 * pow<6>(get(conformal_factor_minus_one) + 1.) /
+        (get(lapse_times_conformal_factor_minus_one) + 1.) *
+        get(longitudinal_shift_dot_correction);
   }
   {
     // Add remaining linearization w.r.t. shift of the shift.grad(K) term to the
@@ -492,7 +505,7 @@ void add_linearized_momentum_sources_impl(
         make_not_null(&shift_correction_dot_extrinsic_curvature_trace_gradient),
         shift_correction, extrinsic_curvature_trace_gradient);
     get(*linearized_lapse_equation) +=
-        pow<5>(get(conformal_factor)) *
+        pow<5>(get(conformal_factor_minus_one) + 1.) *
         get(shift_correction_dot_extrinsic_curvature_trace_gradient);
   }
   // Add sources to linearized momentum constraint
@@ -516,8 +529,9 @@ void add_linearized_momentum_sources_impl(
       extrinsic_curvature_trace_gradient_term.get(i) *=
           4. / 3. *
           (get(lapse_times_conformal_factor_correction) /
-               get(conformal_factor) -
-           get(lapse_times_conformal_factor) / square(get(conformal_factor)) *
+               (get(conformal_factor_minus_one) + 1.) -
+           (get(lapse_times_conformal_factor_minus_one) + 1.) /
+               square(get(conformal_factor_minus_one) + 1.) *
                get(conformal_factor_correction));
       linearized_momentum_constraint->get(i) +=
           extrinsic_curvature_trace_gradient_term.get(i);
@@ -530,8 +544,9 @@ void add_linearized_momentum_sources_impl(
     for (size_t i = 0; i < 3; ++i) {
       lapse_deriv_term.get(i) =
           (lapse_times_conformal_factor_flux.get(i) /
-               get(lapse_times_conformal_factor) -
-           7. * conformal_factor_flux.get(i) / get(conformal_factor));
+               (get(lapse_times_conformal_factor_minus_one) + 1.) -
+           7. * conformal_factor_flux.get(i) /
+               (get(conformal_factor_minus_one) + 1.));
     }
     auto& lapse_deriv_term_lo = get<::Tags::Tempi<2, 3>>(buffer);
     if constexpr (ConformalGeometry == Geometry::FlatCartesian) {
@@ -546,11 +561,12 @@ void add_linearized_momentum_sources_impl(
       // Add momentum density term
       linearized_momentum_constraint->get(i) +=
           16. * M_PI *
-          (pow<3 - ConformalMatterScale>(get(conformal_factor)) *
+          (pow<3 - ConformalMatterScale>(get(conformal_factor_minus_one) + 1.) *
                get(lapse_times_conformal_factor_correction) +
            (3. - ConformalMatterScale) *
-               pow<2 - ConformalMatterScale>(get(conformal_factor)) *
-               get(lapse_times_conformal_factor) *
+               pow<2 - ConformalMatterScale>(get(conformal_factor_minus_one) +
+                                             1.) *
+               (get(lapse_times_conformal_factor_minus_one) + 1.) *
                get(conformal_factor_correction)) *
           conformal_momentum_density.get(i);
       // Add longitudinal shift-correction term
@@ -568,13 +584,14 @@ void add_linearized_momentum_sources_impl(
     for (size_t i = 0; i < 3; ++i) {
       lapse_deriv_correction_term.get(i) =
           (lapse_times_conformal_factor_flux_correction.get(i) /
-               get(lapse_times_conformal_factor) -
+               (get(lapse_times_conformal_factor_minus_one) + 1.) -
            lapse_times_conformal_factor_flux.get(i) /
-               square(get(lapse_times_conformal_factor)) *
+               square(get(lapse_times_conformal_factor_minus_one) + 1.) *
                get(lapse_times_conformal_factor_correction) -
            7. * conformal_factor_flux_correction.get(i) /
-               get(conformal_factor) +
-           7. * conformal_factor_flux.get(i) / square(get(conformal_factor)) *
+               (get(conformal_factor_minus_one) + 1.) +
+           7. * conformal_factor_flux.get(i) /
+               square(get(conformal_factor_minus_one) + 1.) *
                get(conformal_factor_correction));
     }
     auto& lapse_deriv_correction_term_lo = get<::Tags::Tempi<2, 3>>(buffer);
@@ -610,8 +627,8 @@ void add_curved_linearized_momentum_sources(
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>& longitudinal_shift_minus_dt_conformal_metric,
@@ -625,8 +642,9 @@ void add_curved_linearized_momentum_sources(
       linearized_hamiltonian_constraint, linearized_lapse_equation,
       linearized_momentum_constraint, conformal_momentum_density,
       extrinsic_curvature_trace_gradient, conformal_metric,
-      inv_conformal_metric, conformal_factor, lapse_times_conformal_factor,
-      conformal_factor_flux, lapse_times_conformal_factor_flux,
+      inv_conformal_metric, conformal_factor_minus_one,
+      lapse_times_conformal_factor_minus_one, conformal_factor_flux,
+      lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric, conformal_factor_correction,
       lapse_times_conformal_factor_correction, shift_correction,
       conformal_factor_flux_correction,
@@ -641,8 +659,8 @@ void add_flat_cartesian_linearized_momentum_sources(
     gsl::not_null<tnsr::I<DataVector, 3>*> linearized_momentum_constraint,
     const tnsr::I<DataVector, 3>& conformal_momentum_density,
     const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,
-    const Scalar<DataVector>& conformal_factor,
-    const Scalar<DataVector>& lapse_times_conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
+    const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& conformal_factor_flux,
     const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
     const tnsr::II<DataVector, 3>& longitudinal_shift_minus_dt_conformal_metric,
@@ -657,8 +675,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       linearized_hamiltonian_constraint, linearized_lapse_equation,
       linearized_momentum_constraint, conformal_momentum_density,
       extrinsic_curvature_trace_gradient, std::nullopt, std::nullopt,
-      conformal_factor, lapse_times_conformal_factor, conformal_factor_flux,
-      lapse_times_conformal_factor_flux,
+      conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      conformal_factor_flux, lapse_times_conformal_factor_flux,
       longitudinal_shift_minus_dt_conformal_metric, conformal_factor_correction,
       lapse_times_conformal_factor_correction, shift_correction,
       conformal_factor_flux_correction,
@@ -675,12 +693,12 @@ void add_flat_cartesian_linearized_momentum_sources(
       gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,              \
       const Scalar<DataVector>& conformal_energy_density,                     \
       const Scalar<DataVector>& extrinsic_curvature_trace,                    \
-      const Scalar<DataVector>& conformal_factor);                            \
+      const Scalar<DataVector>& conformal_factor_minus_one);                  \
   template void add_linearized_hamiltonian_sources<CONF_MATTER_SCALE(data)>(  \
       gsl::not_null<Scalar<DataVector>*> linearized_hamiltonian_constraint,   \
       const Scalar<DataVector>& conformal_energy_density,                     \
       const Scalar<DataVector>& extrinsic_curvature_trace,                    \
-      const Scalar<DataVector>& conformal_factor,                             \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
       const Scalar<DataVector>& conformal_factor_correction);                 \
   template void add_lapse_sources<CONF_MATTER_SCALE(data)>(                   \
       gsl::not_null<Scalar<DataVector>*> lapse_equation,                      \
@@ -689,8 +707,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       const Scalar<DataVector>& extrinsic_curvature_trace,                    \
       const Scalar<DataVector>& dt_extrinsic_curvature_trace,                 \
       const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,    \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor);                \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one);      \
   template void add_linearized_lapse_sources<CONF_MATTER_SCALE(data)>(        \
       gsl::not_null<Scalar<DataVector>*> linearized_lapse_equation,           \
       const Scalar<DataVector>& conformal_energy_density,                     \
@@ -698,8 +716,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       const Scalar<DataVector>& extrinsic_curvature_trace,                    \
       const Scalar<DataVector>& dt_extrinsic_curvature_trace,                 \
       const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,    \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor,                 \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,       \
       const Scalar<DataVector>& conformal_factor_correction,                  \
       const Scalar<DataVector>& lapse_times_conformal_factor_correction);     \
   template void add_curved_momentum_sources<CONF_MATTER_SCALE(data)>(         \
@@ -711,8 +729,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       const tnsr::ii<DataVector, 3>& conformal_metric,                        \
       const tnsr::II<DataVector, 3>& inv_conformal_metric,                    \
       const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,            \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor,                 \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,       \
       const tnsr::I<DataVector, 3>& conformal_factor_flux,                    \
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,        \
       const tnsr::II<DataVector, 3>&                                          \
@@ -724,8 +742,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       const tnsr::I<DataVector, 3>& conformal_momentum_density,               \
       const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,       \
       const tnsr::I<DataVector, 3>& minus_div_dt_conformal_metric,            \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor,                 \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,       \
       const tnsr::I<DataVector, 3>& conformal_factor_flux,                    \
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,        \
       const tnsr::II<DataVector, 3>&                                          \
@@ -739,8 +757,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,       \
       const tnsr::ii<DataVector, 3>& conformal_metric,                        \
       const tnsr::II<DataVector, 3>& inv_conformal_metric,                    \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor,                 \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,       \
       const tnsr::I<DataVector, 3>& conformal_factor_flux,                    \
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,        \
       const tnsr::II<DataVector, 3>&                                          \
@@ -759,8 +777,8 @@ void add_flat_cartesian_linearized_momentum_sources(
       gsl::not_null<tnsr::I<DataVector, 3>*> linearized_momentum_constraint,  \
       const tnsr::I<DataVector, 3>& conformal_momentum_density,               \
       const tnsr::i<DataVector, 3>& extrinsic_curvature_trace_gradient,       \
-      const Scalar<DataVector>& conformal_factor,                             \
-      const Scalar<DataVector>& lapse_times_conformal_factor,                 \
+      const Scalar<DataVector>& conformal_factor_minus_one,                   \
+      const Scalar<DataVector>& lapse_times_conformal_factor_minus_one,       \
       const tnsr::I<DataVector, 3>& conformal_factor_flux,                    \
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,        \
       const tnsr::II<DataVector, 3>&                                          \

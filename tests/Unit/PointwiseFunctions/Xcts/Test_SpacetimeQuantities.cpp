@@ -48,13 +48,21 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
   get<2, 2>(inv_jacobian) = 1.;
   // Generate random input vars
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<double> dist_factor{0.5, 2.};
+  std::uniform_real_distribution<double> dist_positive{0.5, 2.};
+  std::uniform_real_distribution<double> dist_factor_minus_one{-0.5, 0.5};
   std::uniform_real_distribution<double> dist_isotropic{-1., 1.};
-  const auto conformal_factor = make_with_random_values<Scalar<DataVector>>(
-      make_not_null(&gen), make_not_null(&dist_factor), num_points);
-  const auto lapse_times_conformal_factor =
+  const auto conformal_factor_minus_one =
       make_with_random_values<Scalar<DataVector>>(
-          make_not_null(&gen), make_not_null(&dist_factor), num_points);
+          make_not_null(&gen), make_not_null(&dist_factor_minus_one),
+          num_points);
+  const Scalar<DataVector> conformal_factor{get(conformal_factor_minus_one) +
+                                            1.};
+  const auto lapse_times_conformal_factor_minus_one =
+      make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&gen), make_not_null(&dist_factor_minus_one),
+          num_points);
+  const Scalar<DataVector> lapse_times_conformal_factor{
+      get(lapse_times_conformal_factor_minus_one) + 1.};
   const auto shift_excess = make_with_random_values<tnsr::I<DataVector, 3>>(
       make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto conformal_metric =
@@ -93,7 +101,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
       make_with_random_values<tnsr::I<DataVector, 3>>(
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto energy_density = make_with_random_values<Scalar<DataVector>>(
-      make_not_null(&gen), make_not_null(&dist_factor), num_points);
+      make_not_null(&gen), make_not_null(&dist_positive), num_points);
   const auto momentum_density = make_with_random_values<tnsr::I<DataVector, 3>>(
       make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   // Check output vars
@@ -102,12 +110,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
           typename SpacetimeQuantities::tags_list>::argument_tags>,
       db::AddComputeTags<Tags::SpacetimeQuantitiesCompute<
           typename SpacetimeQuantities::tags_list>>>(
-      mesh, conformal_factor, lapse_times_conformal_factor, shift_excess,
-      conformal_metric, inv_conformal_metric, deriv_conformal_metric,
-      conformal_christoffel_first_kind, conformal_christoffel_second_kind,
-      conformal_christoffel_contracted, conformal_ricci_scalar,
-      trace_extrinsic_curvature, deriv_trace_extrinsic_curvature,
-      shift_background, longitudinal_shift_background_minus_dt_conformal_metric,
+      mesh, conformal_factor_minus_one, lapse_times_conformal_factor_minus_one,
+      shift_excess, conformal_metric, inv_conformal_metric,
+      deriv_conformal_metric, conformal_christoffel_first_kind,
+      conformal_christoffel_second_kind, conformal_christoffel_contracted,
+      conformal_ricci_scalar, trace_extrinsic_curvature,
+      deriv_trace_extrinsic_curvature, shift_background,
+      longitudinal_shift_background_minus_dt_conformal_metric,
       div_longitudinal_shift_background_minus_dt_conformal_metric,
       energy_density, momentum_density, std::move(inv_jacobian));
   const auto& vars =

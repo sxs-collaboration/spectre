@@ -53,8 +53,8 @@ DomainCreator:
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
-        ConformalFactor: Dirichlet
-        LapseTimesConformalFactor: Dirichlet
+        ConformalFactorMinusOne: Dirichlet
+        LapseTimesConformalFactorMinusOne: Dirichlet
         ShiftExcess: Dirichlet
 
 Discretization:
@@ -124,10 +124,10 @@ EventsAndTriggers:
       - ObserveNorms:
           SubfileName: ErrorNorms
           TensorsToObserve:
-            - Name: Error(ConformalFactor)
+            - Name: Error(ConformalFactorMinusOne)
               NormType: L2Norm
               Components: Sum
-            - Name: Error(LapseTimesConformalFactor)
+            - Name: Error(LapseTimesConformalFactorMinusOne)
               NormType: L2Norm
               Components: Sum
             - Name: Error(ShiftExcess)
@@ -147,8 +147,8 @@ EventsAndTriggers:
           VariablesToObserve:
             - ConformalFactor
             - Lapse
-            - Error(ConformalFactor)
-            - Error(LapseTimesConformalFactor)
+            - Error(ConformalFactorMinusOne)
+            - Error(LapseTimesConformalFactorMinusOne)
             - Conformal(EnergyDensity)
             - Conformal(StressTrace)
             - HamiltonianConstraint

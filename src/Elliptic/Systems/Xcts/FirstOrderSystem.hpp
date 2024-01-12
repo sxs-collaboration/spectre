@@ -123,11 +123,11 @@ struct FirstOrderSystem
   static constexpr size_t volume_dim = 3;
 
   using primal_fields = tmpl::flatten<tmpl::list<
-      Tags::ConformalFactor<DataVector>,
+      Tags::ConformalFactorMinusOne<DataVector>,
       tmpl::conditional_t<
           EnabledEquations == Equations::HamiltonianAndLapse or
               EnabledEquations == Equations::HamiltonianLapseAndShift,
-          Tags::LapseTimesConformalFactor<DataVector>, tmpl::list<>>,
+          Tags::LapseTimesConformalFactorMinusOne<DataVector>, tmpl::list<>>,
       tmpl::conditional_t<
           EnabledEquations == Equations::HamiltonianLapseAndShift,
           Tags::ShiftExcess<DataVector, 3, Frame::Inertial>, tmpl::list<>>>>;
@@ -138,12 +138,12 @@ struct FirstOrderSystem
   // meaning so we use the standard `Flux` tags, but for the symmetric
   // longitudinal shift we use the corresponding symmetric tag.
   using primal_fluxes = tmpl::flatten<tmpl::list<
-      ::Tags::Flux<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
+      ::Tags::Flux<Tags::ConformalFactorMinusOne<DataVector>, tmpl::size_t<3>,
                    Frame::Inertial>,
       tmpl::conditional_t<
           EnabledEquations == Equations::HamiltonianAndLapse or
               EnabledEquations == Equations::HamiltonianLapseAndShift,
-          ::Tags::Flux<Tags::LapseTimesConformalFactor<DataVector>,
+          ::Tags::Flux<Tags::LapseTimesConformalFactorMinusOne<DataVector>,
                        tmpl::size_t<3>, Frame::Inertial>,
           tmpl::list<>>,
       tmpl::conditional_t<

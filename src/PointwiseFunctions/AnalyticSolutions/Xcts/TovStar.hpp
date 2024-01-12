@@ -102,10 +102,14 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
                   gsl::not_null<Cache*> cache,
                   Tags::ConformalFactor<DataType> /*meta*/) const override;
   void operator()(
+      gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Tags::ConformalFactorMinusOne<DataType> /*meta*/) const override;
+  void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> deriv_conformal_factor,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial> /*meta*/) const override;
+      ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataType> /*meta*/) const override;
@@ -118,10 +122,15 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
       gsl::not_null<Cache*> cache,
       Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
   void operator()(
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor_minus_one,
+      gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/)
+      const override;
+  void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> deriv_lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial> /*meta*/) const override;
+      ::Tags::deriv<Tags::LapseTimesConformalFactorMinusOne<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
                   gsl::not_null<Cache*> cache,
                   Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
