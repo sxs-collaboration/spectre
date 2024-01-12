@@ -293,7 +293,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::ParticlePositionVelocityCompute<
               volume_dim>,
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
-              volume_dim, Frame::Grid, true>,
+              volume_dim, Frame::Inertial, true>,
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
               volume_dim, Frame::Inertial, false>,
           CurvedScalarWave::Worldtube::Tags::PunctureFieldCompute<volume_dim>,

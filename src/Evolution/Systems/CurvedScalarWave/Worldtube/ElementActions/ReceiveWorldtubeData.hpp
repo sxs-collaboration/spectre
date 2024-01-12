@@ -29,14 +29,9 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace Tags {
-struct TimeStepId;
-}  // namespace Tags
-/// \endcond
 
 namespace CurvedScalarWave::Worldtube::Actions {
 
@@ -44,11 +39,11 @@ namespace CurvedScalarWave::Worldtube::Actions {
  * \brief Checks if the regular field has been received from the worldtube and
  * computes the retarded field for boundary conditions.
  *
- *  \details This action checks whether values for the regular field have been
- * send by the worldtube. If so, the spatial derivative is converted from the
- * grid to inertial frame and the puncture field is added to it to obtain the
- * retarded field. This is stored in \ref Tags::WorldtubeSolution which is used
- * to formulate boundary conditions in
+ *  \details This action checks whether the coefficients of Taylor Series of the
+ * regular field have been sent by the worldtube. If so, the series is evaluated
+ * at the face coordinate in the inertial frame  and the puncture field is added
+ * to it to obtain the retarded field. This is stored in \ref
+ * Tags::WorldtubeSolution which is used to formulate boundary conditions in
  * \ref CurvedScalarWave::BoundaryConditions::Worldtube.
  */
 struct ReceiveWorldtubeData {
@@ -58,15 +53,12 @@ struct ReceiveWorldtubeData {
   template <typename Frame>
   using di_psi_tag =
       ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<Dim>, Frame>;
-  using received_tags =
-      tmpl::list<psi_tag, dt_psi_tag, di_psi_tag<Frame::Grid>>;
   using evolved_tags_list =
       typename CurvedScalarWave::System<Dim>::variables_tag::tags_list;
   using simple_tags = tmpl::list<Tags::WorldtubeSolution<Dim>>;
   using inbox_tags = tmpl::list<Tags::RegularFieldInbox<Dim>>;
-  using tags_to_slice_to_face = tmpl::list<
-      domain::Tags::InverseJacobian<Dim, Frame::Grid, Frame::Inertial>,
-      gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>>;
+  using tags_to_slice_to_face =
+      tmpl::list<gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -100,50 +92,53 @@ struct ReceiveWorldtubeData {
                           direction.value().dimension(),
                           index_to_slice_at(mesh.extents(), direction.value()));
           });
-
       auto& received_data = inbox.at(time_step_id);
-      get(get<psi_tag>(received_data)) +=
-          get(get<psi_tag>(puncture_field.value()));
-
-      // the advective term transforms the time derivative back into the
-      // inertial frame
-      get(get<dt_psi_tag>(received_data)) +=
-          get(get<dt_psi_tag>(puncture_field.value())) -
-          get(get<Tags::RegularFieldAdvectiveTerm<Dim>>(box));
+      const auto& centered_face_coords =
+          db::get<Tags::FaceCoordinates<Dim, Frame::Inertial, true>>(box)
+              .value();
 
       db::mutate<Tags::WorldtubeSolution<Dim>>(
-          [&received_data, &puncture_field,
-           &vars_on_face](const gsl::not_null<Variables<evolved_tags_list>*>
-                              worldtube_solution) {
+          [&received_data, &puncture_field, &vars_on_face,
+           &centered_face_coords,
+           &expansion_order = db::get<Tags::ExpansionOrder>(box)](
+              const gsl::not_null<Variables<evolved_tags_list>*>
+                  worldtube_solution) {
             worldtube_solution->initialize(
                 puncture_field.value().number_of_grid_points());
-            const auto& inv_jacobian = get<domain::Tags::InverseJacobian<
-                Dim, Frame::Grid, Frame::Inertial>>(vars_on_face);
-            auto& phi_inertial =
+
+            auto& psi = get<psi_tag>(*worldtube_solution);
+            auto& pi = get<CurvedScalarWave::Tags::Pi>(*worldtube_solution);
+            auto& phi =
                 get<CurvedScalarWave::Tags::Phi<Dim>>(*worldtube_solution);
+
+            // the puncture field plus the monopole of the regular field
+            get(psi) = get(get<psi_tag>(puncture_field.value())) +
+                       get(get<psi_tag>(received_data))[0];
+            get(pi) = get(get<dt_psi_tag>(puncture_field.value())) +
+                      get(get<dt_psi_tag>(received_data))[0];
             for (size_t i = 0; i < Dim; ++i) {
-              phi_inertial.get(i) =
-                  get<0>(get<di_psi_tag<Frame::Grid>>(received_data)) *
-                      inv_jacobian.get(0, i) +
-                  get<1>(get<di_psi_tag<Frame::Grid>>(received_data)) *
-                      inv_jacobian.get(1, i) +
-                  get<2>(get<di_psi_tag<Frame::Grid>>(received_data)) *
-                      inv_jacobian.get(2, i);
-              phi_inertial.get(i) +=
+              phi.get(i) =
                   get<di_psi_tag<Frame::Inertial>>(puncture_field.value())
                       .get(i);
             }
-
-            get<CurvedScalarWave::Tags::Psi>(*worldtube_solution) =
-                get<psi_tag>(received_data);
+            if (expansion_order > 0) {
+              // add on the dipole of the regular field
+              for (size_t i = 0; i < Dim; ++i) {
+                get(psi) += get(get<psi_tag>(received_data))[i + 1] *
+                            centered_face_coords.get(i);
+                get(pi) += get(get<dt_psi_tag>(received_data))[i + 1] *
+                           centered_face_coords.get(i);
+                phi.get(i) += get(get<psi_tag>(received_data))[i + 1];
+              }
+            }
             const auto& shift =
                 get<gr::Tags::Shift<DataVector, Dim>>(vars_on_face);
-
             const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars_on_face);
-            auto& pi = get<CurvedScalarWave::Tags::Pi>(*worldtube_solution);
-            get(pi) = (-get(get<dt_psi_tag>(received_data)) +
-                       get(dot_product(shift, phi_inertial))) /
-                      get(lapse);
+
+            // convert dt_psi -> pi
+            get(pi) *= -1.;
+            get(pi) += get(dot_product(shift, phi));
+            get(pi) /= get(lapse);
           },
           make_not_null(&box));
       inbox.erase(time_step_id);

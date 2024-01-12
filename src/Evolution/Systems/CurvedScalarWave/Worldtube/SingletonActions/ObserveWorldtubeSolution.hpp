@@ -56,10 +56,11 @@ struct ObserveWorldtubeSolution {
     if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box)) {
       const size_t expansion_order = db::get<Tags::ExpansionOrder>(box);
       const auto& psi_monopole = db::get<
-          Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(box);
+          Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Inertial>>(
+          box);
       const auto& dt_psi_monopole =
           db::get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
-                                       Frame::Grid>>(box);
+                                       Frame::Inertial>>(box);
 
       // number of components in Taylor series
       const size_t num_coefs = ((expansion_order + 3) * (expansion_order + 2) *
@@ -71,10 +72,11 @@ struct ObserveWorldtubeSolution {
 
       if (expansion_order > 0) {
         const auto& psi_dipole = db::get<
-            Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>>(box);
+            Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>>(
+            box);
         const auto& dt_psi_dipole =
             db::get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
-                                         Frame::Grid>>(box);
+                                         Frame::Inertial>>(box);
         for (size_t i = 0; i < Dim; ++i) {
           psi_coefs[1 + i] = psi_dipole.get(i);
           psi_coefs[num_coefs + 1 + i] = dt_psi_dipole.get(i);

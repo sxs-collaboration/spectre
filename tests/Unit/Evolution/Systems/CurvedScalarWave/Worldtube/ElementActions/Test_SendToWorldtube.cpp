@@ -62,15 +62,15 @@ struct MockElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
-                  domain::Tags::Coordinates<Dim, Frame::Grid>,
+                  domain::Tags::Coordinates<Dim, Frame::Inertial>,
                   Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
                   gr::Tags::Lapse<DataVector>,
                   domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                                Frame::Grid>,
+                                                Frame::Inertial>,
                   typename CurvedScalarWave::System<Dim>::variables_tag,
-                  domain::Tags::MeshVelocity<Dim>, ::Tags::TimeStepId>,
+                  ::Tags::TimeStepId, Tags::ParticlePositionVelocity<Dim>>,
               db::AddComputeTags<
-                  Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>>>>,
+                  Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::SendToWorldtube>>>;
 };
@@ -155,10 +155,10 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     const double psi_coefs_0 = dist(generator);
     const double pi_coefs_0 = dist(generator);
     const auto psi_coefs_1 =
-        make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
+        make_with_random_values<tnsr::i<double, Dim, Frame::Inertial>>(
             make_not_null(&generator), dist, 0.);
     const auto pi_coefs_1 =
-        make_with_random_values<tnsr::i<double, Dim, Frame::Grid>>(
+        make_with_random_values<tnsr::i<double, Dim, Frame::Inertial>>(
             make_not_null(&generator), dist, 0.);
     const Time dummy_time{{1., 2.}, {1, 2}};
     const TimeStepId dummy_time_step_id{true, 123, dummy_time};
@@ -169,11 +169,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
           element_id, my_block, initial_refinements);
       auto mesh = domain::Initialization::create_initial_mesh(
           initial_extents, element_id, quadrature);
-      const ElementMap element_map(
-          element_id, my_block.stationary_map().get_to_grid_frame());
+      const ElementMap element_map(element_id,
+                                   my_block.stationary_map().get_clone());
       const auto logical_coords = logical_coordinates(mesh);
-      const auto grid_coords = element_map(logical_coords);
-      auto grid_inv_jacobian = element_map.inv_jacobian(logical_coords);
+      const auto inertial_coords = element_map(logical_coords);
+
+      auto inertial_inv_jacobian = element_map.inv_jacobian(logical_coords);
       const size_t grid_size = mesh.number_of_grid_points();
       // we set lapse and shift to Minkowski so dt Psi = - Pi, and the value we
       // pass in for Pi will get integrated directly
@@ -188,27 +189,28 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
       if (expansion_order > 0) {
         for (size_t i = 0; i < Dim; ++i) {
           get(get<CurvedScalarWave::Tags::Psi>(evolved_vars)) +=
-              psi_coefs_1.get(i) * grid_coords.get(i);
+              psi_coefs_1.get(i) * inertial_coords.get(i);
           get(get<CurvedScalarWave::Tags::Pi>(evolved_vars)) +=
-              pi_coefs_1.get(i) * grid_coords.get(i);
+              pi_coefs_1.get(i) * inertial_coords.get(i);
         }
       }
       std::optional<puncture_field_type> optional_puncture_field =
           is_abutting ? std::make_optional<puncture_field_type>(puncture_field)
                       : std::nullopt;
-      // we set the mesh_velocity to zero so we can recover the exact dt value
-      std::optional<tnsr::I<DataVector, Dim>> mesh_velocity =
-          is_abutting
-              ? std::make_optional<tnsr::I<DataVector, Dim>>(face_size, 0.)
-              : std::nullopt;
 
+      // the particle is at the center of the excision sphere which is the
+      // origin in the Shell domain
+      tnsr::I<double, Dim> particle_position(0.);
+      auto particle_velocity = particle_position;
       ActionTesting::emplace_array_component_and_initialize<element_chare>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           element_id,
-          {std::move(element), std::move(mesh), grid_coords,
+          {std::move(element), std::move(mesh), inertial_coords,
            std::move(optional_puncture_field), std::move(shift),
-           std::move(lapse), std::move(grid_inv_jacobian), evolved_vars,
-           std::move(mesh_velocity), dummy_time_step_id});
+           std::move(lapse), std::move(inertial_inv_jacobian), evolved_vars,
+           dummy_time_step_id,
+           std::array<tnsr::I<double, Dim>, 2>{
+               {std::move(particle_position), std::move(particle_velocity)}}});
     }
 
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
@@ -231,14 +233,6 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     for (const auto& element_id : element_ids) {
       ActionTesting::next_action<element_chare>(make_not_null(&runner),
                                                 element_id);
-      if (excision_sphere.abutting_direction(element_id).has_value()) {
-        const auto& regular_field_advective_term =
-            ActionTesting::get_databox_tag<
-                element_chare, Tags::RegularFieldAdvectiveTerm<Dim>>(
-                runner, element_id);
-        CHECK_ITERABLE_APPROX(regular_field_advective_term,
-                              Scalar<DataVector>(face_size, 0.));
-      }
     }
 
     using inbox_tag = Tags::SphericalHarmonicsInbox<Dim>;
@@ -260,11 +254,11 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     CHECK(worldtube_inbox.empty());
     const auto& psi_monopole_worldtube = ActionTesting::get_databox_tag<
         worldtube_chare,
-        Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Grid>>(runner,
-                                                                       0);
+        Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Inertial>>(
+        runner, 0);
     const auto& dt_psi_monopole_worldtube = ActionTesting::get_databox_tag<
         worldtube_chare, Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0,
-                                              Dim, Frame::Grid>>(runner, 0);
+                                              Dim, Frame::Inertial>>(runner, 0);
     // the integral is over a low resolution DG grid which introduces a large
     // error
     Approx apprx = Approx::custom().epsilon(1e-8).scale(1.0);
@@ -273,12 +267,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     if (expansion_order > 0) {
       const auto& psi_dipole_worldtube = ActionTesting::get_databox_tag<
           worldtube_chare,
-          Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Grid>>(runner,
-                                                                         0);
+          Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>>(
+          runner, 0);
       const auto& dt_psi_dipole_worldtube = ActionTesting::get_databox_tag<
           worldtube_chare, Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>,
-                                                1, Dim, Frame::Grid>>(runner,
-                                                                      0);
+                                                1, Dim, Frame::Inertial>>(
+          runner, 0);
       CHECK_ITERABLE_CUSTOM_APPROX(psi_dipole_worldtube, psi_coefs_1, apprx);
       for (size_t i = 0; i < Dim; ++i) {
         CHECK(dt_psi_dipole_worldtube.get(i) == apprx(-pi_coefs_1.get(i)));
