@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_QuaternionFunctionOfTime.cpp
   Test_QuaternionHelpers.cpp
   Test_SettleToConstant.cpp
+  Test_SettleToConstantQuaternion.cpp
   Test_Tags.cpp
   )
 

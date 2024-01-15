@@ -15,6 +15,7 @@ spectre_target_sources(
   QuaternionHelpers.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
+  SettleToConstantQuaternion.cpp
   )
 
 spectre_target_headers(
@@ -31,6 +32,7 @@ spectre_target_headers(
   QuaternionHelpers.hpp
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
+  SettleToConstantQuaternion.hpp
   Tags.hpp
   ThreadsafeList.hpp
   ThreadsafeList.tpp
