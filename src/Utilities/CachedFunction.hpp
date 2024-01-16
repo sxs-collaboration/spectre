@@ -51,7 +51,7 @@ class CachedFunction {
 template <typename Input, template <typename...> class Map = std::unordered_map,
           typename... MapArgs, typename Function, typename... PassedMapArgs>
 auto make_cached_function(Function function, PassedMapArgs... map_args) {
-  using output = std::result_of_t<Function&(const Input&)>;
+  using output = std::invoke_result_t<Function&, const Input&>;
   return CachedFunction<Function, Map<std::decay_t<Input>,
                                       std::decay_t<output>,
                                       MapArgs...>>(
