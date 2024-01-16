@@ -170,3 +170,71 @@ class EvolutionStatus(ExecutableStatus):
         if field in ["Time", "Speed"]:
             return f"{value:g}"
         raise ValueError
+
+
+class EllipticStatus(ExecutableStatus):
+    """An 'ExecutableStatus' subclass that matches all elliptic executables.
+
+    This is a fallback if no more specialized subclass is implemented.
+    """
+
+    executable_name_patterns = [r"^Solve"]
+    fields = {
+        "Iteration": None,
+        "Residual": None,
+    }
+
+    def solver_status(
+        self, input_file: dict, open_reductions_file, solver_name: str
+    ) -> dict:
+        """Report the residual of the iterative solver
+
+        Arguments:
+          input_file: The input file read in as a dictionary.
+          open_reductions_file: The open h5py reductions data file.
+          solver_name: Name of the solver. Will read the subfile named
+            <SOLVER_NAME>Residuals.dat from the reductions file to extract
+            number of iterations and residual.
+
+        Returns: Status fields "Iteration" and "Residual".
+        """
+        subfile_name = solver_name + "Residuals.dat"
+        logger.debug(f"Reading residuals from subfile: '{subfile_name}'")
+        try:
+            residuals = to_dataframe(open_reductions_file[subfile_name])
+        except:
+            logger.debug("Unable to read residuals.", exc_info=True)
+            return {}
+        result = {
+            "Iteration": len(residuals[residuals["Iteration"] != 0]),
+            "Residual": residuals["Residual"].iloc[-1],
+        }
+        return result
+
+    def status(self, input_file, work_dir):
+        try:
+            reductions_file = input_file["Observers"]["ReductionFileName"]
+            open_reductions_file = h5py.File(
+                os.path.join(work_dir, reductions_file + ".h5"), "r"
+            )
+        except:
+            logger.debug("Unable to open reductions file.", exc_info=True)
+            return {}
+        with open_reductions_file:
+            # Try these solver names in turn and report the status of the first
+            # that exists. Create a subclass to customize this behavior for
+            # a specific executable (e.g. if it has multiple solvers).
+            for solver_name in ["NewtonRaphson", "GMRES"]:
+                solver_status = self.solver_status(
+                    input_file, open_reductions_file, solver_name=solver_name
+                )
+                if solver_status:
+                    return solver_status
+        return {}
+
+    def format(self, field, value):
+        if field in ["Iteration"]:
+            return str(int(value))
+        elif field in ["Residual"]:
+            return f"{value:.1e}"
+        raise ValueError

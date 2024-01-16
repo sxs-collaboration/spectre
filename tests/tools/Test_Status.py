@@ -88,6 +88,25 @@ class TestExecutableStatus(unittest.TestCase):
                 "/Norms", legend=["L2Norm(ConstraintEnergy)"], version=0
             )
             constraints_subfile.append([1.0e-3])
+            open_h5_file.close_current_object()
+            # Elliptic solver residuals
+            residuals_subfile = open_h5_file.insert_dat(
+                "/NewtonRaphsonResiduals",
+                legend=["Iteration", "Residual"],
+                version=0,
+            )
+            residuals_subfile.append([0.0, 1.0e-1])
+            residuals_subfile.append([1.0, 1.0e-4])
+            open_h5_file.close_current_object()
+            residuals_subfile = open_h5_file.insert_dat(
+                "/GmresResiduals",
+                legend=["Iteration", "Residual"],
+                version=0,
+            )
+            residuals_subfile.append([0.0, 1.0e-1])
+            residuals_subfile.append([1.0, 1.0e-4])
+            residuals_subfile.append([0.0, 1.0e-2])
+            residuals_subfile.append([1.0, 1.0e-5])
 
     def tearDown(self):
         shutil.rmtree(self.work_dir, ignore_errors=True)
@@ -114,6 +133,38 @@ class TestExecutableStatus(unittest.TestCase):
         self.assertEqual(status["Time"], 2.0)
         self.assertEqual(status["Speed"], 2640.0)
         self.assertEqual(status["Constraint Energy"], 1.0e-3)
+
+    def test_elliptic_status(self):
+        executable_status = match_executable_status("SolveSomething")
+        status = executable_status.status(self.input_file, self.work_dir)
+        self.assertEqual(status, {"Iteration": 1.0, "Residual": 1.0e-4})
+        self.assertEqual(executable_status.format("Iteration", 1.0), "1")
+        self.assertEqual(
+            executable_status.format("Residual", 1.0e-4), "1.0e-04"
+        )
+
+    def test_xcts_status(self):
+        executable_status = match_executable_status("SolveXcts")
+        status = executable_status.status(self.input_file, self.work_dir)
+        self.assertEqual(
+            status,
+            {
+                "Nonlinear iteration": 1,
+                "Nonlinear residual": 1.0e-4,
+                "Linear iteration": 2,
+                "Linear residual": 1.0e-5,
+            },
+        )
+        self.assertEqual(
+            executable_status.format("Nonlinear iteration", 1.0), "1"
+        )
+        self.assertEqual(executable_status.format("Linear iteration", 1.0), "1")
+        self.assertEqual(
+            executable_status.format("Nonlinear residual", 1.0e-4), "1.0e-04"
+        )
+        self.assertEqual(
+            executable_status.format("Linear residual", 1.0e-4), "1.0e-04"
+        )
 
 
 class TestStatus(unittest.TestCase):

@@ -9,4 +9,5 @@ spectre_python_add_module(
   EvolveGhBinaryBlackHole.py
   EvolveGhSingleBlackHole.py
   ExecutableStatus.py
+  SolveXcts.py
 )
