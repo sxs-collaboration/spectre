@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Tensor")
 
 set(LIBRARY_SOURCES
+  Test_CombineSpacetimeView.cpp
   Test_ContractFirstNIndices.cpp
   Test_Identity.cpp
   Test_Metafunctions.cpp
