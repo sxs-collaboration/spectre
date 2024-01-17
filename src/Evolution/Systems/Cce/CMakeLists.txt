@@ -47,6 +47,7 @@ spectre_target_headers(
   SpecBoundaryData.hpp
   SwshDerivatives.hpp
   System.hpp
+  KleinGordonSystem.hpp
   Tags.hpp
   WorldtubeBufferUpdater.hpp
   WorldtubeDataManager.hpp
