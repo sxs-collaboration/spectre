@@ -244,6 +244,10 @@ Each %Parallel Component struct must have the following type aliases:
    that correspond to mutable items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
    core).  The alias can be omitted if the list is empty.
+7. `array_allocation_tags` is set to a `tmpl::list` of tags that will be
+   constructed from options and will only be used in the `allocate_array`
+   function of an array component. This type alias is only required for array
+   components.
 
 \parblock
 \note Array parallel components must also specify the type alias `using
@@ -272,13 +276,19 @@ static void allocate_array(
     Parallel::CProxy_GlobalCache<metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
     initialization_items,
+    const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
+    array_allocation_items,
     const std::unordered_set<size_t>& procs_to_ignore);
 \endcode
 The `allocate_array` function is called by the Main parallel component
 when the execution starts and will typically insert elements into
 array parallel components. If the `allocate_array` function depends
-upon input options that are not in the GlobalCache, the array component must
-include the appropriate tag in the `simple_tags_from_options` type alias.
+upon input options that are not in the GlobalCache, those tags should be
+added to the `array_allocation_tags` type alias. A TaggedTuple is constructed
+from this type alias and its input options and is only available in the
+`allocate_array` function. All other tags that will be constructed from options
+and used during the %Initialization phase should be placed in the
+`simple_tags_from_options` type alias.
 This type alias is a `tmpl::list` of tags which
 are db::SimpleTag%s that have have a `using option_tags` type alias
 and a static function `create_from_options`. They only need to be explicitly

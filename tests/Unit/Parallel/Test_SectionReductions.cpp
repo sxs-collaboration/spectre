@@ -149,6 +149,9 @@ struct ArrayComponent {
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       tuples::tagged_tuple_from_typelist<simple_tags_from_options>
           initialization_items,
+      const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
+      /*array_allocation_items*/
+      = {},
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =

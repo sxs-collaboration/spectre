@@ -673,11 +673,15 @@ struct ReceiveComponent {
                      Parallel::Actions::TerminatePhase>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+  using array_allocation_tags = tmpl::list<>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
+      const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
+      /*array_allocation_items*/
+      = {},
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     TestHelpers::Parallel::assign_array_elements_round_robin_style(
         Parallel::get_parallel_component<ReceiveComponent>(
