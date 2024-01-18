@@ -38,6 +38,8 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/TMPL.hpp"
@@ -342,6 +344,35 @@ void test_particle_position_velocity_compute() {
   }
 }
 
+void test_geodesic_acceleration_compute() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(1., 100.);
+  const auto random_position = make_with_random_values<tnsr::I<double, Dim>>(
+      make_not_null(&gen), dist, 1);
+  const auto random_velocity = make_with_random_values<tnsr::I<double, Dim>>(
+      make_not_null(&gen), dist, 1);
+  const gr::Solutions::KerrSchild kerr_schild(0.1, make_array(0.5, 0.1, 0.2),
+                                              make_array(0.3, 0.1, 0.2));
+  auto box =
+      db::create<db::AddSimpleTags<Tags::ParticlePositionVelocity<Dim>,
+                                   CurvedScalarWave::Tags::BackgroundSpacetime<
+                                       gr::Solutions::KerrSchild>>,
+                 db::AddComputeTags<Tags::GeodesicAccelerationCompute<Dim>>>(
+          std::array<tnsr::I<double, Dim>, 2>{
+              {random_position, random_velocity}},
+          kerr_schild);
+  const auto christoffel = get<
+      gr::Tags::SpacetimeChristoffelSecondKind<double, Dim, Frame::Inertial>>(
+      kerr_schild.variables(random_position, 0.,
+                            tmpl::list<gr::Tags::SpacetimeChristoffelSecondKind<
+                                double, Dim, Frame::Inertial>>{}));
+  const auto expected_acceleration =
+      gr::geodesic_acceleration(random_velocity, christoffel);
+  CHECK_ITERABLE_APPROX(db::get<Tags::GeodesicAcceleration<Dim>>(box),
+                        expected_acceleration);
+}
+
 void test_puncture_field() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
@@ -481,10 +512,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
       "ObserveCoefficientsTrigger");
+  TestHelpers::db::test_simple_tag<Tags::GeodesicAcceleration<3>>(
+      "GeodesicAcceleration");
   test_excision_sphere_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
   test_particle_position_velocity_compute();
+  test_geodesic_acceleration_compute();
   test_puncture_field();
   test_check_input_file();
 }

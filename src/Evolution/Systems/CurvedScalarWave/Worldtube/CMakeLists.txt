@@ -30,6 +30,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Domain
+  GeneralRelativity
+  GeneralRelativitySolutions
   Options
   Parallel
   Utilities

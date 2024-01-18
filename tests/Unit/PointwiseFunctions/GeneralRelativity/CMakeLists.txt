@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Christoffel.cpp
   Test_ComputeGhQuantities.cpp
   Test_ComputeSpacetimeQuantities.cpp
+  Test_GeodesicAcceleration.cpp
   Test_InterfaceNullNormal.cpp
   Test_KerrSchildCoords.cpp
   Test_ProjectionOperators.cpp

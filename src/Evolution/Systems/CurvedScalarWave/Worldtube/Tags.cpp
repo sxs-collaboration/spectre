@@ -18,6 +18,9 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
@@ -139,7 +142,23 @@ void ParticlePositionVelocityCompute<Dim>::function(
   (*position_and_velocity)[1] = std::move(std::get<3>(mapped_tuple));
 }
 
+template <size_t Dim>
+void GeodesicAccelerationCompute<Dim>::function(
+    gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> acceleration,
+    const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>&
+        position_velocity,
+    const gr::Solutions::KerrSchild& background_spacetime) {
+  const auto christoffel = get<
+      gr::Tags::SpacetimeChristoffelSecondKind<double, Dim, Frame::Inertial>>(
+      background_spacetime.variables(
+          position_velocity.at(0), 0.,
+          tmpl::list<gr::Tags::SpacetimeChristoffelSecondKind<
+              double, Dim, Frame::Inertial>>{}));
+  gr::geodesic_acceleration(acceleration, position_velocity.at(1), christoffel);
+}
+
 template struct ParticlePositionVelocityCompute<3>;
+template struct GeodesicAccelerationCompute<3>;
 template struct PunctureFieldCompute<3>;
 
 template struct FaceCoordinatesCompute<3, Frame::Grid, true>;
