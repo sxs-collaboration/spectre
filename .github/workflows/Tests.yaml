@@ -1184,7 +1184,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Install Intel SDE
         working-directory: /work
         run: |
-          wget -O sde-external.tar.xz https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz
+          wget -O sde-external.tar.xz https://downloadmirror.intel.com/813591/sde-external-9.33.0-2024-01-07-lin.tar.xz
           tar -xJf sde-external.tar.xz
           mv sde-external-* sde
           rm sde-*
