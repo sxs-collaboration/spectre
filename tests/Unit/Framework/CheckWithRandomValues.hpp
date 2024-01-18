@@ -155,24 +155,24 @@ void check_with_random_values_impl(
       make_not_null(&(distributions[ArgumentIs]))));
 
   size_t count = 0;
-  tmpl::for_each<TagsList>([&f, &klass, &args, &used_for_size, &member_args,
-                            &epsilon, &module_name, &function_names,
-                            &count](auto tag) {
+  const auto result = (klass.*f)(std::get<ArgumentIs>(args)...);
+  tmpl::for_each<TagsList>([&args, &used_for_size, &member_args, &epsilon,
+                            &module_name, &function_names, &count,
+                            &result](auto tag) {
     (void)member_args;    // Avoid compiler warning
     (void)used_for_size;  // Avoid compiler warning
     using Tag = tmpl::type_from<decltype(tag)>;
-    const auto result =
-        tuples::get<Tag>((klass.*f)(std::get<ArgumentIs>(args)...));
     const auto& function_name = function_names[count];
     CAPTURE(module_name);
     CAPTURE(function_name);
     CAPTURE(args);
     CAPTURE(member_args);
-    const auto python_result = pypp::call<std::decay_t<decltype(result)>>(
-        module_name, function_name, std::get<ArgumentIs>(args)...,
-        forward_to_pypp<std::decay_t<decltype(result)>>(
-            std::get<MemberArgsIs>(member_args), used_for_size)...);
-    CHECK_ITERABLE_CUSTOM_APPROX(result, python_result,
+    const auto python_result =
+        pypp::call<std::decay_t<decltype(tuples::get<Tag>(result))>>(
+            module_name, function_name, std::get<ArgumentIs>(args)...,
+            forward_to_pypp<std::decay_t<decltype(tuples::get<Tag>(result))>>(
+                std::get<MemberArgsIs>(member_args), used_for_size)...);
+    CHECK_ITERABLE_CUSTOM_APPROX(tuples::get<Tag>(result), python_result,
                                  Approx::custom().epsilon(epsilon).scale(1.0));
     ++count;
   });
