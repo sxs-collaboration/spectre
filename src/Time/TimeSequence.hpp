@@ -50,7 +50,15 @@ class TimeSequence : public PUP::able {
 ///
 /// Holds all the TimeSequences
 namespace TimeSequences {
-/// A sequence of evenly spaced times.
+/*!
+ * \brief A sequence of evenly spaced times.
+ *
+ * The sequence of times
+ * \f{equation}{
+ *   n \times \mathrm{Interval} + \mathrm{Offset}
+ * \f}
+ * for all integers $n$.
+ */
 template <typename T>
 class EvenlySpaced : public TimeSequence<T> {
  public:
@@ -72,7 +80,8 @@ class EvenlySpaced : public TimeSequence<T> {
     using type = T;
   };
 
-  static constexpr Options::String help = "A sequence of evenly spaced times.";
+  static constexpr Options::String help =
+      "The sequence of times  n * Interval + Offset  for all integers n.";
   using options = tmpl::list<Interval, Offset>;
 
   explicit EvenlySpaced(T interval, T offset = 0,
