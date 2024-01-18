@@ -49,6 +49,10 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
   CHECK_OP(Rational(3, 4), /, Rational(2, 5), Rational(15, 8));
   CHECK_OP(Rational(3, 4), /, Rational(3, 2), Rational(1, 2));
 
+  CHECK(abs(Rational(3, 4)) == Rational(3, 4));
+  CHECK(abs(Rational(-3, 4)) == Rational(3, 4));
+  CHECK(abs(Rational(0)) == Rational(0));
+
   const auto hash = std::hash<Rational>{};
   CHECK(hash(Rational(1, 2)) != hash(Rational(1, 3)));
   CHECK(hash(Rational(1, 2)) != hash(Rational(3, 2)));

@@ -121,6 +121,8 @@ bool operator>(const Rational& a, const Rational& b) { return b < a; }
 bool operator<=(const Rational& a, const Rational& b) { return not(b < a); }
 bool operator>=(const Rational& a, const Rational& b) { return not(a < b); }
 
+Rational abs(const Rational& r) { return r.numerator() >= 0 ? r : -r; }
+
 std::ostream& operator<<(std::ostream& os, const Rational& r) {
   return os << r.numerator() << '/' << r.denominator();
 }
