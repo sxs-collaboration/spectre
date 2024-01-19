@@ -96,14 +96,41 @@ void dot_product(
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) {
-  get(*dot_product) = get<0>(vector_a) * get<0>(vector_b) * get<0, 0>(metric);
-  for (size_t b = 1; b < Index::dim; ++b) {
-    get(*dot_product) += get<0>(vector_a) * vector_b.get(b) * metric.get(0, b);
-  }
+  if constexpr (Index::dim == 1) {
+    get(*dot_product) = get<0>(vector_a) * get<0>(vector_b) * get<0, 0>(metric);
+  } else {
+    if (&vector_a == &vector_b) {
+      get(*dot_product) =
+          get<0>(vector_a) * get<1>(vector_a) * get<0, 1>(metric);
+      for (size_t j = 2; j < Index::dim; ++j) {
+        get(*dot_product) +=
+            vector_a.get(0) * vector_a.get(j) * metric.get(0, j);
+      }
+      for (size_t i = 1; i < Index::dim; ++i) {
+        for (size_t j = i + 1; j < Index::dim; ++j) {
+          get(*dot_product) +=
+              vector_a.get(i) * vector_a.get(j) * metric.get(i, j);
+        }
+      }
+      get(*dot_product) *= 2.0;
 
-  for (size_t a = 1; a < Index::dim; ++a) {
-    for (size_t b = 0; b < Index::dim; ++b) {
-      get(*dot_product) += vector_a.get(a) * vector_b.get(b) * metric.get(a, b);
+      for (size_t i = 0; i < Index::dim; ++i) {
+        get(*dot_product) += square(vector_a.get(i)) * metric.get(i, i);
+      }
+    } else {
+      get(*dot_product) =
+          get<0>(vector_a) * get<0>(vector_b) * get<0, 0>(metric);
+      for (size_t b = 1; b < Index::dim; ++b) {
+        get(*dot_product) +=
+            get<0>(vector_a) * vector_b.get(b) * metric.get(0, b);
+      }
+
+      for (size_t a = 1; a < Index::dim; ++a) {
+        for (size_t b = 0; b < Index::dim; ++b) {
+          get(*dot_product) +=
+              vector_a.get(a) * vector_b.get(b) * metric.get(a, b);
+        }
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ComovingMagneticField.cpp
   Test_InversePlasmaBeta.cpp
   Test_LorentzFactor.cpp
+  Test_MagneticFieldTreatment.cpp
   Test_MassFlux.cpp
   Test_MassWeightedFluidItems.cpp
   Test_QuadrupoleFormula.cpp

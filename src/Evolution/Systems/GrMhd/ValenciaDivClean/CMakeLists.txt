@@ -78,6 +78,7 @@ target_link_libraries(
   VariableFixing
   PRIVATE
   RootFinding
+  Simd
   )
 
 add_subdirectory(Actions)
