@@ -37,10 +37,11 @@ class not_null;
 /// requires adding member functions to Block.
 ///
 /// \note strahlkorper_in_different_frame is currently instantiated
-/// only for SrcFrame=Grid and DestFrame=Inertial.  In particular, we
-/// intentionally do not instantiate strahlkorper_in_different_frame
-/// for SrcFrame=Grid and DestFrame=Distorted, because our
-/// Grid->Distorted maps preserve centers and angles, so for
+/// only for i) SrcFrame=Grid and DestFrame=Inertial and ii) SrcFrame=Inertial
+/// and DestFrame=Distorted (necessary for initializing a binary-black-hole
+/// ringdown).  In particular, we intentionally do not instantiate
+/// strahlkorper_in_different_frame for SrcFrame=Grid and DestFrame=Distorted,
+/// because our Grid->Distorted maps preserve centers and angles, so for
 /// Grid->Distorted one should use
 /// strahlkorper_in_different_frame_aligned because it is more
 /// efficient.
