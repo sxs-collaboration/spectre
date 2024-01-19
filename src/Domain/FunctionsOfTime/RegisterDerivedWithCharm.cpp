@@ -12,6 +12,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
+#include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,6 +28,7 @@ void register_derived_with_charm() {
                               FunctionsOfTime::QuaternionFunctionOfTime<2>,
                               FunctionsOfTime::QuaternionFunctionOfTime<3>,
                               FunctionsOfTime::QuaternionFunctionOfTime<4>,
-                              FunctionsOfTime::SettleToConstant>();
+                              FunctionsOfTime::SettleToConstant,
+                              FunctionsOfTime::SettleToConstantQuaternion>();
 }
 }  // namespace domain::FunctionsOfTime
