@@ -5,10 +5,12 @@ set(LIBRARY "Test_Imex")
 
 set(LIBRARY_SOURCES
   Test_GuessResult.cpp
+  Test_Initialize.cpp
   Test_Mode.cpp
   Test_SolveImplicitSector.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Tags)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

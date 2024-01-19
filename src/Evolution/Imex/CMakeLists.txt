@@ -17,6 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   GuessResult.hpp
+  Initialize.hpp
   Mode.hpp
   NamespaceDocs.hpp
   SolveImplicitSector.hpp
@@ -36,5 +37,6 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Protocols)
 add_subdirectory(Tags)
