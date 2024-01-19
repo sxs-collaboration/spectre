@@ -72,6 +72,8 @@ bool operator>(const Rational& a, const Rational& b);
 bool operator<=(const Rational& a, const Rational& b);
 bool operator>=(const Rational& a, const Rational& b);
 
+Rational abs(const Rational& r);
+
 std::ostream& operator<<(std::ostream& os, const Rational& r);
 
 size_t hash_value(const Rational& r);
