@@ -143,6 +143,7 @@ include(SetupStl)
 include(SetupLibsharp)
 include(SetupXsimd)
 include(SetupYamlCpp)
+include(SetupOpenMP)
 
 include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
