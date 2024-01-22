@@ -40,3 +40,5 @@ target_link_libraries(
 if(TARGET OpenMP::OpenMP_CXX)
   target_link_libraries(${LIBRARY} PRIVATE OpenMP::OpenMP_CXX)
 endif()
+
+add_subdirectory(Python)

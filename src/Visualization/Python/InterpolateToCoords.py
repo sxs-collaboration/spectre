@@ -2,128 +2,15 @@
 # See LICENSE.txt for details.
 
 import logging
-import multiprocessing
-from typing import Iterable, Sequence, Union
 
 import click
 import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
-from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr
-from spectre.Domain import (
-    ElementId,
-    block_logical_coordinates,
-    deserialize_domain,
-    deserialize_functions_of_time,
-    element_logical_coordinates,
-)
-from spectre.Interpolation import Irregular
-from spectre.Spectral import Mesh
+from spectre.IO.Exporter import interpolate_to_points
 
 logger = logging.getLogger(__name__)
-
-
-def interpolate_to_coords(
-    volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
-    obs_id: int,
-    tensor_components: Sequence[str],
-    target_coords: Union[np.ndarray, tnsr.I[DataVector, 3]],
-) -> np.ndarray:
-    """Interpolate volume data to target coordinates.
-
-    Arguments:
-      volfiles: Open volume data files.
-      obs_id: Observation ID present in all volume data files.
-      tensor_components: List of tensor components to interpolate. Each string
-        specified here must be a dataset name in the volume files.
-      target_coords: Coordinates to interpolate to. Must be an array of shape
-        (num_target_points, dim) or a 'tnsr.I[DataVector, 3]'.
-
-    Returns:
-      Array of shape (len(tensor_components), num_target_points) with the
-      interpolated data at all 'target_coords'.
-    """
-    if isinstance(target_coords, np.ndarray):
-        num_target_points, dim = target_coords.shape
-        target_coords = tnsr.I[DataVector, 3](target_coords.T)
-    else:
-        dim = target_coords.size
-        num_target_points = len(target_coords[0])
-    # We'll fill this array and return it
-    interpolated_data = np.empty((len(tensor_components), num_target_points))
-    interpolated_data.fill(np.nan)
-    # This is to keep track of completed target points to terminate early
-    filled_data = np.zeros(num_target_points, dtype=bool)
-    # We'll read these from the first volfile
-    domain = None
-    time = None
-    functions_of_time = None
-    block_logical_coords = None
-    if isinstance(volfiles, spectre_h5.H5Vol):
-        volfiles = [volfiles]
-    for volfile in volfiles:
-        assert dim == volfile.get_dimension(), (
-            f"'target_coords' has dimension {dim} but volume data has "
-            f"dimension {volfile.get_dimension()}."
-        )
-        if domain is None:
-            domain = deserialize_domain[dim](volfile.get_domain(obs_id))
-            if domain.is_time_dependent():
-                time = volfile.get_observation_value(obs_id)
-                functions_of_time = deserialize_functions_of_time(
-                    volfile.get_functions_of_time(obs_id)
-                )
-            block_logical_coords = block_logical_coordinates(
-                domain=domain,
-                inertial_coords=target_coords,
-                time=time,
-                functions_of_time=functions_of_time,
-            )
-        all_grid_names = volfile.get_grid_names(obs_id)
-        all_element_ids = list(map(ElementId[dim], all_grid_names))
-        all_extents = volfile.get_extents(obs_id)
-        all_bases = volfile.get_bases(obs_id)
-        all_quadratures = volfile.get_quadratures(obs_id)
-        meshes = {
-            mesh_args[0]: Mesh[dim](*mesh_args[1:])
-            for mesh_args in zip(
-                all_element_ids, all_extents, all_bases, all_quadratures
-            )
-        }
-        # Pre-load the tensor data because it's stored contiguously for all
-        # grids in the file
-        tensor_data = np.asarray(
-            [
-                volfile.get_tensor_component(obs_id, component).data
-                for component in tensor_components
-            ]
-        )
-        # Map the target points to element-logical coordinates
-        element_logical_coords = element_logical_coordinates(
-            all_element_ids, block_logical_coords
-        )
-        for element_id, point in element_logical_coords.items():
-            offset, length = spectre_h5.offset_and_length_for_grid(
-                str(element_id), all_grid_names, all_extents
-            )
-            element_data = tensor_data[:, offset : offset + length]
-            interpolant = Irregular[dim](
-                source_mesh=meshes[element_id],
-                target_logical_coords=point.element_logical_coords,
-            )
-            interpolated_data[:, point.offsets] = np.asarray(
-                [
-                    interpolant.interpolate(DataVector(component))
-                    for component in element_data
-                ]
-            )
-            filled_data[point.offsets] = True
-        # Terminate early if all data has been filled
-        if filled_data.all():
-            break
-    return interpolated_data
 
 
 def parse_points(ctx, param, values):
@@ -189,23 +76,17 @@ def parse_points(ctx, param, values):
         "to a couple of target points."
     ),
 )
+# Note: support for files with different observations can be added if needed by
+# porting `Visualization.ReadH5:select_observation` to C++. That function would
+# also support a `time` option, as an alternative to `step`.
 @click.option(
     "--step",
     type=int,
     help=(
-        "Observation step number. "
-        "Specify '-1' for the last step in the file. "
-        "Mutually exclusive with '--time'."
-    ),
-)
-@click.option(
-    "--time",
-    type=float,
-    help=(
-        "Observation time. "
-        "The observation step closest to the specified "
-        "time is selected. "
-        "Mutually exclusive with '--step'."
+        "Observation step number. Specify '-1' for the last step in the file. "
+        "All files must contain the same set of observations. Support for "
+        "files with different observations (e.g. from multiple segments of a "
+        "simulation) can be added if needed."
     ),
 )
 @click.option(
@@ -220,6 +101,17 @@ def parse_points(ctx, param, values):
         "'--target-coords-file' and the '--output' file."
     ),
 )
+@click.option(
+    "--num-threads",
+    "-j",
+    type=int,
+    show_default="all available cores",
+    help=(
+        "Number of threads to use for interpolation. Only available if compiled"
+        " with OpenMP. Parallelization is over volume data files, so this only"
+        " has an effect if multiple files are specified."
+    ),
+)
 def interpolate_to_coords_command(
     h5_files,
     subfile_name,
@@ -229,52 +121,47 @@ def interpolate_to_coords_command(
     target_coords_file,
     output,
     step,
-    time,
     delimiter,
+    num_threads,
 ):
     """Interpolate volume data to target coordinates."""
     # Script should be a noop if input files are empty
     if not h5_files:
         return
 
-    open_h5_files = [spectre_h5.H5File(filename, "r") for filename in h5_files]
+    # Open first H5 file to get some info
+    open_h5_file = spectre_h5.H5File(h5_files[0], "r")
 
     # Print available subfile names and exit
     if not subfile_name:
         import rich.columns
 
-        rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
-        return
+        available_subfiles = open_h5_file.all_vol_files()
+        if len(available_subfiles) == 1:
+            subfile_name = available_subfiles[0]
+        else:
+            rich.print(rich.columns.Columns(available_subfiles))
+            return
 
     if subfile_name.endswith(".vol"):
         subfile_name = subfile_name[:-4]
     if not subfile_name.startswith("/"):
         subfile_name = "/" + subfile_name
 
-    volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
-    obs_ids = volfiles[0].list_observation_ids()
-    obs_values = list(map(volfiles[0].get_observation_value, obs_ids))
-    dim = volfiles[0].get_dimension()
+    volfile = open_h5_file.get_vol(subfile_name)
+    obs_ids = volfile.list_observation_ids()
+    obs_values = list(map(volfile.get_observation_value, obs_ids))
+    dim = volfile.get_dimension()
 
     # Select observation
-    if (step is None) == (time is None):
-        raise click.UsageError(
-            f"Specify either '--step' (in [0, {len(obs_ids) - 1}], or -1) or "
-            f"'--time' (in [{obs_values[0]:g}, {obs_values[-1]:g}])."
-        )
     if step is None:
-        # Find closest observation to specified time
-        step = np.argmin(np.abs(time - np.array(obs_values)))
-        obs_value = obs_values[step]
-        if obs_value != time:
-            logger.info(
-                f"Selected closest observation to t = {time}: "
-                f"step {step} at t = {obs_value:g}"
-            )
+        raise click.UsageError(
+            f"Must specify '--step' (in [0, {len(obs_ids) - 1}], or -1)."
+        )
     obs_id = obs_ids[step]
 
     # Print available variables and exit
-    all_vars = volfiles[0].list_tensor_components(obs_id)
+    all_vars = volfile.list_tensor_components(obs_id)
     if list_vars or not vars:
         import rich.columns
 
@@ -286,6 +173,9 @@ def interpolate_to_coords_command(
                 f"Unknown variable '{var}'. Available variables are: {all_vars}"
             )
 
+    # Close the H5 file because we're done with preprocessing
+    open_h5_file.close()
+
     # Load target coords from file
     if (target_coords is None) == (target_coords_file is None):
         raise click.UsageError(
@@ -296,27 +186,23 @@ def interpolate_to_coords_command(
         target_coords = np.loadtxt(
             target_coords_file, ndmin=2, delimiter=delimiter
         )
+    if target_coords.shape[1] != dim:
+        raise click.UsageError(
+            f"Target coordinates must have dimension {dim} consistent with"
+            f" volume data files, but have dimension {target_coords.shape[1]}."
+        )
 
     # Interpolate!
-    import rich.progress
-
-    progress = rich.progress.Progress(
-        rich.progress.TextColumn("[progress.description]{task.description}"),
-        rich.progress.BarColumn(),
-        rich.progress.MofNCompleteColumn(),
-        rich.progress.TimeRemainingColumn(),
-        disable=(len(volfiles) == 1),
-    )
-    task_id = progress.add_task("Interpolating files")
-    volfiles_progress = progress.track(volfiles, task_id=task_id)
-    with progress:
-        interpolated_data = interpolate_to_coords(
-            volfiles_progress,
-            target_coords=target_coords,
-            obs_id=obs_id,
+    interpolated_data = np.array(
+        interpolate_to_points(
+            h5_files,
+            subfile_name=subfile_name,
+            observation_step=step,
             tensor_components=vars,
+            target_points=target_coords.T,
+            num_threads=num_threads,
         )
-        progress.update(task_id, completed=len(volfiles))
+    )
 
     # Output result
     column_names = ["X", "Y", "Z"][:dim] + list(vars)

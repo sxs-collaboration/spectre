@@ -9,10 +9,8 @@ import numpy as np
 import numpy.testing as npt
 from click.testing import CliRunner
 
-import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.Visualization.InterpolateToCoords import (
-    interpolate_to_coords,
     interpolate_to_coords_command,
 )
 
@@ -29,20 +27,6 @@ class TestInterpolateToCoords(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
-
-    def test_interpolate_to_coords(self):
-        open_h5_file = spectre_h5.H5File(self.h5_filename, "r")
-        volfile = open_h5_file.get_vol("/element_data")
-        obs_id = volfile.list_observation_ids()[0]
-        # Domain is [0, 2 pi]^3, so we check the endpoints
-        coords = np.array([3 * [0.0], 3 * [2 * np.pi]])
-        (psi,) = interpolate_to_coords(
-            volfile,
-            obs_id=obs_id,
-            tensor_components=["Psi"],
-            target_coords=coords,
-        )
-        npt.assert_allclose(psi, [-0.07059807, -0.06781784])
 
     def test_cli(self):
         runner = CliRunner()
