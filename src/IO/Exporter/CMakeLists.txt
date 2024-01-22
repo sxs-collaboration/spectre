@@ -42,3 +42,40 @@ if(TARGET OpenMP::OpenMP_CXX)
 endif()
 
 add_subdirectory(Python)
+
+# Create a library that can be linked into an external program. Notes:
+# - This is still experimental. The bundled library works (see
+#   Test_BundledExporter.cpp), but building the library on one system and then
+#   distributing it to another (i.e. making the library relocatable) will likely
+#   require some more work. Linking in external dependencies statically would
+#   probably help, so they don't have to be installed on the target system (e.g.
+#   HDF5, yaml-cpp, etc).
+# - A shared library seems to work better than a static library, since it
+#   includes symbols from linked static libs.
+# - The `TARGET_OBJECTS` generator expression links in the objects from the
+#   Exporter library, because otherwise they wouldn't be used and therefore
+#   wouldn't be linked in.
+# - The `EXPORTER_LINKED_LIBS` are needed to resolve the symbols for the
+#   `TARGET_OBJECTS`, just like in the Exporter library (of which this library
+#   is basically an extended copy).
+# - The `BundledExporter.cpp` file and the `CharmModuleInit` object library
+#   define some symbols for compatility with Charm++ and InfoAtLink.
+set(BUNDLED_EXPORTER_LIB BundledExporter)
+add_library(${BUNDLED_EXPORTER_LIB} SHARED
+  BundledExporter.cpp)
+get_target_property(EXPORTER_LINKED_LIBS ${LIBRARY} LINK_LIBRARIES)
+target_link_libraries(
+  ${BUNDLED_EXPORTER_LIB}
+  PRIVATE
+  $<TARGET_OBJECTS:${LIBRARY}>
+  ${EXPORTER_LINKED_LIBS}
+  Informer
+  CharmModuleInit
+  Charmxx::charmxx
+  )
+add_dependencies(${BUNDLED_EXPORTER_LIB} ${LIBRARY})
+# Also export the public header so that external programs can include it
+configure_file(
+  Exporter.hpp
+  ${CMAKE_BINARY_DIR}/include/spectre/Exporter.hpp
+  COPYONLY)
