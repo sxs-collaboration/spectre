@@ -31,6 +31,7 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Exporter)
 add_subdirectory(External)
 add_subdirectory(H5)
 add_subdirectory(Logging)
