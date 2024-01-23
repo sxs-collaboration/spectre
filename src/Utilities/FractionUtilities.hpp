@@ -121,11 +121,28 @@ class ContinuedFractionSummer {
   /// Insert a new term.  Terms should be supplied from most to least
   /// significant.
   void insert(Term_t term) {
-    const auto new_numerator = term * numerator_ + prev_numerator_;
+    if (overflowed_) {
+      return;
+    }
+
+    Term_t new_numerator{};
+    if (__builtin_mul_overflow(term, numerator_, &new_numerator) or
+        __builtin_add_overflow(new_numerator, prev_numerator_,
+                               &new_numerator)) {
+      overflowed_ = true;
+      return;
+    }
+
+    Term_t new_denominator{};
+    if (__builtin_mul_overflow(term, denominator_, &new_denominator) or
+        __builtin_add_overflow(new_denominator, prev_denominator_,
+                               &new_denominator)) {
+      overflowed_ = true;
+      return;
+    }
+
     prev_numerator_ = numerator_;
     numerator_ = new_numerator;
-
-    const auto new_denominator = term * denominator_ + prev_denominator_;
     prev_denominator_ = denominator_;
     denominator_ = new_denominator;
   }
@@ -135,6 +152,7 @@ class ContinuedFractionSummer {
   Term_t denominator_{0};
   Term_t prev_numerator_{0};
   Term_t prev_denominator_{1};
+  bool overflowed_{false};
 };
 
 /// \ingroup UtilitiesGroup
