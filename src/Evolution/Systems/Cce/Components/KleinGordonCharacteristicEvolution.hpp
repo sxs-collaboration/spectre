@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include "Evolution/Systems/Cce/Actions/InitializeKleinGordonVariables.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -49,7 +50,9 @@ struct KleinGordonCharacteristicEvolution
   using cce_system = Cce::KleinGordonSystem<evolve_ccm>;
 
   using cce_base = CharacteristicEvolution<Metavariables>;
-  using typename cce_base::initialize_action_list;
+  using initialize_action_list = tmpl::append<
+      tmpl::list<Actions::InitializeKleinGordonVariables<Metavariables>>,
+      typename cce_base::initialize_action_list>;
 
   template <typename BondiTag>
   using hypersurface_computation =
