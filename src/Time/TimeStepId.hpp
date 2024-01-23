@@ -69,12 +69,19 @@ class TimeStepId {
   double substep_time_{};
 };
 
+/// These comparisons define a total order on all TimeStepIds with the
+/// same direction of time flow.  For any two objects representing
+/// states of the same element, the ordering will match the
+/// computational ordering of those states.  For others, (e.g.,
+/// overlapping steps) it is arbitrary.
+/// @{
 bool operator==(const TimeStepId& a, const TimeStepId& b);
 bool operator!=(const TimeStepId& a, const TimeStepId& b);
 bool operator<(const TimeStepId& a, const TimeStepId& b);
 bool operator<=(const TimeStepId& a, const TimeStepId& b);
 bool operator>(const TimeStepId& a, const TimeStepId& b);
 bool operator>=(const TimeStepId& a, const TimeStepId& b);
+/// @}
 
 std::ostream& operator<<(std::ostream& s, const TimeStepId& id);
 
