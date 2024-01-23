@@ -15,3 +15,5 @@ target_link_libraries(
   Exporter
   Informer
   )
+
+add_subdirectory(Python)

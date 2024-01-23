@@ -25,7 +25,7 @@ def parse_points(ctx, param, values):
     return np.array(points)
 
 
-@click.command(name="interpolate-to-coords")
+@click.command(name="interpolate-to-points")
 @click.argument(
     "h5_files",
     nargs=-1,
@@ -112,7 +112,7 @@ def parse_points(ctx, param, values):
         " has an effect if multiple files are specified."
     ),
 )
-def interpolate_to_coords_command(
+def interpolate_to_points_command(
     h5_files,
     subfile_name,
     list_vars,
@@ -228,4 +228,4 @@ def interpolate_to_coords_command(
 
 
 if __name__ == "__main__":
-    interpolate_to_coords_command(help_option_names=["-h", "--help"])
+    interpolate_to_points_command(help_option_names=["-h", "--help"])

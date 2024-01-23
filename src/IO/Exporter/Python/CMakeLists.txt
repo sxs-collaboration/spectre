@@ -11,6 +11,7 @@ spectre_python_add_module(
   Bindings.cpp
   PYTHON_FILES
   __init__.py
+  InterpolateToPoints.py
 )
 
 spectre_python_link_libraries(

@@ -10,15 +10,15 @@ import numpy.testing as npt
 from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path, unit_test_src_path
-from spectre.Visualization.InterpolateToCoords import (
-    interpolate_to_coords_command,
+from spectre.IO.Exporter.InterpolateToPoints import (
+    interpolate_to_points_command,
 )
 
 
-class TestInterpolateToCoords(unittest.TestCase):
+class TestInterpolateToPoints(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(
-            unit_test_build_path(), "Visualization", "InterpolateToCoords"
+            unit_test_build_path(), "Visualization", "InterpolateToPoints"
         )
         self.h5_filename = os.path.join(
             unit_test_src_path(), "Visualization/Python", "VolTestData0.h5"
@@ -31,7 +31,7 @@ class TestInterpolateToCoords(unittest.TestCase):
     def test_cli(self):
         runner = CliRunner()
         result = runner.invoke(
-            interpolate_to_coords_command,
+            interpolate_to_points_command,
             [
                 self.h5_filename,
                 "-d",
@@ -53,7 +53,7 @@ class TestInterpolateToCoords(unittest.TestCase):
         np.savetxt(coords_file, coords)
         result_file = os.path.join(self.test_dir, "result.txt")
         result = runner.invoke(
-            interpolate_to_coords_command,
+            interpolate_to_points_command,
             [
                 self.h5_filename,
                 "-d",
