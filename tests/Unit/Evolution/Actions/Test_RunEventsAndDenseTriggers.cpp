@@ -516,11 +516,11 @@ void test(const bool time_runs_forward) {
           },
           make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
     }
+    CHECK(run_if_ready(make_not_null(&runner)));
     if (data_needed) {
-      TestCase::check_dense(&runner, true, {});
+      TestEvent::check_calls({});
     } else {
       // If we don't need the data, it shouldn't matter whether it is missing.
-      CHECK(run_if_ready(make_not_null(&runner)));
       TestEvent::check_calls({{step_center, stored_vars}});
     }
   };

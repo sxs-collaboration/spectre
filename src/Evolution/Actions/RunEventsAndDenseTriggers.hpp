@@ -244,21 +244,6 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NotReady:
           return {Parallel::AlgorithmExecution::Retry, std::nullopt};
         case TriggeringState::NeedsEvolvedVariables: {
-          bool ready = true;
-          tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
-            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
-            if (ready) {
-              if (not postprocessor::is_ready(make_not_null(&box),
-                                              make_not_null(&inboxes), cache,
-                                              array_index, component)) {
-                ready = false;
-              }
-            }
-          });
-          if (not ready) {
-            return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-          }
-
           using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
           bool dense_output_succeeded = false;
           variables_restorer.save();
@@ -277,6 +262,21 @@ struct RunEventsAndDenseTriggers {
           if (not dense_output_succeeded) {
             // Need to take another time step
             return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+          }
+
+          bool ready = true;
+          tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
+            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
+            if (ready) {
+              if (not postprocessor::is_ready(make_not_null(&box),
+                                              make_not_null(&inboxes), cache,
+                                              array_index, component)) {
+                ready = false;
+              }
+            }
+          });
+          if (not ready) {
+            return {Parallel::AlgorithmExecution::Retry, std::nullopt};
           }
 
           postprocessor_restorer.save();
