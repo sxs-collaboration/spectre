@@ -19,6 +19,7 @@ spectre_target_headers(
   InitializeCharacteristicEvolutionTime.hpp
   InitializeCharacteristicEvolutionVariables.hpp
   InitializeFirstHypersurface.hpp
+  InitializeKleinGordonFirstHypersurface.hpp
   InitializeKleinGordonVariables.hpp
   InitializeWorldtubeBoundary.hpp
   InsertInterpolationScriData.hpp

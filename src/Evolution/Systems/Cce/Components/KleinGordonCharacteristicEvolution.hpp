@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonVariables.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
@@ -68,6 +69,7 @@ struct KleinGordonCharacteristicEvolution
       // iterations immediately following restarts
       Actions::InitializeFirstHypersurface<
           evolve_ccm, typename Metavariables::cce_boundary_component>,
+      Actions::InitializeKleinGordonFirstHypersurface,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
@@ -94,6 +96,7 @@ struct KleinGordonCharacteristicEvolution
                           evolution::Actions::RunEventsAndTriggers>,
       Actions::InitializeFirstHypersurface<
           evolve_ccm, typename Metavariables::cce_boundary_component>,
+      Actions::InitializeKleinGordonFirstHypersurface,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary,
                      typename Metavariables::cce_boundary_component>,
