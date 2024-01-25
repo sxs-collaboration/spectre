@@ -62,7 +62,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
     const double value = dist(gen);
     // Set the scale because the fractional part of a negative number
     // (defined as `x - floor(x)`) can be larger than the number.
-    auto approx_value = approx.scale(std::abs(std::floor(value)))(value);
+    auto approx_value =
+        approx.scale(std::max(value, std::abs(std::floor(value))))(value);
     ContinuedFractionSummer<Rational> summer;
     bool should_be_smaller = true;
     std::vector<int64_t> terms{};  // Only for output
@@ -108,6 +109,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFractionSummer",
   check(1, 2);
   check(2, 3);
   check(29, 20);
+
+  // Check overflow is handled correctly
+  {
+    ContinuedFractionSummer<Rational> summer;
+    summer.insert(1000);
+    const auto first_value = summer.value();
+    summer.insert(std::numeric_limits<std::int32_t>::max() / 10);
+    CHECK(summer.value() == first_value);
+    summer.insert(1);
+    CHECK(summer.value() == first_value);
+  }
 }
 
 SPECTRE_TEST_CASE(
