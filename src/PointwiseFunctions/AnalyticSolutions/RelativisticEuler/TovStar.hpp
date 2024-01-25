@@ -291,7 +291,7 @@ struct TovVariables {
  * \f{align*}
  * \alpha &= e^{\Phi_t} \\
  * \beta^i &= 0 \\
- * \gamma_{ij} &= \delta_{ij} e^{2 \Phi_r} + \delta_{im} \delta_{jn}
+ * \gamma_{ij} &= \delta_{ij} e^{2 \Phi_\Omega} + \delta_{im} \delta_{jn}
  * \frac{x^m x^n}{r^2} \left( e^{2 \Phi_r} - e^{2 \Phi_\Omega} \right)
  * \f}
  *
@@ -302,7 +302,7 @@ struct TovVariables {
  * potentials are
  *
  * \f{align}
- * e^{\Phi_r} &= \left(1 - \frac{2m}{r}\right)^{-1} \\
+ * e^{\Phi_r} &= \left(1 - \frac{2m}{r}\right)^{-1/2} \\
  * e^{\Phi_\Omega} &= 1
  * \f}
  *
