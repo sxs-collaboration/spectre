@@ -218,7 +218,6 @@ struct InitializeSubdomain {
                   typename InitializeFacesAndMortars::argument_tags>,
               tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
                             overlap_id,
-                            db::get<domain::Tags::InitialExtents<Dim>>(box),
                             db::get<domain::Tags::FunctionsOfTime>(box),
                             background, background_classes{});
           // Background fields
@@ -233,7 +232,6 @@ struct InitializeSubdomain {
                   typename InitializeFacesAndMortars::argument_tags>,
               tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
                             overlap_id,
-                            db::get<domain::Tags::InitialExtents<Dim>>(box),
                             db::get<domain::Tags::FunctionsOfTime>(box));
         }
         // Faces on the other side of the overlapped element's mortars

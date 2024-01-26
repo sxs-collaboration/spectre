@@ -34,6 +34,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Domain/Tags/SurfaceJacobian.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -67,7 +68,7 @@ template <size_t Dim>
 struct InitializeGeometry {
   using return_tags = tmpl::list<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      domain::Tags::ElementMap<Dim>,
+      domain::Tags::NeighborMesh<Dim>, domain::Tags::ElementMap<Dim>,
       domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
       domain::Tags::Coordinates<Dim, Frame::Inertial>,
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
@@ -83,6 +84,7 @@ struct InitializeGeometry {
                  elliptic::dg::Tags::Quadrature>;
   void operator()(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
+      gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_meshes,
       gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
           logical_coords,
@@ -164,7 +166,7 @@ struct InitializeFacesAndMortars {
                                  Dim>>>;
   using argument_tags =
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-                 domain::Tags::ElementMap<Dim>,
+                 domain::Tags::NeighborMesh<Dim>, domain::Tags::ElementMap<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>>;
   template <typename Background = std::nullptr_t, typename... BackgroundClasses>
@@ -192,10 +194,10 @@ struct InitializeFacesAndMortars {
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           mortar_jacobians,
       const Mesh<Dim>& mesh, const Element<Dim>& element,
+      const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
       const ElementMap<Dim, Frame::Inertial>& element_map,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const std::vector<std::array<size_t, Dim>>& initial_extents,
       const domain::FunctionsOfTimeMap& functions_of_time,
       const Background& background = std::nullptr_t{},
       tmpl::list<BackgroundClasses...> /*meta*/ = tmpl::list<>{}) const {
@@ -218,7 +220,6 @@ struct InitializeFacesAndMortars {
             (void)background;
           }
         };
-    const Spectral::Quadrature quadrature = mesh.quadrature(0);
     ASSERT(std::equal(mesh.quadrature().begin() + 1, mesh.quadrature().end(),
                       mesh.quadrature().begin()),
            "This function is implemented assuming the quadrature is isotropic");
@@ -282,8 +283,7 @@ struct InitializeFacesAndMortars {
             mortar_id,
             ::dg::mortar_mesh(
                 face_mesh,
-                domain::Initialization::create_initial_mesh(
-                    initial_extents, neighbor_id, quadrature, orientation)
+                orientation.inverse_map()(neighbor_meshes.at(mortar_id))
                     .slice_away(direction.dimension())));
         mortar_sizes->emplace(
             mortar_id, ::dg::mortar_size(element_id, neighbor_id,
