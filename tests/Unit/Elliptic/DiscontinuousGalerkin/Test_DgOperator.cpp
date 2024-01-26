@@ -131,7 +131,7 @@ struct ElementArray {
                                     domain::Tags::InitialExtents<Dim>>>,
                      ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      ::elliptic::Actions::InitializeOptionalAnalyticSolution<
-                         analytic_solution_tag,
+                         Dim, analytic_solution_tag,
                          tmpl::append<typename System::primal_fields,
                                       typename System::primal_fluxes>,
                          typename metavariables::analytic_solution>,

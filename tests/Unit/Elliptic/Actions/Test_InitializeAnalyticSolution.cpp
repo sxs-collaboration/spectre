@@ -19,6 +19,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
@@ -76,11 +77,13 @@ struct ElementArray {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<domain::Tags::Coordinates<1, Frame::Inertial>>>>>,
+              tmpl::list<domain::Tags::Mesh<1>,
+                         domain::Tags::Coordinates<1, Frame::Inertial>>>>>,
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<elliptic::Actions::InitializeOptionalAnalyticSolution<
+              1,
               elliptic::Tags::Background<elliptic::analytic_data::Background>,
               tmpl::list<ScalarFieldTag>,
               elliptic::analytic_data::AnalyticSolution>>>>;
@@ -115,7 +118,7 @@ void test_initialize_analytic_solution(
             {std::move(analytic_solution_or_data)}};
         const ElementId<1> element_id{0};
         ActionTesting::emplace_component_and_initialize<element_array>(
-            &runner, element_id, {inertial_coords});
+            &runner, element_id, {Mesh<1>{}, inertial_coords});
         ActionTesting::set_phase(make_not_null(&runner),
                                  Parallel::Phase::Testing);
         for (size_t i = 0; i < 2; ++i) {
@@ -148,6 +151,14 @@ void test_initialize_analytic_solution(
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeAnalyticSolution",
                   "[Unit][Elliptic][Actions]") {
+  static_assert(
+      tt::assert_conforms_to_v<
+          elliptic::Actions::InitializeOptionalAnalyticSolution<
+              1,
+              elliptic::Tags::Background<elliptic::analytic_data::Background>,
+              tmpl::list<ScalarFieldTag>,
+              elliptic::analytic_data::AnalyticSolution>,
+          amr::protocols::Projector>);
   test_initialize_analytic_solution(
       tnsr::I<DataVector, 1>{{{{1., 2., 3., 4.}}}},
       Scalar<DataVector>{{{{2., 4., 6., 8.}}}});
