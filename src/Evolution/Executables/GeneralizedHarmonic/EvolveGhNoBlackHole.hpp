@@ -29,6 +29,29 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::observed_reduction_data_tags;
   using typename gh_base::system;
+  static constexpr bool local_time_stepping = gh_base::local_time_stepping;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
+        ::amr::projectors::ProjectVariables<volume_dim,
+                                            typename system::variables_tag>,
+        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<volume_dim>,
+            ::domain::Tags::InitialRefinementLevels<volume_dim>,
+            evolution::dg::Tags::Quadrature,
+            Tags::StepperError<typename system::variables_tag>,
+            Tags::PreviousStepperError<typename system::variables_tag>,
+            Tags::StepperErrorUpdated,
+            SelfStart::Tags::InitialValue<typename system::variables_tag>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
+  };
 
   using step_actions = typename gh_base::template step_actions<tmpl::list<>>;
 
@@ -58,12 +81,16 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
           Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<Parallel::Phase::CheckDomain,
+                                 tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<evolution::Actions::RunEventsAndTriggers,
                          Actions::ChangeSlabSize, step_actions,
                          Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;
+  using dg_element_array = gh_dg_element_array;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
@@ -72,7 +99,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
   };
 
   using component_list =
-      tmpl::flatten<tmpl::list<observers::Observer<EvolutionMetavars>,
+      tmpl::flatten<tmpl::list<::amr::Component<EvolutionMetavars>,
+                               observers::Observer<EvolutionMetavars>,
                                observers::ObserverWriter<EvolutionMetavars>,
                                mem_monitor::MemoryMonitor<EvolutionMetavars>,
                                importers::ElementDataReader<EvolutionMetavars>,
