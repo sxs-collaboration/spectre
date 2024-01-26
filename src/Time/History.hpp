@@ -622,6 +622,11 @@ class History
   /// the time steppers can manage their history.
   const Vars& latest_value() const;
 
+  /// Get the record for the start of the latest complete step.  This
+  /// is the step with substeps stored if there is one, and otherwise
+  /// the most recent step.
+  const StepRecord<Vars>& complete_step_start() const;
+
   /// Check whether we are at the start of a step, i.e, the most
   /// recent entry in the history is not a substep.
   bool at_step_start() const;
@@ -783,6 +788,19 @@ const Vars& History<Vars>::latest_value() const {
     ASSERT(latest_value_if_discarded_.has_value(),
            "Latest value unavailable.  The latest insertion was undone.");
     return *latest_value_if_discarded_;
+  }
+}
+
+template <typename Vars>
+const StepRecord<Vars>& History<Vars>::complete_step_start() const {
+  ASSERT(not this->empty(), "History is empty");
+  if (substep_values_.empty()) {
+    return this->back();
+  } else {
+    const TimeStepId substep_id = substep_values_.front().time_step_id;
+    const TimeStepId step_id(substep_id.time_runs_forward(),
+                             substep_id.slab_number(), substep_id.step_time());
+    return (*this)[step_id];
   }
 }
 

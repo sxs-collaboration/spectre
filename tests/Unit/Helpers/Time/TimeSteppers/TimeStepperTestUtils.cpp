@@ -484,13 +484,15 @@ void check_dense_output(const TimeStepper& stepper,
       auto step = step_size;
       for (;;) {
         history.insert(time_id, y, y);
-        y = std::numeric_limits<double>::signaling_NaN();
         if (not before((time_id.step_time() + step).value(), time)) {
+          // Make sure the initial value is preserved.
+          y = 2.0 * *history.complete_step_start().value;
           if (stepper.dense_update_u(make_not_null(&y), history, time)) {
-            return y;
+            return y - *history.complete_step_start().value;
           }
           REQUIRE(before(time_id.step_time().value(), time));
         }
+        y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {
           double error = 0.0;
           stepper.update_u(make_not_null(&y), make_not_null(&error),

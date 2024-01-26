@@ -76,7 +76,6 @@ void update_u_common(const gsl::not_null<T*> u,
       control_times.begin(), control_times.end(),
       history.back().time_step_id.step_time(), step_end);
 
-  *u = *history.back().value;
   auto coefficient = coefficients.begin();
   for (auto history_entry = used_history_begin;
        history_entry != history.end();
@@ -155,6 +154,7 @@ void AdamsMoultonPc::update_u_impl(const gsl::not_null<T*> u,
                                    const TimeDelta& time_step) const {
   clean_history(history);
   const Time next_time = history.back().time_step_id.step_time() + time_step;
+  *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not history.at_step_start());
 }
@@ -167,11 +167,13 @@ bool AdamsMoultonPc::update_u_impl(const gsl::not_null<T*> u,
   clean_history(history);
   const bool predictor = history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
+  *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not predictor);
   if (predictor) {
     return false;
   }
+  *u_error = *history.back().value;
   update_u_common(u_error, history, next_time, history.integration_order() - 1,
                   true);
   *u_error = *u - *u_error;
@@ -184,7 +186,6 @@ bool AdamsMoultonPc::dense_update_u_impl(const gsl::not_null<T*> u,
                                          const double time) const {
   // Special case required to handle the initial time.
   if (time == history.back().time_step_id.step_time().value()) {
-    *u = *history.back().value;
     return true;
   }
   if (history.at_step_start()) {

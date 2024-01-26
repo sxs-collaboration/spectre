@@ -113,6 +113,7 @@ void AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
     const TimeDelta& time_step) const {
   clean_history(history);
+  *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
 }
 
@@ -121,9 +122,11 @@ bool AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
     const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
   clean_history(history);
+  *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
+  *u_error = *history.back().value;
   update_u_common(u_error, history, time_step, history.integration_order() - 1);
   *u_error = *u - *u_error;
   return true;
@@ -159,7 +162,6 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
       history.back().time_step_id.step_time(),
       history.back().time_step_id.step_time() + time_step);
 
-  *u = *history.back().value;
   auto coefficient = coefficients.begin();
   for (auto history_entry = history_start;
        history_entry != history.end();
