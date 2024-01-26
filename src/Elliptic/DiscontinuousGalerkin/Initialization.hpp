@@ -45,13 +45,33 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic::dg {
+
+namespace detail {
+template <size_t Dim>
+void initialize_coords_and_jacobians(
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+        logical_coords,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> inertial_coords,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_jacobian,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        det_times_inv_jacobian,
+    const Mesh<Dim>& mesh, const ElementMap<Dim, Frame::Inertial>& element_map,
+    const domain::FunctionsOfTimeMap& functions_of_time);
+}  // namespace detail
 
 /*!
  * \brief Initialize the background-independent geometry for the elliptic DG
@@ -103,6 +123,82 @@ struct InitializeGeometry {
       const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
       Spectral::Quadrature quadrature, const ElementId<Dim>& element_id);
+};
+
+template <size_t Dim>
+struct ProjectGeometry : tt::ConformsTo<::amr::protocols::Projector> {
+  using return_tags = tmpl::list<
+      domain::Tags::ElementMap<Dim>,
+      domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
+      domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
+
+  // p-refinement
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+          logical_coords,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          inertial_coords,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_jacobian,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          det_times_inv_jacobian,
+      const Mesh<Dim>& mesh, const Element<Dim>& /*element*/,
+      const Domain<Dim>& /*domain*/,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
+    if (mesh == old_mesh_and_element.first) {
+      // Neighbors may have changed, but this element hasn't. Nothing to do.
+      return;
+    }
+    // The element map doesn't change with p-refinement
+    detail::initialize_coords_and_jacobians(
+        logical_coords, inertial_coords, inv_jacobian, det_inv_jacobian,
+        det_jacobian, det_times_inv_jacobian, mesh, *element_map,
+        functions_of_time);
+  }
+
+  // h-refinement
+  template <typename... ParentOrChildrenItemsType>
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+          logical_coords,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          inertial_coords,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_jacobian,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          det_times_inv_jacobian,
+      const Mesh<Dim>& mesh, const Element<Dim>& element,
+      const Domain<Dim>& domain,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const ParentOrChildrenItemsType&... /*parent_or_children_items*/) {
+    const auto& element_id = element.id();
+    const auto& block = domain.blocks()[element_id.block_id()];
+    *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
+    detail::initialize_coords_and_jacobians(
+        logical_coords, inertial_coords, inv_jacobian, det_inv_jacobian,
+        det_jacobian, det_times_inv_jacobian, mesh, *element_map,
+        functions_of_time);
+  }
 };
 
 namespace detail {
