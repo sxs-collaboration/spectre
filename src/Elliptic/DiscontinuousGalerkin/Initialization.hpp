@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -126,17 +127,17 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
 ///
 /// To normalize face normals this function needs the inverse background metric.
 /// Pass the tag representing the inverse background metric to the
-/// `InvMetricTag` template parameter, and pass the analytic background from
-/// which it can be retrieved as additional argument to the call operator. Set
-/// `InvMetricTag` to `void` to normalize face normals with the Euclidean
-/// magnitude.
+/// `InvMetricTag` template parameter, and the tag representing the analytic
+/// background from which it can be retrieved to the `BackgroundTag` template
+/// parameter. Set `InvMetricTag` and `BackgroundTag` to `void` to normalize
+/// face normals with the Euclidean magnitude.
 ///
 /// Mortar Jacobians are added only on nonconforming internal element
 /// boundaries, i.e., when `Spectral::needs_projection()` is true.
 ///
 /// The `::Tags::deriv<domain::Tags::UnnormalizedFaceNormal<Dim>>` is only added
 /// on external boundaries, for use by boundary conditions.
-template <size_t Dim, typename InvMetricTag>
+template <size_t Dim, typename InvMetricTag, typename BackgroundTag>
 struct InitializeFacesAndMortars {
   using return_tags = tmpl::append<
       domain::make_faces_tags<
@@ -164,12 +165,22 @@ struct InitializeFacesAndMortars {
                  ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
                                      Frame::ElementLogical, Frame::Inertial>,
                                  Dim>>>;
-  using argument_tags =
+  using argument_tags = tmpl::append<
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::NeighborMesh<Dim>, domain::Tags::ElementMap<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                               Frame::Inertial>>;
-  template <typename Background = std::nullptr_t, typename... BackgroundClasses>
+                                               Frame::Inertial>,
+                 domain::Tags::FunctionsOfTime>,
+      tmpl::conditional_t<
+          std::is_same_v<BackgroundTag, void>, tmpl::list<>,
+          tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
+  using volume_tags = tmpl::append<
+      tmpl::list<domain::Tags::FunctionsOfTime>,
+      tmpl::conditional_t<
+          std::is_same_v<BackgroundTag, void>, tmpl::list<>,
+          tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
+  template <typename Background = std::nullptr_t,
+            typename Metavariables = std::nullptr_t>
   void operator()(
       const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
@@ -199,8 +210,8 @@ struct InitializeFacesAndMortars {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      const Background& background = std::nullptr_t{},
-      tmpl::list<BackgroundClasses...> /*meta*/ = tmpl::list<>{}) const {
+      const Background& background = nullptr,
+      const Metavariables& /*meta*/ = nullptr) const {
     static_assert(std::is_same_v<InvMetricTag, void> or
                       not(std::is_same_v<Background, std::nullptr_t>),
                   "Supply an analytic background from which the 'InvMetricTag' "
@@ -209,8 +220,11 @@ struct InitializeFacesAndMortars {
         [&background]([[maybe_unused]] const tnsr::I<DataVector, Dim>&
                           local_inertial_coords) {
           if constexpr (not std::is_same_v<InvMetricTag, void>) {
-            return call_with_dynamic_type<tnsr::II<DataVector, Dim>,
-                                          tmpl::list<BackgroundClasses...>>(
+            using factory_classes = typename std::decay_t<
+                Metavariables>::factory_creation::factory_classes;
+            return call_with_dynamic_type<
+                tnsr::II<DataVector, Dim>,
+                tmpl::at<factory_classes, Background>>(
                 &background,
                 [&local_inertial_coords](const auto* const derived) {
                   return get<InvMetricTag>(derived->variables(
@@ -337,7 +351,7 @@ struct InitializeFacesAndMortars {
 
 /// Initialize background quantities for the elliptic DG operator, possibly
 /// including the metric necessary for normalizing face normals
-template <size_t Dim, typename BackgroundFields>
+template <size_t Dim, typename BackgroundFields, typename BackgroundTag>
 struct InitializeBackground {
   using return_tags =
       tmpl::list<::Tags::Variables<BackgroundFields>,
@@ -346,9 +360,10 @@ struct InitializeBackground {
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  domain::Tags::Mesh<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                               Frame::Inertial>>;
+                                               Frame::Inertial>,
+                 BackgroundTag, Parallel::Tags::Metavariables>;
 
-  template <typename BackgroundBase, typename... BackgroundClasses>
+  template <typename BackgroundBase, typename Metavariables>
   void operator()(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
@@ -356,12 +371,13 @@ struct InitializeBackground {
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const BackgroundBase& background,
-      tmpl::list<BackgroundClasses...> /*meta*/) const {
+      const BackgroundBase& background, const Metavariables& /*meta*/) const {
     // Background fields in the volume
+    using factory_classes =
+        typename std::decay_t<Metavariables>::factory_creation::factory_classes;
     *background_fields =
         call_with_dynamic_type<Variables<BackgroundFields>,
-                               tmpl::list<BackgroundClasses...>>(
+                               tmpl::at<factory_classes, BackgroundBase>>(
             &background, [&inertial_coords, &mesh,
                           &inv_jacobian](const auto* const derived) {
               return variables_from_tagged_tuple(derived->variables(

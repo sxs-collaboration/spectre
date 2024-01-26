@@ -25,7 +25,6 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -132,9 +131,8 @@ struct InitializeSubdomain {
 
   using InitializeGeometry = elliptic::dg::InitializeGeometry<Dim>;
   using InitializeOverlapGeometry = detail::InitializeOverlapGeometry<Dim>;
-  using InitializeFacesAndMortars =
-      elliptic::dg::InitializeFacesAndMortars<Dim,
-                                              typename System::inv_metric_tag>;
+  using InitializeFacesAndMortars = elliptic::dg::InitializeFacesAndMortars<
+      Dim, typename System::inv_metric_tag, BackgroundTag>;
 
   template <typename Tag>
   using overlaps_tag =
@@ -204,35 +202,22 @@ struct InitializeSubdomain {
             direction_from_neighbor,
             db::get<LinearSolver::Schwarz::Tags::MaxOverlap<OptionsGroup>>(
                 box));
+        // Initialize faces and mortars on overlaps
+        elliptic::util::mutate_apply_at<
+            db::wrap_tags_in<overlaps_tag,
+                             typename InitializeFacesAndMortars::return_tags>,
+            tmpl::append<
+                db::wrap_tags_in<
+                    overlaps_tag,
+                    tmpl::list_difference<
+                        typename InitializeFacesAndMortars::argument_tags,
+                        typename InitializeFacesAndMortars::volume_tags>>,
+                typename InitializeFacesAndMortars::volume_tags>,
+            typename InitializeFacesAndMortars::volume_tags>(
+            InitializeFacesAndMortars{}, make_not_null(&box), overlap_id);
         if constexpr (has_background_fields) {
-          // Initialize faces and mortars on overlaps
-          const auto& background = db::get<BackgroundTag>(box);
-          using background_classes = tmpl::at<
-              typename Metavariables::factory_creation::factory_classes,
-              std::decay_t<decltype(background)>>;
-          elliptic::util::mutate_apply_at<
-              db::wrap_tags_in<overlaps_tag,
-                               typename InitializeFacesAndMortars::return_tags>,
-              db::wrap_tags_in<
-                  overlaps_tag,
-                  typename InitializeFacesAndMortars::argument_tags>,
-              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                            overlap_id,
-                            db::get<domain::Tags::FunctionsOfTime>(box),
-                            background, background_classes{});
           // Background fields
           initialize_background_fields(make_not_null(&box), overlap_id);
-        } else {
-          // Initialize faces and mortars on overlaps
-          elliptic::util::mutate_apply_at<
-              db::wrap_tags_in<overlaps_tag,
-                               typename InitializeFacesAndMortars::return_tags>,
-              db::wrap_tags_in<
-                  overlaps_tag,
-                  typename InitializeFacesAndMortars::argument_tags>,
-              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                            overlap_id,
-                            db::get<domain::Tags::FunctionsOfTime>(box));
         }
         // Faces on the other side of the overlapped element's mortars
         initialize_remote_faces(make_not_null(&box), overlap_id);

@@ -15,7 +15,6 @@
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
@@ -79,12 +78,10 @@ struct InitializeFacesMortarsAndBackground {
       "The system has background fields that need initialization. Supply a "
       "'BackgroundTag' to 'elliptic::dg::Actions::initialize_operator'.");
 
-  using InitializeFacesAndMortars =
-      elliptic::dg::InitializeFacesAndMortars<Dim,
-                                              typename System::inv_metric_tag>;
-  using InitializeBackground =
-      elliptic::dg::InitializeBackground<Dim,
-                                         typename System::background_fields>;
+  using InitializeFacesAndMortars = elliptic::dg::InitializeFacesAndMortars<
+      Dim, typename System::inv_metric_tag, BackgroundTag>;
+  using InitializeBackground = elliptic::dg::InitializeBackground<
+      Dim, typename System::background_fields, BackgroundTag>;
 
  public:
   using simple_tags = tmpl::append<
@@ -106,28 +103,11 @@ struct InitializeFacesMortarsAndBackground {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    // Initialize faces and mortars
+    db::mutate_apply<InitializeFacesAndMortars>(make_not_null(&box));
     if constexpr (has_background_fields) {
-      const auto& background = db::get<BackgroundTag>(box);
-      using background_classes =
-          tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                   std::decay_t<decltype(background)>>;
-      // Initialize faces and mortars
-      db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
-                       typename InitializeFacesAndMortars::argument_tags>(
-          InitializeFacesAndMortars{}, make_not_null(&box),
-          db::get<domain::Tags::FunctionsOfTime>(box), background,
-          background_classes{});
       // Initialize background fields
-      db::mutate_apply<typename InitializeBackground::return_tags,
-                       typename InitializeBackground::argument_tags>(
-          InitializeBackground{}, make_not_null(&box), background,
-          background_classes{});
-    } else {
-      // Initialize faces and mortars
-      db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
-                       typename InitializeFacesAndMortars::argument_tags>(
-          InitializeFacesAndMortars{}, make_not_null(&box),
-          db::get<domain::Tags::FunctionsOfTime>(box));
+      db::mutate_apply<InitializeBackground>(make_not_null(&box));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
