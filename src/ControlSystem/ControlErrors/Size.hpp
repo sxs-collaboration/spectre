@@ -139,6 +139,7 @@ namespace ControlErrors {
  *   (averaging scheme detailed above.)
  * - RawDtHorizonCoef00: The raw 00 component of the horizon passed in to the
  *   control error.
+ * - SmootherTimescale: Damping timescale for the averaging of DtHorizonCoef00.
  * - MinDeltaR: The minimum of the `gr::surfaces::radial_distance` between the
  *   horizon and the excision surfaces.
  * - MinRelativeDeltaR: MinDeltaR divided by the
@@ -447,6 +448,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               error_diagnostics.discontinuous_change_has_occurred ? 1.0 : 0.0,
               lambda_00, dt_lambda_00, horizon_00, dt_horizon_00,
               time_deriv_apparent_horizon.coefficients()[0],
+              smoother_tuner_.current_timescale()[0],
               error_diagnostics.min_delta_r,
               error_diagnostics.min_relative_delta_r, avg_delta_r,
               avg_relative_delta_r,
