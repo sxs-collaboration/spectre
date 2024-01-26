@@ -145,9 +145,10 @@ struct ElementArray {
                          ImposeInhomogeneousBoundaryConditionsOnSource<
                              System, fixed_sources_tag>,
                      ::Actions::Label<ApplyOperatorStart>,
-                     ::elliptic::dg::Actions::apply_operator<
+                     typename ::elliptic::dg::Actions::DgOperator<
                          System, Linearized, TemporalIdTag, vars_tag,
-                         primal_fluxes_vars_tag, operator_applied_to_vars_tag>,
+                         primal_fluxes_vars_tag,
+                         operator_applied_to_vars_tag>::apply_actions,
                      IncrementTemporalId, Parallel::Actions::TerminatePhase>>>;
 };
 

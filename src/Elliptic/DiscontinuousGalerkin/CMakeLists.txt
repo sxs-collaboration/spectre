@@ -33,6 +33,7 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   LinearOperators
+  ParallelAmr
   Spectral
   Utilities
   INTERFACE

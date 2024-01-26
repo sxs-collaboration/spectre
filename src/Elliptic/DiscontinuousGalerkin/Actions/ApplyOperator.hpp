@@ -37,6 +37,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -207,13 +208,16 @@ struct PrepareAndSendMortarData<
     // Can't `db::get` the arguments for the boundary conditions within
     // `db::mutate`, so we extract the data to mutate and move it back in when
     // we're done.
+    // Possible optimization: also keep memory for the mortar data around in the
+    // DataBox. Currently the mortar data is extracted and erased by
+    // `apply_operator` anyway, so we can just create a new map here to avoid
+    // dealing with AMR resizing the mortars. When we keep the memory around,
+    // its size has to be adjusted when the mesh changes during AMR.
     typename PrimalFluxesTag::type primal_fluxes;
-    typename all_mortar_data_tag::type all_mortar_data;
-    db::mutate<PrimalFluxesTag, all_mortar_data_tag>(
-        [&primal_fluxes, &all_mortar_data](const auto local_primal_fluxes,
-                                           const auto local_all_mortar_data) {
+    typename all_mortar_data_tag::type all_mortar_data{};
+    db::mutate<PrimalFluxesTag>(
+        [&primal_fluxes](const auto local_primal_fluxes) {
           primal_fluxes = std::move(*local_primal_fluxes);
-          all_mortar_data = std::move(*local_all_mortar_data);
         },
         make_not_null(&box));
 
@@ -447,12 +451,26 @@ using initialize_operator = tmpl::list<
     detail::InitializeFacesMortarsAndBackground<System, BackgroundTag>>;
 
 /*!
+ * \brief AMR projectors for the tags added by `initialize_operator`
+ */
+template <typename System, typename BackgroundTag = void>
+using amr_projectors = tmpl::append<
+    tmpl::list<elliptic::dg::InitializeFacesAndMortars<
+        System::volume_dim, typename System::inv_metric_tag, BackgroundTag>>,
+    tmpl::conditional_t<
+        std::is_same_v<typename System::background_fields, tmpl::list<>>,
+        tmpl::list<>,
+        tmpl::list<elliptic::dg::InitializeBackground<
+            System::volume_dim, typename System::background_fields,
+            BackgroundTag>>>>;
+
+/*!
  * \brief Apply the DG operator to the `PrimalFieldsTag` and write the result to
  * the `OperatorAppliedToFieldsTag`
  *
- * Add this list to the action list of a parallel component to compute the
- * elliptic DG operator or its linearization. The operator involves a
- * communication between nearest-neighbor elements. See `elliptic::dg` for
+ * Add the `apply_actions` list to the action list of a parallel component to
+ * compute the elliptic DG operator or its linearization. The operator involves
+ * a communication between nearest-neighbor elements. See `elliptic::dg` for
  * details on the elliptic DG operator. Make sure to add
  * `elliptic::dg::Actions::initialize_operator` to the initialization phase of
  * your parallel component so the required DataBox tags are set up before
@@ -468,21 +486,37 @@ using initialize_operator = tmpl::list<
  * example when applying the nonlinear and linearized operator. They default to
  * the `PrimalFieldsTag` and the `PrimalFluxesTag`, meaning memory buffers
  * corresponding to these tags are set up in the DataBox.
+ *
+ * \par AMR
+ * Also add the `amr_projectors` to the list of AMR projectors to support AMR.
  */
 template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalFieldsTag, typename PrimalFluxesTag,
           typename OperatorAppliedToFieldsTag,
           typename PrimalMortarFieldsTag = PrimalFieldsTag,
           typename PrimalMortarFluxesTag = PrimalFluxesTag>
-using apply_operator =
-    tmpl::list<detail::PrepareAndSendMortarData<
-                   System, Linearized, TemporalIdTag, PrimalFieldsTag,
-                   PrimalFluxesTag, OperatorAppliedToFieldsTag,
-                   PrimalMortarFieldsTag, PrimalMortarFluxesTag>,
-               detail::ReceiveMortarDataAndApplyOperator<
-                   System, Linearized, TemporalIdTag, PrimalFieldsTag,
-                   PrimalFluxesTag, OperatorAppliedToFieldsTag,
-                   PrimalMortarFieldsTag, PrimalMortarFluxesTag>>;
+struct DgOperator {
+ private:
+  static constexpr size_t Dim = System::volume_dim;
+
+ public:
+  using apply_actions =
+      tmpl::list<detail::PrepareAndSendMortarData<
+                     System, Linearized, TemporalIdTag, PrimalFieldsTag,
+                     PrimalFluxesTag, OperatorAppliedToFieldsTag,
+                     PrimalMortarFieldsTag, PrimalMortarFluxesTag>,
+                 detail::ReceiveMortarDataAndApplyOperator<
+                     System, Linearized, TemporalIdTag, PrimalFieldsTag,
+                     PrimalFluxesTag, OperatorAppliedToFieldsTag,
+                     PrimalMortarFieldsTag, PrimalMortarFluxesTag>>;
+  using amr_projectors = tmpl::list<::amr::projectors::DefaultInitialize<
+      PrimalFluxesTag, OperatorAppliedToFieldsTag,
+      ::Tags::Mortars<elliptic::dg::Tags::MortarData<
+                          typename TemporalIdTag::type,
+                          typename PrimalMortarFieldsTag::tags_list,
+                          typename PrimalMortarFluxesTag::tags_list>,
+                      Dim>>>;
+};
 
 /*!
  * \brief For linear systems, impose inhomogeneous boundary conditions as
