@@ -32,6 +32,7 @@ class Cli(click.MultiCommand):
             "interpolate-to-mesh",
             "plot-dat",
             "plot-power-monitors",
+            "plot-size-control",
             "render-1d",
             "render-3d",
             "resubmit",
@@ -102,6 +103,12 @@ class Cli(click.MultiCommand):
             )
 
             return plot_power_monitors_command
+        elif name in ["plot-size", "plot-size-control"]:
+            from spectre.Visualization.PlotSizeControl import (
+                plot_size_control_command,
+            )
+
+            return plot_size_control_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
 

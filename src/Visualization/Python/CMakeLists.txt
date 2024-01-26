@@ -12,6 +12,7 @@ spectre_python_add_module(
   InterpolateToMesh.py
   PlotDatFile.py
   PlotPowerMonitors.py
+  PlotSizeControl.py
   plots.mplstyle
   ReadH5.py
   ReadInputFile.py
