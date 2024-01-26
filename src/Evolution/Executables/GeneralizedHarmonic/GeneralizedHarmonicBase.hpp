@@ -107,6 +107,8 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -275,6 +277,8 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                                            tmpl::list<gh::NumericInitialData>,
                                            tmpl::list<>>>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+      tmpl::pair<MathFunction<1, Frame::Inertial>,
+                 MathFunctions::all_math_functions<1, Frame::Inertial>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,

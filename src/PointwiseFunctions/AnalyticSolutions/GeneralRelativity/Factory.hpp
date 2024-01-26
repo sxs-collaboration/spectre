@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -17,7 +18,8 @@ namespace gh::Solutions {
 /// \brief List of all analytic solutions
 template <size_t Dim>
 using all_solutions =
-    tmpl::append<tmpl::list<WrappedGr<gr::Solutions::GaugeWave<Dim>>,
+    tmpl::append<tmpl::list<WrappedGr<gr::Solutions::GaugePlaneWave<Dim>>,
+                            WrappedGr<gr::Solutions::GaugeWave<Dim>>,
                             WrappedGr<gr::Solutions::Minkowski<Dim>>>,
                  tmpl::conditional_t<
                      Dim == 3,
