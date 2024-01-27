@@ -21,7 +21,8 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
 }  // namespace detail
 
 /*!
- * \brief Troubled cell indicator using spectral falloff of \cite Persson2006sub
+ * \brief Troubled cell indicator using the idea of spectral falloff by
+ *    \cite Persson2006sub
  *
  * Consider a discontinuity sensing quantity \f$U\f$, which is typically a
  * scalar but could be a tensor of any rank. Let \f$U\f$ have the 1d spectral
@@ -43,25 +44,26 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  * Note that when an exponential filter is being used to deal with aliasing,
  * lower modes can be included in \f$\hat{U}\f$. The main goal of \f$\hat{U}\f$
  * is to measure how much power is in the highest modes, which are the modes
- * responsible for Gibbs phenomena. We define the discontinuity indicator
- * \f$s^\Omega\f$ as
+ * responsible for Gibbs phenomena.
+ *
+ * A cell is troubled if
  *
  * \f{align*}{
- *   s^\Omega=\log_{10}\left(\frac{(\hat{U}, \hat{U})}{(U, U)}\right),
+ *    \frac{(\hat{U}, \hat{U})}{(U, U)} > N^{-\alpha}
  * \f}
  *
  * where \f$(\cdot,\cdot)\f$ is an inner product, which we take to be the
  * Euclidean \f$L_2\f$ norm (i.e. we do not divide by the number of grid points
- * since that cancels out anyway). A cell is troubled if
- *  \f$s^\Omega > -\alpha \log_{10}(N)\f$. Typically, \f$\alpha=4\f$ is a good
- * choice.
+ * since that cancels out anyway) computed as
  *
- * The parameter `zero_cutoff` is used to avoid division and logarithms of small
- * numbers, which can be wildly fluctuating because of roundoff errors.
- * We do not check the TCI for tensor components when \f$L_2(\hat{U}) \leq
- * \epsilon L_2(U)\f$, where \f$\epsilon\f$ is the `zero_cutoff`. If all
- * components are skipped the TCI returns `false`, i.e. the cell is not
- * troubled.
+ * \f{align*}{
+ *    (U, U) \equiv \sqrt{\sum_{i=0}^N U_i^2}
+ * \f}
+ *
+ * where $U_i$ are nodal values of the quantity $U$ at grid points.
+ *
+ * Typically, \f$\alpha=4\f$ is a good choice.
+ *
  */
 template <size_t Dim, typename SymmList, typename IndexList>
 bool persson_tci(const Tensor<DataVector, SymmList, IndexList>& tensor,
