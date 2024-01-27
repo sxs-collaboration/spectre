@@ -25,18 +25,18 @@
 
 namespace {
 
-template <bool Aligned, typename DestFrame>
+template <bool Aligned, typename SrcFrame, typename DestFrame>
 void test_strahlkorper_in_different_frame() {
   const size_t grid_points_each_dimension = 5;
 
   // Set up a Strahlkorper corresponding to a Schwarzschild hole of
-  // mass 1, in the grid frame.
+  // mass 1, in the source frame.
   // Center the Strahlkorper at (0.03,0.02,0.01) so that we test a
   // nonzero center.
-  const std::array<double, 3> strahlkorper_grid_center = {0.03, 0.02, 0.01};
+  const std::array<double, 3> strahlkorper_src_center = {0.03, 0.02, 0.01};
   const size_t l_max = 8;
-  const ylm::Strahlkorper<Frame::Grid> strahlkorper_grid(
-      l_max, 2.0, strahlkorper_grid_center);
+  const ylm::Strahlkorper<SrcFrame> strahlkorper_src(l_max, 2.0,
+                                                     strahlkorper_src_center);
 
   // Create a Domain.
   // We choose a spherical shell domain extending from radius 1.9M to
@@ -56,7 +56,7 @@ void test_strahlkorper_in_different_frame() {
         std::make_unique<domain::creators::time_dependence::Shape<
             domain::ObjectLabel::None>>(0.0, l_max, 1.0,
                                         std::array<double, 3>{{0.1, 0.2, 0.3}},
-                                        strahlkorper_grid_center, 2.0, 12.0)));
+                                        strahlkorper_src_center, 2.0, 12.0)));
   } else {
     domain_creator.reset(new domain::creators::Sphere(
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
@@ -64,7 +64,8 @@ void test_strahlkorper_in_different_frame() {
         radial_distribution, ShellWedges::All,
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, std::array<double, 3>({{0.01, 0.02, 0.03}}))));
+            0.0, std::array<double, 3>({{0.0, 0.0, 0.0}}),
+            std::array<double, 3>({{0.01, 0.02, 0.03}}))));
   }
   Domain<3> domain = domain_creator->create_domain();
   const auto functions_of_time = domain_creator->functions_of_time();
@@ -74,13 +75,13 @@ void test_strahlkorper_in_different_frame() {
   ylm::Strahlkorper<DestFrame> strahlkorper_dest{};
   if constexpr (Aligned) {
     strahlkorper_in_different_frame_aligned(make_not_null(&strahlkorper_dest),
-                                            strahlkorper_grid, domain,
+                                            strahlkorper_src, domain,
                                             functions_of_time, time);
 
   } else {
     strahlkorper_in_different_frame(make_not_null(&strahlkorper_dest),
-                                    strahlkorper_grid, domain,
-                                    functions_of_time, time);
+                                    strahlkorper_src, domain, functions_of_time,
+                                    time);
   }
 
   // Now compare.
@@ -92,13 +93,18 @@ void test_strahlkorper_in_different_frame() {
             2.0, ylm.theta_phi_points(), 1.0,
             std::array<double, 3>{{0.1, 0.2, 0.3}}));
     strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
-        l_max, l_max, new_radius, strahlkorper_grid_center));
+        l_max, l_max, new_radius, strahlkorper_src_center));
+  } else if constexpr (std::is_same_v<SrcFrame, ::Frame::Inertial> and
+                       std::is_same_v<DestFrame, ::Frame::Distorted>) {
+    strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
+        l_max, 2.0,
+        {{strahlkorper_src_center[0] - 0.005, strahlkorper_src_center[1] - 0.01,
+          strahlkorper_src_center[2] - 0.015}}));
   } else {
     strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
         l_max, 2.0,
-        {{strahlkorper_grid_center[0] + 0.005,
-          strahlkorper_grid_center[1] + 0.01,
-          strahlkorper_grid_center[2] + 0.015}}));
+        {{strahlkorper_src_center[0] + 0.005, strahlkorper_src_center[1] + 0.01,
+          strahlkorper_src_center[2] + 0.015}}));
   }
   CHECK_ITERABLE_APPROX(strahlkorper_expected->physical_center(),
                         strahlkorper_dest.physical_center());
@@ -190,9 +196,11 @@ SPECTRE_TEST_CASE("Unit.Domain.StrahlkorperTransformations", "[Unit]") {
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
-  test_strahlkorper_in_different_frame<false, Frame::Inertial>();
-  test_strahlkorper_in_different_frame<true, Frame::Inertial>();
-  test_strahlkorper_in_different_frame<true, Frame::Distorted>();
+  test_strahlkorper_in_different_frame<false, Frame::Grid, Frame::Inertial>();
+  test_strahlkorper_in_different_frame<false, Frame::Inertial,
+                                       Frame::Distorted>();
+  test_strahlkorper_in_different_frame<true, Frame::Grid, Frame::Inertial>();
+  test_strahlkorper_in_different_frame<true, Frame::Grid, Frame::Distorted>();
   test_strahlkorper_coords_in_different_frame<true, Frame::Grid>();
   test_strahlkorper_coords_in_different_frame<true, Frame::Distorted>();
   test_strahlkorper_coords_in_different_frame<false, Frame::Distorted>();
