@@ -61,6 +61,7 @@ Size<DerivOrder, Horizon>::Size(
                                      "HorizonCoef00",
                                      "AveragedDtHorizonCoef00",
                                      "RawDtHorizonCoef00",
+                                     "SmootherTimescale",
                                      "MinDeltaR",
                                      "MinRelativeDeltaR",
                                      "AvgDeltaR",
