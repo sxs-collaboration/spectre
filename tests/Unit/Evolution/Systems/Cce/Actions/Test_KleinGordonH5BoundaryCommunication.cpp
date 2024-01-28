@@ -135,6 +135,12 @@ struct test_metavariables : CharacteristicExtractDefaults<false> {
       tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>,
                  Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
 
+  using klein_gordon_pre_swsh_derivative_tags = tmpl::list<>;
+  using klein_gordon_swsh_derivative_tags = tmpl::list<>;
+  using klein_gordon_transform_buffer_tags = tmpl::list<>;
+  using klein_gordon_source_tags = tmpl::list<>;
+  using klein_gordon_cce_integrand_tags = tmpl::list<>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<

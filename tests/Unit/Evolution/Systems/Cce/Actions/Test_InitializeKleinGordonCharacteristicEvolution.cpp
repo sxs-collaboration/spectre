@@ -70,6 +70,48 @@ struct metavariables : CharacteristicExtractDefaults<false> {
       tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>,
                  Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
 
+  using klein_gordon_pre_swsh_derivative_tags =
+      tmpl::list<Cce::Tags::Dy<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>,
+                 Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>;
+  using klein_gordon_swsh_derivative_tags = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::EthEth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::EthEthbar>>;
+  using klein_gordon_transform_buffer_tags = tmpl::list<
+      Spectral::Swsh::Tags::SwshTransform<Cce::Tags::KleinGordonPsi>,
+      Spectral::Swsh::Tags::SwshTransform<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::Eth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::Ethbar>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>, Spectral::Swsh::Tags::Eth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+          Spectral::Swsh::Tags::Ethbar>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>>;
+
+  using klein_gordon_source_tags = tmpl::flatten<
+      tmpl::transform<Cce::bondi_hypersurface_step_tags,
+                      tmpl::bind<Cce::Tags::KleinGordonSource, tmpl::_1>>>;
+
+  using klein_gordon_cce_integrand_tags =
+      tmpl::list<Cce::Tags::PoleOfIntegrand<Cce::Tags::KleinGordonPi>,
+                 Cce::Tags::RegularIntegrand<Cce::Tags::KleinGordonPi>>;
+
   using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -177,6 +219,49 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
                                                                          0);
   CHECK(kg_scri_tags.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+
+  const auto& kg_pre_swsh_derivative_tags = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<
+          typename metavariables::klein_gordon_pre_swsh_derivative_tags>>(
+      runner, 0);
+  CHECK(kg_pre_swsh_derivative_tags.number_of_grid_points() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
+            number_of_radial_points);
+
+  const auto& kg_swsh_derivative_tags = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<
+          typename metavariables::klein_gordon_swsh_derivative_tags>>(runner,
+                                                                      0);
+  CHECK(kg_swsh_derivative_tags.number_of_grid_points() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
+            number_of_radial_points);
+
+  const auto& kg_transform_buffer_tags = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<
+          typename metavariables::klein_gordon_transform_buffer_tags>>(runner,
+                                                                       0);
+  CHECK(kg_transform_buffer_tags.number_of_grid_points() ==
+        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max) *
+            number_of_radial_points);
+
+  const auto& kg_source_tags = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<typename metavariables::klein_gordon_source_tags>>(
+      runner, 0);
+  CHECK(kg_source_tags.number_of_grid_points() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
+            number_of_radial_points);
+
+  const auto& kg_integrand_tags = ActionTesting::get_databox_tag<
+      component, ::Tags::Variables<
+                     typename metavariables::klein_gordon_cce_integrand_tags>>(
+      runner, 0);
+  CHECK(kg_integrand_tags.number_of_grid_points() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
+            number_of_radial_points);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
