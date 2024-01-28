@@ -23,6 +23,7 @@ spectre_target_headers(
   InitializeKleinGordonVariables.hpp
   InitializeWorldtubeBoundary.hpp
   InsertInterpolationScriData.hpp
+  PrecomputeKleinGordonSourceVariables.hpp
   Psi0Matching.hpp
   ReceiveGhWorldtubeData.hpp
   ReceiveWorldtubeData.hpp

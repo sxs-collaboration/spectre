@@ -7,6 +7,7 @@
 
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonVariables.hpp"
+#include "Evolution/Systems/Cce/Actions/PrecomputeKleinGordonSourceVariables.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -87,6 +88,7 @@ struct KleinGordonCharacteristicEvolution
       tmpl::conditional_t<evolve_ccm,
                           Actions::CalculatePsi0AndDerivAtInnerBoundary,
                           tmpl::list<>>,
+      Actions::PrecomputeKleinGordonSourceVariables,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
@@ -123,6 +125,7 @@ struct KleinGordonCharacteristicEvolution
       tmpl::conditional_t<evolve_ccm,
                           Actions::CalculatePsi0AndDerivAtInnerBoundary,
                           tmpl::list<>>,
+      Actions::PrecomputeKleinGordonSourceVariables,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
