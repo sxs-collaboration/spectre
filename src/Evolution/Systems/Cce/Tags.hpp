@@ -430,6 +430,13 @@ struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
+/// A prefix tag representing Klein-Gordon sources in Cce hypersurface equations
+template <typename Tag>
+struct KleinGordonSource : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+};
+
 template <typename ToInterpolate, typename ObservationTag>
 struct InterpolationManager : db::SimpleTag {
   using type = ScriPlusInterpolationManager<ToInterpolate, ObservationTag>;
