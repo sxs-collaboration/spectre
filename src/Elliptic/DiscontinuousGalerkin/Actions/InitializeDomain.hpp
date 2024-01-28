@@ -77,9 +77,7 @@ struct InitializeDomain {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    db::mutate_apply<typename InitializeGeometry::return_tags,
-                     typename InitializeGeometry::argument_tags>(
-        InitializeGeometry{}, make_not_null(&box), element_id);
+    db::mutate_apply<InitializeGeometry>(make_not_null(&box), element_id);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

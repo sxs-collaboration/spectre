@@ -37,7 +37,7 @@
 namespace elliptic::dg {
 
 template <size_t Dim>
-void InitializeGeometry<Dim>::operator()(
+void InitializeGeometry<Dim>::apply(
     const gsl::not_null<Mesh<Dim>*> mesh,
     const gsl::not_null<Element<Dim>*> element,
     const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_meshes,
@@ -58,8 +58,7 @@ void InitializeGeometry<Dim>::operator()(
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
     const Domain<Dim>& domain,
     const domain::FunctionsOfTimeMap& functions_of_time,
-    const Spectral::Quadrature quadrature,
-    const ElementId<Dim>& element_id) const {
+    const Spectral::Quadrature quadrature, const ElementId<Dim>& element_id) {
   // Mesh
   ASSERT(quadrature == Spectral::Quadrature::GaussLobatto or
              quadrature == Spectral::Quadrature::Gauss,

@@ -106,6 +106,16 @@ void test_mutate_apply_at() {
         make_not_null(&box), Direction<1>::lower_xi());
     CHECK(db::get<DirectionMapTag>(box) ==
           DirectionMap<1, bool>{{Direction<1>::lower_xi(), false}});
+    struct Mutator {
+      static void apply(const gsl::not_null<bool*> mutate_arg) {
+        CHECK_FALSE(*mutate_arg);
+        *mutate_arg = true;
+      }
+    };
+    mutate_apply_at<tmpl::list<DirectionMapTag>, tmpl::list<>, tmpl::list<>>(
+        Mutator{}, make_not_null(&box), Direction<1>::lower_xi());
+    CHECK(db::get<DirectionMapTag>(box) ==
+          DirectionMap<1, bool>{{Direction<1>::lower_xi(), true}});
   };
   check(db::create<
         db::AddSimpleTags<MapTag, NonMapTag, NestedMapTag, DirectionMapTag>>(

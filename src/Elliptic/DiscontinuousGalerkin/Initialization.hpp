@@ -83,7 +83,7 @@ struct InitializeGeometry {
                  domain::Tags::InitialRefinementLevels<Dim>,
                  domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime,
                  elliptic::dg::Tags::Quadrature>;
-  void operator()(
+  static void apply(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
       gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_meshes,
       gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
@@ -102,7 +102,7 @@ struct InitializeGeometry {
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      Spectral::Quadrature quadrature, const ElementId<Dim>& element_id) const;
+      Spectral::Quadrature quadrature, const ElementId<Dim>& element_id);
 };
 
 namespace detail {
@@ -181,7 +181,7 @@ struct InitializeFacesAndMortars {
           tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
   template <typename Background = std::nullptr_t,
             typename Metavariables = std::nullptr_t>
-  void operator()(
+  static void apply(
       const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
           faces_inertial_coords,
@@ -211,7 +211,7 @@ struct InitializeFacesAndMortars {
                             Frame::Inertial>& inv_jacobian,
       const domain::FunctionsOfTimeMap& functions_of_time,
       const Background& background = nullptr,
-      const Metavariables& /*meta*/ = nullptr) const {
+      const Metavariables& /*meta*/ = nullptr) {
     static_assert(std::is_same_v<InvMetricTag, void> or
                       not(std::is_same_v<Background, std::nullptr_t>),
                   "Supply an analytic background from which the 'InvMetricTag' "
@@ -364,14 +364,14 @@ struct InitializeBackground {
                  BackgroundTag, Parallel::Tags::Metavariables>;
 
   template <typename BackgroundBase, typename Metavariables>
-  void operator()(
+  static void apply(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
           face_background_fields,
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const BackgroundBase& background, const Metavariables& /*meta*/) const {
+      const BackgroundBase& background, const Metavariables& /*meta*/) {
     // Background fields in the volume
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
