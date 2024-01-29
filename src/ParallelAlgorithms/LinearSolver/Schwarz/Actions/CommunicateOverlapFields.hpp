@@ -70,14 +70,15 @@ struct OverlapFieldsTag
  * This actions should be followed by
  * `LinearSolver::Schwarz::Actions::ReceiveOverlapFields` in the action list.
  */
-template <typename OverlapFields, typename OptionsGroup, bool RestrictToOverlap>
+template <typename OverlapFields, typename OptionsGroup, bool RestrictToOverlap,
+          typename TemporalIdTag = Convergence::Tags::IterationId<OptionsGroup>>
 struct SendOverlapFields;
 
 /// \cond
 template <typename... OverlapFields, typename OptionsGroup,
-          bool RestrictToOverlap>
+          bool RestrictToOverlap, typename TemporalIdTag>
 struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
-                         RestrictToOverlap> {
+                         RestrictToOverlap, TemporalIdTag> {
   using const_global_cache_tags =
       tmpl::list<Tags::MaxOverlap<OptionsGroup>,
                  logging::Tags::Verbosity<OptionsGroup>>;
@@ -92,15 +93,16 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
       const ParallelComponent* const /*meta*/) {
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
-    // Skip communicating if the overlap is empty
-    if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
+    // Skip communicating if the overlap is empty and we RestrictToOverlap,
+    // because we would end up with empty tensor data.
+    if (UNLIKELY((RestrictToOverlap and
+                  db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0) or
                  element.number_of_neighbors() == 0)) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     // Do some logging
-    const auto& iteration_id =
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    const auto& iteration_id = get<TemporalIdTag>(box);
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Send overlap fields\n", element_id,
@@ -172,12 +174,16 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
  * This actions should be preceded by
  * `LinearSolver::Schwarz::Actions::SendOverlapFields` in the action list.
  */
-template <size_t Dim, typename OverlapFields, typename OptionsGroup>
+template <size_t Dim, typename OverlapFields, typename OptionsGroup,
+          bool RestrictToOverlap,
+          typename TemporalIdTag = Convergence::Tags::IterationId<OptionsGroup>>
 struct ReceiveOverlapFields;
 
 /// \cond
-template <size_t Dim, typename... OverlapFields, typename OptionsGroup>
-struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
+template <size_t Dim, typename... OverlapFields, typename OptionsGroup,
+          bool RestrictToOverlap, typename TemporalIdTag>
+struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup,
+                            RestrictToOverlap, TemporalIdTag> {
  private:
   using overlap_fields_tag =
       detail::OverlapFieldsTag<Dim, tmpl::list<OverlapFields...>, OptionsGroup>;
@@ -197,12 +203,12 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& iteration_id =
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    const auto& iteration_id = get<TemporalIdTag>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
-    // Nothing to receive if overlap is empty
-    if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
+    // Nothing to receive if nothing was sent in the action above
+    if (UNLIKELY((RestrictToOverlap and
+                  db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0) or
                  element.number_of_neighbors() == 0)) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
@@ -227,6 +233,7 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
     db::mutate<Tags::Overlaps<OverlapFields, Dim, OptionsGroup>...>(
         [&received_overlap_fields](const auto... local_overlap_fields) {
           if constexpr (sizeof...(OverlapFields) > 1) {
+            (local_overlap_fields->clear(), ...);
             for (auto& [overlap_id, overlap_fields] : received_overlap_fields) {
               expand_pack((*local_overlap_fields)[overlap_id] =
                               std::move(get<OverlapFields>(overlap_fields))...);

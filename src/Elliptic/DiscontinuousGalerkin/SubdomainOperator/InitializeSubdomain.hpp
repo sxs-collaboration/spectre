@@ -107,19 +107,36 @@ struct InitializeOverlapGeometry {
  * Note that the geometry depends on the system and on the choice of background
  * through the normalization of face normals, which involves a metric.
  *
+ * The `FromInitialDomain` template parameter controls how the
+ * next-to-nearest-neighbor information is acquired:
+ * - If `FromInitialDomain = true`, uses the initial parameters from the input
+ *   file. This can be used at the beginning of a simulation or if the domain
+ *   never changes (no AMR).
+ * - If `FromInitialDomain = false`, uses the mesh, element, and neighbor meshes
+ *   of each neighbor. This typically requires communication to exchange this
+ *   data between neighbors each time the domain changes, e.g. with AMR.
+ *
  * DataBox:
  * - Uses:
  *   - `BackgroundTag`
  *   - `domain::Tags::Element<Dim>`
- *   - `domain::Tags::InitialExtents<Dim>`
- *   - `domain::Tags::InitialRefinementLevels<Dim>`
+ *   - If `FromInitialDomain = true`:
+ *     - `domain::Tags::InitialExtents<Dim>`
+ *     - `domain::Tags::InitialRefinementLevels<Dim>`
+ *     - `elliptic::dg::Tags::Quadrature`
+ *   - If `FromInitialDomain = false`:
+ *     - `Overlaps<domain::Tags::Mesh<Dim>>`
+ *     - `Overlaps<domain::Tags::Element<Dim>>`
+ *     - `Overlaps<domain::Tags::NeighborMesh<Dim>>`
  *   - `domain::Tags::Domain<Dim>`
+ *   - `domain::Tags::FunctionsOfTime`
  *   - `LinearSolver::Schwarz::Tags::MaxOverlap<OptionsGroup>`
  * - Adds: Many tags prefixed with `LinearSolver::Schwarz::Tags::Overlaps`. See
  *   `elliptic::dg::Actions::InitializeDomain` and
  *   `elliptic::dg::Actions::initialize_operator` for a complete list.
  */
-template <typename System, typename BackgroundTag, typename OptionsGroup>
+template <typename System, typename BackgroundTag, typename OptionsGroup,
+          bool FromInitialDomain = true>
 struct InitializeSubdomain {
  private:
   static constexpr size_t Dim = System::volume_dim;
@@ -128,7 +145,10 @@ struct InitializeSubdomain {
   static constexpr bool has_background_fields =
       not std::is_same_v<typename System::background_fields, tmpl::list<>>;
 
-  using InitializeGeometry = elliptic::dg::InitializeGeometry<Dim>;
+  using InitializeGeometry =
+      tmpl::conditional_t<FromInitialDomain,
+                          elliptic::dg::InitializeGeometry<Dim>,
+                          elliptic::dg::ProjectGeometry<Dim>>;
   using InitializeOverlapGeometry = detail::InitializeOverlapGeometry<Dim>;
   using InitializeFacesAndMortars = elliptic::dg::InitializeFacesAndMortars<
       Dim, typename System::inv_metric_tag, BackgroundTag>;
@@ -186,8 +206,13 @@ struct InitializeSubdomain {
         elliptic::util::mutate_apply_at<
             db::wrap_tags_in<overlaps_tag,
                              typename InitializeGeometry::return_tags>,
-            typename InitializeGeometry::argument_tags,
-            typename InitializeGeometry::argument_tags>(
+            tmpl::append<
+                db::wrap_tags_in<overlaps_tag,
+                                 tmpl::list_difference<
+                                     typename InitializeGeometry::argument_tags,
+                                     typename InitializeGeometry::volume_tags>>,
+                typename InitializeGeometry::volume_tags>,
+            typename InitializeGeometry::volume_tags>(
             InitializeGeometry{}, make_not_null(&box), overlap_id, neighbor_id);
         // Initialize subdomain-specific tags on overlaps
         elliptic::util::mutate_apply_at<
