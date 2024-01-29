@@ -488,7 +488,7 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
 /// Initialize background quantities for the elliptic DG operator, possibly
 /// including the metric necessary for normalizing face normals
 template <size_t Dim, typename BackgroundFields, typename BackgroundTag>
-struct InitializeBackground {
+struct InitializeBackground : tt::ConformsTo<::amr::protocols::Projector> {
   using return_tags =
       tmpl::list<::Tags::Variables<BackgroundFields>,
                  domain::Tags::Faces<Dim, ::Tags::Variables<BackgroundFields>>>;
@@ -499,7 +499,8 @@ struct InitializeBackground {
                                                Frame::Inertial>,
                  BackgroundTag, Parallel::Tags::Metavariables>;
 
-  template <typename BackgroundBase, typename Metavariables>
+  template <typename BackgroundBase, typename Metavariables,
+            typename... AmrData>
   static void apply(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
@@ -507,7 +508,18 @@ struct InitializeBackground {
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const BackgroundBase& background, const Metavariables& /*meta*/) {
+      const BackgroundBase& background, const Metavariables& /*meta*/,
+      const AmrData&... amr_data) {
+    if constexpr (sizeof...(AmrData) == 1) {
+      if constexpr (std::is_same_v<AmrData...,
+                                   std::pair<Mesh<Dim>, Element<Dim>>>) {
+        if (((mesh == amr_data.first) and ...)) {
+          // This element hasn't changed during AMR. Nothing to do.
+          return;
+        }
+      }
+    }
+
     // Background fields in the volume
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;
