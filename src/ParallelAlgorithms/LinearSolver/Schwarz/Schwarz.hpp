@@ -172,6 +172,8 @@ struct Schwarz {
       detail::InitializeElement<FieldsTag, OptionsGroup, SubdomainOperator,
                                 SubdomainPreconditioners>>;
 
+  using amr_projectors = initialize_element;
+
   using register_element =
       tmpl::list<async_solvers::RegisterElement<FieldsTag, OptionsGroup,
                                                 SourceTag, ArraySectionIdTag>,

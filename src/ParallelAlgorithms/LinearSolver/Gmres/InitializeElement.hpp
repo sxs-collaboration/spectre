@@ -16,8 +16,10 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 /// \cond
 namespace tuples {
@@ -29,7 +31,7 @@ class TaggedTuple;
 namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
  private:
   using fields_tag = FieldsTag;
   using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
@@ -51,7 +53,7 @@ struct InitializeElement {
   using preconditioned_basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
 
- public:
+ public:  // Iterable action
   using simple_tags = tmpl::append<
       tmpl::list<Convergence::Tags::IterationId<OptionsGroup>,
                  initial_fields_tag, operator_applied_to_fields_tag,
@@ -79,6 +81,17 @@ struct InitializeElement {
         make_not_null(&box), std::numeric_limits<size_t>::max(),
         std::numeric_limits<size_t>::max());
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags = tmpl::list<>;
+  using return_tags = simple_tags;
+
+  template <typename... AmrData>
+  static void apply(const gsl::not_null<size_t*> /*unused*/,
+                    const AmrData&... /*all_items*/) {
+    // No need to reset or initialize any of the items during AMR because they
+    // will be set in `PrepareSolve`. AMR can't happen _during_ a solve.
   }
 };
 

@@ -16,7 +16,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Index.hpp"
-#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -48,6 +47,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"
@@ -59,8 +59,10 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace LinearSolver::Schwarz::detail {
 
@@ -191,7 +193,7 @@ using subdomain_solver = LinearSolver::Serial::LinearSolver<tmpl::append<
 
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
           typename SubdomainPreconditioners>
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
  private:
   using fields_tag = FieldsTag;
   using residual_tag =
@@ -199,14 +201,13 @@ struct InitializeElement {
   static constexpr size_t Dim = SubdomainOperator::volume_dim;
   using SubdomainData =
       ElementCenteredSubdomainData<Dim, typename residual_tag::tags_list>;
-  using subdomain_solver_tag = Tags::SubdomainSolver<
-      std::unique_ptr<subdomain_solver<FieldsTag, SubdomainOperator,
-                                       SubdomainPreconditioners>>,
-      OptionsGroup>;
+  using SubdomainSolver =
+      subdomain_solver<FieldsTag, SubdomainOperator, SubdomainPreconditioners>;
+  using subdomain_solver_tag =
+      Tags::SubdomainSolver<std::unique_ptr<SubdomainSolver>, OptionsGroup>;
 
- public:
-  using simple_tags_from_options =
-      tmpl::list<domain::Tags::InitialExtents<Dim>, subdomain_solver_tag>;
+ public:  // Iterable action
+  using simple_tags_from_options = tmpl::list<subdomain_solver_tag>;
 
   using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;
 
@@ -224,47 +225,66 @@ struct InitializeElement {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    db::mutate_apply<InitializeElement>(make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using return_tags = tmpl::append<simple_tags, simple_tags_from_options>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                 domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
+                 Tags::MaxOverlap<OptionsGroup>>;
+
+  template <typename... AmrData>
+  static void apply(
+      const gsl::not_null<std::array<size_t, Dim>*> intruding_extents,
+      const gsl::not_null<Scalar<DataVector>*> element_weight,
+      const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
+          intruding_overlap_weights,
+      const gsl::not_null<SubdomainData*> subdomain_data,
+      [[maybe_unused]] const gsl::not_null<std::unique_ptr<SubdomainSolver>*>
+          subdomain_solver,
+      const Element<Dim>& element, const Mesh<Dim>& mesh,
+      const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
+      const size_t max_overlap, const AmrData&... amr_data) {
     const size_t num_points = mesh.number_of_grid_points();
-    const auto& logical_coords =
-        db::get<domain::Tags::Coordinates<Dim, Frame::ElementLogical>>(box);
-    const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
 
     // Intruding overlaps
-    std::array<size_t, Dim> intruding_extents{};
     std::array<double, Dim> intruding_overlap_widths{};
     for (size_t d = 0; d < Dim; ++d) {
-      gsl::at(intruding_extents, d) =
+      gsl::at(*intruding_extents, d) =
           LinearSolver::Schwarz::overlap_extent(mesh.extents(d), max_overlap);
       const auto& collocation_points =
           Spectral::collocation_points(mesh.slice_through(d));
       gsl::at(intruding_overlap_widths, d) =
-          LinearSolver::Schwarz::overlap_width(gsl::at(intruding_extents, d),
+          LinearSolver::Schwarz::overlap_width(gsl::at(*intruding_extents, d),
                                                collocation_points);
     }
 
     // Element weight
-    Scalar<DataVector> element_weight{num_points, 1.};
     // For max_overlap > 0 all overlaps will have non-zero extents on an LGL
     // mesh (because it has at least 2 points per dimension), so we don't need
     // to check their extents are non-zero individually
     if (LIKELY(max_overlap > 0)) {
-      LinearSolver::Schwarz::element_weight(
-          make_not_null(&element_weight), logical_coords,
-          intruding_overlap_widths, element.external_boundaries());
+      LinearSolver::Schwarz::element_weight(element_weight, logical_coords,
+                                            intruding_overlap_widths,
+                                            element.external_boundaries());
+    } else {
+      set_number_of_grid_points(element_weight, num_points);
+      get(*element_weight) = 1.;
     }
 
     // Intruding overlap weights
-    DirectionMap<Dim, Scalar<DataVector>> intruding_overlap_weights{};
+    intruding_overlap_weights->clear();
     for (const auto& direction : element.internal_boundaries()) {
       const size_t dim = direction.dimension();
-      if (gsl::at(intruding_extents, dim) > 0) {
+      if (gsl::at(*intruding_extents, dim) > 0) {
         const auto intruding_logical_coords =
             LinearSolver::Schwarz::data_on_overlap(
-                logical_coords, mesh.extents(), gsl::at(intruding_extents, dim),
-                direction);
-        intruding_overlap_weights[direction] =
+                logical_coords, mesh.extents(),
+                gsl::at(*intruding_extents, dim), direction);
+        (*intruding_overlap_weights)[direction] =
             LinearSolver::Schwarz::intruding_weight(
                 intruding_logical_coords, direction, intruding_overlap_widths,
                 element.neighbors().at(direction).size(),
@@ -272,11 +292,23 @@ struct InitializeElement {
       }
     }
 
-    Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(intruding_extents),
-        std::move(element_weight), std::move(intruding_overlap_weights),
-        SubdomainData{num_points});
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    // Subdomain data buffer
+    *subdomain_data = SubdomainData{num_points};
+
+    // Subdomain solver
+    // The subdomain solver initially gets created from options on each element.
+    // Then we have to copy it around during AMR.
+    if constexpr (sizeof...(AmrData) == 1) {
+      if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {
+        // h-refinement: copy from the parent
+        *subdomain_solver = get<subdomain_solver_tag>(amr_data...)->get_clone();
+      } else if constexpr (tt::is_a_v<std::unordered_map, AmrData...>) {
+        // h-coarsening, copy from one of the children (doesn't matter which)
+        *subdomain_solver =
+            get<subdomain_solver_tag>(amr_data.begin()->second...)->get_clone();
+      }
+      (*subdomain_solver)->reset();
+    }
   }
 };
 
