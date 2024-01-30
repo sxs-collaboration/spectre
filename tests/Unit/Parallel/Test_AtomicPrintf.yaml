@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+---
+---
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+
+Lines: 100
+
+NumberOfElements: 40

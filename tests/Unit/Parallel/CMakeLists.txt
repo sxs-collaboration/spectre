@@ -135,6 +135,8 @@ add_algorithm_test("DetectHangArray"
   "This means the executable stopped because of a hang/deadlock\.")
 add_algorithm_test("DynamicInsertion")
 add_algorithm_test("PhaseChangeMain")
+add_algorithm_test("AtomicPrintf"
+  INPUT_FILE "Test_AtomicPrintf.yaml")
 add_algorithm_test(
   "SectionReductions"
   REGEX_TO_MATCH
