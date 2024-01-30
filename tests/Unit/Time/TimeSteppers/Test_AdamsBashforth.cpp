@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
   };
   CHECK(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
-  CHECK_FALSE(can_change(mid, start, end));
+  CHECK(can_change(mid, start, end));
   CHECK_FALSE(can_change(mid, end, start));
   CHECK_FALSE(can_change(end, start, mid));
   CHECK_FALSE(can_change(end, mid, start));
@@ -148,7 +148,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Backwards",
   CHECK_FALSE(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
   CHECK_FALSE(can_change(mid, start, end));
-  CHECK_FALSE(can_change(mid, end, start));
+  CHECK(can_change(mid, end, start));
   CHECK_FALSE(can_change(end, start, mid));
   CHECK(can_change(end, mid, start));
 }

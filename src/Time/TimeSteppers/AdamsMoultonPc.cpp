@@ -199,10 +199,14 @@ bool AdamsMoultonPc::dense_update_u_impl(const gsl::not_null<T*> u,
 template <typename T>
 bool AdamsMoultonPc::can_change_step_size_impl(
     const TimeStepId& time_id, const ConstUntypedHistory<T>& history) const {
-  // We need to forbid local time-stepping before initialization is
-  // complete.  We need to wait during the main evolution so we don't
-  // increase the step size and step to a time still in use from
-  // self-start, as that would cause the coefficients to diverge.
+  // We need to prevent the next step from occurring at the same time
+  // as one already in the history.  The self-start code ensures this
+  // can't happen during self-start, and it clearly can't happen
+  // during normal evolution where the steps are monotonic, but during
+  // the transition between them we have to worry about a step being
+  // placed on a self-start time.  The self-start algorithm guarantees
+  // the final state is safe for constant-time-step evolution, so we
+  // just force that until we've passed all the self-start times.
   const evolution_less_equal<Time> less_equal{time_id.time_runs_forward()};
   return not ::SelfStart::is_self_starting(time_id) and
          alg::all_of(history, [&](const auto& record) {
