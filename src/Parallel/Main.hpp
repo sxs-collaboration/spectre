@@ -160,15 +160,6 @@ class Main : public CBase_Main<Metavariables> {
   // current_termination_check_index_
   void check_if_component_terminated_correctly();
 
-  template <typename ParallelComponent>
-  using parallel_component_options = Parallel::get_option_tags<
-      typename ParallelComponent::simple_tags_from_options, Metavariables>;
-  using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      Parallel::OptionTags::ResourceInfo<Metavariables>,
-      Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
-      Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
-      tmpl::transform<component_list,
-                      tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
   // Lists of all parallel component types
   using group_component_list =
       tmpl::filter<component_list, tmpl::or_<Parallel::is_group<tmpl::_1>,
@@ -185,6 +176,23 @@ class Main : public CBase_Main<Metavariables> {
                               Parallel::is_bound_array<tmpl::_1>>>;
   using singleton_component_list =
       tmpl::filter<component_list, Parallel::is_singleton<tmpl::_1>>;
+
+  template <typename ParallelComponent>
+  using parallel_component_options = Parallel::get_option_tags<
+      typename ParallelComponent::simple_tags_from_options, Metavariables>;
+  template <typename ArrayComponent>
+  using array_component_allocation_options =
+      Parallel::get_option_tags<typename ArrayComponent::array_allocation_tags,
+                                Metavariables>;
+  using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+      Parallel::OptionTags::ResourceInfo<Metavariables>,
+      Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
+      Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
+      tmpl::transform<component_list,
+                      tmpl::bind<parallel_component_options, tmpl::_1>>,
+      tmpl::transform<
+          all_array_component_list,
+          tmpl::bind<array_component_allocation_options, tmpl::_1>>>>>;
 
   Parallel::Phase current_phase_{Parallel::Phase::Initialization};
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
