@@ -3,7 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# CaltechHPC is a supercomputer at Caltech.
+# CaltechHPC is a supercomputer at Caltech using the skylake intel nodes.
 # More information:
 # https://www.hpc.caltech.edu/documentation
 
