@@ -124,7 +124,8 @@ add_algorithm_test(
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmNodelock")
-add_algorithm_test("AlgorithmParallel")
+add_algorithm_test("AlgorithmParallel"
+  INPUT_FILE "Test_AlgorithmParallel.yaml")
 add_algorithm_test("AlgorithmReduction")
 add_algorithm_test("Callback")
 add_algorithm_test("DetectHangArray"
