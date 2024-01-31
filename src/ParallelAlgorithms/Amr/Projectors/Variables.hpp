@@ -35,11 +35,13 @@ namespace amr::projectors {
 template <size_t Dim, typename... VariablesTags>
 struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
   using return_tags = tmpl::list<VariablesTags...>;
-  using argument_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>>;
 
+  // p-refinement
   static void apply(
       const gsl::not_null<typename VariablesTags::type*>... vars,
-      const Mesh<Dim>& new_mesh,
+      const Element<Dim>& /*element*/, const Mesh<Dim>& new_mesh,
       const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
     const auto& old_mesh = old_mesh_and_element.first;
     if (old_mesh == new_mesh) {
@@ -52,21 +54,44 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
         (*vars = apply_matrices(projection_matrices, *vars, old_extents))...);
   }
 
+  // h-refinement
   template <typename... Tags>
-  static void apply(
-      const gsl::not_null<typename VariablesTags::type*>... /*vars*/,
-      const Mesh<Dim>& /*new_mesh*/,
-      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
-    ERROR("h-refinement not implemented yet");
+  static void apply(const gsl::not_null<typename VariablesTags::type*>... vars,
+                    const Element<Dim>& element, const Mesh<Dim>& mesh,
+                    const tuples::TaggedTuple<Tags...>& parent_items) {
+    const auto& element_id = element.id();
+    const auto& parent_id = get<domain::Tags::Element<Dim>>(parent_items).id();
+    std::array<Spectral::ChildSize, Dim> child_sizes{Spectral::ChildSize::Full};
+    for (size_t d = 0; d < Dim; ++d) {
+      if (parent_id.segment_id(d) == element_id.segment_id(d)) {
+        continue;
+      } else if (parent_id.segment_id(d).id_of_child(Side::Lower) ==
+                 element_id.segment_id(d)) {
+        gsl::at(child_sizes, d) = Spectral::ChildSize::LowerHalf;
+      } else if (parent_id.segment_id(d).id_of_child(Side::Upper) ==
+                 element_id.segment_id(d)) {
+        gsl::at(child_sizes, d) = Spectral::ChildSize::UpperHalf;
+      } else {
+        ERROR("Parent element " << parent_id << " is not a parent of element "
+                                << element_id << ". Please report this bug.");
+      }
+    }
+    const auto prolongation_matrices =
+        Spectral::projection_matrix_parent_to_child(mesh, mesh, child_sizes);
+    const auto& parent_extents = mesh.extents();
+    expand_pack((*vars = apply_matrices(prolongation_matrices,
+                                        get<VariablesTags>(parent_items),
+                                        parent_extents))...);
   }
 
+  // h-coarsening
   template <typename... Tags>
   static void apply(
       const gsl::not_null<typename VariablesTags::type*>... /*vars*/,
-      const Mesh<Dim>& /*new_mesh*/,
+      const Element<Dim>& /*element*/, const Mesh<Dim>& /*new_mesh*/,
       const std::unordered_map<ElementId<Dim>, tuples::TaggedTuple<Tags...>>&
       /*children_items*/) {
-    ERROR("h-refinement not implemented yet");
+    ERROR("h-coarsening not implemented yet");
   }
 };
 

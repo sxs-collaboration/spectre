@@ -90,7 +90,8 @@ struct ArrayComponent {
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
   using simple_tags = tmpl::list<
       domain::Tags::Element<volume_dim>, domain::Tags::Mesh<volume_dim>,
       domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
@@ -225,7 +226,7 @@ void test() {
 
   using NeighborMeshes = DirectionalIdMap<1, Mesh<1>>;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{::Verbosity::Debug}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_1_id,
       {element_1, element_1_mesh, NeighborMeshes{}, element_1_info,

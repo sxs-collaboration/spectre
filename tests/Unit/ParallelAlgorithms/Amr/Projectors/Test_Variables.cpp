@@ -75,9 +75,10 @@ void test_p_refine() {
   const auto expected_var_0 = make_vars(x_new, 1.0);
   const auto expected_var_1 = make_vars(x_new, 2.0);
 
-  auto box = db::create<db::AddSimpleTags<domain::Tags::Mesh<Dim>,
-                                          VariablesTag<0>, VariablesTag<1>>>(
-      new_mesh, std::move(var_0), std::move(var_1));
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                        VariablesTag<0>, VariablesTag<1>>>(
+      new_mesh, element, std::move(var_0), std::move(var_1));
 
   db::mutate_apply<amr::projectors::ProjectVariables<
       Dim, tmpl::list<VariablesTag<0>, VariablesTag<1>>>>(
@@ -85,6 +86,41 @@ void test_p_refine() {
 
   CHECK_VARIABLES_APPROX(db::get<VariablesTag<0>>(box), expected_var_0);
   CHECK_VARIABLES_APPROX(db::get<VariablesTag<1>>(box), expected_var_1);
+}
+
+template <size_t Dim>
+void test_h_refine() {
+  const ElementId<Dim> parent_element_id{0};
+  const Element<Dim> parent_element{parent_element_id,
+                                    DirectionMap<Dim, Neighbors<Dim>>{}};
+  const auto child_element_id = parent_element_id.id_of_child(0, Side::Lower);
+  const Element<Dim> child_element{child_element_id,
+                                   DirectionMap<Dim, Neighbors<Dim>>{}};
+  const Mesh<Dim> mesh{4, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto parent_logical_coords = logical_coordinates(mesh);
+  auto parent_var_0 = make_vars(parent_logical_coords, 1.0);
+  auto parent_var_1 = make_vars(parent_logical_coords, 2.0);
+  auto child_logical_coords = parent_logical_coords;
+  get<0>(child_logical_coords) =
+      0.5 * (get<0>(parent_logical_coords) + 1.0) - 1.0;
+  const auto child_var_0 = make_vars(child_logical_coords, 1.0);
+  const auto child_var_1 = make_vars(child_logical_coords, 2.0);
+
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                        VariablesTag<0>, VariablesTag<1>>>(
+      mesh, child_element, VariablesType{}, VariablesType{});
+
+  db::mutate_apply<amr::projectors::ProjectVariables<
+      Dim, tmpl::list<VariablesTag<0>, VariablesTag<1>>>>(
+      make_not_null(&box),
+      tuples::TaggedTuple<domain::Tags::Element<Dim>, VariablesTag<0>,
+                          VariablesTag<1>>(
+          parent_element, std::move(parent_var_0), std::move(parent_var_1)));
+
+  CHECK_VARIABLES_APPROX(db::get<VariablesTag<0>>(box), child_var_0);
+  CHECK_VARIABLES_APPROX(db::get<VariablesTag<1>>(box), child_var_1);
 }
 }  // namespace
 
@@ -97,4 +133,7 @@ SPECTRE_TEST_CASE("Unit.Amr.Projectors.Variables",
   test_p_refine<1>();
   test_p_refine<2>();
   test_p_refine<3>();
+  test_h_refine<1>();
+  test_h_refine<2>();
+  test_h_refine<3>();
 }

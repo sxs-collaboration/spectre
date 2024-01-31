@@ -21,6 +21,8 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
+#include "IO/Logging/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -30,10 +32,12 @@
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -116,6 +120,8 @@ struct AdjustDomain {
         Parallel::get_parallel_component<ParallelComponent>(cache);
     const auto& phase_bookmarks =
         Parallel::local(element_array[element_id])->phase_bookmarks();
+    const auto& verbosity =
+        db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box);
 
     // Check for h-refinement
     if (alg::any_of(my_amr_flags,
@@ -129,6 +135,10 @@ struct AdjustDomain {
       auto& amr_component =
           Parallel::get_parallel_component<amr::Component<Metavariables>>(
               cache);
+      if (verbosity >= Verbosity::Debug) {
+        Parallel::printf("Splitting element %s into %zu: %s\n", element_id,
+                         children_ids.size(), children_ids);
+      }
       Parallel::simple_action<CreateChild>(amr_component, element_array,
                                            element_id, children_ids, 0_st,
                                            phase_bookmarks);
@@ -144,6 +154,10 @@ struct AdjustDomain {
         auto& amr_component =
             Parallel::get_parallel_component<amr::Component<Metavariables>>(
                 cache);
+        if (verbosity >= Verbosity::Debug) {
+          Parallel::printf("Joining %zu elements: %s -> %s\n",
+                           ids_to_join.size(), ids_to_join, parent_id);
+        }
         Parallel::simple_action<CreateParent>(
             amr_component, element_array, std::move(parent_id), element_id,
             std::move(ids_to_join), phase_bookmarks);
@@ -178,7 +192,8 @@ struct AdjustDomain {
                 }
                 neighbors.set_ids_to(new_neighbor_ids);
               }
-              *element = Element<volume_dim>(element_id, new_neighbors);
+              *element =
+                  Element<volume_dim>(element_id, std::move(new_neighbors));
             },
             make_not_null(&box));
       }
@@ -194,6 +209,13 @@ struct AdjustDomain {
               *mesh = amr::projectors::mesh(old_mesh, my_amr_flags);
             },
             make_not_null(&box));
+
+        if (verbosity >= Verbosity::Debug) {
+          Parallel::printf(
+              "Increasing order of element %s: %s -> %s\n", element_id,
+              old_mesh.extents(),
+              db::get<::domain::Tags::Mesh<volume_dim>>(box).extents());
+        }
       }
 
       // Run the projectors on all elements, even if they did no h-refinement.
@@ -202,8 +224,14 @@ struct AdjustDomain {
       tmpl::for_each<amr_projectors>(
           [&box, &old_mesh_and_element](auto projector_v) {
             using projector = typename decltype(projector_v)::type;
-            db::mutate_apply<projector>(make_not_null(&box),
-                                        old_mesh_and_element);
+            try {
+              db::mutate_apply<projector>(make_not_null(&box),
+                                          old_mesh_and_element);
+            } catch (std::exception& e) {
+              ERROR("Error in AMR projector '"
+                    << pretty_type::short_name<projector>() << "':\n"
+                    << e.what());
+            }
           });
 
       // Reset the AMR flags

@@ -18,7 +18,10 @@ class ElementId;
 /// \endcond
 
 namespace amr::Tags {
-/// amr::Info for the neighbors of an Element.
+/// \brief amr::Info for the neighbors of an Element.
+///
+/// Note that the `amr::Info` is stored in the orientation of the neighbor,
+/// i.e., dimensions are not reoriented to the orientation of the element.
 template <size_t VolumeDim>
 struct NeighborInfo : db::SimpleTag {
   using type = std::unordered_map<ElementId<VolumeDim>, amr::Info<VolumeDim>>;
