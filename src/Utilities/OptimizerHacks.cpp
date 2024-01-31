@@ -21,5 +21,7 @@ template std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>,
                                     std::allocator<wchar_t>>::pointer
 std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>,
                            std::allocator<wchar_t>>::_M_use_local_data();
+template void std::__cxx11::basic_string<
+    char, std::char_traits<char>, std::allocator<char>>::_M_init_local_buf();
 #endif /* defined(__clang__) && __clang_major__ >= 15 && defined(__GLIBCXX__) \
         */
