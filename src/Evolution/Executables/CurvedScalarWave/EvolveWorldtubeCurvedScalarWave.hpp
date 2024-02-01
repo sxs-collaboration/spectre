@@ -295,7 +295,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
               volume_dim, Frame::Inertial, true>,
           CurvedScalarWave::Worldtube::Tags::FaceCoordinatesCompute<
-              volume_dim, Frame::Inertial, false>,
+              volume_dim, Frame::Inertial, true>,
+          CurvedScalarWave::Worldtube::Tags::GeodesicAccelerationCompute<3>,
           CurvedScalarWave::Worldtube::Tags::PunctureFieldCompute<volume_dim>,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

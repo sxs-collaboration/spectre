@@ -109,16 +109,19 @@ template <size_t Dim>
 void PunctureFieldCompute<Dim>::function(
     const gsl::not_null<return_type*> result,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-        inertial_face_coords,
-    const ::ExcisionSphere<Dim>& excision_sphere, const double time,
+        inertial_face_coords_centered,
+    const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
+        particle_position_velocity,
+    const tnsr::I<double, Dim>& particle_acceleration,
     const size_t expansion_order) {
-  if (inertial_face_coords.has_value()) {
+  if (inertial_face_coords_centered.has_value()) {
     if (not result->has_value()) {
-      result->emplace(get<0>(inertial_face_coords.value()).size());
+      result->emplace(get<0>(inertial_face_coords_centered.value()).size());
     }
-    puncture_field(
-        make_not_null(&(result->value())), inertial_face_coords.value(), time,
-        get(magnitude(excision_sphere.center())), 1., expansion_order);
+    puncture_field(make_not_null(&(result->value())),
+                   inertial_face_coords_centered.value(),
+                   particle_position_velocity[0], particle_position_velocity[1],
+                   particle_acceleration, 1., expansion_order);
   } else {
     result->reset();
   }
