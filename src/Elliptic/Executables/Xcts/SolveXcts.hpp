@@ -26,6 +26,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -140,8 +141,7 @@ struct Metavariables {
 
   using register_actions =
       tmpl::push_back<typename solver::register_actions,
-                      observers::Actions::RegisterEventsWithObservers,
-                      Parallel::Actions::TerminatePhase>;
+                      observers::Actions::RegisterEventsWithObservers>;
 
   using step_actions = tmpl::list<elliptic::Actions::RunEventsAndTriggers<
       solver::nonlinear_solver_iteration_id>>;
@@ -152,13 +152,21 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename solver::multigrid::options_group>>;
+
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<dg_element_array, register_actions>>;
+  };
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::flatten<

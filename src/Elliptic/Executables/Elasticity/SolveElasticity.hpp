@@ -36,6 +36,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -232,10 +233,9 @@ struct Metavariables {
       operator_applied_to_vars_tag>;
 
   using register_actions =
-      tmpl::list<observers::Actions::RegisterEventsWithObservers,
-                 typename multigrid::register_element,
-                 typename schwarz_smoother::register_element,
-                 Parallel::Actions::TerminatePhase>;
+      tmpl::flatten<tmpl::list<observers::Actions::RegisterEventsWithObservers,
+                               typename multigrid::register_element,
+                               typename schwarz_smoother::register_element>>;
 
   template <typename Label>
   using smooth_actions =
@@ -256,13 +256,21 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename multigrid::options_group>>;
+
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<dg_element_array, register_actions>>;
+  };
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::flatten<
