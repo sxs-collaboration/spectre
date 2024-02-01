@@ -23,9 +23,11 @@ Background: &background
   BinaryWithGravitationalWaves:
     MassLeft: &mass_left 1.
     MassRight: &mass_right 1.
-    XCoordsLeft: &x_left -4.
-    XCoordsRight: &x_right 4.
+    XCoordsLeft: &x_left -8.
+    XCoordsRight: &x_right 8.
     AttenuationParameter: 1.
+    OuterRadius: &outer_radius 40.
+    WriteEvolutionOption: True
 
 InitialGuess: *background
 
@@ -67,7 +69,7 @@ DomainCreator:
       Radius: &outer_shell_inner_radius 20.
       RadialDistribution: Linear
     OuterShell:
-      Radius: &outer_radius 30.
+      Radius: *outer_radius
       RadialDistribution: &outer_shell_distribution Linear
       OpeningAngle: 120.0
       BoundaryCondition: Flatness

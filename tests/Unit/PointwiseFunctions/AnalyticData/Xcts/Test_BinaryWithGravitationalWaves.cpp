@@ -93,7 +93,8 @@ struct Metavariables {
 
 void test_data(const double mass_left, const double mass_right,
                const double xcoord_left, const double xcoord_right,
-               const double attenuation_parameter,
+               const double attenuation_parameter, const double outer_radius,
+               const bool write_evolution_option,
                const std::string& options_string) {
   const auto created = TestHelpers::test_creation<
       std::unique_ptr<elliptic::analytic_data::Background>, Metavariables>(
@@ -110,6 +111,8 @@ void test_data(const double mass_left, const double mass_right,
     CHECK(binary.xcoord_left() == xcoord_left);
     CHECK(binary.xcoord_right() == xcoord_right);
     CHECK(binary.attenuation_parameter() == attenuation_parameter);
+    CHECK(binary.outer_radius() == outer_radius);
+    CHECK(binary.write_evolution_option() == write_evolution_option);
   }
   {
     INFO("Check derivative");
@@ -200,7 +203,6 @@ void test_data(const double mass_left, const double mass_right,
                           tmpl::size_t<3>, Frame::Inertial>>(deriv_variables);
 
     Approx approx = Approx::custom().epsilon(1e-3).scale(1.);
-
     CHECK_ITERABLE_CUSTOM_APPROX(deriv_3_distance_right_test,
                                  deriv_3_distance_right, approx);
     CHECK_ITERABLE_CUSTOM_APPROX(deriv_3_distance_left_test,
@@ -248,13 +250,15 @@ SPECTRE_TEST_CASE(
     "[PointwiseFunctions][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
-  test_data(1.1, .9, -4.5, 10.2, .99,
+  test_data(1.1, .9, -4.5, 10.2, .99, 21., false,
             "BinaryWithGravitationalWaves:\n"
             "  MassLeft: 1.1\n"
             "  MassRight: .9\n"
             "  XCoordsLeft: -4.5\n"
             "  XCoordsRight: 10.2\n"
-            "  AttenuationParameter: .99\n");
+            "  AttenuationParameter: .99\n"
+            "  OuterRadius: 21.\n"
+            "  WriteEvolutionOption: False");
 }
 
 }  // namespace Xcts::AnalyticData
