@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Binary.cpp
+  WavyBBH.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   Binary.hpp
   CommonVariables.hpp
   CommonVariables.tpp
+  WavyBBH.hpp
   )
 
 target_link_libraries(
