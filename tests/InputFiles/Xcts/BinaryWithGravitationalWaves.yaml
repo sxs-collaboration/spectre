@@ -1,0 +1,228 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveXcts
+Testing:
+  Check: parse
+  Timeout: 30
+  Priority: High
+ExpectedOutput:
+  - BwGWReductions.h5
+  - BwGWVolume0.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background: &background
+  BinaryWithGravitationalWaves:
+    MassLeft: &mass_left 1.
+    MassRight: &mass_right 1.
+    XCoordsLeft: &x_left -4.
+    XCoordsRight: &x_right 4.
+    YMomentumLeft: -.366
+    YMomentumRight: .366
+    AttenuationParameter: 1.
+
+InitialGuess: *background
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.4
+      OuterRadius: 2.
+      XCoord: *x_right
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_right, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: &bh_right
+              Schwarzschild:
+                Mass: *mass_right
+                Coordinates: Isotropic
+            NegativeExpansion: *bh_right
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: 0.4
+      OuterRadius: 0.5
+      XCoord: *x_left
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_left, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: &bh_left
+              Schwarzschild:
+                Mass: *mass_left
+                Coordinates: Isotropic
+            NegativeExpansion: *bh_left
+      UseLogarithmicMap: True
+    Envelope:
+      Radius: &outer_shell_inner_radius 14.
+      RadialDistribution: Linear
+    OuterShell:
+      Radius: &outer_radius 20.
+      RadialDistribution: &outer_shell_distribution Linear
+      OpeningAngle: 90.0
+      BoundaryCondition: Flatness
+    UseEquiangularMap: True
+    # This h-refinement is set up so spherical wedges have equal angular size.
+    # Once the domain supports equatorial compression (or similar) this
+    # h-refinement will simplify considerably.
+    InitialRefinement:
+      ObjectAShell:               [1, 1, 1]
+      ObjectBShell:               [1, 1, 1]
+      ObjectACube:                [1, 1, 1]
+      ObjectBCube:                [1, 1, 1]
+      EnvelopeUpperZLeft:         [1, 1, 1]
+      EnvelopeLowerZLeft:         [1, 1, 1]
+      EnvelopeUpperYLeft:         [1, 1, 1]
+      EnvelopeLowerYLeft:         [1, 1, 1]
+      EnvelopeLowerX:             [1, 1, 1]
+      EnvelopeUpperZRight:        [1, 1, 1]
+      EnvelopeLowerZRight:        [1, 1, 1]
+      EnvelopeUpperYRight:        [1, 1, 1]
+      EnvelopeLowerYRight:        [1, 1, 1]
+      EnvelopeUpperX:             [1, 1, 1]
+      OuterShellUpperZLeft:       [0, 1, 0]
+      OuterShellLowerZLeft:       [0, 1, 0]
+      OuterShellUpperYLeft:       [0, 1, 0]
+      OuterShellLowerYLeft:       [0, 1, 0]
+      OuterShellLowerX:           [1, 1, 0]
+      OuterShellUpperZRight:      [0, 1, 0]
+      OuterShellLowerZRight:      [0, 1, 0]
+      OuterShellUpperYRight:      [0, 1, 0]
+      OuterShellLowerYRight:      [0, 1, 0]
+      OuterShellUpperX:           [1, 1, 0]
+    # This p-refinement represents a crude manual optimization of the domain. We
+    # will need AMR to optimize the domain further.
+    InitialGridPoints:
+      ObjectAShell:   [6, 6, 10]
+      ObjectBShell:   [6, 6, 10]
+      ObjectACube:    [6, 6, 7]
+      ObjectBCube:    [6, 6, 7]
+      Envelope:       [6, 6, 6]
+      OuterShell:     [6, 6, 6]
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+    Quadrature: GaussLobatto
+    Formulation: WeakInertial
+
+Observers:
+  VolumeFileName: "BwGWVolume"
+  ReductionFileName: "BwGWReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 1.e-10
+      AbsoluteResidual: 1.e-11
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Verbose
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 100
+      RelativeResidual: 1.e-3
+      AbsoluteResidual: 1.e-10
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    MaxOverlap: 2
+    Iterations: 3
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-10
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+
+RadiallyCompressedCoordinates:
+  InnerRadius: *outer_shell_inner_radius
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
+
+EventsAndTriggers:
+  - Trigger:
+      EveryNIterations:
+        N: 1000000
+        Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: BackgroundData
+          VariablesToObserve:
+            - Conformal(SpatialMetric)
+            - TraceExtrinsicCurvature
+            - ShiftBackground
+            - LongitudinalShiftBackgroundMinusDtConformalMetric
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: ConformalFactor
+              NormType: Max
+              Components: Individual
+            - Name: Lapse
+              NormType: Min
+              Components: Individual
+            - Name: Magnitude(ShiftExcess)
+              NormType: Max
+              Components: Individual
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - ShiftExcess
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - HamiltonianConstraint
+            - MomentumConstraint
+            - RadiallyCompressedCoordinates
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+
