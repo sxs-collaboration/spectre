@@ -19,6 +19,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::subcell {
+namespace {
 template <size_t Dim>
 void test() {
   using tag = subcell::Tags::NeighborTciDecisions<Dim>;
@@ -80,4 +81,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.NeighborTciDecision",
   test<2>();
   test<3>();
 }
+}  // namespace
 }  // namespace evolution::dg::subcell
