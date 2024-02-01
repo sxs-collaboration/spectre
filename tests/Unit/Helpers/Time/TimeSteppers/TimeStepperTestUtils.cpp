@@ -339,8 +339,9 @@ void check_convergence_order(const TimeStepper& stepper,
         approx(stepper.order()).margin(0.4));
 }
 
-void check_dense_output(const TimeStepper& stepper,
-                        const size_t history_integration_order) {
+void check_dense_output(
+    const TimeStepper& stepper, const size_t history_integration_order,
+    const std::pair<int32_t, int32_t>& convergence_step_range) {
   const auto get_dense = [&stepper, &history_integration_order](
                              const TimeDelta& step_size, const double time) {
     const auto impl = [&stepper, &history_integration_order, &step_size,
@@ -418,16 +419,12 @@ void check_dense_output(const TimeStepper& stepper,
 
   // Test convergence
   {
-    const int32_t large_steps = 10;
-    // The high-order solvers have round-off error around here
-    const int32_t small_steps = 30;
-
     const auto error = [&get_dense](const int32_t steps) {
       const Slab slab(0., 1.);
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
     };
-    CHECK(convergence_rate({large_steps, small_steps}, 1, error) ==
+    CHECK(convergence_rate(convergence_step_range, 1, error) ==
           approx(history_integration_order).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
@@ -435,7 +432,7 @@ void check_dense_output(const TimeStepper& stepper,
       return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
                  exp(-0.25 * M_PI));
     };
-    CHECK(convergence_rate({large_steps, small_steps}, 1, error_backwards) ==
+    CHECK(convergence_rate(convergence_step_range, 1, error_backwards) ==
           approx(history_integration_order).margin(0.4));
   }
 }

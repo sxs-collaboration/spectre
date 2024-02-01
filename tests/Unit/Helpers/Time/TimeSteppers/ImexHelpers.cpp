@@ -86,4 +86,49 @@ void check_convergence_order(const ImexTimeStepper& stepper,
   CHECK(convergence_rate(step_range, 1, do_integral, output) ==
         approx(stepper.imex_order()).margin(0.4));
 }
+
+void check_bounded_dense_output(const ImexTimeStepper& stepper) {
+  const double decay_constant = 1.0e5;
+  const Slab slab(0.0, 1.0);
+  const auto time_step = slab.duration();
+  const auto rhs = [&](const double v, const double /*t*/) {
+    return -decay_constant * v;
+  };
+
+  TimeStepId time_step_id(true, 0, slab.start());
+  double y = 1.0;
+  TimeSteppers::History<double> history{stepper.order()};
+  initialize_history(
+      time_step_id.step_time(), make_not_null(&history),
+      [&](const double t) { return exp(-decay_constant * t); }, rhs, time_step,
+      stepper.number_of_past_steps());
+  double test_time = 0.0;
+  for (;;) {
+    history.insert(time_step_id, TimeSteppers::History<double>::no_value,
+                   rhs(y, time_step_id.substep_time()));
+
+    while (test_time < 1.0) {
+      y = 1.0;
+      if (not stepper.dense_update_u(make_not_null(&y), history, test_time)) {
+        break;
+      }
+      CHECK(abs(y) < 5.0);
+      test_time += 0.1;
+    }
+
+    if (time_step_id.slab_number() != 0) {
+      break;
+    }
+
+    y = 1.0;
+    stepper.add_inhomogeneous_implicit_terms(
+        make_not_null(&y), make_not_null(&history), time_step);
+    const double weight =
+        stepper.implicit_weight(make_not_null(&history), time_step);
+
+    y /= 1.0 + decay_constant * weight;
+    time_step_id = stepper.next_time_id(time_step_id, time_step);
+  }
+  CHECK(test_time >= 1.0);
+}
 }  // namespace TimeStepperTestUtils::imex
