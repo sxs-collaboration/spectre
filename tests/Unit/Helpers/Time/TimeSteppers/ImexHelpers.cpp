@@ -21,16 +21,7 @@ namespace TimeStepperTestUtils::imex {
 void check_convergence_order(const ImexTimeStepper& stepper,
                              const std::pair<int32_t, int32_t>& step_range,
                              const bool output) {
-  // Make sure testing code is not left enabled.
-  CHECK(not output);
-
-  std::ofstream output_stream{};
-  if (output) {
-    output_stream.open("convergence.dat");
-    output_stream.precision(18);
-  }
-  const auto do_integral = [&output, &output_stream,
-                            &stepper](const int32_t num_steps) {
+  const auto do_integral = [&stepper](const int32_t num_steps) {
     const Slab slab(0., 1.);
     const TimeDelta step_size = slab.duration() / num_steps;
 
@@ -90,12 +81,9 @@ void check_convergence_order(const ImexTimeStepper& stepper,
       time_step_id = stepper.next_time_id(time_step_id, step_size);
     }
     const double result = abs(y - exp(1.));
-    if (output) {
-      output_stream << num_steps << "\t" << result << std::endl;
-    }
     return result;
   };
-  CHECK(convergence_rate(step_range, 1, do_integral) ==
+  CHECK(convergence_rate(step_range, 1, do_integral, output) ==
         approx(stepper.imex_order()).margin(0.4));
 }
 }  // namespace TimeStepperTestUtils::imex
