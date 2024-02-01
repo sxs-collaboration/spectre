@@ -5,6 +5,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/ImexHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/Rk3Kennedy.hpp"
@@ -34,7 +35,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3Kennedy", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper, {10, 50});
   TimeStepperTestUtils::check_dense_output(stepper, 3_st);
 
-  TimeStepperTestUtils::check_imex_convergence_order(stepper, {10, 50});
+  TimeStepperTestUtils::imex::check_convergence_order(stepper, {10, 50});
 
   TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Rk3Kennedy>(
       "Rk3Kennedy");

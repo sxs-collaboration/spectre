@@ -16,7 +16,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/ImexTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -97,10 +96,6 @@ void check_dense_output(const TimeStepper& stepper,
 
 void check_strong_stability_preservation(const TimeStepper& stepper,
                                          double step_size);
-
-void check_imex_convergence_order(const ImexTimeStepper& stepper,
-                                  const std::pair<int32_t, int32_t>& step_range,
-                                  bool output = false);
 
 template <typename F>
 double convergence_rate(
