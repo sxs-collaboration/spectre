@@ -41,8 +41,11 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Time/Slab.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -138,7 +141,7 @@ struct Component {
   using simple_tags_from_options =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
 
-  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
+  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time, Tags::TimeStep>;
   using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
       ::domain::Tags::FunctionsOfTimeInitialize>>;
   using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
@@ -153,8 +156,10 @@ struct Component {
           control_system::Actions::InitializeMeasurements<control_systems>>>>;
 };
 
+template <bool LocalTimeStepping>
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -166,24 +171,36 @@ struct Metavariables {
   };
 };
 
+template <bool LocalTimeStepping>
 void test_initialize_measurements(const bool ab_active, const bool c_active) {
+  CAPTURE(LocalTimeStepping);
   CAPTURE(ab_active);
   CAPTURE(c_active);
 
-  register_factory_classes_with_charm<Metavariables>();
+  register_factory_classes_with_charm<Metavariables<LocalTimeStepping>>();
   register_classes_with_charm<
       domain::FunctionsOfTime::PiecewisePolynomial<0>>();
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using component = Component<Metavariables>;
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<LocalTimeStepping>>;
+  using component = Component<Metavariables<LocalTimeStepping>>;
   const component* const component_p = nullptr;
 
   // Details shouldn't matter
   const double initial_time = 2.0;
   const size_t measurements_per_update = 6;
+  const double initial_timescale = 1.5;
+  const double fot_expiration = 4.0;
+
+  const double step_to_expiration_ratio = c_active ? 3.0 : 0.2;
+
+  const auto initial_slab = Slab::with_duration_from_start(
+      initial_time, step_to_expiration_ratio * (fot_expiration - initial_time));
+  const auto initial_time_step = initial_slab.duration();
+
   const auto timescale =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-          0.0, std::array{DataVector{1.0}}, 2.0);
+          0.0, std::array{DataVector{initial_timescale}}, 2.0);
   const auto inactive_timescale =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           0.0, std::array{DataVector{std::numeric_limits<double>::infinity()}},
@@ -195,19 +212,24 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
                      (ab_active ? timescale : inactive_timescale)->get_clone());
   timescales.emplace("C",
                      (c_active ? timescale : inactive_timescale)->get_clone());
+
+  const auto fot =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+          0.0, std::array{DataVector{1.0}}, fot_expiration);
+
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions;
-  functions.emplace("A", timescale->get_clone());
-  functions.emplace("B", timescale->get_clone());
-  functions.emplace("C", timescale->get_clone());
+  functions.emplace("A", fot->get_clone());
+  functions.emplace("B", fot->get_clone());
+  functions.emplace("C", fot->get_clone());
 
   MockRuntimeSystem runner{{::Verbosity::Silent, measurements_per_update},
                            {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0,
-      {Tags::TimeStepId::type{true, 0, {}}, initial_time},
+      {Tags::TimeStepId::type{true, 0, {}}, initial_time, initial_time_step},
       evolution::Tags::EventsAndDenseTriggers::type{});
 
   // InitializeRunEventsAndDenseTriggers
@@ -240,6 +262,16 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
         (c_active ? std::nullopt
                   : std::optional(std::numeric_limits<double>::infinity())));
 
+  if (c_active) {
+    // 4 is because of the 3.0 in the step_to_expiration_ratio above.
+    const auto reduced_time_step =
+        LocalTimeStepping ? initial_time_step / 4
+                          : Slab(initial_time, fot_expiration).duration();
+    CHECK(db::get<::Tags::TimeStep>(box) == reduced_time_step);
+  } else {
+    CHECK(db::get<::Tags::TimeStep>(box) == initial_time_step);
+  }
+
   auto& events_and_dense_triggers =
       db::get_mutable_reference<evolution::Tags::EventsAndDenseTriggers>(
           make_not_null(&box));
@@ -266,9 +298,10 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
                   "[ControlSystem][Unit]") {
-  test_initialize_measurements(true, true);
-  test_initialize_measurements(true, false);
-  test_initialize_measurements(false, true);
-  test_initialize_measurements(false, false);
+  for (const auto& [ab_active, c_active] :
+       cartesian_product(std::array{true, false}, std::array{true, false})) {
+    test_initialize_measurements<false>(ab_active, c_active);
+    test_initialize_measurements<true>(ab_active, c_active);
+  }
 }
 }  // namespace

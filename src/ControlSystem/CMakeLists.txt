@@ -57,6 +57,7 @@ target_link_libraries(
   Logging
   Parallel
   Serialization
+  Time
   Utilities
   INTERFACE
   Observer

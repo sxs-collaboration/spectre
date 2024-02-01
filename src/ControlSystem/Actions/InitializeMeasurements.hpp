@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -23,11 +24,20 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Time/ChooseLtsStepSize.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+struct TimeStep;
+}  // namespace Tags
+namespace domain::Tags {
+struct FunctionsOfTime;
+}  // namespace domain::Tags
 namespace evolution::Tags {
 struct EventsAndDenseTriggers;
 }  // namespace evolution::Tags
@@ -119,6 +129,39 @@ struct InitializeMeasurements {
               });
         },
         make_not_null(&box));
+
+    // Ensure that the initial time step is small enough that we don't
+    // need to perform any measurements to complete it.  This is only
+    // necessary for TimeSteppers that use the self-start procedure,
+    // because they cannot adjust their step size on the first step
+    // after self-start, but it isn't harmful to do it in other cases.
+    //
+    // Unlike in the steady-state step-limiting code, we don't do
+    // anything clever looking at measurement times or planning ahead
+    // for future steps.  Avoiding a single non-ideal step isn't worth
+    // the added complexity.
+    double earliest_expiration = std::numeric_limits<double>::infinity();
+    for (const auto& fot :
+         Parallel::get<domain::Tags::FunctionsOfTime>(cache)) {
+      earliest_expiration =
+          std::min(earliest_expiration, fot.second->time_bounds()[1]);
+    }
+    const auto& time_step = db::get<::Tags::TimeStep>(box);
+    const auto start_time = time_step.slab().start();
+    if ((start_time + time_step).value() > earliest_expiration) {
+      db::mutate<::Tags::TimeStep>(
+          [&](const gsl::not_null<TimeDelta*> step) {
+            if constexpr (Metavariables::local_time_stepping) {
+              *step = choose_lts_step_size(
+                  start_time,
+                  0.99 * (earliest_expiration - start_time.value()));
+            } else {
+              *step = Slab(start_time.value(), earliest_expiration).duration();
+            }
+          },
+          make_not_null(&box));
+    }
+
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

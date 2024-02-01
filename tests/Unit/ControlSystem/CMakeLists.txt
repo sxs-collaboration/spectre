@@ -44,5 +44,6 @@ target_link_libraries(
   Parallel
   PostNewtonianHelpers
   SphericalHarmonics
+  Time
   Utilities
 )
