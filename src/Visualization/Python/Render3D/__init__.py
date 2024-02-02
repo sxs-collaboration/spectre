@@ -8,6 +8,7 @@ class Render3DCommands(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "clip",
+            "domain",
         ]
 
     def get_command(self, ctx, name):
@@ -15,6 +16,12 @@ class Render3DCommands(click.MultiCommand):
             from spectre.Visualization.Render3D.Clip import render_clip_command
 
             return render_clip_command
+        elif name == "domain":
+            from spectre.Visualization.Render3D.Domain import (
+                render_domain_command,
+            )
+
+            return render_domain_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise click.UsageError(
