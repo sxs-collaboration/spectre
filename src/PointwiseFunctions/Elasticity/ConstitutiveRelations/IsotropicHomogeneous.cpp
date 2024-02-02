@@ -4,11 +4,13 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 
 #include <array>
-#include <pup.h>  // IWYU pragma: keep
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -19,6 +21,12 @@ template <size_t Dim>
 IsotropicHomogeneous<Dim>::IsotropicHomogeneous(double bulk_modulus,
                                                 double shear_modulus)
     : bulk_modulus_(bulk_modulus), shear_modulus_(shear_modulus) {}
+
+template <size_t Dim>
+std::unique_ptr<ConstitutiveRelation<Dim>>
+IsotropicHomogeneous<Dim>::get_clone() const {
+  return std::make_unique<IsotropicHomogeneous>(*this);
+}
 
 template <>
 void IsotropicHomogeneous<3>::stress(

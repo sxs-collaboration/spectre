@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -56,6 +57,10 @@ class ConstitutiveRelation : public PUP::able {
   ~ConstitutiveRelation() override = default;
 
   WRAPPED_PUPable_abstract(ConstitutiveRelation);  // NOLINT
+
+  /// Returns a `std::unique_ptr` pointing to a copy of the
+  /// `ConstitutiveRelation`.
+  virtual std::unique_ptr<ConstitutiveRelation<Dim>> get_clone() const = 0;
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material

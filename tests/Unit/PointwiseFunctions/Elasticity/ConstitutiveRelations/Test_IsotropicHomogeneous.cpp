@@ -31,10 +31,17 @@ void test_type_traits() {
   CHECK(relation != IsotropicHomogeneous<Dim>{2., 2.});
   test_serialization(relation);
   test_copy_semantics(relation);
-  const auto created_relation =
-      TestHelpers::test_creation<IsotropicHomogeneous<Dim>>(
-          "BulkModulus: 1.\n"
-          "ShearModulus: 2.\n");
+  const auto created_ptr =
+      TestHelpers::test_factory_creation<ConstitutiveRelation<Dim>,
+                                         IsotropicHomogeneous<Dim>>(
+          "IsotropicHomogeneous:\n"
+          "  BulkModulus: 1.\n"
+          "  ShearModulus: 2.\n")
+          ->get_clone();
+  REQUIRE(dynamic_cast<const IsotropicHomogeneous<Dim>*>(created_ptr.get()) !=
+          nullptr);
+  const auto& created_relation =
+      dynamic_cast<const IsotropicHomogeneous<Dim>&>(*created_ptr);
   CHECK(created_relation == relation);
   IsotropicHomogeneous<Dim> moved_relation{1., 2.};
   test_move_semantics(std::move(moved_relation), relation);

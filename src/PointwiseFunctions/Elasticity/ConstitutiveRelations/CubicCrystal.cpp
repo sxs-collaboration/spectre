@@ -4,11 +4,13 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/CubicCrystal.hpp"
 
 #include <array>
-#include <pup.h>  // IWYU pragma: keep
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -25,6 +27,10 @@ CubicCrystal::CubicCrystal(const double c_11, const double c_12,
           << c_11 << " and c_12=" << c_12
           << ". This is because the youngs_modulus "
              "must be positive and the poisson ratio smaller or equal to 0.5.");
+}
+
+std::unique_ptr<ConstitutiveRelation<3>> CubicCrystal::get_clone() const {
+  return std::make_unique<CubicCrystal>(*this);
 }
 
 void CubicCrystal::stress(const gsl::not_null<tnsr::II<DataVector, 3>*> stress,

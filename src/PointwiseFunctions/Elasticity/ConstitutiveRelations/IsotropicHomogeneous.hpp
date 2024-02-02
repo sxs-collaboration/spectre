@@ -5,11 +5,12 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -126,6 +127,8 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
   ~IsotropicHomogeneous() override = default;
 
   IsotropicHomogeneous(double bulk_modulus, double shear_modulus);
+
+  std::unique_ptr<ConstitutiveRelation<Dim>> get_clone() const override;
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material

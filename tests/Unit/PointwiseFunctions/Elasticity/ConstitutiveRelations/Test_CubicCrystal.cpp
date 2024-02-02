@@ -31,10 +31,16 @@ void test_semantics() {
   CHECK(relation != CubicCrystal{3., 0.2, 1.});
   test_serialization(relation);
   test_copy_semantics(relation);
-  const auto created_relation = TestHelpers::test_creation<CubicCrystal>(
-      "C_11: 3.\n"
-      "C_12: 2.\n"
-      "C_44: 1.\n");
+  const auto created_ptr =
+      TestHelpers::test_factory_creation<ConstitutiveRelation<3>, CubicCrystal>(
+          "CubicCrystal:\n"
+          "  C_11: 3.\n"
+          "  C_12: 2.\n"
+          "  C_44: 1.\n")
+          ->get_clone();
+  REQUIRE(dynamic_cast<const CubicCrystal*>(created_ptr.get()) != nullptr);
+  const auto& created_relation =
+      dynamic_cast<const CubicCrystal&>(*created_ptr);
   CHECK(created_relation == relation);
   CubicCrystal moved_relation{3., 2., 1.};
   test_move_semantics(std::move(moved_relation), relation);
