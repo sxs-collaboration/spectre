@@ -7,8 +7,8 @@ Testing:
   Timeout: 30
   Priority: High
 ExpectedOutput:
-  - BbhReductions.h5
-  - BbhVolume0.h5
+  - WBbhReductions.h5
+  - WBbhVolume0.h5
 
 ---
 
@@ -21,9 +21,8 @@ ResourceInfo:
 
 Background: &background
   WavyBBH:
-    MassLeft: 1.
-    MassRight: 1.
-
+    MassLeft: &mass_left 1.
+    MassRight: &mass_right 1.
 
 InitialGuess: *background
 
@@ -31,34 +30,40 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: 0.8
-      OuterRadius: 4.
-      XCoord: *x_right
+      OuterRadius: 2.
+      XCoord: 4.
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_right, 0., 0.]
+            Center: [4., 0., 0.]
             Rotation: [0., 0., 0.]
-            Lapse: *kerr_right
-            NegativeExpansion: *kerr_right
+            Lapse: &bh_right
+              Schwarzschild:
+                Mass: *mass_right
+                Coordinates: Isotropic
+            NegativeExpansion: *bh_right
       UseLogarithmicMap: True
     ObjectB:
       InnerRadius: 0.8
-      OuterRadius: 4.
-      XCoord: *x_left
+      OuterRadius: 2.
+      XCoord: -4.
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_left, 0., 0.]
+            Center: [-4., 0., 0.]
             Rotation: [0., 0., 0.]
-            Lapse: *kerr_left
-            NegativeExpansion: *kerr_left
+            Lapse: &bh_left
+              Schwarzschild:
+                Mass: *mass_left
+                Coordinates: Isotropic
+            NegativeExpansion: *bh_left
       UseLogarithmicMap: True
     Envelope:
-      Radius: &outer_shell_inner_radius 60.
-      RadialDistribution: Projective
+      Radius: &outer_shell_inner_radius 20.
+      RadialDistribution: Linear
     OuterShell:
-      Radius: &outer_radius 1.e9
-      RadialDistribution: &outer_shell_distribution Inverse
+      Radius: &outer_radius 100.
+      RadialDistribution: &outer_shell_distribution Linear
       OpeningAngle: 90.0
       BoundaryCondition: Flatness
     UseEquiangularMap: True

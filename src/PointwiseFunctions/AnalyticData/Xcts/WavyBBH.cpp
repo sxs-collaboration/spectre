@@ -18,7 +18,9 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace Xcts::AnalyticData::detail {
+namespace Xcts::AnalyticData {
+
+namespace detail {
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
@@ -77,9 +79,121 @@ void WavyBBHVariables<DataType>::operator()(
             longitudinal_shift_background_minus_dt_conformal_metric->end(), 0.);
 }
 
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
+    gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+  std::fill(deriv_shift_background->begin(), deriv_shift_background->end(), 0.);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/) const {
+  get(*conformal_energy_density) = 0;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const {
+  get(*conformal_stress_trace) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> /*meta*/)
+    const {
+  std::fill(conformal_momentum_density->begin(),
+            conformal_momentum_density->end(), 0.);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
+  get(*conformal_factor_minus_one) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*>
+        lapse_times_conformal_factor_minus_one,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
+  get(*lapse_times_conformal_factor_minus_one) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
+  std::fill(shift_excess->begin(), shift_excess->end(), 0.);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> rest_mass_density,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::RestMassDensity<DataType> /*meta*/) const {
+  get(*rest_mass_density) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const {
+  get(*specific_enthalpy) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> pressure,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::Pressure<DataType> /*meta*/) const {
+  get(*pressure) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const {
+  std::fill(spatial_velocity->begin(), spatial_velocity->end(), 0.);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> lorentz_factor,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::LorentzFactor<DataType> /*meta*/) const {
+  get(*lorentz_factor) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+    const gsl::not_null<Cache*> /*cache*/,
+    hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
+  std::fill(magnetic_field->begin(), magnetic_field->end(), 0.);
+}
+
 template class WavyBBHVariables<DataVector>;
 
 }  // namespace Xcts::AnalyticData::detail
+
+PUP::able::PUP_ID WavyBBH::my_PUP_ID = 0;  // NOLINT
+
+}  // namespace Xcts::AnalyticData
 
 template class Xcts::AnalyticData::CommonVariables<
     DataVector,

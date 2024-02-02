@@ -36,6 +36,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/WavyBBH.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -105,7 +106,8 @@ struct Metavariables {
     using analytic_solutions_and_data = tmpl::push_back<
         Xcts::Solutions::all_analytic_solutions,
         Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
-                                   Xcts::Solutions::all_analytic_solutions>>;
+                                   Xcts::Solutions::all_analytic_solutions>,
+        Xcts::AnalyticData::WavyBBH>;
 
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
