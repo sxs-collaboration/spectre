@@ -189,7 +189,7 @@ void WavyBBHVariables<DataType>::operator()(
 
 template class WavyBBHVariables<DataVector>;
 
-}  // namespace Xcts::AnalyticData::detail
+}  // namespace detail
 
 PUP::able::PUP_ID WavyBBH::my_PUP_ID = 0;  // NOLINT
 
