@@ -36,7 +36,7 @@ def clean_output(input_file, output_dir, force):
     with open(input_file, "r") as open_input_file:
         metadata = next(yaml.safe_load_all(open_input_file))
 
-    if "ExpectedOutput" not in metadata:
+    if not metadata or "ExpectedOutput" not in metadata:
         logging.warning(
             f"Input file {input_file} does not list 'ExpectedOutput' files."
         )

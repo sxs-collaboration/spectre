@@ -380,7 +380,7 @@ def schedule(
         metadata = yaml.safe_load(metadata_yaml)
         try:
             executable = metadata["Executable"]
-        except KeyError as err:
+        except (KeyError, TypeError) as err:
             raise ValueError(
                 "Specify an 'executable' ('--executable' / '-e') "
                 "or list one in the input file metadata "
@@ -594,7 +594,7 @@ def schedule(
                 returncode=process.returncode, cmd=run_command
             )
         # Run the 'Next' entrypoint listed in the input file metadata
-        if "Next" in metadata:
+        if metadata and "Next" in metadata:
             run_next(
                 metadata["Next"], input_file_path=input_file_path, cwd=run_dir
             )

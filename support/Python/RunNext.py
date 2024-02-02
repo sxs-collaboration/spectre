@@ -112,7 +112,7 @@ def run_next_command(input_file_path, input_run_dir):
         input_run_dir = Path(input_file_path).resolve().parent
     with open(input_file_path) as open_input_file:
         metadata = next(yaml.safe_load_all(open_input_file))
-    if "Next" not in metadata:
+    if not metadata or "Next" not in metadata:
         logger.info(
             "The input file metadata lists no 'Next' entrypoint. Nothing to do."
         )
