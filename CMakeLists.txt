@@ -99,6 +99,7 @@ include(SetupFormaline)
 include(SetupGitHooks)
 include(SetBuildType)
 include(SetupPic)
+include(SetupLinkTimeOptimization)
 include(SetCxxStandard)
 include(StripSymbols)
 # We need Boost for InfoAtLink
