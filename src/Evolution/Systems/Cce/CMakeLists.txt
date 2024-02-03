@@ -12,6 +12,7 @@ spectre_target_sources(
   BoundaryData.cpp
   Equations.cpp
   GaugeTransformBoundaryData.cpp
+  KleinGordonSource.cpp
   LinearOperators.cpp
   LinearSolve.cpp
   NewmanPenrose.cpp
@@ -47,6 +48,7 @@ spectre_target_headers(
   SpecBoundaryData.hpp
   SwshDerivatives.hpp
   System.hpp
+  KleinGordonSource.hpp
   KleinGordonSystem.hpp
   Tags.hpp
   WorldtubeBufferUpdater.hpp
