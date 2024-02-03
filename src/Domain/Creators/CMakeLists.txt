@@ -11,6 +11,7 @@ spectre_target_sources(
   AlignedLattice.cpp
   BinaryCompactObject.cpp
   BinaryCompactObjectHelpers.cpp
+  BlockGroups.cpp
   Brick.cpp
   Cylinder.cpp
   CylindricalBinaryCompactObject.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   AlignedLattice.hpp
   BinaryCompactObject.hpp
   BinaryCompactObjectHelpers.hpp
+  BlockGroups.hpp
   Brick.hpp
   Cylinder.hpp
   CylindricalBinaryCompactObject.hpp

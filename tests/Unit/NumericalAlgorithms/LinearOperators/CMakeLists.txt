@@ -24,6 +24,7 @@ target_link_libraries(
   DataStructures
   DiscontinuousGalerkin
   Domain
+  DomainCreators
   ErrorHandling
   LinearOperators
   MathFunctions
