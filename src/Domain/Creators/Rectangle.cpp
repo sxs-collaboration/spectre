@@ -34,20 +34,17 @@ struct BlockLogical;
 
 namespace domain::creators {
 Rectangle::Rectangle(
-    typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
-    typename InitialRefinement::type initial_refinement_level_xy,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-    typename IsPeriodicIn::type is_periodic_in_xy,
+    std::array<double, 2> lower_xy, std::array<double, 2> upper_xy,
+    std::array<size_t, 2> initial_refinement_level_xy,
+    std::array<size_t, 2> initial_number_of_grid_points_in_xy,
+    std::array<bool, 2> is_periodic_in_xy,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
         time_dependence)
-    // clang-tidy: trivially copyable
-    : lower_xy_(std::move(lower_xy)),                       // NOLINT
-      upper_xy_(std::move(upper_xy)),                       // NOLINT
-      is_periodic_in_xy_(std::move(is_periodic_in_xy)),     // NOLINT
-      initial_refinement_level_xy_(                         // NOLINT
-          std::move(initial_refinement_level_xy)),          // NOLINT
-      initial_number_of_grid_points_in_xy_(                 // NOLINT
-          std::move(initial_number_of_grid_points_in_xy)),  // NOLINT
+    : lower_xy_(lower_xy),
+      upper_xy_(upper_xy),
+      is_periodic_in_xy_(is_periodic_in_xy),
+      initial_refinement_level_xy_(initial_refinement_level_xy),
+      initial_number_of_grid_points_in_xy_(initial_number_of_grid_points_in_xy),
       time_dependence_(std::move(time_dependence)),
       boundary_condition_(nullptr) {
   if (time_dependence_ == nullptr) {
@@ -57,9 +54,9 @@ Rectangle::Rectangle(
 }
 
 Rectangle::Rectangle(
-    typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
-    typename InitialRefinement::type initial_refinement_level_xy,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
+    std::array<double, 2> lower_xy, std::array<double, 2> upper_xy,
+    std::array<size_t, 2> initial_refinement_level_xy,
+    std::array<size_t, 2> initial_number_of_grid_points_in_xy,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
@@ -105,7 +102,10 @@ Domain<2> Rectangle::create_domain() const {
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
                    Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
-      std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
+      std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}},
+      identifications,
+      {},
+      block_names_};
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(

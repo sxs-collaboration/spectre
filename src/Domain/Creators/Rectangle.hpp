@@ -9,6 +9,9 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -107,17 +110,17 @@ class Rectangle : public DomainCreator<2> {
   static constexpr Options::String help{"Creates a 2D rectangle."};
 
   Rectangle(
-      typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
-      typename InitialRefinement::type initial_refinement_level_xy,
-      typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-      typename IsPeriodicIn::type is_periodic_in_xy,
+      std::array<double, 2> lower_xy, std::array<double, 2> upper_xy,
+      std::array<size_t, 2> initial_refinement_level_xy,
+      std::array<size_t, 2> initial_number_of_grid_points_in_xy,
+      std::array<bool, 2> is_periodic_in_xy,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
           time_dependence = nullptr);
 
   Rectangle(
-      typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
-      typename InitialRefinement::type initial_refinement_level_xy,
-      typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
+      std::array<double, 2> lower_xy, std::array<double, 2> upper_xy,
+      std::array<size_t, 2> initial_refinement_level_xy,
+      std::array<size_t, 2> initial_number_of_grid_points_in_xy,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           boundary_condition,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
@@ -147,6 +150,8 @@ class Rectangle : public DomainCreator<2> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
+  std::vector<std::string> block_names() const override { return block_names_; }
+
  private:
   typename LowerBound::type lower_xy_{};
   typename UpperBound::type upper_xy_{};
@@ -157,6 +162,7 @@ class Rectangle : public DomainCreator<2> {
       time_dependence_{nullptr};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_{nullptr};
+  inline static const std::vector<std::string> block_names_{"Rectangle"};
 };
 }  // namespace creators
 }  // namespace domain

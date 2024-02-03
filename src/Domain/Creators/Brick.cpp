@@ -30,20 +30,18 @@ struct Inertial;
 
 namespace domain::creators {
 Brick::Brick(
-    typename LowerBound::type lower_xyz, typename UpperBound::type upper_xyz,
-    typename InitialRefinement::type initial_refinement_level_xyz,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
-    typename IsPeriodicIn::type is_periodic_in_xyz,
+    std::array<double, 3> lower_xyz, std::array<double, 3> upper_xyz,
+    std::array<size_t, 3> initial_refinement_level_xyz,
+    std::array<size_t, 3> initial_number_of_grid_points_in_xyz,
+    std::array<bool, 3> is_periodic_in_xyz,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence)
-    // clang-tidy: trivially copyable
-    : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
-      upper_xyz_(std::move(upper_xyz)),                      // NOLINT
-      is_periodic_in_xyz_(std::move(is_periodic_in_xyz)),    // NOLINT
-      initial_refinement_level_xyz_(                         // NOLINT
-          std::move(initial_refinement_level_xyz)),          // NOLINT
-      initial_number_of_grid_points_in_xyz_(                 // NOLINT
-          std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
+    : lower_xyz_(lower_xyz),
+      upper_xyz_(upper_xyz),
+      is_periodic_in_xyz_(is_periodic_in_xyz),
+      initial_refinement_level_xyz_(initial_refinement_level_xyz),
+      initial_number_of_grid_points_in_xyz_(
+          initial_number_of_grid_points_in_xyz),
       time_dependence_(std::move(time_dependence)),
       boundary_condition_in_lower_x_(nullptr),
       boundary_condition_in_upper_x_(nullptr),
@@ -58,9 +56,9 @@ Brick::Brick(
 }
 
 Brick::Brick(
-    typename LowerBound::type lower_xyz, typename UpperBound::type upper_xyz,
-    typename InitialRefinement::type initial_refinement_level_xyz,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
+    std::array<double, 3> lower_xyz, std::array<double, 3> upper_xyz,
+    std::array<size_t, 3> initial_refinement_level_xyz,
+    std::array<size_t, 3> initial_number_of_grid_points_in_xyz,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition_in_lower_x,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -76,14 +74,12 @@ Brick::Brick(
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     const Options::Context& context)
-    // clang-tidy: trivially copyable
-    : lower_xyz_(std::move(lower_xyz)),  // NOLINT
-      upper_xyz_(std::move(upper_xyz)),  // NOLINT
+    : lower_xyz_(lower_xyz),
+      upper_xyz_(upper_xyz),
       is_periodic_in_xyz_{{false, false, false}},
-      initial_refinement_level_xyz_(                         // NOLINT
-          std::move(initial_refinement_level_xyz)),          // NOLINT
-      initial_number_of_grid_points_in_xyz_(                 // NOLINT
-          std::move(initial_number_of_grid_points_in_xyz)),  // NOLINT
+      initial_refinement_level_xyz_(initial_refinement_level_xyz),
+      initial_number_of_grid_points_in_xyz_(
+          initial_number_of_grid_points_in_xyz),
       time_dependence_(std::move(time_dependence)),
       boundary_condition_in_lower_x_(std::move(boundary_condition_in_lower_x)),
       boundary_condition_in_upper_x_(std::move(boundary_condition_in_upper_x)),
