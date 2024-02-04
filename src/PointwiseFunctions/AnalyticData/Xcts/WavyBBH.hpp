@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <limits>
 #include <optional>
 
@@ -34,19 +35,42 @@ namespace Xcts::AnalyticData {
 
 namespace detail {
 
+namespace Tags {
+template <typename DataType>
+struct Radius_Left : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct Radius_Right : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct Normal_Left : db::SimpleTag {
+  using type = tnsr::I<DataType, 3>;
+};
+template <typename DataType>
+struct Normal_Right : db::SimpleTag {
+  using type = tnsr::I<DataType, 3>;
+};
+}  // namespace Tags
+
 template <typename DataType>
 using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     common_tags<DataType>,
     tmpl::list<
-        ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+        detail::Tags::Radius_Left<DataType>,
+        detail::Tags::Radius_Right<DataType>,
+        detail::Tags::Normal_Left<DataType>,
+        detail::Tags::Normal_Right<DataType>,
+        ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
         // For initial guesses
-        Tags::ConformalFactorMinusOne<DataType>,
-        Tags::LapseTimesConformalFactorMinusOne<DataType>,
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
+        Xcts::Tags::ConformalFactorMinusOne<DataType>,
+        Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
+        Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
     hydro_tags<DataType>>>;
 
 template <typename DataType>
@@ -63,25 +87,49 @@ struct WavyBBHVariables
           DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x, const double local_mass_left,
-      const double local_mass_right)
+      const double local_mass_right, const double local_xcoord_left,
+      const double local_xcoord_right, const double local_ymomentum_left,
+      const double local_ymomentum_right)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         mass_left(local_mass_left),
-        mass_right(local_mass_right) {}
+        mass_right(local_mass_right),
+        xcoord_left(local_xcoord_left),
+        xcoord_right(local_xcoord_right),
+        ymomentum_left(local_ymomentum_left),
+        ymomentum_right(local_ymomentum_right) {}
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
   const double mass_right;
+  const double xcoord_left;
+  const double xcoord_right;
+  const double ymomentum_left;
+  const double ymomentum_right;
+  const double separation = xcoord_right - xcoord_left;
+
+  void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
+                  gsl::not_null<Cache*> /*cache*/,
+                  detail::Tags::Radius_Left<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> radius_right,
+                  gsl::not_null<Cache*> /*cache*/,
+                  detail::Tags::Radius_Right<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
+                  gsl::not_null<Cache*> cache,
+                  detail::Tags::Normal_Left<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
+                  gsl::not_null<Cache*> cache,
+                  detail::Tags::Normal_Right<DataType> /*meta*/) const;
 
   void operator()(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
-      const gsl::not_null<Cache*> /*cache*/,
-      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+      const gsl::not_null<Cache*> cache,
+      Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
       const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
       const gsl::not_null<Cache*> /*cache*/,
-      ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+      ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial>
           meta) const override;
   void operator()(
@@ -96,17 +144,17 @@ struct WavyBBHVariables
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
       gsl::not_null<Cache*> /*cache*/,
-      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
+      Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
       const override;
   void operator()(gsl::not_null<tnsr::II<DataType, Dim, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> /*cache*/,
-                  Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+                  Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
                       DataType, Dim, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
       gsl::not_null<Cache*> /*cache*/,
-      ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+      ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
       const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
@@ -124,16 +172,16 @@ struct WavyBBHVariables
   void operator()(
       const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
       const gsl::not_null<Cache*> /*cache*/,
-      Tags::ConformalFactorMinusOne<DataType> /*meta*/) const;
+      Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const;
   void operator()(
       const gsl::not_null<Scalar<DataType>*>
           lapse_times_conformal_factor_minus_one,
       const gsl::not_null<Cache*> /*cache*/,
-      Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const;
+      Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const;
   void operator()(
       const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
       const gsl::not_null<Cache*> /*cache*/,
-      Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const;
+      Xcts::Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const;
   void operator()(const gsl::not_null<Scalar<DataType>*> rest_mass_density,
                   const gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::RestMassDensity<DataType> /*meta*/) const;
@@ -152,31 +200,59 @@ struct WavyBBHVariables
   void operator()(const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
                   const gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::MagneticField<DataType, 3> /*meta*/) const;
+
+ private:
+  // Put here the division of the calculations (in smaller methods)
+  void add_conformal_PN_of_conformal_metric(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric) const;
+  void add_radiative_term_PN_of_conformal_metric(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric) const;
 };
 
 }  // namespace detail
 
 /*!
- * \brief   WavyBBH black hole initial data with realistic wave background,
- * constructed in Post-Newtonian approximation.
+ * \brief   Binary black hole initial data with realistic wave background,
+ * constructed in Post-Newtonian approximations.
  *
  * This class implements background data for the XCTS equations describing...
  */
 class WavyBBH : public elliptic::analytic_data::Background,
                 public elliptic::analytic_data::InitialGuess {
  public:
-  // ADD NECESSARY MORE OPTION (see WavyBBH.hpp as example) --- JR
-
   struct MassLeft {
-    static constexpr Options::String help = "BLA BLA BLA";
+    static constexpr Options::String help = "The mass of the left black hole.";
     using type = double;
   };
   struct MassRight {
-    static constexpr Options::String help = "BLA BLA BLA";
+    static constexpr Options::String help = "The mass of the right black hole.";
     using type = double;
   };
-  using options = tmpl::list<MassLeft, MassRight>;
-  static constexpr Options::String help = "BLA BLA BLA";
+  struct XCoordsLeft {
+    static constexpr Options::String help =
+        "The coordinates on the x-axis of the left black hole.";
+    using type = double;
+  };
+  struct XCoordsRight {
+    static constexpr Options::String help =
+        "The coordinates on the x-axis of the right black hole.";
+    using type = double;
+  };
+  struct YMomentumLeft {
+    static constexpr Options::String help =
+        "The y-axis-componet of the linear momentum of the left black hole.";
+    using type = double;
+  };
+  struct YMomentumRight {
+    static constexpr Options::String help =
+        "The y-axis-componet of the linear momentum of the right black hole.";
+    using type = double;
+  };
+  using options = tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight,
+                             YMomentumLeft, YMomentumRight>;
+  static constexpr Options::String help =
+      "Binary black hole initial data with realistic wave background, "
+      "constructed in Post-Newtonian approximations. ";
 
   WavyBBH() = default;
   WavyBBH(const WavyBBH&) = delete;
@@ -185,11 +261,21 @@ class WavyBBH : public elliptic::analytic_data::Background,
   WavyBBH& operator=(WavyBBH&&) = default;
   ~WavyBBH() = default;
 
-  WavyBBH(double mass_left, double mass_right,
+  WavyBBH(double mass_left, double mass_right, double xcoord_left,
+          double xcoord_right, double ymomentum_left, double ymomentum_right,
           const Options::Context& context = {})
-      : mass_left_(mass_left), mass_right_(mass_right) {
+      : mass_left_(mass_left),
+        mass_right_(mass_right),
+        xcoord_left_(xcoord_left),
+        xcoord_right_(xcoord_right),
+        ymomentum_left_(ymomentum_left),
+        ymomentum_right_(ymomentum_right) {
     if (mass_left_ <= 0 or mass_right_ <= 0) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
+    }
+    if (xcoord_left_ >= xcoord_right_) {
+      PARSE_ERROR(context,
+                  "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
     }
   }
 
@@ -222,14 +308,26 @@ class WavyBBH : public elliptic::analytic_data::Background,
     elliptic::analytic_data::InitialGuess::pup(p);
     p | mass_left_;
     p | mass_right_;
+    p | xcoord_left_;
+    p | xcoord_right_;
+    p | ymomentum_left_;
+    p | ymomentum_right_;
   }
 
   double mass_left() const { return mass_left_; }
   double mass_right() const { return mass_right_; }
+  double xcoord_left() const { return xcoord_left_; }
+  double xcoord_right() const { return xcoord_right_; }
+  double ymomentum_left() const { return ymomentum_left_; }
+  double ymomentum_right() const { return ymomentum_right_; }
 
  private:
   double mass_left_ = std::numeric_limits<double>::signaling_NaN();
   double mass_right_ = std::numeric_limits<double>::signaling_NaN();
+  double xcoord_left_ = std::numeric_limits<double>::signaling_NaN();
+  double xcoord_right_ = std::numeric_limits<double>::signaling_NaN();
+  double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
+  double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -241,10 +339,15 @@ class WavyBBH : public elliptic::analytic_data::Background,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::WavyBBHVariables<DataType>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
-    const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
-                                mass_left_, mass_right_};
-
-    // SEE IF THERE IS ANYTHING TO ADD HERE --- JR
+    const VarsComputer computer{std::move(mesh),
+                                std::move(inv_jacobian),
+                                x,
+                                mass_left_,
+                                mass_right_,
+                                xcoord_left_,
+                                xcoord_right_,
+                                ymomentum_left_,
+                                ymomentum_right_};
 
     return {cache.get_var(computer, RequestedTags{})...};
   }

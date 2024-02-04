@@ -23,19 +23,23 @@ Background: &background
   WavyBBH:
     MassLeft: &mass_left 1.
     MassRight: &mass_right 1.
+    XCoordsLeft: &x_left -4.
+    XCoordsRight: &x_right 4.
+    YMomentumLeft: -.366
+    YMomentumRight: .366
 
 InitialGuess: *background
 
 DomainCreator:
   BinaryCompactObject:
     ObjectA:
-      InnerRadius: 0.8
-      OuterRadius: 2.
-      XCoord: 4.
+      InnerRadius: 0.4
+      OuterRadius: 0.5
+      XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [4., 0., 0.]
+            Center: [*x_right, 0., 0.]
             Rotation: [0., 0., 0.]
             Lapse: &bh_right
               Schwarzschild:
@@ -44,13 +48,13 @@ DomainCreator:
             NegativeExpansion: *bh_right
       UseLogarithmicMap: True
     ObjectB:
-      InnerRadius: 0.8
-      OuterRadius: 2.
-      XCoord: -4.
+      InnerRadius: 0.4
+      OuterRadius: 0.5
+      XCoord: *x_left
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [-4., 0., 0.]
+            Center: [*x_left, 0., 0.]
             Rotation: [0., 0., 0.]
             Lapse: &bh_left
               Schwarzschild:

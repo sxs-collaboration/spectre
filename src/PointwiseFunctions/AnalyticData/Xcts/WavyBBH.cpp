@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
@@ -24,12 +25,68 @@ namespace detail {
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+    const gsl::not_null<Scalar<DataType>*> radius_left,
     const gsl::not_null<Cache*> /*cache*/,
+    detail::Tags::Radius_Left<DataType> /*meta*/) const {
+  const auto v_x = get<0>(x) - xcoord_left;
+  const auto v_y = get<1>(x);
+  const auto v_z = get<2>(x);
+  get(*radius_left) = sqrt(square(v_x) + square(v_y) + square(v_z));
+}
+
+template <typename DataVector>
+void WavyBBHVariables<DataVector>::operator()(
+    const gsl::not_null<Scalar<DataVector>*> radius_right,
+    const gsl::not_null<Cache*> /*cache*/,
+    detail::Tags::Radius_Right<DataVector> /*meta*/) const {
+  const auto v_x = get<0>(x) - xcoord_right;
+  const auto v_y = get<1>(x);
+  const auto v_z = get<2>(x);
+  get(*radius_right) = sqrt(square(v_x) + square(v_y) + square(v_z));
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::Normal_Left<DataType> /*meta*/) const {
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+  get<0>(*normal_left) = (get<0>(x) - xcoord_left) / radius_left;
+  get<1>(*normal_left) = get<1>(x) / radius_left;
+  get<2>(*normal_left) = get<2>(x) / radius_left;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::Normal_Right<DataType> /*meta*/) const {
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+  get<0>(*normal_right) = (get<0>(x) - xcoord_right) / radius_right;
+  get<1>(*normal_right) = get<1>(x) / radius_right;
+  get<2>(*normal_right) = get<2>(x) / radius_right;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+    const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/) const {
-  get<0, 0>(*conformal_metric) = 1.;
-  get<1, 1>(*conformal_metric) = 1.;
-  get<2, 2>(*conformal_metric) = 1.;
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+  const auto E_left = mass_left + square(ymomentum_left) / (2 * mass_left) -
+                      mass_left * mass_right / separation;
+  const auto E_right = mass_right + square(ymomentum_right) / (2 * mass_right) -
+                       mass_left * mass_right / separation;
+  const auto Phi_PN =
+      1. + E_left / (2 * radius_left) + E_right / (2 * radius_right);
+  get<0, 0>(*conformal_metric) = Phi_PN;
+  get<1, 1>(*conformal_metric) = Phi_PN;
+  get<2, 2>(*conformal_metric) = Phi_PN;
   get<0, 1>(*conformal_metric) = 0.;
   get<0, 2>(*conformal_metric) = 0.;
   get<1, 2>(*conformal_metric) = 0.;
@@ -83,7 +140,7 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
     gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+    ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   std::fill(deriv_shift_background->begin(), deriv_shift_background->end(), 0.);
 }
@@ -118,7 +175,7 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
+    Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
   get(*conformal_factor_minus_one) = 0.;
 }
 
@@ -127,7 +184,7 @@ void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*>
         lapse_times_conformal_factor_minus_one,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
+    Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const {
   get(*lapse_times_conformal_factor_minus_one) = 0.;
 }
 
@@ -135,7 +192,7 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
+    Xcts::Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
   std::fill(shift_excess->begin(), shift_excess->end(), 0.);
 }
 
