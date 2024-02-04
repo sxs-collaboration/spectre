@@ -52,6 +52,10 @@ template <typename DataType>
 struct Normal_Right : db::SimpleTag {
   using type = tnsr::I<DataType, 3>;
 };
+template <typename DataType>
+struct RadiativeTerm : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
 }  // namespace Tags
 
 template <typename DataType>
@@ -62,6 +66,7 @@ using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
         detail::Tags::Radius_Right<DataType>,
         detail::Tags::Normal_Left<DataType>,
         detail::Tags::Normal_Right<DataType>,
+        detail::Tags::RadiativeTerm<DataType>,
         ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
@@ -89,7 +94,7 @@ struct WavyBBHVariables
       const tnsr::I<DataType, 3>& local_x, const double local_mass_left,
       const double local_mass_right, const double local_xcoord_left,
       const double local_xcoord_right, const double local_ymomentum_left,
-      const double local_ymomentum_right)
+      const double local_ymomentum_right, const double local_fat_par)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         mass_left(local_mass_left),
@@ -97,7 +102,8 @@ struct WavyBBHVariables
         xcoord_left(local_xcoord_left),
         xcoord_right(local_xcoord_right),
         ymomentum_left(local_ymomentum_left),
-        ymomentum_right(local_ymomentum_right) {}
+        ymomentum_right(local_ymomentum_right),
+        fat_par(local_fat_par) {}
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
@@ -106,6 +112,7 @@ struct WavyBBHVariables
   const double xcoord_right;
   const double ymomentum_left;
   const double ymomentum_right;
+  const double fat_par;
   const double separation = xcoord_right - xcoord_left;
 
   void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
@@ -120,6 +127,9 @@ struct WavyBBHVariables
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
                   gsl::not_null<Cache*> cache,
                   detail::Tags::Normal_Right<DataType> /*meta*/) const;
+  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+                  const gsl::not_null<Cache*> cache,
+                  detail::Tags::RadiativeTerm<DataType> /*meta*/) const;
 
   void operator()(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
@@ -202,11 +212,21 @@ struct WavyBBHVariables
                   hydro::Tags::MagneticField<DataType, 3> /*meta*/) const;
 
  private:
-  // Put here the division of the calculations (in smaller methods)
-  void add_conformal_PN_of_conformal_metric(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric) const;
   void add_radiative_term_PN_of_conformal_metric(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric) const;
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+      const gsl::not_null<Cache*> cache) const;
+  void add_near_zone_term_to_radiative(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      const gsl::not_null<Cache*> /*cache*/) const;
+  void add_present_term_to_radiative(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      const gsl::not_null<Cache*> /*cache*/) const;
+  void add_past_term_to_radiative(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      const gsl::not_null<Cache*> /*cache*/) const;
+  void add_integral_term_to_radiative(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      const gsl::not_null<Cache*> /*cache*/) const;
 };
 
 }  // namespace detail
@@ -248,8 +268,13 @@ class WavyBBH : public elliptic::analytic_data::Background,
         "The y-axis-componet of the linear momentum of the right black hole.";
     using type = double;
   };
+  struct FatPar {
+    static constexpr Options::String help =
+        "The parameter controlling the width of the atenuation function.";
+    using type = double;
+  };
   using options = tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight,
-                             YMomentumLeft, YMomentumRight>;
+                             YMomentumLeft, YMomentumRight, FatPar>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
@@ -263,13 +288,14 @@ class WavyBBH : public elliptic::analytic_data::Background,
 
   WavyBBH(double mass_left, double mass_right, double xcoord_left,
           double xcoord_right, double ymomentum_left, double ymomentum_right,
-          const Options::Context& context = {})
+          double fat_par, const Options::Context& context = {})
       : mass_left_(mass_left),
         mass_right_(mass_right),
         xcoord_left_(xcoord_left),
         xcoord_right_(xcoord_right),
         ymomentum_left_(ymomentum_left),
-        ymomentum_right_(ymomentum_right) {
+        ymomentum_right_(ymomentum_right),
+        fat_par_(fat_par) {
     if (mass_left_ <= 0 or mass_right_ <= 0) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
     }
@@ -312,6 +338,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
     p | xcoord_right_;
     p | ymomentum_left_;
     p | ymomentum_right_;
+    p | fat_par_;
   }
 
   double mass_left() const { return mass_left_; }
@@ -320,6 +347,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
   double xcoord_right() const { return xcoord_right_; }
   double ymomentum_left() const { return ymomentum_left_; }
   double ymomentum_right() const { return ymomentum_right_; }
+  double fat_par() const { return fat_par_; }
 
  private:
   double mass_left_ = std::numeric_limits<double>::signaling_NaN();
@@ -328,6 +356,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
   double xcoord_right_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
+  double fat_par_ = std::numeric_limits<double>::signaling_NaN();
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -347,7 +376,8 @@ class WavyBBH : public elliptic::analytic_data::Background,
                                 xcoord_left_,
                                 xcoord_right_,
                                 ymomentum_left_,
-                                ymomentum_right_};
+                                ymomentum_right_,
+                                fat_par_};
 
     return {cache.get_var(computer, RequestedTags{})...};
   }

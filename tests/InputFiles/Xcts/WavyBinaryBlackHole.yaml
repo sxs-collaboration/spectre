@@ -27,6 +27,7 @@ Background: &background
     XCoordsRight: &x_right 4.
     YMomentumLeft: -.366
     YMomentumRight: .366
+    FatPar: 1.
 
 InitialGuess: *background
 
@@ -206,6 +207,21 @@ EventsAndTriggers:
             - HamiltonianConstraint
             - MomentumConstraint
             - RadiallyCompressedCoordinates
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - Trigger:
+      EveryNIterations:
+        N: 1000000
+        Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData_ini
+          VariablesToObserve:
+            - Conformal(SpatialMetric)
+            - TraceExtrinsicCurvature
+            - ShiftBackground
+            - LongitudinalShiftBackgroundMinusDtConformalMetric
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]

@@ -71,6 +71,23 @@ void WavyBBHVariables<DataType>::operator()(
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> radiative_term,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::RadiativeTerm<DataType> /*meta*/) const {
+  get<0, 0>(*radiative_term) = 0.;
+  get<0, 1>(*radiative_term) = 0.;
+  get<0, 2>(*radiative_term) = 0.;
+  get<1, 1>(*radiative_term) = 0.;
+  get<1, 2>(*radiative_term) = 0.;
+  get<2, 2>(*radiative_term) = 0.;
+  add_near_zone_term_to_radiative(radiative_term, cache);
+  add_present_term_to_radiative(radiative_term, cache);
+  add_past_term_to_radiative(radiative_term, cache);
+  add_integral_term_to_radiative(radiative_term, cache);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/) const {
@@ -82,14 +99,15 @@ void WavyBBHVariables<DataType>::operator()(
                       mass_left * mass_right / separation;
   const auto E_right = mass_right + square(ymomentum_right) / (2 * mass_right) -
                        mass_left * mass_right / separation;
-  const auto Phi_PN =
+  const auto Psi_PN =
       1. + E_left / (2 * radius_left) + E_right / (2 * radius_right);
-  get<0, 0>(*conformal_metric) = Phi_PN;
-  get<1, 1>(*conformal_metric) = Phi_PN;
-  get<2, 2>(*conformal_metric) = Phi_PN;
+  get<0, 0>(*conformal_metric) = Psi_PN;
+  get<1, 1>(*conformal_metric) = Psi_PN;
+  get<2, 2>(*conformal_metric) = Psi_PN;
   get<0, 1>(*conformal_metric) = 0.;
   get<0, 2>(*conformal_metric) = 0.;
   get<1, 2>(*conformal_metric) = 0.;
+  add_radiative_term_PN_of_conformal_metric(conformal_metric, cache);
 }
 
 template <typename DataType>
@@ -242,6 +260,71 @@ void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
   std::fill(magnetic_field->begin(), magnetic_field->end(), 0.);
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+    const gsl::not_null<Cache*> cache) const {
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+  const auto& radiative_term =
+      cache->get_var(*this, detail::Tags::RadiativeTerm<DataType>{});
+  const auto Fat = 1 / ((1 + fat_par * fat_par * mass_left * mass_left /
+                                 (radius_left * radius_left)) *
+                        (1 + fat_par * fat_par * mass_right * mass_right /
+                                 (radius_right * radius_right)));
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      conformal_metric->get(i, j) += Fat * radiative_term.get(i, j);
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::add_near_zone_term_to_radiative(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+    const gsl::not_null<Cache*> /*cache*/) const {
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      radiative_term->get(i, j) += 0.;
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::add_present_term_to_radiative(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+    const gsl::not_null<Cache*> /*cache*/) const {
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      radiative_term->get(i, j) += 0.;
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::add_past_term_to_radiative(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+    const gsl::not_null<Cache*> /*cache*/) const {
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      radiative_term->get(i, j) += 0.;
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::add_integral_term_to_radiative(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+    const gsl::not_null<Cache*> /*cache*/) const {
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      radiative_term->get(i, j) += 0.;
+    }
+  }
 }
 
 template class WavyBBHVariables<DataVector>;
