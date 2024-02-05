@@ -37,23 +37,51 @@ namespace detail {
 
 namespace Tags {
 template <typename DataType>
-struct Radius_Left : db::SimpleTag {
+struct RadiusLeft : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
-struct Radius_Right : db::SimpleTag {
+struct RadiusRight : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
-struct Normal_Left : db::SimpleTag {
+struct NormalLeft : db::SimpleTag {
   using type = tnsr::I<DataType, 3>;
 };
 template <typename DataType>
-struct Normal_Right : db::SimpleTag {
+struct NormalRight : db::SimpleTag {
+  using type = tnsr::I<DataType, 3>;
+};
+template <typename DataType>
+struct NormalLR : db::SimpleTag {
+  using type = tnsr::I<DataType, 3>;
+};
+template <typename DataType>
+struct MomentumLeft : db::SimpleTag {
+  using type = tnsr::I<DataType, 3>;
+};
+template <typename DataType>
+struct MomentumRight : db::SimpleTag {
   using type = tnsr::I<DataType, 3>;
 };
 template <typename DataType>
 struct RadiativeTerm : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
+template <typename DataType>
+struct NearZoneTerm : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
+template <typename DataType>
+struct PresentTerm : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
+template <typename DataType>
+struct PastTerm : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
+template <typename DataType>
+struct IntegralTerm : db::SimpleTag {
   using type = tnsr::ii<DataType, 3>;
 };
 }  // namespace Tags
@@ -62,11 +90,14 @@ template <typename DataType>
 using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     common_tags<DataType>,
     tmpl::list<
-        detail::Tags::Radius_Left<DataType>,
-        detail::Tags::Radius_Right<DataType>,
-        detail::Tags::Normal_Left<DataType>,
-        detail::Tags::Normal_Right<DataType>,
+        detail::Tags::RadiusLeft<DataType>, detail::Tags::RadiusRight<DataType>,
+        detail::Tags::NormalLeft<DataType>, detail::Tags::NormalRight<DataType>,
+        detail::Tags::NormalLR<DataType>, detail::Tags::MomentumLeft<DataType>,
+        detail::Tags::MomentumRight<DataType>,
         detail::Tags::RadiativeTerm<DataType>,
+        detail::Tags::NearZoneTerm<DataType>,
+        detail::Tags::PresentTerm<DataType>, detail::Tags::PastTerm<DataType>,
+        detail::Tags::IntegralTerm<DataType>,
         ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
@@ -117,19 +148,40 @@ struct WavyBBHVariables
 
   void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
                   gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::Radius_Left<DataType> /*meta*/) const;
+                  detail::Tags::RadiusLeft<DataType> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> radius_right,
                   gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::Radius_Right<DataType> /*meta*/) const;
+                  detail::Tags::RadiusRight<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
                   gsl::not_null<Cache*> cache,
-                  detail::Tags::Normal_Left<DataType> /*meta*/) const;
+                  detail::Tags::NormalLeft<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
                   gsl::not_null<Cache*> cache,
-                  detail::Tags::Normal_Right<DataType> /*meta*/) const;
+                  detail::Tags::NormalRight<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_LR,
+                  gsl::not_null<Cache*> /*cache*/,
+                  detail::Tags::NormalLR<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_left,
+                  gsl::not_null<Cache*> /*cache*/,
+                  detail::Tags::MomentumLeft<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_right,
+                  gsl::not_null<Cache*> /*cache*/,
+                  detail::Tags::MomentumRight<DataType> /*meta*/) const;
   void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
                   const gsl::not_null<Cache*> cache,
                   detail::Tags::RadiativeTerm<DataType> /*meta*/) const;
+  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> near_zone_term,
+                  const gsl::not_null<Cache*> cache,
+                  detail::Tags::NearZoneTerm<DataType> /*meta*/) const;
+  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> present_term,
+                  const gsl::not_null<Cache*> cache,
+                  detail::Tags::PresentTerm<DataType> /*meta*/) const;
+  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> past_term,
+                  const gsl::not_null<Cache*> cache,
+                  detail::Tags::PastTerm<DataType> /*meta*/) const;
+  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> integral_term,
+                  const gsl::not_null<Cache*> cache,
+                  detail::Tags::IntegralTerm<DataType> /*meta*/) const;
 
   void operator()(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
@@ -217,16 +269,16 @@ struct WavyBBHVariables
       const gsl::not_null<Cache*> cache) const;
   void add_near_zone_term_to_radiative(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> /*cache*/) const;
+      const gsl::not_null<Cache*> cache) const;
   void add_present_term_to_radiative(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> /*cache*/) const;
+      const gsl::not_null<Cache*> cache) const;
   void add_past_term_to_radiative(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> /*cache*/) const;
+      const gsl::not_null<Cache*> cache) const;
   void add_integral_term_to_radiative(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> /*cache*/) const;
+      const gsl::not_null<Cache*> cache) const;
 };
 
 }  // namespace detail
@@ -302,6 +354,14 @@ class WavyBBH : public elliptic::analytic_data::Background,
     if (xcoord_left_ >= xcoord_right_) {
       PARSE_ERROR(context,
                   "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
+    }
+    if (fat_par_ <= 0) {
+      PARSE_ERROR(context, "'FatPar' must be positive.");
+    }
+    if (ymomentum_left_ * ymomentum_right_ > 0) {
+      PARSE_ERROR(
+          context,
+          "'YMomentumLeft' and 'YMomentumRight' must have opposite signs.");
     }
   }
 

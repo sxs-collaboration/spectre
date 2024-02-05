@@ -27,7 +27,7 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> radius_left,
     const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::Radius_Left<DataType> /*meta*/) const {
+    detail::Tags::RadiusLeft<DataType> /*meta*/) const {
   const auto v_x = get<0>(x) - xcoord_left;
   const auto v_y = get<1>(x);
   const auto v_z = get<2>(x);
@@ -38,7 +38,7 @@ template <typename DataVector>
 void WavyBBHVariables<DataVector>::operator()(
     const gsl::not_null<Scalar<DataVector>*> radius_right,
     const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::Radius_Right<DataVector> /*meta*/) const {
+    detail::Tags::RadiusRight<DataVector> /*meta*/) const {
   const auto v_x = get<0>(x) - xcoord_right;
   const auto v_y = get<1>(x);
   const auto v_z = get<2>(x);
@@ -49,9 +49,9 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
     const gsl::not_null<Cache*> cache,
-    detail::Tags::Normal_Left<DataType> /*meta*/) const {
+    detail::Tags::NormalLeft<DataType> /*meta*/) const {
   const auto& radius_left =
-      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
   get<0>(*normal_left) = (get<0>(x) - xcoord_left) / radius_left;
   get<1>(*normal_left) = get<1>(x) / radius_left;
   get<2>(*normal_left) = get<2>(x) / radius_left;
@@ -61,12 +61,42 @@ template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
     const gsl::not_null<Cache*> cache,
-    detail::Tags::Normal_Right<DataType> /*meta*/) const {
+    detail::Tags::NormalRight<DataType> /*meta*/) const {
   const auto& radius_right =
-      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
   get<0>(*normal_right) = (get<0>(x) - xcoord_right) / radius_right;
   get<1>(*normal_right) = get<1>(x) / radius_right;
   get<2>(*normal_right) = get<2>(x) / radius_right;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> normal_lr,
+    const gsl::not_null<Cache*> /*cache*/,
+    detail::Tags::NormalLR<DataType> /*meta*/) const {
+  get<0>(*normal_lr) = -1.;
+  get<1>(*normal_lr) = 0.;
+  get<2>(*normal_lr) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> momentum_left,
+    const gsl::not_null<Cache*> /*cache*/,
+    detail::Tags::MomentumLeft<DataType> /*meta*/) const {
+  get<0>(*momentum_left) = 0.;
+  get<1>(*momentum_left) = ymomentum_left;
+  get<2>(*momentum_left) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> momentum_right,
+    const gsl::not_null<Cache*> /*cache*/,
+    detail::Tags::MomentumRight<DataType> /*meta*/) const {
+  get<0>(*momentum_right) = 0.;
+  get<1>(*momentum_right) = ymomentum_right;
+  get<2>(*momentum_right) = 0.;
 }
 
 template <typename DataType>
@@ -88,13 +118,150 @@ void WavyBBHVariables<DataType>::operator()(
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> near_zone_term,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::NearZoneTerm<DataType> /*meta*/) const {
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
+  const auto& normal_left =
+      cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
+  const auto& normal_right =
+      cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
+  const auto& normal_lr =
+      cache->get_var(*this, detail::Tags::NormalLR<DataType>{});
+  const auto& momentum_left =
+      cache->get_var(*this, detail::Tags::MomentumLeft<DataType>{});
+  const auto& momentum_right =
+      cache->get_var(*this, detail::Tags::MomentumRight<DataType>{});
+  const auto s = radius_left + radius_right + separation;
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      near_zone_term->get(i, j) =
+          0.25 / (mass_left * radius_left) *
+              (2. * momentum_left.get(i) * momentum_left.get(j) +
+               (3. * ymomentum_left * normal_left.get(1) * ymomentum_left *
+                    normal_left.get(1) -
+                5. * ymomentum_left * ymomentum_left) *
+                   normal_left.get(i) * normal_left.get(j) +
+               6. * ymomentum_left * normal_left.get(1) *
+                   (normal_left.get(i) * momentum_left.get(j) +
+                    normal_left.get(j) * momentum_left.get(i))) +
+          0.25 / (mass_right * radius_right) *
+              (2. * momentum_right.get(i) * momentum_right.get(j) +
+               (3. * ymomentum_right * normal_right.get(1) * ymomentum_right *
+                    normal_right.get(1) -
+                5. * ymomentum_right * ymomentum_right) *
+                   normal_right.get(i) * normal_right.get(j) +
+               6. * ymomentum_right * normal_right.get(1) *
+                   (normal_right.get(i) * momentum_right.get(j) +
+                    normal_right.get(j) * momentum_right.get(i))) +
+          0.125 * (mass_left * mass_right) *
+              (-32. / s * (1. / separation + 1. / s) * normal_lr.get(i) *
+                   normal_lr.get(j) +
+               2. *
+                   ((radius_left + radius_right) /
+                        (separation * separation * separation) +
+                    12. / (s * s)) *
+                   normal_left.get(i) * normal_right.get(j) +
+               16. * (2. / (s * s) - 1. / (separation * separation)) *
+                   (normal_left.get(i) * normal_lr.get(j) +
+                    normal_left.get(j) * normal_lr.get(i)) +
+               (5. / (separation * radius_left) -
+                1. / (separation * separation * separation) *
+                    (radius_right * radius_right / radius_left +
+                     3. * radius_left) -
+                8. / s * (1. / radius_left + 1. / s)) *
+                   normal_left.get(i) * normal_left.get(j) -
+               32 / s * (1 / separation + 1 / s) * normal_lr.get(i) *
+                   normal_lr.get(j) +
+               2 *
+                   ((radius_left + radius_right) /
+                        (separation * separation * separation) +
+                    12 / (s * s)) *
+                   normal_right.get(i) * normal_left.get(j) -
+               16 * (2 / (s * s) - 1 / (separation * separation)) *
+                   (normal_right.get(i) * normal_lr.get(j) +
+                    normal_right.get(j) * normal_lr.get(i)) +
+               (5 / (separation * radius_right) -
+                1 / (separation * separation * separation) *
+                    (radius_left * radius_left / radius_right +
+                     3 * radius_right) -
+                8 / s * (1 / radius_right + 1 / s)) *
+                   normal_right.get(i) * normal_right.get(j));
+    }
+    near_zone_term->get(i, i) +=
+        0.25 / (mass_left * radius_left) *
+            (ymomentum_left * ymomentum_left -
+             5. * ymomentum_left * normal_left.get(1) * ymomentum_left *
+                 normal_left.get(1)) +
+        0.25 / (mass_right * radius_right) *
+            (ymomentum_right * ymomentum_right -
+             5. * ymomentum_right * normal_right.get(1) * ymomentum_right *
+                 normal_right.get(1)) +
+        0.125 * (mass_left * mass_right) *
+            (5. * radius_left / (separation * separation * separation) *
+                 (radius_left / radius_right - 1.) -
+             17. / (separation * radius_left) +
+             4. / (radius_left * radius_right) +
+             8. / s * (1. / radius_left + 4. / separation) +
+             5. * radius_right / (separation * separation * separation) *
+                 (radius_right / radius_left - 1.) -
+             17. / (separation * radius_right) +
+             4. / (radius_left * radius_right) +
+             8. / s * (1. / radius_right + 4. / separation));
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> present_term,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::PresentTerm<DataType> /*meta*/) const {
+  get<0, 0>(*present_term) = 0.;
+  get<0, 1>(*present_term) = 0.;
+  get<0, 2>(*present_term) = 0.;
+  get<1, 1>(*present_term) = 0.;
+  get<1, 2>(*present_term) = 0.;
+  get<2, 2>(*present_term) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> past_term,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::PastTerm<DataType> /*meta*/) const {
+  get<0, 0>(*past_term) = 0.;
+  get<0, 1>(*past_term) = 0.;
+  get<0, 2>(*past_term) = 0.;
+  get<1, 1>(*past_term) = 0.;
+  get<1, 2>(*past_term) = 0.;
+  get<2, 2>(*past_term) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> integral_term,
+    const gsl::not_null<Cache*> cache,
+    detail::Tags::IntegralTerm<DataType> /*meta*/) const {
+  get<0, 0>(*integral_term) = 0.;
+  get<0, 1>(*integral_term) = 0.;
+  get<0, 2>(*integral_term) = 0.;
+  get<1, 1>(*integral_term) = 0.;
+  get<1, 2>(*integral_term) = 0.;
+  get<2, 2>(*integral_term) = 0.;
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/) const {
   const auto& radius_left =
-      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
   const auto& radius_right =
-      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
   const auto E_left = mass_left + square(ymomentum_left) / (2 * mass_left) -
                       mass_left * mass_right / separation;
   const auto E_right = mass_right + square(ymomentum_right) / (2 * mass_right) -
@@ -267,9 +434,9 @@ void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
     const gsl::not_null<Cache*> cache) const {
   const auto& radius_left =
-      get(cache->get_var(*this, detail::Tags::Radius_Left<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
   const auto& radius_right =
-      get(cache->get_var(*this, detail::Tags::Radius_Right<DataType>{}));
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
   const auto& radiative_term =
       cache->get_var(*this, detail::Tags::RadiativeTerm<DataType>{});
   const auto Fat = 1 / ((1 + fat_par * fat_par * mass_left * mass_left /
@@ -286,10 +453,12 @@ void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
 template <typename DataType>
 void WavyBBHVariables<DataType>::add_near_zone_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-    const gsl::not_null<Cache*> /*cache*/) const {
+    const gsl::not_null<Cache*> cache) const {
+  const auto& near_zone_term =
+      cache->get_var(*this, detail::Tags::NearZoneTerm<DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      radiative_term->get(i, j) += 0.;
+      radiative_term->get(i, j) += near_zone_term.get(i, j);
     }
   }
 }
@@ -297,10 +466,12 @@ void WavyBBHVariables<DataType>::add_near_zone_term_to_radiative(
 template <typename DataType>
 void WavyBBHVariables<DataType>::add_present_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-    const gsl::not_null<Cache*> /*cache*/) const {
+    const gsl::not_null<Cache*> cache) const {
+  const auto& present_term =
+      cache->get_var(*this, detail::Tags::PresentTerm<DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      radiative_term->get(i, j) += 0.;
+      radiative_term->get(i, j) += present_term.get(i, j);
     }
   }
 }
@@ -308,10 +479,12 @@ void WavyBBHVariables<DataType>::add_present_term_to_radiative(
 template <typename DataType>
 void WavyBBHVariables<DataType>::add_past_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-    const gsl::not_null<Cache*> /*cache*/) const {
+    const gsl::not_null<Cache*> cache) const {
+  const auto& past_term =
+      cache->get_var(*this, detail::Tags::PastTerm<DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      radiative_term->get(i, j) += 0.;
+      radiative_term->get(i, j) += past_term.get(i, j);
     }
   }
 }
@@ -319,10 +492,12 @@ void WavyBBHVariables<DataType>::add_past_term_to_radiative(
 template <typename DataType>
 void WavyBBHVariables<DataType>::add_integral_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-    const gsl::not_null<Cache*> /*cache*/) const {
+    const gsl::not_null<Cache*> cache) const {
+  const auto& integral_term =
+      cache->get_var(*this, detail::Tags::IntegralTerm<DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      radiative_term->get(i, j) += 0.;
+      radiative_term->get(i, j) += integral_term.get(i, j);
     }
   }
 }
