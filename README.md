@@ -6,8 +6,8 @@
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2023.12.08-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2023.12.08)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.10309520.svg)](https://doi.org/10.5281/zenodo.10309520)
+[![release](https://img.shields.io/badge/release-v2024.02.05-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2024.02.05)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.10619885.svg)](https://doi.org/10.5281/zenodo.10619885)
 
 ## What is SpECTRE?
 
@@ -29,7 +29,7 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.10309520](https://doi.org/10.5281/zenodo.10309520)
+- DOI: [10.5281/zenodo.10619885](https://doi.org/10.5281/zenodo.10619885)
 
 You can cite this BibTeX entry in your publication:
 
@@ -43,16 +43,16 @@ H\'ebert, Fran\c{c}ois and Kim, Yoonsoo and Kumar, Prayush and Lovelace,
 Geoffrey and Macedo, Alexandra and Moxon, Jordan and O'Shea, Eamonn and
 Pfeiffer, Harald P. and Scheel, Mark A. and Teukolsky, Saul A. and Wittek,
 Nikolas A. and others",
-    title = "\texttt{SpECTRE v2023.12.08}",
-    version = "2023.12.08",
+    title = "\texttt{SpECTRE v2024.02.05}",
+    version = "2024.02.05",
     publisher = "Zenodo",
-    doi = "10.5281/zenodo.10309520",
+    doi = "10.5281/zenodo.10619885",
     url = "https://spectre-code.org",
     howpublished =
-"\href{https://doi.org/10.5281/zenodo.10309520}{10.5281/zenodo.10309520}",
+"\href{https://doi.org/10.5281/zenodo.10619885}{10.5281/zenodo.10619885}",
     license = "MIT",
-    year = "2023",
-    month = "12"
+    year = "2024",
+    month = "2"
 }
 ```
 <!-- BIBTEX ENTRY -->
