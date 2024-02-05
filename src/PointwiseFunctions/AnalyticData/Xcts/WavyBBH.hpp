@@ -53,18 +53,6 @@ struct NormalRight : db::SimpleTag {
   using type = tnsr::I<DataType, 3>;
 };
 template <typename DataType>
-struct NormalLR : db::SimpleTag {
-  using type = tnsr::I<DataType, 3>;
-};
-template <typename DataType>
-struct MomentumLeft : db::SimpleTag {
-  using type = tnsr::I<DataType, 3>;
-};
-template <typename DataType>
-struct MomentumRight : db::SimpleTag {
-  using type = tnsr::I<DataType, 3>;
-};
-template <typename DataType>
 struct RadiativeTerm : db::SimpleTag {
   using type = tnsr::ii<DataType, 3>;
 };
@@ -92,8 +80,6 @@ using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     tmpl::list<
         detail::Tags::RadiusLeft<DataType>, detail::Tags::RadiusRight<DataType>,
         detail::Tags::NormalLeft<DataType>, detail::Tags::NormalRight<DataType>,
-        detail::Tags::NormalLR<DataType>, detail::Tags::MomentumLeft<DataType>,
-        detail::Tags::MomentumRight<DataType>,
         detail::Tags::RadiativeTerm<DataType>,
         detail::Tags::NearZoneTerm<DataType>,
         detail::Tags::PresentTerm<DataType>, detail::Tags::PastTerm<DataType>,
@@ -145,6 +131,9 @@ struct WavyBBHVariables
   const double ymomentum_right;
   const double fat_par;
   const double separation = xcoord_right - xcoord_left;
+  const std::array<double, 3> normal_lr{{-1., 0., 0.}};
+  const std::array<double, 3> momentum_left{{0., ymomentum_left, 0.}};
+  const std::array<double, 3> momentum_right{{0., ymomentum_right, 0.}};
 
   void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
                   gsl::not_null<Cache*> /*cache*/,
@@ -158,15 +147,6 @@ struct WavyBBHVariables
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
                   gsl::not_null<Cache*> cache,
                   detail::Tags::NormalRight<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_LR,
-                  gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::NormalLR<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_left,
-                  gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::MomentumLeft<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> momentum_right,
-                  gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::MomentumRight<DataType> /*meta*/) const;
   void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
                   const gsl::not_null<Cache*> cache,
                   detail::Tags::RadiativeTerm<DataType> /*meta*/) const;

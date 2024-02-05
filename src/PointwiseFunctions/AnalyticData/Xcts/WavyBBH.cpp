@@ -71,36 +71,6 @@ void WavyBBHVariables<DataType>::operator()(
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::I<DataType, 3>*> normal_lr,
-    const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::NormalLR<DataType> /*meta*/) const {
-  get<0>(*normal_lr) = -1.;
-  get<1>(*normal_lr) = 0.;
-  get<2>(*normal_lr) = 0.;
-}
-
-template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::I<DataType, 3>*> momentum_left,
-    const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::MomentumLeft<DataType> /*meta*/) const {
-  get<0>(*momentum_left) = 0.;
-  get<1>(*momentum_left) = ymomentum_left;
-  get<2>(*momentum_left) = 0.;
-}
-
-template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::I<DataType, 3>*> momentum_right,
-    const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::MomentumRight<DataType> /*meta*/) const {
-  get<0>(*momentum_right) = 0.;
-  get<1>(*momentum_right) = ymomentum_right;
-  get<2>(*momentum_right) = 0.;
-}
-
-template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> radiative_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::RadiativeTerm<DataType> /*meta*/) const {
@@ -129,84 +99,69 @@ void WavyBBHVariables<DataType>::operator()(
       cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
   const auto& normal_right =
       cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
-  const auto& normal_lr =
-      cache->get_var(*this, detail::Tags::NormalLR<DataType>{});
-  const auto& momentum_left =
-      cache->get_var(*this, detail::Tags::MomentumLeft<DataType>{});
-  const auto& momentum_right =
-      cache->get_var(*this, detail::Tags::MomentumRight<DataType>{});
   const auto s = radius_left + radius_right + separation;
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       near_zone_term->get(i, j) =
           0.25 / (mass_left * radius_left) *
-              (2. * momentum_left.get(i) * momentum_left.get(j) +
-               (3. * ymomentum_left * normal_left.get(1) * ymomentum_left *
-                    normal_left.get(1) -
-                5. * ymomentum_left * ymomentum_left) *
+              (2. * momentum_left[i] * momentum_left[j] +
+               (3. * square(ymomentum_left * normal_left.get(1)) -
+                5. * square(ymomentum_left)) *
                    normal_left.get(i) * normal_left.get(j) +
                6. * ymomentum_left * normal_left.get(1) *
-                   (normal_left.get(i) * momentum_left.get(j) +
-                    normal_left.get(j) * momentum_left.get(i))) +
+                   (normal_left.get(i) * momentum_left[j] +
+                    normal_left.get(j) * momentum_left[i])) +
           0.25 / (mass_right * radius_right) *
-              (2. * momentum_right.get(i) * momentum_right.get(j) +
-               (3. * ymomentum_right * normal_right.get(1) * ymomentum_right *
-                    normal_right.get(1) -
-                5. * ymomentum_right * ymomentum_right) *
+              (2. * momentum_right[i] * momentum_right[j] +
+               (3. * square(ymomentum_right * normal_right.get(1)) -
+                5. * square(ymomentum_right)) *
                    normal_right.get(i) * normal_right.get(j) +
                6. * ymomentum_right * normal_right.get(1) *
-                   (normal_right.get(i) * momentum_right.get(j) +
-                    normal_right.get(j) * momentum_right.get(i))) +
+                   (normal_right.get(i) * momentum_right[j] +
+                    normal_right.get(j) * momentum_right[i])) +
           0.125 * (mass_left * mass_right) *
-              (-32. / s * (1. / separation + 1. / s) * normal_lr.get(i) *
-                   normal_lr.get(j) +
+              (-32. / s * (1. / separation + 1. / s) * normal_lr[i] *
+                   normal_lr[j] +
                2. *
-                   ((radius_left + radius_right) /
-                        (separation * separation * separation) +
-                    12. / (s * s)) *
+                   ((radius_left + radius_right) / cube(separation) +
+                    12. / square(s)) *
                    normal_left.get(i) * normal_right.get(j) +
-               16. * (2. / (s * s) - 1. / (separation * separation)) *
-                   (normal_left.get(i) * normal_lr.get(j) +
-                    normal_left.get(j) * normal_lr.get(i)) +
+               16. * (2. / square(s) - 1. / square(separation)) *
+                   (normal_left.get(i) * normal_lr[j] +
+                    normal_left.get(j) * normal_lr[i]) +
                (5. / (separation * radius_left) -
-                1. / (separation * separation * separation) *
-                    (radius_right * radius_right / radius_left +
-                     3. * radius_left) -
+                1. / cube(separation) *
+                    (square(radius_right) / radius_left + 3. * radius_left) -
                 8. / s * (1. / radius_left + 1. / s)) *
                    normal_left.get(i) * normal_left.get(j) -
-               32 / s * (1 / separation + 1 / s) * normal_lr.get(i) *
-                   normal_lr.get(j) +
+               32 / s * (1 / separation + 1 / s) * normal_lr[i] * normal_lr[j] +
                2 *
-                   ((radius_left + radius_right) /
-                        (separation * separation * separation) +
-                    12 / (s * s)) *
+                   ((radius_left + radius_right) / cube(separation) +
+                    12 / square(s)) *
                    normal_right.get(i) * normal_left.get(j) -
-               16 * (2 / (s * s) - 1 / (separation * separation)) *
-                   (normal_right.get(i) * normal_lr.get(j) +
-                    normal_right.get(j) * normal_lr.get(i)) +
+               16 * (2 / square(s) - 1 / square(separation)) *
+                   (normal_right.get(i) * normal_lr[j] +
+                    normal_right.get(j) * normal_lr[i]) +
                (5 / (separation * radius_right) -
-                1 / (separation * separation * separation) *
-                    (radius_left * radius_left / radius_right +
-                     3 * radius_right) -
+                1 / cube(separation) *
+                    (square(radius_left) / radius_right + 3 * radius_right) -
                 8 / s * (1 / radius_right + 1 / s)) *
                    normal_right.get(i) * normal_right.get(j));
     }
     near_zone_term->get(i, i) +=
         0.25 / (mass_left * radius_left) *
-            (ymomentum_left * ymomentum_left -
-             5. * ymomentum_left * normal_left.get(1) * ymomentum_left *
-                 normal_left.get(1)) +
+            (square(ymomentum_left) -
+             5. * square(ymomentum_left * normal_left.get(1))) +
         0.25 / (mass_right * radius_right) *
-            (ymomentum_right * ymomentum_right -
-             5. * ymomentum_right * normal_right.get(1) * ymomentum_right *
-                 normal_right.get(1)) +
+            (square(ymomentum_right) -
+             5. * square(ymomentum_right * normal_right.get(1))) +
         0.125 * (mass_left * mass_right) *
-            (5. * radius_left / (separation * separation * separation) *
+            (5. * radius_left / cube(separation) *
                  (radius_left / radius_right - 1.) -
              17. / (separation * radius_left) +
              4. / (radius_left * radius_right) +
              8. / s * (1. / radius_left + 4. / separation) +
-             5. * radius_right / (separation * separation * separation) *
+             5. * radius_right / cube(separation) *
                  (radius_right / radius_left - 1.) -
              17. / (separation * radius_right) +
              4. / (radius_left * radius_right) +
@@ -219,12 +174,74 @@ void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> present_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::PresentTerm<DataType> /*meta*/) const {
-  get<0, 0>(*present_term) = 0.;
-  get<0, 1>(*present_term) = 0.;
-  get<0, 2>(*present_term) = 0.;
-  get<1, 1>(*present_term) = 0.;
-  get<1, 2>(*present_term) = 0.;
-  get<2, 2>(*present_term) = 0.;
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
+  const auto& normal_left =
+      cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
+  const auto& normal_right =
+      cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
+  std::array<double, 3> u1_1;
+  std::array<double, 3> u1_2;
+  std::array<double, 3> u2;
+  for (size_t i = 0; i < 3; ++i) {
+    u1_1[i] = momentum_left[i] / sqrt(mass_left);
+    u1_2[i] = momentum_right[i] / sqrt(mass_right);
+    u2[i] = sqrt(mass_left * mass_right / (2 * separation)) * normal_lr[i];
+  }
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      present_term->get(i, j) =
+          -0.25 / radius_left *
+              (2 * u1_1[i] * u1_1[j] +
+               (3 * square(ymomentum_left * normal_left.get(1)) / mass_left -
+                5 * square(ymomentum_left) / mass_left) *
+                   normal_left.get(i) * normal_left.get(j) +
+               6 * ymomentum_left / sqrt(mass_left) * normal_left.get(1) *
+                   (normal_left.get(i) * u1_1[j] +
+                    normal_left.get(j) * u1_1[i]) +
+               2 * u2[i] * u2[j] +
+               (3 * mass_left * mass_right / (2 * separation) *
+                    square(normal_left.get(0)) -
+                5 * mass_left * mass_right / (2 * separation)) *
+                   normal_left.get(i) * normal_left.get(j) -
+               6 * sqrt(mass_left * mass_right / (2 * separation)) *
+                   normal_left.get(0) *
+                   (normal_left.get(i) * u2[j] + normal_left.get(j) * u2[i])) -
+          0.25 / radius_right *
+              (2 * u1_2[i] * u1_2[j] +
+               (3 * square(ymomentum_right * normal_right.get(1)) / mass_right -
+                5 * square(ymomentum_right) / mass_right) *
+                   normal_right.get(i) * normal_right.get(j) +
+               6 * ymomentum_right / sqrt(mass_right) * normal_right.get(1) *
+                   (normal_right.get(i) * u1_2[j] +
+                    normal_right.get(j) * u1_2[i]) +
+               2 * u2[i] * u2[j] +
+               (3 * mass_left * mass_right / (2 * separation) *
+                    square(normal_right.get(0)) -
+                5 * mass_left * mass_right / (2 * separation)) *
+                   normal_right.get(i) * normal_right.get(j) -
+               6 * sqrt(mass_left * mass_right / (2 * separation)) *
+                   normal_right.get(0) *
+                   (normal_right.get(i) * u2[j] + normal_right.get(j) * u2[i]));
+    }
+    present_term->get(i, i) +=
+        -0.25 / radius_left *
+            (square(ymomentum_left) / mass_left -
+             5 * ymomentum_left / sqrt(mass_left) * normal_left.get(1) *
+                 ymomentum_left / sqrt(mass_left) * normal_left.get(1) +
+             mass_left * mass_right / (2 * separation) -
+             5 * mass_left * mass_right / (2 * separation) *
+                 square(normal_left.get(0))) -
+        0.25 / radius_right *
+            (square(ymomentum_right) / mass_right -
+             5 * ymomentum_right / sqrt(mass_right) * normal_right.get(1) *
+                 ymomentum_right / sqrt(mass_right) * normal_right.get(1) +
+             mass_left * mass_right / (2 * separation) -
+             5 * mass_left * mass_right / (2 * separation) *
+                 square(normal_right.get(0)));
+  }
 }
 
 template <typename DataType>
