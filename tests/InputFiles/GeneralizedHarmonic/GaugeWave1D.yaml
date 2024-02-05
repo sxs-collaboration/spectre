@@ -25,6 +25,10 @@ Evolution:
     AdamsBashforth:
       Order: 3
 
+Amr:
+  Criteria:
+  Verbosity: Quiet
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:

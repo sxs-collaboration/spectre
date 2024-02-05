@@ -98,6 +98,9 @@ Observers:
   ReductionFileName: "BbhReductions"
   SurfaceFileName: "BbhSurfaces"
 
+Amr:
+  Criteria:
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:

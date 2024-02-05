@@ -33,6 +33,7 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>, tmpl::list<>>,
         tmpl::pair<gh::BoundaryConditions::BoundaryCondition<Dim>,
                    tmpl::list<gh::BoundaryConditions::DirichletAnalytic<Dim>>>,
         tmpl::pair<evolution::initial_data::InitialData,

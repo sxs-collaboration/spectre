@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   GaugeWave.cpp
+  GaugePlaneWave.cpp
   HarmonicSchwarzschild.cpp
   KerrHorizon.cpp
   KerrSchild.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   GaugeWave.hpp
+  GaugePlaneWave.hpp
   HarmonicSchwarzschild.hpp
   KerrHorizon.hpp
   KerrSchild.hpp

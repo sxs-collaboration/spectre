@@ -66,6 +66,20 @@
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -107,6 +121,8 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -256,6 +272,11 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
   using system = gh::System<volume_dim>;
 
   using factory_classes = tmpl::map<
+      tmpl::pair<amr::Criterion,
+                 tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+                            amr::Criteria::TruncationError<
+                                volume_dim,
+                                typename system::variables_tag::tags_list>>>,
       tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
       tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
       tmpl::pair<
@@ -275,6 +296,8 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                                            tmpl::list<gh::NumericInitialData>,
                                            tmpl::list<>>>>,
       tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+      tmpl::pair<MathFunction<1, Frame::Inertial>,
+                 MathFunctions::all_math_functions<1, Frame::Inertial>>,
       tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
       tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                  StepChoosers::standard_step_choosers<system>>,
@@ -324,20 +347,24 @@ struct GeneralizedHarmonicTemplateBase {
                  gh::ConstraintDamping::Tags::DampingFunctionGamma1<
                      volume_dim, Frame::Grid>,
                  gh::ConstraintDamping::Tags::DampingFunctionGamma2<
-                     volume_dim, Frame::Grid>>;
+                     volume_dim, Frame::Grid>,
+                 ::amr::Criteria::Tags::Criteria>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
   // Register needs to be before InitializeTimeStepperHistory so that CCE is
   // properly registered when the self-start happens
-  static constexpr std::array<Parallel::Phase, 8> default_phase_order{
-      {Parallel::Phase::Initialization,
-       Parallel::Phase::RegisterWithElementDataReader,
-       Parallel::Phase::ImportInitialData,
-       Parallel::Phase::InitializeInitialDataDependentQuantities,
-       Parallel::Phase::Register, Parallel::Phase::InitializeTimeStepperHistory,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+  static constexpr auto default_phase_order =
+      std::array{Parallel::Phase::Initialization,
+                 Parallel::Phase::RegisterWithElementDataReader,
+                 Parallel::Phase::ImportInitialData,
+                 Parallel::Phase::InitializeInitialDataDependentQuantities,
+                 Parallel::Phase::Register,
+                 Parallel::Phase::InitializeTimeStepperHistory,
+                 Parallel::Phase::CheckDomain,
+                 Parallel::Phase::Evolve,
+                 Parallel::Phase::Exit};
 
   template <typename ControlSystems>
   using step_actions = tmpl::list<
@@ -369,6 +396,7 @@ struct GeneralizedHarmonicTemplateBase {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
+          ::amr::Initialization::Initialize<volume_dim>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
