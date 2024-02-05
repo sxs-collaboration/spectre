@@ -27,7 +27,10 @@ ci_checks=()
 # Check for iostream header
 # (Checked in CI only to allow local debugging-related commits)
 iostream() {
-    is_c++ "$1" && grep -q '#include <iostream>' "$1"
+    is_c++ "$1" \
+     && whitelist "$1" \
+                  'tests/Unit/IO/Exporter/BundledExporter/Test_BundledExporter.cpp$' \
+     && grep -q '#include <iostream>' "$1"
 }
 iostream_report() {
     echo "Found iostream header:"
@@ -122,6 +125,7 @@ check_cmakelists_for_extra_cxx() {
                                                         'tests' \
                                                         'tools' \
                                                         'Executables' \
+                                                        'Exporter' \
                                                         'Python'; then
         matches=$(grep -E "^  .*\.[cht]pp" $1)
         for match in $matches; do

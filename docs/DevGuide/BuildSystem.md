@@ -240,6 +240,10 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
     directory.
+- ENABLE_OPENMP
+  - Enable OpenMP parallelization in some parts of the code, such as Python
+    bindings and interpolating volume data files. Note that simulations do not
+    typically use OpenMP parallelization, so this flag only applies to tools.
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)

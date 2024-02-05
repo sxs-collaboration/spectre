@@ -28,8 +28,8 @@ class Cli(click.MultiCommand):
             "extract-dat",
             "extract-input",
             "generate-xdmf",
-            "interpolate-to-coords",
             "interpolate-to-mesh",
+            "interpolate-to-points",
             "plot-dat",
             "plot-power-monitors",
             "plot-size-control",
@@ -81,12 +81,12 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.GenerateXdmf import generate_xdmf_command
 
             return generate_xdmf_command
-        elif name == "interpolate-to-coords":
-            from spectre.Visualization.InterpolateToCoords import (
-                interpolate_to_coords_command,
+        elif name in ["interpolate-to-points", "interpolate-to-coords"]:
+            from spectre.IO.Exporter.InterpolateToPoints import (
+                interpolate_to_points_command,
             )
 
-            return interpolate_to_coords_command
+            return interpolate_to_points_command
         elif name == "interpolate-to-mesh":
             from spectre.Visualization.InterpolateToMesh import (
                 interpolate_to_mesh_command,

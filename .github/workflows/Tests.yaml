@@ -339,6 +339,7 @@ jobs:
           -D USE_PCH=ON
           -D USE_XSIMD=ON
           -D USE_CCACHE=ON
+          -D ENABLE_OPENMP=ON
           -D BUILD_PYTHON_BINDINGS=ON
           -D BUILD_SHARED_LIBS=ON
           -D MEMORY_ALLOCATOR=SYSTEM
@@ -644,6 +645,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
+          -D ENABLE_OPENMP=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
@@ -783,8 +785,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           mv spectre_src.tar.gz spectre_src;
           cd spectre_src;
           tar xf spectre_src.tar.gz;
-          mkdir build;
-          cd build
+          mkdir build-formaline;
+          cd build-formaline
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
@@ -817,6 +819,21 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           make EvolveBurgers -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml --output-on-failure
+
+          cd .. && rm -r build-formaline
+      - name: Test bundled exporter
+        if: matrix.ASAN != 'ON'
+        working-directory: build
+        run: |
+          make -j2 BundledExporter
+          mkdir build-test-exporter && cd build-test-exporter
+          cmake -D SPECTRE_ROOT=$GITHUB_WORKSPACE/build \
+            $GITHUB_WORKSPACE/tests/Unit/IO/Exporter/BundledExporter
+          make -j2
+          ./TestSpectreExporter \
+            $GITHUB_WORKSPACE/tests/Unit/Visualization/Python/VolTestData0.h5 \
+            element_data 0 Psi 0 0 0 -0.07059806932542323
+          cd .. && rm -r build-test-exporter
       - name: Diagnose ccache
         run: |
           ccache -s
