@@ -244,6 +244,8 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Enable OpenMP parallelization in some parts of the code, such as Python
     bindings and interpolating volume data files. Note that simulations do not
     typically use OpenMP parallelization, so this flag only applies to tools.
+- ENABLE_PARAVIEW
+  - Try to find ParaView to enable 3D rendering tools (default is `ON`)
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)
