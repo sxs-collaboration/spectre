@@ -7,6 +7,7 @@ spectre_target_sources(
   CubicScale.cpp
   Rotation.cpp
   RotationMatrixHelpers.cpp
+  RotScaleTrans.cpp
   Shape.cpp
   SphericalCompression.cpp
   Translation.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   ProductMaps.tpp
   Rotation.hpp
   RotationMatrixHelpers.hpp
+  RotScaleTrans.hpp
   Shape.hpp
   SphericalCompression.hpp
   Translation.hpp

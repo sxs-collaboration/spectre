@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ProductMaps.cpp
   Test_Rotation.cpp
   Test_RotationMatrixHelpers.cpp
+  Test_RotScaleTrans.cpp
   Test_Shape.cpp
   Test_SphericalCompression.cpp
   Test_Translation.cpp

@@ -126,7 +126,8 @@ void test_jacobian(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) {
+        functions_of_time,
+    Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0)) {
   INFO("Test time-dependent Jacobian");
   CAPTURE(test_point);
   CAPTURE(time);
@@ -135,8 +136,6 @@ void test_jacobian(
        &functions_of_time](const std::array<double, Map::dim>& point) {
         return map(point, time, functions_of_time);
       };
-  // Our default approx value is too stringent for this test
-  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
   const auto jacobian = map.jacobian(test_point, time, functions_of_time);
   for (size_t i = 0; i < Map::dim; ++i) {
@@ -177,7 +176,8 @@ void test_jacobian(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) {
+        functions_of_time,
+    Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0)) {
   INFO("Test time-dependent Jacobian");
   CAPTURE(test_point);
   CAPTURE(time);
@@ -186,8 +186,6 @@ void test_jacobian(
        &functions_of_time](const std::array<double, Map::dim>& point) {
         return map(point, time, functions_of_time);
       };
-  // Our default approx value is too stringent for this test
-  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
   const auto jacobian = map.jacobian(test_point, time, functions_of_time);
   std::array<std::array<double, Map::dim>, 5> dv_to_double_array{};
@@ -371,13 +369,12 @@ void test_frame_velocity(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) {
+        functions_of_time,
+    Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0)) {
   const auto compute_map_point = [&map, &test_point, &functions_of_time](
                                      const std::array<double, 1>& time_point) {
     return map(test_point, time_point[0], functions_of_time);
   };
-  // Our default approx value is too stringent for this test
-  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dt = 1e-4;
 
   const auto frame_velocity =
