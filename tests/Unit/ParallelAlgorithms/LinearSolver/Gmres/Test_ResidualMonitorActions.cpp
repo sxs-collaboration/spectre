@@ -386,4 +386,39 @@ SPECTRE_TEST_CASE(
     REQUIRE(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::RelativeResidual);
   }
+
+  SECTION("ErrorOnDivergence") {
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 0.);
+    ActionTesting::simple_action<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
+                              fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 1_st, 0_st, 3.);
+    ActionTesting::simple_action<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
+                              fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 1_st, 1_st, 1.);
+    // Test residual monitor state
+    // H = [[3.], [1.]]
+    CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
+          blaze::DynamicMatrix<double>({{3.}, {1.}}));
+    // Test element state
+    // Initial residual is 0, so this should trigger an error
+    const auto& element_inbox =
+        get_element_inbox_tag(
+            LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
+                TestLinearSolver>{})
+            .at(1);
+    const auto& minres = get<1>(element_inbox);
+    CHECK(minres.size() == 1);
+    CHECK_ITERABLE_APPROX(minres, blaze::DynamicVector<double>({0.}));
+    const auto& has_converged = get<2>(element_inbox);
+    REQUIRE(has_converged);
+    CHECK_THROWS_WITH(has_converged.check_for_error(),
+                      Catch::Matchers::ContainsSubstring(
+                          "Residual should decrease monotonically"));
+  }
 }

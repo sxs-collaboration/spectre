@@ -65,15 +65,19 @@ template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      ::Tags::Initial<LinearSolver::Tags::Magnitude<
-          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
+      ::Tags::Initial<residual_magnitude_tag>;
+  using previous_residual_magnitude_tag =
+      ::Tags::Previous<residual_magnitude_tag>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
  public:
-  using simple_tags =
-      tmpl::list<initial_residual_magnitude_tag, orthogonalization_history_tag>;
+  using simple_tags = tmpl::list<initial_residual_magnitude_tag,
+                                 previous_residual_magnitude_tag,
+                                 orthogonalization_history_tag>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -87,8 +91,10 @@ struct InitializeResidualMonitor {
       const ParallelComponent* const /*meta*/) {
     // The `InitializeResidualMagnitude` action populates these tags
     // with initial values
-    Initialization::mutate_assign<tmpl::list<initial_residual_magnitude_tag>>(
-        make_not_null(&box), std::numeric_limits<double>::signaling_NaN());
+    Initialization::mutate_assign<tmpl::list<initial_residual_magnitude_tag,
+                                             previous_residual_magnitude_tag>>(
+        make_not_null(&box), std::numeric_limits<double>::signaling_NaN(),
+        std::numeric_limits<double>::signaling_NaN());
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
