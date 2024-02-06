@@ -98,6 +98,21 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     test_copy_semantics(has_converged);
   }
 
+  {
+    INFO("HasConverged - error");
+    const Convergence::HasConverged has_converged{Convergence::Reason::Error,
+                                                  "Something went wrong!", 2};
+    CHECK(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::Error);
+    CHECK(has_converged.error_message() == "Something went wrong!");
+    CHECK(has_converged.num_iterations() == 2);
+    test_serialization(has_converged);
+    test_copy_semantics(has_converged);
+    CHECK_THROWS_WITH(
+        has_converged.check_for_error(),
+        Catch::Matchers::ContainsSubstring("Something went wrong!"));
+  }
+
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       ([]() {

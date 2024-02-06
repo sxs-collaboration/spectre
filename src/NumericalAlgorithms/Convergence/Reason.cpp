@@ -23,6 +23,8 @@ std::ostream& operator<<(std::ostream& os, const Reason& reason) {
       return os << "AbsoluteResidual";
     case Reason::RelativeResidual:
       return os << "RelativeResidual";
+    case Reason::Error:
+      return os << "Error";
     default:
       ERROR("Unknown convergence reason");
   }
@@ -43,13 +45,15 @@ Options::create_from_yaml<Convergence::Reason>::create<void>(
     return Convergence::Reason::AbsoluteResidual;
   } else if (type_read == get_output(Convergence::Reason::RelativeResidual)) {
     return Convergence::Reason::RelativeResidual;
+  } else if (type_read == get_output(Convergence::Reason::Error)) {
+    return Convergence::Reason::Error;
   }
   PARSE_ERROR(options.context(),
               "Failed to convert \""
-                  << type_read << "\" to Convergence::Reason. Must be one of '"
+                  << type_read << "\" to Convergence::Reason. Must be one of: '"
                   << get_output(Convergence::Reason::NumIterations) << "', '"
                   << get_output(Convergence::Reason::MaxIterations) << "', '"
-                  << get_output(Convergence::Reason::AbsoluteResidual)
-                  << "' or '"
-                  << get_output(Convergence::Reason::RelativeResidual) << "'.");
+                  << get_output(Convergence::Reason::AbsoluteResidual) << "', '"
+                  << get_output(Convergence::Reason::RelativeResidual) << "', '"
+                  << get_output(Convergence::Reason::Error) << "'.");
 }

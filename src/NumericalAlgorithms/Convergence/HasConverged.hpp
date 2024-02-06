@@ -5,7 +5,9 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <limits>
 #include <optional>
+#include <string>
 
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
@@ -53,12 +55,12 @@ std::optional<Reason> criteria_match(const Criteria& criteria,
                                      double initial_residual_magnitude);
 
 /*!
- * \brief Signals convergence of the algorithm.
+ * \brief Signals convergence or termination of the algorithm.
  *
- * \details Evaluates to `true` if the algorithm has converged and no
- * further iterations should be performed. In this case, the `reason()` member
- * function provides more information. If `false`, calling `reason()` is an
- * error.
+ * \details Evaluates to `true` if the algorithm has converged or terminated and
+ * no further iterations should be performed. In this case, the `reason()`
+ * member function provides more information. If `false`, calling `reason()` is
+ * an error.
  *
  * The stream operator provides a human-readable description of the convergence
  * status.
@@ -82,6 +84,15 @@ struct HasConverged {
   /// `Convergence::Reason::NumIterations`.
   HasConverged(size_t num_iterations, size_t iteration_id);
 
+  /*!
+   * \brief Construct a state manually.
+   *
+   * Currently only allows to construct a state with `Reason::Error`. Use the
+   * other constructors for the other `Reason`s.
+   */
+  HasConverged(Reason reason, std::optional<std::string> error_message,
+               size_t iteration_id);
+
   explicit operator bool() const { return static_cast<bool>(reason_); }
 
   /*!
@@ -91,6 +102,14 @@ struct HasConverged {
    * converged.
    */
   Reason reason() const;
+
+  /*!
+   * \brief Error message if reason is `Reason::Error`
+   *
+   * \warning You may only call this function if the `reason()` is
+   * `Reason::Error`.
+   */
+  const std::string& error_message() const;
 
   /// The number of iterations the algorithm has completed
   size_t num_iterations() const;
@@ -103,6 +122,9 @@ struct HasConverged {
   /// is not available yet.
   double initial_residual_magnitude() const;
 
+  /// Throw an exception if the `reason()` is `Reason::Error`.
+  void check_for_error() const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -114,10 +136,11 @@ struct HasConverged {
 
  private:
   std::optional<Reason> reason_{};
+  std::optional<std::string> error_message_ = std::nullopt;
   Criteria criteria_{};
   size_t iteration_id_{};
-  double residual_magnitude_{};
-  double initial_residual_magnitude_{};
+  double residual_magnitude_ = std::numeric_limits<double>::quiet_NaN();
+  double initial_residual_magnitude_ = std::numeric_limits<double>::quiet_NaN();
 };
 
 }  // namespace Convergence

@@ -16,7 +16,7 @@ struct create_from_yaml;
 namespace Convergence {
 
 /*!
- * \brief The reason the algorithm has converged.
+ * \brief The reason the algorithm has converged or terminated.
  *
  * \see Convergence::Criteria
  */
@@ -29,7 +29,9 @@ enum class Reason {
   /// Residual converged below absolute tolerance
   AbsoluteResidual,
   /// Residual converged below relative tolerance
-  RelativeResidual
+  RelativeResidual,
+  /// An error occurred during the algorithm
+  Error
 };
 
 std::ostream& operator<<(std::ostream& os, const Reason& reason);

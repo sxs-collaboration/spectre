@@ -6,9 +6,11 @@
 #include <optional>
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
+#include <string>
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
@@ -49,9 +51,18 @@ HasConverged::HasConverged(const size_t num_iterations,
       // Store the target num iterations in the convergence criteria's
       // max_iterations
       criteria_(num_iterations, 0, 0),
-      iteration_id_(iteration_id),
-      residual_magnitude_(std::numeric_limits<double>::max()),
-      initial_residual_magnitude_(std::numeric_limits<double>::max()) {}
+      iteration_id_(iteration_id) {}
+
+HasConverged::HasConverged(Reason reason,
+                           std::optional<std::string> error_message,
+                           const size_t iteration_id)
+    : reason_(reason),
+      error_message_(std::move(error_message)),
+      iteration_id_(iteration_id) {
+  ASSERT(reason_ == Reason::Error,
+         "Only allowed to construct HasConverged state manually with "
+         "'Reason::Error'. Use the other constructors for the other reasons.");
+}
 
 Reason HasConverged::reason() const {
   ASSERT(reason_,
@@ -60,12 +71,25 @@ Reason HasConverged::reason() const {
   return *reason_;
 }
 
+const std::string& HasConverged::error_message() const {
+  ASSERT(error_message_.has_value(),
+         "Tried to retrieve the error message, but the convergence reason is "
+         "not 'Error'. Check the `reason()` before calling this function.");
+  return *error_message_;
+}
+
 size_t HasConverged::num_iterations() const { return iteration_id_; }
 
 double HasConverged::residual_magnitude() const { return residual_magnitude_; }
 
 double HasConverged::initial_residual_magnitude() const {
   return initial_residual_magnitude_;
+}
+
+void HasConverged::check_for_error() const {
+  if (reason_ == Reason::Error) {
+    ERROR_AS(error_message(), convergence_error);
+  }
 }
 
 std::ostream& operator<<(std::ostream& os, const HasConverged& has_converged) {
@@ -93,6 +117,8 @@ std::ostream& operator<<(std::ostream& os, const HasConverged& has_converged) {
                   << get_output(has_converged.residual_magnitude_ /
                                 has_converged.initial_residual_magnitude_)
                   << ").";
+      case Reason::Error:
+        return os << *has_converged.error_message_;
       default:
         ERROR("Unknown convergence reason");
     };
@@ -103,6 +129,7 @@ std::ostream& operator<<(std::ostream& os, const HasConverged& has_converged) {
 
 void HasConverged::pup(PUP::er& p) {
   p | reason_;
+  p | error_message_;
   p | criteria_;
   p | iteration_id_;
   p | residual_magnitude_;
@@ -110,10 +137,16 @@ void HasConverged::pup(PUP::er& p) {
 }
 
 bool operator==(const HasConverged& lhs, const HasConverged& rhs) {
-  return lhs.reason_ == rhs.reason_ and lhs.criteria_ == rhs.criteria_ and
+  return lhs.reason_ == rhs.reason_ and
+         lhs.error_message_ == rhs.error_message_ and
+         lhs.criteria_ == rhs.criteria_ and
          lhs.iteration_id_ == rhs.iteration_id_ and
-         lhs.residual_magnitude_ == rhs.residual_magnitude_ and
-         lhs.initial_residual_magnitude_ == rhs.initial_residual_magnitude_;
+         (lhs.residual_magnitude_ == rhs.residual_magnitude_ or
+          (std::isnan(lhs.residual_magnitude_) and
+           std::isnan(rhs.residual_magnitude_))) and
+         (lhs.initial_residual_magnitude_ == rhs.initial_residual_magnitude_ or
+          (std::isnan(lhs.initial_residual_magnitude_) and
+           std::isnan(rhs.initial_residual_magnitude_)));
 }
 
 bool operator!=(const HasConverged& lhs, const HasConverged& rhs) {

@@ -27,11 +27,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Reason",
         "AbsoluteResidual");
   CHECK(get_output(Convergence::Reason::RelativeResidual) ==
         "RelativeResidual");
+  CHECK(get_output(Convergence::Reason::Error) == "Error");
 
   test_construct_from_options<Convergence::Reason::NumIterations>();
   test_construct_from_options<Convergence::Reason::MaxIterations>();
   test_construct_from_options<Convergence::Reason::AbsoluteResidual>();
   test_construct_from_options<Convergence::Reason::RelativeResidual>();
+  test_construct_from_options<Convergence::Reason::Error>();
 
   CHECK_THROWS_WITH(
       (TestHelpers::test_creation<Convergence::Reason>("Miracle")),
