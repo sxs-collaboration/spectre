@@ -1,9 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_charm_module(Printf)
+
 set(LIBRARY Printf)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Printf.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -17,4 +25,11 @@ target_link_libraries(
   INTERFACE
   ErrorHandling
   Utilities
+  PRIVATE
+  SystemUtilities
+  )
+
+add_dependencies(
+  ${LIBRARY}
+  module_Printf
   )
