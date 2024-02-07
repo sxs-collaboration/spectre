@@ -52,16 +52,16 @@ class TestMatrix(unittest.TestCase):
         # Convert Matrix to Numpy array
         A = np.array(M)
         self.assertTrue(isinstance(A, np.ndarray))
-        self.assertEquals(A[0, 0], 1.0)
-        self.assertEquals(A[1, 0], 2.7)
-        self.assertEquals(A[0, 1], 5.42)
-        self.assertEquals(A[1, 1], -2.3)
+        self.assertEqual(A[0, 0], 1.0)
+        self.assertEqual(A[1, 0], 2.7)
+        self.assertEqual(A[0, 1], 5.42)
+        self.assertEqual(A[1, 1], -2.3)
         # Convert Numpy array to Matrix
         M_from_array = Matrix(A)
-        self.assertEquals(M_from_array[0, 0], 1.0)
-        self.assertEquals(M_from_array[1, 0], 2.7)
-        self.assertEquals(M_from_array[0, 1], 5.42)
-        self.assertEquals(M_from_array[1, 1], -2.3)
+        self.assertEqual(M_from_array[0, 0], 1.0)
+        self.assertEqual(M_from_array[1, 0], 2.7)
+        self.assertEqual(M_from_array[0, 1], 5.42)
+        self.assertEqual(M_from_array[1, 1], -2.3)
 
 
 if __name__ == "__main__":

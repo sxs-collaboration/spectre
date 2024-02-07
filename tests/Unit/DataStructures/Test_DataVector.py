@@ -119,7 +119,7 @@ class TestDataVector(unittest.TestCase):
 
     def test_asinh(self):
         a = DataVector(5, 4.0)
-        self.assertEquals(a.sinh(), DataVector(5, math.sinh(4.0)))
+        self.assertEqual(a.sinh(), DataVector(5, math.sinh(4.0)))
         b = DataVector([0.0, -0.5])
         self.assertEqual(b.asinh()[0], 0.0)
         self.assertEqual(b.asinh()[1], math.asinh(-0.5))

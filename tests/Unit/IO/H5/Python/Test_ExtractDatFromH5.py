@@ -70,7 +70,7 @@ class TestExtractDatFromH5(unittest.TestCase):
 
         # Test that we get an error if we try to run again and 'force' flag is
         # False.
-        self.failUnlessRaises(
+        self.assertRaises(
             ValueError,
             extract_dat_files,
             self.h5_filename,
@@ -128,7 +128,7 @@ class TestExtractDatFromH5(unittest.TestCase):
         # We shouldn't have created an out directory
         self.assertFalse(os.path.exists(self.created_dir))
 
-        self.failUnlessRaises(
+        self.assertRaises(
             ValueError,
             extract_dat_files,
             self.h5_filename,
