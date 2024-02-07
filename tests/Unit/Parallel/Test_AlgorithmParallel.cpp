@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
+#include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -66,7 +67,22 @@ struct UnpackCounter {
 };
 }  // namespace AlgorithmParallel_detail
 
+namespace OptionTags {
+struct NumberOfElements {
+  using type = int;
+  static constexpr Options::String help{"Number of elements"};
+};
+}  // namespace OptionTags
+
 namespace Tags {
+struct NumberOfElements : db::SimpleTag {
+  using type = int;
+  using option_tags = tmpl::list<OptionTags::NumberOfElements>;
+  static constexpr bool pass_metavariables = false;
+  static int create_from_options(const int number_of_elements) {
+    return number_of_elements;
+  }
+};
 struct ReceiveArrayComponentsOnceMore : db::SimpleTag {
   using type = bool;
 };
@@ -535,7 +551,7 @@ struct ArrayParallelComponent {
                              tmpl::list<ArrayActions::CheckWasUnpacked>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using array_allocation_tags = tmpl::list<>;
+  using array_allocation_tags = tmpl::list<Tags::NumberOfElements>;
   using array_index = int;
 
   static void allocate_array(
@@ -543,13 +559,15 @@ struct ArrayParallelComponent {
       const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
       /*initialization_items*/,
       const tuples::tagged_tuple_from_typelist<array_allocation_tags>&
-      /*array_allocation_items*/
-      = {},
+          array_allocation_items,
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
-
+    // This corrects that parsing array_allocation_tags works correctly
+    const auto number_of_elements =
+        tuples::get<Tags::NumberOfElements>(array_allocation_items);
+    SPECTRE_PARALLEL_REQUIRE(number_of_elements == number_of_1d_array_elements);
     TestHelpers::Parallel::assign_array_elements_round_robin_style(
         array_proxy, static_cast<size_t>(number_of_1d_array_elements),
         static_cast<size_t>(sys::number_of_procs()), {}, global_cache,
