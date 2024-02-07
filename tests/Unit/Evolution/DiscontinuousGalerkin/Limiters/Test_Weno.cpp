@@ -657,6 +657,7 @@ void test_hweno(const std::array<size_t, VolumeDim>& extents) {
 
 }  // namespace
 
+// [[Timeout, 30]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno", "[Limiters][Unit]") {
   test_weno_option_parsing();
   test_weno_serialization();

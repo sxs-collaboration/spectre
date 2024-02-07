@@ -1356,6 +1356,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
 
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl", "[Limiters][Unit]") {
   test_secondary_neighbors_to_exclude_from_fit();
 
@@ -1388,6 +1389,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl", "[Limiters][Unit]") {
 //    in a separate SPECTRE_TEST_CASE, run in separate calls to the test
 //    executable, the static cache clashes are avoided.
 // 2. To keep the test case duration comfortably under the 2s time limit
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoImpl.GaussQuadrature",
                   "[Limiters][Unit]") {
   const auto gauss = Spectral::Quadrature::Gauss;
