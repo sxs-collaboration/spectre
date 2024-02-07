@@ -590,6 +590,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   PhaseControl::initialize_phase_change_decision_data(
       make_not_null(&phase_change_decision_data_),
       *Parallel::local_branch(global_cache_proxy_));
+
+  printer_chare = CProxy_PrinterChare::ckNew(1);
+  printer_chare_is_set = true;
 }
 
 template <typename Metavariables>
