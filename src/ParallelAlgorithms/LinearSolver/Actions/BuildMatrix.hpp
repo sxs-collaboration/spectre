@@ -285,12 +285,12 @@ struct PrepareBuildMatrix {
           total_num_points, total_num_points);
     }
     db::mutate<Tags::TotalNumPoints, Tags::LocalFirstIndex, IterationIdTag>(
-        [total_num_points = total_num_points,
-         local_first_index = local_first_index](
+        [captured_total_num_points = total_num_points,
+         captured_local_first_index = local_first_index](
             const auto stored_total_num_points,
             const auto stored_local_first_index, const auto iteration_id) {
-          *stored_total_num_points = total_num_points;
-          *stored_local_first_index = local_first_index;
+          *stored_total_num_points = captured_total_num_points;
+          *stored_local_first_index = captured_local_first_index;
           *iteration_id = 0;
         },
         make_not_null(&box));
