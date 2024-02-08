@@ -38,9 +38,12 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidualMagnitude {
  private:
   using fields_tag = FieldsTag;
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      ::Tags::Initial<LinearSolver::Tags::Magnitude<
-          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
+      ::Tags::Initial<residual_magnitude_tag>;
+  using previous_residual_magnitude_tag =
+      ::Tags::Previous<residual_magnitude_tag>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
@@ -54,10 +57,12 @@ struct InitializeResidualMagnitude {
                     const double residual_magnitude) {
     constexpr size_t iteration_id = 0;
 
-    db::mutate<initial_residual_magnitude_tag>(
+    db::mutate<initial_residual_magnitude_tag, previous_residual_magnitude_tag>(
         [residual_magnitude](
-            const gsl::not_null<double*> initial_residual_magnitude) {
+            const gsl::not_null<double*> initial_residual_magnitude,
+            const gsl::not_null<double*> previous_residual_magnitude) {
           *initial_residual_magnitude = residual_magnitude;
+          *previous_residual_magnitude = residual_magnitude;
         },
         make_not_null(&box));
 
@@ -93,9 +98,12 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct StoreOrthogonalization {
  private:
   using fields_tag = FieldsTag;
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      ::Tags::Initial<LinearSolver::Tags::Magnitude<
-          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
+      ::Tags::Initial<residual_magnitude_tag>;
+  using previous_residual_magnitude_tag =
+      ::Tags::Previous<residual_magnitude_tag>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
@@ -161,7 +169,9 @@ struct StoreOrthogonalization {
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
     // Compute the residual vector from the QR decomposition
     blaze::DynamicVector<double> beta(num_rows, 0.);
-    beta[0] = get<initial_residual_magnitude_tag>(box);
+    const double initial_residual_magnitude =
+        get<initial_residual_magnitude_tag>(box);
+    beta[0] = initial_residual_magnitude;
     blaze::DynamicVector<double> minres =
         blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
     const double residual_magnitude =
@@ -175,10 +185,33 @@ struct StoreOrthogonalization {
         OptionsGroup, ParallelComponent>(iteration_id, residual_magnitude,
                                          cache);
 
-    // Determine whether the linear solver has converged
-    Convergence::HasConverged has_converged{
-        get<Convergence::Tags::Criteria<OptionsGroup>>(box), iteration_id,
-        residual_magnitude, get<initial_residual_magnitude_tag>(box)};
+    // Determine whether the linear solver has converged.
+    // GMRES is guaranteed to decrease the residual monotonically, so an
+    // increase in the residual is an error.
+    const auto& convergence_criteria =
+        get<Convergence::Tags::Criteria<OptionsGroup>>(box);
+    const double previous_residual_magnitude =
+        get<previous_residual_magnitude_tag>(box);
+    auto has_converged =
+        residual_magnitude < previous_residual_magnitude
+            ? Convergence::HasConverged{convergence_criteria, iteration_id,
+                                        residual_magnitude,
+                                        initial_residual_magnitude}
+            : Convergence::HasConverged{
+                  Convergence::Reason::Error,
+                  MakeString{} << std::scientific
+                               << "Residual should decrease monotonically, but "
+                                  "increased from "
+                               << previous_residual_magnitude << " to "
+                               << residual_magnitude << ".",
+                  iteration_id};
+
+    db::mutate<previous_residual_magnitude_tag>(
+        [residual_magnitude](
+            const gsl::not_null<double*> stored_previous_residual_magnitude) {
+          *stored_previous_residual_magnitude = residual_magnitude;
+        },
+        make_not_null(&box));
 
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
@@ -189,9 +222,15 @@ struct StoreOrthogonalization {
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
-      Parallel::printf("%s has converged in %zu iterations: %s\n",
-                       pretty_type::name<OptionsGroup>(), iteration_id,
-                       has_converged);
+      if (has_converged.reason() == Convergence::Reason::Error) {
+        Parallel::printf("%s has encountered an error in iteration %zu: %s\n",
+                         pretty_type::name<OptionsGroup>(), iteration_id,
+                         has_converged.error_message());
+      } else {
+        Parallel::printf("%s has converged in %zu iterations: %s\n",
+                         pretty_type::name<OptionsGroup>(), iteration_id,
+                         has_converged);
+      }
     }
 
     Parallel::receive_data<Tags::FinalOrthogonalization<OptionsGroup>>(

@@ -507,11 +507,10 @@ struct NormalizeOperandAndUpdateField {
     auto received_data = std::move(inbox.extract(iteration_id).mapped());
     const double normalization = get<0>(received_data);
     const auto& minres = get<1>(received_data);
-    auto& has_converged = get<2>(received_data);
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
-        [&has_converged](const gsl::not_null<Convergence::HasConverged*>
-                             local_has_converged) {
-          *local_has_converged = std::move(has_converged);
+        [&received_data](
+            const gsl::not_null<Convergence::HasConverged*> has_converged) {
+          *has_converged = std::move(get<2>(received_data));
         },
         make_not_null(&box));
 
@@ -545,7 +544,8 @@ struct NormalizeOperandAndUpdateField {
     db::mutate<operand_tag, basis_history_tag, fields_tag>(
         [normalization, &minres](const auto operand, const auto basis_history,
                                  const auto field, const auto& initial_field,
-                                 const auto& preconditioned_basis_history) {
+                                 const auto& preconditioned_basis_history,
+                                 const auto& has_converged) {
           // Avoid an FPE if the new operand norm is exactly zero. In that case
           // the problem is solved and the algorithm will terminate (see
           // Proposition 9.3 in \cite Saad2003). Since there will be no next
@@ -554,13 +554,18 @@ struct NormalizeOperandAndUpdateField {
             *operand /= normalization;
           }
           basis_history->push_back(*operand);
-          *field = initial_field;
-          for (size_t i = 0; i < minres.size(); i++) {
-            *field += minres[i] * gsl::at(preconditioned_basis_history, i);
+          // Don't update the solution if an error occurred
+          if (not(has_converged and
+                  has_converged.reason() == Convergence::Reason::Error)) {
+            *field = initial_field;
+            for (size_t i = 0; i < minres.size(); i++) {
+              *field += minres[i] * gsl::at(preconditioned_basis_history, i);
+            }
           }
         },
         make_not_null(&box), get<initial_fields_tag>(box),
-        get<preconditioned_basis_history_tag>(box));
+        get<preconditioned_basis_history_tag>(box),
+        get<Convergence::Tags::HasConverged<OptionsGroup>>(box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

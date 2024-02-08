@@ -54,6 +54,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   TestHelpers::db::test_prefix_tag<Tags::NormalDotNumericalFlux<Tag>>(
       "NormalDotNumericalFlux(Tag)");
   // [normal_dot_numerical_flux_name]
+  TestHelpers::db::test_prefix_tag<Tags::Previous<Tag>>("Previous(Tag)");
   // [next_name]
   TestHelpers::db::test_prefix_tag<Tags::Next<Tag>>("Next(Tag)");
   // [next_name]
