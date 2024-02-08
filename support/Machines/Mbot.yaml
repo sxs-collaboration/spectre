@@ -1,0 +1,13 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Mbot
+  Description: |
+    Supercomputer at Cornell hosted by Nils Deppe.
+    More information:
+    https://github.com/sxs-collaboration/WelcomeToSXS/wiki/Mbot
+  DefaultTasksPerNode: 6
+  DefaultProcsPerTasks: 32
+  DefaultQueue: "normal"
+  DefaultTimeLimit: "1-00:00:00"
