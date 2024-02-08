@@ -15,9 +15,27 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TupleSlice.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace elliptic::util {
 namespace detail {
+CREATE_IS_CALLABLE(apply)
+CREATE_IS_CALLABLE_V(apply)
+
+template <typename F, typename Args>
+struct ApplyImpl;
+
+template <typename F, typename... Args>
+struct ApplyImpl<F, std::tuple<Args...>> {
+  // Dispatch to static apply function or call operator, whichever is available
+  static constexpr decltype(auto) apply(F&& f, Args&&... args) {
+    if constexpr (is_apply_callable_v<F, Args...>) {
+      return F::apply(std::forward<Args>(args)...);
+    } else {
+      return std::forward<F>(f)(std::forward<Args>(args)...);
+    }
+  }
+};
 
 template <bool PassThrough, typename... MapKeys>
 struct unmap_arg;
@@ -145,15 +163,24 @@ SPECTRE_ALWAYS_INLINE void mutate_apply_at(
       [&f, &map_keys, &args_items, &args...](const auto... mutated_items) {
         (void)map_keys;
         (void)args_items;
-        std::forward<F>(f)(
-            unmap_arg<tmpl::list_contains_v<PassthroughTags, ReturnTags>,
-                      MapKeys...>::apply(mutated_items, map_keys)...,
-            unmap_arg<tmpl::list_contains_v<PassthroughTags, ArgumentTags>,
-                      MapKeys...>::
-                apply(std::get<tmpl::index_of<tmpl::list<ArgumentTags...>,
-                                              ArgumentTags>::value>(args_items),
-                      map_keys)...,
-            std::forward<Args>(args)...);
+        auto all_args = std::tuple_cat(
+            std::make_tuple(
+                unmap_arg<tmpl::list_contains_v<PassthroughTags, ReturnTags>,
+                          MapKeys...>::apply(mutated_items, map_keys)...),
+            std::forward_as_tuple(
+                unmap_arg<tmpl::list_contains_v<PassthroughTags, ArgumentTags>,
+                          MapKeys...>::
+                    apply(std::get<tmpl::index_of<tmpl::list<ArgumentTags...>,
+                                                  ArgumentTags>::value>(
+                              args_items),
+                          map_keys)...,
+                args...));
+        std::apply(
+            [&f](auto&&... expanded_args) {
+              ApplyImpl<F, std::decay_t<decltype(all_args)>>::apply(
+                  std::forward<F>(f), std::move(expanded_args)...);
+            },
+            std::move(all_args));
       },
       box);
 }

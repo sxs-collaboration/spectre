@@ -24,6 +24,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Domain/Tags/SurfaceJacobian.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
@@ -245,7 +246,7 @@ struct SubdomainOperator
         tmpl::transform<
             tmpl::flatten<tmpl::list<
                 Tags::ExtrudingExtent, domain::Tags::Element<Dim>,
-                domain::Tags::Mesh<Dim>,
+                domain::Tags::Mesh<Dim>, domain::Tags::NeighborMesh<Dim>,
                 domain::Tags::Faces<
                     Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
                 ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
@@ -253,7 +254,6 @@ struct SubdomainOperator
                 // Data on the remote side of the neighbor's mortars
                 tmpl::transform<
                     tmpl::list<
-                        domain::Tags::Mesh<Dim>,
                         domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>,
                         domain::Tags::Mesh<Dim - 1>,
                         ::Tags::MortarSize<Dim - 1>>,
@@ -262,9 +262,9 @@ struct SubdomainOperator
     const auto& [external_boundary_conditions, central_element,
                  central_mortar_meshes, all_overlap_extents,
                  all_neighbor_elements, all_neighbor_meshes,
+                 all_neighbors_neighbor_meshes,
                  all_neighbor_face_normal_magnitudes,
                  all_neighbor_mortar_meshes, all_neighbor_mortar_sizes,
-                 all_neighbors_neighbor_meshes,
                  all_neighbors_neighbor_face_normal_magnitudes,
                  all_neighbors_neighbor_mortar_meshes,
                  all_neighbors_neighbor_mortar_sizes] =

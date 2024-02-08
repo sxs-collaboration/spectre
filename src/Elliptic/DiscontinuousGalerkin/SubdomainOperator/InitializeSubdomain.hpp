@@ -25,7 +25,6 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -35,6 +34,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
@@ -74,18 +74,16 @@ struct InitializeOverlapGeometry {
   using return_tags =
       tmpl::list<elliptic::dg::subdomain_operator::Tags::ExtrudingExtent,
                  elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-                     domain::Tags::Mesh<Dim>, Dim>,
-                 elliptic::dg::subdomain_operator::Tags::NeighborMortars<
                      domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>, Dim>,
                  elliptic::dg::subdomain_operator::Tags::NeighborMortars<
                      domain::Tags::Mesh<Dim - 1>, Dim>,
                  elliptic::dg::subdomain_operator::Tags::NeighborMortars<
                      ::Tags::MortarSize<Dim - 1>, Dim>>;
   using argument_tags =
-      tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>>;
+      tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                 domain::Tags::NeighborMesh<Dim>>;
   void operator()(
       gsl::not_null<size_t*> extruding_extent,
-      gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim>>*> neighbor_meshes,
       gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           neighbor_face_normal_magnitudes,
       gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*>
@@ -93,7 +91,7 @@ struct InitializeOverlapGeometry {
       gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
           neighbor_mortar_sizes,
       const Element<Dim>& element, const Mesh<Dim>& mesh,
-      const std::vector<std::array<size_t, Dim>>& initial_extents,
+      const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
       const ElementId<Dim>& element_id, const Direction<Dim>& overlap_direction,
       const size_t max_overlap) const;
 };
@@ -132,9 +130,8 @@ struct InitializeSubdomain {
 
   using InitializeGeometry = elliptic::dg::InitializeGeometry<Dim>;
   using InitializeOverlapGeometry = detail::InitializeOverlapGeometry<Dim>;
-  using InitializeFacesAndMortars =
-      elliptic::dg::InitializeFacesAndMortars<Dim,
-                                              typename System::inv_metric_tag>;
+  using InitializeFacesAndMortars = elliptic::dg::InitializeFacesAndMortars<
+      Dim, typename System::inv_metric_tag, BackgroundTag>;
 
   template <typename Tag>
   using overlaps_tag =
@@ -200,41 +197,25 @@ struct InitializeSubdomain {
                              typename InitializeOverlapGeometry::argument_tags>,
             tmpl::list<>>(
             InitializeOverlapGeometry{}, make_not_null(&box), overlap_id,
-            db::get<domain::Tags::InitialExtents<Dim>>(box), neighbor_id,
-            direction_from_neighbor,
+            neighbor_id, direction_from_neighbor,
             db::get<LinearSolver::Schwarz::Tags::MaxOverlap<OptionsGroup>>(
                 box));
+        // Initialize faces and mortars on overlaps
+        elliptic::util::mutate_apply_at<
+            db::wrap_tags_in<overlaps_tag,
+                             typename InitializeFacesAndMortars::return_tags>,
+            tmpl::append<
+                db::wrap_tags_in<
+                    overlaps_tag,
+                    tmpl::list_difference<
+                        typename InitializeFacesAndMortars::argument_tags,
+                        typename InitializeFacesAndMortars::volume_tags>>,
+                typename InitializeFacesAndMortars::volume_tags>,
+            typename InitializeFacesAndMortars::volume_tags>(
+            InitializeFacesAndMortars{}, make_not_null(&box), overlap_id);
         if constexpr (has_background_fields) {
-          // Initialize faces and mortars on overlaps
-          const auto& background = db::get<BackgroundTag>(box);
-          using background_classes = tmpl::at<
-              typename Metavariables::factory_creation::factory_classes,
-              std::decay_t<decltype(background)>>;
-          elliptic::util::mutate_apply_at<
-              db::wrap_tags_in<overlaps_tag,
-                               typename InitializeFacesAndMortars::return_tags>,
-              db::wrap_tags_in<
-                  overlaps_tag,
-                  typename InitializeFacesAndMortars::argument_tags>,
-              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                            overlap_id,
-                            db::get<domain::Tags::InitialExtents<Dim>>(box),
-                            db::get<domain::Tags::FunctionsOfTime>(box),
-                            background, background_classes{});
           // Background fields
           initialize_background_fields(make_not_null(&box), overlap_id);
-        } else {
-          // Initialize faces and mortars on overlaps
-          elliptic::util::mutate_apply_at<
-              db::wrap_tags_in<overlaps_tag,
-                               typename InitializeFacesAndMortars::return_tags>,
-              db::wrap_tags_in<
-                  overlaps_tag,
-                  typename InitializeFacesAndMortars::argument_tags>,
-              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                            overlap_id,
-                            db::get<domain::Tags::InitialExtents<Dim>>(box),
-                            db::get<domain::Tags::FunctionsOfTime>(box));
         }
         // Faces on the other side of the overlapped element's mortars
         initialize_remote_faces(make_not_null(&box), overlap_id);
@@ -324,10 +305,9 @@ struct InitializeSubdomain {
     const auto& domain = db::get<domain::Tags::Domain<Dim>>(*box);
     const auto& functions_of_time =
         db::get<domain::Tags::FunctionsOfTime>(*box);
-    const auto& neighbor_meshes = db::get<overlaps_tag<
-        elliptic::dg::subdomain_operator::Tags::NeighborMortars<
-            domain::Tags::Mesh<Dim>, Dim>>>(*box)
-                                      .at(overlap_id);
+    const auto& neighbor_meshes =
+        db::get<overlaps_tag<domain::Tags::NeighborMesh<Dim>>>(*box).at(
+            overlap_id);
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
       const auto direction_from_neighbor = orientation(direction.opposite());

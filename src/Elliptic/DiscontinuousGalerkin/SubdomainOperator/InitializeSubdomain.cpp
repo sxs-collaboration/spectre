@@ -3,9 +3,7 @@
 
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/InitializeSubdomain.hpp"
 
-#include <array>
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
@@ -23,7 +21,6 @@ namespace elliptic::dg::subdomain_operator::Actions::detail {
 template <size_t Dim>
 void InitializeOverlapGeometry<Dim>::operator()(
     const gsl::not_null<size_t*> extruding_extent,
-    const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim>>*> neighbor_meshes,
     const gsl::not_null<::dg::MortarMap<
         Dim, Scalar<DataVector>>*> /*neighbor_face_normal_magnitudes*/,
     const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*>
@@ -31,10 +28,9 @@ void InitializeOverlapGeometry<Dim>::operator()(
     const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
         neighbor_mortar_sizes,
     const Element<Dim>& element, const Mesh<Dim>& mesh,
-    const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
     const ElementId<Dim>& element_id, const Direction<Dim>& overlap_direction,
     const size_t max_overlap) const {
-  const Spectral::Quadrature quadrature = mesh.quadrature(0);
   // Extruding extent
   *extruding_extent = LinearSolver::Schwarz::overlap_extent(
       mesh.extents(overlap_direction.dimension()), max_overlap);
@@ -49,12 +45,7 @@ void InitializeOverlapGeometry<Dim>::operator()(
         orientation(mesh).slice_away(direction_from_neighbor.dimension());
     for (const auto& neighbor_id : neighbors) {
       const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
-      const auto& neighbor_mesh =
-          neighbor_meshes
-              ->emplace(mortar_id,
-                        domain::Initialization::create_initial_mesh(
-                            initial_extents, neighbor_id, quadrature))
-              .first->second;
+      const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
       const auto neighbor_face_mesh =
           neighbor_mesh.slice_away(direction_from_neighbor.dimension());
       neighbor_mortar_meshes->emplace(

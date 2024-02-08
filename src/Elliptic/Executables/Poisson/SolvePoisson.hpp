@@ -36,6 +36,7 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -239,13 +240,12 @@ struct Metavariables {
       system, true, linear_solver_iteration_id, vars_tag, fluxes_vars_tag,
       operator_applied_to_vars_tag>;
 
-  using register_actions =
+  using register_actions = tmpl::flatten<
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
                  typename schwarz_smoother::register_element,
                  typename multigrid::register_element,
                  LinearSolver::Actions::build_matrix_register<
-                     LinearSolver::multigrid::Tags::IsFinestGrid>,
-                 Parallel::Actions::TerminatePhase>;
+                     LinearSolver::multigrid::Tags::IsFinestGrid>>>;
 
   template <typename Label>
   using smooth_actions =
@@ -275,15 +275,23 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
-          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
-          Parallel::PhaseActions<Parallel::Phase::BuildMatrix,
-                                 build_matrix_actions>>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
+                 Parallel::PhaseActions<Parallel::Phase::BuildMatrix,
+                                        build_matrix_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename multigrid::options_group>>;
+
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<dg_element_array, register_actions>>;
+  };
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::flatten<

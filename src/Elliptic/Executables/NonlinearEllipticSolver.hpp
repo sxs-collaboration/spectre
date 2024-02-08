@@ -193,9 +193,9 @@ struct Solver {
                                                 fluxes_tag>>>>;
 
   using register_actions =
-      tmpl::list<typename nonlinear_solver::register_element,
-                 typename multigrid::register_element,
-                 typename schwarz_smoother::register_element>;
+      tmpl::flatten<tmpl::list<typename nonlinear_solver::register_element,
+                               typename multigrid::register_element,
+                               typename schwarz_smoother::register_element>>;
 
   template <bool Linearized>
   using build_operator_actions = elliptic::dg::Actions::apply_operator<
