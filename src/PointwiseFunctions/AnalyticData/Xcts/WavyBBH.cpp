@@ -47,6 +47,97 @@ void WavyBBHVariables<DataVector>::operator()(
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*> deriv_one_over_radius_left,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial> /*meta*/) const {
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
+  const auto& normal_left =
+      cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
+  for (size_t i = 0; i < 3; ++i) {
+    deriv_one_over_radius_left->get(i) =
+        -normal_left.get(i) / square(radius_left);
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*> deriv_one_over_radius_right,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial> /*meta*/) const {
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
+  const auto& normal_right =
+      cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
+  for (size_t i = 0; i < 3; ++i) {
+    deriv_one_over_radius_right->get(i) =
+        -normal_right.get(i) / square(radius_right);
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    gsl::not_null<tnsr::ijk<DataType, 3>*> deriv_3_radius_left,
+    gsl::not_null<Cache*> cache,
+    ::Tags::deriv<
+        ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
+                                    tmpl::size_t<Dim>, Frame::Inertial>,
+                      tmpl::size_t<Dim>, Frame::Inertial>,
+        tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+  const auto& radius_left =
+      get(cache->get_var(*this, detail::Tags::RadiusLeft<DataType>{}));
+  const auto& normal_left =
+      cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
+  std::array<std::array<double, 3>, 3> delta{
+      {{{1., 0., 0.}}, {{0., 1., 0.}}, {{0., 0., 1.}}}};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        deriv_3_radius_left->get(i, j, k) =
+            (-normal_left.get(i) * delta[j][k] -
+             normal_left.get(j) * delta[i][k] -
+             normal_left.get(k) * delta[i][j] +
+             3 * normal_left.get(i) * normal_left.get(j) * normal_left.get(k)) /
+            square(radius_left);
+      }
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
+    gsl::not_null<tnsr::ijk<DataType, 3>*> deriv_3_radius_right,
+    gsl::not_null<Cache*> cache,
+    ::Tags::deriv<
+        ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
+                                    tmpl::size_t<Dim>, Frame::Inertial>,
+                      tmpl::size_t<Dim>, Frame::Inertial>,
+        tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+  const auto& radius_right =
+      get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
+  const auto& normal_right =
+      cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
+  std::array<std::array<double, 3>, 3> delta{
+      {{{1., 0., 0.}}, {{0., 1., 0.}}, {{0., 0., 1.}}}};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        deriv_3_radius_right->get(i, j, k) =
+            (-normal_right.get(i) * delta[j][k] -
+             normal_right.get(j) * delta[i][k] -
+             normal_right.get(k) * delta[i][j] +
+             3 * normal_right.get(i) * normal_right.get(j) *
+                 normal_right.get(k)) /
+            square(radius_right);
+      }
+    }
+  }
+}
+
+template <typename DataType>
+void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
     const gsl::not_null<Cache*> cache,
     detail::Tags::NormalLeft<DataType> /*meta*/) const {
@@ -299,16 +390,54 @@ void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   std::fill(deriv_conformal_metric->begin(), deriv_conformal_metric->end(), 0.);
 }
 
 template <typename DataType>
 void WavyBBHVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const {
+  const auto& deriv_one_over_radius_left = cache->get_var(
+      *this, ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& deriv_one_over_radius_right = cache->get_var(
+      *this, ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& deriv_3_radius_left = cache->get_var(
+      *this,
+      ::Tags::deriv<
+          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
+                                      tmpl::size_t<Dim>, Frame::Inertial>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& deriv_3_radius_right = cache->get_var(
+      *this,
+      ::Tags::deriv<
+          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
+                                      tmpl::size_t<Dim>, Frame::Inertial>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          tmpl::size_t<Dim>, Frame::Inertial>{});
   get(*trace_extrinsic_curvature) = 0.;
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      get(*trace_extrinsic_curvature) +=
+          -deriv_one_over_radius_left.get(j) * momentum_left[j] -
+          deriv_one_over_radius_right.get(j) * momentum_right[j] -
+          0.5 * deriv_3_radius_left.get(i, i, j) * momentum_left[j] -
+          0.5 * deriv_3_radius_right.get(i, i, j) * momentum_right[j];
+    }
+    get(*trace_extrinsic_curvature) +=
+        2. *
+            (deriv_one_over_radius_left.get(i) +
+             deriv_one_over_radius_left.get(i)) *
+            momentum_left[i] +
+        2. *
+            (deriv_one_over_radius_right.get(i) +
+             deriv_one_over_radius_right.get(i)) *
+            momentum_right[i];
+  }
 }
 
 template <typename DataType>

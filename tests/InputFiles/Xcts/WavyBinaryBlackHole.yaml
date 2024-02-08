@@ -35,7 +35,7 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: 0.4
-      OuterRadius: 0.5
+      OuterRadius: 2.
       XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
@@ -64,10 +64,10 @@ DomainCreator:
             NegativeExpansion: *bh_left
       UseLogarithmicMap: True
     Envelope:
-      Radius: &outer_shell_inner_radius 20.
+      Radius: &outer_shell_inner_radius 14.
       RadialDistribution: Linear
     OuterShell:
-      Radius: &outer_radius 100.
+      Radius: &outer_radius 20.
       RadialDistribution: &outer_shell_distribution Linear
       OpeningAngle: 90.0
       BoundaryCondition: Flatness
@@ -216,7 +216,7 @@ EventsAndTriggers:
         Offset: 0
     Events:
       - ObserveFields:
-          SubfileName: VolumeData_ini
+          SubfileName: BackgroundData
           VariablesToObserve:
             - Conformal(SpatialMetric)
             - TraceExtrinsicCurvature

@@ -41,7 +41,15 @@ struct RadiusLeft : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
+struct OneOverRadiusLeft : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
 struct RadiusRight : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct OneOverRadiusRight : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
@@ -78,6 +86,20 @@ template <typename DataType>
 using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     common_tags<DataType>,
     tmpl::list<
+        ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+        ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+        ::Tags::deriv<
+            ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
+                                        tmpl::size_t<3>, Frame::Inertial>,
+                          tmpl::size_t<3>, Frame::Inertial>,
+            tmpl::size_t<3>, Frame::Inertial>,
+        ::Tags::deriv<
+            ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
+                                        tmpl::size_t<3>, Frame::Inertial>,
+                          tmpl::size_t<3>, Frame::Inertial>,
+            tmpl::size_t<3>, Frame::Inertial>,
         detail::Tags::RadiusLeft<DataType>, detail::Tags::RadiusRight<DataType>,
         detail::Tags::NormalLeft<DataType>, detail::Tags::NormalRight<DataType>,
         detail::Tags::RadiativeTerm<DataType>,
@@ -136,15 +158,41 @@ struct WavyBBHVariables
   const std::array<double, 3> momentum_right{{0., ymomentum_right, 0.}};
 
   void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
-                  gsl::not_null<Cache*> /*cache*/,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::RadiusLeft<DataType> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> radius_right,
                   gsl::not_null<Cache*> /*cache*/,
                   detail::Tags::RadiusRight<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_radius_left,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_radius_right,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_radius_left,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<
+          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
+                                      tmpl::size_t<Dim>, Frame::Inertial>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_radius_right,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<
+          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
+                                      tmpl::size_t<Dim>, Frame::Inertial>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> normal_left,
                   gsl::not_null<Cache*> cache,
                   detail::Tags::NormalLeft<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
+  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> normal_right,
                   gsl::not_null<Cache*> cache,
                   detail::Tags::NormalRight<DataType> /*meta*/) const;
   void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
