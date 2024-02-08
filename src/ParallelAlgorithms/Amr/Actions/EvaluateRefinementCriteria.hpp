@@ -87,12 +87,10 @@ struct EvaluateRefinementCriteria {
     constexpr size_t volume_dim = Metavariables::volume_dim;
     auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 
-    using compute_tags = tmpl::remove_duplicates<tmpl::filter<
-        tmpl::flatten<tmpl::transform<
-            tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                     Criterion>,
-            detail::get_tags<tmpl::_1>>>,
-        db::is_compute_tag<tmpl::_1>>>;
+    using compute_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 Criterion>,
+        detail::get_tags<tmpl::_1>>>>;
     auto observation_box =
         make_observation_box<compute_tags>(make_not_null(&box));
 
