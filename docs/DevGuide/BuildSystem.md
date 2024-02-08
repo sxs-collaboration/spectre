@@ -290,6 +290,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Minimum priority of input file tests to run. Possible values are: `low` (not
     usually run on CI), `normal` (run at least once on CI), `high` (run always
     on CI). (default is `normal`)
+- SPECTRE_LTO
+  - Enable link-time optimization if the compiler supports it.
+- SPECTRE_LTO_CORES
+  - Specifies the number of cores to use for parallelizing LTO. Must be a
+    positive integer or "auto". This is only available when `SPECTRE_LTO=ON` and
+    the compiler supports LTO.
 - SPECTRE_TEST_RUNNER
   - Run test executables through a wrapper.  This might be `charmrun`, for
     example.  (default is to not use one)
