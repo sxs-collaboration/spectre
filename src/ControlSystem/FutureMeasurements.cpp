@@ -64,4 +64,14 @@ void FutureMeasurements::pup(PUP::er& p) {
   p | measurements_until_update_;
   p | measurements_per_update_;
 }
+
+bool operator==(const FutureMeasurements& lhs, const FutureMeasurements& rhs) {
+  return lhs.measurements_ == rhs.measurements_ and
+         lhs.measurements_until_update_ == rhs.measurements_until_update_ and
+         lhs.measurements_per_update_ == rhs.measurements_per_update_;
+}
+
+bool operator!=(const FutureMeasurements& lhs, const FutureMeasurements& rhs) {
+  return not(lhs == rhs);
+}
 }  // namespace control_system
