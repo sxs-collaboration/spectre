@@ -8,6 +8,12 @@ spectre_add_python_bindings_test(
   None)
 
 spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotAlongLine"
+  Test_PlotAlongLine.py
+  "unit;visualization;python"
+  None)
+
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotDatFile"
   Test_PlotDatFile.py
   "unit;visualization;python"
@@ -28,6 +34,11 @@ spectre_add_python_bindings_test(
 if(${BUILD_PYTHON_BINDINGS})
   # Test is a bit slow because it writes a bunch of plot files to verify
   # the argument handling works.
+  set_tests_properties(
+    "Unit.Visualization.Python.PlotAlongLine"
+    PROPERTIES
+    TIMEOUT 10
+    )
   set_tests_properties(
     "Unit.Visualization.Python.PlotDatFile"
     PROPERTIES

@@ -30,6 +30,7 @@ class Cli(click.MultiCommand):
             "generate-xdmf",
             "interpolate-to-mesh",
             "interpolate-to-points",
+            "plot-along-line",
             "plot-dat",
             "plot-power-monitors",
             "plot-size-control",
@@ -93,6 +94,12 @@ class Cli(click.MultiCommand):
             )
 
             return interpolate_to_mesh_command
+        elif name == "plot-along-line":
+            from spectre.Visualization.PlotAlongLine import (
+                plot_along_line_command,
+            )
+
+            return plot_along_line_command
         elif name == "plot-dat":
             from spectre.Visualization.PlotDatFile import plot_dat_command
 
