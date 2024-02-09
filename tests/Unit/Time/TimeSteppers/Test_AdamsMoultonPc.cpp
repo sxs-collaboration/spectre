@@ -10,6 +10,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -55,7 +56,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
     TimeStepperTestUtils::check_convergence_order(stepper, {10, 30});
     for (size_t history_order = 2; history_order <= order; ++history_order) {
       CAPTURE(history_order);
-      TimeStepperTestUtils::check_dense_output(stepper, history_order);
+      TimeStepperTestUtils::check_dense_output(stepper, history_order,
+                                               {10, 30});
     }
   }
 

@@ -5,6 +5,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/ImexHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/Heun2.hpp"
@@ -32,9 +33,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Heun2", "[Unit][Time]") {
   TimeStepperTestUtils::integrate_variable_test(stepper, 2, 0, 1.0e-6);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_convergence_order(stepper, {10, 50});
-  TimeStepperTestUtils::check_dense_output(stepper, 2_st);
+  TimeStepperTestUtils::check_dense_output(stepper, 2_st, {10, 100});
 
-  TimeStepperTestUtils::check_imex_convergence_order(stepper, {10, 50});
+  TimeStepperTestUtils::imex::check_convergence_order(stepper, {10, 50});
+  TimeStepperTestUtils::imex::check_bounded_dense_output(stepper);
 
   TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Heun2>("Heun2");
   test_serialization(stepper);

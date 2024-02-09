@@ -6,30 +6,24 @@
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
 #include <algorithm>
-#include <array>
+#include <blaze/math/DynamicMatrix.h>
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
-#include <fstream>
 #include <limits>
-#include <type_traits>
+#include <utility>
 
-#include "DataStructures/ComplexDataVector.hpp"
-#include "DataStructures/DynamicMatrix.hpp"
-#include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Numeric.hpp"
+#include "Utilities/Algorithm.hpp"
 
 namespace TimeStepperTestUtils {
 
@@ -76,49 +70,6 @@ void take_step_and_check_error(
   CHECK(time_id.substep() == 0);
   CHECK(time_id.step_time() - *time == step_size);
   *time = time_id.step_time();
-}
-
-template <typename F>
-double convergence_rate(const int32_t large_steps, const int32_t small_steps,
-                        F&& error, const bool output = false) {
-  // We do a least squares fit on a log-log error-vs-steps plot.  The
-  // unequal points caused by the log scale will introduce some bias,
-  // but the typical range this is used for is only a factor of a few,
-  // so it shouldn't be too bad.
-
-  // Make sure testing code is not left enabled.
-  CHECK(not output);
-
-  std::ofstream output_stream{};
-  if (output) {
-    output_stream.open("convergence.dat");
-    output_stream.precision(18);
-  }
-
-  const auto num_tests = static_cast<size_t>(small_steps - large_steps) + 1;
-  std::vector<double> log_steps;
-  std::vector<double> log_errors;
-  log_steps.reserve(num_tests);
-  log_errors.reserve(num_tests);
-  for (auto steps = large_steps; steps <= small_steps; ++steps) {
-    const double this_error = abs(error(steps));
-    if (output) {
-      output_stream << steps << "\t" << this_error << std::endl;
-    }
-    log_steps.push_back(log(steps));
-    log_errors.push_back(log(this_error));
-  }
-  const double average_log_steps = alg::accumulate(log_steps, 0.0) / num_tests;
-  const double average_log_errors =
-      alg::accumulate(log_errors, 0.0) / num_tests;
-  double numerator = 0.0;
-  double denominator = 0.0;
-  for (size_t i = 0; i < num_tests; ++i) {
-    numerator += (log_steps[i] - average_log_steps) *
-        (log_errors[i] - average_log_errors);
-    denominator += square(log_steps[i] - average_log_steps);
-  }
-  return -numerator / denominator;
 }
 }  // namespace
 
@@ -363,81 +314,6 @@ void stability_test(const TimeStepper& stepper, const double phase) {
                        phase - 0.1));
 }
 
-void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
-                         const size_t number_of_past_steps,
-                         const double epsilon, const bool forward) {
-  // This does an integral putting the entire derivative into the
-  // boundary term.
-  const double unused_local_deriv = 4444.;
-
-  auto analytic = [](double t) { return sin(t); };
-  auto driver = [](double t) { return cos(t); };
-  auto coupling = [=](const double local, const double remote) {
-    CHECK(local == unused_local_deriv);
-    return remote;
-  };
-
-  Approx approx = Approx::custom().epsilon(epsilon);
-
-  const uint64_t num_steps = 100;
-  const Slab slab(0.875, 1.);
-  const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
-
-  TimeStepId time_id(forward, 0, forward ? slab.start() : slab.end());
-  double y = analytic(time_id.substep_time());
-  TimeSteppers::History<double> volume_history{order};
-  TimeSteppers::BoundaryHistory<double, double, double> boundary_history{};
-
-  {
-    Time history_time = time_id.step_time();
-    TimeDelta history_step_size = step_size;
-    for (size_t j = 0; j < number_of_past_steps; ++j) {
-      ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
-      if ((history_step_size.is_positive() and
-           history_time.is_at_slab_start()) or
-          (not history_step_size.is_positive() and
-           history_time.is_at_slab_end())) {
-        const Slab new_slab =
-            history_time.slab().advance_towards(-history_step_size);
-        history_time = history_time.with_slab(new_slab);
-        history_step_size = history_step_size.with_slab(new_slab);
-      }
-      history_time -= history_step_size;
-      const TimeStepId history_id(forward, 0, history_time);
-      volume_history.insert_initial(history_id, analytic(history_time.value()),
-                                    0.);
-      boundary_history.local().insert_initial(history_id, order,
-                                              unused_local_deriv);
-      boundary_history.remote().insert_initial(history_id, order,
-                                               driver(history_time.value()));
-    }
-  }
-
-  for (uint64_t i = 0; i < num_steps; ++i) {
-    for (uint64_t substep = 0;
-         substep < stepper.number_of_substeps();
-         ++substep) {
-      volume_history.insert(time_id, y, 0.);
-      boundary_history.local().insert(time_id, order, unused_local_deriv);
-      boundary_history.remote().insert(time_id, order,
-                                       driver(time_id.substep_time()));
-
-      stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
-                       step_size);
-      stepper.add_boundary_delta(&y, make_not_null(&boundary_history),
-                                 step_size, coupling);
-      time_id = stepper.next_time_id(time_id, step_size);
-    }
-    CHECK(y == approx(analytic(time_id.substep_time())));
-  }
-  // Make sure history is being cleaned up.  The limit of 20 is
-  // arbitrary, but much larger than the order of any integrators we
-  // care about and much smaller than the number of time steps in the
-  // test.
-  CHECK(boundary_history.local().size() < 20);
-  CHECK(boundary_history.remote().size() < 20);
-}
-
 void check_convergence_order(const TimeStepper& stepper,
                              const std::pair<int32_t, int32_t>& step_range,
                              const bool output) {
@@ -459,12 +335,13 @@ void check_convergence_order(const TimeStepper& stepper,
     const double result = abs(y - exp(1.));
     return result;
   };
-  CHECK(convergence_rate(step_range.first, step_range.second, do_integral,
-                         output) == approx(stepper.order()).margin(0.4));
+  CHECK(convergence_rate(step_range, 1, do_integral, output) ==
+        approx(stepper.order()).margin(0.4));
 }
 
-void check_dense_output(const TimeStepper& stepper,
-                        const size_t history_integration_order) {
+void check_dense_output(
+    const TimeStepper& stepper, const size_t history_integration_order,
+    const std::pair<int32_t, int32_t>& convergence_step_range) {
   const auto get_dense = [&stepper, &history_integration_order](
                              const TimeDelta& step_size, const double time) {
     const auto impl = [&stepper, &history_integration_order, &step_size,
@@ -542,16 +419,12 @@ void check_dense_output(const TimeStepper& stepper,
 
   // Test convergence
   {
-    const int32_t large_steps = 10;
-    // The high-order solvers have round-off error around here
-    const int32_t small_steps = 30;
-
     const auto error = [&get_dense](const int32_t steps) {
       const Slab slab(0., 1.);
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
     };
-    CHECK(convergence_rate(large_steps, small_steps, error) ==
+    CHECK(convergence_rate(convergence_step_range, 1, error) ==
           approx(history_integration_order).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
@@ -559,83 +432,8 @@ void check_dense_output(const TimeStepper& stepper,
       return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
                  exp(-0.25 * M_PI));
     };
-    CHECK(convergence_rate(large_steps, small_steps, error_backwards) ==
+    CHECK(convergence_rate(convergence_step_range, 1, error_backwards) ==
           approx(history_integration_order).margin(0.4));
-  }
-}
-
-void check_boundary_dense_output(const LtsTimeStepper& stepper) {
-  // We only support variable time-step, multistep LTS integration.
-  // Any multistep, variable time-step integrator must give the same
-  // results from dense output as from just taking a short step
-  // because we require dense output to be continuous.  A sufficient
-  // test is therefore to run with an LTS pattern and check that the
-  // dense output predicts the actual step result.
-  const Slab slab(0., 1.);
-
-  // We don't use any meaningful values.  We only care that the dense
-  // output gives the same result as normal output.
-  // NOLINTNEXTLINE(spectre-mutable)
-  auto get_value = [value = 1.]() mutable { return value *= 1.1; };
-
-  const auto coupling = [](const double a, const double b) { return a * b; };
-
-  const auto make_time_id = [](const Time& t) {
-    return TimeStepId(true, 0, t);
-  };
-
-  TimeSteppers::BoundaryHistory<double, double, double> history{};
-  {
-    const Slab init_slab = slab.retreat();
-    for (size_t i = 0; i < stepper.number_of_past_steps(); ++i) {
-      const Time init_time =
-          init_slab.end() -
-          init_slab.duration() * (i + 1) / stepper.number_of_past_steps();
-      history.local().insert_initial(make_time_id(init_time), stepper.order(),
-                                     get_value());
-      history.remote().insert_initial(make_time_id(init_time), stepper.order(),
-                                      get_value());
-    }
-  }
-
-  std::array<std::deque<TimeDelta>, 2> dt{
-      {{slab.duration() / 2, slab.duration() / 4, slab.duration() / 4},
-       {slab.duration() / 6, slab.duration() / 6, slab.duration() * 2 / 9,
-        slab.duration() * 4 / 9}}};
-
-  Time t = slab.start();
-  Time next_check = t + dt[0][0];
-  std::array<Time, 2> next{{t, t}};
-  for (;;) {
-    const size_t side = next[0] <= next[1] ? 0 : 1;
-
-    if (side == 0) {
-      history.local().insert(make_time_id(next[0]), stepper.order(),
-                             get_value());
-    } else {
-      history.remote().insert(make_time_id(next[1]), stepper.order(),
-                              get_value());
-    }
-
-    const TimeDelta this_dt = gsl::at(dt, side).front();
-    gsl::at(dt, side).pop_front();
-
-    gsl::at(next, side) += this_dt;
-
-    if (std::min(next[0], next[1]) == next_check) {
-      double dense_result = 0.0;
-      stepper.boundary_dense_output(&dense_result, history, next_check.value(),
-                                    coupling);
-      double delta = 0.0;
-      stepper.add_boundary_delta(&delta, make_not_null(&history),
-                                 next_check - t, coupling);
-      CHECK(dense_result == approx(delta));
-      if (next_check.is_at_slab_boundary()) {
-        break;
-      }
-      t = next_check;
-      next_check += dt[0].front();
-    }
   }
 }
 
@@ -710,86 +508,5 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
           return stepper.next_time_id_for_error(time_step_id, time_step);
         });
   }
-}
-
-void check_imex_convergence_order(const ImexTimeStepper& stepper,
-                                  const std::pair<int32_t, int32_t>& step_range,
-                                  const bool output) {
-  // Make sure testing code is not left enabled.
-  CHECK(not output);
-
-  std::ofstream output_stream{};
-  if (output) {
-    output_stream.open("convergence.dat");
-    output_stream.precision(18);
-  }
-  const auto do_integral = [&output, &output_stream,
-                            &stepper](const int32_t num_steps) {
-    const Slab slab(0., 1.);
-    const TimeDelta step_size = slab.duration() / num_steps;
-
-    TimeStepId time_step_id(true, 0, slab.start());
-    double y = 1.;
-    TimeSteppers::History<double> history{stepper.order()};
-    TimeSteppers::History<double> implicit_history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) { return 3.0 * v; };
-    const auto implicit_rhs = [](const double v, const double /*t*/) {
-      return -2.0 * v;
-    };
-    const auto implicit_rhs_init =
-        [&implicit_rhs](const auto /*no_value*/, const double t) {
-          return implicit_rhs(exp(t), t);
-        };
-    initialize_history(
-        time_step_id.step_time(), make_not_null(&history),
-        [](const double t) { return exp(t); }, rhs, step_size,
-        stepper.number_of_past_steps());
-    initialize_history(
-        time_step_id.step_time(), make_not_null(&implicit_history),
-        [](const double /*t*/) {
-          return TimeSteppers::History<double>::no_value;
-        },
-        implicit_rhs_init, step_size, stepper.number_of_past_steps());
-    while (time_step_id.step_time() < slab.end()) {
-      history.insert(time_step_id, y, rhs(y, time_step_id.substep_time()));
-      implicit_history.insert(time_step_id,
-                              TimeSteppers::History<double>::no_value,
-                              implicit_rhs(y, time_step_id.substep_time()));
-      stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
-      // This system is simple enough that we can do the implicit
-      // solve analytically.
-
-      // Verify that the functions can be called in either order.  The
-      // order used by the IMEX code has not been consistent during
-      // development, so make sure to support both orders.
-      auto y2 = y;
-      auto implicit_history2 = implicit_history;
-      stepper.add_inhomogeneous_implicit_terms(
-          make_not_null(&y2), make_not_null(&implicit_history2), step_size);
-      const double weight =
-          stepper.implicit_weight(make_not_null(&implicit_history), step_size);
-      // Both methods are required to do history cleanup
-      CHECK(implicit_history == implicit_history2);
-      // Verify that the weight calculation only uses the history times.
-      implicit_history2.map_entries([](const auto value) {
-        *value = std::numeric_limits<double>::signaling_NaN();
-      });
-      CHECK(stepper.implicit_weight(make_not_null(&implicit_history2),
-                                    step_size) == weight);
-      stepper.add_inhomogeneous_implicit_terms(
-          make_not_null(&y), make_not_null(&implicit_history), step_size);
-      CHECK(y == y2);
-
-      y /= 1.0 + 2.0 * weight;
-      time_step_id = stepper.next_time_id(time_step_id, step_size);
-    }
-    const double result = abs(y - exp(1.));
-    if (output) {
-      output_stream << num_steps << "\t" << result << std::endl;
-    }
-    return result;
-  };
-  CHECK(convergence_rate(step_range.first, step_range.second, do_integral) ==
-        approx(stepper.imex_order()).margin(0.4));
 }
 }  // namespace TimeStepperTestUtils

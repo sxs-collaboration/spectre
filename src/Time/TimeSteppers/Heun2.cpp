@@ -31,8 +31,8 @@ const RungeKutta::ButcherTableau& Heun2::butcher_tableau() const {
       // Coefficients for the embedded method for generating an error measure.
       {1.0, 0.0},
       // Dense output coefficient polynomials
-      {{0.0, 1.0, -0.5},
-       {0.0, 0.0, 0.5}}};
+      {{0.0, 0.5},
+       {0.0, 0.5}}};
   return tableau;
 }
 
