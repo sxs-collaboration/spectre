@@ -144,6 +144,12 @@ EvolutionSystem:
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
 
+Amr:
+  Criteria:
+  Policies:
+    Isotropy: Anisotropic
+  Verbosity: Quiet
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:

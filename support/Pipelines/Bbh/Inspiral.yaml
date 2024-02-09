@@ -185,6 +185,12 @@ Observers:
 Cce:
   BondiSachsOutputFilePrefix: "BondiSachs"
 
+Amr:
+  Criteria:
+  Policies:
+    Isotropy: Anisotropic
+  Verbosity: Quiet
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:
