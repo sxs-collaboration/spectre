@@ -33,7 +33,7 @@ def _parse_point(ctx, param, value):
     return np.array(list(map(float, value.split(","))))
 
 
-@click.command(name="plot-along-line")
+@click.command(name="along-line")
 @click.argument(
     "h5_files",
     nargs=-1,

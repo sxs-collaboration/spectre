@@ -18,7 +18,7 @@ from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 logger = logging.getLogger(__name__)
 
 
-@click.command(name="plot-size-control")
+@click.command(name="size-control")
 @click.argument(
     "reduction_files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
