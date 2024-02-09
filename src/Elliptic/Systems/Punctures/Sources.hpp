@@ -22,7 +22,7 @@ namespace Punctures {
 /*!
  * \brief Add the nonlinear sources for the puncture equation.
  *
- * Adds $\beta \left(\alpha \left(1 + u\right) + 1\right)^{-7}$.
+ * Adds $-\beta \left(\alpha \left(1 + u\right) + 1\right)^{-7}$.
  *
  * \see Punctures
  */
@@ -34,7 +34,7 @@ void add_sources(gsl::not_null<Scalar<DataVector>*> puncture_equation,
 /*!
  * \brief Add the linearized sources for the puncture equation.
  *
- * Adds $\frac{d}{du}(\beta \left(\alpha \left(1 + u\right) + 1\right)^{-7})$.
+ * Adds $-\frac{d}{du}(\beta \left(\alpha \left(1 + u\right) + 1\right)^{-7})$.
  *
  * \see Punctures
  */
