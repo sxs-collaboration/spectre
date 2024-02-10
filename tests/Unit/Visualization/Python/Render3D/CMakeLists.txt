@@ -1,10 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_python_module(paraview FALSE)
+find_python_module(paraview)
 
 # Skip tests if ParaView is not found
-if (NOT PY_PARAVIEW)
+if (NOT PY_paraview_FOUND)
   message(STATUS "ParaView not found, skipping 'Render3D' tests")
   return()
 endif()

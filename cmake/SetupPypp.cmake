@@ -24,7 +24,7 @@ file(APPEND
 
 # Also check that SciPy is installed
 include(FindPythonModule)
-find_python_module(scipy TRUE)
+find_python_module(scipy REQUIRED)
 
 add_library(Python::NumPy INTERFACE IMPORTED)
 set_property(TARGET Python::NumPy PROPERTY

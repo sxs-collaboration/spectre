@@ -77,9 +77,9 @@ function correctly. Use Doxygen version 1.9.3 or higher.")
     )
 
   include(FindPythonModule)
-  find_python_module(bs4 FALSE)
-  find_python_module(pybtex FALSE)
-  if (PY_BS4 AND PY_PYBTEX)
+  find_python_module(bs4)
+  find_python_module(pybtex)
+  if (PY_bs4_FOUND AND PY_pybtex_FOUND)
     # Construct the command that runs the postprocessing over the Doxygen HTML
     # output
     set(
@@ -104,17 +104,17 @@ ${CMAKE_SOURCE_DIR}/docs/Dependencies.bib"
 generate_docs_exit=$?\n\
 ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
       )
-  else (PY_BS4 AND PY_PYBTEX)
+  else()
     message(WARNING "Doxygen documentation postprocessing is disabled because"
     " Python dependencies were not found:")
-    if (NOT PY_BS4)
+    if (NOT PY_bs4_FOUND)
       message(WARNING "BeautifulSoup4 missing. "
         "Install with: pip install beautifulsoup4")
     endif()
-    if (NOT PY_PYBTEX)
+    if (NOT PY_pybtex_FOUND)
       message(WARNING "Pybtex missing. Install with: pip install pybtex")
     endif()
-  endif (PY_BS4 AND PY_PYBTEX)
+  endif()
 
   # Parse the command into a CMake list for the `add_custom_target`
   separate_arguments(GENERATE_DOCS_COMMAND)
@@ -169,8 +169,8 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
 
   # Use [coverxygen](https://github.com/psycofdj/coverxygen) to check the level
   # of documentation coverage.
-  find_python_module(coverxygen FALSE)
-  if (LCOV AND GENHTML AND SED AND PY_COVERXYGEN
+  find_python_module(coverxygen)
+  if (LCOV AND GENHTML AND SED AND PY_coverxygen_FOUND
       AND EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
     set(DOX_COVERAGE_OUTPUT "${CMAKE_BINARY_DIR}/docs/html/doc_coverage/")
     add_custom_target(
@@ -236,8 +236,7 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
 
       COMMENT "SpECTRE Documentation Coverage"
       )
-  endif(LCOV AND GENHTML AND SED AND PY_COVERXYGEN
-    AND EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
+  endif()
 else(DOXYGEN_FOUND)
   message(WARNING "Doxygen is needed to build the documentation.")
 endif (DOXYGEN_FOUND)
