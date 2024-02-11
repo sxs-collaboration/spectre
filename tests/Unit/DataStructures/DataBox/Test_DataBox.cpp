@@ -3354,12 +3354,12 @@ struct BaseConsumerSimple : BaseConsumer, db::SimpleTag {
 struct BaseConsumerComputeFromSimple : BaseConsumerSimple, db::ComputeTag {
   using base = BaseConsumerSimple;
   using argument_tags = tmpl::list<BaseProviderSimple>;
-  static void function(gsl::not_null<int*>, int);
+  static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
 };
 struct BaseConsumerComputeFromBase : BaseConsumerSimple, db::ComputeTag {
   using base = BaseConsumerSimple;
   using argument_tags = tmpl::list<BaseProvider>;
-  static void function(gsl::not_null<int*>, int);
+  static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
 };
 struct ChainedConsumer : db::SimpleTag {
   using type = int;
@@ -3367,7 +3367,7 @@ struct ChainedConsumer : db::SimpleTag {
 struct ChainedConsumerCompute : ChainedConsumer, db::ComputeTag {
   using base = ChainedConsumer;
   using argument_tags = tmpl::list<BaseConsumer>;
-  static void function(gsl::not_null<int*>, int);
+  static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
 };
 
 using SimpleBox =
