@@ -94,12 +94,14 @@ struct WorldtubeData : public PUP::able {
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  WorldtubeData(){};
+  WorldtubeData() {}
 
   explicit WorldtubeData(const double extraction_radius)
       : extraction_radius_{extraction_radius} {}
 
   explicit WorldtubeData(CkMigrateMessage* msg) : PUP::able(msg) {}
+
+  ~WorldtubeData() override = default;
 
   virtual std::unique_ptr<WorldtubeData> get_clone() const = 0;
 
