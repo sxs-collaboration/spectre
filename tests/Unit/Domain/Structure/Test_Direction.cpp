@@ -104,12 +104,12 @@ void test_semantics() {
   check_cmp(Direction<3>::lower_eta(), Direction<3>::upper_eta());
   check_cmp(Direction<3>::upper_eta(), Direction<3>::lower_zeta());
   check_cmp(Direction<3>::lower_zeta(), Direction<3>::upper_zeta());
-  std::is_sorted(Direction<1>::all_directions().begin(),
-                 Direction<1>::all_directions().end());
-  std::is_sorted(Direction<2>::all_directions().begin(),
-                 Direction<2>::all_directions().end());
-  std::is_sorted(Direction<3>::all_directions().begin(),
-                 Direction<3>::all_directions().end());
+  CHECK(std::is_sorted(Direction<1>::all_directions().begin(),
+                       Direction<1>::all_directions().end()));
+  CHECK(std::is_sorted(Direction<2>::all_directions().begin(),
+                       Direction<2>::all_directions().end()));
+  CHECK(std::is_sorted(Direction<3>::all_directions().begin(),
+                       Direction<3>::all_directions().end()));
 }
 
 void test_helper_functions() {
