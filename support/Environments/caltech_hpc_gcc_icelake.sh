@@ -43,6 +43,7 @@ spectre_run_cmake() {
           -D MACHINE=CaltechHpcIcelake \
           -D OVERRIDE_ARCH=icelake-server \
           -D BLA_VENDOR=OpenBLAS \
+          -D ENABLE_PARAVIEW=ON \
           "$@" \
           $SPECTRE_HOME
 }

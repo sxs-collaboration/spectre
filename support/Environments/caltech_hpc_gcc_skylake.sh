@@ -42,6 +42,7 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=CaltechHpcSkylake \
           -D OVERRIDE_ARCH=skylake \
+          -D ENABLE_PARAVIEW=ON \
           "$@" \
           $SPECTRE_HOME
 }
