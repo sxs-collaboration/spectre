@@ -31,7 +31,7 @@ function(find_python_module module)
   endif()
   # Make `find_package_handle_standard_args` error if the package is not found
   if(ARG_REQUIRED)
-    set(${module}_FIND_REQUIRED TRUE)
+    set(PY_${module}_FIND_REQUIRED TRUE)
   endif()
   find_package_handle_standard_args(PY_${module}
     REQUIRED_VARS PY_${module}_LOCATION)
