@@ -26,8 +26,10 @@ void prepend_python_path(const std::string& new_path) {
     ERROR_NO_TRACE("Trying to add path '"
                    << new_path
                    << "' to the python environment during setup "
-                      "but this directory does not exist. Maybe "
-                      "you have a typo in your path?");
+                      "but this directory does not exist. Either "
+                      "you have a typo in your path, or you need "
+                      "to create the appropriate site-packages "
+                      "directory after upgrading python.");
   }
   PyObject* sys_path = PySys_GetObject("path");
   PyList_Insert(sys_path, 0, PyUnicode_FromString(new_path.c_str()));

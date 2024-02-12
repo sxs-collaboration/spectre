@@ -77,7 +77,7 @@ def parse_source_file(file_name):
     # body. However, if the test case does not (yet) contain any semicolons then
     # we accidentally fail to find a test.
     test_regex = re.compile(
-        "(\/\/ \[\[.*?)?SPECTRE_TEST_CASE\((.*?)\) {(.*?);", re.DOTALL
+        r"(\/\/ \[\[.*?)?SPECTRE_TEST_CASE\((.*?)\) {(.*?);", re.DOTALL
     )
     test_cases_found = re.findall(test_regex, file_string)
 
@@ -101,7 +101,7 @@ def parse_source_file(file_name):
         # "Unit.My.Test", "[Unit][My]"
         # group(1) == Unit.My.Test
         # group(2) == [Unit][My]
-        parsed_name = re.search('"(.*)",[\s]*"(.*)"', test_name)
+        parsed_name = re.search(r'"(.*)",[\s]*"(.*)"', test_name)
         test_name = parsed_name.group(1)
         for disallowed_name in disallowed_test_name_portions:
             if test_name.lower().find(disallowed_name.lower()) != -1:
@@ -134,7 +134,7 @@ def parse_source_file(file_name):
         output_regex = ""
 
         all_attributes_by_name = re.findall(
-            "\[\[([^,]+), (.*?)\]\]", attributes, re.DOTALL
+            r"\[\[([^,]+), (.*?)\]\]", attributes, re.DOTALL
         )
         for attribute in all_attributes_by_name:
             if not attribute[0].lower() in allowed_test_attributes:

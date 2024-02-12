@@ -318,8 +318,9 @@ void test_cylinder_no_refinement() {
                               "\n"}};
 
     const auto cylinder_factory =
-        [&opt_string, with_boundary_conditions = with_boundary_conditions]() {
-          if (with_boundary_conditions) {
+        [&opt_string,
+         captured_with_boundary_conditions = with_boundary_conditions]() {
+          if (captured_with_boundary_conditions) {
             return TestHelpers::test_option_tag<
                 domain::OptionTags::DomainCreator<3>,
                 TestHelpers::domain::BoundaryConditions::
