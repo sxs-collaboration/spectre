@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Constraints.cpp
   DriveToTarget.cpp
+  IncreaseResolution.cpp
   Loehner.cpp
   Persson.cpp
   Random.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   Criteria.hpp
   Criterion.hpp
   DriveToTarget.hpp
+  IncreaseResolution.hpp
   Loehner.hpp
   Persson.hpp
   Random.hpp
