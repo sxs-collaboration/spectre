@@ -15,7 +15,7 @@ void add_sources(const gsl::not_null<Scalar<DataVector>*> puncture_equation,
                  const Scalar<DataVector>& alpha,
                  const Scalar<DataVector>& beta,
                  const Scalar<DataVector>& field) {
-  get(*puncture_equation) +=
+  get(*puncture_equation) -=
       get(beta) / pow<7>(get(alpha) * (get(field) + 1.) + 1.);
 }
 
@@ -24,7 +24,7 @@ void add_linearized_sources(
     const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,
     const Scalar<DataVector>& field,
     const Scalar<DataVector>& field_correction) {
-  get(*linearized_puncture_equation) -=
+  get(*linearized_puncture_equation) +=
       7. * get(alpha) * get(beta) /
       pow<8>(get(alpha) * (get(field) + 1.) + 1.) * get(field_correction);
 }
