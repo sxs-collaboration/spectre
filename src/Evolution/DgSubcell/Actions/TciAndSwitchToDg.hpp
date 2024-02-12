@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -209,9 +210,13 @@ struct TciAndSwitchToDg {
                                      subcell_options.persson_exponent() + 1.0,
                                      only_need_rdmp_data);
 
-    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-        [&tci_result](const auto rdmp_data_ptr) {
+    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci,
+               evolution::dg::subcell::Tags::TciCallsSinceRollback>(
+        [only_need_rdmp_data, &tci_result](
+            const auto rdmp_data_ptr,
+            const gsl::not_null<size_t*> tci_calls_since_rollback_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+          (*tci_calls_since_rollback_ptr) += (only_need_rdmp_data ? 0 : 1);
         },
         make_not_null(&box));
 
@@ -264,6 +269,7 @@ struct TciAndSwitchToDg {
           variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
           Tags::ActiveGrid, subcell::Tags::GhostDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::TciGridHistory,
+          evolution::dg::subcell::Tags::TciCallsSinceRollback,
           evolution::dg::subcell::Tags::CellCenteredFlux<flux_variables, Dim>>(
           [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto active_history_ptr,
@@ -272,6 +278,7 @@ struct TciAndSwitchToDg {
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
                   tci_grid_history_ptr,
+              const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
               const auto subcell_cell_centered_fluxes) {
             // Note: strictly speaking, to be conservative this should
             // reconstruct uJ instead of u.
@@ -296,6 +303,9 @@ struct TciAndSwitchToDg {
             // Clear the TCI grid history since we don't need to use it when on
             // the DG grid.
             tci_grid_history_ptr->clear();
+
+            // Reset tci_calls_since_rollback
+            *tci_calls_since_rollback_ptr = 0;
 
             // Clear the allocation for the cell-centered fluxes.
             *subcell_cell_centered_fluxes = std::nullopt;
