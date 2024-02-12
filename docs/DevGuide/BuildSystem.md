@@ -245,7 +245,7 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     bindings and interpolating volume data files. Note that simulations do not
     typically use OpenMP parallelization, so this flag only applies to tools.
 - ENABLE_PARAVIEW
-  - Try to find ParaView to enable 3D rendering tools (default is `ON`)
+  - Try to find ParaView to enable 3D rendering tools (default is `OFF`)
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)
