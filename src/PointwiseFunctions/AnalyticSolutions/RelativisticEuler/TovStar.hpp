@@ -316,6 +316,10 @@ struct TovVariables {
  * where $\psi = \sqrt{r / \bar{r}}$ is the conformal factor, $r$ is the areal
  * (Schwarzschild) radius and $\bar{r}$ is the isotropic radius. See
  * `RelativisticEuler::Solutions::TovSolution` for details.
+ *
+ * \warning Isotropic coordinates should be used because the metric derivatives
+ * are smooth. Otherwise the grid will over-compensate with finite difference
+ * cells.
  */
 
 class TovStar : public virtual evolution::initial_data::InitialData,
