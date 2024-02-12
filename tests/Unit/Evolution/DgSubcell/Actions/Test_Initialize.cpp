@@ -43,6 +43,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
@@ -487,6 +488,9 @@ void test(const bool always_use_subcell, const bool interior_element,
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::DidRollback>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(runner,
+                                                                   self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, self_id));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
@@ -540,6 +544,9 @@ void test(const bool always_use_subcell, const bool interior_element,
       runner, self_id));
 
   // Check things have correct values.
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
+            runner, self_id) == 0);
   CHECK(ActionTesting::get_databox_tag<
             comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
             runner, self_id)
