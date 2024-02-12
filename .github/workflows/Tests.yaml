@@ -571,6 +571,7 @@ jobs:
           tar -xzf paraview.tar.gz
           rm paraview.tar.gz
           mv ParaView-* /opt/paraview
+          echo "/opt/paraview/bin" >> $GITHUB_PATH
           # Make 'paraview' Python package available
           PYTHONPATH=/opt/paraview/lib/python3.9/site-packages:$PYTHONPATH
           # Give system-installed Python packages priority over ParaView's
