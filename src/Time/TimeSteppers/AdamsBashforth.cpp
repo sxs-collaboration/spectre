@@ -173,18 +173,20 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
 template <typename T>
 bool AdamsBashforth::can_change_step_size_impl(
     const TimeStepId& time_id, const ConstUntypedHistory<T>& history) const {
-  // We need to forbid local time-stepping before initialization is
-  // complete.  The self-start procedure itself should never consider
-  // changing the step size, but we need to wait during the main
-  // evolution until the self-start history has been replaced with
-  // "real" values.
-  const evolution_less<Time> less{time_id.time_runs_forward()};
+  // We need to prevent the next step from occurring at the same time
+  // as one already in the history.  The self-start code ensures this
+  // can't happen during self-start, and it clearly can't happen
+  // during normal evolution where the steps are monotonic, but during
+  // the transition between them we have to worry about a step being
+  // placed on a self-start time.  The self-start algorithm guarantees
+  // the final state is safe for constant-time-step evolution, so we
+  // just force that until we've passed all the self-start times.
+  const evolution_less_equal<Time> less_equal{time_id.time_runs_forward()};
   return not ::SelfStart::is_self_starting(time_id) and
-         (history.size() == 0 or
-          (less(history.back().time_step_id.step_time(),
-                time_id.step_time()) and
-           std::is_sorted(history_time_iterator(history.begin()),
-                          history_time_iterator(history.end()), less)));
+         alg::all_of(history, [&](const auto& record) {
+           return less_equal(record.time_step_id.step_time(),
+                             time_id.step_time());
+         });
 }
 
 template <typename T>

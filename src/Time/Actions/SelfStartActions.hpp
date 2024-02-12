@@ -223,16 +223,13 @@ struct Initialize {
             ? 0
             : db::get<::Tags::TimeStepper<TimeStepper>>(box).order() - 1;
 
-    TimeDelta self_start_step = initial_step;
-
-    // Make sure the starting procedure fits in a slab.
-    if (abs(self_start_step * values_needed).fraction() >= 1) {
-      // Decrease the step so that the generated history will be
-      // entirely before the first step.  This ensures we will not
-      // generate any duplicate times in the history as we start the
-      // real evolution.
-      self_start_step /= (values_needed + 1);
-    }
+    // Decrease the step so that the generated history will be
+    // entirely before the first step.  This ensures we will not
+    // generate any duplicate times in the history as we start the
+    // real evolution and that the starting procedure does not require
+    // any more information (such as function-of-time values) than the
+    // first real step.
+    const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
     StoreInitialValues<
         tmpl::push_back<detail::vars_to_save<System>, ::Tags::TimeStep,
