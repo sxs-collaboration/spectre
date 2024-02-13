@@ -72,10 +72,15 @@ struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+// [ImexSystem]
 struct System : tt::ConformsTo<imex::protocols::ImexSystem> {
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2>>;
+
+  // Explicit evolution stuff here...
+
   using implicit_sectors = tmpl::list<Sector<Var1>, Sector<Var2>>;
 };
+// [ImexSystem]
 
 struct NonautonomousSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using tensors = tmpl::list<Var1>;

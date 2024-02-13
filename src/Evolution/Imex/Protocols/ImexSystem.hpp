@@ -17,6 +17,8 @@ namespace imex::protocols {
 ///
 /// For efficiency, the tensors in each sector are required to be
 /// adjacent in the system's variables.
+///
+/// \snippet DoImplicitStepSector.hpp ImexSystem
 struct ImexSystem {
   template <typename ConformingType>
   struct test {
