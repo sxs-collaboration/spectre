@@ -5,8 +5,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Access.hpp
-  AsAccess.hpp
   DataBox.hpp
   DataBoxTag.hpp
   DataOnSlice.hpp

@@ -58,18 +58,9 @@ struct Duplicate : db::SimpleTag {
   using type = int;
 };
 
-struct DuplicateConstGlobalCache : db::SimpleTag {
-  using type = int;
-};
-
-struct DuplicateMutableGlobalCache : db::SimpleTag {
-  using type = int;
-};
-
 struct InitializeThree {
-  using const_global_cache_tags = tmpl::list<TagOne, DuplicateConstGlobalCache>;
-  using mutable_global_cache_tags =
-      tmpl::list<TagTwo, DuplicateMutableGlobalCache>;
+  using const_global_cache_tags = tmpl::list<TagOne, Duplicate>;
+  using mutable_global_cache_tags = tmpl::list<TagTwo, Duplicate>;
   using simple_tags_from_options = tmpl::list<>;
   using simple_tags = tmpl::list<Three, Duplicate>;
   using compute_tags = tmpl::list<>;
@@ -80,9 +71,8 @@ struct InitializeThree {
 };
 
 struct InitializeTwo {
-  using const_global_cache_tags =
-      tmpl::list<TagThree, DuplicateConstGlobalCache>;
-  using mutable_global_cache_tags = tmpl::list<DuplicateMutableGlobalCache>;
+  using const_global_cache_tags = tmpl::list<TagThree, Duplicate>;
+  using mutable_global_cache_tags = tmpl::list<Duplicate>;
   using simple_tags_from_options = tmpl::list<Two>;
   using simple_tags = tmpl::list<Duplicate>;
   using compute_tags = tmpl::list<FiveCompute>;
@@ -92,8 +82,8 @@ struct InitializeTwo {
 };
 
 struct InitializeTen {
-  using const_global_cache_tags = tmpl::list<DuplicateConstGlobalCache>;
-  using mutable_global_cache_tags = tmpl::list<DuplicateMutableGlobalCache>;
+  using const_global_cache_tags = tmpl::list<Duplicate>;
+  using mutable_global_cache_tags = tmpl::list<Duplicate>;
   using simple_tags_from_options = tmpl::list<Two>;
   using simple_tags = tmpl::list<Ten, Duplicate>;
   using compute_tags = tmpl::list<FiveCompute>;
@@ -120,16 +110,14 @@ struct Component {
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         tmpl::list<initialization_action>>>;
 
-  static_assert(
-      std::is_same_v<
-          tmpl::count_if<initialization_action::const_global_cache_tags,
-                         std::is_same<tmpl::_1, DuplicateConstGlobalCache>>,
-          tmpl::size_t<1>>);
-  static_assert(
-      std::is_same_v<
-          tmpl::count_if<initialization_action::mutable_global_cache_tags,
-                         std::is_same<tmpl::_1, DuplicateMutableGlobalCache>>,
-          tmpl::size_t<1>>);
+  static_assert(std::is_same_v<
+                tmpl::count_if<initialization_action::const_global_cache_tags,
+                               std::is_same<tmpl::_1, Duplicate>>,
+                tmpl::size_t<1>>);
+  static_assert(std::is_same_v<
+                tmpl::count_if<initialization_action::mutable_global_cache_tags,
+                               std::is_same<tmpl::_1, Duplicate>>,
+                tmpl::size_t<1>>);
   static_assert(std::is_same_v<
                 tmpl::count_if<initialization_action::simple_tags_from_options,
                                std::is_same<tmpl::_1, Two>>,
@@ -158,10 +146,9 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Actions.InitializeItems",
                   "[Unit][ParallelAlgorithms]") {
   using component = Component<Metavariables>;
 
-  tuples::TaggedTuple<TagOne, TagThree, DuplicateConstGlobalCache>
-      const_cache_items{7, -4., 8.};
-  tuples::TaggedTuple<TagTwo, DuplicateMutableGlobalCache> mutable_cache_items{
-      "bla", 9.};
+  tuples::TaggedTuple<TagOne, TagThree, Duplicate> const_cache_items{7, -4.,
+                                                                     8.};
+  tuples::TaggedTuple<TagTwo, Duplicate> mutable_cache_items{"bla", 9.};
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{const_cache_items,
                                                          mutable_cache_items};
