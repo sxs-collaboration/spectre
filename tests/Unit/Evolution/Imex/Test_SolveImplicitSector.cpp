@@ -135,7 +135,6 @@ struct Preparer {
 };
 // End stuff only used for DataBox handling
 
-// [initial_guess]
 struct AnalyticSolution {
   using return_tags = tmpl::list<Var2, Var3>;
   using argument_tags = tmpl::list<Var1, NonTensor>;
@@ -159,7 +158,6 @@ struct AnalyticSolution {
     return {get(var1).size(), imex::GuessResult::ExactSolution};
   }
 };
-// [initial_guess]
 
 struct InitialGuess {
   using return_tags = tmpl::list<Var2, Var3>;
@@ -261,7 +259,6 @@ struct Jacobian {
   }
 };
 
-// [ImplicitSector]
 template <bool TestWithAnalyticSolution>
 struct ImplicitSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using tensors = tmpl::list<Var2, Var3>;
@@ -288,7 +285,6 @@ struct ImplicitSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
 
   using solve_attempts = tmpl::list<SolveAttempt>;
 };
-// [ImplicitSector]
 
 // ::tensors doesn't depend on the template parameter
 using sector_variables_tag = Tags::Variables<ImplicitSector<false>::tensors>;
