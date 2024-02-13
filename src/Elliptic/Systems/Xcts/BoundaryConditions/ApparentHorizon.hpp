@@ -26,6 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -125,9 +126,9 @@ class ApparentHorizon
     using type =
         Options::Auto<std::unique_ptr<elliptic::analytic_data::InitialGuess>>;
     static constexpr Options::String help =
-        "Specify an analytic solution to impose a Dirichlet condition on the "
-        "lapse. The analytic solution will be evaluated at coordinates "
-        "centered at the apparent horizon. "
+        "Specify an analytic solution or a superposed binary to impose a "
+        "Dirichlet condition on the lapse. The analytic solution will be "
+        "evaluated at coordinates centered at the apparent horizon. "
         "Alternatively, set this option to 'None' "
         "to impose a zero von-Neumann boundary condition on the lapse. Note "
         "that the latter will not result in the standard Kerr-Schild slicing "

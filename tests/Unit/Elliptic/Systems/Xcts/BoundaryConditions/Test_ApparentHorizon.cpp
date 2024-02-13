@@ -35,7 +35,9 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -398,11 +400,13 @@ void test_with_random_values() {
       DataVector{3});
 }
 
-void test_consistency_with_kerr(const bool compute_expansion) {
+void test_consistency_with_kerr(const bool compute_expansion,
+                                const bool superposed_lapse_bc_condition) {
   INFO("Consistency with Kerr solution");
   CAPTURE(compute_expansion);
+  CAPTURE(superposed_lapse_bc_condition);
   const double mass = 0.45;
-  const std::array<double, 3> center{{0., 0., 0.}};
+  const std::array<double, 3> center{{8., 0., 0.}};
   const std::array<double, 3> dimensionless_spin{{0., 0., 0.8}};
   const double horizon_kerrschild_radius =
       mass * (1. + sqrt(1. - dot(dimensionless_spin, dimensionless_spin)));
@@ -412,10 +416,27 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       -0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
   const KerrSchild solution{mass, dimensionless_spin,
-                            std::array<double, 3>{{0., 0., 0.}},
                             std::array<double, 3>{{0., 0., 0.}}};
+
+  // Set up the lapse boundary condition
+  using Binary =
+      Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
+                                 Xcts::Solutions::all_analytic_solutions>;
+  auto lapse_bc_condition =
+      [&]() -> std::unique_ptr<elliptic::analytic_data::InitialGuess> {
+    if (superposed_lapse_bc_condition) {
+      return std::make_unique<Binary>(
+          std::array<double, 2>{{-8., 8.}}, std::array<double, 2>{{0., 0.}},
+          std::make_unique<KerrSchild>(solution),
+          std::make_unique<KerrSchild>(solution), 0.015, 0.,
+          std::array<double, 3>{{0., 0., 0.}}, std::array<double, 2>{{4., 4.}});
+    } else {
+      return std::make_unique<KerrSchild>(solution);
+    }
+  }();
+
   const ApparentHorizon<Xcts::Geometry::Curved> kerr_horizon{
-      center, rotation, std::make_unique<KerrSchild>(solution),
+      center, rotation, std::move(lapse_bc_condition),
       // Check with and without the negative-expansion condition. Either the
       // expansion is _computed_ to be zero from the Kerr solution at the
       // horizon, or it is just set to zero.
@@ -441,7 +462,8 @@ void test_consistency_with_kerr(const bool compute_expansion) {
           wedge_map, horizon_map);
   // Set up a mesh so we can numerically differentiate the Jacobian
   const auto logical_coords = logical_coordinates(mesh);
-  const tnsr::I<DataVector, 3> inertial_coords = (*coord_map)(logical_coords);
+  tnsr::I<DataVector, 3> inertial_coords = (*coord_map)(logical_coords);
+  get<0>(inertial_coords) += center[0];
   const auto inv_jacobian = coord_map->inv_jacobian(logical_coords);
   const auto deriv_inv_jac =
       partial_derivative(inv_jacobian, mesh, inv_jacobian);
@@ -450,18 +472,21 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
   const auto x = data_on_slice(inertial_coords, mesh.extents(),
                                direction.dimension(), slice_index);
+  auto x_centered = x;
+  get<0>(x_centered) -= center[0];
 
   // Make sure the face is indeed horizon conforming
   const std::array<DataVector, 2> theta_phi{
-      {atan2(sqrt(square(get<0>(x)) + square(get<1>(x))), get<2>(x)),
-       atan2(get<1>(x), get<0>(x))}};
+      {atan2(sqrt(square(get<0>(x_centered)) + square(get<1>(x_centered))),
+             get<2>(x_centered)),
+       atan2(get<1>(x_centered), get<0>(x_centered))}};
   const DataVector expected_horizon_radii = get(
       gr::Solutions::kerr_horizon_radius(theta_phi, mass, dimensionless_spin));
-  CHECK_ITERABLE_APPROX(get(magnitude(x)), expected_horizon_radii);
+  CHECK_ITERABLE_APPROX(get(magnitude(x_centered)), expected_horizon_radii);
 
   // Get background fields from the solution
   const auto background_fields = solution.variables(
-      x,
+      x_centered,
       tmpl::list<
           Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
           Tags::ConformalChristoffelSecondKind<DataVector, 3, Frame::Inertial>,
@@ -495,14 +520,14 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   }
 
   // Retrieve the expected surface vars and fluxes from the solution
-  const auto surface_vars_expected =
-      variables_from_tagged_tuple(solution.variables(
-          x, tmpl::list<Tags::ConformalFactorMinusOne<DataVector>,
-                        Tags::LapseTimesConformalFactorMinusOne<DataVector>,
-                        Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>{}));
+  auto surface_vars_expected = variables_from_tagged_tuple(solution.variables(
+      x_centered,
+      tmpl::list<Tags::ConformalFactorMinusOne<DataVector>,
+                 Tags::LapseTimesConformalFactorMinusOne<DataVector>,
+                 Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>{}));
   const auto surface_fluxes_expected =
       variables_from_tagged_tuple(solution.variables(
-          x,
+          x_centered,
           tmpl::list<
               ::Tags::Flux<Tags::ConformalFactorMinusOne<DataVector>,
                            tmpl::size_t<3>, Frame::Inertial>,
@@ -566,6 +591,16 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       get<Tags::ConformalChristoffelSecondKind<DataVector, 3, Frame::Inertial>>(
           background_fields));
   // Check the result.
+  if (superposed_lapse_bc_condition) {
+    const auto& binary =
+        dynamic_cast<const Binary&>(*kerr_horizon.solution_for_lapse().value());
+    get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+        surface_vars_expected) =
+        get<Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
+            binary.variables(
+                x, tmpl::list<
+                       Tags::LapseTimesConformalFactorMinusOne<DataVector>>{}));
+  }
   CHECK_VARIABLES_APPROX(surface_vars, surface_vars_expected);
   CHECK_VARIABLES_APPROX(n_dot_surface_fluxes, n_dot_surface_fluxes_expected);
 }
@@ -605,8 +640,10 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                 "      Center: [0., 0., 0.]\n"
                 "      Velocity: [0., 0., 0.]\n");
   test_with_random_values();
-  test_consistency_with_kerr(false);
-  test_consistency_with_kerr(true);
+  test_consistency_with_kerr(false, false);
+  test_consistency_with_kerr(true, false);
+  test_consistency_with_kerr(false, true);
+  test_consistency_with_kerr(true, true);
 }
 
 }  // namespace Xcts::BoundaryConditions
