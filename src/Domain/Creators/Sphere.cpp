@@ -267,11 +267,25 @@ Sphere::Sphere(
       // Build the maps. We only apply the maps in the inner-most shell. The
       // inner radius is what's passed in, but the outer radius is the outer
       // radius of the inner-most shell so we have to see how many shells we
-      // have
+      // have.
+      // The transition region for the rotation, expansion and translation maps
+      // occurs only in the outer-most shell. We require at least one radial
+      // partition, as the transition requires spherical shape.
+
+      if (radial_partitioning_.empty()) {
+        PARSE_ERROR(context,
+                    "The hard-coded translation map requires at least two "
+                    "shells. Use at least one radial partition.");
+      }
+
       std::get<sphere::TimeDependentMapOptions>(time_dependent_options_.value())
-          .build_maps(std::array{0.0, 0.0, 0.0}, inner_radius_,
-                      radial_partitioning_.empty() ? outer_radius_
-                                                   : radial_partitioning_[0]);
+          .build_maps(
+              std::array{0.0, 0.0, 0.0},
+              // Inner shell radii for the Shape map
+              std::pair<double, double>{inner_radius_, radial_partitioning_[0]},
+              // Outer shell radii for the transition region
+              std::pair<double, double>{radial_partitioning_.back(),
+                                        outer_radius_});
     }
   }
 }
@@ -374,9 +388,15 @@ Domain<3> Sphere::create_domain() const {
               time_dependent_options_.value());
 
       // First shell gets the distorted maps.
+      // Last shell gets the transition region for the rotation, expansion and
+      // translation maps
       for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
         const bool include_distorted_map_in_first_shell =
             block_id < num_blocks_per_shell_;
+        // False if block_id is in the last shell
+        const bool use_rigid =
+            block_id + num_blocks_per_shell_ + (fill_interior_ ? 1 : 0) <
+            num_blocks_;
         block_maps_grid_to_distorted[block_id] =
             hard_coded_options.grid_to_distorted_map(
                 include_distorted_map_in_first_shell);
@@ -385,7 +405,7 @@ Domain<3> Sphere::create_domain() const {
                 include_distorted_map_in_first_shell);
         block_maps_grid_to_inertial[block_id] =
             hard_coded_options.grid_to_inertial_map(
-                include_distorted_map_in_first_shell);
+                include_distorted_map_in_first_shell, use_rigid);
       }
     } else {
       const auto& time_dependence = std::get<std::unique_ptr<
