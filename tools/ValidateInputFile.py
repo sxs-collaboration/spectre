@@ -124,7 +124,7 @@ def validate_input_file(
             elif line.startswith("While operating factory for"):
                 # remove "unique_ptr" entry from path
                 path.pop()
-            elif "ERROR" in line:
+            elif "# ERROR #" in line:
                 break
             else:
                 msg.append(line)
