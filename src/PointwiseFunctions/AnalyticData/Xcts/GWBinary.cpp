@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticData/Xcts/WavyBBH.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/GWBinary.hpp"
 
 #include <cstddef>
 
@@ -24,7 +24,7 @@ namespace Xcts::AnalyticData {
 namespace detail {
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> radius_left,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::RadiusLeft<DataType> /*meta*/) const {
@@ -35,7 +35,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataVector>
-void WavyBBHVariables<DataVector>::operator()(
+void GWBinaryVariables<DataVector>::operator()(
     const gsl::not_null<Scalar<DataVector>*> radius_right,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::RadiusRight<DataVector> /*meta*/) const {
@@ -46,7 +46,7 @@ void WavyBBHVariables<DataVector>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*> deriv_one_over_radius_left,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>, tmpl::size_t<Dim>,
@@ -62,7 +62,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*> deriv_one_over_radius_right,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>, tmpl::size_t<Dim>,
@@ -78,7 +78,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     gsl::not_null<tnsr::ijk<DataType, 3>*> deriv_3_radius_left,
     gsl::not_null<Cache*> cache,
     ::Tags::deriv<
@@ -107,7 +107,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     gsl::not_null<tnsr::ijk<DataType, 3>*> deriv_3_radius_right,
     gsl::not_null<Cache*> cache,
     ::Tags::deriv<
@@ -137,7 +137,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> normal_left,
     const gsl::not_null<Cache*> cache,
     detail::Tags::NormalLeft<DataType> /*meta*/) const {
@@ -149,7 +149,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> normal_right,
     const gsl::not_null<Cache*> cache,
     detail::Tags::NormalRight<DataType> /*meta*/) const {
@@ -161,7 +161,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> radiative_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::RadiativeTerm<DataType> /*meta*/) const {
@@ -178,7 +178,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> near_zone_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::NearZoneTerm<DataType> /*meta*/) const {
@@ -261,7 +261,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> present_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::PresentTerm<DataType> /*meta*/) const {
@@ -336,7 +336,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> past_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::PastTerm<DataType> /*meta*/) const {
@@ -349,7 +349,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> integral_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::IntegralTerm<DataType> /*meta*/) const {
@@ -362,7 +362,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/) const {
@@ -386,7 +386,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
@@ -395,7 +395,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const {
@@ -441,7 +441,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const {
@@ -449,7 +449,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
     const gsl::not_null<Cache*> /*cache*/,
     Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/) const {
@@ -457,7 +457,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
         longitudinal_shift_background_minus_dt_conformal_metric,
     const gsl::not_null<Cache*> /*cache*/,
@@ -468,7 +468,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
     gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
@@ -477,7 +477,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/) const {
@@ -485,7 +485,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const {
@@ -493,7 +493,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> /*meta*/)
@@ -503,7 +503,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
     const gsl::not_null<Cache*> /*cache*/,
     Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const {
@@ -511,7 +511,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*>
         lapse_times_conformal_factor_minus_one,
     const gsl::not_null<Cache*> /*cache*/,
@@ -520,7 +520,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
     const gsl::not_null<Cache*> /*cache*/,
     Xcts::Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
@@ -528,7 +528,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> rest_mass_density,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::RestMassDensity<DataType> /*meta*/) const {
@@ -536,7 +536,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const {
@@ -544,7 +544,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> pressure,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::Pressure<DataType> /*meta*/) const {
@@ -552,7 +552,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const {
@@ -560,7 +560,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lorentz_factor,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::LorentzFactor<DataType> /*meta*/) const {
@@ -568,7 +568,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::operator()(
+void GWBinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
@@ -576,7 +576,7 @@ void WavyBBHVariables<DataType>::operator()(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
+void GWBinaryVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
     const gsl::not_null<Cache*> cache) const {
   const auto& radius_left =
@@ -585,9 +585,9 @@ void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
       get(cache->get_var(*this, detail::Tags::RadiusRight<DataType>{}));
   const auto& radiative_term =
       cache->get_var(*this, detail::Tags::RadiativeTerm<DataType>{});
-  const auto Fat = 1 / ((1 + fat_par * fat_par * mass_left * mass_left /
+  const auto Fat = 1 / ((1 + atenuation * atenuation * mass_left * mass_left /
                                  (radius_left * radius_left)) *
-                        (1 + fat_par * fat_par * mass_right * mass_right /
+                        (1 + atenuation * atenuation * mass_right * mass_right /
                                  (radius_right * radius_right)));
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
@@ -597,7 +597,7 @@ void WavyBBHVariables<DataType>::add_radiative_term_PN_of_conformal_metric(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::add_near_zone_term_to_radiative(
+void GWBinaryVariables<DataType>::add_near_zone_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
     const gsl::not_null<Cache*> cache) const {
   const auto& near_zone_term =
@@ -610,7 +610,7 @@ void WavyBBHVariables<DataType>::add_near_zone_term_to_radiative(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::add_present_term_to_radiative(
+void GWBinaryVariables<DataType>::add_present_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
     const gsl::not_null<Cache*> cache) const {
   const auto& present_term =
@@ -623,7 +623,7 @@ void WavyBBHVariables<DataType>::add_present_term_to_radiative(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::add_past_term_to_radiative(
+void GWBinaryVariables<DataType>::add_past_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
     const gsl::not_null<Cache*> cache) const {
   const auto& past_term =
@@ -636,7 +636,7 @@ void WavyBBHVariables<DataType>::add_past_term_to_radiative(
 }
 
 template <typename DataType>
-void WavyBBHVariables<DataType>::add_integral_term_to_radiative(
+void GWBinaryVariables<DataType>::add_integral_term_to_radiative(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
     const gsl::not_null<Cache*> cache) const {
   const auto& integral_term =
@@ -648,14 +648,14 @@ void WavyBBHVariables<DataType>::add_integral_term_to_radiative(
   }
 }
 
-template class WavyBBHVariables<DataVector>;
+template class GWBinaryVariables<DataVector>;
 
 }  // namespace detail
 
-PUP::able::PUP_ID WavyBBH::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID GWBinary::my_PUP_ID = 0;  // NOLINT
 
 }  // namespace Xcts::AnalyticData
 
 template class Xcts::AnalyticData::CommonVariables<
     DataVector,
-    typename Xcts::AnalyticData::detail::WavyBBHVariables<DataVector>::Cache>;
+    typename Xcts::AnalyticData::detail::GWBinaryVariables<DataVector>::Cache>;

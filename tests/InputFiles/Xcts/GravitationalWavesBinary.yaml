@@ -7,8 +7,8 @@ Testing:
   Timeout: 30
   Priority: High
 ExpectedOutput:
-  - WBbhReductions.h5
-  - WBbhVolume0.h5
+  - GWBReductions.h5
+  - GWBVolume0.h5
 
 ---
 
@@ -20,14 +20,14 @@ ResourceInfo:
   Singletons: Auto
 
 Background: &background
-  WavyBBH:
+  GWBinary:
     MassLeft: &mass_left 1.
     MassRight: &mass_right 1.
     XCoordsLeft: &x_left -4.
     XCoordsRight: &x_right 4.
     YMomentumLeft: -.366
     YMomentumRight: .366
-    FatPar: 1.
+    Atenuation: 1.
 
 InitialGuess: *background
 
@@ -118,8 +118,8 @@ Discretization:
     Formulation: WeakInertial
 
 Observers:
-  VolumeFileName: "WBbhVolume"
-  ReductionFileName: "WBbhReductions"
+  VolumeFileName: "GWBVolume"
+  ReductionFileName: "GWBReductions"
 
 NonlinearSolver:
   NewtonRaphson:
@@ -175,6 +175,21 @@ RadiallyCompressedCoordinates:
   Compression: *outer_shell_distribution
 
 EventsAndTriggers:
+  - Trigger:
+      EveryNIterations:
+        N: 1000000
+        Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: BackgroundData
+          VariablesToObserve:
+            - Conformal(SpatialMetric)
+            - TraceExtrinsicCurvature
+            - ShiftBackground
+            - LongitudinalShiftBackgroundMinusDtConformalMetric
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
   - Trigger: HasConverged
     Events:
       - ObserveNorms:
@@ -210,18 +225,4 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
-  - Trigger:
-      EveryNIterations:
-        N: 1000000
-        Offset: 0
-    Events:
-      - ObserveFields:
-          SubfileName: BackgroundData
-          VariablesToObserve:
-            - Conformal(SpatialMetric)
-            - TraceExtrinsicCurvature
-            - ShiftBackground
-            - LongitudinalShiftBackgroundMinusDtConformalMetric
-          InterpolateToMesh: None
-          CoordinatesFloatingPointType: Double
-          FloatingPointTypes: [Double]
+

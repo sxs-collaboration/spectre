@@ -83,7 +83,7 @@ struct IntegralTerm : db::SimpleTag {
 }  // namespace Tags
 
 template <typename DataType>
-using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
+using GWBinaryVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     common_tags<DataType>,
     tmpl::list<
         ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
@@ -118,14 +118,14 @@ using WavyBBHVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
     hydro_tags<DataType>>>;
 
 template <typename DataType>
-struct WavyBBHVariables
-    : CommonVariables<DataType, WavyBBHVariablesCache<DataType>> {
+struct GWBinaryVariables
+    : CommonVariables<DataType, GWBinaryVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
-  using Cache = WavyBBHVariablesCache<DataType>;
-  using Base = CommonVariables<DataType, WavyBBHVariablesCache<DataType>>;
+  using Cache = GWBinaryVariablesCache<DataType>;
+  using Base = CommonVariables<DataType, GWBinaryVariablesCache<DataType>>;
   using Base::operator();
 
-  WavyBBHVariables(
+  GWBinaryVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
           DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
@@ -133,7 +133,7 @@ struct WavyBBHVariables
       const tnsr::I<DataType, 3>& local_x, const double local_mass_left,
       const double local_mass_right, const double local_xcoord_left,
       const double local_xcoord_right, const double local_ymomentum_left,
-      const double local_ymomentum_right, const double local_fat_par)
+      const double local_ymomentum_right, const double local_atenuation)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         mass_left(local_mass_left),
@@ -142,7 +142,7 @@ struct WavyBBHVariables
         xcoord_right(local_xcoord_right),
         ymomentum_left(local_ymomentum_left),
         ymomentum_right(local_ymomentum_right),
-        fat_par(local_fat_par) {}
+        atenuation(local_atenuation) {}
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
@@ -151,7 +151,7 @@ struct WavyBBHVariables
   const double xcoord_right;
   const double ymomentum_left;
   const double ymomentum_right;
-  const double fat_par;
+  const double atenuation;
   const double separation = xcoord_right - xcoord_left;
   const std::array<double, 3> normal_lr{{-1., 0., 0.}};
   const std::array<double, 3> momentum_left{{0., ymomentum_left, 0.}};
@@ -317,8 +317,8 @@ struct WavyBBHVariables
  *
  * This class implements background data for the XCTS equations describing...
  */
-class WavyBBH : public elliptic::analytic_data::Background,
-                public elliptic::analytic_data::InitialGuess {
+class GWBinary : public elliptic::analytic_data::Background,
+                 public elliptic::analytic_data::InitialGuess {
  public:
   struct MassLeft {
     static constexpr Options::String help = "The mass of the left black hole.";
@@ -348,34 +348,34 @@ class WavyBBH : public elliptic::analytic_data::Background,
         "The y-axis-componet of the linear momentum of the right black hole.";
     using type = double;
   };
-  struct FatPar {
+  struct Atenuation {
     static constexpr Options::String help =
         "The parameter controlling the width of the atenuation function.";
     using type = double;
   };
   using options = tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight,
-                             YMomentumLeft, YMomentumRight, FatPar>;
+                             YMomentumLeft, YMomentumRight, Atenuation>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
 
-  WavyBBH() = default;
-  WavyBBH(const WavyBBH&) = delete;
-  WavyBBH& operator=(const WavyBBH&) = delete;
-  WavyBBH(WavyBBH&&) = default;
-  WavyBBH& operator=(WavyBBH&&) = default;
-  ~WavyBBH() = default;
+  GWBinary() = default;
+  GWBinary(const GWBinary&) = delete;
+  GWBinary& operator=(const GWBinary&) = delete;
+  GWBinary(GWBinary&&) = default;
+  GWBinary& operator=(GWBinary&&) = default;
+  ~GWBinary() = default;
 
-  WavyBBH(double mass_left, double mass_right, double xcoord_left,
-          double xcoord_right, double ymomentum_left, double ymomentum_right,
-          double fat_par, const Options::Context& context = {})
+  GWBinary(double mass_left, double mass_right, double xcoord_left,
+           double xcoord_right, double ymomentum_left, double ymomentum_right,
+           double atenuation, const Options::Context& context = {})
       : mass_left_(mass_left),
         mass_right_(mass_right),
         xcoord_left_(xcoord_left),
         xcoord_right_(xcoord_right),
         ymomentum_left_(ymomentum_left),
         ymomentum_right_(ymomentum_right),
-        fat_par_(fat_par) {
+        atenuation_(atenuation) {
     if (mass_left_ <= 0 or mass_right_ <= 0) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
     }
@@ -383,8 +383,8 @@ class WavyBBH : public elliptic::analytic_data::Background,
       PARSE_ERROR(context,
                   "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
     }
-    if (fat_par_ <= 0) {
-      PARSE_ERROR(context, "'FatPar' must be positive.");
+    if (atenuation_ <= 0) {
+      PARSE_ERROR(context, "'Atenuation' must be positive.");
     }
     if (ymomentum_left_ * ymomentum_right_ > 0) {
       PARSE_ERROR(
@@ -393,11 +393,11 @@ class WavyBBH : public elliptic::analytic_data::Background,
     }
   }
 
-  explicit WavyBBH(CkMigrateMessage* m)
+  explicit GWBinary(CkMigrateMessage* m)
       : elliptic::analytic_data::Background(m),
         elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(WavyBBH);
+  WRAPPED_PUPable_decl_template(GWBinary);
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
@@ -426,7 +426,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
     p | xcoord_right_;
     p | ymomentum_left_;
     p | ymomentum_right_;
-    p | fat_par_;
+    p | atenuation_;
   }
 
   double mass_left() const { return mass_left_; }
@@ -435,7 +435,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
   double xcoord_right() const { return xcoord_right_; }
   double ymomentum_left() const { return ymomentum_left_; }
   double ymomentum_right() const { return ymomentum_right_; }
-  double fat_par() const { return fat_par_; }
+  double atenuation() const { return atenuation_; }
 
  private:
   double mass_left_ = std::numeric_limits<double>::signaling_NaN();
@@ -444,7 +444,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
   double xcoord_right_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
-  double fat_par_ = std::numeric_limits<double>::signaling_NaN();
+  double atenuation_ = std::numeric_limits<double>::signaling_NaN();
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -454,7 +454,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
           DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::WavyBBHVariables<DataType>;
+    using VarsComputer = detail::GWBinaryVariables<DataType>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
     const VarsComputer computer{std::move(mesh),
                                 std::move(inv_jacobian),
@@ -465,7 +465,7 @@ class WavyBBH : public elliptic::analytic_data::Background,
                                 xcoord_right_,
                                 ymomentum_left_,
                                 ymomentum_right_,
-                                fat_par_};
+                                atenuation_};
 
     return {cache.get_var(computer, RequestedTags{})...};
   }
