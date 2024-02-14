@@ -2,9 +2,6 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
-  Amr
-  AmrCriteria
-  AmrProjectors
   Charmxx::main
   CoordinateMaps
   DgSubcell
@@ -18,6 +15,7 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  ParallelAmr
   PhaseControl
   Spectral
   Time

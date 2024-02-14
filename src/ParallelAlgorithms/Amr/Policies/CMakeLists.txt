@@ -20,6 +20,7 @@ spectre_target_headers(
   EnforcePolicies.hpp
   Isotropy.hpp
   Policies.hpp
+  Tags.hpp
   )
 
 target_link_libraries(

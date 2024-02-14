@@ -20,6 +20,8 @@ Amr:
     - Random:
         ChangeRefinementFraction: 0.8
         MaximumRefinementLevel: 8
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Verbose
 
 DomainCreator:

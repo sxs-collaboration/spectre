@@ -31,6 +31,8 @@ Amr:
         VariablesToMonitor: [Psi]
         AbsoluteTarget: 1.e-6
         RelativeTarget: 1.0
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Verbose
 
 PhaseChangeAndTriggers:

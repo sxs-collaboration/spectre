@@ -17,6 +17,8 @@ Parallelization:
 
 Amr:
   Criteria:
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Quiet
 
 ResourceInfo:

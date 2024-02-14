@@ -11,6 +11,7 @@
 #include "ParallelAlgorithms/Amr/Actions/AdjustDomain.hpp"
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup AmrGroup
@@ -29,7 +30,8 @@ struct Component {
 
   using chare_type = Parallel::Algorithms::Singleton;
 
-  using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
+  using const_global_cache_tags =
+      tmpl::list<amr::Criteria::Tags::Criteria, amr::Tags::Policies>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;

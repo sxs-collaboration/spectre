@@ -19,6 +19,8 @@ Amr:
     - Random:
         ChangeRefinementFraction: 0.8
         MaximumRefinementLevel: 4
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Verbose
 
 ResourceInfo:

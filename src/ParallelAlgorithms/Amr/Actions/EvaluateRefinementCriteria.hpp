@@ -24,6 +24,8 @@
 #include "ParallelAlgorithms/Amr/Actions/UpdateAmrDecision.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Policies/EnforcePolicies.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -55,6 +57,7 @@ namespace amr::Actions {
 ///   * domain::Tags::Element<volume_dim>
 ///   * amr::Tags::NeighborInfo<volume_dim>
 ///   * amr::Criteria::Tags::Criteria (from GlobalCache)
+///   * amr::Tags::Policies (from GlobalCache)
 ///   * any tags requested by the refinement criteria
 /// - Modifies:
 ///   * amr::Tags::Info<volume_dim>
@@ -66,6 +69,8 @@ namespace amr::Actions {
 /// - Evaluates each refinement criteria held by amr::Criteria::Tags::Criteria,
 ///   and in each dimension selects the amr::Flag with the highest
 ///   priority (i.e the highest integral value).
+/// - If necessary, changes the refinement decision in order to satisfy the
+///   amr::Policies
 /// - An Element that is splitting in one dimension is not allowed to join
 ///   in another dimension.  If this is requested by the refinement critiera,
 ///   the decision to join is changed to do nothing
@@ -99,6 +104,9 @@ struct EvaluateRefinementCriteria {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }
     }
+
+    amr::enforce_policies(make_not_null(&overall_decision),
+                          db::get<amr::Tags::Policies>(box));
 
     // An element cannot join if it is splitting in another dimension.
     // Update the flags now before sending to neighbors as each time

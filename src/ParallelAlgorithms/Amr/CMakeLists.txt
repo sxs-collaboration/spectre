@@ -16,6 +16,9 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Amr
+  AmrCriteria
+  AmrPolicies
+  AmrProjectors
   DataStructures
   Initialization
   Logging
