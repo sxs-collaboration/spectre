@@ -347,8 +347,7 @@ struct GeneralizedHarmonicTemplateBase {
                  gh::ConstraintDamping::Tags::DampingFunctionGamma1<
                      volume_dim, Frame::Grid>,
                  gh::ConstraintDamping::Tags::DampingFunctionGamma2<
-                     volume_dim, Frame::Grid>,
-                 ::amr::Criteria::Tags::Criteria>;
+                     volume_dim, Frame::Grid>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

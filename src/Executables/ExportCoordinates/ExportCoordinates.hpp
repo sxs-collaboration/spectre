@@ -277,8 +277,6 @@ struct Metavariables {
     static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
   };
 
-  using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
-
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
       "file. The output can be used to compute initial data externally, for "

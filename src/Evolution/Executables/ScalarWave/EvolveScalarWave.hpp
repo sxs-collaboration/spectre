@@ -269,8 +269,7 @@ struct EvolutionMetavars {
           tmpl::list<>>>>;
 
   using const_global_cache_tags =
-      tmpl::list<evolution::initial_data::Tags::InitialData,
-                 ::amr::Criteria::Tags::Criteria>;
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
