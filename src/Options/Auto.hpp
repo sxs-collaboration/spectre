@@ -7,6 +7,7 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -92,27 +93,52 @@ std::ostream& operator<<(std::ostream& os, const Auto<T, Label>& x) {
   }
 }
 
+namespace Auto_detail {
+template <typename Label>
+struct AutoLabel {};
+}  // namespace Auto_detail
+
+template <typename Label>
+struct create_from_yaml<Auto_detail::AutoLabel<Label>> {
+  template <typename Metavariables>
+  static Auto_detail::AutoLabel<Label> create(const Option& options) {
+    const auto label_string = pretty_type::name<Label>();
+    try {
+      if (options.parse_as<std::string>() == label_string) {
+        return {};
+      }
+    } catch (...) {
+      // The node failed to parse as a string.  It is not the Label.
+    }
+    // The error if the std::variant parse fails will print the value
+    // from the input file (and the T parse probably will too), so we
+    // don't need to print it again.
+    PARSE_ERROR(options.context(),
+                "Failed to parse as Auto label \"" << label_string << "\"");
+  }
+};
+
 template <typename T, typename Label>
 struct create_from_yaml<Auto<T, Label>> {
   template <typename Metavariables>
   static Auto<T, Label> create(const Option& options) {
-    try {
-      if (options.parse_as<std::string>() == pretty_type::name<Label>()) {
+    auto parsed_variant =
+        options.parse_as<std::variant<Auto_detail::AutoLabel<Label>, T>,
+                         Metavariables>();
+    if (std::holds_alternative<T>(parsed_variant)) {
+      return Auto<T, Label>{std::move(std::get<T>(parsed_variant))};
+    } else {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__
         // < 10
-        return {};
+      return Auto<T, Label>{};
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__
         // < 10
-      }
-    } catch (...) {
-      // The node failed to parse as a string.  It is not the AutoLabel.
     }
-    return Auto<T, Label>{options.parse_as<T, Metavariables>()};
   }
 };
 }  // namespace Options

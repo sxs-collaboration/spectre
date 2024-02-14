@@ -200,10 +200,30 @@ void test_use_as_option() {
   // Make sure this compiles.
   TestHelpers::test_creation<NonCopyableArgument>("AutoArg: Auto");
 }
+
+struct LabelThatShouldPrint {
+  static std::string name() { return "PrintedName"; }
+};
+
+void test_error_message() {
+  CHECK_THROWS_WITH(
+      (TestHelpers::test_creation<Options::Auto<double, LabelThatShouldPrint>>(
+          "NotValid")),
+      Catch::Matchers::ContainsSubstring("PrintedName") and
+          Catch::Matchers::ContainsSubstring("to type double") and
+          Catch::Matchers::ContainsSubstring("NotValid"));
+  CHECK_THROWS_WITH((TestHelpers::test_creation<
+                        Options::Auto<std::string, LabelThatShouldPrint>>(
+                        "[not, a, string]")),
+                    Catch::Matchers::ContainsSubstring("PrintedName") and
+                        Catch::Matchers::ContainsSubstring("to type string") and
+                        Catch::Matchers::ContainsSubstring("not, a, string"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.Auto", "[Unit][Options]") {
   test_class();
   test_parsing();
   test_use_as_option();
+  test_error_message();
 }
