@@ -130,8 +130,9 @@ void check(const bool time_runs_forward,
   CAPTURE(time);
   CAPTURE(request);
 
-  const TimeDelta initial_step_size =
-      (time_runs_forward ? 1 : -1) * time.slab().duration();
+  const TimeDelta initial_step_size = (time_runs_forward ? 1 : -1) *
+                                      time.slab().duration() /
+                                      time.fraction().denominator();
 
   using component = Component<Metavariables<StepChoosersToUse>>;
   using MockRuntimeSystem =
@@ -142,10 +143,8 @@ void check(const bool time_runs_forward,
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeStepId(
-           time_runs_forward, -1,
-           (time_runs_forward ? time.slab().end() : time.slab().start()) -
-               initial_step_size),
+      {TimeStepId(time_runs_forward, 0,
+                  time_runs_forward ? time.slab().start() : time.slab().end()),
        TimeStepId(time_runs_forward, 0, time), initial_step_size,
        initial_step_size,
        reject_step
