@@ -26,6 +26,10 @@ double control_error_delta_r(const double horizon_00,
   const double Y00 = 0.25 * M_2_SQRTPI;
 
   // This corresponds to 'DeltaRPolicy=Relative' in SpEC.
+  // Notice that both horizon_00 and dt_horizon_00 are actually spherepack
+  // coefs, not spherical harmonic coefs. However, they only show up in this
+  // expression as a ratio, so the spherepack factor cancels out, thus we don't
+  // add it in here.
   return dt_horizon_00 * (lambda_00 - grid_frame_excision_sphere_radius / Y00) /
              horizon_00 -
          dt_lambda_00;

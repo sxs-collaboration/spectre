@@ -395,6 +395,10 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
               DataVector{time_deriv_apparent_horizon.coefficients()[0]}});
     }
 
+    // This is needed because the horizon_00 (and dt) are spherepack coefs, not
+    // spherical harmonic coefs.
+    const double spherepack_factor = sqrt(0.5 * M_PI);
+
     // This is needed for every state
     const double control_error_delta_r = size::control_error_delta_r(
         horizon_00, dt_horizon_00, lambda_00, dt_lambda_00,
@@ -404,7 +408,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
             ? std::optional<double>(control_error_delta_r -
                                     delta_r_drift_outward_options_.value()
                                         .outward_drift_velocity -
-                                    (lambda_00 + horizon_00 -
+                                    (lambda_00 +
+                                     spherepack_factor * horizon_00 -
                                      grid_frame_excision_sphere_radius / Y00) /
                                         delta_r_drift_outward_options_.value()
                                             .outward_drift_timescale)
@@ -436,8 +441,10 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
       // < R_ex > = R_ex^grid - \lambda_00 * Y_00
       // < \Delta R > = \Delta R / < R_ah >
       const double avg_delta_r =
-          (horizon_00 + lambda_00) * Y00 - grid_frame_excision_sphere_radius;
-      const double avg_relative_delta_r = avg_delta_r / (horizon_00 * Y00);
+          (spherepack_factor * horizon_00 + lambda_00) * Y00 -
+          grid_frame_excision_sphere_radius;
+      const double avg_relative_delta_r =
+          avg_delta_r / (spherepack_factor * horizon_00 * Y00);
 
       Parallel::threaded_action<
           observers::ThreadedActions::WriteReductionDataRow>(
