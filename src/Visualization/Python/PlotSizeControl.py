@@ -137,13 +137,19 @@ def plot_size_control_command(
     top2 = axes[-1].plot(
         times, data["DampingTime"], color="C1", label="Damping time"
     )
-    top3 = axes[-1].plot(
-        times,
-        data["SmootherTimescale"],
-        color="C2",
-        label="Smooth damping time",
-    )
-    top_lines = top1 + top2 + top3
+    # Support an older version of control system output that didn't have the
+    # smoother timescale
+    if "SmootherTimescale" in data.columns:
+        top3 = axes[-1].plot(
+            times,
+            data["SmootherTimescale"],
+            color="C2",
+            label="Smooth damping time",
+        )
+        top_lines = top1 + top2 + top3
+    else:
+        top_lines = top1 + top2
+
     top_labels = [l.get_label() for l in top_lines]
     axes[0].tick_params(axis="y", labelcolor="C0")
 
