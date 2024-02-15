@@ -70,7 +70,12 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
  * average with larger weights toward the highest modes. This number should
  * correspond to the number of digits resolved by the spectral expansion.
  *
- * \note Modes that are identically zero are ignored in the weighted average.
+ * \note Modes below a cutoff of $100 \epsilon \mathrm{max}_k(P_k)$ are ignored
+ * in the weighted average, where $\epsilon$ is the machine epsilon. This
+ * ensures that we don't underestimate the truncation error if some modes are
+ * zero (e.g. by symmetry). Furthermore, if the last two or more modes are zero,
+ * we assume that the function is represented exactly and return a relative
+ * truncation error of zero.
  *
  * \details The number of modes (`num_modes_to_use`) argument needs to be less
  * or equal than the total number of power monitors (`power_monitor.size()`).

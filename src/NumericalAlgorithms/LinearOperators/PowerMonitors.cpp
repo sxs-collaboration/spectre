@@ -63,19 +63,31 @@ double relative_truncation_error(const DataVector& power_monitor,
       "Number of modes needs less or equal than the number of power monitors");
   ASSERT(2_st <= num_modes_to_use,
          "Number of modes needs to be larger or equal than 2.");
+  const size_t last_index = num_modes_to_use - 1;
+  const double max_mode = blaze::max(power_monitor);
+  const double cutoff =
+      100. * std::numeric_limits<double>::epsilon() * max_mode;
+  // If the last two or more modes are zero, assume that the function is
+  // represented exactly and return a relative truncation error of zero.
+  // Just one zero mode is not enough to make this assumption, as the function
+  // could have zero modes by symmetry.
+  if (num_modes_to_use >= 2 and power_monitor[last_index] < cutoff and
+      power_monitor[last_index - 1] < cutoff) {
+    return -log10(cutoff) + 2.;
+  }
   // Compute weighted average and total sum in the current dimension
   double weighted_average = 0.0;
   double weight_sum = 0.0;
   double weight_value = 0.0;
-  const size_t last_index = num_modes_to_use - 1;
   for (size_t index = 0; index <= last_index; ++index) {
     const double mode = power_monitor[index];
-    if (mode == 0.) {
+    if (mode < cutoff) {
+      // Ignore modes below this cutoff, so modes that are zero (e.g. by
+      // symmetry) don't make us underestimate the truncation error.
       continue;
     }
     // Compute current weight
-    weight_value =
-        exp(-square(index - static_cast<double>(last_index) + 0.5));
+    weight_value = exp(-square(static_cast<double>(last_index - index) - 0.5));
     // Add weighted power monitor
     weighted_average += weight_value * log10(mode);
     // Add term to weighted sum
