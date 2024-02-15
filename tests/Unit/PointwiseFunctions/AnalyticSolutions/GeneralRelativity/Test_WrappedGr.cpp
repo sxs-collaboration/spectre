@@ -44,10 +44,9 @@ void compare_different_wrapped_solutions(const double mass,
 template <typename SolutionType>
 void test_copy_and_move(const SolutionType& solution) {
   test_copy_semantics(solution);
-  const auto& solution_copy = solution;
   auto solution_copy2 = solution;
   // clang-tidy: std::move of trivially copyable type
-  test_move_semantics(std::move(solution_copy2), solution_copy);  // NOLINT
+  test_move_semantics(std::move(solution_copy2), solution);  // NOLINT
 }
 
 template <typename SolutionType, typename... Args>
