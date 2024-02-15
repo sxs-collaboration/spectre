@@ -66,7 +66,8 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
 /*!
  * \ingroup SpecialRelativityGroup
  * \brief Apply a Lorentz boost to the spatial part of a one form.
- * \details The zero component of the one form is also specified.
+ * \details This requires passing the 0th component of the one form as an
+ * additional argument.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(

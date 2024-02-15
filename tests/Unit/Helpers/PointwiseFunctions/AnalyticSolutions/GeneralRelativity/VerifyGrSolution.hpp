@@ -427,8 +427,8 @@ void verify_consistency(const Solution& solution, const double time,
       derivative_approx);
 }
 
-/// Check the consistency of dependent quantities returned by a
-/// solution.  This includes checking pointwise relations such as
+/// Check the consistency of quantities depenent on other metric quantities
+/// returned by a solution.  This includes checking pointwise relations such as
 /// consistency of the metric and inverse and comparing returned and
 /// numerical derivatives.
 template <typename Solution, typename Frame>

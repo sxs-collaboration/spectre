@@ -218,11 +218,15 @@ namespace Solutions {
  * ## Boost of the Kerr-Schild solution
  *
  * We add initial momentum to the solution by applying a Lorentz boost to the
- * metric. Given the form of the Kerr-Schild metric in terms of a covariant
- * expression in terms of the Minkowski metric, a scalar function and a one
- * form, this can be done by boosting the these objects individually and then
- * constructing the metric as above. Notice that we also need to appropriately
- * boost the coordinates to the boosted frame.
+ * metric. Since the Kerr-Schild metric can be expressed covariantly in terms of
+ * the Minkowski metric, a scalar function and a one form, we constructing the
+ * metric by boosting the these objects individually. Notice that we also need
+ * to appropriately boost the coordinates to the boosted frame.
+ *
+ * \warning While technically the boosted Kerr-Schild metric is dependent on
+ * both the time and space coordinates, we have implemented it only at $t = 0$
+ * as in SpEC. Therefore it is technically not an analytic solution and should
+ * not be used to compute errors with respect to it.
  *
  */
 class KerrSchild : public AnalyticSolution<3_st>,
