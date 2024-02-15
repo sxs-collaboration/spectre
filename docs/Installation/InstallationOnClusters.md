@@ -49,10 +49,6 @@ that are necessary for proper operation. Instead, use `module
 restore`. Currently the tests can only be run in serial, e.g. `ctest -j1`
 because all the MPI jobs end up being launched on the same core.
 
-## Cedar, Graham, and Niagara at ComputeCanada
-
-Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
-
 ## Frontera at TACC
 
 Follow the general instructions, using `frontera` for `SYSTEM_TO_RUN_ON`.
