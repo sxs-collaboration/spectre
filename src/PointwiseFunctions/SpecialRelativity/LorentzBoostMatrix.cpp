@@ -63,10 +63,7 @@ void lorentz_boost_matrix(
 template <size_t SpatialDim>
 tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
     const std::array<double, SpatialDim>& velocity) {
-  tnsr::I<double, SpatialDim, Frame::NoFrame> velocity_as_tensor{};
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    velocity_as_tensor.get(i) = gsl::at(velocity, i);
-  }
+  tnsr::I<double, SpatialDim, Frame::NoFrame> velocity_as_tensor(velocity);
   return lorentz_boost_matrix(velocity_as_tensor);
 }
 

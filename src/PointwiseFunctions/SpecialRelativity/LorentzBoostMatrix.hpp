@@ -96,6 +96,8 @@ void lorentz_boost(
  * \ingroup SpecialRelativityGroup
  * \brief Apply a Lorentz boosts for each index of a rank-2 tensor with
  * lower or covariant indices.
+ * \note In the future we might want to write a single function capable to boost
+ * a tensor of arbitrary rank.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
