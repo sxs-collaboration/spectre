@@ -102,6 +102,11 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
             db::get<Tags::TimeStepId>(box).substep_time());
       runner.next_action<component>(0);
     }
+    auto& box =
+        ActionTesting::get_databox<component>(make_not_null(&runner), 0);
+    db::mutate<Tags::Next<Tags::TimeStep>>(
+        [](const gsl::not_null<TimeDelta*> next_step) { *next_step /= 2; },
+        make_not_null(&box));
   }
 
   const auto& box = ActionTesting::get_databox<component>(runner, 0);
@@ -111,10 +116,10 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
   CHECK(final_time_id ==
         TimeStepId(time_step.is_positive(), 8, start + 2 * time_step));
   CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time());
-  CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
+  CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab) / 2);
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
         AdaptiveSteppingDiagnostics{
-            1 + static_cast<uint64_t>(final_time_id.slab_number() - 8), 2, 5, 4,
+            1 + static_cast<uint64_t>(final_time_id.slab_number() - 8), 2, 5, 5,
             5});
 }
 }  // namespace
