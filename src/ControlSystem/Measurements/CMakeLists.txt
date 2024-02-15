@@ -18,6 +18,7 @@ spectre_target_headers(
   BNSCenterOfMass.hpp
   BothHorizons.hpp
   CharSpeed.hpp
+  NonFactoryCreatable.hpp
   SingleHorizon.hpp
   )
 
