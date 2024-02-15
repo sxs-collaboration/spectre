@@ -315,7 +315,117 @@ struct GWBinaryVariables
  * \brief   Binary black hole initial data with realistic wave background,
  * constructed in Post-Newtonian approximations.
  *
- * This class implements background data for the XCTS equations describing...
+ * This class implements background data for the XCTS equations describing
+ * a binary black hole system with a realistic gravitational wave content.
+ * The data is constructed from Post-Newtonian expansions for the inspiral
+ * phase, in orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT
+ * gauge it is possible to get the 3-metric as \f$\gamma^{PN}_{ij} =
+ * \psi^{4}_{PN} \delta_{ij} + h^{TT}_{ij}\f$ where \f$h^{TT}_{ij}\f$ is the
+ * radiative part and the non-radiative Post-Newtonian conformal factor is given
+ * by
+ *
+ * \f[\psi_{PN} = 1 + \sum_{a=1}^{2} \frac{E_a}{2 r_a} + O(\epsilon^6)\f]
+ *
+ * and
+ *
+ * \f[E_a = (\epsilon^2) m_a + (\epsilon^4) \Bigr(\frac{p_a^2}{2 m_a} -
+ * \frac{m_1 m_2}{2 r_{12}}\Bigr)\f]
+ *
+ * with \f$\vec{p}_a\f$ the linear momentum, \f$r_a\f$ the distance to each
+ * black hole center of mass from the point of calculation and \f$r_{12}\f$
+ * separation between the two black holes and \f$m_a\f$ is the mass of each
+ * black hole. Near each black hole, the 3-metric can be approximated by the
+ * Schwarzschild 3-metric in isotropic coordinates.
+ *
+ * In \cite Mundim2010hu, the radiative term \f$h^{TT}_{ij}\f$ is decomposed
+ * into two parts, a near-zone that is only valid close to the black holes and a
+ * remainder that makes corrections far from the black holes, \f$h^{TT}_{ij} =
+ * h^{TT\ (NZ)}_{ij} + h^{TT\ (remainder)}_{ij} + O(\epsilon^5)\f$. The
+ * near-zone term is given by $h^{TT\ (NZ)}_{ij} = (\epsilon^4) h^{TT}_{(4)ij} +
+ * (\epsilon^5) h^{TT}_{(5)ij}$, with
+ *
+ * \f{align}{
+ * h^{TT\ i j}_{(4)} = \frac{1}{4} \sum_a \frac{1}{m_a r_a} \Bigr\{
+ * [p_a^2-5(\hat{n}_a \cdot \vec{p}_a)^2] \delta^{i j}+2 p_a^i p_a^j
+ * +[3(\hat{n}_a \cdot \vec{p}_a)^2-5p_a^2] n_a^i n_a^j +12(\hat{n}_a \cdot
+ * \vec{p}_a) n_a^{(i} p_a^{j)} \Bigr\} \\
+ *  +\frac{1}{8} \sum_a \sum_{b \neq a} m_a m_b \Bigr\{-\frac{32}{s_{a
+ * b}}(\frac{1}{r_{a b}}+\frac{1}{s_{a b}}) n_{a b}^i n_{a
+ * b}^j+2(\frac{r_a+r_b}{r_{a b}^3}+\frac{12}{s_{a b}^2}) n_a^i
+ * n_b^j+32(\frac{2}{s_{a b}^2}-\frac{1}{r_{a b}^2}) n_a^{(i} n_{a b}^{j)} \\
+ *  +[\frac{5}{r_{a b} r_a}-\frac{1}{r_{a b}^3}(\frac{r_b^2}{r_a}+3
+ * r_a)-\frac{8}{s_{a b}}(\frac{1}{r_a}+\frac{1}{s_{a b}})] n_a^i n_a^j+[5
+ * \frac{r_a}{r_{a b}^3}(\frac{r_a}{r_b}-1)-\frac{17}{r_{a b} r_a}+\frac{4}{r_a
+ * r_b}+\frac{8}{s_{a b}}(\frac{1}{r_a}+\frac{4}{r_{a b}})] \delta^{i j}\Bigr\},
+ * \f}
+ *
+ * where \f$\hat{n}_a\f$ is the unit normal vector pointing to the black hole
+ * center of mass, \f$\hat{n}_{ab}\f$ is the unit normal vector pointing from
+ * black hole \f$a\f$ to black hole \f$b\f$ and \f$s_{ab} = r_a + r_b +
+ * r_{ab}\f$. The term \f$h^{TT}_{(5)ij}\f$ is a spatially constant field that
+ * just varies in time, for initial data we can choose an initial time such that
+ * \f$h^{TT}_{(5)ij} = 0\f$.
+ *
+ * Looking at \cite Kelly2007uc, the remainder term in itself is decomposed in
+ * general computations for specific vectors as
+ *
+ * \f[
+ * h^{TT\ (remainder)}_{ij} = H^{TT\ 1}_{ij} \Bigr[
+ * \frac{\Vec{p_1}}{\sqrt{m_1}}\Bigr] + H^{TT\ 2}_{ij} \Bigr[
+ * \frac{\Vec{p_2}}{\sqrt{m_2}}\Bigr] + H^{TT\ 1}_{ij} \Bigr[ \sqrt{\frac{m_1
+ * m_2}{2 r_{12}}}  \hat{n_{12}} \Bigr] + H^{TT\ 2}_{ij} \Bigr[ \sqrt{\frac{m_1
+ * m_2}{2 r_{12}}}  \hat{n_{12}} \Bigr], \f]
+ *
+ * each of this is composed of three different computations: one computed at
+ * present time \f$t\f$, other at retarded time \f$t_{a}^{r}\f$ defined by \f$t
+ * - t_{a}^{r} - r_a(t_{a}^{r}) = 0\f$ and the last is an integral between the
+ * two times:
+ *
+ * \f[
+ * H^{TT\ a}_{ij} [ \Vec{u} ] = H^{TT\ a}_{ij} [ \Vec{u} ; t] + H^{TT\ a}_{ij} [
+ * \Vec{u} ; t^{r}_a] + H^{TT\ a}_{ij} [ \Vec{u} ; t_{a}^{r} \to t]. \f]
+ *
+ * Explicitly they are
+ *
+ * \f[
+ * H^{TT\ a}_{ij} [ \Vec{u} ; t] = -\frac{1}{4 r_a(t)} \Bigr\{ [u^2 - 5(\Vec{u}
+ * \cdot \hat{n}_a)^2] \delta_{ij} + 2 u^iu^j + 3(\Vec{u}\cdot\hat{n}_a)^2 - 5
+ * u^2] n_a^i n_a^j + 12 (\Vec{u} \cdot \hat{n}_a) u^{(i}n_a^{j)}\Bigr\}_t, \f]
+ *
+ * \f[
+ * H^{TT\ a}_{ij} [ \Vec{u} ; t^{r}_a] = -\frac{1}{r_a(t^{r}_a)} \Bigr\{ [-2u^2
+ * + 2(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 4u^iu^j + [2 u^2 + 2 (\Vec{u}
+ * \cdot \hat{n}_a)^2 ] n_a^i n_a^j - 8(\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)}
+ * \Bigr\}_{t^{r}_a}, \f]
+ *
+ * and
+ *
+ * \f{align}{
+ * H^{TT\ a}_{ij} [ \Vec{u} &; t^{r}_a \to t] = \\
+ *  - \int^t_{t^{r}_a} d\tau & \frac{(t-\tau)}{r_a(\tau)^3}  \Bigr\{ [-5u^2 +
+ * 9(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 6u^iu^j - 12
+ * (\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [9 u^2 - 15(\Vec{u} \cdot
+ * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\} \\
+ *  - \int^t_{t^{r}_a} d\tau & \frac{(t-\tau)^3}{r_a(\tau)^5}  \Bigr\{ [u^2 -
+ * 5(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 2 u^iu^j - 20
+ * (\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [-5 u^2 + 35(\Vec{u} \cdot
+ * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\}. \f}
+ *
+ * With this the whole spatial metric is computed up to \f$4PN\f$ order and the
+ * radiative term agrees well with quadrupole predictions. In \cite Tichy2002ec,
+ * the extrinsic curvature is given up to \f$5PN\f$ order by
+ *
+ * \f[
+ * K^{ij}_{PN} = - \psi^{-10}_{PN} \Bigr[ (\epsilon^3) \tilde{\pi}_{(3)}^{ij} +
+ * (\epsilon^5) \frac{1}{2} \Dot{h}^{TT}_{(4)ij} + (\epsilon^5) (\phi_{(2)}
+ * \tilde{\pi}_{(3)}^{ij})^{TT} \Bigr] + O(\epsilon^6). \f]
+ *
+ * where
+ *
+ * \f[
+ *  \tilde{\pi}_{(3)}^{i j}=\frac{1}{16 \pi} \sum_a p_{a}^k\{-\delta_{i
+ * j}(\frac{1}{r_a})_{, k}+2[\delta_{i k}(\frac{1}{r_a})_{, j}+\delta_{j
+ * k}(\frac{1}{r_a})_{, i}]-\frac{1}{2} r_{a, i j k}\}. \f]
  */
 class GWBinary : public elliptic::analytic_data::Background,
                  public elliptic::analytic_data::InitialGuess {
