@@ -58,18 +58,18 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
       db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
 
-  const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
+  const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
   tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
-                                &next_time_id](auto tag_v) {
+                                &time_step_id](auto tag_v) {
     if (not can_change_step_size) {
       return;
     }
     using tag = typename decltype(tag_v)::type;
     const auto& history = db::get<tag>(*box);
     can_change_step_size =
-        time_stepper.can_change_step_size(next_time_id, history);
+        time_stepper.can_change_step_size(time_step_id, history);
   });
   if (not can_change_step_size) {
     return true;
@@ -103,6 +103,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
         "that the simulation can proceed");
   }
 
+  const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
   const auto new_step =
       choose_lts_step_size(next_time_id.step_time(), desired_step);
   db::mutate<Tags::Next<Tags::TimeStep>>(
@@ -116,14 +117,15 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
     return true;
   } else {
     db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
-        [&time_stepper, &desired_step](
+        [&time_stepper, &desired_step, &time_step_id](
             const gsl::not_null<TimeStepId*> local_next_time_id,
-            const gsl::not_null<TimeDelta*> time_step,
-            const TimeStepId& time_id) {
-          *time_step = choose_lts_step_size(time_id.step_time(), desired_step);
-          *local_next_time_id = time_stepper.next_time_id(time_id, *time_step);
+            const gsl::not_null<TimeDelta*> time_step) {
+          *time_step =
+              choose_lts_step_size(time_step_id.step_time(), desired_step);
+          *local_next_time_id =
+              time_stepper.next_time_id(time_step_id, *time_step);
         },
-        box, db::get<Tags::TimeStepId>(*box));
+        box);
     return false;
   }
 }
