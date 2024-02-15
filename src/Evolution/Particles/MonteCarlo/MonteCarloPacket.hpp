@@ -34,7 +34,7 @@ struct Packet {
   double momentum_upper_t;
 
   // Coordinates of the packet, currently in Inertial coordinates
-  tnsr::I<double, 3, Frame::Inertial> coordinates;
+  tnsr::I<double, 3, Frame::ElementLogical> coordinates;
 
   // Spatial components of the 4-momentum, also in Inertial coordinates
   tnsr::i<double, 3, Frame::Inertial> momentum;
