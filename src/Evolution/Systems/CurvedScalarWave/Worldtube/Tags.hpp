@@ -217,6 +217,24 @@ struct ParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
 };
 /// @}
 
+/*!
+ * \brief The position of the scalar charge evolved by the worldtube singleton.
+ * This tag is meant to be used by the worldtube singleton to evolve the orbit.
+ */
+template <size_t Dim>
+struct EvolvedPosition : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim>;
+};
+
+/*!
+ * \brief The velocity of the scalar charge evolved by the worldtube singleton.
+ * This tag is meant to be used by the worldtube singleton to evolve the orbit.
+ */
+template <size_t Dim>
+struct EvolvedVelocity : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim>;
+};
+
 /// @{
 /*!
  * \brief Computes the coordinate geodesic acceleration of the particle in the
