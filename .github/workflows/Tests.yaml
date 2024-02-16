@@ -420,7 +420,8 @@ jobs:
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
             # Test 3D rendering with ParaView
-            test_3d_rendering: ON
+            # Note: currently disabled because of some unknown upstream issue
+            # test_3d_rendering: ON
             # Need Python version consistent with ParaView
             PYTHON_VERSION: "3.9"
           # Don't modify the gcc-11 Debug build so its cache can be reused for
