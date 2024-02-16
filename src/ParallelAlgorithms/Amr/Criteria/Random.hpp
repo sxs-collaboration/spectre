@@ -4,7 +4,9 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <pup.h>
+#include <unordered_map>
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -16,33 +18,37 @@
 #include "Utilities/TMPL.hpp"
 
 namespace amr::Criteria {
+namespace detail {
+amr::Flag random_flag(
+    const std::unordered_map<amr::Flag, size_t>& probability_weights);
+}  // namespace detail
+
 /*!
- * \brief Randomly h-refine (or coarsen) an Element in each dimension.
+ * \brief Randomly refine (or coarsen) an Element in each dimension.
  *
- * \details Let \f$f\f$ be `ChangeRefinementFraction`, \f$L_{max}\f$ be
- * `MaximumRefinementLevel`, and \f$L_d\f$ be the current refinement level
- * of an Element in a particular dimension.  In each dimension, a random
- * number \f$r_d \in [0, 1]\f$ is generated.  If \f$r_d > f\f$ the refinement
- * flag is set to amr::Flags::DoNothing.  If \f$r_d < f L_d / L_{max}\f$
- * the refinement flag is set to amr::Flags::Join.  Otherwise the
- * refinement flag is set to amr::Flag::Split.
+ * You can specify a probability for each possible `amr::Flag`. It is evaluated
+ * in each dimension separately. Details:
  *
- * \note This criterion is primarily useful for testing the mechanics of
- * h-refinement
+ * - Probabilities are specified as integer weights. The probability for an
+ *   `amr::Flag` is its weight over the sum of all weights.
+ * - Flags with weight zero do not need to be specified.
+ * - If all weights are zero, `amr::Flag::DoNothing` is always chosen.
  */
 class Random : public Criterion {
  public:
-  /// The fraction of the time random refinement does changes the grid
-  struct ChangeRefinementFraction {
-    using type = double;
+  struct ProbabilityWeights {
+    using type = std::unordered_map<amr::Flag, size_t>;
     static constexpr Options::String help = {
-        "The fraction of the time that random refinement will change the "
-        "grid."};
-    static double lower_bound() { return 0.0; }
-    static double upper_bound() { return 1.0; }
+        "Possible refinement types and their probability, specified as integer "
+        "weights. The probability for a refinement type is its weight over the "
+        "sum of all weights. For example, set 'Split: 1' and 'DoNothing: 4' to "
+        "split each element with 20% probability. The refinement is evaluated "
+        "in each dimension separately."};
   };
 
-  /// The maximum allowed refinement level
+  /// The maximum allowed refinement level.
+  /// Can be deleted once the max refinement level is enforced globally as an
+  /// AMR policy.
   struct MaximumRefinementLevel {
     using type = size_t;
     static constexpr Options::String help = {
@@ -50,15 +56,16 @@ class Random : public Criterion {
     static size_t upper_bound() { return ElementId<3>::max_refinement_level; }
   };
 
-  using options = tmpl::list<ChangeRefinementFraction, MaximumRefinementLevel>;
+  using options = tmpl::list<ProbabilityWeights, MaximumRefinementLevel>;
 
   static constexpr Options::String help = {
-      "Randomly h-refine (or coarsen) the grid"};
+      "Randomly refine (or coarsen) the grid"};
 
   Random() = default;
 
-  Random(const double do_something_fraction,
-         const size_t maximum_refinement_level);
+  explicit Random(
+      std::unordered_map<amr::Flag, size_t> probability_weights,
+      size_t maximum_refinement_level = std::numeric_limits<size_t>::max());
 
   /// \cond
   explicit Random(CkMigrateMessage* msg);
@@ -70,27 +77,29 @@ class Random : public Criterion {
 
   using argument_tags = tmpl::list<>;
 
-  template <typename Metavariables>
+  template <size_t Dim, typename Metavariables>
   auto operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                  const ElementId<Metavariables::volume_dim>& element_id) const;
+                  const ElementId<Dim>& element_id) const;
 
   void pup(PUP::er& p) override;
 
  private:
-  amr::Flag random_flag(size_t current_refinement_level) const;
-
-  double do_something_fraction_{0.0};
-  size_t maximum_refinement_level_{0};
+  std::unordered_map<amr::Flag, size_t> probability_weights_{};
+  size_t maximum_refinement_level_ = std::numeric_limits<size_t>::max();
 };
 
-template <typename Metavariables>
-auto Random::operator()(
-    Parallel::GlobalCache<Metavariables>& /*cache*/,
-    const ElementId<Metavariables::volume_dim>& element_id) const {
-  constexpr size_t volume_dim = Metavariables::volume_dim;
-  auto result = make_array<volume_dim>(amr::Flag::Undefined);
-  for (size_t d = 0; d < volume_dim; ++d) {
-    result[d] = random_flag(element_id.segment_ids()[d].refinement_level());
+template <size_t Dim, typename Metavariables>
+auto Random::operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                        const ElementId<Dim>& element_id) const {
+  auto result = make_array<Dim>(amr::Flag::Undefined);
+  for (size_t d = 0; d < Dim; ++d) {
+    result[d] = detail::random_flag(probability_weights_);
+    // Enforce max refinement level. Can be deleted once it's enforced globally.
+    if (result[d] == amr::Flag::Split and
+        element_id.segment_ids()[d].refinement_level() >=
+            maximum_refinement_level_) {
+      result[d] = amr::Flag::DoNothing;
+    }
   }
   return result;
 }

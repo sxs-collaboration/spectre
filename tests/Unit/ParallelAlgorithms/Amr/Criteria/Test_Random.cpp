@@ -4,7 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
@@ -48,26 +50,14 @@ void test_criterion(const amr::Criterion& criterion) {
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::DoNothing));
-  }
-  for (size_t level = 1; level < 5; ++level) {
-    ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 1))};
-    flags = criterion.evaluate(empty_box, empty_cache, id);
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::DoNothing or
-             flags[d] == amr::Flag::Join));
-    }
-  }
-  ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(5, 1))};
-  flags = criterion.evaluate(empty_box, empty_cache, id);
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK((flags[d] == amr::Flag::Join or flags[d] == amr::Flag::DoNothing));
+    CHECK((gsl::at(flags, d) == amr::Flag::Split or
+           gsl::at(flags, d) == amr::Flag::DoNothing));
   }
 }
 
 template <size_t VolumeDim>
-void test_always_change_refinement() {
-  const amr::Criteria::Random criterion(1.0, 5);
+void test_always_split() {
+  const amr::Criteria::Random criterion{{{amr::Flag::Split, 1}}};
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
   auto databox = db::create<db::AddSimpleTags<>>();
   auto empty_box =
@@ -76,25 +66,13 @@ void test_always_change_refinement() {
   ElementId<VolumeDim> root_id{0};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(flags[d] == amr::Flag::Split);
-  }
-  for (size_t level = 1; level < 5; ++level) {
-    ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 1))};
-    flags = criterion.evaluate(empty_box, empty_cache, id);
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK((flags[d] == amr::Flag::Split or flags[d] == amr::Flag::Join));
-    }
-  }
-  ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(5, 1))};
-  flags = criterion.evaluate(empty_box, empty_cache, id);
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(flags[d] == amr::Flag::Join);
+    CHECK(gsl::at(flags, d) == amr::Flag::Split);
   }
 }
 
 template <size_t VolumeDim>
 void test_always_do_nothing() {
-  const amr::Criteria::Random criterion(0.0, 5);
+  const amr::Criteria::Random criterion{{{amr::Flag::DoNothing, 1}}};
 
   Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
   auto databox = db::create<db::AddSimpleTags<>>();
@@ -105,17 +83,38 @@ void test_always_do_nothing() {
     ElementId<VolumeDim> id{0, make_array<VolumeDim>(SegmentId(level, 0))};
     auto flags = criterion.evaluate(empty_box, empty_cache, id);
     for (size_t d = 0; d < VolumeDim; ++d) {
-      CHECK(flags[d] == amr::Flag::DoNothing);
+      CHECK(gsl::at(flags, d) == amr::Flag::DoNothing);
     }
+  }
+}
+
+template <size_t VolumeDim>
+void test_h_or_p() {
+  const amr::Criteria::Random criterion{{{amr::Flag::Split, 1},
+                                         {amr::Flag::IncreaseResolution, 1},
+                                         {amr::Flag::DecreaseResolution, 1},
+                                         {amr::Flag::Join, 1}}};
+  Parallel::GlobalCache<Metavariables<VolumeDim>> empty_cache{};
+  auto databox = db::create<db::AddSimpleTags<>>();
+  auto empty_box =
+      make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
+
+  ElementId<VolumeDim> root_id{0};
+  auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    CHECK((gsl::at(flags, d) != amr::Flag::DoNothing and
+           gsl::at(flags, d) != amr::Flag::Undefined));
   }
 }
 
 template <size_t VolumeDim>
 void test() {
   register_factory_classes_with_charm<Metavariables<VolumeDim>>();
-  test_always_change_refinement<VolumeDim>();
+  test_always_split<VolumeDim>();
   test_always_do_nothing<VolumeDim>();
-  const amr::Criteria::Random random_criterion(0.8, 5);
+  test_h_or_p<VolumeDim>();
+  const amr::Criteria::Random random_criterion{
+      {{amr::Flag::Split, 4}, {amr::Flag::DoNothing, 1}}};
   test_criterion<VolumeDim>(random_criterion);
   test_criterion<VolumeDim>(serialize_and_deserialize(random_criterion));
 
@@ -123,7 +122,9 @@ void test() {
       TestHelpers::test_creation<std::unique_ptr<amr::Criterion>,
                                  Metavariables<VolumeDim>>(
           "Random:\n"
-          "  ChangeRefinementFraction: 0.8\n"
+          "  ProbabilityWeights:\n"
+          "    Split: 4\n"
+          "    DoNothing: 1\n"
           "  MaximumRefinementLevel: 5\n");
   test_criterion<VolumeDim>(*criterion);
   test_criterion<VolumeDim>(*serialize_and_deserialize(criterion));
