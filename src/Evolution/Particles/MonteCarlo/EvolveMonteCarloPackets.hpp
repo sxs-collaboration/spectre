@@ -25,8 +25,7 @@ void time_derivative_momentum_geodesic(
     const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
-    const size_t& closest_point_index);
+    const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric);
 
 // Advances a single packet by time time_step along a geodesic
 void evolve_single_packet_on_geodesic(
@@ -39,12 +38,9 @@ void evolve_single_packet_on_geodesic(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian,
-    const size_t& closest_point_index);
+                          Frame::Inertial>& inverse_jacobian);
 
 }  // namespace detail
-
-struct Packet;
 
 void evolve_packets(
     gsl::not_null<std::vector<Packet>*> packets, const double& time_step,
