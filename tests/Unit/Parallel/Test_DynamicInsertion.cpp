@@ -19,7 +19,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -79,6 +78,19 @@ struct Value : db::SimpleTag {
   using type = double;
 };
 
+template <typename Metavariables>
+struct TestAmrComponent {
+  using metavariables = Metavariables;
+  using chare_type = Parallel::Algorithms::Singleton;
+  using simple_tags_from_options = tmpl::list<>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+
+  static void execute_next_phase(
+      const Parallel::Phase /*next_phase*/,
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache_proxy*/) {}
+};
+
 struct InitializeValue {
   using simple_tags = tmpl::list<Value>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -105,7 +117,8 @@ struct ArrayReduce {
     const auto& my_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index];
     const auto& singleton_proxy =
-        Parallel::get_parallel_component<amr::Component<Metavariables>>(cache);
+        Parallel::get_parallel_component<TestAmrComponent<Metavariables>>(
+            cache);
     Parallel::ReductionData<Parallel::ReductionDatum<double, funcl::Plus<>>>
         reduction_data{db::get<Value>(box)};
     Parallel::contribute_to_reduction<CheckReduction>(reduction_data, my_proxy,
@@ -225,7 +238,7 @@ struct ChangeArray {
       std::vector<int> new_ids(number_of_new_elements);
       std::iota(new_ids.begin(), new_ids.end(), 100 * array_index);
       auto& singleton_proxy =
-          Parallel::get_parallel_component<amr::Component<Metavariables>>(
+          Parallel::get_parallel_component<TestAmrComponent<Metavariables>>(
               cache);
       Parallel::simple_action<CreateChild>(singleton_proxy, array_proxy,
                                            array_index, new_ids.front(),
@@ -331,7 +344,7 @@ struct TestArray {
 };
 
 struct TestMetavariables {
-  using component_list = tmpl::list<amr::Component<TestMetavariables>,
+  using component_list = tmpl::list<TestAmrComponent<TestMetavariables>,
                                     TestArray<TestMetavariables>>;
 
   static constexpr Options::String help =
@@ -351,7 +364,8 @@ void register_callback() {
       tmpl::list<
           Parallel::SimpleActionCallback<
               CreateChild,
-              CProxy_AlgorithmSingleton<amr::Component<TestMetavariables>, int>,
+              CProxy_AlgorithmSingleton<TestAmrComponent<TestMetavariables>,
+                                        int>,
               CProxy_AlgorithmArray<TestArray<TestMetavariables>, int>, int,
               int, std::vector<int>,
               std::unordered_map<Parallel::Phase, size_t>>,

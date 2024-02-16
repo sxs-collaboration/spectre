@@ -2,14 +2,12 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
-  Amr
-  AmrCriteria
-  AmrProjectors
   Charmxx::main
   DomainCreators
   Informer
   Logging
   Options
+  ParallelAmr
   PhaseControl
   Spectral
   Utilities

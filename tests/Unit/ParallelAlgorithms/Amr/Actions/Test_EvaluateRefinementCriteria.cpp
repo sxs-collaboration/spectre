@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -53,7 +54,8 @@ struct Component {
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
-  using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
+  using const_global_cache_tags =
+      tmpl::list<amr::Criteria::Tags::Criteria, amr::Tags::Policies>;
   using simple_tags =
       tmpl::list<domain::Tags::Element<volume_dim>,
                  domain::Tags::Mesh<volume_dim>, amr::Tags::Info<volume_dim>,
@@ -111,7 +113,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info;
 
   ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
-      {std::move(criteria)}};
+      {std::move(criteria), amr::Policies{amr::Isotropy::Anisotropic}}};
 
   const Element<1> self(self_id, {{{Direction<1>::lower_xi(), {{lo_id}, {}}},
                                    {Direction<1>::upper_xi(), {{up_id}, {}}}}});
@@ -249,7 +251,7 @@ void check_split_while_join_is_avoided() {
   // But we do not allow an Element to simultaneously split and join so the
   // action should change the flags to (DoNothing, Split)
   ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
-      {std::move(criteria)}};
+      {std::move(criteria), amr::Policies{amr::Isotropy::Anisotropic}}};
 
   const Element<2> self(self_id, {});
   ActionTesting::emplace_component_and_initialize<my_component>(

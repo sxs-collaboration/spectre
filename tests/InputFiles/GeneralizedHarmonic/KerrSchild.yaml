@@ -31,8 +31,6 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 1
-Amr:
-  Criteria:
 
 PhaseChangeAndTriggers:
   - Trigger:

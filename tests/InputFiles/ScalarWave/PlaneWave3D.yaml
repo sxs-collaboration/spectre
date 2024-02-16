@@ -26,6 +26,8 @@ InitialData:
 
 Amr:
   Criteria:
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Verbose
 
 PhaseChangeAndTriggers:

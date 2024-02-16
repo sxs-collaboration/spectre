@@ -16,6 +16,9 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Amr
+  AmrCriteria
+  AmrPolicies
+  AmrProjectors
   DataStructures
   Initialization
   Logging
@@ -25,5 +28,6 @@ target_link_libraries(
 
 add_subdirectory(Actions)
 add_subdirectory(Criteria)
+add_subdirectory(Policies)
 add_subdirectory(Projectors)
 add_subdirectory(Protocols)

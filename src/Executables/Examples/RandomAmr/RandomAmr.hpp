@@ -77,8 +77,6 @@ struct RandomAmrMetavars {
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
-  using const_global_cache_tags = tmpl::list<amr::Criteria::Tags::Criteria>;
-
   static constexpr auto default_phase_order =
       std::array{Parallel::Phase::Initialization, Parallel::Phase::CheckDomain,
                  Parallel::Phase::Evolve, Parallel::Phase::Exit};

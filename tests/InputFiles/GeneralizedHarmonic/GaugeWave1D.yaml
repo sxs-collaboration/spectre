@@ -27,6 +27,8 @@ Evolution:
 
 Amr:
   Criteria:
+  Policies:
+    Isotropy: Anisotropic
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:

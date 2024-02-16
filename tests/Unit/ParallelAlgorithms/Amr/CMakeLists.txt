@@ -21,6 +21,9 @@ set(LIBRARY_SOURCES
   Criteria/Test_Persson.cpp
   Criteria/Test_Random.cpp
   Criteria/Test_TruncationError.cpp
+  Policies/Test_Isotropy.cpp
+  Policies/Test_EnforcePolicies.cpp
+  Policies/Test_Policies.cpp
   Projectors/Test_DefaultInitialize.cpp
   Projectors/Test_Mesh.cpp
   Projectors/Test_Tensors.cpp
@@ -35,6 +38,7 @@ target_link_libraries(
   PRIVATE
   Amr
   AmrCriteria
+  AmrPolicies
   AmrProjectors
   CoordinateMaps
   Domain
