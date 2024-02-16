@@ -17,10 +17,10 @@
 
 namespace StepChoosers {
 /// Avoids instabilities due to rapid increases in the step size by
-/// preventing the step size from increasing unless all steps in the
-/// time-stepper history are the same size.  If there have been recent
-/// step size changes the new size bound is the size of the most
-/// recent step, otherwise it is infinite (no restriction is imposed).
+/// preventing the step size from increasing if any step in the
+/// time-stepper history increased.  If there have been recent step
+/// size increases, the new size bound is the size of the most recent
+/// step, otherwise it is infinite (no restriction is imposed).
 template <typename StepChooserUse>
 class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
@@ -48,15 +48,17 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
     const double sloppiness =
         slab_rounding_error(history.front().time_step_id.step_time());
     std::optional<Time> previous_time{};
-    for (const auto& record : history) {
-      const Time time = record.time_step_id.step_time();
+    double newer_step = last_step_magnitude;
+    for (auto record = history.rbegin(); record != history.rend(); ++record) {
+      const Time time = record->time_step_id.step_time();
       if (previous_time.has_value()) {
+        const double this_step = abs(*previous_time - time).value();
         // Potential roundoff error comes from the inability to make
         // slabs exactly the same length.
-        if (abs(abs(*previous_time - time).value() - last_step_magnitude) >
-            sloppiness) {
+        if (this_step < newer_step - sloppiness) {
           return std::make_pair(last_step_magnitude, true);
         }
+        newer_step = this_step;
       }
       previous_time.emplace(time);
     }

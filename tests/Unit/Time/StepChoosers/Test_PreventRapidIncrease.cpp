@@ -180,10 +180,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   check_case(-1, {0, {2, 5}});
   check_case(-1, {{1, 5}, {2, 5}, {3, 5}});
   check_case(-1, {{4, 5}, {5, 5}, {6, 5}});
-  check_case({1, 5}, {{4, 5}, {5, 5}, {7, 5}});
+  check_case(-1, {{4, 5}, {5, 5}, {7, 5}});
+  check_case({1, 5}, {{4, 5}, {5, 5}, {11, 10}});
   check_case({2, 5}, {{3, 5}, {5, 5}, {6, 5}});
   check_case(-1, {{1, 5}, {2, 5}, {3, 5}, {4, 5}});
   check_case({2, 5}, {{0, 5}, {2, 5}, {3, 5}, {4, 5}});
+  check_case({1, 5}, {{1, 5}, {2, 5}, {4, 5}, {5, 5}});
   check_case({1, 20}, {{1, 5}, {1, 4}, {3, 5}, {4, 5}});
 
   // Cause roundoff errors
