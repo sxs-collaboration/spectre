@@ -532,6 +532,7 @@ jobs:
       # container because they take up a lot of space.
       - name: Install compiler
         run: |
+          apt-get update -y
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           else
@@ -1192,6 +1193,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           compiler: ${{ matrix.compiler }}
       - name: Install compiler
         run: |
+          apt-get update -y
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           else
