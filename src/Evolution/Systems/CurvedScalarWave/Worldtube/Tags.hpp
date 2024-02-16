@@ -36,6 +36,9 @@
 namespace Tags {
 struct Time;
 }  // namespace Tags
+namespace OptionTags {
+struct InitialTime;
+}  // namespace OptionTags
 /// \endcond
 
 namespace CurvedScalarWave::Worldtube {
@@ -186,6 +189,33 @@ struct ObserveCoefficientsTrigger : db::SimpleTag {
   static std::unique_ptr<Trigger> create_from_options(
       const std::unique_ptr<Trigger>& trigger) {
     return deserialize<type>(serialize<type>(trigger).data());
+  }
+};
+
+/*!
+ * \brief The initial position and velocity of the scalar charge in inertial
+ * coordinates.
+ */
+struct InitialPositionAndVelocity : db::SimpleTag {
+  using type = std::array<tnsr::I<double, 3, Frame::Inertial>, 2>;
+  using option_tags =
+      tmpl::list<domain::OptionTags::DomainCreator<3>,
+                 OptionTags::ExcisionSphere, ::OptionTags::InitialTime>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const std::unique_ptr<::DomainCreator<3>>& domain_creator,
+      const std::string& excision_sphere_name, const double initial_time) {
+    // only evaluated at initial time, so expiration times don't matter
+    const auto initial_fot = domain_creator->functions_of_time();
+    const auto domain = domain_creator->create_domain();
+    const auto& excision_sphere =
+        domain.excision_spheres().at(excision_sphere_name);
+    ASSERT(excision_sphere.is_time_dependent(),
+           "excision_sphere not time dependent");
+    const auto& maps = excision_sphere.moving_mesh_grid_to_inertial_map();
+    const auto mapped_tuple = maps.coords_frame_velocity_jacobians(
+        excision_sphere.center(), initial_time, initial_fot);
+    return {std::get<0>(mapped_tuple), std::get<3>(mapped_tuple)};
   }
 };
 
