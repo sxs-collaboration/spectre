@@ -32,6 +32,7 @@ target_link_libraries(
   Domain
   GeneralRelativity
   GeneralRelativitySolutions
+  LinearOperators
   Options
   Parallel
   Utilities
