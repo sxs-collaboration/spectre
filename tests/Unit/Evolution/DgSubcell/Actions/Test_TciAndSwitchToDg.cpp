@@ -236,16 +236,15 @@ void test_impl(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
       evolution::dg::subcell::SubcellOptions{
-          1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell,
-          recons_method, use_halo,
+          4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, recons_method,
+          use_halo,
           test_block_id_assert
               ? std::optional{std::vector<std::string>{"Block0"}}
               : std::optional<std::vector<std::string>>{},
           ::fd::DerivativeOrder::Two},
       TestCreator<Dim>{}}}};
 
-  TimeStepId time_step_id{false, self_starting ? -1 : 1,
-                          Slab{1.0, 2.0}.end()};
+  TimeStepId time_step_id{false, self_starting ? -1 : 1, Slab{1.0, 2.0}.end()};
   const TimeDelta step_size{Slab{1.0, 2.0}, {-1, 10}};
   if (in_substep) {
     // We are in the middle of a time step with a substep method, so update

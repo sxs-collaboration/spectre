@@ -206,7 +206,7 @@ void test(const bool all_neighbors_are_doing_dg,
   const evolution::dg::subcell::SubcellOptions& subcell_options =
       evolution::dg::subcell::SubcellOptions{
           evolution::dg::subcell::SubcellOptions{
-              1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
+              4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell,
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
               use_halo,
               all_neighbors_are_doing_dg

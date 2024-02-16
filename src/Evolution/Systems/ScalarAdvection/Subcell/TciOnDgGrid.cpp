@@ -43,7 +43,9 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnDgGrid<Dim>::apply(
                                        subcell_options.rdmp_delta0(),
                                        subcell_options.rdmp_epsilon()) or
       ((max_abs_u > tci_options.u_cutoff) and
-       ::evolution::dg::subcell::persson_tci(dg_u, dg_mesh, persson_exponent));
+       ::evolution::dg::subcell::persson_tci(
+           dg_u, dg_mesh, persson_exponent,
+           subcell_options.persson_num_highest_modes()));
 
   return {cell_is_troubled, std::move(rdmp_tci_data)};
 }

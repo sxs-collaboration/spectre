@@ -58,12 +58,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TciOnFdGrid",
     // check the result
     const double persson_exponent{4.0};
     const evolution::dg::subcell::SubcellOptions subcell_options{
+        persson_exponent,
+        1_st,
         1.0e-16,
         1.0e-4,
-        1.0e-16,
-        1.0e-4,
-        persson_exponent,
-        persson_exponent,
         false,
         evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
         false,

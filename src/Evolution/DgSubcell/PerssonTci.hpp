@@ -17,7 +17,7 @@ namespace detail {
 template <size_t Dim>
 bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
                       const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      double alpha);
+                      double alpha, size_t num_highest_modes);
 }  // namespace detail
 
 /*!
@@ -38,8 +38,10 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  * filtered solution \f$\hat{U}\f$ as
  *
  * \f{align*}{
- *   \hat{U}(x)=c_N P_N(x).
+ *   \hat{U}(x)=\sum_{i=N+1-M}^{N} c_i P_i(x).
  * \f}
+ *
+ * where $M$ is the number of highest modes to include in the filtered solution.
  *
  * Note that when an exponential filter is being used to deal with aliasing,
  * lower modes can be included in \f$\hat{U}\f$. The main goal of \f$\hat{U}\f$
@@ -49,7 +51,7 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  * A cell is troubled if
  *
  * \f{align*}{
- *    \frac{(\hat{U}, \hat{U})}{(U, U)} > N^{-\alpha}
+ *    \frac{(\hat{U}, \hat{U})}{(U, U)} > (N + 1 - M)^{-\alpha}
  * \f}
  *
  * where \f$(\cdot,\cdot)\f$ is an inner product, which we take to be the
@@ -62,17 +64,19 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  *
  * where $U_i$ are nodal values of the quantity $U$ at grid points.
  *
- * Typically, \f$\alpha=4\f$ is a good choice.
+ * Typically, \f$\alpha=4.0\f$ and $M=1$ is a good choice.
  *
  */
 template <size_t Dim, typename SymmList, typename IndexList>
 bool persson_tci(const Tensor<DataVector, SymmList, IndexList>& tensor,
-                 const Mesh<Dim>& dg_mesh, const double alpha) {
+                 const Mesh<Dim>& dg_mesh, const double alpha,
+                 const size_t num_highest_modes) {
   DataVector filtered_component(dg_mesh.number_of_grid_points());
   for (size_t component_index = 0; component_index < tensor.size();
        ++component_index) {
     if (detail::persson_tci_impl(make_not_null(&filtered_component),
-                                 tensor[component_index], dg_mesh, alpha)) {
+                                 tensor[component_index], dg_mesh, alpha,
+                                 num_highest_modes)) {
       return true;
     }
   }

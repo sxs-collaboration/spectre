@@ -85,20 +85,23 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       subcell_mesh.extents(),
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
-  if (evolution::dg::subcell::persson_tci(dg_mag_tilde_e, dg_mesh,
-                                          persson_exponent)) {
+  if (evolution::dg::subcell::persson_tci(
+          dg_mag_tilde_e, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {+1, rdmp_tci_data};
   }
 
-  if (evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
-                                          persson_exponent)) {
+  if (evolution::dg::subcell::persson_tci(
+          dg_mag_tilde_b, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {+2, rdmp_tci_data};
   }
 
   if (tci_options.tilde_q_cutoff.has_value() and
       max(abs(get(dg_tilde_q))) > tci_options.tilde_q_cutoff.value() and
-      evolution::dg::subcell::persson_tci(dg_tilde_q, dg_mesh,
-                                          persson_exponent)) {
+      evolution::dg::subcell::persson_tci(
+          dg_tilde_q, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {+3, rdmp_tci_data};
   }
 

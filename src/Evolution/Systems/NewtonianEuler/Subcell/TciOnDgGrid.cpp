@@ -71,10 +71,12 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnDgGrid<Dim>::apply(
                                        subcell_options.rdmp_epsilon()) or
       min(get(mass_density)) < min_density_allowed or
       min(get(get<Pressure>(*dg_prim_vars))) < min_pressure_allowed or
-      evolution::dg::subcell::persson_tci(mass_density, dg_mesh,
-                                          persson_exponent) or
-      evolution::dg::subcell::persson_tci(energy_density, dg_mesh,
-                                          persson_exponent);
+      evolution::dg::subcell::persson_tci(
+          mass_density, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes()) or
+      evolution::dg::subcell::persson_tci(
+          energy_density, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes());
   return {cell_is_troubled, std::move(rdmp_tci_data)};
 }
 

@@ -23,14 +23,12 @@ namespace evolution::dg::subcell::detail {
 template <size_t Dim>
 bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
                       const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      const double alpha) {
+                      const double alpha, const size_t num_highest_modes) {
   ASSERT(component.size() == dg_mesh.number_of_grid_points(),
          "The tensor components being checked must have the same number of "
          "grid points as the DG mesh. The tensor has "
              << component.size() << " grid points while the DG mesh has "
              << dg_mesh.number_of_grid_points() << " grid points.");
-
-  const double component_norm{l2Norm(component)};
 
   const Matrix identity{};
   for (size_t d = 0; d < Dim; ++d) {
@@ -76,7 +74,11 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
     // to pow<double,double> already provides a certain amount of speed-up, it
     // would be sufficient to stick to the case 2 for now.
     //
-    if (pow(dg_mesh.extents(d) - 1, alpha) * l2Norm(*filtered_component) >
+
+    const double component_norm{l2Norm(component)};
+
+    if (pow(dg_mesh.extents(d) - num_highest_modes, alpha) *
+            l2Norm(*filtered_component) >
         component_norm) {
       return true;
     }
@@ -90,7 +92,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
   template bool persson_tci_impl(                                  \
       gsl::not_null<DataVector*> filtered_component,               \
       const DataVector& component, const Mesh<DIM(data)>& dg_mesh, \
-      double alpha);
+      double alpha, size_t num_highest_modes);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

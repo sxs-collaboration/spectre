@@ -46,10 +46,12 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid<Dim>::apply(
           past_rdmp_tci_data.min_variables_values,
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon()));
 
-  return {cell_is_troubled or ((max_abs_u > tci_options.u_cutoff) and
-                               ::evolution::dg::subcell::persson_tci(
-                                   dg_u, dg_mesh, persson_exponent)),
-          {{max(get(subcell_u))}, {min(get(subcell_u))}}};
+  return {
+      cell_is_troubled or ((max_abs_u > tci_options.u_cutoff) and
+                           ::evolution::dg::subcell::persson_tci(
+                               dg_u, dg_mesh, persson_exponent,
+                               subcell_options.persson_num_highest_modes())),
+      {{max(get(subcell_u))}, {min(get(subcell_u))}}};
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

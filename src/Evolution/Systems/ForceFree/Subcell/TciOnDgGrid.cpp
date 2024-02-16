@@ -78,19 +78,23 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnDgGrid::apply(
       DataVector{min(min(get(subcell_mag_tilde_e)), min(get(dg_mag_tilde_e))),
                  min(min(get(subcell_mag_tilde_b)), min(get(dg_mag_tilde_b)))};
 
-  if (evolution::dg::subcell::persson_tci(dg_mag_tilde_e, dg_mesh,
-                                          persson_exponent)) {
+  if (evolution::dg::subcell::persson_tci(
+          dg_mag_tilde_e, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {-1, std::move(rdmp_tci_data)};
   }
 
-  if (evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
-                                          persson_exponent)) {
+  if (evolution::dg::subcell::persson_tci(
+          dg_mag_tilde_b, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {-2, std::move(rdmp_tci_data)};
   }
 
   if (tci_options.tilde_q_cutoff.has_value() and
       max(abs(get(tilde_q))) > tci_options.tilde_q_cutoff.value() and
-      evolution::dg::subcell::persson_tci(tilde_q, dg_mesh, persson_exponent)) {
+      evolution::dg::subcell::persson_tci(
+          tilde_q, dg_mesh, persson_exponent,
+          subcell_options.persson_num_highest_modes())) {
     return {-3, std::move(rdmp_tci_data)};
   }
 

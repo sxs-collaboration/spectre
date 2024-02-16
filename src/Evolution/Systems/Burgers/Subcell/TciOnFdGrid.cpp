@@ -42,7 +42,8 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon()));
 
   return {cell_is_troubled or ::evolution::dg::subcell::persson_tci(
-                                  dg_u, dg_mesh, persson_exponent),
+                                  dg_u, dg_mesh, persson_exponent,
+                                  subcell_options.persson_num_highest_modes()),
           {{max(get(subcell_u))}, {min(get(subcell_u))}}};
 }
 }  // namespace Burgers::subcell

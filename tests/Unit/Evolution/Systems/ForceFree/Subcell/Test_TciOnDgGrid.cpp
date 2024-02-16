@@ -78,12 +78,10 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const double persson_exponent = 4.0;
 
   const evolution::dg::subcell::SubcellOptions subcell_options{
-      1.0e-10,
-      1.0e-10,
-      1.0e-10,
-      1.0e-10,
       persson_exponent,
-      persson_exponent,
+      1_st,
+      1.0e-10,
+      1.0e-10,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,

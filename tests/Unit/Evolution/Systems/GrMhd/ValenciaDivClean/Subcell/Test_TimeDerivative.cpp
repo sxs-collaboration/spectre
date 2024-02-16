@@ -347,7 +347,6 @@ std::array<double, 5> test(const size_t num_dg_pts,
         grmhd::ValenciaDivClean::ConservativeFromPrimitive{},
         cell_centered_spacetime_vars, cell_centered_prim_vars);
   if (fd_derivative_order != ::fd::DerivativeOrder::Two) {
-
     cell_centered_fluxes =
         Variables<flux_tags>{subcell_mesh.number_of_grid_points()};
     apply(make_not_null(&(cell_centered_fluxes.value())),
@@ -467,7 +466,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
       grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
       cell_centered_fluxes,
       evolution::dg::subcell::SubcellOptions{
-          1.0e-7, 1.0e-3, 1.0e-7, 1.0e-3, 4.0, 4.0, false,
+          4.0, 1_st, 1.0e-3, 1.0e-4, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, fd_derivative_order},
       typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{});

@@ -242,7 +242,7 @@ void test(const bool always_use_subcell, const bool interior_element,
       {SystemAnalyticSolution{},
        evolution::dg::subcell::SubcellOptions{
            evolution::dg::subcell::SubcellOptions{
-               1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, always_use_subcell,
+               4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell,
                evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
                false,
                allow_subcell_in_block
