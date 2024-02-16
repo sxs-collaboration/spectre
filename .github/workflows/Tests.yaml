@@ -420,7 +420,8 @@ jobs:
             build_type: Debug
             TEST_TIMEOUT_FACTOR: 2
             # Test 3D rendering with ParaView
-            test_3d_rendering: ON
+            # Note: currently disabled because of some unknown upstream issue
+            # test_3d_rendering: ON
             # Need Python version consistent with ParaView
             PYTHON_VERSION: "3.9"
           # Don't modify the gcc-11 Debug build so its cache can be reused for
@@ -532,6 +533,7 @@ jobs:
       # container because they take up a lot of space.
       - name: Install compiler
         run: |
+          apt-get update -y
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           else
@@ -1192,6 +1194,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           compiler: ${{ matrix.compiler }}
       - name: Install compiler
         run: |
+          apt-get update -y
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           else
