@@ -61,6 +61,9 @@ struct KleinGordonCharacteristicEvolution
   using hypersurface_computation =
       typename cce_base::template hypersurface_computation<BondiTag>;
 
+  using klein_gordon_hypersurface_computation = tmpl::list<
+      ::Actions::MutateApply<GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>>;
+
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
 
@@ -96,6 +99,7 @@ struct KleinGordonCharacteristicEvolution
                      tmpl::bind<ComputeKleinGordonSource, tmpl::_1>>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
+      klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       ::Actions::MutateApply<
           CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>>,
@@ -137,6 +141,7 @@ struct KleinGordonCharacteristicEvolution
                      tmpl::bind<ComputeKleinGordonSource, tmpl::_1>>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
+      klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe,
       ::Actions::RecordTimeStepperData<cce_system>,

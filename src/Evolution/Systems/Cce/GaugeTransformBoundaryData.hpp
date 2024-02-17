@@ -520,6 +520,37 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiH> {
 };
 
 /*!
+ * \brief Computes the evolution gauge quantity \f$\hat \Pi\f$ for the scalar
+ * field on the worldtube.
+ *
+ * \details The evolution gauge \f$\hat \Pi\f$ obeys
+ * \f{align*}{
+ *   \hat \Pi = \partial_{t^\prime} \psi + \Re
+ *   \left(\mathcal{U}^{(0)}\bar{\eth}\psi\right)
+ * \f}
+ *
+ * where \f$\partial_{t^\prime} \psi\f$ comes from the Cauchy evolution.
+ */
+template <>
+struct GaugeAdjustedBoundaryValue<Tags::KleinGordonPi> {
+  using return_tags =
+      tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>>;
+  using argument_tags = tmpl::list<
+      Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri,
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
+      Tags::LMax, Tags::KleinGordonPsi>;
+
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+          evolution_kg_pi,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& cauchy_kg_pi,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>&
+          evolution_gauge_u_at_scri,
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& volume_psi);
+};
+
+/*!
  * \brief Update the Cauchy gauge cartesian coordinate derivative \f$\partial_u
  * x(\hat x)\f$, as well as remaining gauge quantities \f$\mathcal U^{(0)}\f$,
  * \f$\hat U \equiv \mathcal U - \mathcal U^{(0)}\f$, and \f$\partial_{\hat u}
