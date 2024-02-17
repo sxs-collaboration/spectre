@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Criteria/Test_Constraints.cpp
   Criteria/Test_Criterion.cpp
   Criteria/Test_DriveToTarget.cpp
+  Criteria/Test_IncreaseResolution.cpp
   Criteria/Test_Loehner.cpp
   Criteria/Test_Persson.cpp
   Criteria/Test_Random.cpp
