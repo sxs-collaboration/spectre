@@ -13,7 +13,7 @@ ExpectedOutput:
 ---
 
 Parallelization:
-  ElementDistribution: NumGridPointsAndGridSpacing
+  ElementDistribution: NumGridPoints
 
 Amr:
   Criteria:
