@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -43,8 +44,16 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/CartesianProduct.hpp"
@@ -115,6 +124,10 @@ struct ElementArray {
   using primal_fluxes_vars_tag = ::Tags::Variables<primal_fluxes_vars>;
   using operator_applied_to_vars_tag =
       ::Tags::Variables<db::wrap_tags_in<DgOperatorAppliedTo, primal_vars>>;
+  using dg_operator =
+      ::elliptic::dg::Actions::DgOperator<System, Linearized, TemporalIdTag,
+                                          vars_tag, primal_fluxes_vars_tag,
+                                          operator_applied_to_vars_tag>;
   // Don't wrap the fixed sources in the `Var` prefix because typically we want
   // to impose inhomogeneous boundary conditions on the un-prefixed vars, i.e.
   // not necessarily the vars we apply the linearized operator to
@@ -138,6 +151,8 @@ struct ElementArray {
                      ::elliptic::Actions::InitializeFixedSources<
                          System, analytic_solution_tag>,
                      ::elliptic::dg::Actions::initialize_operator<System>,
+                     Initialization::Actions::InitializeItems<
+                         ::amr::Initialization::Initialize<Dim>>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -145,18 +160,65 @@ struct ElementArray {
                          ImposeInhomogeneousBoundaryConditionsOnSource<
                              System, fixed_sources_tag>,
                      ::Actions::Label<ApplyOperatorStart>,
-                     typename ::elliptic::dg::Actions::DgOperator<
-                         System, Linearized, TemporalIdTag, vars_tag,
-                         primal_fluxes_vars_tag,
-                         operator_applied_to_vars_tag>::apply_actions,
-                     IncrementTemporalId, Parallel::Actions::TerminatePhase>>>;
+                     typename dg_operator::apply_actions, IncrementTemporalId,
+                     Parallel::Actions::TerminatePhase>>>;
+};
+
+template <typename Metavariables>
+struct AmrComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockSingletonChare;
+  using array_index = int;
+  using component_being_mocked = ::amr::Component<Metavariables>;
+  using const_global_cache_tags =
+      tmpl::list<::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+                 logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<>>>>>;
+};
+
+template <typename Metavariables>
+struct ProjectTemporalId : tt::ConformsTo<::amr::protocols::Projector> {
+  using return_tags =
+      tmpl::list<TemporalIdTag,
+                 // Work around a segfault because this tag isn't handled
+                 // correctly by the testing framework
+                 Parallel::Tags::GlobalCacheImpl<Metavariables>>;
+  using argument_tags = tmpl::list<>;
+  // p-refinement
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<size_t*> /*temporal_id*/,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
+      const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {}
+  // h-refinement
+  template <typename... ParentTags>
+  static void apply(
+      const gsl::not_null<size_t*> temporal_id,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
+      const tuples::TaggedTuple<ParentTags...>& parent_items) {
+    *temporal_id = get<TemporalIdTag>(parent_items);
+  }
+  // h-coarsening
+  template <size_t Dim, typename... ChildTags>
+  static void apply(
+      const gsl::not_null<size_t*> temporal_id,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
+      const std::unordered_map<
+          ElementId<Dim>, tuples::TaggedTuple<ChildTags...>>& children_items) {
+    *temporal_id = get<TemporalIdTag>(children_items.begin()->second);
+  }
 };
 
 template <typename System, bool Linearized, typename AnalyticSolution>
 struct Metavariables {
+  static constexpr size_t volume_dim = System::volume_dim;
   using analytic_solution = AnalyticSolution;
   using element_array = ElementArray<System, Linearized, Metavariables>;
-  using component_list = tmpl::list<element_array>;
+  using amr_component = AmrComponent<Metavariables>;
+  using component_list = tmpl::list<element_array, amr_component>;
   using const_global_cache_tags =
       tmpl::list<::Tags::AnalyticSolution<AnalyticSolution>>;
   struct factory_creation
@@ -167,8 +229,31 @@ struct Metavariables {
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    tmpl::list<AnalyticSolution>>,
-        tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>>;
+        tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>,
+        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random>>>;
   };
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::flatten<tmpl::list<
+        ProjectTemporalId<Metavariables>,
+        ::amr::projectors::DefaultInitialize<
+            tmpl::list<domain::Tags::InitialExtents<volume_dim>,
+                       domain::Tags::InitialRefinementLevels<volume_dim>,
+                       typename element_array::vars_tag>>,
+        elliptic::dg::ProjectGeometry<volume_dim>,
+        elliptic::Actions::InitializeFixedSources<
+            System, typename element_array::analytic_solution_tag>,
+        ::elliptic::Actions::InitializeOptionalAnalyticSolution<
+            volume_dim, typename element_array::analytic_solution_tag,
+            tmpl::append<typename System::primal_fields,
+                         typename System::primal_fluxes>,
+            analytic_solution>,
+        elliptic::dg::Actions::amr_projectors<
+            System, typename element_array::analytic_solution_tag>,
+        typename element_array::dg_operator::amr_projectors>>;
+  };
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <
@@ -192,7 +277,8 @@ void test_dg_operator(
         std::unordered_map<
             ElementId<Dim>,
             typename ElementArray::operator_applied_to_vars_tag::type>>>&
-        tests_data) {
+        tests_data,
+    const bool test_amr = false) {
   CAPTURE(penalty_parameter);
   CAPTURE(use_massive_dg_operator);
 
@@ -222,20 +308,33 @@ void test_dg_operator(
     }
   }
 
+  // Configure AMR criteria so we _increase_ (never decrease) resolution
+  std::vector<std::unique_ptr<::amr::Criterion>> amr_criteria{};
+  amr_criteria.push_back(std::make_unique<::amr::Criteria::Random>(
+      std::unordered_map<::amr::Flag, size_t>{
+          // h-refinement is not supported yet in the action testing framework
+          {::amr::Flag::Split, 0},
+          {::amr::Flag::IncreaseResolution, 1},
+          {::amr::Flag::DoNothing, 1}}));
+
   ActionTesting::MockRuntimeSystem<Metavars> runner{tuples::TaggedTuple<
       domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ExternalBoundaryConditions<Dim>,
       ::elliptic::dg::Tags::PenaltyParameter, ::elliptic::dg::Tags::Massive,
       ::elliptic::dg::Tags::Quadrature, ::elliptic::dg::Tags::Formulation,
-      ::Tags::AnalyticSolution<AnalyticSolution>>{
+      ::Tags::AnalyticSolution<AnalyticSolution>,
+      ::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+      logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
       std::move(domain), domain_creator.functions_of_time(),
       std::move(boundary_conditions), penalty_parameter,
       use_massive_dg_operator, quadrature, ::dg::Formulation::StrongInertial,
-      analytic_solution}};
+      analytic_solution, std::move(amr_criteria),
+      ::amr::Policies{::amr::Isotropy::Anisotropic}, ::Verbosity::Debug}};
 
   // DataBox shortcuts
-  const auto get_tag = [&runner](
-      auto tag_v, const ElementId<Dim>& local_element_id) -> const auto& {
+  const auto get_tag =
+      [&runner](auto tag_v,
+                const ElementId<Dim>& local_element_id) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                               local_element_id);
@@ -379,36 +478,100 @@ void test_dg_operator(
     apply_operator_and_check_result({}, all_zero_primal_fluxes,
                                     all_zero_operator_vars);
   }
-  {
-    INFO("Test A(x) = b with analytic solution");
-    std::unordered_map<ElementId<Dim>, Vars> analytic_primal_vars{};
-    std::unordered_map<ElementId<Dim>, PrimalFluxesVars>
-        analytic_primal_fluxes{};
-    std::unordered_map<ElementId<Dim>, OperatorAppliedToVars>
-        analytic_fixed_source_with_inhom_bc{};
-    for (const auto& element_id : all_element_ids) {
-      const auto& inertial_coords = get_tag(
-          domain::Tags::Coordinates<Dim, Frame::Inertial>{}, element_id);
-      analytic_primal_vars[element_id] =
-          variables_from_tagged_tuple(analytic_solution.variables(
-              inertial_coords, typename System::primal_fields{}));
-      analytic_primal_fluxes[element_id] =
-          variables_from_tagged_tuple(analytic_solution.variables(
-              inertial_coords, typename System::primal_fluxes{}));
-      analytic_fixed_source_with_inhom_bc[element_id] =
-          get_tag(fixed_sources_tag{}, element_id);
-    }
-    apply_operator_and_check_result(
-        analytic_primal_vars, analytic_primal_fluxes,
-        analytic_fixed_source_with_inhom_bc, analytic_solution_aux_approx,
-        analytic_solution_operator_approx);
-  }
+  const auto test_analytic_solution =
+      [&analytic_solution, &all_element_ids, &get_tag,
+       &apply_operator_and_check_result, &analytic_solution_aux_approx,
+       &analytic_solution_operator_approx]() {
+        INFO("Test A(x) = b with analytic solution");
+        std::unordered_map<ElementId<Dim>, Vars> analytic_primal_vars{};
+        std::unordered_map<ElementId<Dim>, PrimalFluxesVars>
+            analytic_primal_fluxes{};
+        std::unordered_map<ElementId<Dim>, OperatorAppliedToVars>
+            analytic_fixed_source_with_inhom_bc{};
+        for (const auto& element_id : all_element_ids) {
+          const auto& inertial_coords = get_tag(
+              domain::Tags::Coordinates<Dim, Frame::Inertial>{}, element_id);
+          analytic_primal_vars[element_id] =
+              variables_from_tagged_tuple(analytic_solution.variables(
+                  inertial_coords, typename System::primal_fields{}));
+          analytic_primal_fluxes[element_id] =
+              variables_from_tagged_tuple(analytic_solution.variables(
+                  inertial_coords, typename System::primal_fluxes{}));
+          analytic_fixed_source_with_inhom_bc[element_id] =
+              get_tag(fixed_sources_tag{}, element_id);
+        }
+        apply_operator_and_check_result(
+            analytic_primal_vars, analytic_primal_fluxes,
+            analytic_fixed_source_with_inhom_bc, analytic_solution_aux_approx,
+            analytic_solution_operator_approx);
+      };
+  test_analytic_solution();
   {
     INFO("Test A(x) = b with custom x and b");
     for (const auto& test_data : tests_data) {
       std::apply(apply_operator_and_check_result, test_data);
     }
   }
+
+  // Stop here if we're not testing AMR
+  if (not test_amr) {
+    return;
+  }
+
+  INFO("Run AMR!");
+  const auto invoke_all_simple_actions = [&runner, &all_element_ids]() {
+    bool quiescence = false;
+    while (not quiescence) {
+      quiescence = true;
+      for (const auto& element_id : all_element_ids) {
+        while (not ActionTesting::is_simple_action_queue_empty<element_array>(
+            runner, element_id)) {
+          ActionTesting::invoke_queued_simple_action<element_array>(
+              make_not_null(&runner), element_id);
+          quiescence = false;
+        }
+      }
+    }
+  };
+  using amr_component = typename Metavars::amr_component;
+  ActionTesting::emplace_singleton_component<amr_component>(
+      make_not_null(&runner), ActionTesting::NodeId{0},
+      ActionTesting::LocalCoreId{0});
+  auto& cache = ActionTesting::cache<amr_component>(runner, 0);
+  Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
+      Parallel::get_parallel_component<element_array>(cache));
+  invoke_all_simple_actions();
+  Parallel::simple_action<::amr::Actions::AdjustDomain>(
+      Parallel::get_parallel_component<element_array>(cache));
+  invoke_all_simple_actions();
+  // h-refinement is not supported yet in the action testing framework
+  // // Invoke `CreateChild` on AMR component
+  // while (not ActionTesting::is_simple_action_queue_empty<amr_component>(
+  //              runner, 0)) {
+  //   ActionTesting::invoke_queued_simple_action<amr_component>(
+  //       make_not_null(&runner), 0);
+  // }
+  // // Update list of element IDs
+  // all_element_ids.clear();
+  // for (const auto& [element_id, element] :
+  //      runner.template mock_distributed_objects<element_array>()) {
+  //   (void)element;
+  //   all_element_ids.insert(element_id);
+  // }
+  // CAPTURE(all_element_ids);
+  // Go to the start of the testing phase to run the
+  // `ImposeInhomogeneousBoundaryConditionsOnSource` action again
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  if constexpr (Linearized) {
+    for (const auto& element_id : all_element_ids) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
+  }
+
+  // Test analytic solution again after AMR. It should still pass because we
+  // only refined, never coarsened.
+  test_analytic_solution();
 }
 
 }  // namespace
@@ -561,7 +724,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
             quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {});
+            analytic_solution_operator_approx, {}, true);
       }
     }
   }
@@ -668,7 +831,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
             quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {});
+            analytic_solution_operator_approx, {}, true);
       }
     }
   }
@@ -808,7 +971,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
             quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {});
+            analytic_solution_operator_approx, {}, true);
       }
     }
   }
@@ -934,10 +1097,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
            cartesian_product(make_array(true, false),
                              make_array(Spectral::Quadrature::GaussLobatto,
                                         Spectral::Quadrature::Gauss))) {
-        test_dg_operator<system, true>(domain_creator, penalty_parameter,
-                                       massive, quadrature, analytic_solution,
-                                       analytic_solution_aux_approx,
-                                       analytic_solution_operator_approx, {});
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, massive, quadrature,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, {}, true);
       }
     }
   }
