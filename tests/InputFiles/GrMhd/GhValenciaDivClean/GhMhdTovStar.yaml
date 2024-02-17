@@ -42,7 +42,7 @@ InitialData: &InitialData
         PolytropicFluid:
             PolytropicConstant: 100.0
             PolytropicExponent: 2.0
-    Coordinates: Schwarzschild
+    Coordinates: Isotropic
 
 EquationOfState:
   FromInitialData
@@ -68,19 +68,19 @@ DomainCreator:
 VariableFixing:
   FixConservatives:
     Enable: false # Only needed when not using Kastaun for recovery
-    CutoffD: &CutoffD 1.0e-12
-    MinimumValueOfD: &MinimumD 1.0e-12
+    CutoffD: &CutoffD 1.1e-15
+    MinimumValueOfD: &MinimumD 1.0e-15
     CutoffYe: 0.0
     MinimumValueOfYe: 0.0
-    SafetyFactorForB: 1.0e-12
+    SafetyFactorForB: &BSafetyFactor 1.0e-12
     SafetyFactorForS: 1.0e-12
-    SafetyFactorForSCutoffD: 1.0e-12
-    SafetyFactorForSSlope: 0.0
+    SafetyFactorForSCutoffD: 1.0e-8
+    SafetyFactorForSSlope: 0.0001
     MagneticField: AssumeZero
   FixToAtmosphere:
-    DensityOfAtmosphere: 1.0e-12
-    DensityCutoff: 1.0e-12
-    TransitionDensityCutoff: 1.0e-11
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    TransitionDensityCutoff: 9.0e-15
     MaxVelocityMagnitude: 1.0e-4
   LimitLorentzFactor:
     Enable: false # Only needed when not using Kastaun for recovery
@@ -101,21 +101,25 @@ EvolutionSystem:
         AnalyticPrescription: *InitialData
     DampingFunctionGamma0:
       GaussianPlusConstant:
-        Constant: 1.0
-        Amplitude: 0.0
-        Width: 1.0
+        Constant: 0.01
+        Amplitude: 0.12
+        # Width comes from the radius of the star in code units.
+        Width: 7.884855
         Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma1:
       GaussianPlusConstant:
-        Constant: -1.0
-        Amplitude: 0.0
-        Width: 1.0
+        Constant: -0.999
+        Amplitude: 0.999
+        # Width is chosen so that the outer boundary is a few sigma out,
+        # but large enough that the bulk dynamics have gamma_2=0
+        Width: 30.0
         Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma2:
       GaussianPlusConstant:
-        Constant: 1.0
-        Amplitude: 0.0
-        Width: 1.0
+        Constant: 0.01
+        Amplitude: 1.2
+        # Width comes from the radius of the star in code units.
+        Width: 7.884855
         Center: [0.0, 0.0, 0.0]
 
 
@@ -144,8 +148,8 @@ SpatialDiscretization:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20
       MinimumValueOfTildeTau: 1.0e-50
-      AtmosphereDensity: 1.01e-15
-      SafetyFactorForB: 1.0e-12
+      AtmosphereDensity: *AtmosphereDensityCutoff
+      SafetyFactorForB: *BSafetyFactor
       MagneticFieldCutoff: DoNotCheckMagneticField
   SubcellSolver:
     Reconstructor:
