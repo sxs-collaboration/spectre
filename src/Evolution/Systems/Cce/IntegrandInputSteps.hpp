@@ -172,6 +172,26 @@ struct TagsToComputeForImpl<Tags::KleinGordonSource<Tags::BondiQ>> {
                                                   Spectral::Swsh::Tags::Eth>>;
   using second_swsh_derivative_tags = tmpl::list<>;
 };
+
+template <>
+struct TagsToComputeForImpl<Tags::KleinGordonPi> {
+  using pre_swsh_derivative_tags =
+      tmpl::list<Tags::Dy<Tags::Dy<Tags::KleinGordonPsi>>>;
+  using second_swsh_derivative_tags =
+      tmpl::list<Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                  Spectral::Swsh::Tags::EthEth>,
+                 Spectral::Swsh::Tags::Derivative<
+                     Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>;
+  using swsh_derivative_tags = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Ethbar>>;
+};
 }  // namespace detail
 
 /*!

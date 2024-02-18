@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
@@ -20,11 +21,10 @@ namespace {
 using real_volume_tags_to_generate = tmpl::list<Tags::OneMinusY>;
 
 using swsh_volume_tags_to_generate =
-    tmpl::list<Tags::Exp2Beta, Tags::BondiR, Tags::BondiK, Tags::BondiJ,
-               Tags::Dy<Tags::KleinGordonPsi>,
-               Tags::KleinGordonPsi,
-               Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
-                                                Spectral::Swsh::Tags::Eth>>;
+    tmpl::list<Tags::Exp2Beta, Tags::BondiR, Tags::BondiK, Tags::EthRDividedByR,
+               Tags::EthEthRDividedByR, Tags::EthEthbarRDividedByR,
+               Tags::BondiJ, Tags::Dy<Tags::KleinGordonPsi>,
+               Tags::KleinGordonPsi, Tags::Dy<Tags::Dy<Tags::KleinGordonPsi>>>;
 
 using swsh_boundary_tags_to_generate =
     tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
@@ -34,10 +34,38 @@ using swsh_volume_tags_to_compute =
                Tags::KleinGordonSource<Tags::BondiQ>,
                Tags::KleinGordonSource<Tags::BondiU>,
                Tags::KleinGordonSource<Tags::BondiW>,
-               Tags::KleinGordonSource<Tags::BondiH>>;
+               Tags::KleinGordonSource<Tags::BondiH>,
+               Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::KleinGordonPsi>,
+                                                Spectral::Swsh::Tags::Ethbar>,
+               Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::KleinGordonPsi>,
+                                                Spectral::Swsh::Tags::Eth>,
+               Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                Spectral::Swsh::Tags::Ethbar>,
+               Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                Spectral::Swsh::Tags::Eth>,
+               Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                Spectral::Swsh::Tags::EthEth>,
+               Spectral::Swsh::Tags::Derivative<
+                   Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>;
 
 using swsh_boundary_tags_to_compute =
     tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>>;
+
+using swsh_transform_tags_to_compute = tmpl::list<
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::Dy<Tags::KleinGordonPsi>, Spectral::Swsh::Tags::Eth>>,
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::Dy<Tags::KleinGordonPsi>, Spectral::Swsh::Tags::Ethbar>>,
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::KleinGordonPsi, Spectral::Swsh::Tags::Eth>>,
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::KleinGordonPsi, Spectral::Swsh::Tags::Ethbar>>,
+    Spectral::Swsh::Tags::SwshTransform<Tags::Dy<Tags::KleinGordonPsi>>,
+    Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPsi>,
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEth>>,
+    Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+        Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>>;
 
 template <typename Metavariables>
 struct mock_kg_characteristic_evolution {
@@ -47,6 +75,7 @@ struct mock_kg_characteristic_evolution {
                                      swsh_volume_tags_to_compute>>,
       ::Tags::Variables<tmpl::append<swsh_boundary_tags_to_generate,
                                      swsh_boundary_tags_to_compute>>,
+      ::Tags::Variables<swsh_transform_tags_to_compute>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>;
 
   using metavariables = Metavariables;
@@ -60,6 +89,7 @@ struct mock_kg_characteristic_evolution {
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<
+              Actions::CalculateIntegrandInputsForTag<Tags::KleinGordonPi>,
               tmpl::transform<
                   bondi_hypersurface_step_tags,
                   tmpl::bind<::Actions::MutateApply,
@@ -77,7 +107,9 @@ struct metavariables {
 };
 
 // This unit test is to validate the automatic calling chain of Klein-Gordon Cce
-// calculations, including the mutators `ComputeKleinGordonSource` and
+// calculations, including the action
+// `CalculateIntegrandInputsForTag<Tags::KleinGordonPi>`, the mutators
+// `ComputeKleinGordonSource` and
 // `GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>`. The test involves
 // (a) Fills a bunch of variables with random numbers (filtered so that there is
 // no aliasing in highest modes).
@@ -94,6 +126,10 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
   const size_t l_max = sdist(*gen);
   const size_t number_of_radial_points = sdist(*gen);
   UniformCustomDistribution<double> coefficient_distribution{-2.0, 2.0};
+
+  Variables<swsh_transform_tags_to_compute> component_swsh_transform_variables{
+      number_of_radial_points *
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
 
   Variables<
       tmpl::append<real_volume_tags_to_generate, swsh_volume_tags_to_generate,
@@ -171,17 +207,80 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
           l_max, number_of_radial_points}};
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {component_volume_variables, component_boundary_variables, interpolator});
+      {component_volume_variables, component_boundary_variables,
+       component_swsh_transform_variables, interpolator});
   auto expected_box = db::create<
       tmpl::append<component::simple_tags,
                    db::AddSimpleTags<Tags::LMax, Tags::NumberOfRadialPoints>>>(
-      component_volume_variables, component_boundary_variables, interpolator,
-      l_max, number_of_radial_points);
+      component_volume_variables, component_boundary_variables,
+      component_swsh_transform_variables, interpolator, l_max,
+      number_of_radial_points);
 
   runner.set_phase(Parallel::Phase::Evolve);
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 7; i++) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
+
+  // tests for `Actions::CalculateIntegrandInputsForTag<Tags::KleinGordonPi>`
+  {
+    // tests for `mutate_all_pre_swsh_derivatives_for_tag<Tags::KleinGordonPi>`
+    tmpl::for_each<pre_swsh_derivative_tags_to_compute_for_t<
+        Tags::KleinGordonPi>>([&expected_box,
+                               &runner](auto pre_swsh_derivative_tag_v) {
+      using pre_swsh_derivative_tag =
+          typename decltype(pre_swsh_derivative_tag_v)::type;
+      using mutation = PreSwshDerivatives<pre_swsh_derivative_tag>;
+      db::mutate_apply<mutation>(make_not_null(&expected_box));
+
+      auto computed_result =
+          ActionTesting::get_databox_tag<component, pre_swsh_derivative_tag>(
+              runner, 0);
+
+      auto expected_result = db::get<pre_swsh_derivative_tag>(expected_box);
+      CHECK(computed_result == expected_result);
+    });
+
+    // tests for `mutate_all_swsh_derivatives_for_tag<Tags::KleinGordonPi>`
+    db::mutate_apply<Spectral::Swsh::AngularDerivatives<
+        single_swsh_derivative_tags_to_compute_for_t<Tags::KleinGordonPi>>>(
+        make_not_null(&expected_box));
+    tmpl::for_each<
+        single_swsh_derivative_tags_to_compute_for_t<Tags::KleinGordonPi>>(
+        [&expected_box, &runner](auto derivative_tag_v) {
+          using derivative_tag = typename decltype(derivative_tag_v)::type;
+          detail::apply_swsh_jacobian_helper<derivative_tag>(
+              make_not_null(&expected_box),
+              typename ApplySwshJacobianInplace<
+                  derivative_tag>::on_demand_argument_tags{});
+
+          auto computed_result =
+              ActionTesting::get_databox_tag<component, derivative_tag>(runner,
+                                                                        0);
+
+          auto expected_result = db::get<derivative_tag>(expected_box);
+          CHECK(computed_result == expected_result);
+        });
+
+    db::mutate_apply<Spectral::Swsh::AngularDerivatives<
+        second_swsh_derivative_tags_to_compute_for_t<Tags::KleinGordonPi>>>(
+        make_not_null(&expected_box));
+    tmpl::for_each<
+        second_swsh_derivative_tags_to_compute_for_t<Tags::KleinGordonPi>>(
+        [&expected_box, &runner](auto derivative_tag_v) {
+          using derivative_tag = typename decltype(derivative_tag_v)::type;
+          detail::apply_swsh_jacobian_helper<derivative_tag>(
+              make_not_null(&expected_box),
+              typename ApplySwshJacobianInplace<
+                  derivative_tag>::on_demand_argument_tags{});
+
+          auto computed_result =
+              ActionTesting::get_databox_tag<component, derivative_tag>(runner,
+                                                                        0);
+
+          auto expected_result = db::get<derivative_tag>(expected_box);
+          CHECK(computed_result == expected_result);
+        });
   }
 
   // tests for `ComputeKleinGordonSource`

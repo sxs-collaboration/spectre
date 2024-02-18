@@ -62,7 +62,8 @@ struct KleinGordonCharacteristicEvolution
       typename cce_base::template hypersurface_computation<BondiTag>;
 
   using klein_gordon_hypersurface_computation = tmpl::list<
-      ::Actions::MutateApply<GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>>;
+      ::Actions::MutateApply<GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>,
+      Actions::CalculateIntegrandInputsForTag<Tags::KleinGordonPi>>;
 
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
