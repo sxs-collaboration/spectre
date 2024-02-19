@@ -49,10 +49,6 @@ that are necessary for proper operation. Instead, use `module
 restore`. Currently the tests can only be run in serial, e.g. `ctest -j1`
 because all the MPI jobs end up being launched on the same core.
 
-## Cedar, Graham, and Niagara at ComputeCanada
-
-Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
-
 ## Frontera at TACC
 
 Follow the general instructions, using `frontera` for `SYSTEM_TO_RUN_ON`.
@@ -81,18 +77,40 @@ get multiple MPI ranks on your node and the run will hang.
 
 ## CaltechHPC at Caltech
 
-Follow the general instructions, using `caltech_hpc` for `SYSTEM_TO_RUN_ON`.
-When you go to build, you will need to get an interactive node (login nodes
-limit the amount of memory accessible to individual users, to below the amount
-necessary to build SpECTRE).
-To ensure you get an entire node to build on, use the command:
+Follow the general instructions, using `caltech_hpc` for `SYSTEM_TO_RUN_ON`,
+except you don't need to install any dependencies, so you can skip step 5 and
+step 6. There are also two different types of compute nodes on CaltechHPC:
+
+1. Skylake Intel nodes
+2. Icelake Intel nodes
+
+Each type of compute node has it's own environment file, so be sure to choose
+the one you want. When you go to build, you will need to get an interactive node
+(login nodes limit the amount of memory accessible to individual users, to below
+the amount necessary to build SpECTRE).
+
+To ensure you get an entire node to build on, use the following commands.
+
+1. For Skylake Intel nodes
 ```
-srun -t 02:00:00 -N 1 -c 32 --mem=192000 -A sxs -D . --pty /bin/bash
+srun -t 02:00:00 -N 1 -c 56 -D . --pty /bin/bash
 ```
-being sure to re-source environment files once you get the interactive node
-shell.
+2. For Icelake Intel nodes
+```
+srun --partition=expansion --constraint=icelake -t 02:00:00 \
+    -N 1 -c 64 -D . --pty /bin/bash
+```
+
+If you are part of the SXS collaboration, you can add `-A sxs` to bill the SXS
+allocation. Be sure to re-source the correct environment files once you get the
+interactive node shell.
 
 ## Ocean at Fullerton
 
 Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`,
+you do not need to install any dependencies, so you can skip steps 5 and 6.
+
+## Mbot at Cornell
+
+Follow the general instructions, using `mbot` for `SYSTEM_TO_RUN_ON`,
 you do not need to install any dependencies, so you can skip steps 5 and 6.
