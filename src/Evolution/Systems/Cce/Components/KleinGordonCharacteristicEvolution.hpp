@@ -65,6 +65,15 @@ struct KleinGordonCharacteristicEvolution
   using typename cce_base::compute_scri_quantities_and_observe;
 
   using self_start_extract_action_list = tmpl::list<
+      Actions::RequestBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          KleinGordonCharacteristicEvolution<Metavariables>>,
+      Actions::ReceiveWorldtubeData<
+          Metavariables,
+          typename Metavariables::cce_boundary_communication_tags>,
+      Actions::ReceiveWorldtubeData<
+          Metavariables,
+          typename Metavariables::klein_gordon_boundary_communication_tags>,
       // note that the initialization will only actually happen on the
       // iterations immediately following restarts
       Actions::InitializeFirstHypersurface<
@@ -91,9 +100,18 @@ struct KleinGordonCharacteristicEvolution
       ::Actions::UpdateU<cce_system>>;
 
   using extract_action_list = tmpl::list<
+      Actions::RequestBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          KleinGordonCharacteristicEvolution<Metavariables>>,
       ::Actions::Label<CceEvolutionLabelTag>,
       tmpl::conditional_t<evolve_ccm, tmpl::list<>,
                           evolution::Actions::RunEventsAndTriggers>,
+      Actions::ReceiveWorldtubeData<
+          Metavariables,
+          typename Metavariables::cce_boundary_communication_tags>,
+      Actions::ReceiveWorldtubeData<
+          Metavariables,
+          typename Metavariables::klein_gordon_boundary_communication_tags>,
       Actions::InitializeFirstHypersurface<
           evolve_ccm, typename Metavariables::cce_boundary_component>,
       Actions::InitializeKleinGordonFirstHypersurface,
@@ -114,6 +132,9 @@ struct KleinGordonCharacteristicEvolution
       ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
+      Actions::RequestNextBoundaryData<
+          typename Metavariables::cce_boundary_component,
+          KleinGordonCharacteristicEvolution<Metavariables>>,
       ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 

@@ -132,6 +132,115 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
 
 /*!
  * \ingroup ActionsGroup
+ * \brief Obtains the Klein-Gordon CCE boundary data at the specified `time`,
+ * and reports it to the `EvolutionComponent` via
+ * `Actions::ReceiveWorldtubeData`.
+ *
+ * \details This uses the `WorldtubeDataManager` to perform all of the work of
+ * managing the file buffer, interpolating to the desired time point, and
+ * compute the Bondi and Klein-Gordon quantities on the boundary. Once readied,
+ * it sends each tensor or scalar from the the full `Variables<typename
+ * Metavariables::cce_boundary_communication_tags>` or `Variables<typename
+ * Metavariables::klein_gordon_boundary_communication_tags>` back to the
+ * `EvolutionComponent`
+ *
+ * Uses:
+ * - DataBox:
+ *  - `Tags::H5WorldtubeBoundaryDataManager`
+ *  - `Tags::KleinGordonH5WorldtubeBoundaryDataManager`
+ *
+ * \ref DataBoxGroup changes:
+ * - Adds: nothing
+ * - Removes: nothing
+ * - Modifies:
+ *   - `Tags::Variables<typename
+ * Metavariables::cce_boundary_communication_tags>` (every tensor)
+ *   - `Tags::Variables<typename
+ * Metavariables::klein_gordon_boundary_communication_tags>` (every scalar)
+ */
+template <typename Metavariables, typename EvolutionComponent>
+struct BoundaryComputeAndSendToEvolution<
+    KleinGordonH5WorldtubeBoundary<Metavariables>, EvolutionComponent> {
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
+    auto hdf5_lock = Parallel::local_branch(
+                         Parallel::get_parallel_component<
+                             observers::ObserverWriter<Metavariables>>(cache))
+                         ->template local_synchronous_action<
+                             observers::Actions::GetLockPointer<
+                                 observers::Tags::H5FileLock>>();
+    bool tensor_successfully_populated = false;
+    bool klein_gordon_successfully_populated = false;
+    db::mutate<
+        Tags::H5WorldtubeBoundaryDataManager,
+        Tags::KleinGordonH5WorldtubeBoundaryDataManager,
+        ::Tags::Variables<
+            typename Metavariables::cce_boundary_communication_tags>,
+        ::Tags::Variables<
+            typename Metavariables::klein_gordon_boundary_communication_tags>>(
+        [&tensor_successfully_populated, &klein_gordon_successfully_populated,
+         &time, &hdf5_lock](
+            const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager<
+                Tags::characteristic_worldtube_boundary_tags<
+                    Tags::BoundaryValue>>>*>
+                tensor_worldtube_data_manager,
+            const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager<
+                Tags::klein_gordon_worldtube_boundary_tags>>*>
+                klein_gordon_worldtube_data_manager,
+            const gsl::not_null<Variables<
+                typename Metavariables::cce_boundary_communication_tags>*>
+                tensor_boundary_variables,
+            const gsl::not_null<
+                Variables<typename Metavariables::
+                              klein_gordon_boundary_communication_tags>*>
+                klein_gordon_boundary_variables) {
+          tensor_successfully_populated =
+              (*tensor_worldtube_data_manager)
+                  ->populate_hypersurface_boundary_data(
+                      tensor_boundary_variables, time.substep_time(),
+                      hdf5_lock);
+
+          klein_gordon_successfully_populated =
+              (*klein_gordon_worldtube_data_manager)
+                  ->populate_hypersurface_boundary_data(
+                      klein_gordon_boundary_variables, time.substep_time(),
+                      hdf5_lock);
+        },
+        make_not_null(&box));
+    if (not tensor_successfully_populated) {
+      ERROR(
+          "Insufficient tensor boundary data to proceed, exiting early at "
+          "time " +
+          std::to_string(time.substep_time()));
+    }
+
+    if (not klein_gordon_successfully_populated) {
+      ERROR(
+          "Insufficient scalar boundary data to proceed, exiting early at "
+          "time " +
+          std::to_string(time.substep_time()));
+    }
+    Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
+        typename Metavariables::cce_boundary_communication_tags>>(
+        Parallel::get_parallel_component<EvolutionComponent>(cache), time,
+        db::get<::Tags::Variables<
+            typename Metavariables::cce_boundary_communication_tags>>(box),
+        true);
+
+    Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
+        typename Metavariables::klein_gordon_boundary_communication_tags>>(
+        Parallel::get_parallel_component<EvolutionComponent>(cache), time,
+        db::get<::Tags::Variables<
+            typename Metavariables::klein_gordon_boundary_communication_tags>>(
+            box),
+        true);
+  }
+};
+
+/*!
+ * \ingroup ActionsGroup
  * \brief Calculates the analytic boundary data at the specified `time`, and
  * sends the resulting Bondi-Sachs boundary data to the `EvolutionComponent`
  *

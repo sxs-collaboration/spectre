@@ -17,8 +17,10 @@ set(LIBRARY_SOURCES
   Test_InitializeKleinGordonFirstHypersurface.cpp
   Test_InitializeKleinGordonWorldtubeBoundary.cpp
   Test_InitializeWorldtubeBoundary.cpp
+  Test_KleinGordonH5BoundaryCommunication.cpp
   Test_Psi0Matching.cpp
   Test_RequestBoundaryData.cpp
+  Test_RequestKleinGordonBoundaryData.cpp
   Test_SendGhVarsToCce.cpp
   Test_ScriObserveInterpolated.cpp
   Test_TimeManagement.cpp

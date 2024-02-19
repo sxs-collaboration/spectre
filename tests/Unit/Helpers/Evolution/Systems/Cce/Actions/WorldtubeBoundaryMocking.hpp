@@ -22,6 +22,8 @@ namespace {  // NOLINT
 struct test_metavariables;
 template <typename Metavariables>
 struct mock_characteristic_evolution;
+template <typename Metavariables>
+struct mock_kg_characteristic_evolution;
 }  // namespace
 namespace Actions {
 namespace {  // NOLINT
@@ -95,6 +97,14 @@ struct mock_gh_worldtube_boundary {
 template <typename Metavariables>
 struct mock_klein_gordon_h5_worldtube_boundary {
   using component_being_mocked = KleinGordonH5WorldtubeBoundary<Metavariables>;
+  using replace_these_simple_actions =
+      tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
+          KleinGordonH5WorldtubeBoundary<Metavariables>,
+          mock_kg_characteristic_evolution<test_metavariables>>>;
+  using with_these_simple_actions =
+      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
+          KleinGordonH5WorldtubeBoundary<Metavariables>,
+          mock_kg_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
       tmpl::list<Actions::InitializeWorldtubeBoundary<
