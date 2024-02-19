@@ -42,6 +42,7 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -131,6 +132,15 @@ struct SetSubcellGrid {
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
+
+    for (size_t d = 0; d < Dim; ++d) {
+      if (subcell_options.persson_num_highest_modes() >= dg_mesh.extents(d)) {
+        ERROR("Number of the highest modes to be monitored by the Persson TCI ("
+              << subcell_options.persson_num_highest_modes()
+              << ") must be smaller than the extent of the DG mesh ("
+              << dg_mesh.extents(d) << ").");
+      }
+    }
 
     // Loop over block neighbors and if neighbor id is inside of
     // subcell_options.only_dg_block_ids(), then bordering DG-only block

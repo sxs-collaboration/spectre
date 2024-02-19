@@ -31,41 +31,29 @@ namespace evolution::dg::subcell {
  */
 class SubcellOptions {
  public:
-  struct InitialData {
+  struct PerssonTci {
     static constexpr Options::String help =
-        "Parameters only used when setting up initial data.";
-  };
-
-  /// The \f$\delta_0\f$ parameter in the relaxed discrete maximum principle
-  /// troubled-cell indicator when applied to the initial data
-  struct InitialDataRdmpDelta0 {
-    static std::string name() { return "RdmpDelta0"; }
-    static constexpr Options::String help{"Absolute jump tolerance parameter."};
-    using type = double;
-    static type lower_bound() { return 0.0; }
-    using group = InitialData;
-  };
-  /// The \f$\epsilon\f$ parameter in the relaxed discrete maximum principle
-  /// troubled-cell indicator when applied to the initial data
-  struct InitialDataRdmpEpsilon {
-    static std::string name() { return "RdmpEpsilon"; }
-    static constexpr Options::String help{
-        "The jump-dependent relaxation constant."};
-    using type = double;
-    static type lower_bound() { return 0.0; }
-    static type upper_bound() { return 1.0; }
-    using group = InitialData;
+        "Parameters related to the Persson TCI";
   };
   /// The exponent \f$\alpha\f$ passed to the Persson troubled-cell indicator
-  /// when applied to the initial data.
-  struct InitialDataPerssonExponent {
-    static std::string name() { return "PerssonExponent"; }
+  struct PerssonExponent {
+    static std::string name() { return "Exponent"; }
     static constexpr Options::String help{
-        "The exponent at which the error should decrease with N."};
+        "The exponent at which the error should decrease with (N+1-M)"};
     using type = double;
     static constexpr type lower_bound() { return 1.0; }
     static constexpr type upper_bound() { return 10.0; }
-    using group = InitialData;
+    using group = PerssonTci;
+  };
+  /// The number of highest modes the Persson troubled-cell indicator monitors
+  struct PerssonNumHighestModes {
+    static std::string name() { return "NumHighestModes"; }
+    static constexpr Options::String help{
+        "The number of highest modes M the Persson TCI monitors."};
+    using type = size_t;
+    static constexpr type lower_bound() { return 1_st; }
+    static constexpr type upper_bound() { return 10_st; }
+    using group = PerssonTci;
   };
 
   /// The \f$\delta_0\f$ parameter in the relaxed discrete maximum principle
@@ -85,15 +73,6 @@ class SubcellOptions {
     using type = double;
     static type lower_bound() { return 0.0; }
     static type upper_bound() { return 1.0; }
-  };
-  /// The exponent \f$\alpha\f$ passed to the Persson troubled-cell indicator
-  struct PerssonExponent {
-    static std::string name() { return "PerssonExponent"; }
-    static constexpr Options::String help{
-        "The exponent at which the error should decrease with N."};
-    using type = double;
-    static constexpr type lower_bound() { return 1.0; }
-    static constexpr type upper_bound() { return 10.0; }
   };
   /// If true, then we always use the subcell method, not DG.
   struct AlwaysUseSubcells {
@@ -154,9 +133,9 @@ class SubcellOptions {
   };
 
   using options =
-      tmpl::list<InitialDataRdmpDelta0, InitialDataRdmpEpsilon, RdmpDelta0,
-                 RdmpEpsilon, InitialDataPerssonExponent, PerssonExponent,
-                 AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo,
+      tmpl::list<PerssonExponent, PerssonNumHighestModes, RdmpDelta0,
+                 RdmpEpsilon, AlwaysUseSubcells,
+                 SubcellToDgReconstructionMethod, UseHalo,
                  OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder>;
 
   static constexpr Options::String help{
@@ -164,11 +143,9 @@ class SubcellOptions {
 
   SubcellOptions() = default;
   SubcellOptions(
-      double initial_data_rdmp_delta0, double initial_data_rdmp_epsilon,
-      double rdmp_delta0, double rdmp_epsilon,
-      double initial_data_persson_exponent, double persson_exponent,
-      bool always_use_subcells, fd::ReconstructionMethod recons_method,
-      bool use_halo,
+      double persson_exponent, size_t persson_num_highest_modes,
+      double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
+      fd::ReconstructionMethod recons_method, bool use_halo,
       std::optional<std::vector<std::string>> only_dg_block_and_group_names,
       ::fd::DerivativeOrder finite_difference_derivative_order);
 
@@ -188,21 +165,15 @@ class SubcellOptions {
 
   void pup(PUP::er& p);
 
-  double initial_data_rdmp_delta0() const { return initial_data_rdmp_delta0_; }
+  double persson_exponent() const { return persson_exponent_; }
 
-  double initial_data_rdmp_epsilon() const {
-    return initial_data_rdmp_epsilon_;
+  size_t persson_num_highest_modes() const {
+    return persson_num_highest_modes_;
   }
 
   double rdmp_delta0() const { return rdmp_delta0_; }
 
   double rdmp_epsilon() const { return rdmp_epsilon_; }
-
-  double initial_data_persson_exponent() const {
-    return initial_data_persson_exponent_;
-  }
-
-  double persson_exponent() const { return persson_exponent_; }
 
   bool always_use_subcells() const { return always_use_subcells_; }
 
@@ -226,15 +197,11 @@ class SubcellOptions {
  private:
   friend bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
-  double initial_data_rdmp_delta0_ =
-      std::numeric_limits<double>::signaling_NaN();
-  double initial_data_rdmp_epsilon_ =
-      std::numeric_limits<double>::signaling_NaN();
+  double persson_exponent_ = std::numeric_limits<double>::signaling_NaN();
+  size_t persson_num_highest_modes_ =
+      std::numeric_limits<size_t>::signaling_NaN();
   double rdmp_delta0_ = std::numeric_limits<double>::signaling_NaN();
   double rdmp_epsilon_ = std::numeric_limits<double>::signaling_NaN();
-  double initial_data_persson_exponent_ =
-      std::numeric_limits<double>::signaling_NaN();
-  double persson_exponent_ = std::numeric_limits<double>::signaling_NaN();
   bool always_use_subcells_ = false;
   fd::ReconstructionMethod reconstruction_method_ =
       fd::ReconstructionMethod::AllDimsAtOnce;

@@ -80,12 +80,10 @@ void test(const TestThis test_this) {
           get<MassDensity>(dg_prims), get<Pressure>(dg_prims));
 
   const evolution::dg::subcell::SubcellOptions subcell_options{
+      persson_exponent,
+      1_st,
       1.0e-18,
       1.0e-4,
-      1.0e-18,
-      1.0e-4,
-      persson_exponent,
-      persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,

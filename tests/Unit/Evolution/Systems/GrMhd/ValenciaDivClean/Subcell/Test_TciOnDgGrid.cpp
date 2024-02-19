@@ -106,12 +106,10 @@ void test(const TestThis test_this, const int expected_tci_status,
                                            : std::nullopt};
 
   const evolution::dg::subcell::SubcellOptions subcell_options{
+      persson_exponent,
+      1_st,
       1.0e-60,  // Tiny value because the magnetic field is so small
       1.0e-4,
-      1.0e-60,  // Tiny value because the magnetic field is so small
-      1.0e-4,
-      persson_exponent,
-      persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
@@ -350,7 +348,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       // the updated box values and the original primvars.
       CHECK(db::get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
                 box) !=
-           get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
+            get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
                 prim_vars));
     }
   }

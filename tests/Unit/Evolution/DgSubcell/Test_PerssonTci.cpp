@@ -92,8 +92,8 @@ void test_persson_impl(
   }
 
   CHECK(evolution::dg::subcell::persson_tci(get<TagToCheck>(vars), dg_mesh,
-                                            persson_exponent) ==
-        expected_tci_triggered);
+                                            persson_exponent,
+                                            1_st) == expected_tci_triggered);
 }
 
 template <size_t Dim>

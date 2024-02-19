@@ -80,7 +80,7 @@ void test(const fd::DerivativeOrder derivative_order, const bool did_rollback) {
                             ::Tags::Variables<flux_variables>>>(
           did_rollback,
           evolution::dg::subcell::SubcellOptions{
-              1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, false,
+              4.0, 1_st, 1.0e-3, 1.0e-4, false,
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
               std::nullopt, derivative_order},
           subcell_mesh, typename CellCenteredFluxTag::type{}, dg_mesh,

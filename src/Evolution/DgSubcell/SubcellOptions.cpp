@@ -22,19 +22,15 @@
 
 namespace evolution::dg::subcell {
 SubcellOptions::SubcellOptions(
-    double initial_data_rdmp_delta0, double initial_data_rdmp_epsilon,
-    double rdmp_delta0, double rdmp_epsilon,
-    double initial_data_persson_exponent, double persson_exponent,
-    bool always_use_subcells, fd::ReconstructionMethod recons_method,
-    bool use_halo,
+    double persson_exponent, size_t persson_num_highest_modes,
+    double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
+    fd::ReconstructionMethod recons_method, bool use_halo,
     std::optional<std::vector<std::string>> only_dg_block_and_group_names,
     ::fd::DerivativeOrder finite_difference_derivative_order)
-    : initial_data_rdmp_delta0_(initial_data_rdmp_delta0),
-      initial_data_rdmp_epsilon_(initial_data_rdmp_epsilon),
+    : persson_exponent_(persson_exponent),
+      persson_num_highest_modes_(persson_num_highest_modes),
       rdmp_delta0_(rdmp_delta0),
       rdmp_epsilon_(rdmp_epsilon),
-      initial_data_persson_exponent_(initial_data_persson_exponent),
-      persson_exponent_(persson_exponent),
       always_use_subcells_(always_use_subcells),
       reconstruction_method_(recons_method),
       use_halo_(use_halo),
@@ -94,12 +90,10 @@ SubcellOptions::SubcellOptions(
 }
 
 void SubcellOptions::pup(PUP::er& p) {
-  p | initial_data_rdmp_delta0_;
-  p | initial_data_rdmp_epsilon_;
+  p | persson_exponent_;
+  p | persson_num_highest_modes_;
   p | rdmp_delta0_;
   p | rdmp_epsilon_;
-  p | initial_data_persson_exponent_;
-  p | persson_exponent_;
   p | always_use_subcells_;
   p | reconstruction_method_;
   p | use_halo_;
@@ -109,13 +103,10 @@ void SubcellOptions::pup(PUP::er& p) {
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
-  return lhs.initial_data_rdmp_delta0() == rhs.initial_data_rdmp_delta0() and
-         lhs.initial_data_rdmp_epsilon() == rhs.initial_data_rdmp_epsilon() and
+  return lhs.persson_exponent() == rhs.persson_exponent() and
+         lhs.persson_num_highest_modes() == rhs.persson_num_highest_modes() and
          lhs.rdmp_delta0() == rhs.rdmp_delta0() and
          lhs.rdmp_epsilon() == rhs.rdmp_epsilon() and
-         lhs.initial_data_persson_exponent() ==
-             rhs.initial_data_persson_exponent() and
-         lhs.persson_exponent() == rhs.persson_exponent() and
          lhs.always_use_subcells() == rhs.always_use_subcells() and
          lhs.reconstruction_method() == rhs.reconstruction_method() and
          lhs.use_halo() == rhs.use_halo() and

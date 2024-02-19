@@ -83,13 +83,11 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
     Subcell:
+      PerssonTci:
+        Exponent: 4.0
+        NumHighestModes: 1
       RdmpDelta0: 1.0e-7
       RdmpEpsilon: 1.0e-3
-      PerssonExponent: 4.0
-      InitialData:
-        RdmpDelta0: 1.0e-7
-        RdmpEpsilon: 1.0e-3
-        PerssonExponent: 4.0
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: false
