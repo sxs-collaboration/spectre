@@ -66,11 +66,12 @@ Observers:
   ReductionFileName: "PoissonProductOfSinusoids3DReductions"
 
 LinearSolver:
-  ConvergenceCriteria:
-    MaxIterations: 1
-    RelativeResidual: 1.e-6
-    AbsoluteResidual: 1.e-6
-  Verbosity: Verbose
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 1
+      RelativeResidual: 1.e-6
+      AbsoluteResidual: 1.e-6
+    Verbosity: Verbose
 
   Multigrid:
     Iterations: 1

@@ -36,6 +36,8 @@ Background: &solution
 
 InitialGuess: Flatness
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   Sphere:
     InnerRadius: 0.2

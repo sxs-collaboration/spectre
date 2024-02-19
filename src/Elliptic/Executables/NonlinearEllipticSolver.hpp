@@ -21,11 +21,14 @@
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/SubdomainPreconditioners/MinusLaplacian.hpp"
+#include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Tags.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/BuildMatrix.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Actions/RestrictFields.hpp"
@@ -96,6 +99,9 @@ struct Solver {
   using system = typename Metavariables::system;
   static_assert(
       tt::assert_conforms_to_v<system, elliptic::protocols::FirstOrderSystem>);
+  static constexpr bool is_linear =
+      std::is_same_v<elliptic::get_sources_computer<system, true>,
+                     typename system::sources_computer>;
 
   using background_tag =
       elliptic::Tags::Background<elliptic::analytic_data::Background>;
@@ -109,8 +115,14 @@ struct Solver {
   using fluxes_tag = ::Tags::Variables<typename system::primal_fluxes>;
   /// These are the fixed sources, i.e. the RHS of the equations
   using fixed_sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
-  using operator_applied_to_fields_tag =
-      db::add_tag_prefix<NonlinearSolver::Tags::OperatorAppliedTo, fields_tag>;
+  using operator_applied_to_fields_tag = tmpl::conditional_t<
+      is_linear,
+      // This is the linear operator applied to the fields. We only use it to
+      // apply the operator to the initial guess, so an optimization would be to
+      // re-use the `operator_applied_to_vars_tag` below. This optimization
+      // needs a few minor changes to the parallel linear solver algorithm.
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>,
+      db::add_tag_prefix<NonlinearSolver::Tags::OperatorAppliedTo, fields_tag>>;
 
   /// The nonlinear solver algorithm
   using nonlinear_solver = NonlinearSolver::newton_raphson::NewtonRaphson<
@@ -120,12 +132,15 @@ struct Solver {
       Convergence::Tags::IterationId<typename nonlinear_solver::options_group>;
 
   /// The linear solver algorithm. We use GMRES since the operator is not
-  /// necessarily to be symmetric. Using CG here would be an optimization for
+  /// necessarily symmetric. Using CG here would be an optimization for
   /// symmetric problems.
   using linear_solver = LinearSolver::gmres::Gmres<
-      Metavariables, typename nonlinear_solver::linear_solver_fields_tag,
+      Metavariables,
+      tmpl::conditional_t<is_linear, fields_tag,
+                          typename nonlinear_solver::linear_solver_fields_tag>,
       OptionTags::GmresGroup, true,
-      typename nonlinear_solver::linear_solver_source_tag,
+      tmpl::conditional_t<is_linear, fixed_sources_tag,
+                          typename nonlinear_solver::linear_solver_source_tag>,
       LinearSolver::multigrid::Tags::IsFinestGrid>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
@@ -151,32 +166,46 @@ struct Solver {
 
   /// For the GMRES linear solver we need to apply the DG operator to its
   /// internal "operand" in every iteration of the algorithm.
-  using correction_vars_tag = typename linear_solver::operand_tag;
-  using operator_applied_to_correction_vars_tag =
-      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
-                         correction_vars_tag>;
+  using vars_tag = typename linear_solver::operand_tag;
+  using operator_applied_to_vars_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, vars_tag>;
   /// The correction fluxes can be stored in an arbitrary tag. We don't need to
   /// access them anywhere, they're just a memory buffer for the linearized
   /// operator.
-  using correction_fluxes_tag =
+  using fluxes_vars_tag =
       db::add_tag_prefix<NonlinearSolver::Tags::Correction, fluxes_tag>;
 
   /// Fields that may be observed to monitor the state of the solver
-  using observe_fields = tmpl::append<
-      typename nonlinear_solver::linear_solver_fields_tag::tags_list,
-      typename nonlinear_solver::linear_solver_source_tag::tags_list>;
+  using observe_fields = tmpl::conditional_t<
+      is_linear,
+      tmpl::append<
+          typename fixed_sources_tag::tags_list,
+          typename db::add_tag_prefix<LinearSolver::Tags::Operand,
+                                      fields_tag>::tags_list,
+          typename db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+                                      fields_tag>::tags_list>,
+      tmpl::append<
+          typename nonlinear_solver::linear_solver_fields_tag::tags_list,
+          typename nonlinear_solver::linear_solver_source_tag::tags_list>>;
 
   /// Collect all reduction tags for observers
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<nonlinear_solver, linear_solver, multigrid, schwarz_smoother>>;
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
+          tmpl::conditional_t<is_linear, tmpl::list<>, nonlinear_solver>,
+          linear_solver, multigrid, schwarz_smoother>>>;
+
+  // For labeling the yaml option for RandomizeVariables
+  struct RandomizeInitialGuess {};
 
   using initialization_actions = tmpl::list<
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
-      typename nonlinear_solver::initialize_element,
+      tmpl::conditional_t<is_linear, tmpl::list<>,
+                          typename nonlinear_solver::initialize_element>,
       typename linear_solver::initialize_element,
       typename multigrid::initialize_element,
       typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
+      ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag,
@@ -186,26 +215,37 @@ struct Solver {
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
-      ::Initialization::Actions::AddComputeTags<tmpl::list<
-          // For linearized boundary conditions
-          elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
-          elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
-                                                fluxes_tag>>>>;
+      tmpl::conditional_t<
+          is_linear, tmpl::list<>,
+          ::Initialization::Actions::AddComputeTags<tmpl::list<
+              // For linearized boundary conditions
+              elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
+              elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
+                                                    fluxes_tag>>>>>;
 
-  using register_actions =
-      tmpl::flatten<tmpl::list<typename nonlinear_solver::register_element,
-                               typename multigrid::register_element,
-                               typename schwarz_smoother::register_element>>;
+  using register_actions = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<is_linear,
+                          LinearSolver::Actions::build_matrix_register<
+                              LinearSolver::multigrid::Tags::IsFinestGrid>,
+                          typename nonlinear_solver::register_element>,
+      typename multigrid::register_element,
+      typename schwarz_smoother::register_element>>;
 
   template <bool Linearized>
   using build_operator_actions = elliptic::dg::Actions::apply_operator<
       system, Linearized,
       tmpl::conditional_t<Linearized, linear_solver_iteration_id,
                           nonlinear_solver_iteration_id>,
-      tmpl::conditional_t<Linearized, correction_vars_tag, fields_tag>,
-      tmpl::conditional_t<Linearized, correction_fluxes_tag, fluxes_tag>,
-      tmpl::conditional_t<Linearized, operator_applied_to_correction_vars_tag,
+      tmpl::conditional_t<Linearized, vars_tag, fields_tag>,
+      tmpl::conditional_t<Linearized, fluxes_vars_tag, fluxes_tag>,
+      tmpl::conditional_t<Linearized, operator_applied_to_vars_tag,
                           operator_applied_to_fields_tag>>;
+
+  using build_matrix_actions = LinearSolver::Actions::build_matrix_actions<
+      linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
+      build_operator_actions<true>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+      LinearSolver::multigrid::Tags::IsFinestGrid>;
 
   template <typename Label>
   using smooth_actions =
@@ -223,36 +263,68 @@ struct Solver {
                                        typename system::primal_fields>>>>;
 
   template <typename StepActions>
-  using solve_actions = typename nonlinear_solver::template solve<
+  using linear_solve_actions = typename linear_solver::template solve<
+      tmpl::list<
+          // Multigrid preconditioning
+          typename multigrid::template solve<
+              build_operator_actions<true>,
+              // Schwarz smoothing on each multigrid level
+              smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
+              smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
+          // Support disabling the preconditioner
+          ::LinearSolver::Actions::make_identity_if_skipped<
+              multigrid, build_operator_actions<true>>>,
+      StepActions>;
+
+  template <typename StepActions>
+  using nonlinear_solve_actions = typename nonlinear_solver::template solve<
       build_operator_actions<false>,
       tmpl::list<
+          // Transfer data down the multigrid hierachy
           LinearSolver::multigrid::Actions::ReceiveFieldsFromFinerGrid<
               volume_dim, tmpl::list<fields_tag, fluxes_tag>,
               typename multigrid::options_group>,
           LinearSolver::multigrid::Actions::SendFieldsToCoarserGrid<
               tmpl::list<fields_tag, fluxes_tag>,
               typename multigrid::options_group, void>,
+          // Communicate data on subdomain overlap regions
           LinearSolver::Schwarz::Actions::SendOverlapFields<
               communicated_overlap_tags,
               typename schwarz_smoother::options_group, false>,
           LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
               volume_dim, communicated_overlap_tags,
               typename schwarz_smoother::options_group>,
+          // Reset Schwarz subdomain solver
           LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
               typename schwarz_smoother::options_group>,
-          typename linear_solver::template solve<tmpl::list<
-              typename multigrid::template solve<
-                  build_operator_actions<true>,
-                  smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
-                  smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
-              ::LinearSolver::Actions::make_identity_if_skipped<
-                  multigrid, build_operator_actions<true>>>>>,
+          // Linear solve for correction
+          linear_solve_actions<tmpl::list<>>>,
       StepActions>;
 
-  using component_list = tmpl::list<typename nonlinear_solver::component_list,
-                                    typename linear_solver::component_list,
-                                    typename multigrid::component_list,
-                                    typename schwarz_smoother::component_list>;
+  template <typename StepActions>
+  using solve_actions = tmpl::conditional_t<
+      is_linear,
+      // Linear solve
+      tmpl::list<
+          // Apply the DG operator to the initial guess
+          elliptic::dg::Actions::apply_operator<
+              system, true, linear_solver_iteration_id, fields_tag,
+              fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
+              fluxes_vars_tag>,
+          // Modify fixed sources with boundary conditions
+          elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
+              system, fixed_sources_tag>,
+          // Krylov solve
+          linear_solve_actions<StepActions>>,
+      // Nonlinear solve
+      nonlinear_solve_actions<StepActions>>;
+
+  using component_list = tmpl::flatten<
+      tmpl::list<tmpl::conditional_t<is_linear, tmpl::list<>,
+                                     typename nonlinear_solver::component_list>,
+                 typename linear_solver::component_list,
+                 typename multigrid::component_list,
+                 typename schwarz_smoother::component_list>>;
 };
 
 }  // namespace elliptic::nonlinear_solver

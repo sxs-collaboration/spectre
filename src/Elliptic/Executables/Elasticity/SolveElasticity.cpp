@@ -20,7 +20,7 @@ extern "C" void CkRegisterMainModule() {
       {&domain::creators::register_derived_with_charm,
        &domain::FunctionsOfTime::register_derived_with_charm,
        &register_derived_classes_with_charm<
-           metavariables::schwarz_smoother::subdomain_solver>,
+           metavariables::solver::schwarz_smoother::subdomain_solver>,
        &elliptic::subdomain_preconditioners::register_derived_with_charm,
        &register_factory_classes_with_charm<metavariables>},
       {});
