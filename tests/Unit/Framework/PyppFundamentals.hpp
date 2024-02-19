@@ -12,6 +12,7 @@
 #include <initializer_list>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -27,6 +28,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/SpinWeighted.hpp"
@@ -35,6 +37,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
@@ -259,7 +262,9 @@ struct FromPyObject<long, std::nullptr_t> {
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x")
 #endif
-      throw std::runtime_error{"Cannot convert non-long/int type to long."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{
+          "Cannot convert non-long/int type to long. Got " + python_type};
     }
     return PyLong_AsLong(t);
   }
@@ -279,7 +284,9 @@ struct FromPyObject<unsigned long, std::nullptr_t> {
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x");
 #endif
-      throw std::runtime_error{"Cannot convert non-long/int type to long."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{
+          "Cannot convert non-long/int type to long. Got " + python_type};
     }
     return PyLong_AsUnsignedLong(t);
   }
@@ -291,7 +298,9 @@ struct FromPyObject<double, std::nullptr_t> {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
     } else if (not PyFloat_Check(t)) {
-      throw std::runtime_error{"Cannot convert non-double type to double."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{
+          "Cannot convert non-double type to double. Got " + python_type};
     }
     return PyFloat_AsDouble(t);
   }
@@ -303,7 +312,9 @@ struct FromPyObject<bool, std::nullptr_t> {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
     } else if (not PyBool_Check(t)) {
-      throw std::runtime_error{"Cannot convert non-bool type to bool."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{"Cannot convert non-bool type to bool. Got " +
+                               python_type};
     }
     return static_cast<bool>(PyLong_AsLong(t));
   }
@@ -322,7 +333,9 @@ struct FromPyObject<std::string, std::nullptr_t> {
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x")
 #endif
-      throw std::runtime_error{"Cannot convert non-string type to string."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{
+          "Cannot convert non-string type to string. Got " + python_type};
     }
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     return std::string(PyString_AsString(t));
@@ -348,7 +361,9 @@ struct FromPyObject<void*, std::nullptr_t> {
     if (t == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
     } else if (t != Py_None) {
-      throw std::runtime_error{"Cannot convert non-None type to void."};
+      const std::string python_type{Py_TYPE(t)->tp_name};
+      throw std::runtime_error{"Cannot convert non-None type to void. Got " +
+                               python_type};
     }
     return nullptr;
   }
@@ -360,7 +375,9 @@ struct FromPyObject<T, Requires<tt::is_a_v<std::vector, T>>> {
     if (p == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
     } else if (not PyList_CheckExact(p)) {
-      throw std::runtime_error{"Cannot convert non-list type to vector."};
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{"Cannot convert non-list type to vector. Got " +
+                               python_type};
     }
     T t(static_cast<size_t>(PyList_Size(p)));
     for (size_t i = 0; i < t.size(); ++i) {
@@ -380,7 +397,9 @@ struct FromPyObject<T, Requires<tt::is_std_array_v<T>>> {
     if (p == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
     } else if (not PyList_CheckExact(p)) {
-      throw std::runtime_error{"Cannot convert non-list type to array."};
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{"Cannot convert non-list type to array. Got " +
+                               python_type};
     }
     T t{};
     // clang-tidy: Do no implicitly decay an array into a pointer
@@ -403,7 +422,9 @@ struct FromPyObject<DataVector, std::nullptr_t> {
     }
     // clang-tidy: c-style casts. (Expanded from macro)
     if (not PyArray_CheckExact(p)) {  // NOLINT
-      throw std::runtime_error{"Cannot convert non-array type to DataVector."};
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{
+          "Cannot convert non-array type to DataVector. Got " + python_type};
     }
     // clang-tidy: reinterpret_cast
     const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
@@ -438,8 +459,10 @@ struct FromPyObject<ComplexDataVector, std::nullptr_t> {
     }
     // clang-tidy: c-style casts. (Expanded from macro)
     if (not PyArray_CheckExact(p)) {  // NOLINT
+      const std::string python_type{Py_TYPE(p)->tp_name};
       throw std::runtime_error{
-          "Cannot convert non-array type to ComplexDataVector."};
+          "Cannot convert non-array type to ComplexDataVector. Got " +
+          python_type};
     }
     // clang-tidy: reinterpret_cast
     const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
@@ -559,7 +582,7 @@ template <typename... Symms, typename... Indices>
 struct FromPyObject<std::tuple<Tensor<double, Symms, Indices>...>,
                     std::nullptr_t> {
   static std::tuple<Tensor<double, Symms, Indices>...> convert(PyObject* p) {
-    if (PyTuple_Check(p) == 0) {
+    if (PyTuple_CheckExact(p) == 0) {
       const std::string python_type{Py_TYPE(p)->tp_name};
       throw std::runtime_error{"Expected a Python tuple but got " +
                                python_type};
@@ -589,6 +612,41 @@ struct FromPyObject<std::tuple<Tensor<double, Symms, Indices>...>,
             std::to_string(Is) +
             " of the tuple. Conversion error: " + std::string{e.what()}};
       }
+    }());
+    return result;
+  }
+};
+
+template <typename... Tags>
+struct FromPyObject<tuples::TaggedTuple<Tags...>, std::nullptr_t> {
+  static tuples::TaggedTuple<Tags...> convert(PyObject* p) {
+    if (PyDict_CheckExact(p) == 0) {
+      const std::string python_type{Py_TYPE(p)->tp_name};
+      throw std::runtime_error{"Expected a Python dictionary but got " +
+                               python_type};
+    }
+    tuples::TaggedTuple<Tags...> result{};
+    EXPAND_PACK_LEFT_TO_RIGHT([&result, &p]() {
+      const std::string tag_name = db::tag_name<Tags>();
+      PyObject* python_tag_name = PyUnicode_FromString(tag_name.c_str());
+      PyObject* tag_value = PyDict_GetItemWithError(p, python_tag_name);
+      if (tag_value == nullptr) {
+        PyObject* python_keys = PyDict_Keys(p);
+        const auto keys = from_py_object<std::vector<std::string>>(python_keys);
+        Py_DECREF(python_keys);
+        throw std::runtime_error("Could not find tag " + tag_name +
+                                 " in dictionary. Known keys are " +
+                                 std::string{MakeString{} << keys});
+      }
+      try {
+        get<Tags>(result) = from_py_object<typename Tags::type>(tag_value);
+      } catch (const std::exception& e) {
+        throw std::runtime_error{
+            std::string{"TaggedTuple conversion failed for tag name "} +
+            tag_name + ". Conversion error: " + std::string{e.what()}};
+      }
+      Py_DECREF(python_tag_name);
+      // tag_value is a borrowed reference, so no need to DECREF.
     }());
     return result;
   }

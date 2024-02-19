@@ -311,5 +311,55 @@ def tuple_of_tensor_works(a):
     return (np.asarray(2.0 * a), np.asarray([5.0 * a]))
 
 
+def tagged_tuple_of_tensor_wrong_type(a):
+    return 0
+
+
+def tagged_tuple_of_tensor_missing_tag_too_small(a):
+    return {"Var1": np.asarray(2.0 * a), "Var3": 10}
+
+
+def tagged_tuple_of_tensor_missing(a):
+    return {
+        "Var1": np.asarray(2.0 * a),
+        "Var2b": np.asarray([5.0 * a]),
+        "Var3": 10,
+    }
+
+
+def tagged_tuple_of_tensor_convert_var1(a):
+    return {"Var1": np.asarray([a]), "Var2": np.asarray([5.0 * a]), "Var3": 10}
+
+
+def tagged_tuple_of_tensor_convert_var2(a):
+    return {"Var1": np.asarray(2.0 * a), "Var2": np.asarray(a), "Var3": 10}
+
+
+def tagged_tuple_of_tensor_convert_var3(a):
+    return {
+        "Var1": np.asarray(2.0 * a),
+        "Var2": np.asarray([5.0 * a]),
+        "Var3": np.asarray([5.0 * a]),
+    }
+
+
+def tagged_tuple_of_tensor_works(a):
+    return {
+        "Var1": np.asarray(2.0 * a),
+        "Var2": np.asarray([5.0 * a]),
+        "Var3": 10,
+    }
+
+
+def tagged_tuple_of_tensor_works_extra_dict(a):
+    return {
+        "Var1": np.asarray(2.0 * a),
+        "Var2": np.asarray([5.0 * a]),
+        "Var3": 10,
+        "Var4": 7.3,
+        "Var5": np.asarray(9.0 * a),
+    }
+
+
 def custom_conversion(t, a):
     return t * a

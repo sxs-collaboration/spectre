@@ -24,16 +24,26 @@ class DataBox;
 /// \endcond
 
 namespace Triggers {
-/// \ingroup EventsAndTriggersGroup
-/// \ingroup TimeGroup
-/// Check a trigger on substeps, as well as full steps.  Primarily for
-/// debugging.
-///
-/// In LTS mode, only substeps of the first step in each slab will be
-/// checked. Such substeps may not be aligned across the domain.
-///
-/// The observation value on a substep is set to the start time of the
-/// step plus $10^6$ times the substep number.
+/*!
+ * \ingroup EventsAndTriggersGroup
+ * \ingroup TimeGroup
+ * Check a trigger on substeps, as well as full steps.  Primarily for
+ * debugging.
+ *
+ * In LTS mode, only substeps of the first step in each slab will be
+ * checked. Such substeps may not be aligned across the domain.
+ *
+ * The observation value on a substep is set to the start time of the
+ * step plus $10^6$ times the substep number.
+ *
+ * This trigger can be used as:
+ *
+ * ```yaml
+ * - Trigger:
+ *     OnSubsteps:
+ *       Always:
+ * ```
+ */
 class OnSubsteps : public Trigger {
  public:
   /// \cond

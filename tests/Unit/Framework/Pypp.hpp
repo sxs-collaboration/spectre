@@ -16,7 +16,9 @@
 #include <type_traits>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/PyppFundamentals.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -209,6 +211,50 @@ struct ContainerPackAndUnpack<std::tuple<Tensor<T, Symm, Indices>...>,
   }
 };
 
+template <typename... Tags, typename ConversionClassList>
+struct ContainerPackAndUnpack<tuples::TaggedTuple<Tags...>, ConversionClassList,
+                              std::nullptr_t> {
+ private:
+  using first_tag = tmpl::front<tmpl::list<Tags...>>;
+
+ public:
+  template <typename Tag>
+  struct UnpackedTag {
+    static std::string name() { return db::tag_name<Tag>(); }
+    using type = typename ContainerPackAndUnpack<
+        typename Tag::type, ConversionClassList>::unpacked_container;
+  };
+  using unpacked_container = tuples::TaggedTuple<UnpackedTag<Tags>...>;
+  using packed_container = tuples::TaggedTuple<Tags...>;
+  // This assumes the first member of the TaggedTuple sets the packed
+  // type. I'm (Nils Deppe) not sure how else to handle this right now.
+  using packed_type =
+      typename ContainerPackAndUnpack<typename first_tag::type,
+                                      ConversionClassList>::packed_type;
+
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
+    return {ContainerPackAndUnpack<typename Tags::type, ConversionClassList>::
+                unpack(tuples::get<Tags>(packed), grid_point_index)...};
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    EXPAND_PACK_LEFT_TO_RIGHT([grid_point_index, &packed, &unpacked]() {
+      ContainerPackAndUnpack<typename Tags::type, ConversionClassList>::pack(
+          make_not_null(&tuples::get<Tags>(*packed)),
+          tuples::get<UnpackedTag<Tags>>(unpacked), grid_point_index);
+    }());
+  }
+
+  static inline size_t get_size(const packed_container& packed) {
+    return ContainerPackAndUnpack<
+        typename first_tag::type,
+        ConversionClassList>::get_size(tuples::get<first_tag>(packed));
+  }
+};
+
 template <typename T, size_t Size, typename ConversionClassList>
 struct ContainerPackAndUnpack<std::array<T, Size>, ConversionClassList,
                               std::nullptr_t> {
@@ -398,24 +444,58 @@ struct CallImpl {
   }
 };
 
-template <typename T>
+template <typename T, typename ConversionClassList>
 struct is_tuple_of_tensors_of_vectors : std::false_type {
-  template <typename ConversionClassList>
   static T make_zero(const size_t npts) {
     return make_with_value<typename ContainerPackAndUnpack<
         T, ConversionClassList>::packed_container>(npts, 0.0);
   }
 };
 
-template <typename T, typename... Symms, typename... Indices>
-struct is_tuple_of_tensors_of_vectors<std::tuple<Tensor<T, Symms, Indices>...>>
+template <typename T, typename... Symms, typename... Indices,
+          typename ConversionClassList>
+struct is_tuple_of_tensors_of_vectors<std::tuple<Tensor<T, Symms, Indices>...>,
+                                      ConversionClassList>
     : std::bool_constant<std::is_same_v<DataVector, T> or
                          std::is_same_v<ComplexDataVector, T>> {
-  template <typename ConversionClassList>
   static std::tuple<Tensor<T, Symms, Indices>...> make_zero(const size_t npts) {
     return {make_with_value<typename ContainerPackAndUnpack<
         Tensor<T, Symms, Indices>, ConversionClassList>::packed_container>(
         npts, 0.0)...};
+  }
+};
+
+template <typename... Tags, typename ConversionClassList>
+struct is_tuple_of_tensors_of_vectors<tuples::TaggedTuple<Tags...>,
+                                      ConversionClassList>
+    : std::bool_constant<
+          (std::is_same_v<typename ContainerPackAndUnpack<
+                              tuples::TaggedTuple<Tags...>,
+                              ConversionClassList>::packed_type,
+                          DataVector> or
+           std::is_same_v<typename ContainerPackAndUnpack<
+                              tuples::TaggedTuple<Tags...>,
+                              ConversionClassList>::packed_type,
+                          ComplexDataVector>)and tt::
+              is_a_v<Tensor, typename tmpl::front<tmpl::list<Tags...>>::type>> {
+  static tuples::TaggedTuple<Tags...> make_zero(const size_t npts) {
+    return {[npts]() {
+      using tag_type = typename Tags::type;
+      if constexpr (std::is_same_v<
+                        typename ContainerPackAndUnpack<
+                            tag_type, ConversionClassList>::packed_type,
+                        DataVector> or
+                    std::is_same_v<
+                        typename ContainerPackAndUnpack<
+                            tag_type, ConversionClassList>::packed_type,
+                        ComplexDataVector>) {
+        return make_with_value<typename ContainerPackAndUnpack<
+            tag_type, ConversionClassList>::packed_container>(npts, 0.0);
+      } else {
+        (void)npts;
+        return tag_type{};
+      }
+    }()...};
   }
 };
 
@@ -430,7 +510,8 @@ struct CallImpl<
             std::is_same_v<typename ContainerPackAndUnpack<
                                ReturnType, ConversionClassList>::packed_type,
                            ComplexDataVector>)) or
-        is_tuple_of_tensors_of_vectors<ReturnType>::value>> {
+        is_tuple_of_tensors_of_vectors<ReturnType,
+                                       ConversionClassList>::value>> {
   template <typename... Args>
   static ReturnType call(const std::string& module_name,
                          const std::string& function_name, const Args&... t) {
@@ -466,8 +547,9 @@ struct CallImpl<
       }
     }
 
-    auto return_container = is_tuple_of_tensors_of_vectors<
-        ReturnType>::template make_zero<ConversionClassList>(npts);
+    auto return_container =
+        is_tuple_of_tensors_of_vectors<ReturnType,
+                                       ConversionClassList>::make_zero(npts);
 
     for (size_t s = 0; s < npts; ++s) {
       PyObject* args = pypp::make_py_tuple(
