@@ -70,18 +70,18 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
-    const tnsr::I<DataType, SpatialDim, Frame>& vector,
-    const double vector_component_0,
+    const tnsr::I<DataType, SpatialDim, Frame>& one_form,
+    const double one_form_component_0,
     const std::array<double, SpatialDim>& velocity) {
   if (velocity == make_array<SpatialDim>(0.)) {
-    *result = vector;
+    *result = one_form;
     return;
   }
   const auto boost_matrix = lorentz_boost_matrix(velocity);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    result->get(i) = boost_matrix.get(i + 1, 0) * vector_component_0;
+    result->get(i) = boost_matrix.get(i + 1, 0) * one_form_component_0;
     for (size_t j = 0; j < SpatialDim; ++j) {
-      result->get(i) += boost_matrix.get(i + 1, j + 1) * vector.get(j);
+      result->get(i) += boost_matrix.get(i + 1, j + 1) * one_form.get(j);
     }
   }
 }
@@ -89,17 +89,17 @@ void lorentz_boost(
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> result,
-    const tnsr::a<DataType, SpatialDim, Frame>& vector,
+    const tnsr::a<DataType, SpatialDim, Frame>& one_form,
     const std::array<double, SpatialDim>& velocity) {
   if (velocity == make_array<SpatialDim>(0.)) {
-    *result = vector;
+    *result = one_form;
     return;
   }
   const auto boost_matrix = lorentz_boost_matrix(velocity);
   for (size_t i = 0; i < SpatialDim + 1; ++i) {
     result->get(i) = 0.;
     for (size_t j = 0; j < SpatialDim + 1; ++j) {
-      result->get(i) += boost_matrix.get(i, j) * vector.get(j);
+      result->get(i) += boost_matrix.get(i, j) * one_form.get(j);
     }
   }
 }
@@ -159,13 +159,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
   template void sr::lorentz_boost(                                        \
       const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>*>  \
           result,                                                         \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& vector,         \
-      const double vector_component_0,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& one_form,       \
+      const double one_form_component_0,                                  \
       const std::array<double, DIM(data)>& velocity);                     \
   template void sr::lorentz_boost(                                        \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>  \
           result,                                                         \
-      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& vector,         \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& one_form,       \
       const std::array<double, DIM(data)>& velocity);                     \
   template void sr::lorentz_boost(                                        \
       const gsl::not_null<tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>*> \

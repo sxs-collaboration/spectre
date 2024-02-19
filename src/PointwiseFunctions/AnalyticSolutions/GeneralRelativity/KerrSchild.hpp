@@ -228,6 +228,14 @@ namespace Solutions {
  * as in SpEC. Therefore it is technically not an analytic solution and should
  * not be used to compute errors with respect to it.
  *
+ * Moreover, since the boosted solution is intended for use as initial data,
+ * we do not compute the time derivatives of the lapse and shift in the boosted
+ * frame. We use gauge freedom to set them to zero.
+ *
+ * Consequently, the gr::Tags::SpacetimeChristoffelSecondKind computed here,
+ * corresponds to the boosted Kerr-Schild for the gauge where lapse and shift
+ * have vanishing derivatives.
+ *
  */
 class KerrSchild : public AnalyticSolution<3_st>,
                    public MarkAsAnalyticSolution {
