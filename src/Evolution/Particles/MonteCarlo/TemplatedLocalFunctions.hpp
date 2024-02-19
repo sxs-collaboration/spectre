@@ -1,0 +1,82 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace Frame {
+struct Fluid;
+}  // namespace Frame
+/// \endcond
+
+/// Items related to the evolution of particles
+/// Items related to Monte-Carlo radiation transport
+namespace Particles::MonteCarlo {
+
+struct Packet;
+
+namespace detail {
+
+void draw_single_packet(
+    gsl::not_null<double*> time,
+    gsl::not_null<std::array<double, 3>*> coord,
+    gsl::not_null<std::array<double, 3>*> momentum,
+    gsl::not_null<std::mt19937*> random_number_generator);
+}  // namespace detail
+
+/// Structure containing Monte-Carlo function templated on EnergyBins
+/// and/or NeutrinoSpecies
+template <size_t EnergyBins, size_t NeutrinoSpecies>
+struct TemplatedLocalFunctions {
+/*!
+ * \brief Function emitting Monte Carlo packets
+ *
+ * We emit a total energy emission_in_cell for each grid
+ * cell, neutrino species, and neutrino energy bin. We aim for packets of
+ * energy single_packet_energy in the fluid frame. The number of packets
+ * is, in each bin b and for each species s,
+ * `N = emission_in_cell[s][b] / single_packet_energy[s]`
+ * and randomly rounded up or down to get integer number of packets (i.e.
+ * if we want N=2.6 packets, there is a 60 percent chance of creating a 3rd
+ * packet). The position of the packets is drawn from a homogeneous
+ * distribution in the logical frame, and the direction of propagation of the
+ * neutrinos is drawn from an isotropic distribution in the fluid frame.
+ * Specifically, the 4-momentum of a packet of energy nu in the fluid frame
+ * is
+ * \f{align}
+ * p^t &= \nu \\
+ * p^x &= \nu * sin(\theta) * cos(\phi) \\
+ * p^y &= \nu * sin(\theta) * sin(\phi) \\
+ * p^z &= \nu * cos(theta)
+ * \f}
+ * with \f$cos(\theta)\f$ drawn from a uniform distribution in [-1,1] and
+ * \f$\phi\f$ from a uniform distribution in \f$[0,2*\pi]\f$. We
+ * transform to the inertial frame \f$p_t\f$ and \f$p^x,p^y,p^z\f$ using the
+ * jacobian/inverse jacobian passed as option. The number of neutrinos in
+ * each packet is defined as
+ * `n = single_packet_energy[s] / energy_at_bin_center[b]`
+ * Note that the packet energy is in code units and energy of a bin in MeV.
+*/
+  void emit_packets(
+      gsl::not_null<std::vector<Packet>*> packets,
+      gsl::not_null<std::mt19937*> random_number_generator,
+      const double& time_start_step, const double& time_step,
+      const Mesh<3>& mesh,
+      const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
+          emission_in_cell,
+      const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
+      const std::array<double, EnergyBins>& energy_at_bin_center,
+      const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+          inertial_to_fluid_jacobian,
+      const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+          inertial_to_fluid_inverse_jacobian);
+};
+
+}  // namespace Particles::MonteCarlo

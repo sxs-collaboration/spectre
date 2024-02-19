@@ -13,14 +13,17 @@
 /// Items related to Monte-Carlo radiation transport
 namespace Particles::MonteCarlo {
 
+/// Struct representing a single Monte Carlo packet of neutrinos
 struct Packet {
-  // Constructor
-  Packet(const double& number_of_neutrinos_,
+  /// Constructor
+  Packet(const size_t& species_,
+         const double& number_of_neutrinos_,
          const size_t& index_of_closest_grid_point_, const double& time_,
          const double& coord_x_, const double& coord_y_, const double& coord_z_,
          const double& p_upper_t_, const double& p_x_, const double& p_y_,
          const double& p_z_)
-      : number_of_neutrinos(number_of_neutrinos_),
+      : species(species_),
+        number_of_neutrinos(number_of_neutrinos_),
         index_of_closest_grid_point(index_of_closest_grid_point_),
         time(time_),
         momentum_upper_t(p_upper_t_) {
@@ -32,29 +35,33 @@ struct Packet {
     momentum[2] = p_z_;
   }
 
-  // Number of neutrinos represented by current packet
-  // Note that this number is rescaled so that
-  // Energy_of_packet = N * Energy_of_neutrinos
-  // with the packet energy in G=Msun=c=1 units but
-  // the neutrino energy in MeV!
+  /// Species of neutrinos (in the code, just an index used to access the
+  /// right interaction rates; typically \f$0=\nu_e, 1=\nu_a, 2=\nu_x\f$)
+  size_t species;
+
+  /// Number of neutrinos represented by current packet
+  /// Note that this number is rescaled so that
+  /// `Energy_of_packet = N * Energy_of_neutrinos`
+  /// with the packet energy in G=Msun=c=1 units but
+  /// the neutrino energy in MeV!
   double number_of_neutrinos;
 
-  // Index of the closest point on the FD grid.
+  /// Index of the closest point on the FD grid.
   size_t index_of_closest_grid_point;
 
-  // Current time
+  /// Current time
   double time;
 
-  // p^t
+  /// Stores \f$p^t\f$
   double momentum_upper_t;
 
-  // Coordinates of the packet, currently in Inertial coordinates
+  /// Coordinates of the packet, in element logical coordinates
   tnsr::I<double, 3, Frame::ElementLogical> coordinates;
 
-  // Spatial components of the 4-momentum, also in Inertial coordinates
+  /// Spatial components of the 4-momentum \f$p_i\f$, in Inertial coordinates
   tnsr::i<double, 3, Frame::Inertial> momentum;
 
-  // Recalculte p^t using the fact that the 4-momentum is a null vector
+  /// Recalculte \f$p^t\f$ using the fact that the 4-momentum is a null vector
   void renormalize_momentum(
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& lapse);

@@ -51,6 +51,8 @@ void diffuse_packet(gsl::not_null<Packet*> /*packet*/,
                     const double& /*time_step*/);
 }  // namespace detail
 
+/// Evolve all packets in the provided std::vector (approximately) to the
+/// end of the current time step.
 void evolve_packets(
     gsl::not_null<std::vector<Packet>*> packets, const double& time_step,
     const Mesh<3>& mesh,

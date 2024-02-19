@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "MonteCarloPacket.hpp"
+#include "Evolution/Particles/MonteCarlo/Packet.hpp"
 
 namespace Particles::MonteCarlo {
 
