@@ -121,7 +121,6 @@ struct make_neighbor_mortars_tag_impl {
  * conditions so far.
  */
 template <typename System, typename OptionsGroup,
-          typename ArgsTagsFromCenter = tmpl::list<>,
           typename BoundaryConditionClasses = tmpl::list<>>
 struct SubdomainOperator
     : LinearSolver::Schwarz::SubdomainOperator<System::volume_dim> {
@@ -187,8 +186,9 @@ struct SubdomainOperator
   // These tags can be taken directly from the central element's DataBox, even
   // when evaluating neighbors
   using args_tags_from_center = tmpl::remove_duplicates<tmpl::push_back<
-      ArgsTagsFromCenter, elliptic::dg::Tags::PenaltyParameter,
-      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>>;
+      typename System::fluxes_computer::const_global_cache_tags,
+      elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
+      elliptic::dg::Tags::Formulation>>;
 
   // Data on neighbors is stored in the central element's DataBox in
   // `LinearSolver::Schwarz::Tags::Overlaps` maps, so we wrap the argument tags

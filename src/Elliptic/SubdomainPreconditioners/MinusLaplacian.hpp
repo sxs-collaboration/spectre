@@ -117,7 +117,7 @@ class MinusLaplacian
   using BoundaryConditionsBase =
       typename poisson_system::boundary_conditions_base;
   using SubdomainOperator = elliptic::dg::subdomain_operator::SubdomainOperator<
-      poisson_system, OptionsGroup, tmpl::list<>,
+      poisson_system, OptionsGroup,
       tmpl::list<Poisson::BoundaryConditions::Robin<Dim>>>;
   using SubdomainData = ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
       Dim, tmpl::list<Poisson::Tags::Field>>;
