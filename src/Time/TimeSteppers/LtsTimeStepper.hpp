@@ -50,14 +50,14 @@ class LtsTimeStepper : public virtual TimeStepper {
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   using BoundaryHistoryType = TimeSteppers::BoundaryHistory<
       LocalVars, RemoteVars,
-      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+      std::invoke_result_t<const Coupling&, LocalVars, RemoteVars>>;
 
   /// Return type of boundary-related functions.  The coupling returns
   /// the derivative of the variables, but this is multiplied by the
   /// time step so the return type should not have `dt` prefixes.
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   using BoundaryReturn = db::unprefix_variables<
-      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+      std::invoke_result_t<const Coupling&, LocalVars, RemoteVars>>;
 
 /// \cond
 #define LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL(_, data)              \

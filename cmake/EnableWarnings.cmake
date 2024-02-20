@@ -44,6 +44,7 @@ if(${ENABLE_WARNINGS})
 -Wstack-protector;\
 -Wswitch-default;\
 -Wunreachable-code;\
+-Wno-gnu-zero-variadic-macro-arguments;\
 -Wwrite-strings" SpectreWarnings)
 endif()
 

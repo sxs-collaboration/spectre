@@ -67,10 +67,12 @@ struct RotatingSchwarzschild : public SphericalMetricData {
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  RotatingSchwarzschild(){};
+  RotatingSchwarzschild() {}
 
   RotatingSchwarzschild(double extraction_radius, double mass,
                         double frequency);
+
+  ~RotatingSchwarzschild() override = default;
 
   std::unique_ptr<WorldtubeData> get_clone() const override;
 

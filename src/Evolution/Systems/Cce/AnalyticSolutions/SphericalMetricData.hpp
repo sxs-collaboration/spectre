@@ -50,6 +50,8 @@ struct SphericalMetricData : public WorldtubeData {
   explicit SphericalMetricData(const double extraction_radius)
       : WorldtubeData{extraction_radius} {}
 
+  ~SphericalMetricData() override = default;
+
   /*!
    * Computes the Jacobian
    * \f$\partial x_{\mathrm{Cartesian}}^j / \partial x_{\mathrm{spherical}}^i\f$

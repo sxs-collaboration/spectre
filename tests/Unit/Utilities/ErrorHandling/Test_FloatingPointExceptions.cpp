@@ -21,6 +21,7 @@
 // the arm64 architecture, so when building on Apple Silicon,
 // directly call the fpe_signal_handler in these tests so that they pass.
 
+#if not (defined(__APPLE__) and defined(__arm64__))
 namespace {
 // Compilers (both gcc and clang) seem prone to deciding that these
 // can't actually throw exceptions and then optimizing away the
@@ -53,6 +54,7 @@ namespace {
   throw std::runtime_error("wrong");
 }
 }  // namespace
+#endif
 
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions",
                   "[ErrorHandling][Unit]") {
