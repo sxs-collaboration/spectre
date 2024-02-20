@@ -770,6 +770,15 @@ RotatingStar::variables(
 
 template <typename DataType>
 auto RotatingStar::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DataType>>> {
+  return make_with_value<Scalar<DataType>>(get<0>(x), 0.0);
+}
+
+template <typename DataType>
+auto RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<DerivLapse<DataType>> /*meta*/) const
@@ -789,6 +798,15 @@ auto RotatingStar::variables(
         (0.5 / vars->delta_r) * (get(lapse_upper) - get(lapse_lower));
   }
   return deriv_lapse;
+}
+
+template <typename DataType>
+auto RotatingStar::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::Shift<DataType, 3>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<DataType, 3>>> {
+  return make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(get<0>(x), 0.0);
 }
 
 template <typename DataType>
@@ -816,6 +834,16 @@ auto RotatingStar::variables(
     }
   }
   return deriv_shift;
+}
+
+template <typename DataType>
+auto RotatingStar::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /*vars*/,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>>> /*meta*/) const
+    -> tuples::TaggedTuple<::Tags::dt<gr::Tags::SpatialMetric<DataType, 3>>> {
+  return make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(get<0>(x),
+                                                                 0.0);
 }
 
 template <typename DataType>
@@ -973,6 +1001,37 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_DERIVS, (double, DataVector),
                         (DerivLapse, DerivShift, DerivSpatialMetric))
 
 #undef INSTANTIATE_METRIC_DERIVS
+
+#define INSTANTIATE_METRIC_TIME_DERIVS_SCALARS(_, data)                 \
+  template auto RotatingStar::variables(                                \
+      const gsl::not_null<IntermediateVariables<DTYPE(data)>*> /*vars*/,\
+      const tnsr::I<DTYPE(data), 3>& x,                                 \
+      tmpl::list < ::Tags::dt < TAG(data) < DTYPE(data) >>>             \
+      /*meta*/) const                                                   \
+      -> tuples::TaggedTuple < ::Tags::dt < TAG(data) < DTYPE(data) >>> \
+      ;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TIME_DERIVS_SCALARS,
+                        (double, DataVector), (gr::Tags::Lapse))
+
+#undef INSTANTIATE_METRIC_TIME_DERIVS_SCALARS
+
+#define INSTANTIATE_METRIC_TIME_DERIVS_TENSORS(_, data)              \
+  template auto RotatingStar::variables(                             \
+      const gsl::not_null<IntermediateVariables<DTYPE(data)>*>       \
+      /*vars*/,                                                      \
+      const tnsr::I<DTYPE(data), 3>& x,                              \
+      tmpl::list < ::Tags::dt < TAG(data) < DTYPE(data), 3 >>>       \
+      /*meta*/) const                                                \
+      -> tuples::TaggedTuple < ::Tags::dt < TAG(data) < DTYPE(data), \
+      3 >>>                                                          \
+      ;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TIME_DERIVS_TENSORS,
+                        (double, DataVector),
+                        (gr::Tags::Shift, gr::Tags::SpatialMetric))
+
+#undef INSTANTIATE_METRIC_TIME_DERIVS_TENSORS
 
 #undef TAG
 #undef DTYPE
