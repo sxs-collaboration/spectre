@@ -39,6 +39,8 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CartesianProduct.hpp"
@@ -406,6 +408,66 @@ void test_geodesic_acceleration_compute() {
                         expected_acceleration);
 }
 
+void test_background_quantities_compute() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+
+  // the velocity has to be less than c or the dilation factor is undefined
+  std::uniform_real_distribution<> pos_dist(1., 10.);
+  std::uniform_real_distribution<> vel_dist(-0.2, 0.2);
+
+  const auto random_position = make_with_random_values<tnsr::I<double, Dim>>(
+      make_not_null(&gen), pos_dist, 1);
+  const auto random_velocity = make_with_random_values<tnsr::I<double, Dim>>(
+      make_not_null(&gen), vel_dist, 1);
+  const gr::Solutions::KerrSchild kerr_schild(1., make_array(0.3, 0.1, 0.2),
+                                              make_array(0.3, 0.1, 0.2));
+  auto box =
+      db::create<db::AddSimpleTags<Tags::ParticlePositionVelocity<Dim>,
+                                   CurvedScalarWave::Tags::BackgroundSpacetime<
+                                       gr::Solutions::KerrSchild>>,
+                 db::AddComputeTags<Tags::BackgroundQuantitiesCompute<Dim>>>(
+          std::array<tnsr::I<double, Dim>, 2>{
+              {random_position, random_velocity}},
+          kerr_schild);
+  const auto kerr_schild_quantities = kerr_schild.variables(
+      random_position, 0.,
+      tmpl::list<gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
+                 gr::Tags::SpatialMetric<double, Dim>,
+                 gr::Tags::InverseSpatialMetric<double, Dim>>{});
+  const auto expected_metric = gr::spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::SpatialMetric<double, Dim>>(kerr_schild_quantities));
+  const auto expected_inverse_metric = gr::inverse_spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::InverseSpatialMetric<double, Dim>>(kerr_schild_quantities));
+
+  const auto& background_quantities =
+      db::get<Tags::BackgroundQuantities<Dim>>(box);
+
+  const auto& metric =
+      get<gr::Tags::SpacetimeMetric<double, Dim>>(background_quantities);
+  const auto& inverse_metric =
+      get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(background_quantities);
+
+  CHECK_ITERABLE_APPROX(metric, expected_metric);
+  CHECK_ITERABLE_APPROX(inverse_metric, expected_inverse_metric);
+
+  const double dilation_factor =
+      get(get<Tags::TimeDilationFactor>(background_quantities));
+
+  tnsr::A<double, Dim> four_velocity{};
+  get<0>(four_velocity) = dilation_factor;
+  for (size_t i = 0; i < Dim; ++i) {
+    four_velocity.get(i + 1) = random_velocity.get(i) * dilation_factor;
+  }
+  const auto normalization = tenex::evaluate<>(
+      metric(ti::a, ti::b) * four_velocity(ti::A) * four_velocity(ti::B));
+  CHECK(get(normalization) == approx(-1.));
+}
+
 void test_puncture_field() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
@@ -571,6 +633,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "GeodesicAcceleration");
   TestHelpers::db::test_simple_tag<Tags::TimeDilationFactor>(
       "TimeDilationFactor");
+  TestHelpers::db::test_simple_tag<Tags::BackgroundQuantities<3>>(
+      "BackgroundQuantities");
   test_excision_sphere_tag();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
@@ -578,6 +642,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   test_particle_position_velocity_compute();
   test_evolved_particle_position_velocity_compute();
   test_geodesic_acceleration_compute();
+  test_background_quantities_compute();
   test_puncture_field();
   test_check_input_file();
 }

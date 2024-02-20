@@ -31,6 +31,7 @@
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace Tags {
@@ -392,6 +393,35 @@ struct TimeDilationFactor : db::SimpleTag {
   using type = Scalar<double>;
 };
 
+/// @{
+/*!
+ * \brief A tuple of Tensors evaluated at the charge depending only the
+ * background and the particle's position and velocity. These values are
+ * effectively cached between different iterations of the worldtube scheme.
+ */
+template <size_t Dim>
+struct BackgroundQuantities : db::SimpleTag {
+  using type =
+      tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
+                          gr::Tags::InverseSpacetimeMetric<double, Dim>,
+                          Tags::TimeDilationFactor>;
+};
+
+template <size_t Dim>
+struct BackgroundQuantitiesCompute : BackgroundQuantities<Dim>, db::ComputeTag {
+  using base = BackgroundQuantities<Dim>;
+  using return_type =
+      tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
+                          gr::Tags::InverseSpacetimeMetric<double, Dim>,
+                          Tags::TimeDilationFactor>;
+
+  using argument_tags = tmpl::list<
+      ParticlePositionVelocity<Dim>,
+      CurvedScalarWave::Tags::BackgroundSpacetime<gr::Solutions::KerrSchild>>;
+  static void function(gsl::not_null<return_type*> result,
+                       const std::array<tnsr::I<double, Dim, Frame::Inertial>,
+                                        2>& position_velocity,
+                       const gr::Solutions::KerrSchild& background_spacetime);
 };
 /// @}
 

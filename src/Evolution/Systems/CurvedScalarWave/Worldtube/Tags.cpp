@@ -20,6 +20,8 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
@@ -173,9 +175,44 @@ void GeodesicAccelerationCompute<Dim>::function(
   gr::geodesic_acceleration(acceleration, position_velocity.at(1), christoffel);
 }
 
-template struct ParticlePositionVelocityCompute<3>;
+template <size_t Dim>
+void BackgroundQuantitiesCompute<Dim>::function(
+    gsl::not_null<return_type*> result,
+    const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>&
+        position_velocity,
+    const gr::Solutions::KerrSchild& background_spacetime) {
+  const auto kerr_schild_quantities = background_spacetime.variables(
+      position_velocity.at(0), 0.,
+      tmpl::list<gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
+                 gr::Tags::SpatialMetric<double, Dim>,
+                 gr::Tags::InverseSpatialMetric<double, Dim>>{});
+  auto metric = gr::spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::SpatialMetric<double, Dim>>(kerr_schild_quantities));
+  auto inverse_metric = gr::inverse_spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::InverseSpatialMetric<double, Dim>>(kerr_schild_quantities));
+
+  const auto& velocity = position_velocity.at(1);
+  double temp = metric.get(0, 0);
+  for (size_t i = 0; i < Dim; ++i) {
+    temp += 2. * metric.get(i + 1, 0) * velocity.get(i);
+    for (size_t j = 0; j < Dim; ++j) {
+      temp += metric.get(i + 1, j + 1) * velocity.get(i) * velocity.get(j);
+    }
+  }
+  get(get<TimeDilationFactor>(*result)) = sqrt(-1. / temp);
+  get<gr::Tags::SpacetimeMetric<double, Dim>>(*result) = std::move(metric);
+  get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(*result) =
+      std::move(inverse_metric);
+}
+
+template struct BackgroundQuantitiesCompute<3>;
 template struct EvolvedParticlePositionVelocityCompute<3>;
 template struct GeodesicAccelerationCompute<3>;
+template struct ParticlePositionVelocityCompute<3>;
 template struct PunctureFieldCompute<3>;
 
 template struct FaceCoordinatesCompute<3, Frame::Grid, true>;
