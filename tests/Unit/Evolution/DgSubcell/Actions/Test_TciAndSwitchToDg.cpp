@@ -38,6 +38,7 @@
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
@@ -90,6 +91,7 @@ struct component {
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciGridHistory,
       evolution::dg::subcell::Tags::TciCallsSinceRollback,
+      evolution::dg::subcell::Tags::StepsSinceTciCall,
       Tags::Variables<tmpl::list<Var1>>,
       Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
       Tags::ConcreteTimeStepper<TimeStepper>,
@@ -322,13 +324,14 @@ void test_impl(
 
   // Set a large number of TCI calls to mock having just returned from FD.
   const size_t tci_calls_since_rollback = 100;
+  const size_t steps_since_tci_call = 300;
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
        ghost_data, tci_decision, rdmp_tci_data, tci_grid_history,
-       tci_calls_since_rollback, evolved_vars, time_stepper_history,
-       make_time_stepper(multistep_time_stepper), neighbor_decisions,
-       Element<Dim>{ElementId<Dim>{0}, {}},
+       tci_calls_since_rollback, steps_since_tci_call, evolved_vars,
+       time_stepper_history, make_time_stepper(multistep_time_stepper),
+       neighbor_decisions, Element<Dim>{ElementId<Dim>{0}, {}},
        typename evolution::dg::subcell::Tags::CellCenteredFlux<
            typename metavars::system::flux_variables, Dim>::type::value_type{
            subcell_mesh.number_of_grid_points()}});
@@ -383,10 +386,16 @@ void test_impl(
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
                 runner, 0) == tci_calls_since_rollback);
+      CHECK(ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(
+                runner, 0) == steps_since_tci_call);
     } else {
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
                 runner, 0) == tci_calls_since_rollback + 1);
+      CHECK(ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(
+                runner, 0) == steps_since_tci_call + 1);
     }
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);

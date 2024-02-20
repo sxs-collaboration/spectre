@@ -30,6 +30,7 @@
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
@@ -211,12 +212,15 @@ struct TciAndSwitchToDg {
                                      only_need_rdmp_data);
 
     db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci,
-               evolution::dg::subcell::Tags::TciCallsSinceRollback>(
+               evolution::dg::subcell::Tags::TciCallsSinceRollback,
+               evolution::dg::subcell::Tags::StepsSinceTciCall>(
         [only_need_rdmp_data, &tci_result](
             const auto rdmp_data_ptr,
-            const gsl::not_null<size_t*> tci_calls_since_rollback_ptr) {
+            const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
+            const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
           (*tci_calls_since_rollback_ptr) += (only_need_rdmp_data ? 0 : 1);
+          (*steps_since_tci_call_ptr) += (only_need_rdmp_data ? 0 : 1);
         },
         make_not_null(&box));
 
