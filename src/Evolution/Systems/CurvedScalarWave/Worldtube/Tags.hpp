@@ -384,6 +384,17 @@ struct GeodesicAccelerationCompute : GeodesicAcceleration<Dim>, db::ComputeTag {
 };
 /// @}
 
+/*!
+ * \brief The coordinate time dilation factor of the scalar charge, i.e. the 0th
+ * component of its 4-velocity.
+ */
+struct TimeDilationFactor : db::SimpleTag {
+  using type = Scalar<double>;
+};
+
+};
+/// @}
+
 /// @{
 /*!
  * \brief An optional that holds the coordinates of an element face abutting the

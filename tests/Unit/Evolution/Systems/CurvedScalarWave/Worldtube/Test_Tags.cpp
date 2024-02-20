@@ -569,6 +569,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "ObserveCoefficientsTrigger");
   TestHelpers::db::test_simple_tag<Tags::GeodesicAcceleration<3>>(
       "GeodesicAcceleration");
+  TestHelpers::db::test_simple_tag<Tags::TimeDilationFactor>(
+      "TimeDilationFactor");
   test_excision_sphere_tag();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
