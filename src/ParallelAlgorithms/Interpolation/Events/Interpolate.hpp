@@ -50,6 +50,7 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
 class Interpolate<VolumeDim, InterpolationTargetTag,
                   tmpl::list<InterpolatorSourceVarTags...>> : public Event {
+ public:
   /// \cond
   explicit Interpolate(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
