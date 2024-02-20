@@ -39,6 +39,7 @@
 #include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
+#include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
@@ -119,6 +120,8 @@ void test(const bool moving_mesh) {
       "InterpolatorsFromNeighborDgToFd");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciCallsSinceRollback>(
       "TciCallsSinceRollback");
+  TestHelpers::db::test_simple_tag<subcell::Tags::StepsSinceTciCall>(
+      "StepsSinceTciCall");
 
   TestHelpers::db::test_compute_tag<
       subcell::Tags::LogicalCoordinatesCompute<Dim>>(
