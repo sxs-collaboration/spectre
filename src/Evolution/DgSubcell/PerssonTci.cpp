@@ -34,7 +34,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
   for (size_t d = 0; d < Dim; ++d) {
     auto matrices = make_array<Dim>(std::cref(identity));
     gsl::at(matrices, d) = Spectral::filtering::zero_lowest_modes(
-        dg_mesh.slice_through(d), dg_mesh.extents(d) - 1);
+        dg_mesh.slice_through(d), dg_mesh.extents(d) - num_highest_modes);
     apply_matrices(filtered_component, matrices, component, dg_mesh.extents());
 
     //
