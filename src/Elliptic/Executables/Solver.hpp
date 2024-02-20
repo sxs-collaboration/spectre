@@ -46,7 +46,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// Items related to composing nonlinear elliptic solver executables
-namespace elliptic::nonlinear_solver {
+namespace elliptic {
 
 /// Option tags for nonlinear elliptic solver executables
 namespace OptionTags {
@@ -327,4 +327,4 @@ struct Solver {
                  typename schwarz_smoother::component_list>>;
 };
 
-}  // namespace elliptic::nonlinear_solver
+}  // namespace elliptic

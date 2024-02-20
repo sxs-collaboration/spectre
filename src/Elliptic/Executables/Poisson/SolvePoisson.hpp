@@ -14,7 +14,7 @@
 #include "Elliptic/Actions/RunEventsAndTriggers.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
+#include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/Poisson/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
@@ -58,7 +58,7 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using system =
       Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
-  using solver = elliptic::nonlinear_solver::Solver<Metavariables>;
+  using solver = elliptic::Solver<Metavariables>;
 
   using analytic_solution_fields = typename system::primal_fields;
   using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;

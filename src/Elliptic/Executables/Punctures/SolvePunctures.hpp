@@ -11,7 +11,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/RunEventsAndTriggers.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
+#include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/Punctures/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Punctures/FirstOrderSystem.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
@@ -47,7 +47,7 @@ struct Metavariables {
 
   static constexpr size_t volume_dim = 3;
   using system = Punctures::FirstOrderSystem;
-  using solver = elliptic::nonlinear_solver::Solver<Metavariables>;
+  using solver = elliptic::Solver<Metavariables>;
 
   using observe_integral_fields =
       tmpl::list<Punctures::Tags::AdmMassIntegrandCompute>;
