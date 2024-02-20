@@ -251,8 +251,6 @@ struct PrepareAndSendMortarData<
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
             box),
-        db::get<domain::Tags::Faces<
-            Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         mortar_meshes,
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         temporal_id, apply_boundary_condition,
@@ -403,7 +401,7 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
                                     Frame::ElementLogical, Frame::Inertial>,
                                 Dim>>(box),
-        db::get<elliptic::dg::Tags::PenaltyParameter>(box),
+        db::get<::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>(box),
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), temporal_id,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
@@ -632,7 +630,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                                    Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
-        db::get<elliptic::dg::Tags::PenaltyParameter>(box),
+        db::get<::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>(box),
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), apply_boundary_condition,
         std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),

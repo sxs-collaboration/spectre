@@ -1243,37 +1243,4 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       }
     }
   }
-
-  // The following are tests for smaller units of functionality
-  {
-    INFO("Zero boundary data");
-    const auto direction = Direction<2>::lower_xi();
-    const Mesh<2> mesh{
-        {5, 3}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-    const Mesh<1> mortar_mesh{4, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
-    const ::dg::MortarSize<1> mortar_size{{Spectral::MortarSize::LowerHalf}};
-    const Scalar<DataVector> face_normal_magnitude{{{{1., 2., 3.}}}};
-    const auto boundary_data =
-        elliptic::dg::zero_boundary_data_on_mortar<tmpl::list<ScalarFieldTag>,
-                                                   tmpl::list<AuxFieldTag<2>>>(
-            direction, mesh, face_normal_magnitude, mortar_mesh, mortar_size);
-    CHECK(get(get<::Tags::NormalDotFlux<ScalarFieldTag>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<0>(get<::Tags::NormalDotFlux<AuxFieldTag<2>>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<1>(get<::Tags::NormalDotFlux<AuxFieldTag<2>>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get(get<elliptic::dg::Tags::NormalDotFluxForJump<ScalarFieldTag>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<elliptic::dg::Tags::PerpendicularNumPoints>(
-              boundary_data.extra_data) == 5);
-    const DataVector expected_element_size{2., 1., 2. / 3.};
-    const auto expected_element_size_on_mortar =
-        apply_matrices(Spectral::projection_matrix_parent_to_child(
-                           mesh.slice_away(0), mortar_mesh, mortar_size),
-                       expected_element_size, Index<1>{3});
-    CHECK(get(get<elliptic::dg::Tags::ElementSize>(boundary_data.field_data)) ==
-          expected_element_size_on_mortar);
-  }
 }

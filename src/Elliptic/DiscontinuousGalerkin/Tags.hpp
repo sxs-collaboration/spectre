@@ -4,6 +4,8 @@
 #pragma once
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
@@ -75,6 +77,15 @@ struct PenaltyParameter : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::PenaltyParameter>;
   static double create_from_options(const double value) { return value; }
+};
+
+/*!
+ * \brief The penalty factor in internal penalty fluxes
+ *
+ * \see elliptic::dg::penalty
+ */
+struct PenaltyFactor : db::SimpleTag {
+  using type = Scalar<DataVector>;
 };
 
 /// Whether or not to multiply the DG operator with the mass matrix. Massive DG

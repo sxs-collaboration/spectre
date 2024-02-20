@@ -181,6 +181,42 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
   }
   return mortar_logical_coords;
 }
+
+template <size_t Dim>
+void mortar_jacobian(
+    const gsl::not_null<Scalar<DataVector>*> mortar_jacobian,
+    const gsl::not_null<Scalar<DataVector>*> perpendicular_element_size,
+    const Mesh<Dim - 1>& mortar_mesh,
+    const ::dg::MortarSize<Dim - 1>& mortar_size,
+    const Direction<Dim>& direction,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+        mortar_logical_coords,
+    const std::optional<tnsr::II<DataVector, Dim>>& inv_metric_on_mortar,
+    const ElementMap<Dim, Frame::Inertial>& element_map,
+    const domain::FunctionsOfTimeMap& functions_of_time) {
+  determinant(mortar_jacobian, element_map.jacobian(mortar_logical_coords, 0.,
+                                                    functions_of_time));
+  // These factors of two account for the mortar size
+  for (const auto& mortar_size_i : mortar_size) {
+    if (mortar_size_i != Spectral::MortarSize::Full) {
+      get(*mortar_jacobian) *= 0.5;
+    }
+  }
+  const auto inv_jacobian_on_mortar =
+      element_map.inv_jacobian(mortar_logical_coords, 0., functions_of_time);
+  const auto unnormalized_mortar_normal =
+      unnormalized_face_normal(mortar_mesh, inv_jacobian_on_mortar, direction);
+  Scalar<DataVector> mortar_normal_magnitude{};
+  if (inv_metric_on_mortar.has_value()) {
+    magnitude(make_not_null(&mortar_normal_magnitude),
+              unnormalized_mortar_normal, inv_metric_on_mortar.value());
+  } else {
+    magnitude(make_not_null(&mortar_normal_magnitude),
+              unnormalized_mortar_normal);
+  }
+  get(*mortar_jacobian) *= get(mortar_normal_magnitude);
+  get(*perpendicular_element_size) = 2. / get(mortar_normal_magnitude);
+}
 }  // namespace detail
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -197,7 +233,19 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
   detail::mortar_logical_coordinates(                                          \
       const Mesh<DIM(data) - 1>& mortar_mesh,                                  \
       const ::dg::MortarSize<DIM(data) - 1>& mortar_size,                      \
-      const Direction<DIM(data)>& direction);
+      const Direction<DIM(data)>& direction);                                  \
+  template void detail::mortar_jacobian(                                       \
+      gsl::not_null<Scalar<DataVector>*> mortar_jacobian,                      \
+      gsl::not_null<Scalar<DataVector>*> perpendicular_element_size,           \
+      const Mesh<DIM(data) - 1>& mortar_mesh,                                  \
+      const ::dg::MortarSize<DIM(data) - 1>& mortar_size,                      \
+      const Direction<DIM(data)>& direction,                                   \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&             \
+          mortar_logical_coords,                                               \
+      const std::optional<tnsr::II<DataVector, DIM(data)>>&                    \
+          inv_metric_on_mortar,                                                \
+      const ElementMap<DIM(data), Frame::Inertial>& element_map,               \
+      const domain::FunctionsOfTimeMap& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

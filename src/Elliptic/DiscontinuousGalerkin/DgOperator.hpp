@@ -20,7 +20,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
-#include "Elliptic/DiscontinuousGalerkin/Penalty.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
@@ -136,18 +135,6 @@
 namespace elliptic::dg {
 
 namespace Tags {
-/// Number of grid points perpendicular to an element face. Used to compute
-/// the penalty (see `elliptic::dg::penalty`).
-struct PerpendicularNumPoints {
-  using type = size_t;
-};
-
-/// A measure of element size perpendicular to an element face. Used to compute
-/// the penalty (see `elliptic::dg::penalty`).
-struct ElementSize : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
 /// The quantity \f$n_i F^i(n_j u)\f$ where \f$F^i\f$ is the system flux, and
 /// \f$n_i\f$ is the face normal. This quantity is projected to mortars to
 /// compute the jump term of the numerical flux.
@@ -164,35 +151,8 @@ template <typename PrimalFields, typename PrimalFluxes>
 using BoundaryData = ::dg::SimpleBoundaryData<
     tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, PrimalFields>,
                  db::wrap_tags_in<::Tags::NormalDotFlux, PrimalFluxes>,
-                 db::wrap_tags_in<Tags::NormalDotFluxForJump, PrimalFields>,
-                 tmpl::list<Tags::ElementSize>>,
-    tmpl::list<Tags::PerpendicularNumPoints>>;
-
-/// Construct `elliptic::dg::BoundaryData` assuming the variable data on the
-/// element is zero, and project it to the mortar.
-template <typename PrimalMortarFields, typename PrimalMortarFluxes, size_t Dim>
-BoundaryData<PrimalMortarFields, PrimalMortarFluxes>
-zero_boundary_data_on_mortar(const Direction<Dim>& direction,
-                             const Mesh<Dim>& mesh,
-                             const Scalar<DataVector>& face_normal_magnitude,
-                             const Mesh<Dim - 1>& mortar_mesh,
-                             const ::dg::MortarSize<Dim - 1>& mortar_size) {
-  const auto face_mesh = mesh.slice_away(direction.dimension());
-  const size_t face_num_points = face_mesh.number_of_grid_points();
-  BoundaryData<PrimalMortarFields, PrimalMortarFluxes> boundary_data{
-      face_num_points};
-  boundary_data.field_data.initialize(face_num_points, 0.);
-  get<Tags::PerpendicularNumPoints>(boundary_data.extra_data) =
-      mesh.extents(direction.dimension());
-  // Possible optimization: Store face-normal magnitude on mortars in DataBox,
-  // so we don't have to project it here.
-  get(get<Tags::ElementSize>(boundary_data.field_data)) =
-      2. / get(face_normal_magnitude);
-  return Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-             ? boundary_data.project_to_mortar(face_mesh, mortar_mesh,
-                                               mortar_size)
-             : std::move(boundary_data);
-}
+                 db::wrap_tags_in<Tags::NormalDotFluxForJump, PrimalFields>>,
+    tmpl::list<>>;
 
 /// Boundary data on both sides of a mortar.
 ///
@@ -298,7 +258,6 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                             Frame::Inertial>& inv_jacobian,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
       const DirectionMap<Dim, tnsr::I<DataVector, Dim>>& face_normal_vectors,
-      const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const TemporalId& temporal_id,
@@ -398,18 +357,21 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const size_t face_num_points = face_mesh.number_of_grid_points();
       const auto& face_normal = face_normals.at(direction);
       const auto& face_normal_vector = face_normal_vectors.at(direction);
-      const auto& face_normal_magnitude = face_normal_magnitudes.at(direction);
       const auto& fluxes_args_on_face = fluxes_args_on_faces.at(direction);
       Variables<tmpl::list<PrimalFluxesVars...>> primal_fluxes_on_face{};
       Variables<tmpl::list<PrimalVars...>> vars_on_face{};
       BoundaryData<tmpl::list<PrimalMortarVars...>,
                    tmpl::list<PrimalMortarFluxes...>>
-          boundary_data{face_num_points};
+          boundary_data{};
       if (AllDataIsZero or local_data_is_zero) {
-        // Just setting all boundary field data to zero. Variable-independent
-        // data such as the element size will be set below.
-        boundary_data.field_data.initialize(face_num_points, 0.);
+        if (is_internal) {
+          // We manufacture zero boundary data directly on the mortars below.
+          // Nothing to do here.
+        } else {
+          boundary_data.field_data.initialize(face_num_points, 0.);
+        }
       } else {
+        boundary_data.field_data.initialize(face_num_points);
         primal_fluxes_on_face.initialize(face_num_points);
         vars_on_face.initialize(face_num_points);
         // Compute F^i(n_j u) on faces
@@ -443,16 +405,6 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                 boundary_data.field_data)));
       }
 
-      // Collect the remaining data that's needed on both sides of the boundary
-      // These are actually constant throughout the solve, so a performance
-      // optimization could be to store them in the DataBox. In particular, when
-      // the `local_data_is_zero` we don't have do projections at all if we
-      // store the face-normal magnitude on mortars in the DataBox.
-      get<Tags::PerpendicularNumPoints>(boundary_data.extra_data) =
-          mesh.extents(direction.dimension());
-      get(get<Tags::ElementSize>(boundary_data.field_data)) =
-          2. / get(face_normal_magnitude);
-
       if (is_internal) {
         if constexpr (not AllDataIsZero) {
           // Project boundary data on internal faces to mortars
@@ -463,6 +415,18 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
             const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
             const auto& mortar_mesh = all_mortar_meshes.at(mortar_id);
             const auto& mortar_size = all_mortar_sizes.at(mortar_id);
+            if (local_data_is_zero) {
+              // No need to project anything. We just manufacture zero boundary
+              // data on the mortar.
+              BoundaryData<tmpl::list<PrimalMortarVars...>,
+                           tmpl::list<PrimalMortarFluxes...>>
+                  zero_boundary_data{};
+              zero_boundary_data.field_data.initialize(
+                  mortar_mesh.number_of_grid_points(), 0.);
+              (*all_mortar_data)[mortar_id].local_insert(
+                  temporal_id, std::move(zero_boundary_data));
+              continue;
+            }
             // When no projection is necessary we can safely move the boundary
             // data from the face as there is only a single neighbor in this
             // direction
@@ -608,8 +572,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
       const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
-      const double penalty_parameter, const bool massive,
-      const ::dg::Formulation formulation, const TemporalId& /*temporal_id*/,
+      const ::dg::MortarMap<Dim, Scalar<DataVector>>& penalty_factors,
+      const bool massive, const ::dg::Formulation formulation,
+      const TemporalId& /*temporal_id*/,
       const std::tuple<SourcesArgs...>& sources_args,
       const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
@@ -804,12 +769,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       // the data so early together with the auxiliary boundary data. In this
       // case the penalty needs to include a factor N_points^2 / h (see the
       // `penalty` function).
-      const auto penalty = elliptic::dg::penalty(
-          min(get(get<Tags::ElementSize>(local_data.field_data)),
-              get(get<Tags::ElementSize>(remote_data.field_data))),
-          std::max(get<Tags::PerpendicularNumPoints>(local_data.extra_data),
-                   get<Tags::PerpendicularNumPoints>(remote_data.extra_data)),
-          penalty_parameter);
+      const auto& penalty_factor = penalty_factors.at(mortar_id);
       // Start with the penalty term
       auto primal_boundary_corrections_on_mortar =
           Variables<tmpl::list<PrimalMortarVars...>>(
@@ -824,7 +784,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           get<PrimalMortarVars>(primal_boundary_corrections_on_mortar),
           get<Tags::NormalDotFluxForJump<PrimalMortarVars>>(
               remote_data.field_data)));
-      primal_boundary_corrections_on_mortar *= penalty;
+      primal_boundary_corrections_on_mortar *= get(penalty_factor);
       const auto add_avg_contribution = [](auto& lhs, const auto& rhs,
                                            const double prefactor) {
         for (size_t i = 0; i < lhs.size(); ++i) {
@@ -951,8 +911,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           face_jacobian_times_inv_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
-      const double penalty_parameter, const bool massive,
-      const ::dg::Formulation formulation,
+      const ::dg::MortarMap<Dim, Scalar<DataVector>>& penalty_factors,
+      const bool massive, const ::dg::Formulation formulation,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
@@ -987,16 +947,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         make_not_null(&unused_deriv_vars_buffer),
         make_not_null(&primal_fluxes_buffer), make_not_null(&all_mortar_data),
         zero_primal_vars, element, mesh, inv_jacobian, face_normals,
-        face_normal_vectors, face_normal_magnitudes, all_mortar_meshes,
-        all_mortar_sizes, temporal_id, apply_boundary_condition, fluxes_args,
-        fluxes_args_on_faces);
+        face_normal_vectors, all_mortar_meshes, all_mortar_sizes, temporal_id,
+        apply_boundary_condition, fluxes_args, fluxes_args_on_faces);
     apply_operator<true>(
         make_not_null(&operator_applied_to_zero_vars),
         make_not_null(&all_mortar_data), zero_primal_vars, primal_fluxes_buffer,
         element, mesh, inv_jacobian, det_inv_jacobian, det_jacobian,
         det_times_inv_jacobian, face_normal_magnitudes, face_jacobians,
         face_jacobian_times_inv_jacobians, all_mortar_meshes, all_mortar_sizes,
-        {}, penalty_parameter, massive, formulation, temporal_id, sources_args);
+        {}, penalty_factors, massive, formulation, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;
