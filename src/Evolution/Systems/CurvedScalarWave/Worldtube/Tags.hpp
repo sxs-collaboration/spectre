@@ -192,7 +192,8 @@ struct ObserveCoefficientsTrigger : db::SimpleTag {
 /// @{
 /*!
  * \brief The position and velocity of the scalar charge particle orbiting a
- * central black hole given in inertial coordinates.
+ * central black hole given in inertial coordinates. This compute tag is meant
+ * to be used by the elements.
  */
 template <size_t Dim>
 struct ParticlePositionVelocity : db::SimpleTag {
@@ -208,7 +209,7 @@ struct ParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
                                    domain::Tags::FunctionsOfTime>;
   static void function(
       gsl::not_null<std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>*>
-          position,
+          position_velocity,
       const ::ExcisionSphere<Dim>& excision_sphere, double time,
       const std::unordered_map<
           std::string,
@@ -216,6 +217,43 @@ struct ParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
           functions_of_time);
 };
 /// @}
+
+/*!
+ * \brief The position of the scalar charge evolved by the worldtube singleton.
+ * This tag is meant to be used by the worldtube singleton to evolve the orbit.
+ */
+template <size_t Dim>
+struct EvolvedPosition : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim>;
+};
+
+/*!
+ * \brief The velocity of the scalar charge evolved by the worldtube singleton.
+ * This tag is meant to be used by the worldtube singleton to evolve the orbit.
+ */
+template <size_t Dim>
+struct EvolvedVelocity : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim>;
+};
+
+/*!
+ * \brief The position and velocity of the scalar charge particle orbiting a
+ * central black hole given in inertial coordinates. This compute tag is meant
+ * to be used by the worldtube singleton which evolves the position and velocity
+ * according to an ODE along with the DG evolution.
+ */
+template <size_t Dim>
+struct EvolvedParticlePositionVelocityCompute : ParticlePositionVelocity<Dim>,
+                                                db::ComputeTag {
+  using base = ParticlePositionVelocity<Dim>;
+  using return_type = std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>;
+  using argument_tags = tmpl::list<EvolvedPosition<Dim>, EvolvedVelocity<Dim>>;
+  static void function(
+      gsl::not_null<std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>*>
+          position_velocity,
+      const tnsr::I<DataVector, Dim>& evolved_position,
+      const tnsr::I<DataVector, Dim>& evolved_velocity);
+};
 
 /// @{
 /*!

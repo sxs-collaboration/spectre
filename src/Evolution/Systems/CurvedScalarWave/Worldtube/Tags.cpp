@@ -146,6 +146,18 @@ void ParticlePositionVelocityCompute<Dim>::function(
 }
 
 template <size_t Dim>
+void EvolvedParticlePositionVelocityCompute<Dim>::function(
+    gsl::not_null<std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>*>
+        position_velocity,
+    const tnsr::I<DataVector, Dim>& evolved_position,
+    const tnsr::I<DataVector, Dim>& evolved_velocity) {
+  for (size_t i = 0; i < Dim; ++i) {
+    (*position_velocity)[0].get(i) = evolved_position.get(i)[0];
+    (*position_velocity)[1].get(i) = evolved_velocity.get(i)[0];
+  }
+}
+
+template <size_t Dim>
 void GeodesicAccelerationCompute<Dim>::function(
     gsl::not_null<tnsr::I<double, Dim, Frame::Inertial>*> acceleration,
     const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>&
@@ -161,6 +173,7 @@ void GeodesicAccelerationCompute<Dim>::function(
 }
 
 template struct ParticlePositionVelocityCompute<3>;
+template struct EvolvedParticlePositionVelocityCompute<3>;
 template struct GeodesicAccelerationCompute<3>;
 template struct PunctureFieldCompute<3>;
 

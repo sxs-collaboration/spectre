@@ -344,6 +344,26 @@ void test_particle_position_velocity_compute() {
   }
 }
 
+void test_evolved_particle_position_velocity_compute() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  const DataVector used_for_size(1);
+  const auto evolved_pos = make_with_random_values<tnsr::I<DataVector, Dim>>(
+      make_not_null(&gen), dist, used_for_size);
+  const auto evolved_vel = make_with_random_values<tnsr::I<DataVector, Dim>>(
+      make_not_null(&gen), dist, used_for_size);
+  auto box = db::create<
+      db::AddSimpleTags<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>,
+      db::AddComputeTags<Tags::EvolvedParticlePositionVelocityCompute<3>>>(
+      evolved_pos, evolved_vel);
+  const auto& pos_vel = db::get<Tags::ParticlePositionVelocity<Dim>>(box);
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(pos_vel[0].get(i) == evolved_pos.get(i)[0]);
+    CHECK(pos_vel[1].get(i) == evolved_vel.get(i)[0]);
+  }
+}
+
 void test_geodesic_acceleration_compute() {
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
@@ -510,6 +530,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       Tags::FaceCoordinates<3, Frame::Inertial, false>>("FaceCoordinates");
   TestHelpers::db::test_simple_tag<Tags::ParticlePositionVelocity<3>>(
       "ParticlePositionVelocity");
+  TestHelpers::db::test_simple_tag<Tags::EvolvedPosition<3>>("EvolvedPosition");
+  TestHelpers::db::test_simple_tag<Tags::EvolvedVelocity<3>>("EvolvedVelocity");
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
   TestHelpers::db::test_simple_tag<
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
@@ -521,6 +543,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
   test_particle_position_velocity_compute();
+  test_evolved_particle_position_velocity_compute();
   test_geodesic_acceleration_compute();
   test_puncture_field();
   test_check_input_file();
