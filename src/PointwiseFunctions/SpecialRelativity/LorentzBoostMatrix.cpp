@@ -70,18 +70,19 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
 template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
     const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
-    const tnsr::I<DataType, SpatialDim, Frame>& one_form,
-    const double one_form_component_0,
+    const tnsr::I<DataType, SpatialDim, Frame>& vector,
+    const double vector_component_0,
     const std::array<double, SpatialDim>& velocity) {
   if (velocity == make_array<SpatialDim>(0.)) {
-    *result = one_form;
+    *result = vector;
     return;
   }
-  const auto boost_matrix = lorentz_boost_matrix(velocity);
+  // Inverse matrix with respect to the boost applied to one forms
+  const auto boost_matrix = lorentz_boost_matrix(-velocity);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    result->get(i) = boost_matrix.get(i + 1, 0) * one_form_component_0;
+    result->get(i) = boost_matrix.get(i + 1, 0) * vector_component_0;
     for (size_t j = 0; j < SpatialDim; ++j) {
-      result->get(i) += boost_matrix.get(i + 1, j + 1) * one_form.get(j);
+      result->get(i) += boost_matrix.get(i + 1, j + 1) * vector.get(j);
     }
   }
 }

@@ -219,9 +219,11 @@ namespace Solutions {
  *
  * We add initial momentum to the solution by applying a Lorentz boost to the
  * metric. Since the Kerr-Schild metric can be expressed covariantly in terms of
- * the Minkowski metric, a scalar function and a one form, we constructing the
- * metric by boosting the these objects individually. Notice that we also need
- * to appropriately boost the coordinates to the boosted frame.
+ * the Minkowski metric, a scalar function and a one form, we construct the
+ * metric in the rest frame of the black hole and then apply an inverse boost to
+ * each of the covariant objects individually. Notice that we also need to
+ * appropriately boost the coordinates to the to the rest frame before computing
+ * the metric.
  *
  * \warning While technically the boosted Kerr-Schild metric is dependent on
  * both the time and space coordinates, we have implemented it only at $t = 0$
@@ -230,7 +232,7 @@ namespace Solutions {
  *
  * Moreover, since the boosted solution is intended for use as initial data,
  * we do not compute the time derivatives of the lapse and shift in the boosted
- * frame. We use gauge freedom to set them to zero.
+ * frame but set them to zero.
  *
  * Consequently, the gr::Tags::SpacetimeChristoffelSecondKind computed here,
  * corresponds to the boosted Kerr-Schild for the gauge where lapse and shift

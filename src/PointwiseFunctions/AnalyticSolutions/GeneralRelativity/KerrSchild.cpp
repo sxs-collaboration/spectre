@@ -87,9 +87,9 @@ void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     internal_tags::x_minus_center<DataType, Frame> /*meta*/) const {
   const auto& x_minus_center = cache->get_var(
       *this, internal_tags::x_minus_center_unboosted<DataType, Frame>{});
-  // Inverse-boost because the coordinates are given in the boosted frame
+  // Boost the coordinates to the rest frame
   sr::lorentz_boost(x_minus_center_boosted, x_minus_center, 0.,
-                    -solution_.boost_velocity());
+                    solution_.boost_velocity());
 }
 
 template <typename DataType, typename Frame>

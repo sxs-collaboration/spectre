@@ -65,16 +65,15 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
 /// @{
 /*!
  * \ingroup SpecialRelativityGroup
- * \brief Apply a Lorentz boost to the spatial part of a one form.
- * \details This requires passing the 0th component of the one form as an
+ * \brief Apply a Lorentz boost to the spatial part of a vector.
+ * \details This requires passing the 0th component of the vector as an
  * additional argument.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void lorentz_boost(
-    gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
-    const tnsr::I<DataType, SpatialDim, Frame>& one_form,
-    double one_form_component_0,
-    const std::array<double, SpatialDim>& velocity);
+void lorentz_boost(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> result,
+                   const tnsr::I<DataType, SpatialDim, Frame>& vector,
+                   double vector_component_0,
+                   const std::array<double, SpatialDim>& velocity);
 /// @}
 
 /// @{

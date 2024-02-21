@@ -382,7 +382,8 @@ void test_zero_spin_optimization(const DataType& used_for_size) {
 
 template <typename Frame, typename DataType>
 void test_boosted_for_zero_velocity(const DataType& used_for_size) {
-  const std::array<double, 3> boost_velocity{{0.0, 0.0, 1.0e-50}};
+  const double epsilon = std::numeric_limits<double>::epsilon();
+  const std::array<double, 3> boost_velocity{{0.0, 0.0, epsilon}};
 
   gr::Solutions::KerrSchild solution_zero_velocity(
       3.0, {{0., 0., 0.}}, {{0.2, 0.3, 0.2}});
@@ -406,8 +407,8 @@ void test_boosted_for_zero_velocity(const DataType& used_for_size) {
 
 template <typename Frame, typename DataType>
 void test_boosted_spacetime_metric(const DataType& used_for_size) {
-  // Test that the extrinsic curvature of the boosted solution indeed
-  // corresponds to the boosted extrinsic curvature tensor
+  // Test that the spacetime metric of the boosted solution indeed
+  // corresponds to the boosted spacetime metric tensor
 
   const auto x = spatial_coords<Frame>(used_for_size);
   const double t = 0.0;

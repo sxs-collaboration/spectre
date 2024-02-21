@@ -85,25 +85,35 @@ void test_lorentz_boost(const std::array<double, SpatialDim> velocity) {
   CHECK_ITERABLE_APPROX(unboosted_covariant_vector, covariant_vector);
 
   // Check boost of the spatial vector
+  auto contravariant_vector =
+      make_with_random_values<tnsr::a<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
   tnsr::I<DataType, SpatialDim, Frame> spatial_vector =
       make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    spatial_vector.get(i) = covariant_vector.get(i + 1);
+    spatial_vector.get(i) = contravariant_vector.get(i + 1);
   }
   // Lower index, i.e. v_0
-  const double vector_component_0 = get<0>(covariant_vector);
+  const double vector_component_0 = get<0>(contravariant_vector);
 
   tnsr::I<DataType, SpatialDim, Frame> boosted_spatial_vector =
       make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
-
   sr::lorentz_boost<DataType, SpatialDim, Frame>(
       make_not_null(&boosted_spatial_vector), spatial_vector,
       vector_component_0, velocity);
 
+  // We don't have an overload of the Lorentz boost for 4d vectors (just for one
+  // forms). But we can just change the sign of the velocity to boost it with
+  // the inverse Lorentz matrix for testing
+  tnsr::a<DataType, SpatialDim, Frame> boosted_contravariant_vector;
+  sr::lorentz_boost<DataType, SpatialDim, Frame>(
+      make_not_null(&boosted_contravariant_vector), contravariant_vector,
+      -velocity);
   tnsr::I<DataType, SpatialDim, Frame> expected_spatial_vector =
       make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(used_for_size, 0.0);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    expected_spatial_vector.get(i) = boosted_covariant_vector.get(i + 1);
+    expected_spatial_vector.get(i) = boosted_contravariant_vector.get(i + 1);
   }
   CHECK_ITERABLE_APPROX(expected_spatial_vector, boosted_spatial_vector);
 
@@ -123,7 +133,7 @@ void test_lorentz_boost(const std::array<double, SpatialDim> velocity) {
       make_with_random_values<tnsr::a<DataType, SpatialDim, Frame>>(
           make_not_null(&generator), make_not_null(&distribution),
           used_for_size);
-  // We boost it as well, but with possibly another velocity
+  // We boost it as well
   tnsr::a<DataType, SpatialDim, Frame> boosted_covariant_vector_2;
   sr::lorentz_boost<DataType, SpatialDim, Frame>(
       make_not_null(&boosted_covariant_vector_2), covariant_vector_2, velocity);
@@ -166,10 +176,7 @@ SPECTRE_TEST_CASE(
 
   d = large_velocity_squared;
   CHECK_FOR_DOUBLES(test_lorentz_boost_matrix_analytic, (1, 2, 3));
-}
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.SpecialRelativity.LorentzBoost",
-                  "[PointwiseFunctions][Unit]") {
   const std::array<double, 3> velocity{{0.1, -0.4, 0.3}};
   test_lorentz_boost<double, 3, Frame::Inertial>(velocity);
 }
