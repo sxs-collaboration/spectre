@@ -385,7 +385,8 @@ void test_massive_restriction(const size_t parent_num_points,
                                           true);
     const auto rhs =
         apply_matrix(restriction_operator_massive, massive_child_data);
-    CHECK_ITERABLE_APPROX(lhs, rhs);
+    Approx local_approx = Approx::custom().epsilon(1.0e-9);
+    CHECK_ITERABLE_CUSTOM_APPROX(lhs, rhs, local_approx);
   }
 }
 

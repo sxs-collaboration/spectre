@@ -282,7 +282,14 @@ void test_predictor_inverse_temporal_matrix() {
       };
   for (size_t i = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-       i <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+       i <=
+       std::min(Spectral::maximum_number_of_points<Spectral::Basis::Legendre>,
+                12_st);
+
+       /*The maximum number of allowed collocation points is given by
+       `Spectral::maximum_number_of_points<Spectral::Basis::Legendre>`, but
+       the matrices corresponding to numbers of points above 12 are not
+       tested, because we only derived the expected matrices up to 12 points.*/
        ++i) {
     perform_check(i);
   }

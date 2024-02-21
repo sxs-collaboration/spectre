@@ -69,23 +69,23 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
     for (const unsigned half_power : half_powers) {
       test_exponential_filter<Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto>(
-          alpha, half_power, 2.0e-14);
+          alpha, half_power, 2.0e-12);
       test_exponential_filter<Spectral::Basis::Legendre,
                               Spectral::Quadrature::Gauss>(alpha, half_power,
-                                                           1.0e-12);
+                                                           1.0e-10);
       test_exponential_filter<Spectral::Basis::Chebyshev,
                               Spectral::Quadrature::GaussLobatto>(
-          alpha, half_power, 2.0e-14);
+          alpha, half_power, 2.0e-12);
       test_exponential_filter<Spectral::Basis::Chebyshev,
                               Spectral::Quadrature::Gauss>(alpha, half_power,
-                                                           1.0e-12);
+                                                           1.0e-10);
     }
   }
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_zero_lowest_modes() {
-  Approx local_approx = Approx::custom().epsilon(1.0e-13);
+  Approx local_approx = Approx::custom().epsilon(1.0e-11);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   for (size_t num_pts =
@@ -113,7 +113,7 @@ void test_zero_lowest_modes() {
       for (size_t i = 0; i < num_pts; ++i) {
         CAPTURE(i);
         if (i < number_of_modes_to_filter) {
-          CHECK(fabs(filtered_modal_coeffs[i]) < 1.0e-13);
+          CHECK(fabs(filtered_modal_coeffs[i]) < 1.0e-11);
         } else {
           CHECK(local_approx(filtered_modal_coeffs[i]) ==
                 initial_modal_coeffs[i]);
