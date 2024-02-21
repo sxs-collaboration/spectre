@@ -108,22 +108,19 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 void lorentz_boost(
     const gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
     const tnsr::ab<DataType, SpatialDim, Frame>& tensor,
-    const std::array<double, SpatialDim>& velocity_first_index,
-    const std::array<double, SpatialDim>& velocity_second_index) {
-  if (velocity_first_index == make_array<SpatialDim>(0.) and
-      velocity_second_index == make_array<SpatialDim>(0.)) {
+    const std::array<double, SpatialDim>& velocity) {
+  if (velocity == make_array<SpatialDim>(0.)) {
     *result = tensor;
     return;
   }
-  const auto boost_matrix_1 = lorentz_boost_matrix(velocity_first_index);
-  const auto boost_matrix_2 = lorentz_boost_matrix(velocity_second_index);
+  const auto boost_matrix = lorentz_boost_matrix(velocity);
   for (size_t i = 0; i < SpatialDim + 1; ++i) {
     for (size_t k = 0; k < SpatialDim + 1; ++k) {
       result->get(i, k) = 0.;
       for (size_t j = 0; j < SpatialDim + 1; ++j) {
         for (size_t l = 0; l < SpatialDim + 1; ++l) {
-          result->get(i, k) += boost_matrix_1.get(i, j) *
-                               boost_matrix_2.get(k, l) * tensor.get(j, l);
+          result->get(i, k) += boost_matrix.get(i, j) * boost_matrix.get(k, l) *
+                               tensor.get(j, l);
         }
       }
     }
@@ -171,8 +168,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const gsl::not_null<tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>*> \
           result,                                                         \
       const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>& tensor,        \
-      const std::array<double, DIM(data)>& velocity_first_index,          \
-      const std::array<double, DIM(data)>& velocity_second_index);
+      const std::array<double, DIM(data)>& velocity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial))

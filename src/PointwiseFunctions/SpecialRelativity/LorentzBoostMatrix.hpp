@@ -98,10 +98,8 @@ void lorentz_boost(
  * a tensor of arbitrary rank.
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
-void lorentz_boost(
-    gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
-    const tnsr::ab<DataType, SpatialDim, Frame>& tensor,
-    const std::array<double, SpatialDim>& velocity_first_index,
-    const std::array<double, SpatialDim>& velocity_second_index);
+void lorentz_boost(gsl::not_null<tnsr::ab<DataType, SpatialDim, Frame>*> result,
+                   const tnsr::ab<DataType, SpatialDim, Frame>& tensor,
+                   const std::array<double, SpatialDim>& velocity);
 /// @}
 }  // namespace sr

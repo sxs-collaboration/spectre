@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -403,6 +404,83 @@ void test_boosted_for_zero_velocity(const DataType& used_for_size) {
       });
 }
 
+template <typename Frame, typename DataType>
+void test_boosted_spacetime_metric(const DataType& used_for_size) {
+  // Test that the extrinsic curvature of the boosted solution indeed
+  // corresponds to the boosted extrinsic curvature tensor
+
+  const auto x = spatial_coords<Frame>(used_for_size);
+  const double t = 0.0;
+
+  // KerrSchild solution
+  const double mass = 1.0;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  gr::Solutions::KerrSchild solution(mass, spin, center);
+
+  // Boosted KerrSchild solution
+  const std::array<double, 3> velocity{{0.5, 0.0, 0.0}};
+  gr::Solutions::KerrSchild boosted_solution(mass, spin, center, velocity);
+
+  // Need to evaluate at the boosted coordinates
+  // Boost coordinates
+  tnsr::I<DataType, 3, Frame> x_boosted;
+  sr::lorentz_boost(make_not_null(&x_boosted), x, 0., -velocity);
+  const auto vars = solution.variables(
+      x_boosted, t,
+      typename gr::Solutions::KerrSchild::tags<DataType, Frame>{});
+  const auto& lapse = get<typename gr::Tags::Lapse<DataType>>(vars);
+  const auto& shift = get<typename gr::Tags::Shift<DataType, 3, Frame>>(vars);
+  const auto& spatial_metric =
+      get<typename gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
+
+  // Compute spacetime metric
+  tnsr::aa<DataType, 3, Frame> spacetime_metric;
+  gr::spacetime_metric(make_not_null(&spacetime_metric), lapse, shift,
+                       spatial_metric);
+
+  auto spacetime_metric_as_asymmetric_tensor =
+      make_with_value<tnsr::ab<DataType, 3, Frame>>(x, 0.0);
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      spacetime_metric_as_asymmetric_tensor.get(a, b) =
+          spacetime_metric.get(a, b);
+    }
+  }
+
+  tnsr::ab<DataType, 3, Frame> expected_boosted_spacetime_metric;
+  sr::lorentz_boost(make_not_null(&expected_boosted_spacetime_metric),
+                    spacetime_metric_as_asymmetric_tensor, -velocity);
+
+  // Boosted metric quantities
+  const auto boosted_vars = boosted_solution.variables(
+      x, t, typename gr::Solutions::KerrSchild::tags<DataType, Frame>{});
+  const auto& lapse_from_boosted_solution =
+      get<typename gr::Tags::Lapse<DataType>>(boosted_vars);
+  const auto& shift_from_boosted_solution =
+      get<typename gr::Tags::Shift<DataType, 3, Frame>>(boosted_vars);
+  const auto& spatial_metric_from_boosted_solution =
+      get<typename gr::Tags::SpatialMetric<DataType, 3, Frame>>(boosted_vars);
+
+  tnsr::aa<DataType, 3, Frame> spacetime_metric_from_boosted_solution;
+  gr::spacetime_metric(make_not_null(&spacetime_metric_from_boosted_solution),
+                       lapse_from_boosted_solution, shift_from_boosted_solution,
+                       spatial_metric_from_boosted_solution);
+
+  auto spacetime_metric_from_boosted_solution_as_asymmetric_tensor =
+      make_with_value<tnsr::ab<DataType, 3, Frame>>(x, 0.0);
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      spacetime_metric_from_boosted_solution_as_asymmetric_tensor.get(a, b) =
+          spacetime_metric_from_boosted_solution.get(a, b);
+    }
+  }
+
+  CHECK_ITERABLE_APPROX(
+      expected_boosted_spacetime_metric,
+      spacetime_metric_from_boosted_solution_as_asymmetric_tensor);
+}
+
 void test_serialize() {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}},
                                      {{0.1, 0.2, 0.3}});
@@ -448,6 +526,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_zero_spin_optimization<Frame::Inertial>(0.0);
   test_boosted_for_zero_velocity<Frame::Inertial>(DataVector(5));
   test_boosted_for_zero_velocity<Frame::Inertial>(0.0);
+  test_boosted_spacetime_metric<Frame::Inertial, double>(0.0);
 
   test_schwarzschild<Frame::Grid>(DataVector(5));
   test_schwarzschild<Frame::Grid>(0.0);
@@ -460,6 +539,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_zero_spin_optimization<Frame::Grid>(0.0);
   test_boosted_for_zero_velocity<Frame::Grid>(DataVector(5));
   test_boosted_for_zero_velocity<Frame::Grid>(0.0);
+  test_boosted_spacetime_metric<Frame::Grid, double>(0.0);
 
   CHECK_THROWS_WITH(
       []() {

@@ -62,8 +62,7 @@ void test_lorentz_boost_matrix_analytic(const double& velocity_squared) {
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_lorentz_boost(const std::array<double, SpatialDim> velocity,
-                        const std::array<double, SpatialDim> velocity_2) {
+void test_lorentz_boost(const std::array<double, SpatialDim> velocity) {
   const DataVector used_for_size{3., 4., 5.};
 
   MAKE_GENERATOR(generator);
@@ -127,8 +126,7 @@ void test_lorentz_boost(const std::array<double, SpatialDim> velocity,
   // We boost it as well, but with possibly another velocity
   tnsr::a<DataType, SpatialDim, Frame> boosted_covariant_vector_2;
   sr::lorentz_boost<DataType, SpatialDim, Frame>(
-      make_not_null(&boosted_covariant_vector_2), covariant_vector_2,
-      velocity_2);
+      make_not_null(&boosted_covariant_vector_2), covariant_vector_2, velocity);
 
   for (size_t i = 0; i < SpatialDim + 1; ++i) {
     for (size_t j = 0; j < SpatialDim + 1; ++j) {
@@ -139,7 +137,7 @@ void test_lorentz_boost(const std::array<double, SpatialDim> velocity,
   }
 
   sr::lorentz_boost<DataType, SpatialDim, Frame>(make_not_null(&boosted_tensor),
-                                                 tensor, velocity, velocity_2);
+                                                 tensor, velocity);
   CHECK_ITERABLE_APPROX(expected_tensor, boosted_tensor);
 }
 
@@ -173,6 +171,5 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.SpecialRelativity.LorentzBoost",
                   "[PointwiseFunctions][Unit]") {
   const std::array<double, 3> velocity{{0.1, -0.4, 0.3}};
-  const std::array<double, 3> velocity_2{{0.2, -0.1, -0.5}};
-  test_lorentz_boost<double, 3, Frame::Inertial>(velocity, velocity_2);
+  test_lorentz_boost<double, 3, Frame::Inertial>(velocity);
 }
