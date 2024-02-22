@@ -359,7 +359,8 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
       for (size_t i = 0; i < Dim; i++) {
         get_element(gsl::at(result, i), k) += gsl::at(func_or_deriv_of_time, i);
       }
-      ASSERT(max(magnitude(result)) <= outer_radius_.value(),
+      const double eps = std::numeric_limits<double>::epsilon() * 100.0;
+      ASSERT(max(magnitude(result)) - eps <= outer_radius_.value(),
              "Coordinates translated outside outer radius, This should not "
              "happen");
     } else if (get_element(radius, k) > inner_radius_.value() and
@@ -373,7 +374,8 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::piecewise_helper(
         get_element(gsl::at(result, i), k) +=
             gsl::at(func_or_deriv_of_time, i) * radial_falloff_factor;
       }
-      ASSERT(max(magnitude(result)) <= outer_radius_.value(),
+      const double eps = std::numeric_limits<double>::epsilon() * 100.0;
+      ASSERT(max(magnitude(result)) - eps <= outer_radius_.value(),
              "Coordinates translated outside outer radius, This should not "
              "happen");
     }

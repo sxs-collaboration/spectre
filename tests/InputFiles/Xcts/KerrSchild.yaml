@@ -4,7 +4,7 @@
 Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 50
   Priority: High
 ExpectedOutput:
   - KerrSchildReductions.h5
@@ -29,7 +29,7 @@ Background: &solution
   KerrSchild:
     Mass: &KerrMass 1.
     Spin: &KerrSpin [0., 0., 0.6]
-    Center: [0., 0., 0.]
+    Center: &Center [0., 0., 0.]
 
 InitialGuess: Flatness
 
@@ -51,8 +51,8 @@ DomainCreator:
     UseEquiangularMap: True
     EquatorialCompression: None
     WhichWedges: All
-    RadialPartitioning: []
-    RadialDistribution: [Logarithmic]
+    RadialPartitioning: [3.0]
+    RadialDistribution: [Linear, Logarithmic]
     TimeDependentMaps:
       InitialTime: 0.
       ShapeMap:
@@ -60,6 +60,8 @@ DomainCreator:
         InitialValues:
           Mass: *KerrMass
           Spin: *KerrSpin
+      TranslationMap:
+        InitialValues: [*Center, [0., 0., 0.]]
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
