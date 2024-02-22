@@ -11,10 +11,11 @@ ExpectedOutput:
   - ElasticHalfSpaceMirrorVolume0.h5
 OutputFileChecks:
   - Label: Discretization error
-    Subfile: /ErrorNorms.dat
+    Subfile: ErrorNorms.dat
     FileGlob: ElasticHalfSpaceMirrorReductions.h5
-    SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 6.e-4
+    ExpectedData:
+      - [1, 171, 3.39481799202234e-01, 5.94500292306939e-04]
+    AbsoluteTolerance: 1e-12
 
 ---
 
@@ -36,10 +37,7 @@ Background: &solution
     RelativeTolerance: 1e-10
 
 Material:
-  Layer0:
-    IsotropicHomogeneous: *fused_silica
-  Layer1:
-    IsotropicHomogeneous: *fused_silica
+  IsotropicHomogeneous: *fused_silica
 
 InitialGuess: Zero
 
@@ -55,9 +53,9 @@ DomainCreator:
     InitialGridPoints: [2, 3, 3]
     UseEquiangularMap: True
     RadialPartitioning: []
-    PartitioningInZ: [0.1]
+    PartitioningInZ: []
     RadialDistribution: [Linear]
-    DistributionInZ: [Linear, Linear]
+    DistributionInZ: [Linear]
     BoundaryConditions:
       LowerZ:
         AnalyticSolution:
@@ -86,7 +84,7 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 2
+      MaxIterations: 1
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     Verbosity: Quiet
@@ -122,20 +120,18 @@ LinearSolver:
 EventsAndTriggers:
   - Trigger: HasConverged
     Events:
-      - ObserveNorms: &error_norms
+      - ObserveNorms:
           SubfileName: ErrorNorms
           TensorsToObserve:
             - Name: Error(Displacement)
               NormType: L2Norm
               Components: Sum
-      - ObserveNorms: &volume_integrals
+      - ObserveNorms:
           SubfileName: VolumeIntegrals
           TensorsToObserve:
             - Name: PotentialEnergyDensity
               NormType: VolumeIntegral
               Components: Individual
-      - ObserveNormsPerLayer: *error_norms
-      - ObserveNormsPerLayer: *volume_integrals
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
