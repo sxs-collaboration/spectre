@@ -5,6 +5,7 @@ import argparse
 import glob
 import logging
 import os
+import re
 import unittest
 
 import h5py
@@ -22,10 +23,12 @@ class H5Check:
 
     Attributes:
         unit_test: The `unittest.testcase` object, used to invoke asserts
-        test_h5_label: An identifier string for the test
-        h5_glob: The shell glob matching the h5 files to test
-        test_h5_entity: The h5 path for the group or dataset to check
-        expected_h5_entity: The h5 path for the expected group or dataset
+        label: An identifier string for the test
+        file_glob: The shell glob matching the h5 files to test
+        subfile: The h5 path for the group or dataset to check
+        expected_data_subfile: The h5 path for the expected group or dataset
+        expected_data: The expected data to compare with directly. Mutually
+          exclusive with `expected_data_subfile`.
         absolute_tolerance: The absolute tolerance for approximation checks
         relative_tolerance: The relative tolerance for approximation checks
     """
@@ -33,13 +36,14 @@ class H5Check:
     def __init__(
         self,
         unit_test,
-        test_h5_label,
-        h5_glob,
-        test_h5_entity,
-        expected_h5_entity,
+        label,
+        file_glob,
+        subfile,
         absolute_tolerance,
-        relative_tolerance,
-        skip_columns,
+        relative_tolerance=None,
+        expected_data_subfile=None,
+        expected_data=None,
+        skip_columns=None,
     ):
         """Initializer for H5Check
 
@@ -49,16 +53,21 @@ class H5Check:
         and subTest member functions
         """
         self.unit_test = unit_test
-        self.h5_glob = h5_glob
-        self.test_h5_label = test_h5_label
-        self.test_h5_entity = test_h5_entity
+        self.h5_glob = file_glob
+        self.test_h5_label = label
+        self.test_h5_entity = subfile
         # The `expected` entity, if specified, is what the `test` entity is
         # compared to. For example, one may wish to compare the L2Norm of the
         # scalar field to an expected value from an analytic solution. If an
         # `expected` entity is not specified then the `test` entity is compared
         # to 0.0. This is what would be typically done for error measures, for
         # example.
-        self.expected_h5_entity = expected_h5_entity
+        self.expected_h5_entity = expected_data_subfile
+        if expected_data:
+            assert (
+                self.expected_h5_entity is None
+            ), "Set expected subfile or expected data, not both."
+        self.expected_data = expected_data
         self.absolute_tolerance = float(absolute_tolerance)
         self.relative_tolerance = (
             0.0 if relative_tolerance is None else float(relative_tolerance)
@@ -69,7 +78,7 @@ class H5Check:
         """Perform the unit test comparisons between the dataset or group
 
         If `expected_entity` is `None`, then the `test_entity` is compared to
-        0.0 instead (using only the absolute tolerance)
+        the `expected_data` or 0.0 instead.
 
         Args:
             h5_file: An h5 File object on which to perform checks
@@ -118,7 +127,7 @@ class H5Check:
                     if test_data.dtype == float or test_data.dtype == complex:
                         npt.assert_allclose(
                             test_data[:, column_mask],
-                            0.0,
+                            self.expected_data or 0.0,
                             rtol=self.relative_tolerance,
                             atol=self.absolute_tolerance,
                         )
@@ -264,18 +273,16 @@ class H5CheckTestCase(unittest.TestCase):
         h5_check_list = []
         with open(self.input_filename, "r") as open_input_file:
             parsed_yaml = next(yaml.safe_load_all(open_input_file))
+        to_snake_case = re.compile(r"(?!^)(?=[A-Z])")
         for check_block in parsed_yaml["OutputFileChecks"]:
             logging.info("Parsed File check : " + check_block.get("Label"))
             h5_check_list.append(
                 H5Check(
                     self,
-                    check_block.get("Label"),
-                    check_block.get("FileGlob"),
-                    check_block.get("Subfile"),
-                    check_block.get("ExpectedDataSubfile"),
-                    check_block.get("AbsoluteTolerance"),
-                    check_block.get("RelativeTolerance"),
-                    check_block.get("SkipColumns"),
+                    **{
+                        re.sub(to_snake_case, "_", key).lower(): value
+                        for key, value in check_block.items()
+                    },
                 )
             )
         for h5_check in h5_check_list:
