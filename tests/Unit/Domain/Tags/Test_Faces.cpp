@@ -23,19 +23,24 @@
 namespace domain {
 
 namespace {
+struct ArgTag : db::SimpleTag {
+  using type = double;
+};
+
 template <size_t Dim>
 struct FacesTestCompute
     : Tags::Faces<Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0>>>>,
       db::ComputeTag {
   using base =
       Tags::Faces<Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0>>>>;
-  using argument_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<ArgTag>;
   static void function(
       const gsl::not_null<
           DirectionMap<Dim, Variables<tmpl::list<::Tags::TempScalar<0>>>>*>
-          vars_on_faces) {
+          vars_on_faces,
+      const double arg) {
     (*vars_on_faces)[Direction<Dim>::lower_xi()] =
-        Variables<tmpl::list<::Tags::TempScalar<0>>>{3, 1.};
+        Variables<tmpl::list<::Tags::TempScalar<0>>>{3, arg};
   }
 };
 }  // namespace
@@ -79,10 +84,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags.Faces", "[Unit][Domain]") {
   }
   {
     INFO("Compute-subitems");
-    auto box = db::create<db::AddSimpleTags<>,
-                          db::AddComputeTags<FacesTestCompute<Dim>>>();
+    auto box = db::create<db::AddSimpleTags<ArgTag>,
+                          db::AddComputeTags<FacesTestCompute<Dim>>>(1.);
     CHECK(get(db::get<scalar_on_faces_tag>(box).at(
               Direction<Dim>::lower_xi())) == DataVector{size_t{3}, 1.});
+    db::mutate<ArgTag>([](const gsl::not_null<double*> arg) { *arg = 2.; },
+                       make_not_null(&box));
+    CHECK(get(db::get<scalar_on_faces_tag>(box).at(
+              Direction<Dim>::lower_xi())) == DataVector{size_t{3}, 2.});
   }
 }
 

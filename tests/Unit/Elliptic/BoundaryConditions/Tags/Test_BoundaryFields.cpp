@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
       auto& flux = get<::Tags::TempI<0, Dim>>(fluxes).get(d);
       std::iota(flux.begin(), flux.end(), 10. * static_cast<double>(d + 1));
     }
-    const auto box = db::create<
+    auto box = db::create<
         db::AddSimpleTags<
             vars_tag, fluxes_tag, domain::Tags::Mesh<Dim>,
             domain::Tags::Element<Dim>,
@@ -67,5 +67,13 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
                   Dim, ::Tags::NormalDotFlux<::Tags::TempScalar<0>>>>(box)
                   .at(Direction<Dim>::lower_xi())) ==
           DataVector{-10., -13., -16.});
+    // Mutate and check if subitems are updated correctly
+    db::mutate<vars_tag>(
+        [](const auto stored_vars) {
+          get(get<::Tags::TempScalar<0>>(*stored_vars))[0] = -1.;
+        },
+        make_not_null(&box));
+    CHECK(get(get<domain::Tags::Faces<Dim, ::Tags::TempScalar<0>>>(box).at(
+              Direction<Dim>::lower_xi())) == DataVector{-1., 4., 7.});
   }
 }

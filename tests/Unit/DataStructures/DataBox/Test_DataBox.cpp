@@ -1856,6 +1856,10 @@ void test_data_on_slice() {
 }  // namespace
 
 namespace {
+// For tests with subitems we create a `Parent` tag here. It's just a pair of
+// two items (think a `Variables` with tensor tags). The two items are made
+// available as `First` and `Second` tags in the databox.
+
 // We can't use raw fundamental types as subitems because subitems
 // need to have a reference-like nature.
 template <typename T>
@@ -1945,6 +1949,97 @@ struct Subitems<ParentCompute<N>> {
   }
 };
 }  // namespace db
+
+namespace {
+// Now we go one step further with subitems: we store two `Parent` tags in this
+// `LeftAndRight` tag (think a Variables in a DirectionMap). Then we make the
+// subitems of the `Parent` available as `LeftAndRight` subitems as well. So we
+// have this structure:
+//
+// - LeftAndRight<Parent> is in the DataBox (Parent contains First and Second)
+// - LeftAndRight<First> and LeftAndRight<Second> are accessible as subitems
+template <typename Tag>
+struct LeftAndRight : db::PrefixTag, db::SimpleTag {
+  using tag = Tag;
+  using type = std::pair<typename tag::type, typename tag::type>;
+};
+
+struct ArgTag : db::SimpleTag {
+  using type = size_t;
+};
+
+struct LeftAndRightParentCompute : LeftAndRight<Parent<0>>, db::ComputeTag {
+  using base = LeftAndRight<Parent<0>>;
+  using argument_tags = tmpl::list<ArgTag>;
+  using return_type = typename LeftAndRight<Parent<0>>::type;
+  static void function(const gsl::not_null<return_type*> result,
+                       const size_t arg) {
+    *result = std::make_pair(
+        // Left
+        std::make_pair(
+            // First
+            Boxed<int>(arg + 1),
+            // Second
+            Boxed<double>(arg * 2.)),
+        // Right
+        std::make_pair(
+            // First
+            Boxed<int>(arg + 2),
+            // Second
+            Boxed<double>(arg * 3.)));
+  }
+};
+
+}  // namespace
+
+namespace db {
+template <>
+struct Subitems<LeftAndRightParentCompute> {
+  using tag = LeftAndRightParentCompute;
+  using type = tmpl::list<LeftAndRight<First<0>>, LeftAndRight<Second<0>>>;
+
+  template <typename Subtag>
+  static void create_item(
+      const gsl::not_null<typename tag::type*> parent_value,
+      const gsl::not_null<typename Subtag::type*> sub_value) {
+    const auto& [left_parent, right_parent] = *parent_value;
+    auto& [left_sub, right_sub] = *sub_value;
+    left_sub = std::get<Subtag::tag::index>(left_parent).ptr();
+    right_sub = std::get<Subtag::tag::index>(right_parent).ptr();
+  }
+
+  template <typename Subtag>
+  static void create_compute_item(
+      const gsl::not_null<typename Subtag::type*> sub_value,
+      const typename tag::type& parent_value) {
+    const auto& [left_parent, right_parent] = parent_value;
+    auto& [left_sub, right_sub] = *sub_value;
+    left_sub = std::get<Subtag::tag::index>(left_parent).ptr();
+    right_sub = std::get<Subtag::tag::index>(right_parent).ptr();
+  }
+};
+}  // namespace db
+
+namespace Tags {
+// These subitems are implemented as compute tags, because they can't just
+// const-reference the parent value. They have to create a new LeftAndRight pair
+// (like Variables in a DirectionMap).
+template <typename FirstOrSecond>
+struct Subitem<LeftAndRight<FirstOrSecond>, LeftAndRightParentCompute,
+               Requires<std::is_same_v<FirstOrSecond, First<0>> or
+                        std::is_same_v<FirstOrSecond, Second<0>>>>
+    : db::ComputeTag, LeftAndRight<FirstOrSecond> {
+  using base = LeftAndRight<FirstOrSecond>;
+  using return_type = typename base::type;
+  using parent_tag = LeftAndRightParentCompute;
+  using argument_tags = tmpl::list<parent_tag>;
+  static void function(const gsl::not_null<return_type*> subitems,
+                       const typename parent_tag::type& parent_value) {
+    ::db::Subitems<parent_tag>::template create_compute_item<base>(
+        subitems, parent_value);
+  }
+};
+}  // namespace Tags
 
 namespace {
 
@@ -2048,6 +2143,28 @@ void test_subitems() {
     CHECK(*db::get<Second<0>>(box) == 2.5);
     CHECK(*db::get<First<1>>(box) == 3);
     CHECK(*db::get<Second<1>>(box) == 5.);
+  }
+  {
+    INFO("Mutation with subitems");
+    auto box = db::create<db::AddSimpleTags<Parent<0>>,
+                          db::AddComputeTags<ParentCompute<1>>>(
+        std::make_pair(Boxed<int>(2), Boxed<double>(3.5)));
+    CHECK(*db::get<First<1>>(box) == 3);
+    db::mutate<Parent<0>>(
+        [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*> val) {
+          *val = std::make_pair(Boxed<int>(5), Boxed<double>(2.5));
+        },
+        make_not_null(&box));
+    CHECK(*db::get<First<1>>(box) == 6);
+  }
+  {
+    INFO("Mutation with compute-subitems");
+    auto box = db::create<db::AddSimpleTags<ArgTag>,
+                          db::AddComputeTags<LeftAndRightParentCompute>>(2_st);
+    CHECK(*db::get<LeftAndRight<First<0>>>(box).first == 3);
+    db::mutate<ArgTag>([](const gsl::not_null<size_t*> arg) { *arg = 3; },
+                       make_not_null(&box));
+    CHECK(*db::get<LeftAndRight<First<0>>>(box).first == 4);
   }
 }
 
