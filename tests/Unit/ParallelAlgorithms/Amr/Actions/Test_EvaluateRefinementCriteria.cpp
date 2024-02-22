@@ -5,7 +5,9 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -37,15 +39,16 @@ namespace {
 
 // when called on the specified refinement level, this criteria
 // always will choose to join
-auto create_always_join(const size_t refinement_level) {
-  return std::make_unique<amr::Criteria::Random>(1.0, refinement_level);
+auto create_always_join() {
+  return std::make_unique<amr::Criteria::Random>(
+      std::unordered_map<amr::Flag, size_t>{{amr::Flag::Join, 1}});
 }
 
 // when called on any refinement level, this criteria always will choose to do
 // nothing
 auto create_always_do_nothing() {
   return std::make_unique<amr::Criteria::Random>(
-      0.0, ElementId<3>::max_refinement_level);
+      std::unordered_map<amr::Flag, size_t>{{amr::Flag::DoNothing, 1}});
 }
 
 template <typename Metavariables>
@@ -291,17 +294,17 @@ SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
   // Run the test 3 times, twice with a single criterion that give known
   // decisions, and then once with two criteria, one of which always produces
   // flags of a higher priority than the other
-  criteria.emplace_back(create_always_join(1));
+  criteria.emplace_back(create_always_join());
   evaluate_criteria(std::move(criteria), std::array{amr::Flag::Join});
   criteria.clear();
   criteria.emplace_back(create_always_do_nothing());
   evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
   criteria.clear();
   criteria.emplace_back(create_always_do_nothing());
-  criteria.emplace_back(create_always_join(1));
+  criteria.emplace_back(create_always_join());
   evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
   criteria.clear();
-  criteria.emplace_back(create_always_join(1));
+  criteria.emplace_back(create_always_join());
   criteria.emplace_back(create_always_do_nothing());
   evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
   check_split_while_join_is_avoided();

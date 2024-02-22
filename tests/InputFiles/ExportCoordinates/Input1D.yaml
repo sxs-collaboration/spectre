@@ -17,7 +17,10 @@ Parallelization:
 Amr:
   Criteria:
     - Random:
-        ChangeRefinementFraction: 0.8
+        ProbabilityWeights:
+          Split: 2
+          Join: 1
+          DoNothing: 1
         MaximumRefinementLevel: 4
   Policies:
     Isotropy: Anisotropic
