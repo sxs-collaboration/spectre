@@ -575,33 +575,6 @@ struct EvolutionMetavars {
       control_system::Actions::InitializeMeasurements<control_systems>,
       Parallel::Actions::TerminatePhase>;
 
-  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors = tmpl::list<
-        Initialization::ProjectTimeStepping<volume_dim>,
-        evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
-        ::amr::projectors::ProjectVariables<volume_dim,
-                                            typename system::variables_tag>,
-        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
-        evolution::Actions::ProjectRunEventsAndDenseTriggers,
-        ::amr::projectors::DefaultInitialize<
-            Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
-            ::domain::Tags::InitialExtents<volume_dim>,
-            ::domain::Tags::InitialRefinementLevels<volume_dim>,
-            evolution::dg::Tags::Quadrature,
-            Tags::StepperError<typename system::variables_tag>,
-            Tags::PreviousStepperError<typename system::variables_tag>,
-            Tags::StepperErrorUpdated,
-            SelfStart::Tags::InitialValue<typename system::variables_tag>,
-            SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
-        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
-            typename control_system::Actions::InitializeMeasurements<
-                control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>>>>;
-  };
-
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
       tmpl::flatten<tmpl::list<
@@ -690,7 +663,33 @@ struct EvolutionMetavars {
     }
   }
 
-  using dg_element_array = gh_dg_element_array;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = gh_dg_element_array;
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
+        ::amr::projectors::ProjectVariables<volume_dim,
+                                            typename system::variables_tag>,
+        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<volume_dim>,
+            ::domain::Tags::InitialRefinementLevels<volume_dim>,
+            evolution::dg::Tags::Quadrature,
+            Tags::StepperError<typename system::variables_tag>,
+            Tags::PreviousStepperError<typename system::variables_tag>,
+            Tags::StepperErrorUpdated,
+            SelfStart::Tags::InitialValue<typename system::variables_tag>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
+            typename control_system::Actions::InitializeMeasurements<
+                control_systems>::simple_tags,
+            intrp::Tags::InterpPointInfo<EvolutionMetavars>>>>;
+  };
 
   using component_list = tmpl::flatten<tmpl::list<
       ::amr::Component<EvolutionMetavars>,

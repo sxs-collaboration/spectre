@@ -8,9 +8,12 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+struct ElementArray;
+
 struct Metavariables {
   // [amr_projectors]
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = ElementArray;
     using projectors =
         tmpl::list<Initialization::ProjectTimeStepping<1>,
                    evolution::dg::Initialization::ProjectDomain<1>>;

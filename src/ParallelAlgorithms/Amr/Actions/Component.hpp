@@ -48,12 +48,12 @@ struct Component {
     if (Parallel::Phase::EvaluateAmrCriteria == next_phase) {
       Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
           Parallel::get_parallel_component<
-              typename metavariables::dg_element_array>(local_cache));
+              typename metavariables::amr::element_array>(local_cache));
     }
     if (Parallel::Phase::AdjustDomain == next_phase) {
       Parallel::simple_action<::amr::Actions::AdjustDomain>(
           Parallel::get_parallel_component<
-              typename metavariables::dg_element_array>(local_cache));
+              typename metavariables::amr::element_array>(local_cache));
     }
   }
 };

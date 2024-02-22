@@ -219,31 +219,6 @@ struct EvolutionMetavars {
   // wave system, the user should determine whether this filter can be removed.
   static constexpr bool use_filtering = (2 == volume_dim);
 
-  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors = tmpl::list<
-        Initialization::ProjectTimeStepping<volume_dim>,
-        evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
-        ::amr::projectors::ProjectVariables<volume_dim,
-                                            typename system::variables_tag>,
-        ::amr::projectors::ProjectTensors<volume_dim,
-                                          ::ScalarWave::Tags::ConstraintGamma2>,
-        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
-        evolution::Actions::ProjectRunEventsAndDenseTriggers,
-        ::amr::projectors::DefaultInitialize<
-            Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
-            ::domain::Tags::InitialExtents<volume_dim>,
-            ::domain::Tags::InitialRefinementLevels<volume_dim>,
-            evolution::dg::Tags::Quadrature,
-            Tags::StepperError<typename system::variables_tag>,
-            Tags::PreviousStepperError<typename system::variables_tag>,
-            Tags::StepperErrorUpdated,
-            SelfStart::Tags::InitialValue<typename system::variables_tag>,
-            SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
-  };
-
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
@@ -315,6 +290,33 @@ struct EvolutionMetavars {
                          Actions::ChangeSlabSize, step_actions,
                          Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = dg_element_array;
+
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        Initialization::ProjectTimeStepperHistory<EvolutionMetavars>,
+        ::amr::projectors::ProjectVariables<volume_dim,
+                                            typename system::variables_tag>,
+        ::amr::projectors::ProjectTensors<volume_dim,
+                                          ::ScalarWave::Tags::ConstraintGamma2>,
+        evolution::dg::Initialization::ProjectMortars<EvolutionMetavars>,
+        evolution::Actions::ProjectRunEventsAndDenseTriggers,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<volume_dim>,
+            ::domain::Tags::InitialRefinementLevels<volume_dim>,
+            evolution::dg::Tags::Quadrature,
+            Tags::StepperError<typename system::variables_tag>,
+            Tags::PreviousStepperError<typename system::variables_tag>,
+            Tags::StepperErrorUpdated,
+            SelfStart::Tags::InitialValue<typename system::variables_tag>,
+            SelfStart::Tags::InitialValue<Tags::TimeStep>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
+  };
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
