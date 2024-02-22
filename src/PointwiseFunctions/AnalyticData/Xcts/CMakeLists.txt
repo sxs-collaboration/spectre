@@ -9,7 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Binary.cpp
-  GWBinary.cpp
+  BinaryWithGravitationalWaves.cpp
   )
 
 spectre_target_headers(
@@ -18,9 +18,9 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   Binary.hpp
+  BinaryWithGravitationalWaves.hpp
   CommonVariables.hpp
   CommonVariables.tpp
-  GWBinary.hpp
   )
 
 target_link_libraries(

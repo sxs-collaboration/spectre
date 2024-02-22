@@ -20,14 +20,14 @@ ResourceInfo:
   Singletons: Auto
 
 Background: &background
-  GWBinary:
+  BinaryWithGravitationalWaves:
     MassLeft: &mass_left 1.
     MassRight: &mass_right 1.
     XCoordsLeft: &x_left -4.
     XCoordsRight: &x_right 4.
     YMomentumLeft: -.366
     YMomentumRight: .366
-    Atenuation: 1.
+    AtenuationParameter: 1.
 
 InitialGuess: *background
 
@@ -118,8 +118,8 @@ Discretization:
     Formulation: WeakInertial
 
 Observers:
-  VolumeFileName: "GWBVolume"
-  ReductionFileName: "GWBReductions"
+  VolumeFileName: "BwGWVolume"
+  ReductionFileName: "BwGWReductions"
 
 NonlinearSolver:
   NewtonRaphson:

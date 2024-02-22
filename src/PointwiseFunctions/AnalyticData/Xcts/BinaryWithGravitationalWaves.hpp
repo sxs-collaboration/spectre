@@ -37,19 +37,19 @@ namespace detail {
 
 namespace Tags {
 template <typename DataType>
-struct RadiusLeft : db::SimpleTag {
+struct DistanceLeft : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
-struct OneOverRadiusLeft : db::SimpleTag {
+struct OneOverDistanceLeft : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
-struct RadiusRight : db::SimpleTag {
+struct DistanceRight : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
-struct OneOverRadiusRight : db::SimpleTag {
+struct OneOverDistanceRight : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
@@ -80,52 +80,72 @@ template <typename DataType>
 struct IntegralTerm : db::SimpleTag {
   using type = tnsr::ii<DataType, 3>;
 };
+template <typename DataType>
+struct PostNewtonianConjugateMomentum3 : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
+template <typename DataType>
+struct PostNewtonianExtrinsicCurvature : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3>;
+};
 }  // namespace Tags
 
 template <typename DataType>
-using GWBinaryVariablesCache = cached_temp_buffer_from_typelist<tmpl::append<
-    common_tags<DataType>,
-    tmpl::list<
-        ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        ::Tags::deriv<
-            ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
-                                        tmpl::size_t<3>, Frame::Inertial>,
+using BinaryWithGravitationalWavesVariablesCache =
+    cached_temp_buffer_from_typelist<tmpl::append<
+        common_tags<DataType>,
+        tmpl::list<
+            ::Tags::deriv<detail::Tags::OneOverDistanceLeft<DataType>,
                           tmpl::size_t<3>, Frame::Inertial>,
-            tmpl::size_t<3>, Frame::Inertial>,
-        ::Tags::deriv<
-            ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
-                                        tmpl::size_t<3>, Frame::Inertial>,
+            ::Tags::deriv<detail::Tags::OneOverDistanceRight<DataType>,
                           tmpl::size_t<3>, Frame::Inertial>,
-            tmpl::size_t<3>, Frame::Inertial>,
-        detail::Tags::RadiusLeft<DataType>, detail::Tags::RadiusRight<DataType>,
-        detail::Tags::NormalLeft<DataType>, detail::Tags::NormalRight<DataType>,
-        detail::Tags::RadiativeTerm<DataType>,
-        detail::Tags::NearZoneTerm<DataType>,
-        detail::Tags::PresentTerm<DataType>, detail::Tags::PastTerm<DataType>,
-        detail::Tags::IntegralTerm<DataType>,
-        ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
-        // For initial guesses
-        Xcts::Tags::ConformalFactorMinusOne<DataType>,
-        Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
-        Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
-    hydro_tags<DataType>>>;
+            ::Tags::deriv<
+                ::Tags::deriv<
+                    ::Tags::deriv<detail::Tags::DistanceLeft<DataType>,
+                                  tmpl::size_t<3>, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+                tmpl::size_t<3>, Frame::Inertial>,
+            ::Tags::deriv<
+                ::Tags::deriv<
+                    ::Tags::deriv<detail::Tags::DistanceRight<DataType>,
+                                  tmpl::size_t<3>, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+                tmpl::size_t<3>, Frame::Inertial>,
+            detail::Tags::DistanceLeft<DataType>,
+            detail::Tags::DistanceRight<DataType>,
+            detail::Tags::NormalLeft<DataType>,
+            detail::Tags::NormalRight<DataType>,
+            detail::Tags::RadiativeTerm<DataType>,
+            detail::Tags::NearZoneTerm<DataType>,
+            detail::Tags::PresentTerm<DataType>,
+            detail::Tags::PastTerm<DataType>,
+            detail::Tags::IntegralTerm<DataType>,
+            detail::Tags::PostNewtonianConjugateMomentum3<DataType>,
+            detail::Tags::PostNewtonianExtrinsicCurvature<DataType>,
+            ::Tags::deriv<
+                Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+                tmpl::size_t<3>, Frame::Inertial>,
+            gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+            gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+            gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, 3>, 0>,
+            // For initial guesses
+            Xcts::Tags::ConformalFactorMinusOne<DataType>,
+            Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType>,
+            Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
+        hydro_tags<DataType>>>;
 
 template <typename DataType>
-struct GWBinaryVariables
-    : CommonVariables<DataType, GWBinaryVariablesCache<DataType>> {
+struct BinaryWithGravitationalWavesVariables
+    : CommonVariables<DataType,
+                      BinaryWithGravitationalWavesVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
-  using Cache = GWBinaryVariablesCache<DataType>;
-  using Base = CommonVariables<DataType, GWBinaryVariablesCache<DataType>>;
+  using Cache = BinaryWithGravitationalWavesVariablesCache<DataType>;
+  using Base =
+      CommonVariables<DataType,
+                      BinaryWithGravitationalWavesVariablesCache<DataType>>;
   using Base::operator();
 
-  GWBinaryVariables(
+  BinaryWithGravitationalWavesVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
           DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
@@ -133,7 +153,8 @@ struct GWBinaryVariables
       const tnsr::I<DataType, 3>& local_x, const double local_mass_left,
       const double local_mass_right, const double local_xcoord_left,
       const double local_xcoord_right, const double local_ymomentum_left,
-      const double local_ymomentum_right, const double local_atenuation)
+      const double local_ymomentum_right,
+      const double local_atenuation_parameter)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         mass_left(local_mass_left),
@@ -142,7 +163,7 @@ struct GWBinaryVariables
         xcoord_right(local_xcoord_right),
         ymomentum_left(local_ymomentum_left),
         ymomentum_right(local_ymomentum_right),
-        atenuation(local_atenuation) {}
+        atenuation_parameter(local_atenuation_parameter) {}
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
@@ -151,41 +172,41 @@ struct GWBinaryVariables
   const double xcoord_right;
   const double ymomentum_left;
   const double ymomentum_right;
-  const double atenuation;
+  const double atenuation_parameter;
   const double separation = xcoord_right - xcoord_left;
   const std::array<double, 3> normal_lr{{-1., 0., 0.}};
   const std::array<double, 3> momentum_left{{0., ymomentum_left, 0.}};
   const std::array<double, 3> momentum_right{{0., ymomentum_right, 0.}};
 
-  void operator()(gsl::not_null<Scalar<DataType>*> radius_left,
+  void operator()(gsl::not_null<Scalar<DataType>*> distance_left,
                   gsl::not_null<Cache*> cache,
-                  detail::Tags::RadiusLeft<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<Scalar<DataType>*> radius_right,
+                  detail::Tags::DistanceLeft<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> distance_right,
                   gsl::not_null<Cache*> /*cache*/,
-                  detail::Tags::RadiusRight<DataType> /*meta*/) const;
+                  detail::Tags::DistanceRight<DataType> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_radius_left,
+      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_distance_left,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<detail::Tags::OneOverRadiusLeft<DataType>,
+      ::Tags::deriv<detail::Tags::OneOverDistanceLeft<DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_radius_right,
+      gsl::not_null<tnsr::i<DataType, Dim>*> deriv_one_over_distance_right,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<detail::Tags::OneOverRadiusRight<DataType>,
+      ::Tags::deriv<detail::Tags::OneOverDistanceRight<DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_radius_left,
+      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_distance_left,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<
-          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusLeft<DataType>,
+          ::Tags::deriv<::Tags::deriv<detail::Tags::DistanceLeft<DataType>,
                                       tmpl::size_t<Dim>, Frame::Inertial>,
                         tmpl::size_t<Dim>, Frame::Inertial>,
           tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_radius_right,
+      gsl::not_null<tnsr::ijk<DataType, Dim>*> deriv_3_distance_right,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<
-          ::Tags::deriv<::Tags::deriv<detail::Tags::RadiusRight<DataType>,
+          ::Tags::deriv<::Tags::deriv<detail::Tags::DistanceRight<DataType>,
                                       tmpl::size_t<Dim>, Frame::Inertial>,
                         tmpl::size_t<Dim>, Frame::Inertial>,
           tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
@@ -210,6 +231,14 @@ struct GWBinaryVariables
   void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> integral_term,
                   const gsl::not_null<Cache*> cache,
                   detail::Tags::IntegralTerm<DataType> /*meta*/) const;
+  void operator()(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> pn_conjugate_momentum3,
+      const gsl::not_null<Cache*> cache,
+      detail::Tags::PostNewtonianConjugateMomentum3<DataType> /*meta*/) const;
+  void operator()(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> pn_extrinsic_curvature,
+      const gsl::not_null<Cache*> cache,
+      detail::Tags::PostNewtonianExtrinsicCurvature<DataType> /*meta*/) const;
 
   void operator()(
       const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
@@ -324,12 +353,14 @@ struct GWBinaryVariables
  * radiative part and the non-radiative Post-Newtonian conformal factor is given
  * by
  *
- * \f[\psi_{PN} = 1 + \sum_{a=1}^{2} \frac{E_a}{2 r_a} + O(\epsilon^6)\f]
+ * \f{equation}{
+ * \psi_{PN} = 1 + \sum_{a=1}^{2} \frac{E_a}{2 r_a} + O(\epsilon^6)
+ * \f}
  *
  * and
  *
- * \f[E_a = (\epsilon^2) m_a + (\epsilon^4) \Bigr(\frac{p_a^2}{2 m_a} -
- * \frac{m_1 m_2}{2 r_{12}}\Bigr)\f]
+ * \f{equation}{E_a = (\epsilon^2) m_a + (\epsilon^4) \Bigr(\frac{p_a^2}{2 m_a}
+ * - \frac{m_1 m_2}{2 r_{12}}\Bigr) \f}
  *
  * with \f$\vec{p}_a\f$ the linear momentum, \f$r_a\f$ the distance to each
  * black hole center of mass from the point of calculation and \f$r_{12}\f$
@@ -345,19 +376,19 @@ struct GWBinaryVariables
  * (\epsilon^5) h^{TT}_{(5)ij}$, with
  *
  * \f{align}{
- * h^{TT\ i j}_{(4)} = \frac{1}{4} \sum_a \frac{1}{m_a r_a} \Bigr\{
+ * h^{TT\ i j}_{(4)} &= \frac{1}{4} \sum_a \frac{1}{m_a r_a} \Bigr\{
  * [p_a^2-5(\hat{n}_a \cdot \vec{p}_a)^2] \delta^{i j}+2 p_a^i p_a^j
  * +[3(\hat{n}_a \cdot \vec{p}_a)^2-5p_a^2] n_a^i n_a^j +12(\hat{n}_a \cdot
- * \vec{p}_a) n_a^{(i} p_a^{j)} \Bigr\} \\
- *  +\frac{1}{8} \sum_a \sum_{b \neq a} m_a m_b \Bigr\{-\frac{32}{s_{a
+ * \vec{p}_a) n_a^{(i} p_a^{j)} \Bigr\} \nonumber \\
+ *  &+\frac{1}{8} \sum_a \sum_{b \neq a} m_a m_b \Bigr\{-\frac{32}{s_{a
  * b}}(\frac{1}{r_{a b}}+\frac{1}{s_{a b}}) n_{a b}^i n_{a
  * b}^j+2(\frac{r_a+r_b}{r_{a b}^3}+\frac{12}{s_{a b}^2}) n_a^i
  * n_b^j+32(\frac{2}{s_{a b}^2}-\frac{1}{r_{a b}^2}) n_a^{(i} n_{a b}^{j)} \\
- *  +[\frac{5}{r_{a b} r_a}-\frac{1}{r_{a b}^3}(\frac{r_b^2}{r_a}+3
+ *  &+[\frac{5}{r_{a b} r_a}-\frac{1}{r_{a b}^3}(\frac{r_b^2}{r_a}+3
  * r_a)-\frac{8}{s_{a b}}(\frac{1}{r_a}+\frac{1}{s_{a b}})] n_a^i n_a^j+[5
  * \frac{r_a}{r_{a b}^3}(\frac{r_a}{r_b}-1)-\frac{17}{r_{a b} r_a}+\frac{4}{r_a
  * r_b}+\frac{8}{s_{a b}}(\frac{1}{r_a}+\frac{4}{r_{a b}})] \delta^{i j}\Bigr\},
- * \f}
+ * \nonumber \f}
  *
  * where \f$\hat{n}_a\f$ is the unit normal vector pointing to the black hole
  * center of mass, \f$\hat{n}_{ab}\f$ is the unit normal vector pointing from
@@ -369,66 +400,67 @@ struct GWBinaryVariables
  * Looking at \cite Kelly2007uc, the remainder term in itself is decomposed in
  * general computations for specific vectors as
  *
- * \f[
+ * \f{equation}{
  * h^{TT\ (remainder)}_{ij} = H^{TT\ 1}_{ij} \Bigr[
- * \frac{\Vec{p_1}}{\sqrt{m_1}}\Bigr] + H^{TT\ 2}_{ij} \Bigr[
- * \frac{\Vec{p_2}}{\sqrt{m_2}}\Bigr] + H^{TT\ 1}_{ij} \Bigr[ \sqrt{\frac{m_1
+ * \frac{\vec{p_1}}{\sqrt{m_1}}\Bigr] + H^{TT\ 2}_{ij} \Bigr[
+ * \frac{\vec{p_2}}{\sqrt{m_2}}\Bigr] + H^{TT\ 1}_{ij} \Bigr[ \sqrt{\frac{m_1
  * m_2}{2 r_{12}}}  \hat{n_{12}} \Bigr] + H^{TT\ 2}_{ij} \Bigr[ \sqrt{\frac{m_1
- * m_2}{2 r_{12}}}  \hat{n_{12}} \Bigr], \f]
+ * m_2}{2 r_{12}}}  \hat{n_{12}} \Bigr], \f}
  *
  * each of this is composed of three different computations: one computed at
  * present time \f$t\f$, other at retarded time \f$t_{a}^{r}\f$ defined by \f$t
  * - t_{a}^{r} - r_a(t_{a}^{r}) = 0\f$ and the last is an integral between the
  * two times:
  *
- * \f[
- * H^{TT\ a}_{ij} [ \Vec{u} ] = H^{TT\ a}_{ij} [ \Vec{u} ; t] + H^{TT\ a}_{ij} [
- * \Vec{u} ; t^{r}_a] + H^{TT\ a}_{ij} [ \Vec{u} ; t_{a}^{r} \to t]. \f]
+ * \f{equation}{
+ * H^{TT\ a}_{ij} [ \vec{u} ] = H^{TT\ a}_{ij} [ \vec{u} ; t] + H^{TT\ a}_{ij} [
+ * \vec{u} ; t^{r}_a] + H^{TT\ a}_{ij} [ \vec{u} ; t_{a}^{r} \to t]. \f}
  *
  * Explicitly they are
  *
- * \f[
- * H^{TT\ a}_{ij} [ \Vec{u} ; t] = -\frac{1}{4 r_a(t)} \Bigr\{ [u^2 - 5(\Vec{u}
- * \cdot \hat{n}_a)^2] \delta_{ij} + 2 u^iu^j + 3(\Vec{u}\cdot\hat{n}_a)^2 - 5
- * u^2] n_a^i n_a^j + 12 (\Vec{u} \cdot \hat{n}_a) u^{(i}n_a^{j)}\Bigr\}_t, \f]
+ * \f{equation}{
+ * H^{TT\ a}_{ij} [ \vec{u} ; t] = -\frac{1}{4 r_a(t)} \Bigr\{ [u^2 - 5(\vec{u}
+ * \cdot \hat{n}_a)^2] \delta_{ij} + 2 u^iu^j + 3(\vec{u}\cdot\hat{n}_a)^2 - 5
+ * u^2] n_a^i n_a^j + 12 (\vec{u} \cdot \hat{n}_a) u^{(i}n_a^{j)}\Bigr\}_t, \f}
  *
- * \f[
- * H^{TT\ a}_{ij} [ \Vec{u} ; t^{r}_a] = -\frac{1}{r_a(t^{r}_a)} \Bigr\{ [-2u^2
- * + 2(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 4u^iu^j + [2 u^2 + 2 (\Vec{u}
- * \cdot \hat{n}_a)^2 ] n_a^i n_a^j - 8(\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)}
- * \Bigr\}_{t^{r}_a}, \f]
+ * \f{equation}{
+ * H^{TT\ a}_{ij} [ \vec{u} ; t^{r}_a] = -\frac{1}{r_a(t^{r}_a)} \Bigr\{ [-2u^2
+ * + 2(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 4u^iu^j + [2 u^2 + 2 (\vec{u}
+ * \cdot \hat{n}_a)^2 ] n_a^i n_a^j - 8(\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)}
+ * \Bigr\}_{t^{r}_a}, \f}
  *
  * and
  *
  * \f{align}{
- * H^{TT\ a}_{ij} [ \Vec{u} &; t^{r}_a \to t] = \\
- *  - \int^t_{t^{r}_a} d\tau & \frac{(t-\tau)}{r_a(\tau)^3}  \Bigr\{ [-5u^2 +
- * 9(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 6u^iu^j - 12
- * (\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [9 u^2 - 15(\Vec{u} \cdot
+ * H^{TT\ a}_{ij} [ \vec{u} ; t^{r}_a \to t] &= \nonumber \\
+ *  &- \int^t_{t^{r}_a} d\tau \frac{(t-\tau)}{r_a(\tau)^3}  \Bigr\{ [-5u^2 +
+ * 9(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 6u^iu^j - 12
+ * (\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [9 u^2 - 15(\vec{u} \cdot
  * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\} \\
- *  - \int^t_{t^{r}_a} d\tau & \frac{(t-\tau)^3}{r_a(\tau)^5}  \Bigr\{ [u^2 -
- * 5(\Vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 2 u^iu^j - 20
- * (\Vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [-5 u^2 + 35(\Vec{u} \cdot
- * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\}. \f}
+ *  &- \int^t_{t^{r}_a} d\tau \frac{(t-\tau)^3}{r_a(\tau)^5}  \Bigr\{ [u^2 -
+ * 5(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 2 u^iu^j - 20
+ * (\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [-5 u^2 + 35(\vec{u} \cdot
+ * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\}. \nonumber \f}
  *
  * With this the whole spatial metric is computed up to \f$4PN\f$ order and the
  * radiative term agrees well with quadrupole predictions. In \cite Tichy2002ec,
  * the extrinsic curvature is given up to \f$5PN\f$ order by
  *
- * \f[
+ * \f{equation}{
  * K^{ij}_{PN} = - \psi^{-10}_{PN} \Bigr[ (\epsilon^3) \tilde{\pi}_{(3)}^{ij} +
- * (\epsilon^5) \frac{1}{2} \Dot{h}^{TT}_{(4)ij} + (\epsilon^5) (\phi_{(2)}
- * \tilde{\pi}_{(3)}^{ij})^{TT} \Bigr] + O(\epsilon^6). \f]
+ * (\epsilon^5) \frac{1}{2} \dot{h}^{TT}_{(4)ij} + (\epsilon^5) (\phi_{(2)}
+ * \tilde{\pi}_{(3)}^{ij})^{TT} \Bigr] + O(\epsilon^6). \f}
  *
  * where
  *
- * \f[
+ * \f{equation}{
  *  \tilde{\pi}_{(3)}^{i j}=\frac{1}{16 \pi} \sum_a p_{a}^k\{-\delta_{i
  * j}(\frac{1}{r_a})_{, k}+2[\delta_{i k}(\frac{1}{r_a})_{, j}+\delta_{j
- * k}(\frac{1}{r_a})_{, i}]-\frac{1}{2} r_{a, i j k}\}. \f]
+ * k}(\frac{1}{r_a})_{, i}]-\frac{1}{2} r_{a, i j k}\}. \f}
  */
-class GWBinary : public elliptic::analytic_data::Background,
-                 public elliptic::analytic_data::InitialGuess {
+class BinaryWithGravitationalWaves
+    : public elliptic::analytic_data::Background,
+      public elliptic::analytic_data::InitialGuess {
  public:
   struct MassLeft {
     static constexpr Options::String help = "The mass of the left black hole.";
@@ -458,34 +490,39 @@ class GWBinary : public elliptic::analytic_data::Background,
         "The y-axis-componet of the linear momentum of the right black hole.";
     using type = double;
   };
-  struct Atenuation {
+  struct AtenuationParameter {
     static constexpr Options::String help =
         "The parameter controlling the width of the atenuation function.";
     using type = double;
   };
-  using options = tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight,
-                             YMomentumLeft, YMomentumRight, Atenuation>;
+  using options =
+      tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight, YMomentumLeft,
+                 YMomentumRight, AtenuationParameter>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
 
-  GWBinary() = default;
-  GWBinary(const GWBinary&) = delete;
-  GWBinary& operator=(const GWBinary&) = delete;
-  GWBinary(GWBinary&&) = default;
-  GWBinary& operator=(GWBinary&&) = default;
-  ~GWBinary() = default;
+  BinaryWithGravitationalWaves() = default;
+  BinaryWithGravitationalWaves(const BinaryWithGravitationalWaves&) = delete;
+  BinaryWithGravitationalWaves& operator=(const BinaryWithGravitationalWaves&) =
+      delete;
+  BinaryWithGravitationalWaves(BinaryWithGravitationalWaves&&) = default;
+  BinaryWithGravitationalWaves& operator=(BinaryWithGravitationalWaves&&) =
+      default;
+  ~BinaryWithGravitationalWaves() = default;
 
-  GWBinary(double mass_left, double mass_right, double xcoord_left,
-           double xcoord_right, double ymomentum_left, double ymomentum_right,
-           double atenuation, const Options::Context& context = {})
+  BinaryWithGravitationalWaves(double mass_left, double mass_right,
+                               double xcoord_left, double xcoord_right,
+                               double ymomentum_left, double ymomentum_right,
+                               double atenuation_parameter,
+                               const Options::Context& context = {})
       : mass_left_(mass_left),
         mass_right_(mass_right),
         xcoord_left_(xcoord_left),
         xcoord_right_(xcoord_right),
         ymomentum_left_(ymomentum_left),
         ymomentum_right_(ymomentum_right),
-        atenuation_(atenuation) {
+        atenuation_parameter_(atenuation_parameter) {
     if (mass_left_ <= 0 or mass_right_ <= 0) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
     }
@@ -493,8 +530,8 @@ class GWBinary : public elliptic::analytic_data::Background,
       PARSE_ERROR(context,
                   "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
     }
-    if (atenuation_ <= 0) {
-      PARSE_ERROR(context, "'Atenuation' must be positive.");
+    if (atenuation_parameter_ <= 0) {
+      PARSE_ERROR(context, "'AtenuationParameter' must be positive.");
     }
     if (ymomentum_left_ * ymomentum_right_ > 0) {
       PARSE_ERROR(
@@ -503,11 +540,11 @@ class GWBinary : public elliptic::analytic_data::Background,
     }
   }
 
-  explicit GWBinary(CkMigrateMessage* m)
+  explicit BinaryWithGravitationalWaves(CkMigrateMessage* m)
       : elliptic::analytic_data::Background(m),
         elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(GWBinary);
+  WRAPPED_PUPable_decl_template(BinaryWithGravitationalWaves);
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
@@ -536,7 +573,7 @@ class GWBinary : public elliptic::analytic_data::Background,
     p | xcoord_right_;
     p | ymomentum_left_;
     p | ymomentum_right_;
-    p | atenuation_;
+    p | atenuation_parameter_;
   }
 
   double mass_left() const { return mass_left_; }
@@ -545,7 +582,7 @@ class GWBinary : public elliptic::analytic_data::Background,
   double xcoord_right() const { return xcoord_right_; }
   double ymomentum_left() const { return ymomentum_left_; }
   double ymomentum_right() const { return ymomentum_right_; }
-  double atenuation() const { return atenuation_; }
+  double atenuation_parameter() const { return atenuation_parameter_; }
 
  private:
   double mass_left_ = std::numeric_limits<double>::signaling_NaN();
@@ -554,7 +591,7 @@ class GWBinary : public elliptic::analytic_data::Background,
   double xcoord_right_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
-  double atenuation_ = std::numeric_limits<double>::signaling_NaN();
+  double atenuation_parameter_ = std::numeric_limits<double>::signaling_NaN();
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -564,7 +601,8 @@ class GWBinary : public elliptic::analytic_data::Background,
           DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::GWBinaryVariables<DataType>;
+    using VarsComputer =
+        detail::BinaryWithGravitationalWavesVariables<DataType>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
     const VarsComputer computer{std::move(mesh),
                                 std::move(inv_jacobian),
@@ -575,7 +613,7 @@ class GWBinary : public elliptic::analytic_data::Background,
                                 xcoord_right_,
                                 ymomentum_left_,
                                 ymomentum_right_,
-                                atenuation_};
+                                atenuation_parameter_};
 
     return {cache.get_var(computer, RequestedTags{})...};
   }
