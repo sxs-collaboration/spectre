@@ -196,6 +196,7 @@ void test_persson() {
   }
 }
 
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tci.Persson", "[Evolution][Unit]") {
   test_persson<1>();
   test_persson<2>();
