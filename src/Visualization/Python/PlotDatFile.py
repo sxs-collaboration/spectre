@@ -43,7 +43,7 @@ def parse_functions(ctx, param, all_values):
     return functions_and_labels
 
 
-@click.command(name="plot-dat")
+@click.command(name="dat")
 @click.argument(
     "h5_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),

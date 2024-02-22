@@ -9,6 +9,7 @@ spectre_python_add_module(
   __init__.py
   GenerateXdmf.py
   InterpolateToMesh.py
+  PlotAlongLine.py
   PlotDatFile.py
   PlotPowerMonitors.py
   PlotSizeControl.py

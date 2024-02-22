@@ -30,9 +30,7 @@ class Cli(click.MultiCommand):
             "generate-xdmf",
             "interpolate-to-mesh",
             "interpolate-to-points",
-            "plot-dat",
-            "plot-power-monitors",
-            "plot-size-control",
+            "plot",
             "render-1d",
             "render-3d",
             "resubmit",
@@ -93,22 +91,10 @@ class Cli(click.MultiCommand):
             )
 
             return interpolate_to_mesh_command
-        elif name == "plot-dat":
-            from spectre.Visualization.PlotDatFile import plot_dat_command
+        elif name == "plot":
+            from spectre.Visualization import plot_command
 
-            return plot_dat_command
-        elif name == "plot-power-monitors":
-            from spectre.Visualization.PlotPowerMonitors import (
-                plot_power_monitors_command,
-            )
-
-            return plot_power_monitors_command
-        elif name in ["plot-size", "plot-size-control"]:
-            from spectre.Visualization.PlotSizeControl import (
-                plot_size_control_command,
-            )
-
-            return plot_size_control_command
+            return plot_command
         elif name == "render-1d":
             from spectre.Visualization.Render1D import render_1d_command
 
@@ -266,8 +252,9 @@ def read_config_file(ctx, param, config_file):
         "  starttime: now-2days\n"
         "  state_styles:\n"
         "    RUNNING: blink\n"
-        "plot-dat:\n"
-        "  stylesheet: path/to/stylesheet.mplstyle\n\n"
+        "plot:\n"
+        "  dat:\n"
+        "    stylesheet: path/to/stylesheet.mplstyle\n\n"
         "The path of the config file can also be specified by "
         "setting the 'SPECTRE_CONFIG_FILE' environment variable."
     ),
