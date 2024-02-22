@@ -198,7 +198,7 @@ void test_translation_control_system() {
 
 void test_names() {
   using translation = control_system::Systems::Translation<
-      2, control_system::measurements::BothHorizons>;
+      2, control_system::measurements::BothHorizons, 2>;
 
   CHECK(pretty_type::name<translation>() == "Translation");
   CHECK(*translation::component_name(0, 3) == "x");

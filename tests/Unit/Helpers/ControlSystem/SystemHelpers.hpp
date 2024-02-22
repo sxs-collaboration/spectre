@@ -292,7 +292,7 @@ struct MockMetavars {
   using rotation_system =
       control_system::Systems::Rotation<rot_deriv_order, BothHorizons>;
   using translation_system =
-      control_system::Systems::Translation<trans_deriv_order, BothHorizons>;
+      control_system::Systems::Translation<trans_deriv_order, BothHorizons, 2>;
   using shape_system =
       control_system::Systems::Shape<::domain::ObjectLabel::A,
                                      shape_deriv_order, BothHorizons>;

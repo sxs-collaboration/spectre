@@ -318,7 +318,7 @@ struct EvolutionMetavars {
   using control_systems =
       tmpl::list<control_system::Systems::Rotation<3, both_horizons>,
                  control_system::Systems::Expansion<2, both_horizons>,
-                 control_system::Systems::Translation<2, both_horizons>,
+                 control_system::Systems::Translation<2, both_horizons, 2>,
                  control_system::Systems::Shape<::domain::ObjectLabel::A, 2,
                                                 both_horizons>,
                  control_system::Systems::Shape<::domain::ObjectLabel::B, 2,
