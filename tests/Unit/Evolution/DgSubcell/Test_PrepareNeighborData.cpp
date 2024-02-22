@@ -212,7 +212,7 @@ void test(const bool all_neighbors_are_doing_dg,
               all_neighbors_are_doing_dg
                   ? std::optional{std::vector<std::string>{"Block1"}}
                   : std::optional<std::vector<std::string>>{},
-              fd_derivative_order},
+              fd_derivative_order, 1, 1, 1},
           TestCreator<Dim>{}};
 
   Interps fd_to_fd_neighbor_interpolants{};

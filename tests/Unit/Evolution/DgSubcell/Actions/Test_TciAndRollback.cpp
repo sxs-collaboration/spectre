@@ -285,7 +285,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
               disable_subcell_in_block
                   ? std::optional{std::vector<std::string>{"Block1"}}
                   : std::optional<std::vector<std::string>>{},
-              ::fd::DerivativeOrder::Two},
+              ::fd::DerivativeOrder::Two, 1, 1, 1},
           TestCreator<Dim>{}};
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

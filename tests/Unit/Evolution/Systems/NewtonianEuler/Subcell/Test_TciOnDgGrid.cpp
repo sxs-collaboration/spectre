@@ -88,7 +88,10 @@ void test(const TestThis test_this) {
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,
-      fd::DerivativeOrder::Two};
+      fd::DerivativeOrder::Two,
+      1,
+      1,
+      1};
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<cons_tags>, ::Tags::Variables<prim_tags>,

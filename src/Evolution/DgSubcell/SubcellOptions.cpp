@@ -26,7 +26,10 @@ SubcellOptions::SubcellOptions(
     double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
     fd::ReconstructionMethod recons_method, bool use_halo,
     std::optional<std::vector<std::string>> only_dg_block_and_group_names,
-    ::fd::DerivativeOrder finite_difference_derivative_order)
+    ::fd::DerivativeOrder finite_difference_derivative_order,
+    const size_t number_of_steps_between_tci_calls,
+    const size_t min_tci_calls_after_rollback,
+    const size_t min_clear_tci_before_dg)
     : persson_exponent_(persson_exponent),
       persson_num_highest_modes_(persson_num_highest_modes),
       rdmp_delta0_(rdmp_delta0),
@@ -35,10 +38,19 @@ SubcellOptions::SubcellOptions(
       reconstruction_method_(recons_method),
       use_halo_(use_halo),
       only_dg_block_and_group_names_(std::move(only_dg_block_and_group_names)),
-      finite_difference_derivative_order_(finite_difference_derivative_order) {
+      finite_difference_derivative_order_(finite_difference_derivative_order),
+      number_of_steps_between_tci_calls_(number_of_steps_between_tci_calls),
+      min_tci_calls_after_rollback_(min_tci_calls_after_rollback),
+      min_clear_tci_before_dg_(min_clear_tci_before_dg) {
   if (not only_dg_block_and_group_names_.has_value()) {
     only_dg_block_ids_ = std::vector<size_t>{};
   }
+  ASSERT(number_of_steps_between_tci_calls_ > 0,
+         "number_of_steps_between_tci_calls_ must be greater than zero.");
+  ASSERT(min_tci_calls_after_rollback_ > 0,
+         "min_tci_calls_after_rollback_ must be greater than zero.");
+  ASSERT(min_clear_tci_before_dg_ > 0,
+         "min_clear_tci_before_dg_ must be greater than zero.");
 }
 
 template <size_t Dim>
@@ -76,6 +88,9 @@ void SubcellOptions::pup(PUP::er& p) {
   p | only_dg_block_and_group_names_;
   p | only_dg_block_ids_;
   p | finite_difference_derivative_order_;
+  p | number_of_steps_between_tci_calls_;
+  p | min_tci_calls_after_rollback_;
+  p | min_clear_tci_before_dg_;
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
@@ -90,7 +105,12 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
              rhs.only_dg_block_and_group_names_ and
          lhs.only_dg_block_ids_ == rhs.only_dg_block_ids_ and
          lhs.finite_difference_derivative_order_ ==
-             rhs.finite_difference_derivative_order_;
+             rhs.finite_difference_derivative_order_ and
+         lhs.number_of_steps_between_tci_calls_ ==
+             rhs.number_of_steps_between_tci_calls_ and
+         lhs.min_tci_calls_after_rollback_ ==
+             rhs.min_tci_calls_after_rollback_ and
+         lhs.min_clear_tci_before_dg_ == rhs.min_clear_tci_before_dg_;
 }
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {

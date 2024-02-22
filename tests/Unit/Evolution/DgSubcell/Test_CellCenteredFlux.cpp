@@ -82,7 +82,7 @@ void test(const fd::DerivativeOrder derivative_order, const bool did_rollback) {
           evolution::dg::subcell::SubcellOptions{
               4.0, 1_st, 1.0e-3, 1.0e-4, false,
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-              std::nullopt, derivative_order},
+              std::nullopt, derivative_order, 1, 1, 1},
           subcell_mesh, typename CellCenteredFluxTag::type{}, dg_mesh,
           dg_mesh_velocity,
           Variables<flux_variables>{subcell_mesh.number_of_grid_points(), 1.0});

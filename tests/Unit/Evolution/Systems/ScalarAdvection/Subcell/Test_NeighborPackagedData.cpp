@@ -205,7 +205,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, ::fd::DerivativeOrder::Two});
+          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
 
   // Compute face-centered velocity field and add it to the box. This action
   // needs to be called in prior since NeighborPackagedData::apply() internally
