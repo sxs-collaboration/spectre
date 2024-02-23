@@ -35,8 +35,9 @@ Background: &solution
 Material:
   IsotropicHomogeneous: *iron
 
-InitialGuess:
-  Zero:
+InitialGuess: Zero
+
+RandomizeInitialGuess: None
 
 DomainCreator:
   Rectangle:
@@ -62,7 +63,7 @@ Observers:
   ReductionFileName: "ElasticBentBeam2DReductions"
 
 LinearSolver:
-  GMRES:
+  Gmres:
     ConvergenceCriteria:
       MaxIterations: 1
       RelativeResidual: 1.e-8
@@ -103,3 +104,9 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+
+PhaseChangeAndTriggers:
+
+BuildMatrix:
+  MatrixSubfileName: Matrix
+  Verbosity: Verbose

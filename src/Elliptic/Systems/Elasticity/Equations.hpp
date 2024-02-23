@@ -66,6 +66,7 @@ struct Fluxes {
       tmpl::list<Tags::ConstitutiveRelation<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
   using volume_tags = tmpl::list<Tags::ConstitutiveRelation<Dim>>;
+  using const_global_cache_tags = volume_tags;
   static void apply(gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
                     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
                         constitutive_relation,

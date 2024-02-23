@@ -33,6 +33,8 @@ Background: &solution
 
 InitialGuess: Flatness
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   Sphere:
     # Boyer-Lindquist radius a bit inside the horizon:

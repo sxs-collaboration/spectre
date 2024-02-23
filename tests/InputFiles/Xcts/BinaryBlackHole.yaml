@@ -39,6 +39,8 @@ Background: &background
 
 InitialGuess: *background
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   BinaryCompactObject:
     ObjectA:

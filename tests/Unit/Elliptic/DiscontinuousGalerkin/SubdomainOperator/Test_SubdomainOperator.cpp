@@ -442,7 +442,6 @@ struct Metavariables {
 // sources that take arguments out of the DataBox this test can insert actions
 // that initialize those arguments.
 template <typename System, typename ExtraInitActions = tmpl::list<>,
-          typename ArgsTagsFromCenter = tmpl::list<>,
           size_t Dim = System::volume_dim>
 void test_subdomain_operator(
     const DomainCreator<Dim>& domain_creator,
@@ -455,8 +454,9 @@ void test_subdomain_operator(
   CAPTURE(penalty_parameter);
   CAPTURE(use_massive_dg_operator);
 
-  using SubdomainOperator = elliptic::dg::subdomain_operator::SubdomainOperator<
-      System, DummyOptionsGroup, ArgsTagsFromCenter>;
+  using SubdomainOperator =
+      elliptic::dg::subdomain_operator::SubdomainOperator<System,
+                                                          DummyOptionsGroup>;
 
   using metavariables =
       Metavariables<System, SubdomainOperator, ExtraInitActions>;
@@ -925,9 +925,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
         VariantType{make_boundary_condition<system>(
             elliptic::BoundaryConditionType::Dirichlet)},
         nullptr};
-    test_subdomain_operator<
-        system, tmpl::list<InitializeConstitutiveRelation<3>>,
-        tmpl::list<::Elasticity::Tags::ConstitutiveRelation<3>>>(
+    test_subdomain_operator<system,
+                            tmpl::list<InitializeConstitutiveRelation<3>>>(
         domain_creator);
   }
 }

@@ -176,6 +176,8 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
 
+RandomizeInitialGuess: None
+
 ResourceInfo:
   AvoidGlobalProc0: false
   Singletons: Auto

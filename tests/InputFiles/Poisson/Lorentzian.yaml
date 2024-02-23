@@ -57,11 +57,12 @@ Observers:
   ReductionFileName: "LorentzianReductions"
 
 LinearSolver:
-  ConvergenceCriteria:
-    MaxIterations: 10
-    RelativeResidual: 0.
-    AbsoluteResidual: 1.e-3
-  Verbosity: Quiet
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 10
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-3
+    Verbosity: Quiet
 
   Multigrid:
     Iterations: 1

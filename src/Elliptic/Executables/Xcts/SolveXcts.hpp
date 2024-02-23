@@ -13,7 +13,7 @@
 #include "Elliptic/Actions/RunEventsAndTriggers.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Elliptic/Executables/NonlinearEllipticSolver.hpp"
+#include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/HydroQuantities.hpp"
@@ -55,7 +55,7 @@ struct Metavariables {
   using system =
       Xcts::FirstOrderSystem<Xcts::Equations::HamiltonianLapseAndShift,
                              Xcts::Geometry::Curved, conformal_matter_scale>;
-  using solver = elliptic::nonlinear_solver::Solver<Metavariables>;
+  using solver = elliptic::Solver<Metavariables>;
 
   static constexpr Options::String help{
       "Find the solution to an XCTS problem."};

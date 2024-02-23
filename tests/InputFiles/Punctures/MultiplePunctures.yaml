@@ -29,6 +29,8 @@ Background:
 
 InitialGuess: Flatness
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   Sphere:
     InnerRadius: 2.
