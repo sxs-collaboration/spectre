@@ -207,8 +207,9 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const Mesh<dim>& new_mesh, const Element<dim>& new_element,
       const std::unordered_map<ElementId<dim>, amr::Info<dim>>& neighbor_info,
       const std::pair<Mesh<dim>, Element<dim>>& /*old_mesh_and_element*/) {
-    static_assert(not Metavariables::local_time_stepping,
-                  "AMR with local time-stepping is not yet supported");
+    if (Metavariables::local_time_stepping) {
+      ERROR("AMR with local time-stepping is not yet supported");
+    }
 
     mortar_data->clear();
     mortar_mesh->clear();

@@ -76,4 +76,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FutureMeasurements",
   const auto measurements_copy = serialize_and_deserialize(measurements);
   REQUIRE(measurements_copy.next_measurement() == std::optional(8.0));
   REQUIRE(measurements_copy.next_update() == std::optional(10.0));
+  REQUIRE(measurements == measurements_copy);
 }

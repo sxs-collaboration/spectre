@@ -32,6 +32,12 @@ Evolution:
     AdamsBashforth:
       Order: 1
 
+Amr:
+  Criteria:
+  Policies:
+    Isotropy: Anisotropic
+  Verbosity: Quiet
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:

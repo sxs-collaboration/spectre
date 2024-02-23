@@ -98,6 +98,12 @@ Observers:
   ReductionFileName: "BbhReductions"
   SurfaceFileName: "BbhSurfaces"
 
+Amr:
+  Criteria:
+  Policies:
+    Isotropy: Anisotropic
+  Verbosity: Quiet
+
 PhaseChangeAndTriggers:
   - Trigger:
       Slabs:

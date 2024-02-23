@@ -153,7 +153,11 @@ class Constraints : public Criterion {
   WRAPPED_PUPable_decl_template(Constraints);  // NOLINT
   /// \endcond
 
-  using compute_tags_for_observation_box = TensorTags;
+  using compute_tags_for_observation_box = tmpl::append<
+      TensorTags, tmpl::list<domain::Tags::JacobianCompute<
+                                 Dim, Frame::ElementLogical, Frame::Inertial>,
+                             Events::Tags::ObserverJacobianCompute<
+                                 Dim, Frame::ElementLogical, Frame::Inertial>>>;
 
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
 

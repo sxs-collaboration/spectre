@@ -52,6 +52,9 @@ class FutureMeasurements {
 
   void pup(PUP::er& p);
 
+  friend bool operator==(const FutureMeasurements& lhs,
+                         const FutureMeasurements& rhs);
+
  private:
   // This stores the most recent (or current) measurement time,
   // followed by some future measurement times.  We need to keep one
@@ -63,4 +66,6 @@ class FutureMeasurements {
   size_t measurements_until_update_{};
   size_t measurements_per_update_{};
 };
+
+bool operator!=(const FutureMeasurements& lhs, const FutureMeasurements& rhs);
 }  // namespace control_system

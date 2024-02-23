@@ -105,6 +105,8 @@ struct RandomAmrMetavars {
   void pup(PUP::er& /*p*/) {}
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = dg_element_array;
+
     using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
         domain::Tags::InitialExtents<Dim>,
         domain::Tags::InitialRefinementLevels<Dim>,

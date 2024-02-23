@@ -317,18 +317,6 @@ struct Metavariables {
                  observers::Actions::RegisterWithObservers<
                      Actions::FindGlobalMinimumGridSpacing>>;
 
-  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
-    using projectors = tmpl::list<
-        Initialization::ProjectTimeStepping<volume_dim>,
-        evolution::dg::Initialization::ProjectDomain<volume_dim>,
-        ::amr::projectors::DefaultInitialize<
-            Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
-            ::domain::Tags::InitialExtents<Dim>,
-            ::domain::Tags::InitialRefinementLevels<Dim>,
-            evolution::dg::Tags::Quadrature>>;
-  };
-
   using dg_element_array = DgElementArray<
       Metavariables,
       tmpl::list<
@@ -358,6 +346,19 @@ struct Metavariables {
                          Actions::FindGlobalMinimumGridSpacing,
                          evolution::Actions::RunEventsAndTriggers,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = dg_element_array;
+    using projectors = tmpl::list<
+        Initialization::ProjectTimeStepping<volume_dim>,
+        evolution::dg::Initialization::ProjectDomain<volume_dim>,
+        ::amr::projectors::DefaultInitialize<
+            Initialization::Tags::InitialTimeDelta,
+            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            ::domain::Tags::InitialExtents<Dim>,
+            ::domain::Tags::InitialRefinementLevels<Dim>,
+            evolution::dg::Tags::Quadrature>>;
+  };
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
