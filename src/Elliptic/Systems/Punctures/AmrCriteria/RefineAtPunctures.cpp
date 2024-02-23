@@ -39,11 +39,11 @@ std::array<amr::Flag, 3> RefineAtPunctures::impl(
       block_logical_coordinates(domain, puncture_positions);
   const auto element_logical_coords =
       element_logical_coordinates({element_id}, block_logical_coords);
-  // Split (h-refine) the element if it contains a puncture, else p-refine
+  // Split (h-refine) the element if it contains a puncture
   if (element_logical_coords.find(element_id) != element_logical_coords.end()) {
     return make_array<3>(amr::Flag::Split);
   } else {
-    return make_array<3>(amr::Flag::IncreaseResolution);
+    return make_array<3>(amr::Flag::DoNothing);
   }
 }
 
