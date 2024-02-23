@@ -154,7 +154,7 @@ struct BinaryWithGravitationalWavesVariables
       const double local_mass_right, const double local_xcoord_left,
       const double local_xcoord_right, const double local_ymomentum_left,
       const double local_ymomentum_right,
-      const double local_atenuation_parameter)
+      const double local_attenuation_parameter)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
         mass_left(local_mass_left),
@@ -163,7 +163,7 @@ struct BinaryWithGravitationalWavesVariables
         xcoord_right(local_xcoord_right),
         ymomentum_left(local_ymomentum_left),
         ymomentum_right(local_ymomentum_right),
-        atenuation_parameter(local_atenuation_parameter) {}
+        attenuation_parameter(local_attenuation_parameter) {}
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
@@ -172,7 +172,7 @@ struct BinaryWithGravitationalWavesVariables
   const double xcoord_right;
   const double ymomentum_left;
   const double ymomentum_right;
-  const double atenuation_parameter;
+  const double attenuation_parameter;
   const double separation = xcoord_right - xcoord_left;
   const std::array<double, 3> normal_lr{{-1., 0., 0.}};
   const std::array<double, 3> momentum_left{{0., ymomentum_left, 0.}};
@@ -427,7 +427,8 @@ struct BinaryWithGravitationalWavesVariables
  * H^{TT\ a}_{ij} [ \vec{u} ; t^{r}_a] = -\frac{1}{r_a(t^{r}_a)} \Bigr\{ [-2u^2
  * + 2(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 4u^iu^j + [2 u^2 + 2 (\vec{u}
  * \cdot \hat{n}_a)^2 ] n_a^i n_a^j - 8(\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)}
- * \Bigr\}_{t^{r}_a}, \f}
+ * \Bigr\}_{t^{r}_a},
+ * \label{eq:retarded_term} \f}
  *
  * and
  *
@@ -436,11 +437,15 @@ struct BinaryWithGravitationalWavesVariables
  *  &- \int^t_{t^{r}_a} d\tau \frac{(t-\tau)}{r_a(\tau)^3}  \Bigr\{ [-5u^2 +
  * 9(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 6u^iu^j - 12
  * (\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [9 u^2 - 15(\vec{u} \cdot
- * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\} \\
+ * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\} \label{eq:integral_term} \\
  *  &- \int^t_{t^{r}_a} d\tau \frac{(t-\tau)^3}{r_a(\tau)^5}  \Bigr\{ [u^2 -
  * 5(\vec{u} \cdot \hat{n}_a)^2] \delta^{ij} + 2 u^iu^j - 20
  * (\vec{u}\cdot\hat{n}_a) u^{(i}n_a^{j)} + [-5 u^2 + 35(\vec{u} \cdot
  * \hat{n}_a)^2 ]  n_a^i n_a^j\Bigr\}. \nonumber \f}
+ *
+ * \warning The retarded and integral terms, equations
+ * \f$\eqref{eq:retarded_term}\f$ and \f$\eqref{eq:integral_term}\f$, are not
+ * implemented yet. Instead these terms are set to zero.}
  *
  * With this the whole spatial metric is computed up to \f$4PN\f$ order and the
  * radiative term agrees well with quadrupole predictions. In \cite Tichy2002ec,
@@ -490,14 +495,14 @@ class BinaryWithGravitationalWaves
         "The y-axis-componet of the linear momentum of the right black hole.";
     using type = double;
   };
-  struct AtenuationParameter {
+  struct AttenuationParameter {
     static constexpr Options::String help =
-        "The parameter controlling the width of the atenuation function.";
+        "The parameter controlling the width of the attenuation function.";
     using type = double;
   };
   using options =
       tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight, YMomentumLeft,
-                 YMomentumRight, AtenuationParameter>;
+                 YMomentumRight, AttenuationParameter>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
@@ -514,7 +519,7 @@ class BinaryWithGravitationalWaves
   BinaryWithGravitationalWaves(double mass_left, double mass_right,
                                double xcoord_left, double xcoord_right,
                                double ymomentum_left, double ymomentum_right,
-                               double atenuation_parameter,
+                               double attenuation_parameter,
                                const Options::Context& context = {})
       : mass_left_(mass_left),
         mass_right_(mass_right),
@@ -522,7 +527,7 @@ class BinaryWithGravitationalWaves
         xcoord_right_(xcoord_right),
         ymomentum_left_(ymomentum_left),
         ymomentum_right_(ymomentum_right),
-        atenuation_parameter_(atenuation_parameter) {
+        attenuation_parameter_(attenuation_parameter) {
     if (mass_left_ <= 0 or mass_right_ <= 0) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
     }
@@ -530,8 +535,8 @@ class BinaryWithGravitationalWaves
       PARSE_ERROR(context,
                   "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
     }
-    if (atenuation_parameter_ <= 0) {
-      PARSE_ERROR(context, "'AtenuationParameter' must be positive.");
+    if (attenuation_parameter_ <= 0) {
+      PARSE_ERROR(context, "'AttenuationParameter' must be positive.");
     }
     if (ymomentum_left_ * ymomentum_right_ > 0) {
       PARSE_ERROR(
@@ -573,7 +578,7 @@ class BinaryWithGravitationalWaves
     p | xcoord_right_;
     p | ymomentum_left_;
     p | ymomentum_right_;
-    p | atenuation_parameter_;
+    p | attenuation_parameter_;
   }
 
   double mass_left() const { return mass_left_; }
@@ -582,7 +587,7 @@ class BinaryWithGravitationalWaves
   double xcoord_right() const { return xcoord_right_; }
   double ymomentum_left() const { return ymomentum_left_; }
   double ymomentum_right() const { return ymomentum_right_; }
-  double atenuation_parameter() const { return atenuation_parameter_; }
+  double attenuation_parameter() const { return attenuation_parameter_; }
 
  private:
   double mass_left_ = std::numeric_limits<double>::signaling_NaN();
@@ -591,7 +596,7 @@ class BinaryWithGravitationalWaves
   double xcoord_right_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
-  double atenuation_parameter_ = std::numeric_limits<double>::signaling_NaN();
+  double attenuation_parameter_ = std::numeric_limits<double>::signaling_NaN();
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -613,7 +618,7 @@ class BinaryWithGravitationalWaves
                                 xcoord_right_,
                                 ymomentum_left_,
                                 ymomentum_right_,
-                                atenuation_parameter_};
+                                attenuation_parameter_};
 
     return {cache.get_var(computer, RequestedTags{})...};
   }

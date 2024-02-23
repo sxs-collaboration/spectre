@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
+#include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.tpp"
@@ -28,21 +29,19 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> distance_left,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::DistanceLeft<DataType> /*meta*/) const {
-  const auto v_x = get<0>(x) - xcoord_left;
-  const auto v_y = get<1>(x);
-  const auto v_z = get<2>(x);
-  get(*distance_left) = sqrt(square(v_x) + square(v_y) + square(v_z));
+  tnsr::I<DataType, 3> v(x);
+  v.get(0) -= xcoord_left;
+  *distance_left = magnitude(v);
 }
 
-template <typename DataVector>
-void BinaryWithGravitationalWavesVariables<DataVector>::operator()(
-    const gsl::not_null<Scalar<DataVector>*> distance_right,
+template <typename DataType>
+void BinaryWithGravitationalWavesVariables<DataType>::operator()(
+    const gsl::not_null<Scalar<DataType>*> distance_right,
     const gsl::not_null<Cache*> /*cache*/,
-    detail::Tags::DistanceRight<DataVector> /*meta*/) const {
-  const auto v_x = get<0>(x) - xcoord_right;
-  const auto v_y = get<1>(x);
-  const auto v_z = get<2>(x);
-  get(*distance_right) = sqrt(square(v_x) + square(v_y) + square(v_z));
+    detail::Tags::DistanceRight<DataType> /*meta*/) const {
+  tnsr::I<DataType, 3> v(x);
+  v.get(0) -= xcoord_right;
+  *distance_right = magnitude(v);
 }
 
 template <typename DataType>
@@ -475,17 +474,13 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const {
-  const auto& conformal_metric = cache->get_var(
-      *this, Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>{});
   const auto& pn_extrinsic_curvature = cache->get_var(
       *this, detail::Tags::PostNewtonianExtrinsicCurvature<DataType>{});
-  get(*trace_extrinsic_curvature) = 0.;
-  for (size_t i = 0; i < 3; ++i) {
-    for (size_t j = 0; j < 3; ++j) {
-      get(*trace_extrinsic_curvature) +=
-          conformal_metric.get(i, j) * pn_extrinsic_curvature.get(i, j);
-    }
-  }
+  const auto& inv_conformal_metric = cache->get_var(
+      *this,
+      ::Xcts::Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
+  trace(trace_extrinsic_curvature, pn_extrinsic_curvature,
+        inv_conformal_metric);
 }
 
 template <typename DataType>
@@ -635,9 +630,9 @@ void BinaryWithGravitationalWavesVariables<DataType>::
   const auto& radiative_term =
       cache->get_var(*this, detail::Tags::RadiativeTerm<DataType>{});
   const auto Fat =
-      1 / ((1 + atenuation_parameter * atenuation_parameter * mass_left *
+      1 / ((1 + attenuation_parameter * attenuation_parameter * mass_left *
                     mass_left / (distance_left * distance_left)) *
-           (1 + atenuation_parameter * atenuation_parameter * mass_right *
+           (1 + attenuation_parameter * attenuation_parameter * mass_right *
                     mass_right / (distance_right * distance_right)));
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {

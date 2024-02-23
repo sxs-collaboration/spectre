@@ -7,8 +7,8 @@ Testing:
   Timeout: 30
   Priority: High
 ExpectedOutput:
-  - GWBReductions.h5
-  - GWBVolume0.h5
+  - BwGWReductions.h5
+  - BwGWVolume0.h5
 
 ---
 
@@ -27,7 +27,7 @@ Background: &background
     XCoordsRight: &x_right 4.
     YMomentumLeft: -.366
     YMomentumRight: .366
-    AtenuationParameter: 1.
+    AttenuationParameter: 1.
 
 InitialGuess: *background
 
