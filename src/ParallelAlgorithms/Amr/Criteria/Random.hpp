@@ -95,9 +95,11 @@ auto Random::operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
   for (size_t d = 0; d < Dim; ++d) {
     result[d] = detail::random_flag(probability_weights_);
     // Enforce max refinement level. Can be deleted once it's enforced globally.
-    if (result[d] == amr::Flag::Split and
-        element_id.segment_ids()[d].refinement_level() >=
-            maximum_refinement_level_) {
+    if ((result[d] == amr::Flag::Split and
+         element_id.segment_ids()[d].refinement_level() >=
+             maximum_refinement_level_) or
+        (result[d] == amr::Flag::Join and
+         element_id.segment_ids()[d].refinement_level() == 0)) {
       result[d] = amr::Flag::DoNothing;
     }
   }

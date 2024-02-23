@@ -99,7 +99,7 @@ void test_h_or_p() {
   auto empty_box =
       make_observation_box<db::AddComputeTags<>>(make_not_null(&databox));
 
-  ElementId<VolumeDim> root_id{0};
+  ElementId<VolumeDim> root_id{0, make_array<VolumeDim>(SegmentId(1, 0))};
   auto flags = criterion.evaluate(empty_box, empty_cache, root_id);
   for (size_t d = 0; d < VolumeDim; ++d) {
     CHECK((gsl::at(flags, d) != amr::Flag::DoNothing and
