@@ -15,10 +15,15 @@ namespace Particles::MonteCarlo {
 
 struct Packet {
   // Constructor
-  Packet(const double& time_, const double& coord_x_, const double& coord_y_,
-         const double& coord_z_, const double& p_upper_t_, const double& p_x_,
-         const double& p_y_, const double& p_z_)
-      : time(time_), momentum_upper_t(p_upper_t_) {
+  Packet(const double& number_of_neutrinos_,
+         const size_t& index_of_closest_grid_point_, const double& time_,
+         const double& coord_x_, const double& coord_y_, const double& coord_z_,
+         const double& p_upper_t_, const double& p_x_, const double& p_y_,
+         const double& p_z_)
+      : number_of_neutrinos(number_of_neutrinos_),
+        index_of_closest_grid_point(index_of_closest_grid_point_),
+        time(time_),
+        momentum_upper_t(p_upper_t_) {
     coordinates[0] = coord_x_;
     coordinates[1] = coord_y_;
     coordinates[2] = coord_z_;
@@ -27,6 +32,16 @@ struct Packet {
     momentum[2] = p_z_;
   }
 
+  // Number of neutrinos represented by current packet
+  // Note that this number is rescaled so that
+  // Energy_of_packet = N * Energy_of_neutrinos
+  // with the packet energy in G=Msun=c=1 units but
+  // the neutrino energy in MeV!
+  double number_of_neutrinos;
+
+  // Index of the closest point on the FD grid.
+  size_t index_of_closest_grid_point;
+
   // Current time
   double time;
 
@@ -34,7 +49,7 @@ struct Packet {
   double momentum_upper_t;
 
   // Coordinates of the packet, currently in Inertial coordinates
-  tnsr::I<double, 3, Frame::Inertial> coordinates;
+  tnsr::I<double, 3, Frame::ElementLogical> coordinates;
 
   // Spatial components of the 4-momentum, also in Inertial coordinates
   tnsr::i<double, 3, Frame::Inertial> momentum;
@@ -42,7 +57,7 @@ struct Packet {
   // Recalculte p^t using the fact that the 4-momentum is a null vector
   void renormalize_momentum(
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& lapse, const size_t& closest_point_index);
+      const Scalar<DataVector>& lapse);
 };
 
 }  // namespace Particles::MonteCarlo
