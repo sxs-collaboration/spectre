@@ -84,21 +84,27 @@ struct AdvanceTime {
            const gsl::not_null<TimeDelta*> next_time_step,
            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
            const TimeStepper& time_stepper, const bool using_error_control) {
+          const bool new_step = next_time_id->substep() == 0;
           if (time_id->slab_number() != next_time_id->slab_number()) {
             ++diags->number_of_slabs;
             // Put this here instead of unconditionally doing the next
             // check because on the first call time_id doesn't have a
             // valid slab so comparing the times will FPE.
             ++diags->number_of_steps;
-          } else if (time_id->step_time() != next_time_id->step_time()) {
+          } else if (new_step) {
             ++diags->number_of_steps;
-          }
-          if (time_step->fraction() != next_time_step->fraction()) {
-            ++diags->number_of_step_fraction_changes;
           }
 
           *time_id = *next_time_id;
-          *time_step = next_time_step->with_slab(time_id->step_time().slab());
+
+          if (new_step) {
+            if (time_step->fraction() != next_time_step->fraction()) {
+              ++diags->number_of_step_fraction_changes;
+            }
+
+            *time_step = next_time_step->with_slab(time_id->step_time().slab());
+            *next_time_step = *time_step;
+          }
 
           if (using_error_control) {
             *next_time_id =
@@ -107,8 +113,6 @@ struct AdvanceTime {
             *next_time_id =
                 time_stepper.next_time_id(*next_time_id, *time_step);
           }
-          *next_time_step =
-              time_step->with_slab(next_time_id->step_time().slab());
           *time = time_id->substep_time();
         },
         make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box),

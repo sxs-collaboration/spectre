@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -71,8 +72,6 @@ struct Var : db::SimpleTag {
   using type = double;
 };
 
-using history_tag = Tags::HistoryEvolvedVariables<Var>;
-
 struct System {
   using variables_tag = Var;
 };
@@ -90,7 +89,8 @@ struct Component {
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  Tags::Next<Tags::TimeStep>, ::Tags::StepChoosers,
                  Tags::IsUsingTimeSteppingErrorControl,
-                 Tags::AdaptiveSteppingDiagnostics, history_tag,
+                 Tags::AdaptiveSteppingDiagnostics,
+                 Tags::HistoryEvolvedVariables<Var>,
                  typename System::variables_tag>;
   using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
   using phase_dependent_action_list = tmpl::list<
@@ -124,14 +124,16 @@ struct Metavariables {
 
 template <typename StepChoosersToUse = AllStepChoosers>
 void check(const bool time_runs_forward,
-           std::unique_ptr<LtsTimeStepper> time_stepper, const Time& time,
+           std::unique_ptr<LtsTimeStepper> time_stepper,
+           TimeSteppers::History<double> history, const Time& time,
            const double request, const TimeDelta& expected_step,
            const bool reject_step) {
   CAPTURE(time);
   CAPTURE(request);
 
-  const TimeDelta initial_step_size =
-      (time_runs_forward ? 1 : -1) * time.slab().duration();
+  const TimeDelta initial_step_size = (time_runs_forward ? 1 : -1) *
+                                      time.slab().duration() /
+                                      time.fraction().denominator();
 
   using component = Component<Metavariables<StepChoosersToUse>>;
   using MockRuntimeSystem =
@@ -142,10 +144,8 @@ void check(const bool time_runs_forward,
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeStepId(
-           time_runs_forward, -1,
-           (time_runs_forward ? time.slab().end() : time.slab().start()) -
-               initial_step_size),
+      {TimeStepId(time_runs_forward, 0,
+                  time_runs_forward ? time.slab().start() : time.slab().end()),
        TimeStepId(time_runs_forward, 0, time), initial_step_size,
        initial_step_size,
        reject_step
@@ -157,8 +157,8 @@ void check(const bool time_runs_forward,
                  std::make_unique<Constant>(2. * request),
                  std::make_unique<Constant>(request),
                  std::make_unique<Constant>(2. * request)),
-       false, AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5},
-       typename history_tag::type{}, 1.});
+       false, AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}, std::move(history),
+       1.});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
@@ -186,23 +186,34 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   for (auto reject_step : {true, false}) {
-    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
           slab.start() + slab.duration() / 4, slab_length / 5.,
           slab.duration() / 8, reject_step);
-    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
           slab.start() + slab.duration() / 4, slab_length, slab.duration() / 4,
           reject_step);
-    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
           slab.end() - slab.duration() / 4, slab_length / 5.,
           -slab.duration() / 8, reject_step);
-    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
           slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4,
           reject_step);
   }
+
+  {
+    // History out of order, as if just after self-start.
+    TimeSteppers::History<double> history{};
+    history.insert(TimeStepId(true, -1, slab.start() + slab.duration() / 8),
+                   0.0, 0.0);
+    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+          std::move(history), slab.start() + slab.duration() / 4, 1.0e-3,
+          slab.duration() / 4, false);
+  }
+
   CHECK_THROWS_WITH(
       ([&slab, &slab_length]() {
         check<tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>(
-            true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
+            true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
             slab.start() + slab.duration() / 4, slab_length / 5.,
             slab.duration() / 8, true);
       })(),
