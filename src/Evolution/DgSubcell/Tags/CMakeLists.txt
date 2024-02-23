@@ -26,9 +26,11 @@ spectre_target_headers(
   OnSubcells.hpp
   ReconstructionOrder.hpp
   Reconstructor.hpp
+  StepsSinceTciCall.hpp
   SubcellOptions.hpp
   SubcellSolver.hpp
   Tags.hpp
+  TciCallsSinceRollback.hpp
   TciGridHistory.hpp
   TciStatus.hpp
   )

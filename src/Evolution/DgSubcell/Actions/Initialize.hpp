@@ -31,7 +31,9 @@
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
+#include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
@@ -69,6 +71,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::ActiveGrid`
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::TciGridHistory`
+ *   - `subcell::Tags::TciCallsSinceRollback`
  *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  *   - `subcell::Tags::TciDecision`
  *   - `subcell::Tags::DataForRdmpTci`
@@ -90,6 +93,7 @@ struct SetSubcellGrid {
 
   using simple_tags = tmpl::list<
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
+      Tags::TciCallsSinceRollback, Tags::StepsSinceTciCall,
       Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
@@ -182,14 +186,18 @@ struct SetSubcellGrid {
 
     db::mutate_apply<
         tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
-                   typename System::variables_tag, subcell::Tags::TciDecision>,
+                   typename System::variables_tag, subcell::Tags::TciDecision,
+                   subcell::Tags::TciCallsSinceRollback,
+                   subcell::Tags::StepsSinceTciCall>,
         tmpl::list<>>(
         [&cell_is_not_on_external_boundary, &dg_mesh,
-         subcell_allowed_in_element,
-         &subcell_mesh](const gsl::not_null<ActiveGrid*> active_grid_ptr,
-                        const gsl::not_null<bool*> did_rollback_ptr,
-                        const auto active_vars_ptr,
-                        const gsl::not_null<int*> tci_decision_ptr) {
+         subcell_allowed_in_element, &subcell_mesh](
+            const gsl::not_null<ActiveGrid*> active_grid_ptr,
+            const gsl::not_null<bool*> did_rollback_ptr,
+            const auto active_vars_ptr,
+            const gsl::not_null<int*> tci_decision_ptr,
+            const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
+            const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
           // subcells as a normal solve.
@@ -206,6 +214,8 @@ struct SetSubcellGrid {
           }
 
           *tci_decision_ptr = 0;
+          *tci_calls_since_rollback_ptr = 0;
+          *steps_since_tci_call_ptr = 0;
         },
         make_not_null(&box));
     if constexpr (System::has_primitive_and_conservative_vars) {

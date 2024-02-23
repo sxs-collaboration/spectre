@@ -5,7 +5,7 @@
 
 #include <deque>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 
 namespace evolution::dg::subcell::Tags {
