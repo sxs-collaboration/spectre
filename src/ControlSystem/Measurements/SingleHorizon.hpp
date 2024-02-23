@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "ControlSystem/Measurements/NonFactoryCreatable.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
@@ -91,9 +92,8 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
 
     template <typename ControlSystems>
-    using event =
-        intrp::Events::Interpolate<3, InterpolationTarget<ControlSystems>,
-                                   ::ah::source_vars<3>>;
+    using event = NonFactoryCreatableWrapper<intrp::Events::Interpolate<
+        3, InterpolationTarget<ControlSystems>, ::ah::source_vars<3>>>;
   };
 
   using submeasurements = tmpl::list<Submeasurement>;

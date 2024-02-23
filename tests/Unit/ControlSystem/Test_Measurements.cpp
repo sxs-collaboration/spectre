@@ -3,6 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <memory>
+#include <typeinfo>
+
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Measurements/CharSpeed.hpp"
@@ -18,70 +21,122 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TMPL.hpp"
 
+using example_list =
+    tmpl::list<control_system::TestHelpers::ExampleControlSystem>;
+
+// BothHorizons
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::BothHorizons::
                                  FindHorizon<::domain::ObjectLabel::A>,
                              control_system::protocols::Submeasurement>);
-
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::BothHorizons,
                              control_system::protocols::Measurement>);
-
 static_assert(
     tt::assert_conforms_to_v<
-        control_system::measurements::BothHorizons::
-            FindHorizon<::domain::ObjectLabel::A>::interpolation_target_tag<
-                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
+        control_system::measurements::BothHorizons::FindHorizon<
+            ::domain::ObjectLabel::A>::interpolation_target_tag<example_list>,
         intrp::protocols::InterpolationTargetTag>);
+static_assert(
+    not control_system::measurements::BothHorizons::FindHorizon<
+        ::domain::ObjectLabel::A>::event<example_list>::factory_creatable);
 
+// SingleHorizon
+static_assert(
+    tt::assert_conforms_to_v<control_system::measurements::SingleHorizon<
+                                 ::domain::ObjectLabel::B>::Submeasurement,
+                             control_system::protocols::Submeasurement>);
+static_assert(
+    tt::assert_conforms_to_v<
+        control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>,
+        control_system::protocols::Measurement>);
 static_assert(
     tt::assert_conforms_to_v<
         control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
-            Submeasurement::interpolation_target_tag<
-                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
+            Submeasurement::interpolation_target_tag<example_list>,
         intrp::protocols::InterpolationTargetTag>);
+static_assert(
+    not control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
+        Submeasurement::event<example_list>::factory_creatable);
 
+// BothNSCenters
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::BothNSCenters::FindTwoCenters,
               control_system::protocols::Submeasurement>);
-
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::BothNSCenters,
                              control_system::protocols::Measurement>);
+static_assert(
+    not control_system::measurements::BothNSCenters::FindTwoCenters::event<
+        example_list>::factory_creatable);
 
+// CharSpeed
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::CharSpeed<domain::ObjectLabel::A>,
               control_system::protocols::Measurement>);
-
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::CharSpeed<
                                  domain::ObjectLabel::A>::Excision,
                              control_system::protocols::Submeasurement>);
-
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::CharSpeed<
                                  domain::ObjectLabel::A>::Horizon,
                              control_system::protocols::Submeasurement>);
-
+static_assert(tt::assert_conforms_to_v<
+              control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+                  Excision::interpolation_target_tag<example_list>,
+              intrp::protocols::InterpolationTargetTag>);
+static_assert(tt::assert_conforms_to_v<
+              control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+                  Horizon::interpolation_target_tag<example_list>,
+              intrp::protocols::InterpolationTargetTag>);
 static_assert(
-    tt::assert_conforms_to_v<
-        control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
-            Excision::interpolation_target_tag<
-                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
-        intrp::protocols::InterpolationTargetTag>);
-
+    not control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+        Excision::event<example_list>::factory_creatable);
 static_assert(
-    tt::assert_conforms_to_v<
-        control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
-            Horizon::interpolation_target_tag<
-                tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,
-        intrp::protocols::InterpolationTargetTag>);
+    not control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+        Horizon::event<example_list>::factory_creatable);
 
 namespace {
+void test_serialization() {
+  using EventPtr = std::unique_ptr<::Event>;
+  using non_factory_creatable_event =
+      control_system::measurements::BothHorizons::FindHorizon<
+          ::domain::ObjectLabel::A>::event<example_list>;
+  using factory_creatable_event =
+      typename non_factory_creatable_event::factory_creatable_class;
+
+  register_classes_with_charm<non_factory_creatable_event,
+                              factory_creatable_event>();
+
+  const EventPtr non_factory_event =
+      std::make_unique<non_factory_creatable_event>();
+  const EventPtr factory_event = std::make_unique<factory_creatable_event>();
+
+  const EventPtr serialized_non_factory_event =
+      serialize_and_deserialize(non_factory_event);
+  const EventPtr serialized_factory_event =
+      serialize_and_deserialize(factory_event);
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
+#endif  // __clang__
+  CHECK(typeid(*serialized_non_factory_event.get()) ==
+        typeid(*non_factory_event.get()));
+  CHECK(typeid(*serialized_factory_event.get()) ==
+        typeid(*factory_event.get()));
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif  // __clang__
+}
 
 // Check that the center of mass is at the expected location for this test.
 void check_centers(const double center_a_x, const double center_a_y,
@@ -201,6 +256,8 @@ struct Metavariables {
 // in the FindTwoCenters submeasurement
 SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
                   "[ControlSystem][Unit]") {
+  test_serialization();
+
   // Part 1 of the test: calculation of the relevant integrals
   // within a (mock) element.
   const Mesh<3> mesh(2, Spectral::Basis::FiniteDifference,
