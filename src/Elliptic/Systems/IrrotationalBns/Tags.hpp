@@ -38,20 +38,8 @@ struct RotationalShift : db::SimpleTag {
  */
 template <typename DataType>
 struct RotationalShiftStress : db::SimpleTag {
-  using type = tnsr::Ij<DataType, 3>;
+  using type = tnsr::II<DataType, 3>;
 };
-
-/*!
- * \brief The divergence of the stress-energy corresponding
- * to the rotation shift
- *
- * \f[ \D_i \Sigma^i_j = \frac{D_i B^i B_j + B^i D_i B_j}{\alpha^2}\f]
- */
-template <typename DataType>
-struct DivergenceRotationalShiftStress : db::SimpleTag {
-  using type = tnsr::i<DataType, 3>;
-};
-
 /*!
  * \brief  The derivative  \f$D_i \ln (\alpha/h)\f$
  */

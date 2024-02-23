@@ -26,14 +26,13 @@ tnsr::I<DataType, 3> rotational_shift(
     const tnsr::I<DataType, 3>& shift,
     const tnsr::I<DataType, 3>& spatial_rotational_killing_vector);
 template <typename DataType>
-void rotational_shift_stress(gsl::not_null<tnsr::Ij<DataType, 3>*> result,
+void rotational_shift_stress(gsl::not_null<tnsr::II<DataType, 3>*> result,
                              const tnsr::I<DataType, 3>& rotational_shift,
-                             const Scalar<DataType>& lapse,
-                             const tnsr::ii<DataType, 3>& spatial_metric);
+                             const Scalar<DataType>& lapse);
 template <typename DataType>
-tnsr::Ij<DataType, 3> rotational_shift_stress(
-    const tnsr::I<DataType, 3>& rotational_shift, const Scalar<DataType>& lapse,
-    const tnsr::ii<DataType, 3>& spatial_metric);
+tnsr::II<DataType, 3> rotational_shift_stress(
+    const tnsr::I<DataType, 3>& rotational_shift,
+    const Scalar<DataType>& lapse);
 template <typename DataType>
 void derivative_rotational_shift_over_lapse(
     gsl::not_null<tnsr::iJ<DataType, 3>*> result,
@@ -47,17 +46,6 @@ tnsr::iJ<DataType, 3> derivative_rotational_shift_over_lapse(
     const tnsr::iJ<DataType, 3>& deriv_of_shift, const Scalar<DataType>& lapse,
     const tnsr::i<DataType, 3>& deriv_of_lapse,
     const tnsr::iJ<DataType, 3>& deriv_of_spatial_rotational_killing_vector);
-template <typename DataType>
-void divergence_rotational_shift_stress(
-    gsl::not_null<tnsr::i<DataType, 3>*> result,
-    const tnsr::I<DataType, 3>& rotational_shift,
-    const tnsr::iJ<DataType, 3>& derivative_rotational_shift_over_lapse,
-    const Scalar<DataType>& lapse, const tnsr::ii<DataType, 3>& spatial_metric);
-template <typename DataType>
-tnsr::i<DataType, 3> divergence_rotational_shift_stress(
-    const tnsr::I<DataType, 3>& rotational_shift,
-    const tnsr::iJ<DataType, 3>& derivative_rotational_shift_over_lapse,
-    const Scalar<DataType>& lapse, const tnsr::ii<DataType, 3>& spatial_metric);
 template <typename DataType>
 void enthalpy_density_squared(
     gsl::not_null<Scalar<DataType>*> result,

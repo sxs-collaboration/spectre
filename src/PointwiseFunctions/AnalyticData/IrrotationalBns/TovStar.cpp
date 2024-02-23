@@ -20,7 +20,6 @@
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
@@ -122,8 +121,9 @@ void TovVariables<DataType, Region>::operator()(
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     gsl::not_null<tnsr::i<DataType, 3>*> auxiliary_velocity,
-    gsl::not_null<Cache*> cache,
-    IrrotationalBns::Tags::AuxiliaryVelocity<DataType> /*meta*/) const {
+    gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto spatial_metric =
       get_tov_var(gr::Tags::SpatialMetric<DataType, 3>{});
   std::array<double, 3> star_velocity{
@@ -134,68 +134,86 @@ void TovVariables<DataType, Region>::operator()(
       auxiliary_velocity->get(i) +=
           gsl::at(star_velocity, j) * spatial_metric.get(i, j);
     }
-
+    const auto& specific_enthalpy =
+        get(get_tov_var(hydro::Tags::Pressure<DataType>{})) /
+            get(get_tov_var(hydro::Tags::RestMassDensity<DataType>{})) +
+        get(get_tov_var(hydro::Tags::SpecificInternalEnergy<DataType>{})) + 1.0;
     auxiliary_velocity->get(i) *=
-        (get(get_tov_var(hydro::Tags::SpecificEnthalpy<DataType>{})) *
+        (specific_enthalpy *
          get(get_tov_var(hydro::Tags::LorentzFactor<DataType>{})));
   }
-  const auto& rotational_shift =
-      cache->get_var(*this, IrrotationalBns::Tags::RotationalShift<DataType>{});
-  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
-  // auxiliary_velocity is currently the gradient of the velocity potential
-  // This equation is missing a factor of lapse^2
-  ::tenex::evaluate<ti::i>(
-      auxiliary_velocity,
-      (*auxiliary_velocity)(ti::i)-spatial_metric(ti::i, ti::j) *
-          rotational_shift(ti::J) *
-          (euler_enthalpy_constant +
-           rotational_shift(ti::K) * (*auxiliary_velocity)(ti::k)));
 }
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
-    gsl::not_null<tnsr::Ij<DataType, 3>*> rotational_shift_stress,
+    gsl::not_null<tnsr::I<DataType, 3>*> flux_for_velocity_potential,
+    gsl::not_null<Cache*> cache,
+    ::Tags::Flux<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                 tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+  const auto& rotational_shift_stress = cache->get_var(
+      *this, IrrotationalBns::Tags::RotationalShiftStress<DataType>{});
+  const auto& inverse_spatial_metric =
+      get_tov_var(gr::Tags::InverseSpatialMetric<DataType, 3>{});
+  const auto& auxiliary_velocity = cache->get_var(
+      *this, ::Tags::deriv<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  ::tenex::evaluate<ti::I>(flux_for_velocity_potential,
+                           (inverse_spatial_metric(ti::I, ti::J) -
+                            rotational_shift_stress(ti::I, ti::J)) *
+                               auxiliary_velocity(ti::j));
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    gsl::not_null<tnsr::i<DataType, 3>*> deriv_log_lapse_over_specific_enthalpy,
+    gsl::not_null<Cache*> cache,
+    IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<DataType> /*meta*/)
+    const {
+  // The specific enthalpy is proportional to one over the lapse inside the star
+  // which simplifies the derivative substantially
+  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
+  const auto& deriv_of_lapse =
+      cache->get_var(*this, ::Tags::deriv<gr::Tags::Lapse<DataType>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  ::tenex::evaluate<ti::i>(deriv_log_lapse_over_specific_enthalpy,
+                           2.0 * deriv_of_lapse(ti::i) / lapse());
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    gsl::not_null<Scalar<DataType>*> fixed_source, gsl::not_null<Cache*> cache,
+    ::Tags::FixedSource<
+        IrrotationalBns::Tags::VelocityPotential<DataType>> /*meta*/) const {
+  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
+  const auto& rotational_shift =
+      cache->get_var(*this, IrrotationalBns::Tags::RotationalShift<DataType>{});
+  const auto& deriv_log_lapse_over_specific_enthalpy = cache->get_var(
+      *this,
+      IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<DataType>{});
+  const auto& deriv_of_lapse =
+      cache->get_var(*this, ::Tags::deriv<gr::Tags::Lapse<DataType>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  const auto& deriv_of_shift =
+      cache->get_var(*this, ::Tags::deriv<gr::Tags::Shift<DataType, 3>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  ::tenex::evaluate<>(
+      fixed_source, euler_enthalpy_constant *
+                        (1.0 / square(lapse()) * rotational_shift(ti::I) *
+                             deriv_log_lapse_over_specific_enthalpy(ti::i) -
+                         2.0 / square(lapse()) * rotational_shift(ti::I) *
+                             deriv_of_lapse(ti::i) +
+                         1.0 / square(lapse()) * deriv_of_shift(ti::i, ti::I)));
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    gsl::not_null<tnsr::II<DataType, 3>*> rotational_shift_stress,
     gsl::not_null<Cache*> cache,
     IrrotationalBns::Tags::RotationalShiftStress<DataType> /*meta*/) const {
   const auto& rotational_shift =
       cache->get_var(*this, IrrotationalBns::Tags::RotationalShift<DataType>{});
   const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
-  const auto& spatial_metric =
-      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3>{});
-  hydro::initial_data::rotational_shift_stress(
-      rotational_shift_stress, rotational_shift, lapse, spatial_metric);
-}
-
-template <typename DataType, StarRegion Region>
-void TovVariables<DataType, Region>::operator()(
-    gsl::not_null<tnsr::i<DataType, 3>*> divergence_rotational_shift_stress,
-    gsl::not_null<Cache*> cache,
-    IrrotationalBns::Tags::DivergenceRotationalShiftStress<DataType> /*meta*/)
-    const {
-  const auto& deriv_shift =
-      cache->get_var(*this, ::Tags::deriv<gr::Tags::Shift<DataType, 3>,
-                                          tmpl::size_t<3>, Frame::Inertial>{});
-  const auto& rotational_shift =
-      cache->get_var(*this, IrrotationalBns::Tags::RotationalShift<DataType>{});
-  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataType>{});
-  const auto& deriv_of_lapse =
-      cache->get_var(*this, ::Tags::deriv<gr::Tags::Lapse<DataType>,
-                                          tmpl::size_t<3>, Frame::Inertial>{});
-  const auto& spatial_metric =
-      cache->get_var(*this, gr::Tags::SpatialMetric<DataType, 3>{});
-  const Scalar<DataType> sqrt_det_spatial_metric =
-      get_tov_var(gr::Tags::SqrtDetSpatialMetric<DataType>{});
-  const auto deriv_of_spatial_rotational_killing_vector =
-      hydro::initial_data::derivative_spatial_rotational_killing_vector(
-          x, make_with_value<Scalar<DataType>>(x, orbital_angular_velocity),
-          sqrt_det_spatial_metric);
-  tnsr::iJ<DataType, 3> derivative_rotational_shift_over_lapse{};
-  hydro::initial_data::derivative_rotational_shift_over_lapse(
-      make_not_null(&derivative_rotational_shift_over_lapse), rotational_shift,
-      deriv_shift, lapse, deriv_of_lapse,
-      deriv_of_spatial_rotational_killing_vector);
-  hydro::initial_data::divergence_rotational_shift_stress(
-      divergence_rotational_shift_stress, rotational_shift,
-      derivative_rotational_shift_over_lapse, lapse, spatial_metric);
+  hydro::initial_data::rotational_shift_stress(rotational_shift_stress,
+                                               rotational_shift, lapse);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

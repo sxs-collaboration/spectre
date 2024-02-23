@@ -68,20 +68,16 @@ struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
  private:
   using velocity_potential = Tags::VelocityPotential<DataVector>;
-  using auxiliary_velocity = Tags::AuxiliaryVelocity<DataVector>;
 
  public:
   static constexpr size_t volume_dim = 3;
 
   using primal_fields = tmpl::list<velocity_potential>;
-  using auxiliary_fields = tmpl::list<auxiliary_velocity>;
 
   // We just use the standard `Flux` prefix because the fluxes don't have
   // symmetries and we don't need to give them a particular meaning.
   using primal_fluxes = tmpl::list<
       ::Tags::Flux<velocity_potential, tmpl::size_t<3>, Frame::Inertial>>;
-  using auxiliary_fluxes = tmpl::list<
-      ::Tags::Flux<auxiliary_velocity, tmpl::size_t<3>, Frame::Inertial>>;
 
   using background_fields = tmpl::list<
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
@@ -95,8 +91,7 @@ struct FirstOrderSystem
                     Frame::Inertial>,
       Tags::EulerEnthalpyConstant, Tags::RotationalShift<DataVector>,
       Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
-      Tags::FixedSources<DataVector>, Tags::RotationalShiftStress<DataVector>,
-      Tags::DivergenceRotationalShiftStress<DataVector>,
+      Tags::RotationalShiftStress<DataVector>,
       Tags::SpatialRotationalKillingVector<DataVector>,
       Tags::DerivSpatialRotationalKillingVector<DataVector>>;
   using inv_metric_tag =

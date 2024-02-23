@@ -34,13 +34,30 @@ namespace IrrotationalBns {
  */
 void flat_potential_fluxes(
     gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
+    const tnsr::II<DataVector, 3>& rotational_shift_stress,
     const tnsr::i<DataVector, 3>& auxiliary_velocity);
+
+/*!
+ * \brief Compute the fluxes $F^i=\gamma^{ij} n_j \Phi  + n_i \Phi
+ * \frac{B^iB^j}{\alpha^2}  $ where $n_j$ is the
+ * `face_normal`.
+ *
+ * The `face_normal_vector` is $\gamma^{ij} n_j$.
+ */
+void fluxes_on_face(
+    gsl::not_null<tnsr::I<DataVector, 3>*> face_flux_for_potential,
+    const tnsr::I<DataVector, 3>& face_normal_vector,
+    const tnsr::i<DataVector, 3>& face_normal,
+    const tnsr::II<DataVector, 3>& rotational_shift_stress,
+    const Scalar<DataVector>& velocity_potential);
+
 /*!
  * \brief Compute the generic fluxes \f$F^i = U^i\f$ for the Irrotational BNS
  * equation for the velocity potential.
  */
 void curved_potential_fluxes(
     gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
+    const tnsr::II<DataVector, 3>& rotational_shift_stress,
     const tnsr::II<DataVector, 3>& inverse_spatial_metric,
     const tnsr::i<DataVector, 3>& auxiliary_velocity);
 
@@ -51,8 +68,8 @@ void curved_potential_fluxes(
  */
 void add_flat_potential_sources(
     gsl::not_null<Scalar<DataVector>*> source_for_potential,
-    const tnsr::I<DataVector, 3>& upper_auxiliary_velocity,
-    const tnsr::i<DataVector, 3>& log_deriv_lapse_over_specific_enthalpy);
+    const tnsr::i<DataVector, 3>& log_deriv_lapse_over_specific_enthalpy,
+    const tnsr::I<DataVector, 3>& flux_for_potential);
 /*!
  * \brief Add the sources \f$S=-\Gamma^i_{ij}U^j\f$
  * for the curved-space Irrotational BNS equation on a spatial metric
@@ -67,47 +84,7 @@ void add_curved_potential_sources(
     const tnsr::i<DataVector, 3>& christoffel_contracted,
     const tnsr::I<DataVector, 3>& flux_for_potential);
 
-/*!
- * \brief Compute the fluxes \f$F^i_j=\left(\delta^i_j -
- * \Sigma^{i}_{j}/2\right) \Phi(x)\f$ for the auxiliary
- * field in the first-order formulation of the Irrotational BNS equation.
- *
- * \see IrrotationalBns::FirstOrderSystem
- */
-void auxiliary_fluxes(
-    gsl::not_null<tnsr::Ij<DataVector, 3>*> flux_for_auxiliary,
-    const Scalar<DataVector>& velocity_potential,
-    const tnsr::Ij<DataVector, 3>& rotational_shift_stress);
 
-/*!
- * \brief Compute the sources \f$Sf$ for the auxiliary
- * field in the first-order formulation of the Irrotational BNS equations
- * without including any of the terms which contain Christoffel symbols
- * arising from covariant derivatives of the fluxes or the shift-stress.
- *
- * \see IrrotationalBns::FirstOrderSystem
- */
-void add_auxiliary_sources_without_flux_christoffels(
-    gsl::not_null<tnsr::i<DataVector, 3>*> auxiliary_sources,
-    const Scalar<DataVector>& velocity_potential,
-    const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
-    const tnsr::i<DataVector, 3>& fixed_sources);
-
-/*!
- * \brief Compute the additional source terms \f$S_{U_i}= \Phi\left(
- * \Gamma^{k}_{ji}\Sigma^{j}_k  - \Gamma^k_{k_i} \right)f$ corresponding to
- * Christoffel symbols arising from taking covariant derivatives (these are zero
- * when the spatial metric is flat). field in the first-order formulation of the
- * Irrotational BNS equation .
- *
- * \see IrrotationalBns::FirstOrderSystem
- */
-void add_auxiliary_source_flux_christoffels(
-    gsl::not_null<tnsr::i<DataVector, 3>*> auxiliary_sources,
-    const Scalar<DataVector>& velocity_potential,
-    const tnsr::i<DataVector, 3>& christoffel_contracted,
-    const tnsr::Ijj<DataVector, 3>& christoffel,
-    const tnsr::Ij<DataVector, 3>& rotational_shift_stress);
 /*!
  * \brief Compute the fluxes \f$F^i_A\f$ for the IrrotationalBns equation on
  * a flat metric in Cartesian coordinates.
@@ -120,10 +97,12 @@ struct Fluxes<Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   // Order is prmal
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
-                    const tnsr::Ij<DataVector, 3>& /*rotational_shift_stress*/,
+                    const tnsr::II<DataVector, 3>& rotational_shift_stress,
                     const tnsr::i<DataVector, 3>& auxiliary_velocity);
-  static void apply(gsl::not_null<tnsr::Ij<DataVector, 3>*> flux_for_auxiliary,
-                    const tnsr::Ij<DataVector, 3>& rotational_shift_stress,
+  static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_on_face,
+                    const tnsr::II<DataVector, 3>& rotational_shift_stress,
+                    const tnsr::i<DataVector, 3>& face_normal,
+                    const tnsr::I<DataVector, 3>& face_normal_vector,
                     const Scalar<DataVector>& velocity_potential);
 };
 
@@ -140,12 +119,13 @@ struct Fluxes<Geometry::Curved> {
                  Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
-                    const tnsr::II<DataVector, 3>& inv_spatial_metric,
-                    const tnsr::Ij<DataVector, 3>& rotational_shift_stress,
+                    const tnsr::II<DataVector, 3>& inverse_spatial_metric,
+                    const tnsr::II<DataVector, 3>& rotational_shift_stress,
                     const tnsr::i<DataVector, 3>& auxiliary_velocity);
-  static void apply(gsl::not_null<tnsr::Ij<DataVector, 3>*> flux_for_auxiliary,
-                    const tnsr::II<DataVector, 3>& inv_spatial_metric,
-                    const tnsr::Ij<DataVector, 3>& rotational_shift_stress,
+  static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_on_face,
+                    const tnsr::II<DataVector, 3>& rotational_shift_stress,
+                    const tnsr::i<DataVector, 3>& face_normal,
+                    const tnsr::I<DataVector, 3>& face_normal_vector,
                     const Scalar<DataVector>& velocity_potential);
 };
 
@@ -158,23 +138,11 @@ struct Fluxes<Geometry::Curved> {
 template <>
 struct Sources<Geometry::FlatCartesian> {
   using argument_tags =
-      tmpl::list<Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
-                 Tags::DivergenceRotationalShiftStress<DataVector>,
-                 Tags::FixedSources<DataVector>>;
+      tmpl::list<Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_potential,
       const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
-      const tnsr::i<DataVector, 3>& /*div_rotational_shift_stress*/,
-      const tnsr::i<DataVector, 3>& /*fixed_sources*/,
-      const Scalar<DataVector>& /*velocity_potential*/,
       const tnsr::I<DataVector, 3>& flux_for_potential);
-  static void apply(
-      gsl::not_null<tnsr::i<DataVector, 3>*> equation_for_auxiliary_velocity,
-      const tnsr::i<DataVector,
-                    3>& /*log_deriv_of_lapse_over_specific_enthalpy*/,
-      const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
-      const tnsr::i<DataVector, 3>& fixed_sources,
-      const Scalar<DataVector>& velocity_potential);
 };
 
 /*!
@@ -187,30 +155,13 @@ template <>
 struct Sources<Geometry::Curved> {
   using argument_tags = tmpl::list<
       Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
-      gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
-      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
-      Tags::DivergenceRotationalShiftStress<DataVector>,
-      Tags::RotationalShiftStress<DataVector>, Tags::FixedSources<DataVector>>;
+      gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_potential,
       const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
       const tnsr::i<DataVector, 3>& christoffel_contracted,
-      const tnsr::Ijj<DataVector, 3>& /*christoffel*/,
-      const tnsr::i<DataVector, 3>& /*div_rotational_shift_stress*/,
-      const tnsr::Ij<DataVector, 3>& /*rotational_shift_stress*/,
-      const tnsr::i<DataVector, 3>& /*fixed_sources*/,
-      const Scalar<DataVector>& /*velocity_potential*/,
+      const Scalar<DataVector>& velocity_potential,
       const tnsr::I<DataVector, 3>& flux_for_potential);
-  static void apply(
-      gsl::not_null<tnsr::i<DataVector, 3>*> equation_for_auxiliary_velocity,
-      const tnsr::i<DataVector,
-                    3>& /*log_deriv_of_lapse_over_specific_enthalpy*/,
-      const tnsr::i<DataVector, 3>& christoffel_contracted,
-      const tnsr::Ijj<DataVector, 3>& christoffel,
-      const tnsr::i<DataVector, 3>& div_rotational_shift_stress,
-      const tnsr::Ij<DataVector, 3>& rotational_shift_stress,
-      const tnsr::i<DataVector, 3>& fixed_sources,
-      const Scalar<DataVector>& velocity_potential);
 };
 
 }  // namespace IrrotationalBns

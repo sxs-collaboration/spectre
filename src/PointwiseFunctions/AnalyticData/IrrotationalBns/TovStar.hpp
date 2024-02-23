@@ -41,7 +41,11 @@ using StarRegion = RelativisticEuler::Solutions::tov_detail::StarRegion;
 template <typename DataType>
 using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     IrrotationalBns::Tags::VelocityPotential<DataType>,
-    IrrotationalBns::Tags::AuxiliaryVelocity<DataType>,
+    ::Tags::deriv<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                  tmpl::size_t<3>, Frame::Inertial>,
+    ::Tags::Flux<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                 tmpl::size_t<3>, Frame::Inertial>,
+    ::Tags::FixedSource<IrrotationalBns::Tags::VelocityPotential<DataType>>,
     gr::Tags::Lapse<DataType>,
     ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::Inertial>,
     gr::Tags::Shift<DataType, 3, Frame::Inertial>,
@@ -49,7 +53,6 @@ using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
                   Frame::Inertial>,
     IrrotationalBns::Tags::RotationalShift<DataType>,
     IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<DataType>,
-    IrrotationalBns::Tags::DivergenceRotationalShiftStress<DataType>,
     IrrotationalBns::Tags::RotationalShiftStress<DataType>,
     gr::Tags::SpatialMetric<DataType, 3>>>;
 
@@ -98,7 +101,18 @@ struct TovVariables
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> auxiliary_velocity,
       gsl::not_null<Cache*> cache,
-      IrrotationalBns::Tags::AuxiliaryVelocity<DataType> /*meta*/) const;
+      ::Tags::deriv<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> flux_for_velocity_potential,
+      gsl::not_null<Cache*> cache,
+      ::Tags::Flux<IrrotationalBns::Tags::VelocityPotential<DataType>,
+                   tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> fixed_source,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<
+          IrrotationalBns::Tags::VelocityPotential<DataType>> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataType> /*meta*/) const;
@@ -124,12 +138,7 @@ struct TovVariables
                   IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<
                       DataType> /*meta*/) const;
   void operator()(
-      gsl::not_null<tnsr::i<DataType, 3>*> divergence_rotational_shift_stress,
-      gsl::not_null<Cache*> cache,
-      IrrotationalBns::Tags::DivergenceRotationalShiftStress<DataType> /*meta*/)
-      const;
-  void operator()(
-      gsl::not_null<tnsr::Ij<DataType, 3>*> rotational_shift_stress,
+      gsl::not_null<tnsr::II<DataType, 3>*> rotational_shift_stress,
       gsl::not_null<Cache*> cache,
       IrrotationalBns::Tags::RotationalShiftStress<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,

@@ -9,7 +9,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -36,22 +35,20 @@ tnsr::I<DataType, 3> rotational_shift(
 }
 
 template <typename DataType>
-void rotational_shift_stress(const gsl::not_null<tnsr::Ij<DataType, 3>*> result,
+void rotational_shift_stress(const gsl::not_null<tnsr::II<DataType, 3>*> result,
                              const tnsr::I<DataType, 3>& rotational_shift,
-                             const Scalar<DataType>& lapse,
-                             const tnsr::ii<DataType, 3>& spatial_metric) {
-  ::tenex::evaluate<ti::I, ti::j>(
-      result, rotational_shift(ti::I) * spatial_metric(ti::k, ti::j) *
-                  rotational_shift(ti::K) / square(lapse()));
+                             const Scalar<DataType>& lapse) {
+  ::tenex::evaluate<ti::I, ti::J>(
+      result,
+      rotational_shift(ti::I) * rotational_shift(ti::J) / square(lapse()));
 }
 
 template <typename DataType>
-tnsr::Ij<DataType, 3> rotational_shift_stress(
-    const tnsr::I<DataType, 3>& rotational_shift, const Scalar<DataType>& lapse,
-    const tnsr::ii<DataType, 3>& spatial_metric) {
-  tnsr::Ij<DataType, 3> buffer{};
-  rotational_shift_stress(make_not_null(&buffer), rotational_shift, lapse,
-                          spatial_metric);
+tnsr::II<DataType, 3> rotational_shift_stress(
+    const tnsr::I<DataType, 3>& rotational_shift,
+    const Scalar<DataType>& lapse) {
+  tnsr::II<DataType, 3> buffer{};
+  rotational_shift_stress(make_not_null(&buffer), rotational_shift, lapse);
   return buffer;
 }
 
@@ -200,14 +197,12 @@ tnsr::iJ<DataType, 3> derivative_spatial_rotational_killing_vector(
       const tnsr::I<DTYPE(data), 3>& shift,                                   \
       const tnsr::I<DTYPE(data), 3>& spatial_rotational_killing_vector);      \
   template void rotational_shift_stress(                                      \
-      gsl::not_null<tnsr::Ij<DTYPE(data), 3>*> result,                        \
+      gsl::not_null<tnsr::II<DTYPE(data), 3>*> result,                        \
       const tnsr::I<DTYPE(data), 3>& rotational_shift,                        \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::ii<DTYPE(data), 3>& spatial_metric);                        \
-  template tnsr::Ij<DTYPE(data), 3> rotational_shift_stress(                  \
+      const Scalar<DTYPE(data)>& lapse);                                      \
+  template tnsr::II<DTYPE(data), 3> rotational_shift_stress(                  \
       const tnsr::I<DTYPE(data), 3>& rotational_shift,                        \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::ii<DTYPE(data), 3>& spatial_metric);                        \
+      const Scalar<DTYPE(data)>& lapse);                                      \
   template void derivative_rotational_shift_over_lapse(                       \
       gsl::not_null<tnsr::iJ<DTYPE(data), 3>*> result,                        \
       const tnsr::I<DTYPE(data), 3>& rotational_shift,                        \
