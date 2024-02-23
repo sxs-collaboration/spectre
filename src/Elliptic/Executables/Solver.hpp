@@ -208,7 +208,7 @@ struct Solver {
       ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
-          background_tag,
+          volume_dim, background_tag,
           tmpl::append<typename system::primal_fields,
                        typename system::primal_fluxes>,
           elliptic::analytic_data::AnalyticSolution>,
@@ -232,7 +232,7 @@ struct Solver {
       typename schwarz_smoother::register_element>>;
 
   template <bool Linearized>
-  using build_operator_actions = elliptic::dg::Actions::apply_operator<
+  using dg_operator = elliptic::dg::Actions::DgOperator<
       system, Linearized,
       tmpl::conditional_t<Linearized, linear_solver_iteration_id,
                           nonlinear_solver_iteration_id>,
@@ -243,14 +243,13 @@ struct Solver {
 
   using build_matrix_actions = LinearSolver::Actions::build_matrix_actions<
       linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
-      build_operator_actions<true>,
+      typename dg_operator<true>::apply_actions,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
       LinearSolver::multigrid::Tags::IsFinestGrid>;
 
   template <typename Label>
-  using smooth_actions =
-      typename schwarz_smoother::template solve<build_operator_actions<true>,
-                                                Label>;
+  using smooth_actions = typename schwarz_smoother::template solve<
+      typename dg_operator<true>::apply_actions, Label>;
 
   /// This data needs to be communicated on subdomain overlap regions
   using communicated_overlap_tags = tmpl::flatten<tmpl::list<
@@ -267,18 +266,18 @@ struct Solver {
       tmpl::list<
           // Multigrid preconditioning
           typename multigrid::template solve<
-              build_operator_actions<true>,
+              typename dg_operator<true>::apply_actions,
               // Schwarz smoothing on each multigrid level
               smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
               smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
           // Support disabling the preconditioner
           ::LinearSolver::Actions::make_identity_if_skipped<
-              multigrid, build_operator_actions<true>>>,
+              multigrid, typename dg_operator<true>::apply_actions>>,
       StepActions>;
 
   template <typename StepActions>
   using nonlinear_solve_actions = typename nonlinear_solver::template solve<
-      build_operator_actions<false>,
+      typename dg_operator<false>::apply_actions,
       tmpl::list<
           // Transfer data down the multigrid hierachy
           LinearSolver::multigrid::Actions::ReceiveFieldsFromFinerGrid<
@@ -307,10 +306,10 @@ struct Solver {
       // Linear solve
       tmpl::list<
           // Apply the DG operator to the initial guess
-          elliptic::dg::Actions::apply_operator<
+          typename elliptic::dg::Actions::DgOperator<
               system, true, linear_solver_iteration_id, fields_tag,
               fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
-              fluxes_vars_tag>,
+              fluxes_vars_tag>::apply_actions,
           // Modify fixed sources with boundary conditions
           elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
               system, fixed_sources_tag>,

@@ -45,13 +45,33 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic::dg {
+
+namespace detail {
+template <size_t Dim>
+void initialize_coords_and_jacobians(
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+        logical_coords,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> inertial_coords,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_jacobian,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        det_times_inv_jacobian,
+    const Mesh<Dim>& mesh, const ElementMap<Dim, Frame::Inertial>& element_map,
+    const domain::FunctionsOfTimeMap& functions_of_time);
+}  // namespace detail
 
 /*!
  * \brief Initialize the background-independent geometry for the elliptic DG
@@ -105,6 +125,82 @@ struct InitializeGeometry {
       Spectral::Quadrature quadrature, const ElementId<Dim>& element_id);
 };
 
+template <size_t Dim>
+struct ProjectGeometry : tt::ConformsTo<::amr::protocols::Projector> {
+  using return_tags = tmpl::list<
+      domain::Tags::ElementMap<Dim>,
+      domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
+      domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
+
+  // p-refinement
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+          logical_coords,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          inertial_coords,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_jacobian,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          det_times_inv_jacobian,
+      const Mesh<Dim>& mesh, const Element<Dim>& /*element*/,
+      const Domain<Dim>& /*domain*/,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
+    if (mesh == old_mesh_and_element.first) {
+      // Neighbors may have changed, but this element hasn't. Nothing to do.
+      return;
+    }
+    // The element map doesn't change with p-refinement
+    detail::initialize_coords_and_jacobians(
+        logical_coords, inertial_coords, inv_jacobian, det_inv_jacobian,
+        det_jacobian, det_times_inv_jacobian, mesh, *element_map,
+        functions_of_time);
+  }
+
+  // h-refinement
+  template <typename... ParentOrChildrenItemsType>
+  static void apply(
+      const gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+          logical_coords,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          inertial_coords,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+      const gsl::not_null<Scalar<DataVector>*> det_jacobian,
+      const gsl::not_null<InverseJacobian<
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
+          det_times_inv_jacobian,
+      const Mesh<Dim>& mesh, const Element<Dim>& element,
+      const Domain<Dim>& domain,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const ParentOrChildrenItemsType&... /*parent_or_children_items*/) {
+    const auto& element_id = element.id();
+    const auto& block = domain.blocks()[element_id.block_id()];
+    *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
+    detail::initialize_coords_and_jacobians(
+        logical_coords, inertial_coords, inv_jacobian, det_inv_jacobian,
+        det_jacobian, det_times_inv_jacobian, mesh, *element_map,
+        functions_of_time);
+  }
+};
+
 namespace detail {
 // Compute derivative of the Jacobian numerically
 template <size_t Dim>
@@ -138,7 +234,7 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
 /// The `::Tags::deriv<domain::Tags::UnnormalizedFaceNormal<Dim>>` is only added
 /// on external boundaries, for use by boundary conditions.
 template <size_t Dim, typename InvMetricTag, typename BackgroundTag>
-struct InitializeFacesAndMortars {
+struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
   using return_tags = tmpl::append<
       domain::make_faces_tags<
           Dim,
@@ -179,8 +275,7 @@ struct InitializeFacesAndMortars {
       tmpl::conditional_t<
           std::is_same_v<BackgroundTag, void>, tmpl::list<>,
           tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
-  template <typename Background = std::nullptr_t,
-            typename Metavariables = std::nullptr_t>
+  template <typename... AmrData>
   static void apply(
       const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
@@ -210,8 +305,46 @@ struct InitializeFacesAndMortars {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      const Background& background = nullptr,
-      const Metavariables& /*meta*/ = nullptr) {
+      const AmrData&... amr_data) {
+    apply(face_directions, faces_inertial_coords, face_normals,
+          face_normal_vectors, face_normal_magnitudes, face_jacobians,
+          face_jacobian_times_inv_jacobian, deriv_unnormalized_face_normals,
+          mortar_meshes, mortar_sizes, mortar_jacobians, mesh, element,
+          neighbor_meshes, element_map, inv_jacobian, functions_of_time,
+          nullptr, nullptr, amr_data...);
+  }
+  template <typename Background, typename Metavariables, typename... AmrData>
+  static void apply(
+      const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
+      const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
+          faces_inertial_coords,
+      const gsl::not_null<DirectionMap<Dim, tnsr::i<DataVector, Dim>>*>
+          face_normals,
+      const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
+          face_normal_vectors,
+      const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
+          face_normal_magnitudes,
+      const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
+          face_jacobians,
+      const gsl::not_null<DirectionMap<
+          Dim, InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                               Frame::Inertial>>*>
+          face_jacobian_times_inv_jacobian,
+      const gsl::not_null<DirectionMap<Dim, tnsr::ij<DataVector, Dim>>*>
+          deriv_unnormalized_face_normals,
+      const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
+      const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
+          mortar_sizes,
+      const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
+          mortar_jacobians,
+      const Mesh<Dim>& mesh, const Element<Dim>& element,
+      const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
+      const ElementMap<Dim, Frame::Inertial>& element_map,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
+      const domain::FunctionsOfTimeMap& functions_of_time,
+      const Background& background, const Metavariables& /*meta*/,
+      const AmrData&... /*amr_data*/) {
     static_assert(std::is_same_v<InvMetricTag, void> or
                       not(std::is_same_v<Background, std::nullptr_t>),
                   "Supply an analytic background from which the 'InvMetricTag' "
@@ -287,6 +420,9 @@ struct InitializeFacesAndMortars {
     detail::deriv_unnormalized_face_normals_impl(
         deriv_unnormalized_face_normals, mesh, element, inv_jacobian);
     // Mortars (internal directions)
+    mortar_meshes->clear();
+    mortar_sizes->clear();
+    mortar_jacobians->clear();
     const auto& element_id = element.id();
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
@@ -352,7 +488,7 @@ struct InitializeFacesAndMortars {
 /// Initialize background quantities for the elliptic DG operator, possibly
 /// including the metric necessary for normalizing face normals
 template <size_t Dim, typename BackgroundFields, typename BackgroundTag>
-struct InitializeBackground {
+struct InitializeBackground : tt::ConformsTo<::amr::protocols::Projector> {
   using return_tags =
       tmpl::list<::Tags::Variables<BackgroundFields>,
                  domain::Tags::Faces<Dim, ::Tags::Variables<BackgroundFields>>>;
@@ -363,7 +499,8 @@ struct InitializeBackground {
                                                Frame::Inertial>,
                  BackgroundTag, Parallel::Tags::Metavariables>;
 
-  template <typename BackgroundBase, typename Metavariables>
+  template <typename BackgroundBase, typename Metavariables,
+            typename... AmrData>
   static void apply(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
@@ -371,7 +508,18 @@ struct InitializeBackground {
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const BackgroundBase& background, const Metavariables& /*meta*/) {
+      const BackgroundBase& background, const Metavariables& /*meta*/,
+      const AmrData&... amr_data) {
+    if constexpr (sizeof...(AmrData) == 1) {
+      if constexpr (std::is_same_v<AmrData...,
+                                   std::pair<Mesh<Dim>, Element<Dim>>>) {
+        if (((mesh == amr_data.first) and ...)) {
+          // This element hasn't changed during AMR. Nothing to do.
+          return;
+        }
+      }
+    }
+
     // Background fields in the volume
     using factory_classes =
         typename std::decay_t<Metavariables>::factory_creation::factory_classes;

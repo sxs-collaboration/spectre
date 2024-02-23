@@ -36,6 +36,44 @@
 
 namespace elliptic::dg {
 
+namespace detail{
+template <size_t Dim>
+void initialize_coords_and_jacobians(
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+        logical_coords,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> inertial_coords,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_jacobian,
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
+        det_times_inv_jacobian,
+        const Mesh<Dim>& mesh,
+    const ElementMap<Dim, Frame::Inertial>& element_map,
+    const domain::FunctionsOfTimeMap& functions_of_time) {
+  // Coordinates
+  *logical_coords = logical_coordinates(mesh);
+  *inertial_coords =
+      element_map(*logical_coords, 0., functions_of_time);
+  // Jacobian
+  // Note: we can try to use `::dg::metric_identity_jacobian_quantities` here.
+  // When I tried (NV, Dec 2023) the DG residuals diverged on a sphere domain
+  // with a large outer boundary (1e9). This was possibly because no
+  // metric-identity Jacobians were used on faces, though I also tried slicing
+  // the metric-identity Jacobian to the faces and that didn't help.
+  *inv_jacobian =
+      element_map.inv_jacobian(*logical_coords, 0., functions_of_time);
+  *det_inv_jacobian = determinant(*inv_jacobian);
+  get(*det_jacobian) = 1. / get(*det_inv_jacobian);
+  *det_times_inv_jacobian = *inv_jacobian;
+  for (auto& component : *det_times_inv_jacobian) {
+    component *= get(*det_jacobian);
+  }
+    }
+} // namespace detail
+
 template <size_t Dim>
 void InitializeGeometry<Dim>::apply(
     const gsl::not_null<Mesh<Dim>*> mesh,
@@ -81,24 +119,11 @@ void InitializeGeometry<Dim>::apply(
   }
   // Element map
   *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
-  // Coordinates
-  *logical_coords = logical_coordinates(*mesh);
-  *inertial_coords =
-      element_map->operator()(*logical_coords, 0., functions_of_time);
-  // Jacobian
-  // Note: we can try to use `::dg::metric_identity_jacobian_quantities` here.
-  // When I tried (NV, Dec 2023) the DG residuals diverged on a sphere domain
-  // with a large outer boundary (1e9). This was possibly because no
-  // metric-identity Jacobians were used on faces, though I also tried slicing
-  // the metric-identity Jacobian to the faces and that didn't help.
-  *inv_jacobian =
-      element_map->inv_jacobian(*logical_coords, 0., functions_of_time);
-  *det_inv_jacobian = determinant(*inv_jacobian);
-  get(*det_jacobian) = 1. / get(*det_inv_jacobian);
-  *det_times_inv_jacobian = *inv_jacobian;
-  for (auto& component : *det_times_inv_jacobian) {
-    component *= get(*det_jacobian);
-  }
+  // Coordinates and Jacobians
+  detail::initialize_coords_and_jacobians(
+      logical_coords, inertial_coords, inv_jacobian, det_inv_jacobian,
+      det_jacobian, det_times_inv_jacobian, *mesh, *element_map,
+      functions_of_time);
 }
 
 namespace detail {

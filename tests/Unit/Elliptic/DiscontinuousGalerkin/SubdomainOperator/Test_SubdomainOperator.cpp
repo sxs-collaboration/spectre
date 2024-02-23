@@ -374,9 +374,9 @@ struct ElementArray {
       SubdomainOperatorAppliedToDataTag<Dim, typename fields_tag::tags_list>;
 
   using apply_full_dg_operator_actions =
-      ::elliptic::dg::Actions::apply_operator<System, true, TemporalIdTag,
-                                              fields_tag, fluxes_tag,
-                                              operator_applied_to_fields_tag>;
+      typename ::elliptic::dg::Actions::DgOperator<
+          System, true, TemporalIdTag, fields_tag, fluxes_tag,
+          operator_applied_to_fields_tag>::apply_actions;
 
   using background_tag =
       elliptic::Tags::Background<elliptic::analytic_data::Background>;

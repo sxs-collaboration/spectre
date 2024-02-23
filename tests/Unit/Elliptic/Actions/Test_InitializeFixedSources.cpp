@@ -28,6 +28,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -42,6 +43,7 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 struct System {
+  static constexpr size_t volume_dim = 1;
   using primal_fields = tmpl::list<ScalarFieldTag>;
 };
 
@@ -105,6 +107,13 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
                   "[Unit][Elliptic][Actions]") {
+  using background_tag =
+      elliptic::Tags::Background<elliptic::analytic_data::Background>;
+  static_assert(
+      tt::assert_conforms_to_v<
+          elliptic::Actions::InitializeFixedSources<System, background_tag>,
+          amr::protocols::Projector>);
+
   domain::creators::register_derived_with_charm();
   register_factory_classes_with_charm<Metavariables>();
   // Which element we work with does not matter for this test
@@ -113,13 +122,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
       {{-0.5}}, {{1.5}}, {{2}}, {{4}}};
 
   using element_array = ElementArray<Metavariables>;
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<
-      elliptic::Tags::Background<elliptic::analytic_data::Background>,
-      domain::Tags::Domain<1>, domain::Tags::FunctionsOfTimeInitialize,
-      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Quadrature>{
-      std::make_unique<Background>(), domain_creator.create_domain(),
-      domain_creator.functions_of_time(), false,
-      Spectral::Quadrature::GaussLobatto}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      tuples::TaggedTuple<background_tag, domain::Tags::Domain<1>,
+                          domain::Tags::FunctionsOfTimeInitialize,
+                          elliptic::dg::Tags::Massive,
+                          elliptic::dg::Tags::Quadrature>{
+          std::make_unique<Background>(), domain_creator.create_domain(),
+          domain_creator.functions_of_time(), false,
+          Spectral::Quadrature::GaussLobatto}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
@@ -127,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
-  const auto get_tag = [&runner, &element_id ](auto tag_v) -> const auto& {
+  const auto get_tag = [&runner, &element_id](auto tag_v) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner,
                                                               element_id);

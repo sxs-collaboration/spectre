@@ -14,10 +14,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
-#include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -49,50 +51,64 @@ namespace elliptic::Actions {
  * - Adds:
  *   - `db::wrap_tags_in<::Tags::FixedSource, primal_fields>`
  */
-template <typename System, typename BackgroundTag>
-struct InitializeFixedSources {
+template <typename System, typename BackgroundTag,
+          size_t Dim = System::volume_dim>
+struct InitializeFixedSources : tt::ConformsTo<::amr::protocols::Projector> {
  private:
   using fixed_sources_tag = ::Tags::Variables<
       db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>>;
 
- public:
+ public:  // Iterable action
   using const_global_cache_tags =
       tmpl::list<elliptic::dg::Tags::Massive, BackgroundTag>;
   using simple_tags = tmpl::list<fixed_sources_tag>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            size_t Dim, typename ActionList, typename ParallelComponent>
+            typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& inertial_coords =
-        get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    const auto& background = db::get<BackgroundTag>(box);
+    db::mutate_apply<InitializeFixedSources>(make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
 
+ public:  // DataBox mutator, amr::protocols::Projector
+  using return_tags = tmpl::list<fixed_sources_tag>;
+  using argument_tags = tmpl::list<
+      domain::Tags::Coordinates<Dim, Frame::Inertial>, BackgroundTag,
+      elliptic::dg::Tags::Massive, domain::Tags::Mesh<Dim>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      Parallel::Tags::Metavariables>;
+
+  template <typename Background, typename Metavariables, typename... AmrData>
+  static void apply(
+      const gsl::not_null<typename fixed_sources_tag::type*> fixed_sources,
+      const tnsr::I<DataVector, Dim>& inertial_coords,
+      const Background& background, const bool massive, const Mesh<Dim>& mesh,
+      const Scalar<DataVector>& det_inv_jacobian, const Metavariables& /*meta*/,
+      const AmrData&... /*amr_data*/) {
     // Retrieve the fixed-sources of the elliptic system from the background,
     // which (along with the boundary conditions) define the problem we want to
     // solve.
-    auto fixed_sources = elliptic::util::get_analytic_data<
-        typename fixed_sources_tag::tags_list>(background, box,
-                                               inertial_coords);
+    using factory_classes =
+        typename std::decay_t<Metavariables>::factory_creation::factory_classes;
+    *fixed_sources =
+        call_with_dynamic_type<Variables<typename fixed_sources_tag::tags_list>,
+                               tmpl::at<factory_classes, Background>>(
+            &background, [&inertial_coords](const auto* const derived) {
+              return variables_from_tagged_tuple(derived->variables(
+                  inertial_coords, typename fixed_sources_tag::tags_list{}));
+            });
 
     // Apply DG mass matrix to the fixed sources if the DG operator is massive
-    if (db::get<elliptic::dg::Tags::Massive>(box)) {
-      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-      const auto& det_inv_jacobian = db::get<
-          domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
-          box);
-      fixed_sources /= get(det_inv_jacobian);
-      ::dg::apply_mass_matrix(make_not_null(&fixed_sources), mesh);
+    if (massive) {
+      *fixed_sources /= get(det_inv_jacobian);
+      ::dg::apply_mass_matrix(fixed_sources, mesh);
     }
-
-    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                                 std::move(fixed_sources));
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
