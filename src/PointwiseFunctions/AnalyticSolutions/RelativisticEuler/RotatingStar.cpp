@@ -24,6 +24,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -31,6 +32,10 @@ namespace RelativisticEuler::Solutions {
 namespace detail {
 CstSolution::CstSolution(const std::string& filename,
                          const double equilibrium_kappa) {
+  if (not file_system::check_if_file_exists(filename)) {
+    ERROR("Cannot open file '" << filename
+                               << "' in CstSolution/RotatingStar\n");
+  }
   std::ifstream cst_file(filename);
   std::string header_line;
   std::getline(cst_file, header_line);
