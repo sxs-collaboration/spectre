@@ -20,6 +20,12 @@ spectre_add_python_bindings_test(
   None)
 
 spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotMemoryMonitors"
+  Test_PlotMemoryMonitors.py
+  "unit;visualization;python"
+  None)
+
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotPowerMonitors"
   Test_PlotPowerMonitors.py
   "unit;visualization;python"
@@ -41,6 +47,11 @@ if(${BUILD_PYTHON_BINDINGS})
     )
   set_tests_properties(
     "Unit.Visualization.Python.PlotDatFile"
+    PROPERTIES
+    TIMEOUT 10
+    )
+  set_tests_properties(
+    "Unit.Visualization.Python.PlotMemoryMonitors"
     PROPERTIES
     TIMEOUT 10
     )

@@ -11,6 +11,7 @@ spectre_python_add_module(
   InterpolateToMesh.py
   PlotAlongLine.py
   PlotDatFile.py
+  PlotMemoryMonitors.py
   PlotPowerMonitors.py
   PlotSizeControl.py
   plots.mplstyle
