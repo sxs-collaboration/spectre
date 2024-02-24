@@ -4,15 +4,18 @@
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 
 #include <pup.h>
-#include <pup_stl.h>
 
 namespace amr {
-Policies::Policies(const amr::Isotropy isotropy) : isotropy_(isotropy) {}
+Policies::Policies(const amr::Isotropy isotropy, const amr::Limits& limits)
+    : isotropy_(isotropy), limits_(limits) {}
 
-void Policies::pup(PUP::er& p) { p | isotropy_; }
+void Policies::pup(PUP::er& p) {
+  p | isotropy_;
+  p | limits_;
+}
 
 bool operator==(const Policies& lhs, const Policies& rhs) {
-  return lhs.isotropy() == rhs.isotropy();
+  return lhs.isotropy() == rhs.isotropy() and lhs.limits() == rhs.limits();
 }
 
 bool operator!=(const Policies& lhs, const Policies& rhs) {

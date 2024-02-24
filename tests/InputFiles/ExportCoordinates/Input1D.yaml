@@ -24,6 +24,9 @@ Amr:
         MaximumRefinementLevel: 4
   Policies:
     Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: [0, 4]
+      NumGridPoints: Auto
   Verbosity: Verbose
 
 ResourceInfo:

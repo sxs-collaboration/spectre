@@ -104,7 +104,8 @@ struct EvaluateRefinementCriteria {
     }
 
     amr::enforce_policies(make_not_null(&overall_decision),
-                          db::get<amr::Tags::Policies>(box));
+                          db::get<amr::Tags::Policies>(box), element_id,
+                          get<::domain::Tags::Mesh<volume_dim>>(box));
 
     // An element cannot join if it is splitting in another dimension.
     // Update the flags now before sending to neighbors as each time

@@ -148,6 +148,9 @@ Amr:
   Criteria:
   Policies:
     Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:

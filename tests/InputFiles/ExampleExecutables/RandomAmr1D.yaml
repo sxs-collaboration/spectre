@@ -25,6 +25,9 @@ Amr:
         MaximumRefinementLevel: 8
   Policies:
     Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: [0, 8]
+      NumGridPoints: Auto
   Verbosity: Verbose
 
 DomainCreator:

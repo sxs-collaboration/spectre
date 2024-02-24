@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   EnforcePolicies.cpp
   Isotropy.cpp
+  Limits.cpp
   Policies.cpp
   )
 
@@ -19,6 +20,7 @@ spectre_target_headers(
   HEADERS
   EnforcePolicies.hpp
   Isotropy.hpp
+  Limits.hpp
   Policies.hpp
   Tags.hpp
   )
