@@ -37,6 +37,12 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None)
 
+spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotSlice"
+  Test_PlotSlice.py
+  "unit;visualization;python"
+  None)
+
 if(${BUILD_PYTHON_BINDINGS})
   # Test is a bit slow because it writes a bunch of plot files to verify
   # the argument handling works.
@@ -62,6 +68,11 @@ if(${BUILD_PYTHON_BINDINGS})
     )
   set_tests_properties(
     "Unit.Visualization.Python.PlotSizeControl"
+    PROPERTIES
+    TIMEOUT 10
+    )
+  set_tests_properties(
+    "Unit.Visualization.Python.PlotSlice"
     PROPERTIES
     TIMEOUT 10
     )

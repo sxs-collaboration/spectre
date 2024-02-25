@@ -16,6 +16,7 @@ spectre_python_add_module(
   PlotMemoryMonitors.py
   PlotPowerMonitors.py
   PlotSizeControl.py
+  PlotSlice.py
   plots.mplstyle
   ReadH5.py
   ReadInputFile.py
