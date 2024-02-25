@@ -5,6 +5,7 @@
 
 import logging
 import os
+from typing import Sequence
 
 import click
 import matplotlib.pyplot as plt
@@ -15,6 +16,24 @@ import spectre.IO.H5 as spectre_h5
 from spectre.IO.Exporter import interpolate_to_points
 
 logger = logging.getLogger(__name__)
+
+
+def points_on_line(
+    line_start: Sequence[float], line_end: Sequence[float], num_points: int
+) -> np.ndarray:
+    """Returns points on a line.
+
+    Parameters:
+      line_start: Start point of the line.
+      line_end: End point of the line.
+      num_points: Number of points to return.
+
+    Returns: An array of shape (dim, num_points) with uniformly spaced points
+      on the line.
+    """
+    line_parameter = np.linspace(0, 1, num_points)
+    normal = np.asarray(line_end) - np.asarray(line_start)
+    return line_start[:, np.newaxis] + np.outer(normal, line_parameter)
 
 
 def _parse_step(ctx, param, value):
@@ -208,31 +227,26 @@ def plot_along_line_command(
             "Both '--line-start' / '-A' and '--line-end' / '-B' must have"
             f" {dim} values (the dimension of the volume data)."
         )
-    line_parameter = np.linspace(0, 1, num_samples)
-    normal = line_end - line_start
-    target_coords = line_start + np.outer(line_parameter, normal)
+    target_coords = points_on_line(line_start, line_end, num_samples)
     vars_on_line = interpolate_to_points(
         h5_files,
         subfile_name=subfile_name,
         observation_step=step,
         tensor_components=vars,
-        target_points=target_coords.T,
+        target_points=target_coords,
         num_threads=num_threads,
     )
 
     # Set x-axis for plot. For plotting along an axis, use the axis coordinate.
     # Otherwise, use the line parameter.
-    if (dim < 2 or normal[1] == 0) and (dim < 3 or normal[2] == 0):
-        x = target_coords[:, 0]
-        x_label = "x"
-    elif normal[0] == 0 and (dim < 3 or normal[2] == 0):
-        x = target_coords[:, 1]
-        x_label = "y"
-    elif dim == 3 and normal[0] == 0 and normal[1] == 0:
-        x = target_coords[:, 2]
-        x_label = "z"
+    normal = np.asarray(line_end) - np.asarray(line_start)
+    nonzero_entries = np.nonzero(normal)[0]
+    coord_axis = nonzero_entries[0] if len(nonzero_entries) == 1 else None
+    if coord_axis is not None:
+        x = target_coords[coord_axis]
+        x_label = "xyz"[coord_axis]
     else:
-        x = line_parameter
+        x = np.linspace(0, 1, num_samples)
         A_label = ", ".join(f"{x:g}" for x in line_start)
         B_label = ", ".join(f"{x:g}" for x in line_end)
         x_label = f"$({A_label})$ to $({B_label})$"
