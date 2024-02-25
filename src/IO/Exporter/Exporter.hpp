@@ -17,6 +17,19 @@
 
 namespace spectre::Exporter {
 
+/// Identifies an observation by its ID in the volume data file.
+struct ObservationId {
+  explicit ObservationId(size_t local_value) : value(local_value) {}
+  size_t value;
+};
+
+/// Identifies an observation by its index in the ordered list of observations.
+/// Negative indices are counted from the end of the list.
+struct ObservationStep {
+  explicit ObservationStep(int local_value) : value(local_value) {}
+  int value;
+};
+
 /*!
  * \brief Interpolate data in volume files to target points
  *
@@ -24,9 +37,10 @@ namespace spectre::Exporter {
  * \param volume_files_or_glob The list of H5 files, or a glob pattern
  * \param subfile_name The name of the subfile in the H5 files containing the
  * volume data
- * \param observation_step The index of the observation in the volume files
- * to interpolate. A value of 0 would be the first observation, and a value of
- * -1 would be the last observation.
+ * \param observation Either the observation ID as a `size_t`, or the index of
+ * the observation in the volume files to interpolate as an `int` (a value of 0
+ * would be the first observation, and a value of -1 would be the last
+ * observation).
  * \param tensor_components The tensor components to interpolate, e.g.
  * "Lapse", "Shift_x", "Shift_y", "Shift_z", "SpatialMetric_xx", etc.
  * Look into the H5 file to see what components are available.
@@ -44,7 +58,8 @@ template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    std::string subfile_name, int observation_step,
+    std::string subfile_name,
+    const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
     std::optional<size_t> num_threads = std::nullopt);

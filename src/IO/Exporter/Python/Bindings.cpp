@@ -18,27 +18,25 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
       "interpolate_to_points",
       [](const std::variant<std::vector<std::string>, std::string>&
              volume_files_or_glob,
-         const std::string& subfile_name, int observation_step,
+         const std::string& subfile_name, const size_t observation_id,
          const std::vector<std::string>& tensor_components,
          std::vector<std::vector<double>> target_points,
          const std::optional<size_t>& num_threads) {
         const size_t dim = target_points.size();
+        const spectre::Exporter::ObservationId obs_id{observation_id};
         if (dim == 1) {
           return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, observation_step,
-              tensor_components,
+              volume_files_or_glob, subfile_name, obs_id, tensor_components,
               make_array<std::vector<double>, 1>(std::move(target_points)),
               num_threads);
         } else if (dim == 2) {
           return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, observation_step,
-              tensor_components,
+              volume_files_or_glob, subfile_name, obs_id, tensor_components,
               make_array<std::vector<double>, 2>(std::move(target_points)),
               num_threads);
         } else if (dim == 3) {
           return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, observation_step,
-              tensor_components,
+              volume_files_or_glob, subfile_name, obs_id, tensor_components,
               make_array<std::vector<double>, 3>(std::move(target_points)),
               num_threads);
         } else {
@@ -50,6 +48,6 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
         }
       },
       py::arg("volume_files_or_glob"), py::arg("subfile_name"),
-      py::arg("observation_step"), py::arg("tensor_components"),
+      py::arg("observation_id"), py::arg("tensor_components"),
       py::arg("target_points"), py::arg("num_threads") = std::nullopt);
 }

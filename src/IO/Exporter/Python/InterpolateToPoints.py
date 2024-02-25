@@ -197,7 +197,7 @@ def interpolate_to_points_command(
         interpolate_to_points(
             h5_files,
             subfile_name=subfile_name,
-            observation_step=step,
+            observation_id=obs_id,
             tensor_components=vars,
             target_points=target_coords.T,
             num_threads=num_threads,

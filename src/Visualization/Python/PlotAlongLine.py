@@ -231,7 +231,7 @@ def plot_along_line_command(
     vars_on_line = interpolate_to_points(
         h5_files,
         subfile_name=subfile_name,
-        observation_step=step,
+        observation_id=obs_id,
         tensor_components=vars,
         target_points=target_coords,
         num_threads=num_threads,

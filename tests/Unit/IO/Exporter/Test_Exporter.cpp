@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     INFO("Bundled volume data files");
     const auto interpolated_data = interpolate_to_points<3>(
         unit_test_src_path() + "/Visualization/Python/VolTestData*.h5",
-        "element_data", 0, {"Psi", "Phi_x", "Phi_y", "Phi_z"},
+        "element_data", ObservationStep{0}, {"Psi", "Phi_x", "Phi_y", "Phi_z"},
         {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}});
     const auto& psi = interpolated_data[0];
     CHECK(psi[0] == approx(-0.07059806932542323));
@@ -62,14 +62,15 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
       h5::H5File<h5::AccessType::ReadWrite> h5_file(h5_file_name);
       auto& volfile = h5_file.insert<h5::VolumeData>("/VolumeData", 0);
       volfile.write_volume_data(
-          0, 0.,
+          123, 0.,
           {ElementVolumeData{element_id,
                              {TensorComponent{"Psi", std::move(psi_float)}},
                              mesh}},
           serialize(domain));
     }
-    const auto interpolated_data = interpolate_to_points<2>(
-        h5_file_name, "/VolumeData", 0, {"Psi"}, {{{0.}, {0.}}});
+    const auto interpolated_data =
+        interpolate_to_points<2>(h5_file_name, "/VolumeData",
+                                 ObservationId{123}, {"Psi"}, {{{0.}, {0.}}});
     // Compare to single precision
     Approx custom_approx =
         Approx::custom()
