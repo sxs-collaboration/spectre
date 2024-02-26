@@ -29,7 +29,7 @@ Background: &solution
   KerrSchild:
     Mass: &KerrMass 1.
     Spin: &KerrSpin [0., 0., 0.6]
-    Center: [0., 0., 0.]
+    Center: &KerrCenter [0., 0., 0.]
 
 InitialGuess: Flatness
 
@@ -39,8 +39,8 @@ DomainCreator:
   Sphere:
     # Boyer-Lindquist radius a bit inside the horizon:
     # 0.89 * (M + sqrt(M^2 - a^2))
-    InnerRadius: 1.602
-    OuterRadius: 10.
+    InnerRadius: &InnerRadius 1.602
+    OuterRadius: &OuterRadius 10.
     Interior:
       ExciseWithBoundaryCondition:
         AnalyticSolution:
@@ -56,12 +56,14 @@ DomainCreator:
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]
     TimeDependentMaps:
-      InitialTime: 0.
-      ShapeMap:
+      Shape:
+        InitialTime: 0.
         LMax: 20
-        InitialValues:
-          Mass: *KerrMass
-          Spin: *KerrSpin
+        Mass: *KerrMass
+        Spin: *KerrSpin
+        Center: *KerrCenter
+        InnerRadius: *InnerRadius
+        OuterRadius: *OuterRadius
     OuterBoundaryCondition:
       AnalyticSolution:
         Solution: *solution
