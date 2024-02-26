@@ -22,7 +22,6 @@ Amr:
           Split: 2
           Join: 1
           DoNothing: 1
-        MaximumRefinementLevel: 8
   Policies:
     Isotropy: Anisotropic
     Limits:
