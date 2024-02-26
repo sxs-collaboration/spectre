@@ -20,6 +20,7 @@
 #include "PointwiseFunctions/Hydro/ComovingMagneticField.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/InitialData/IrrotationalBns.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -177,8 +178,27 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   RelEulerTovStar tov_star_;
 
  public:
-  using options = RelEulerTovStar::options;
-  static constexpr Options::String help = RelEulerTovStar::help;
+  struct EulerEnthalpyConstant {
+    using type = double;
+    static constexpr Options::String help =
+        "The Euler Enthalpy constant of the star";
+  };
+  struct StarCenter {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help =
+        "The location of the center of the star";
+  };
+  struct OrbitalAngularVelocity {
+    using type = double;
+    static constexpr Options::String help =
+        "The initial angular velocity of the binary orbit";
+  };
+  using options = tmpl::list<
+      EulerEnthalpyConstant, hydro::OptionTags::EquationOfState<true, 1>,
+      RelEulerTovStar::Coordinates, StarCenter, OrbitalAngularVelocity>;
+  static constexpr Options::String help = {
+      "A TovStar to be used as a background"
+      "for solving the Irrotational BNS hydro equations"};
 
   TovStar() = default;
   TovStar(const TovStar&) = default;
