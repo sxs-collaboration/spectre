@@ -122,7 +122,8 @@ void test_ks(const Mesh<3>& mesh) {
           "    GeneralizedHarmonic(KerrSchild):\n"
           "      Mass: 1.2\n"
           "      Spin: [0.1, 0.2, 0.3]\n"
-          "      Center: [-0.1, -0.2, -0.4]\n")
+          "      Center: [-0.1, -0.2, -0.4]\n"
+          "      Velocity: [0.0, 0.0, 0.0]\n")
           ->get_clone());
   CHECK_FALSE(gauge_condition->is_harmonic());
 

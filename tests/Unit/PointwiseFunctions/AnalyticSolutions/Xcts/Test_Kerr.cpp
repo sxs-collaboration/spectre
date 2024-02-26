@@ -59,7 +59,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Xcts.Kerr",
                 "KerrSchild:\n"
                 "  Mass: 0.43\n"
                 "  Spin: [0.1, 0.2, 0.3]\n"
-                "  Center: [1., 2., 3.]");
+                "  Center: [1., 2., 3.]\n"
+                "  Velocity: [0., 0., 0.]");
 }
 
 }  // namespace Xcts::Solutions

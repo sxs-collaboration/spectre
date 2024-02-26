@@ -30,6 +30,7 @@ Background: &solution
     Mass: &KerrMass 1.
     Spin: &KerrSpin [0., 0., 0.6]
     Center: [0., 0., 0.]
+    Velocity: [0., 0., 0.]
 
 InitialGuess: Flatness
 

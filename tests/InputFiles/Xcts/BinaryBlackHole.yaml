@@ -27,11 +27,13 @@ Background: &background
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     AngularVelocity: 0.0144
     Expansion: 0.
     LinearVelocity: [0., 0., 0.]
