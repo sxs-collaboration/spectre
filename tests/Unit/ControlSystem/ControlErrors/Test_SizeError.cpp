@@ -13,6 +13,7 @@
 #include "ControlSystem/ControlErrors/Size.hpp"
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
@@ -46,6 +47,8 @@ struct Distorted;
 }
 
 namespace {
+constexpr double Y00 = 0.25 * M_2_SQRTPI;
+
 struct Metavars {
   using const_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
@@ -82,6 +85,7 @@ void test_size_error_one_step(
     const double time, const double grid_excision_boundary_radius,
     const double distorted_excision_boundary_radius_initial,
     const double distorted_excision_boundary_velocity,
+    const double distorted_horizon_radius,
     const double distorted_horizon_velocity, const double target_char_speed,
     const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>&
         function_of_time,
@@ -103,7 +107,6 @@ void test_size_error_one_step(
                                   false};
 
   const size_t l_max = 8;
-  const double distorted_horizon_radius = 2.00;
 
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
   ylm::Strahlkorper<Frame::Distorted> horizon(l_max, distorted_horizon_radius,
@@ -169,8 +172,15 @@ void test_size_error_one_step(
           lambda_dt_lambda[0][0], lambda_dt_lambda[1][0],
           grid_excision_boundary_radius);
 
-  // For this test, DeltaRDriftOutward is turned off.
-  const std::optional<double> control_error_delta_r_outward{};
+  std::optional<double> control_error_delta_r_outward{};
+
+  if constexpr (std::is_same_v<
+                    FinalState,
+                    control_system::size::States::DeltaRDriftOutward>) {
+    // The 0.001 should match the value below
+    control_error_delta_r_outward =
+        control_error_delta_r + distorted_horizon_radius * 0.001 / Y00;
+  }
 
   auto error = control_system::size::control_error(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
@@ -305,11 +315,11 @@ template <typename InitialState, typename FinalState>
 void test_size_error(const double grid_excision_boundary_radius,
                      const double distorted_excision_boundary_radius_initial,
                      const double distorted_excision_boundary_velocity,
+                     const double distorted_horizon_radius,
                      const double distorted_horizon_velocity,
                      const double target_char_speed,
                      const double expected_error) {
   const double initial_time = 0.0;
-  const double Y00 = 0.25 * M_2_SQRTPI;
   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> function_of_time(
       new domain::FunctionsOfTime::PiecewisePolynomial<3>(
           initial_time,
@@ -331,8 +341,9 @@ void test_size_error(const double grid_excision_boundary_radius,
       make_not_null(&predictor_comoving_char_speed),
       make_not_null(&predictor_delta_radius), initial_time,
       grid_excision_boundary_radius, distorted_excision_boundary_radius_initial,
-      distorted_excision_boundary_velocity, distorted_horizon_velocity,
-      target_char_speed, function_of_time, expected_error);
+      distorted_excision_boundary_velocity, distorted_horizon_radius,
+      distorted_horizon_velocity, target_char_speed, function_of_time,
+      expected_error);
 }
 }  // namespace
 
@@ -342,22 +353,22 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
   // Should go to DeltaR state with error of zero, since ComovingMinCharSpeed
   // will be positive.
   test_size_error<control_system::size::States::Initial,
-                  control_system::size::States::DeltaR>(1.98, 1.98, 0.0, 0.0,
-                                                        0.0, 0.0);
+                  control_system::size::States::DeltaR>(1.98, 1.98, 0.0, 2.0,
+                                                        0.0, 0.0, 0.0);
   // Should remain in Initial state, since ComovingMinCharSpeed will
   // be negative.  Note that the way we make ComovingMinCharSpeed negative
   // is we put the excision boundary outside (!) the horizon, which normally
   // should never happen but here it serves the purpose of this test.
   test_size_error<control_system::size::States::Initial,
-                  control_system::size::States::Initial>(2.01, 2.01, 0.0, 0.0,
-                                                         0.0, 0.0);
-  const double Y00 = 0.25 * M_2_SQRTPI;
+                  control_system::size::States::Initial>(2.01, 2.01, 0.0, 2.0,
+                                                         0.0, 0.0, 0.0);
   const double horizon_velocity = 0.01;
   const double excision_velocity = 0.03;
   const double excision_grid = 1.95;
   const double target_char_speed = 0.05;
   {
     // The following is computed by hand from arxiv:1211.6079 eq. 96.
+    const double horizon_distorted = 2.0;
     const double excision_distorted = 1.98;
     const double expected_control_error =
         (-horizon_velocity * 0.5 * excision_distorted + excision_velocity) /
@@ -365,13 +376,29 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
     // Should stay in state DeltaR.
     test_size_error<control_system::size::States::DeltaR,
                     control_system::size::States::DeltaR>(
-        excision_grid, excision_distorted, excision_velocity, horizon_velocity,
-        target_char_speed, expected_control_error);
+        excision_grid, excision_distorted, excision_velocity, horizon_distorted,
+        horizon_velocity, target_char_speed, expected_control_error);
+  }
+  {
+    // The following is computed by hand from arxiv:1211.6079 eq. 97.
+    const double horizon_distorted = 2.0;
+    const double excision_distorted = 1.95;
+    const double drift_velocity = 0.001;
+    const double expected_control_error =
+        (-horizon_velocity * 0.5 * excision_distorted + excision_velocity +
+         horizon_distorted * drift_velocity) /
+        Y00;
+    // Should stay in state DeltaRDriftOutward.
+    test_size_error<control_system::size::States::DeltaRDriftOutward,
+                    control_system::size::States::DeltaRDriftOutward>(
+        excision_grid, excision_distorted, excision_velocity, horizon_distorted,
+        horizon_velocity, target_char_speed, expected_control_error);
   }
 
   {
     // The following is computed by hand from arxiv:1211.6079 eq. 92
     // and the Schwarzshild solution in Kerr-schild coords.
+    const double horizon_distorted = 2.0;
     const double excision_distorted = 2.0;
     const double mass = 1.0;  // hardcoded in test.
     const double normal_radial_one_form_mag =
@@ -387,7 +414,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
     // Should stay in state AhSpeed.
     test_size_error<control_system::size::States::AhSpeed,
                     control_system::size::States::AhSpeed>(
-        excision_grid, excision_distorted, excision_velocity, horizon_velocity,
-        target_char_speed, expected_control_error);
+        excision_grid, excision_distorted, excision_velocity, horizon_distorted,
+        horizon_velocity, target_char_speed, expected_control_error);
   }
 }
