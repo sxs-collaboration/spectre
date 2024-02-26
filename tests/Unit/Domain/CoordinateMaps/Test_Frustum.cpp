@@ -111,7 +111,7 @@ void test_suite_for_frustum(
     // to fail in extreme cases.
     const CoordinateMaps::Frustum frustum_map(
         face_vertices, lower_z, upper_z, map_i(), with_equiangular_map,
-        zeta_distribution, 1.0, 1.0, opening_angle);
+        zeta_distribution, std::nullopt, 1.0, 1.0, opening_angle);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
