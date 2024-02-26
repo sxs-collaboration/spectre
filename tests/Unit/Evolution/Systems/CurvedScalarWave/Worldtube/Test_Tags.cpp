@@ -63,6 +63,19 @@ void test_excision_sphere_tag() {
           "Available excision spheres are: (ExcisionSphere)"));
 }
 
+void test_initial_position_velocity_tag() {
+  const double orbital_radius = 7.;
+  const double angular_vel = 0.1;
+  const auto domain_creator =
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
+          orbital_radius, 0.2, angular_vel);
+  const tnsr::I<double, 3> expected_pos{{orbital_radius, 0., 0.}};
+  const tnsr::I<double, 3> expected_vel{{0., angular_vel * orbital_radius, 0.}};
+  CHECK(Tags::InitialPositionAndVelocity::create_from_options(
+            domain_creator, "ExcisionSphereA", 0.) ==
+        std::array<tnsr::I<double, 3>, 2>{{expected_pos, expected_vel}});
+}
+
 void test_compute_face_coordinates_grid() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<
@@ -540,6 +553,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::GeodesicAcceleration<3>>(
       "GeodesicAcceleration");
   test_excision_sphere_tag();
+  test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
   test_particle_position_velocity_compute();
