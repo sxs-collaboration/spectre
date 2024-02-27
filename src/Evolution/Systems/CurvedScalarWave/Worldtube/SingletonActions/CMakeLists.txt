@@ -5,6 +5,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  UpdateAcceleration.cpp
   )
 
 spectre_target_headers(
@@ -17,4 +18,5 @@ spectre_target_headers(
   ObserveWorldtubeSolution.hpp
   ReceiveElementData.hpp
   SendToElements.hpp
+  UpdateAcceleration.hpp
 )

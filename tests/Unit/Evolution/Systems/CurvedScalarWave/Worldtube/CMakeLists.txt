@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   SingletonActions/Test_InitializeEvolvedVariables.cpp
   SingletonActions/Test_ObserveWorldtubeSolution.cpp
+  SingletonActions/Test_UpdateAcceleration.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
