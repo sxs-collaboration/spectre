@@ -13,6 +13,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ObserveWorldtubeSolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateAcceleration.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -21,7 +22,9 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
+#include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -68,6 +71,9 @@ struct WorldtubeSingleton {
           ::Initialization::TimeStepping<Metavariables, TimeStepperBase>,
           Initialization::InitializeEvolvedVariables,
           Initialization::InitializeElementFacesGridCoordinates<Dim>>,
+      ::Initialization::Actions::AddComputeTags<
+          tmpl::list<Tags::EvolvedParticlePositionVelocityCompute<Dim>,
+                     Tags::GeodesicAccelerationCompute<Dim>>>,
       Parallel::Actions::TerminatePhase>;
 
   struct worldtube_system {
@@ -78,6 +84,7 @@ struct WorldtubeSingleton {
   };
   using step_actions =
       tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
+                 ::Actions::MutateApply<UpdateAcceleration>,
                  ::Actions::RecordTimeStepperData<worldtube_system>,
                  ::Actions::UpdateU<worldtube_system>,
                  Actions::SendToElements<Metavariables>>;
