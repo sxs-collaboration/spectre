@@ -224,7 +224,7 @@ class EllipticStatus(ExecutableStatus):
             # Try these solver names in turn and report the status of the first
             # that exists. Create a subclass to customize this behavior for
             # a specific executable (e.g. if it has multiple solvers).
-            for solver_name in ["NewtonRaphson", "GMRES"]:
+            for solver_name in ["NewtonRaphson", "Gmres"]:
                 solver_status = self.solver_status(
                     input_file, open_reductions_file, solver_name=solver_name
                 )
