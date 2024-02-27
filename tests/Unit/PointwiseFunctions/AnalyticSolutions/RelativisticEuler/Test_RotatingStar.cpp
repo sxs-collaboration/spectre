@@ -90,4 +90,12 @@ SPECTRE_TEST_CASE(
   verify_solution(solution, {{20., 0., 0.}}, error_tolerance);
   verify_solution(solution, {{0., 20., 0.}}, error_tolerance);
   verify_solution(solution, {{0., 0., 20.}}, error_tolerance);
+
+  CHECK_THROWS_WITH(
+      RelativisticEuler::Solutions::RotatingStar(
+          unit_test_src_path() +
+              "/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
+              "RotatingStarIdDoesNotExist.dat",
+          100),
+      Catch::Matchers::ContainsSubstring("Cannot open file"));
 }
