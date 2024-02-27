@@ -95,6 +95,7 @@ template <>
 struct Fluxes<Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<>;
   // Order is prmal
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
@@ -118,6 +119,7 @@ struct Fluxes<Geometry::Curved> {
       tmpl::list<gr::Tags::InverseSpatialMetric<DataVector, 3>,
                  Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& inverse_spatial_metric,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
