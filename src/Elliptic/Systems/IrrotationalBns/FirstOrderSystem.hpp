@@ -89,7 +89,7 @@ struct FirstOrderSystem
       gr::Tags::Shift<DataVector, 3>,
       ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::int_<3>,
                     Frame::Inertial>,
-      Tags::EulerEnthalpyConstant, Tags::RotationalShift<DataVector>,
+      Tags::RotationalShift<DataVector>,
       Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
       Tags::RotationalShiftStress<DataVector>,
       Tags::SpatialRotationalKillingVector<DataVector>,

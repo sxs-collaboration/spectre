@@ -57,7 +57,7 @@ using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     IrrotationalBns::Tags::RotationalShiftStress<DataType>,
     gr::Tags::SpatialMetric<DataType, 3>>>;
 
-template <typename DataType, StarRegion Region>
+template <typename DataType, StarRegion Region = StarRegion::Interior>
 struct TovVariables
     : RelativisticEuler::Solutions::tov_detail::TovVariables<DataType, Region> {
   static constexpr size_t Dim = 3;
@@ -248,18 +248,16 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    return variables_impl<DataType>(x, std::nullopt, std::nullopt,
-                                    tmpl::list<RequestedTags...>{});
+    return variables_impl<DataType>(x, tmpl::list<RequestedTags...>{});
   }
 
   template <typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& /*mesh*/,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                            Frame::Inertial>& inv_jacobian,
+                            Frame::Inertial>& /*inv_jacobian*/,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    return variables_impl<DataVector>(x, mesh, inv_jacobian,
-                                      tmpl::list<RequestedTags...>{});
+    return variables_impl<DataVector>(x, tmpl::list<RequestedTags...>{});
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -272,20 +270,20 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   }
 
  private:
-  template <typename DataType, tov_detail::StarRegion Region,
-            typename... RequestedTags>
+  template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
-      std::optional<std::reference_wrapper<const InverseJacobian<
-          DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
-          inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = tov_detail::TovVariables<DataType, Region>;
+    using VarsComputer = tov_detail::TovVariables<DataType>;
     typename VarsComputer::Cache cache{get_size(*x.begin())};
     const DataType radius = get(magnitude(x));
-    const VarsComputer computer{std::move(mesh), std::move(inv_jacobian), x,
-                                radius, tov_star_};
+    const VarsComputer computer{x,
+                                radius,
+                                tov_star_,
+                                tov_star_.equation_of_state(),
+                                star_center_,
+                                euler_enthalpy_constant_,
+                                orbital_angular_velocity_};
   }
 
   friend bool operator==(const TovStar& lhs, const TovStar& rhs) {

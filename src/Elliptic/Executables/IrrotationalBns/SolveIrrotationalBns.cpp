@@ -17,6 +17,7 @@
 using metavariables = Metavariables;
 
 extern "C" void CkRegisterMainModule() {
+  Parallel::printf("Before main module registration\n");
   Parallel::charmxx::register_main_module<metavariables>();
   Parallel::charmxx::register_init_node_and_proc(
       {&domain::creators::register_derived_with_charm,

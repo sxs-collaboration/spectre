@@ -86,8 +86,7 @@ struct Metavariables {
                    IrrotationalBns::InitialData::all_initial_data>,
         tmpl::pair<elliptic::analytic_data::InitialGuess,
                    IrrotationalBns::InitialData::all_initial_data>,
-        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
-                   IrrotationalBns::InitialData::all_initial_data>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution, tmpl::list<>>,
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    IrrotationalBns::BoundaryConditions::
                        standard_boundary_conditions<system>>,
