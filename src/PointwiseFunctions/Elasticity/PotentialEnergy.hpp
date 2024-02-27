@@ -28,8 +28,13 @@ namespace Elasticity {
  * for example, where \f$T^{i3}=0=T^{3i}\f$.
  */
 template <size_t Dim>
+void potential_energy_density(gsl::not_null<Scalar<DataVector>*> result,
+                              const tnsr::ii<DataVector, Dim>& strain,
+                              const tnsr::II<DataVector, Dim>& stress);
+
+template <size_t Dim>
 void potential_energy_density(
-    gsl::not_null<Scalar<DataVector>*> potential_energy_density,
+    gsl::not_null<Scalar<DataVector>*> result,
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
@@ -55,14 +60,10 @@ struct PotentialEnergyDensityCompute
   using base = Elasticity::Tags::PotentialEnergyDensity<Dim>;
   using return_type = Scalar<DataVector>;
   using argument_tags =
-      tmpl::list<Elasticity::Tags::Strain<Dim>,
-                 domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 Elasticity::Tags::ConstitutiveRelation<Dim>>;
+      tmpl::list<Elasticity::Tags::Strain<Dim>, Elasticity::Tags::Stress<Dim>>;
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, Dim>&,
-      const tnsr::I<DataVector, Dim>&,
-      const ConstitutiveRelations::ConstitutiveRelation<Dim>&)>(
-      &potential_energy_density<Dim>);
+      const tnsr::II<DataVector, Dim>&)>(&potential_energy_density<Dim>);
 };
 
 }  // namespace Tags

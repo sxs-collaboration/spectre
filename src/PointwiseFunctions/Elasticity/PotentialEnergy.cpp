@@ -19,21 +19,27 @@
 namespace Elasticity {
 
 template <size_t Dim>
+void potential_energy_density(const gsl::not_null<Scalar<DataVector>*> result,
+                              const tnsr::ii<DataVector, Dim>& strain,
+                              const tnsr::II<DataVector, Dim>& stress) {
+  set_number_of_grid_points(result, strain);
+  get(*result) = 0.;
+  for (size_t i = 0; i < stress.size(); ++i) {
+    get(*result) -= stress.multiplicity(i) * stress[i] * strain[i];
+  }
+  get(*result) *= 0.5;
+}
+
+template <size_t Dim>
 void potential_energy_density(
-    const gsl::not_null<Scalar<DataVector>*> potential_energy_density,
+    const gsl::not_null<Scalar<DataVector>*> result,
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation) {
-  set_number_of_grid_points(potential_energy_density, coordinates);
   tnsr::II<DataVector, Dim> stress{coordinates.begin()->size()};
   constitutive_relation.stress(make_not_null(&stress), strain, coordinates);
-  get(*potential_energy_density) = 0.;
-  for (size_t i = 0; i < stress.size(); ++i) {
-    get(*potential_energy_density) -=
-        stress.multiplicity(i) * stress[i] * strain[i];
-  }
-  get(*potential_energy_density) *= 0.5;
+  potential_energy_density(result, strain, stress);
 }
 
 template <size_t Dim>
@@ -53,7 +59,11 @@ Scalar<DataVector> potential_energy_density(
 
 #define INSTANTIATE(_, data)                                        \
   template void potential_energy_density<DIM(data)>(                \
-      gsl::not_null<Scalar<DataVector>*> potential_energy_density,  \
+      gsl::not_null<Scalar<DataVector>*> result,                    \
+      const tnsr::ii<DataVector, DIM(data)>& strain,                \
+      const tnsr::II<DataVector, DIM(data)>& stress);               \
+  template void potential_energy_density<DIM(data)>(                \
+      gsl::not_null<Scalar<DataVector>*> result,                    \
       const tnsr::ii<DataVector, DIM(data)>& strain,                \
       const tnsr::I<DataVector, DIM(data)>& coordinates,            \
       const ConstitutiveRelations::ConstitutiveRelation<DIM(data)>& \

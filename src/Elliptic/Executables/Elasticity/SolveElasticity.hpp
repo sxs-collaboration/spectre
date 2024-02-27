@@ -41,6 +41,7 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Factory.hpp"
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
+#include "PointwiseFunctions/Elasticity/Stress.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -67,6 +68,7 @@ struct Metavariables {
   using observe_fields = tmpl::append<
       analytic_solution_fields, error_tags, typename solver::observe_fields,
       tmpl::list<Elasticity::Tags::StrainCompute<volume_dim>,
+                 Elasticity::Tags::StressCompute<volume_dim>,
                  Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>,
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
