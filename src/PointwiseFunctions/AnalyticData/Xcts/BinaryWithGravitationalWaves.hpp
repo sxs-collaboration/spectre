@@ -216,48 +216,48 @@ struct BinaryWithGravitationalWavesVariables
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> normal_right,
                   gsl::not_null<Cache*> cache,
                   detail::Tags::NormalRight<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-                  const gsl::not_null<Cache*> cache,
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::RadiativeTerm<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> near_zone_term,
-                  const gsl::not_null<Cache*> cache,
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> near_zone_term,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::NearZoneTerm<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> present_term,
-                  const gsl::not_null<Cache*> cache,
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> present_term,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::PresentTerm<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> past_term,
-                  const gsl::not_null<Cache*> cache,
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> past_term,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::PastTerm<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::ii<DataType, Dim>*> integral_term,
-                  const gsl::not_null<Cache*> cache,
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> integral_term,
+                  gsl::not_null<Cache*> cache,
                   detail::Tags::IntegralTerm<DataType> /*meta*/) const;
   void operator()(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> pn_conjugate_momentum3,
-      const gsl::not_null<Cache*> cache,
+      gsl::not_null<tnsr::ii<DataType, Dim>*> pn_conjugate_momentum3,
+      gsl::not_null<Cache*> cache,
       detail::Tags::PostNewtonianConjugateMomentum3<DataType> /*meta*/) const;
   void operator()(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> pn_extrinsic_curvature,
-      const gsl::not_null<Cache*> cache,
+      gsl::not_null<tnsr::ii<DataType, Dim>*> pn_extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
       detail::Tags::PostNewtonianExtrinsicCurvature<DataType> /*meta*/) const;
 
   void operator()(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
-      const gsl::not_null<Cache*> cache,
+      gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+      gsl::not_null<Cache*> cache,
       Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
-      const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
+      gsl::not_null<Cache*> /*cache*/,
       ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial>
           meta) const override;
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+      gsl::not_null<Cache*> /*cache*/,
       gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const override;
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
+      gsl::not_null<Cache*> /*cache*/,
       ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
       const override;
   void operator()(
@@ -276,66 +276,64 @@ struct BinaryWithGravitationalWavesVariables
       ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<Scalar<DataType>*> conformal_energy_density,
+      gsl::not_null<Cache*> /*cache*/,
       gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/) const;
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
+      gsl::not_null<Cache*> /*cache*/,
       gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const;
   void operator()(
-      const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
+      gsl::not_null<Cache*> /*cache*/,
       gr::Tags::Conformal<gr::Tags::MomentumDensity<DataType, Dim>, 0> /*meta*/)
       const;
+  void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
+                  gsl::not_null<Cache*> /*cache*/,
+                  Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const;
   void operator()(
-      const gsl::not_null<Scalar<DataType>*> conformal_factor_minus_one,
-      const gsl::not_null<Cache*> /*cache*/,
-      Xcts::Tags::ConformalFactorMinusOne<DataType> /*meta*/) const;
-  void operator()(
-      const gsl::not_null<Scalar<DataType>*>
-          lapse_times_conformal_factor_minus_one,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor_minus_one,
+      gsl::not_null<Cache*> /*cache*/,
       Xcts::Tags::LapseTimesConformalFactorMinusOne<DataType> /*meta*/) const;
   void operator()(
-      const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
-      const gsl::not_null<Cache*> /*cache*/,
+      gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
+      gsl::not_null<Cache*> /*cache*/,
       Xcts::Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const;
-  void operator()(const gsl::not_null<Scalar<DataType>*> rest_mass_density,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<Scalar<DataType>*> rest_mass_density,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::RestMassDensity<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<Scalar<DataType>*> specific_enthalpy,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<Scalar<DataType>*> pressure,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<Scalar<DataType>*> pressure,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::Pressure<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> spatial_velocity,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::SpatialVelocity<DataType, 3> /*meta*/) const;
-  void operator()(const gsl::not_null<Scalar<DataType>*> lorentz_factor,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<Scalar<DataType>*> lorentz_factor,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::LorentzFactor<DataType> /*meta*/) const;
-  void operator()(const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
-                  const gsl::not_null<Cache*> /*cache*/,
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+                  gsl::not_null<Cache*> /*cache*/,
                   hydro::Tags::MagneticField<DataType, 3> /*meta*/) const;
 
  private:
   void add_radiative_term_PN_of_conformal_metric(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
-      const gsl::not_null<Cache*> cache) const;
+      gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+      gsl::not_null<Cache*> cache) const;
   void add_near_zone_term_to_radiative(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> cache) const;
+      gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      gsl::not_null<Cache*> cache) const;
   void add_present_term_to_radiative(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> cache) const;
+      gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      gsl::not_null<Cache*> cache) const;
   void add_past_term_to_radiative(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> cache) const;
+      gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      gsl::not_null<Cache*> cache) const;
   void add_integral_term_to_radiative(
-      const gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
-      const gsl::not_null<Cache*> cache) const;
+      gsl::not_null<tnsr::ii<DataType, Dim>*> radiative_term,
+      gsl::not_null<Cache*> cache) const;
 };
 
 }  // namespace detail

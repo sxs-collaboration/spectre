@@ -95,9 +95,9 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
         deriv_3_distance_left->get(i, j, k) =
-            (-normal_left.get(i) * delta[j][k] -
-             normal_left.get(j) * delta[i][k] -
-             normal_left.get(k) * delta[i][j] +
+            (-normal_left.get(i) * delta.at(j).at(k) -
+             normal_left.get(j) * delta.at(i).at(k) -
+             normal_left.get(k) * delta.at(i).at(j) +
              3 * normal_left.get(i) * normal_left.get(j) * normal_left.get(k)) /
             square(distance_left);
       }
@@ -124,9 +124,9 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
         deriv_3_distance_right->get(i, j, k) =
-            (-normal_right.get(i) * delta[j][k] -
-             normal_right.get(j) * delta[i][k] -
-             normal_right.get(k) * delta[i][j] +
+            (-normal_right.get(i) * delta.at(j).at(k) -
+             normal_right.get(j) * delta.at(i).at(k) -
+             normal_right.get(k) * delta.at(i).at(j) +
              3 * normal_right.get(i) * normal_right.get(j) *
                  normal_right.get(k)) /
             square(distance_right);
@@ -194,45 +194,46 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     for (size_t j = 0; j <= i; ++j) {
       near_zone_term->get(i, j) =
           0.25 / (mass_left * distance_left) *
-              (2. * momentum_left[i] * momentum_left[j] +
+              (2. * momentum_left.at(i) * momentum_left.at(j) +
                (3. * square(ymomentum_left * normal_left.get(1)) -
                 5. * square(ymomentum_left)) *
                    normal_left.get(i) * normal_left.get(j) +
                6. * ymomentum_left * normal_left.get(1) *
-                   (normal_left.get(i) * momentum_left[j] +
-                    normal_left.get(j) * momentum_left[i])) +
+                   (normal_left.get(i) * momentum_left.at(j) +
+                    normal_left.get(j) * momentum_left.at(i))) +
           0.25 / (mass_right * distance_right) *
-              (2. * momentum_right[i] * momentum_right[j] +
+              (2. * momentum_right.at(i) * momentum_right.at(j) +
                (3. * square(ymomentum_right * normal_right.get(1)) -
                 5. * square(ymomentum_right)) *
                    normal_right.get(i) * normal_right.get(j) +
                6. * ymomentum_right * normal_right.get(1) *
-                   (normal_right.get(i) * momentum_right[j] +
-                    normal_right.get(j) * momentum_right[i])) +
+                   (normal_right.get(i) * momentum_right.at(j) +
+                    normal_right.get(j) * momentum_right.at(i))) +
           0.125 * (mass_left * mass_right) *
-              (-32. / s * (1. / separation + 1. / s) * normal_lr[i] *
-                   normal_lr[j] +
+              (-32. / s * (1. / separation + 1. / s) * normal_lr.at(i) *
+                   normal_lr.at(j) +
                2. *
                    ((distance_left + distance_right) / cube(separation) +
                     12. / square(s)) *
                    normal_left.get(i) * normal_right.get(j) +
                16. * (2. / square(s) - 1. / square(separation)) *
-                   (normal_left.get(i) * normal_lr[j] +
-                    normal_left.get(j) * normal_lr[i]) +
+                   (normal_left.get(i) * normal_lr.at(j) +
+                    normal_left.get(j) * normal_lr.at(i)) +
                (5. / (separation * distance_left) -
                 1. / cube(separation) *
                     (square(distance_right) / distance_left +
                      3. * distance_left) -
                 8. / s * (1. / distance_left + 1. / s)) *
                    normal_left.get(i) * normal_left.get(j) -
-               32 / s * (1 / separation + 1 / s) * normal_lr[i] * normal_lr[j] +
+               32 / s * (1 / separation + 1 / s) * normal_lr.at(i) *
+                   normal_lr.at(j) +
                2 *
                    ((distance_left + distance_right) / cube(separation) +
                     12 / square(s)) *
                    normal_right.get(i) * normal_left.get(j) -
                16 * (2 / square(s) - 1 / square(separation)) *
-                   (normal_right.get(i) * normal_lr[j] +
-                    normal_right.get(j) * normal_lr[i]) +
+                   (normal_right.get(i) * normal_lr.at(j) +
+                    normal_right.get(j) * normal_lr.at(i)) +
                (5 / (separation * distance_right) -
                 1 / cube(separation) *
                     (square(distance_left) / distance_right +
@@ -274,49 +275,52 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
   const auto& normal_right =
       cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
-  std::array<double, 3> u1_1;
-  std::array<double, 3> u1_2;
-  std::array<double, 3> u2;
+  std::array<double, 3> u1_1{};
+  std::array<double, 3> u1_2{};
+  std::array<double, 3> u2{};
   for (size_t i = 0; i < 3; ++i) {
-    u1_1[i] = momentum_left[i] / sqrt(mass_left);
-    u1_2[i] = momentum_right[i] / sqrt(mass_right);
-    u2[i] = sqrt(mass_left * mass_right / (2 * separation)) * normal_lr[i];
+    u1_1.at(i) = momentum_left.at(i) / sqrt(mass_left);
+    u1_2.at(i) = momentum_right.at(i) / sqrt(mass_right);
+    u2.at(i) =
+        sqrt(mass_left * mass_right / (2 * separation)) * normal_lr.at(i);
   }
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       present_term->get(i, j) =
           -0.25 / distance_left *
-              (2 * u1_1[i] * u1_1[j] +
+              (2 * u1_1.at(i) * u1_1.at(j) +
                (3 * square(ymomentum_left * normal_left.get(1)) / mass_left -
                 5 * square(ymomentum_left) / mass_left) *
                    normal_left.get(i) * normal_left.get(j) +
                6 * ymomentum_left / sqrt(mass_left) * normal_left.get(1) *
-                   (normal_left.get(i) * u1_1[j] +
-                    normal_left.get(j) * u1_1[i]) +
-               2 * u2[i] * u2[j] +
+                   (normal_left.get(i) * u1_1.at(j) +
+                    normal_left.get(j) * u1_1.at(i)) +
+               2 * u2.at(i) * u2.at(j) +
                (3 * mass_left * mass_right / (2 * separation) *
                     square(normal_left.get(0)) -
                 5 * mass_left * mass_right / (2 * separation)) *
                    normal_left.get(i) * normal_left.get(j) -
                6 * sqrt(mass_left * mass_right / (2 * separation)) *
                    normal_left.get(0) *
-                   (normal_left.get(i) * u2[j] + normal_left.get(j) * u2[i])) -
+                   (normal_left.get(i) * u2.at(j) +
+                    normal_left.get(j) * u2.at(i))) -
           0.25 / distance_right *
-              (2 * u1_2[i] * u1_2[j] +
+              (2 * u1_2.at(i) * u1_2.at(j) +
                (3 * square(ymomentum_right * normal_right.get(1)) / mass_right -
                 5 * square(ymomentum_right) / mass_right) *
                    normal_right.get(i) * normal_right.get(j) +
                6 * ymomentum_right / sqrt(mass_right) * normal_right.get(1) *
-                   (normal_right.get(i) * u1_2[j] +
-                    normal_right.get(j) * u1_2[i]) +
-               2 * u2[i] * u2[j] +
+                   (normal_right.get(i) * u1_2.at(j) +
+                    normal_right.get(j) * u1_2.at(i)) +
+               2 * u2.at(i) * u2.at(j) +
                (3 * mass_left * mass_right / (2 * separation) *
                     square(normal_right.get(0)) -
                 5 * mass_left * mass_right / (2 * separation)) *
                    normal_right.get(i) * normal_right.get(j) -
                6 * sqrt(mass_left * mass_right / (2 * separation)) *
                    normal_right.get(0) *
-                   (normal_right.get(i) * u2[j] + normal_right.get(j) * u2[i]));
+                   (normal_right.get(i) * u2.at(j) +
+                    normal_right.get(j) * u2.at(i)));
     }
     present_term->get(i, i) +=
         -0.25 / distance_left *
@@ -339,7 +343,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
 template <typename DataType>
 void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> past_term,
-    const gsl::not_null<Cache*> cache,
+    const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::PastTerm<DataType> /*meta*/) const {
   get<0, 0>(*past_term) = 0.;
   get<0, 1>(*past_term) = 0.;
@@ -352,7 +356,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
 template <typename DataType>
 void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> integral_term,
-    const gsl::not_null<Cache*> cache,
+    const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::IntegralTerm<DataType> /*meta*/) const {
   get<0, 0>(*integral_term) = 0.;
   get<0, 1>(*integral_term) = 0.;
@@ -394,15 +398,16 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       pn_conjugate_momentum3->get(i, j) = 0.;
       for (size_t k = 0; k < 3; ++k) {
         pn_conjugate_momentum3->get(i, j) +=
-            momentum_left[k] *
-                (2 * (delta[i][k] * deriv_one_over_distance_left.get(j) +
-                      delta[j][k] * deriv_one_over_distance_left.get(i)) -
-                 delta[i][j] * deriv_one_over_distance_left.get(k) -
+            gsl::at(momentum_left, k) *
+                (2 * (delta.at(i).at(k) * deriv_one_over_distance_left.get(j) +
+                      delta.at(j).at(k) * deriv_one_over_distance_left.get(i)) -
+                 delta.at(i).at(j) * deriv_one_over_distance_left.get(k) -
                  0.5 * deriv_3_distance_left.get(i, j, k)) +
-            momentum_right[k] *
-                (2 * (delta[i][k] * deriv_one_over_distance_right.get(j) +
-                      delta[j][k] * deriv_one_over_distance_right.get(i)) -
-                 delta[i][j] * deriv_one_over_distance_right.get(k) -
+            gsl::at(momentum_right, k) *
+                (2 * (delta.at(i).at(k) * deriv_one_over_distance_right.get(j) +
+                      delta.at(j).at(k) *
+                          deriv_one_over_distance_right.get(i)) -
+                 delta.at(i).at(j) * deriv_one_over_distance_right.get(k) -
                  0.5 * deriv_3_distance_right.get(i, j, k));
       }
     }
