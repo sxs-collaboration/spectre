@@ -156,12 +156,12 @@ SPECTRE_TEST_CASE(
         Elasticity::ConstitutiveRelations::ConstitutiveRelation<2>>>
         constitutive_relations{};
     constitutive_relations.push_back(constitutive_relation.get_clone());
-    const Element<2> element{ElementId<2>{0}, {}};
+    const ElementId<2> element_id{0};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, mesh, coord_map,
         std::numeric_limits<double>::epsilon() * 100.,
-        std::make_tuple(std::move(constitutive_relations), element,
-                        inertial_coords));
+        std::make_tuple(std::move(constitutive_relations), inertial_coords,
+                        element_id));
   };
 
   {

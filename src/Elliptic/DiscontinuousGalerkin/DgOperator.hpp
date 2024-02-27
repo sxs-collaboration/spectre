@@ -76,7 +76,9 @@
  * couples grid points across nearest-neighbor elements through the fluxes:
  *
  * \f{align}
+ * \label{eq:internal_penalty_auxiliary}
  * u^* &= \frac{1}{2} \left(u^\mathrm{int} + u^\mathrm{ext}\right) \\
+ * \label{eq:internal_penalty_primal}
  * (n_i F^i)^* &= \frac{1}{2} n_i \left(
  * F^i_\mathrm{int} + F^i_\mathrm{ext} \right)
  * - \sigma n_i F^i(n_j (u^\mathrm{int} - u^\mathrm{ext}))
@@ -131,6 +133,14 @@
  * \f$N_\mathrm{points} - 1\f$ because we found unstable configurations on
  * curved meshes when using the polynomial degree. Optimizing the penalty on
  * curved meshes is subject to further investigation.
+ *
+ * \par Discontinuous fluxes:
+ * The DG operator also supports systems with potentially discontinuous fluxes,
+ * such as elasticity with layered materials. The way to handle the
+ * discontinuous fluxes in the DG scheme is described in \cite Vu2023thn.
+ * Essentially, we evaluate the penalty term in
+ * Eq. $\ref{eq:internal_penalty_primal}$ on both sides of an element boundary
+ * and take the average. The other terms in the numerical flux remain unchanged.
  */
 namespace elliptic::dg {
 
@@ -275,7 +285,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                  << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
-    const bool local_data_is_zero = data_is_zero(element.id());
+    const auto& element_id = element.id();
+    const bool local_data_is_zero = data_is_zero(element_id);
     ASSERT(Linearized or not local_data_is_zero,
            "Only a linear operator can take advantage of the knowledge that "
            "the operand is zero. Don't return 'true' in 'data_is_zero' unless "
@@ -300,12 +311,21 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       // Compute the fluxes
       primal_fluxes->initialize(num_points);
       std::apply(
-          [&primal_fluxes, &primal_vars,
-           &deriv_vars](const auto&... expanded_fluxes_args) {
-            FluxesComputer::apply(
-                make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
-                expanded_fluxes_args..., get<PrimalVars>(primal_vars)...,
-                get<DerivTags>(*deriv_vars)...);
+          [&primal_fluxes, &primal_vars, &deriv_vars,
+           &element_id](const auto&... expanded_fluxes_args) {
+            if constexpr (FluxesComputer::is_discontinuous) {
+              FluxesComputer::apply(
+                  make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
+                  expanded_fluxes_args..., element_id,
+                  get<PrimalVars>(primal_vars)...,
+                  get<DerivTags>(*deriv_vars)...);
+            } else {
+              (void)element_id;
+              FluxesComputer::apply(
+                  make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
+                  expanded_fluxes_args..., get<PrimalVars>(primal_vars)...,
+                  get<DerivTags>(*deriv_vars)...);
+            }
           },
           fluxes_args);
     }
@@ -565,7 +585,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                  << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
-    const bool local_data_is_zero = data_is_zero(element.id());
+    const auto& element_id = element.id();
+    const bool local_data_is_zero = data_is_zero(element_id);
     ASSERT(Linearized or not local_data_is_zero,
            "Only a linear operator can take advantage of the knowledge that "
            "the operand is zero. Don't return 'true' in 'data_is_zero' unless "
@@ -698,12 +719,22 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           face_num_points};
       std::apply(
           [&auxiliary_boundary_corrections, &face_normal, &face_normal_vector,
-           &avg_vars_on_face](const auto&... expanded_fluxes_args_on_face) {
-            FluxesComputer::apply(
-                make_not_null(
-                    &get<PrimalFluxesVars>(auxiliary_boundary_corrections))...,
-                expanded_fluxes_args_on_face..., face_normal,
-                face_normal_vector, get<PrimalMortarVars>(avg_vars_on_face)...);
+           &avg_vars_on_face,
+           &element_id](const auto&... expanded_fluxes_args_on_face) {
+            if constexpr (FluxesComputer::is_discontinuous) {
+              FluxesComputer::apply(make_not_null(&get<PrimalFluxesVars>(
+                                        auxiliary_boundary_corrections))...,
+                                    expanded_fluxes_args_on_face..., element_id,
+                                    face_normal, face_normal_vector,
+                                    get<PrimalMortarVars>(avg_vars_on_face)...);
+            } else {
+              (void)element_id;
+              FluxesComputer::apply(make_not_null(&get<PrimalFluxesVars>(
+                                        auxiliary_boundary_corrections))...,
+                                    expanded_fluxes_args_on_face...,
+                                    face_normal, face_normal_vector,
+                                    get<PrimalMortarVars>(avg_vars_on_face)...);
+            }
           },
           fluxes_args_on_face);
 
@@ -782,17 +813,52 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // We reuse the memory buffer from above for the result.
         std::apply(
             [&auxiliary_boundary_corrections, &face_normal, &face_normal_vector,
-             &primal_boundary_corrections_on_face](
-                const auto&... expanded_fluxes_args_on_face) {
-              FluxesComputer::apply(
-                  make_not_null(&get<PrimalFluxesVars>(
-                      auxiliary_boundary_corrections))...,
-                  expanded_fluxes_args_on_face..., face_normal,
-                  face_normal_vector,
-                  get<PrimalMortarVars>(
-                      primal_boundary_corrections_on_face)...);
+             &primal_boundary_corrections_on_face,
+             &element_id](const auto&... expanded_fluxes_args_on_face) {
+              if constexpr (FluxesComputer::is_discontinuous) {
+                FluxesComputer::apply(
+                    make_not_null(&get<PrimalFluxesVars>(
+                        auxiliary_boundary_corrections))...,
+                    expanded_fluxes_args_on_face..., element_id, face_normal,
+                    face_normal_vector,
+                    get<PrimalMortarVars>(
+                        primal_boundary_corrections_on_face)...);
+              } else {
+                (void)element_id;
+                FluxesComputer::apply(
+                    make_not_null(&get<PrimalFluxesVars>(
+                        auxiliary_boundary_corrections))...,
+                    expanded_fluxes_args_on_face..., face_normal,
+                    face_normal_vector,
+                    get<PrimalMortarVars>(
+                        primal_boundary_corrections_on_face)...);
+              }
             },
             fluxes_args_on_face);
+        if constexpr (FluxesComputer::is_discontinuous) {
+          if (is_internal) {
+            // For penalty term with discontinuous fluxes: evaluate the fluxes
+            // on the other side of the boundary as well and take average
+            Variables<tmpl::list<PrimalFluxesVars...>> fluxes_other_side{
+                face_num_points};
+            std::apply(
+                [&fluxes_other_side, &face_normal, &face_normal_vector,
+                 &primal_boundary_corrections_on_face,
+                 &local_neighbor_id =
+                     neighbor_id](const auto&... expanded_fluxes_args_on_face) {
+                  FluxesComputer::apply(
+                      make_not_null(
+                          &get<PrimalFluxesVars>(fluxes_other_side))...,
+                      expanded_fluxes_args_on_face..., local_neighbor_id,
+                      face_normal, face_normal_vector,
+                      get<PrimalMortarVars>(
+                          primal_boundary_corrections_on_face)...);
+                },
+                fluxes_args_on_face);
+            auxiliary_boundary_corrections += fluxes_other_side;
+            auxiliary_boundary_corrections *= 0.5;
+          }
+        }
         EXPAND_PACK_LEFT_TO_RIGHT(normal_dot_flux(
             make_not_null(
                 &get<PrimalMortarVars>(primal_boundary_corrections_on_face)),

@@ -96,8 +96,10 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *
  *   1. The `primal_fluxes` as not-null pointer
  *   2. The `argument_tags`
- *   3. The `primal_fields`
- *   4. The partial derivatives of the `primal_fields`
+ *   3. If `is_discontinuous` is `true` (see below):
+ *      const ElementId<Dim>& element_id
+ *   4. The `primal_fields`
+ *   5. The partial derivatives of the `primal_fields`
  *
  *   The function can assume the output buffers are already correctly sized,
  *   but no guarantee is made on the values that the buffers hold at input.
@@ -113,9 +115,11 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *
  *   1. The `primal_fluxes` as not-null pointer
  *   2. The `argument_tags`
- *   3. The `const tnsr::i<DataVector, Dim>& face_normal` ($n_i$)
- *   4. The `const tnsr::I<DataVector, Dim>& face_normal_vector` ($n^i$)
- *   5. The `primal_fields`
+ *   3. If `is_discontinuous` is `true` (see below):
+ *      const ElementId<Dim>& element_id
+ *   4. The `const tnsr::i<DataVector, Dim>& face_normal` ($n_i$)
+ *   5. The `const tnsr::I<DataVector, Dim>& face_normal_vector` ($n^i$)
+ *   6. The `primal_fields`
  *
  *   The `fluxes_computer` class must also have the following additional
  *   type aliases and static member variables:
@@ -129,6 +133,13 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   - `bool is_trivial`: a boolean indicating whether the fluxes are simply
  *     the spatial metric, as is the case for the Poisson equation. Some
  *     computations can be skipped in this case.
+ *   - `bool is_discontinuous`: a boolean indicating whether the fluxes are
+ *     potentially discontinuous across element boundaries. This is `true` for
+ *     systems where the equations on both sides of the boundary are different,
+ *     e.g. elasticity with different materials on either side of the boundary.
+ *     An additional `element_id` argument is passed to the `apply` functions in
+ *     this case, which identifies on which side of an element boundary the
+ *     fluxes are being evaluated.
  *
  * - `sources_computer`: A class that defines the sources \f$S_\alpha\f$. Must
  *   have an `argument_tags` type alias and an `apply` function that adds the

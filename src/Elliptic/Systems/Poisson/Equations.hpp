@@ -80,6 +80,7 @@ struct Fluxes<Dim, Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const Scalar<DataVector>& field,
                     const tnsr::i<DataVector, Dim>& field_gradient);
@@ -102,6 +103,7 @@ struct Fluxes<Dim, Geometry::Curved> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
                     const Scalar<DataVector>& field,

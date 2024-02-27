@@ -67,12 +67,12 @@ void test_solution() {
   constitutive_relations.push_back(std::move(constitutive_relation));
   const Mesh<Dim> mesh{12, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
-  const Element<Dim> element{ElementId<Dim>{0}, {}};
+  const ElementId<Dim> element_id{0};
   const auto coord_map = make_coord_map<Dim>();
   FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
       solution, mesh, coord_map, 1.e-14,
-      std::make_tuple(std::move(constitutive_relations), element,
-                      coord_map(logical_coordinates(mesh))));
+      std::make_tuple(std::move(constitutive_relations),
+                      coord_map(logical_coordinates(mesh)), element_id));
 }
 
 }  // namespace

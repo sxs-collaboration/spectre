@@ -46,6 +46,7 @@ struct Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       const Scalar<DataVector>& conformal_factor_minus_one,
@@ -64,6 +65,7 @@ struct Fluxes<Equations::Hamiltonian, Geometry::Curved> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
@@ -83,6 +85,7 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       gsl::not_null<tnsr::I<DataVector, 3>*>
@@ -108,6 +111,7 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = true;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       gsl::not_null<tnsr::I<DataVector, 3>*>
@@ -134,6 +138,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = false;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       gsl::not_null<tnsr::I<DataVector, 3>*>
@@ -166,6 +171,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved> {
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
   static constexpr bool is_trivial = false;
+  static constexpr bool is_discontinuous = false;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       gsl::not_null<tnsr::I<DataVector, 3>*>
