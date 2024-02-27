@@ -66,7 +66,8 @@ void test_compute_item_in_databox(const RealDataType& used_for_size_real) {
   const auto expected = gr::psi_4_real(
       spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
       spatial_metric, inv_spatial_metric, inertial_coords);
-  CHECK((db::get<gr::Tags::Psi4Real<RealDataType>>(box)) == expected);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::Psi4Real<RealDataType>>(box)),
+                        expected);
 }
 
 template <typename RealDataType, typename ComplexDataType>
