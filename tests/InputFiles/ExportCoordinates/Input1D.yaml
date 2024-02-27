@@ -21,9 +21,11 @@ Amr:
           Split: 2
           Join: 1
           DoNothing: 1
-        MaximumRefinementLevel: 4
   Policies:
     Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: [0, 4]
+      NumGridPoints: Auto
   Verbosity: Verbose
 
 ResourceInfo:

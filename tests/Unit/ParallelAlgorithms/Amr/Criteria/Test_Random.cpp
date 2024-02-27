@@ -124,8 +124,7 @@ void test() {
           "Random:\n"
           "  ProbabilityWeights:\n"
           "    Split: 4\n"
-          "    DoNothing: 1\n"
-          "  MaximumRefinementLevel: 5\n");
+          "    DoNothing: 1\n");
   test_criterion<VolumeDim>(*criterion);
   test_criterion<VolumeDim>(*serialize_and_deserialize(criterion));
 }

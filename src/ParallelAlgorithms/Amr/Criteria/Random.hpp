@@ -46,26 +46,14 @@ class Random : public Criterion {
         "in each dimension separately."};
   };
 
-  /// The maximum allowed refinement level.
-  /// Can be deleted once the max refinement level is enforced globally as an
-  /// AMR policy.
-  struct MaximumRefinementLevel {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "The maximum allowed refinement level."};
-    static size_t upper_bound() { return ElementId<3>::max_refinement_level; }
-  };
-
-  using options = tmpl::list<ProbabilityWeights, MaximumRefinementLevel>;
+  using options = tmpl::list<ProbabilityWeights>;
 
   static constexpr Options::String help = {
       "Randomly refine (or coarsen) the grid"};
 
   Random() = default;
 
-  explicit Random(
-      std::unordered_map<amr::Flag, size_t> probability_weights,
-      size_t maximum_refinement_level = std::numeric_limits<size_t>::max());
+  explicit Random(std::unordered_map<amr::Flag, size_t> probability_weights);
 
   /// \cond
   explicit Random(CkMigrateMessage* msg);
@@ -85,21 +73,14 @@ class Random : public Criterion {
 
  private:
   std::unordered_map<amr::Flag, size_t> probability_weights_{};
-  size_t maximum_refinement_level_ = std::numeric_limits<size_t>::max();
 };
 
 template <size_t Dim, typename Metavariables>
 auto Random::operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                        const ElementId<Dim>& element_id) const {
+                        const ElementId<Dim>& /*element_id*/) const {
   auto result = make_array<Dim>(amr::Flag::Undefined);
   for (size_t d = 0; d < Dim; ++d) {
     result[d] = detail::random_flag(probability_weights_);
-    // Enforce max refinement level. Can be deleted once it's enforced globally.
-    if (result[d] == amr::Flag::Split and
-        element_id.segment_ids()[d].refinement_level() >=
-            maximum_refinement_level_) {
-      result[d] = amr::Flag::DoNothing;
-    }
   }
   return result;
 }

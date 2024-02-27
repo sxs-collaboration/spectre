@@ -12,10 +12,8 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace amr::Criteria {
-Random::Random(std::unordered_map<amr::Flag, size_t> probability_weights,
-               const size_t maximum_refinement_level)
-    : probability_weights_(std::move(probability_weights)),
-      maximum_refinement_level_(maximum_refinement_level) {}
+Random::Random(std::unordered_map<amr::Flag, size_t> probability_weights)
+    : probability_weights_(std::move(probability_weights)) {}
 
 Random::Random(CkMigrateMessage* msg) : Criterion(msg) {}
 
@@ -23,7 +21,6 @@ Random::Random(CkMigrateMessage* msg) : Criterion(msg) {}
 void Random::pup(PUP::er& p) {
   Criterion::pup(p);
   p | probability_weights_;
-  p | maximum_refinement_level_;
 }
 
 namespace detail {

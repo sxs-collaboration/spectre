@@ -68,6 +68,8 @@
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
@@ -592,7 +594,8 @@ void test_subdomain_operator(
         std::make_unique<RandomBackground<Dim>>(), overlap,
         ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
         quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),
-        ::amr::Policies{::amr::Isotropy::Anisotropic}, ::Verbosity::Debug}};
+        ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}},
+        ::Verbosity::Debug}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {

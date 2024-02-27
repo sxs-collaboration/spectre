@@ -52,6 +52,8 @@
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
@@ -329,7 +331,8 @@ void test_dg_operator(
       std::move(boundary_conditions), penalty_parameter,
       use_massive_dg_operator, quadrature, ::dg::Formulation::StrongInertial,
       analytic_solution, std::move(amr_criteria),
-      ::amr::Policies{::amr::Isotropy::Anisotropic}, ::Verbosity::Debug}};
+      ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}},
+      ::Verbosity::Debug}};
 
   // DataBox shortcuts
   const auto get_tag =

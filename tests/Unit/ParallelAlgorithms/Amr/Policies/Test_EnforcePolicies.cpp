@@ -8,8 +8,13 @@
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Amr/Policies/EnforcePolicies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -17,9 +22,10 @@ namespace {
 template <size_t Dim>
 void test_decision(const std::array<amr::Flag, Dim>& original_decision,
                    const amr::Policies& amr_policies,
+                   const ElementId<Dim>& element_id, const Mesh<Dim>& mesh,
                    const std::array<amr::Flag, Dim>& expected_decision) {
   auto decision = original_decision;
-  enforce_policies(make_not_null(&decision), amr_policies);
+  enforce_policies(make_not_null(&decision), amr_policies, element_id, mesh);
   CHECK(decision == expected_decision);
 }
 
@@ -31,15 +37,31 @@ void test_1d() {
   const auto join = std::array{amr::Flag::Join};
   const auto all_flags = std::vector{split, increase, stay, decrease, join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
   const auto policies = std::array{anisotropic, isotropic};
-
+  const ElementId<1> element_id{0, {{{1, 0}}}};
+  const Mesh<1> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
   for (const auto flags : all_flags) {
     for (const auto policy : policies) {
-      test_decision(flags, policy, flags);
+      test_decision(flags, policy, element_id, mesh, flags);
     }
   }
+
+  amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{0, 5, 1, 12}};
+  test_decision(join, policy, ElementId<1>{0}, mesh, stay);
+  test_decision(split, policy, ElementId<1>{0, {{{5, 2}}}}, mesh, stay);
+  test_decision(
+      decrease, policy, element_id,
+      Mesh<1>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, stay);
+  test_decision(
+      decrease, policy, element_id,
+      Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      stay);
+  test_decision(
+      increase, policy, element_id,
+      Mesh<1>{12, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+      stay);
 }
 
 void test_2d() {
@@ -94,32 +116,35 @@ void test_2d() {
       split_join,        increase_join,  stay_join,         decrease_join,
       join_join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
+
+  const ElementId<2> element_id{0, {{{1, 0}, {1, 0}}}};
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
 
   for (const auto flags : all_flags) {
-    test_decision(flags, anisotropic, flags);
+    test_decision(flags, anisotropic, element_id, mesh, flags);
   }
 
   for (const auto flags : std::vector{
            split_split, increase_split, stay_split, decrease_split, join_split,
            split_increase, split_stay, split_decrease, split_join}) {
-    test_decision(flags, isotropic, split_split);
+    test_decision(flags, isotropic, element_id, mesh, split_split);
   }
   for (const auto flags : std::vector{
            increase_increase, stay_increase, decrease_increase, join_increase,
            increase_stay, increase_decrease, increase_join}) {
-    test_decision(flags, isotropic, increase_increase);
+    test_decision(flags, isotropic, element_id, mesh, increase_increase);
   }
   for (const auto flags : std::vector{stay_stay, stay_decrease, stay_join,
                                       decrease_stay, join_stay}) {
-    test_decision(flags, isotropic, stay_stay);
+    test_decision(flags, isotropic, element_id, mesh, stay_stay);
   }
   for (const auto flags :
        std::vector{decrease_decrease, decrease_join, join_decrease}) {
-    test_decision(flags, isotropic, decrease_decrease);
+    test_decision(flags, isotropic, element_id, mesh, decrease_decrease);
   }
-  test_decision(join_join, isotropic, join_join);
+  test_decision(join_join, isotropic, element_id, mesh, join_join);
 }
 
 void test_3d() {
@@ -127,10 +152,14 @@ void test_3d() {
       std::array{amr::Flag::DoNothing, amr::Flag::Split, amr::Flag::Split};
   const auto split_split_split =
       std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split};
-  amr::Policies isotropic{amr::Isotropy::Isotropic};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic};
-  test_decision(stay_split_split, anisotropic, stay_split_split);
-  test_decision(stay_split_split, isotropic, split_split_split);
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
+  const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
+  const Mesh<3> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+  test_decision(stay_split_split, anisotropic, element_id, mesh,
+                stay_split_split);
+  test_decision(stay_split_split, isotropic, element_id, mesh,
+                split_split_split);
 }
 }  // namespace
 

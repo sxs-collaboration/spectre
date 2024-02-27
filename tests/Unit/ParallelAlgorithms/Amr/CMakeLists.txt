@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Criteria/Test_TruncationError.cpp
   Policies/Test_EnforcePolicies.cpp
   Policies/Test_Isotropy.cpp
+  Policies/Test_Limits.cpp
   Policies/Test_Policies.cpp
   Projectors/Test_CopyFromCreatorOrLeaveAsIs.cpp
   Projectors/Test_DefaultInitialize.cpp
