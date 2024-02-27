@@ -94,7 +94,7 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
     {
       INFO("Element without puncture");
       const ElementId<3> element_id{0, {{{1, 1}, {1, 0}, {1, 0}}}};
-      const auto expected_flags = make_array<3>(amr::Flag::IncreaseResolution);
+      const auto expected_flags = make_array<3>(amr::Flag::DoNothing);
       auto flags = criterion.evaluate(box, empty_cache, element_id);
       CHECK(flags == expected_flags);
     }

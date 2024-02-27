@@ -23,8 +23,7 @@
 namespace Punctures::AmrCriteria {
 
 /*!
- * \brief h-refine (split) elements containing a puncture, and p-refine
- * everywhere else.
+ * \brief h-refine (split) elements containing a puncture
  *
  * This refinement scheme is expected to yield exponential convergence, despite
  * the presence of the C^2 punctures.
@@ -34,8 +33,7 @@ class RefineAtPunctures : public amr::Criterion {
   using options = tmpl::list<>;
 
   static constexpr Options::String help = {
-      "h-refine (split) elements containing a puncture, and p-refine "
-      "everywhere else."};
+      "h-refine (split) elements containing a puncture."};
 
   RefineAtPunctures() = default;
 
