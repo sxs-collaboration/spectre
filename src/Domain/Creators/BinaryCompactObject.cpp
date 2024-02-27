@@ -441,7 +441,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
       radial_distribution_envelope_ ==
               domain::CoordinateMaps::Distribution::Projective
           ? std::optional<double>(length_inner_cube_ / length_outer_cube_)
-          : std::nullopt,
+          : std::optional<double>(-(length_outer_cube_ + length_inner_cube_) /
+                                  (length_outer_cube_ - length_inner_cube_)),
       1.0, opening_angle_));
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));

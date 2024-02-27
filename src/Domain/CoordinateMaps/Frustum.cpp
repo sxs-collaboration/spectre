@@ -130,6 +130,10 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
     w_plus_ = w_delta + 1.0;
     w_minus_ = w_delta - 1.0;
   } else {
+    if (zeta_distribution_ == Distribution::Logarithmic) {
+      zeta_distribution_value_ = distribution_value.value_or(
+          -(radius_ + inner_radius_) / (radius_ - inner_radius_));
+    }
     w_plus_ = 2.0;
     w_minus_ = 0.0;
   }
@@ -150,12 +154,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
     cap_zeta = zeta;
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
     Interval log_mapping{
-        -1.0,
-        1.0,
-        -1.0,
-        1.0,
-        zeta_distribution_,
-        -(radius_ + inner_radius_) / (radius_ - inner_radius_)};
+        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
     cap_zeta = log_mapping(std::array<T, 1>{{zeta}})[0];
   } else {
     ERROR(
@@ -238,12 +237,7 @@ std::optional<std::array<double, 3>> Frustum::inverse(
                         (w_plus_ - w_minus_ * logical_coords[2]);
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
     Interval log_mapping{
-        -1.0,
-        1.0,
-        -1.0,
-        1.0,
-        zeta_distribution_,
-        -(radius_ + inner_radius_) / (radius_ - inner_radius_)};
+        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
     logical_coords[2] =
         log_mapping.inverse(std::array<double, 1>{{logical_coords[2]}})
             .value()[0];
@@ -345,12 +339,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
     cap_zeta_deriv = make_with_value<ReturnType>(zeta, 1.0);
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
     Interval log_mapping{
-        -1.0,
-        1.0,
-        -1.0,
-        1.0,
-        zeta_distribution_,
-        -(radius_ + inner_radius_) / (radius_ - inner_radius_)};
+        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
     cap_zeta = log_mapping(std::array<T, 1>{{zeta}})[0];
     cap_zeta_deriv = get<0, 0>(log_mapping.jacobian(std::array<T, 1>{{zeta}}));
   } else {
@@ -538,7 +527,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
 }
 
 void Frustum::pup(PUP::er& p) {
-  size_t version = 2;
+  size_t version = 3;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -589,6 +578,14 @@ void Frustum::pup(PUP::er& p) {
     // data from an old version.
     inner_radius_ = std::numeric_limits<double>::signaling_NaN();
   }
+  if (version >= 3) {
+    p | zeta_distribution_value_;
+  } else {
+    if (zeta_distribution_ == CoordinateMaps::Distribution::Logarithmic) {
+      zeta_distribution_value_ =
+          -(radius_ + inner_radius_) / (radius_ - inner_radius_);
+    }
+  }
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) {
@@ -618,7 +615,12 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
          lhs.sphericity_ == rhs.sphericity_ and lhs.phi_ == rhs.phi_ and
          lhs.half_opening_angle_ == rhs.half_opening_angle_ and
          lhs.one_over_tan_half_opening_angle_ ==
-             rhs.one_over_tan_half_opening_angle_;
+             rhs.one_over_tan_half_opening_angle_ and
+         std::isnan(lhs.zeta_distribution_value_) ==
+             std::isnan(rhs.zeta_distribution_value_) and
+         ((std::isnan(lhs.zeta_distribution_value_) and
+           std::isnan(rhs.zeta_distribution_value_)) or
+          lhs.zeta_distribution_value_ == rhs.zeta_distribution_value_);
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) {
