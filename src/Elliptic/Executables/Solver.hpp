@@ -213,8 +213,6 @@ struct Solver {
                        typename system::primal_fluxes>,
           elliptic::analytic_data::AnalyticSolution>,
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
-      elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
-          system, background_tag, typename schwarz_smoother::options_group>,
       tmpl::conditional_t<
           is_linear, tmpl::list<>,
           ::Initialization::Actions::AddComputeTags<tmpl::list<
@@ -251,6 +249,14 @@ struct Solver {
   using smooth_actions = typename schwarz_smoother::template solve<
       typename dg_operator<true>::apply_actions, Label>;
 
+  // These tags are communicated on subdomain overlaps to initialize the
+  // subdomain geometry. AMR updates these tags, so we have to communicate them
+  // after each AMR step.
+  using subdomain_init_tags =
+      tmpl::list<domain::Tags::Mesh<volume_dim>,
+                 domain::Tags::Element<volume_dim>,
+                 domain::Tags::NeighborMesh<volume_dim>>;
+
   /// This data needs to be communicated on subdomain overlap regions
   using communicated_overlap_tags = tmpl::flatten<tmpl::list<
       // For linearized sources
@@ -260,6 +266,11 @@ struct Solver {
       domain::make_faces_tags<
           volume_dim, db::wrap_tags_in<::Tags::NormalDotFlux,
                                        typename system::primal_fields>>>>;
+
+  using init_subdomain_action =
+      elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
+          system, background_tag, typename schwarz_smoother::options_group,
+          false>;
 
   template <typename StepActions>
   using linear_solve_actions = typename linear_solver::template solve<
@@ -289,10 +300,12 @@ struct Solver {
           // Communicate data on subdomain overlap regions
           LinearSolver::Schwarz::Actions::SendOverlapFields<
               communicated_overlap_tags,
-              typename schwarz_smoother::options_group, false>,
+              typename schwarz_smoother::options_group, false,
+              nonlinear_solver_iteration_id>,
           LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
               volume_dim, communicated_overlap_tags,
-              typename schwarz_smoother::options_group>,
+              typename schwarz_smoother::options_group, false,
+              nonlinear_solver_iteration_id>,
           // Reset Schwarz subdomain solver
           LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
               typename schwarz_smoother::options_group>,
@@ -301,22 +314,33 @@ struct Solver {
       StepActions>;
 
   template <typename StepActions>
-  using solve_actions = tmpl::conditional_t<
-      is_linear,
-      // Linear solve
-      tmpl::list<
-          // Apply the DG operator to the initial guess
-          typename elliptic::dg::Actions::DgOperator<
-              system, true, linear_solver_iteration_id, fields_tag,
-              fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
-              fluxes_vars_tag>::apply_actions,
-          // Modify fixed sources with boundary conditions
-          elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
-              system, fixed_sources_tag>,
-          // Krylov solve
-          linear_solve_actions<StepActions>>,
-      // Nonlinear solve
-      nonlinear_solve_actions<StepActions>>;
+  using solve_actions = tmpl::flatten<tmpl::list<
+      // Communicate subdomain geometry and initialize subdomain to account for
+      // domain changes
+      LinearSolver::Schwarz::Actions::SendOverlapFields<
+          subdomain_init_tags, typename schwarz_smoother::options_group, false>,
+      LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
+          volume_dim, subdomain_init_tags,
+          typename schwarz_smoother::options_group, false>,
+      init_subdomain_action,
+      // Linear or nonlinear solve
+      tmpl::conditional_t<
+          is_linear,
+          // Linear solve
+          tmpl::list<
+              // Apply the DG operator to the initial guess
+              typename elliptic::dg::Actions::DgOperator<
+                  system, true, linear_solver_iteration_id, fields_tag,
+                  fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
+                  fluxes_vars_tag>::apply_actions,
+              // Modify fixed sources with boundary conditions
+              elliptic::dg::Actions::
+                  ImposeInhomogeneousBoundaryConditionsOnSource<
+                      system, fixed_sources_tag>,
+              // Krylov solve
+              linear_solve_actions<StepActions>>,
+          // Nonlinear solve
+          nonlinear_solve_actions<StepActions>>>>;
 
   using component_list = tmpl::flatten<
       tmpl::list<tmpl::conditional_t<is_linear, tmpl::list<>,

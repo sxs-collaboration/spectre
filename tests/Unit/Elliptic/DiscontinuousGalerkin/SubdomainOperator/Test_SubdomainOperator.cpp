@@ -60,8 +60,18 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
@@ -373,10 +383,10 @@ struct ElementArray {
   using subdomain_operator_applied_to_fields_tag =
       SubdomainOperatorAppliedToDataTag<Dim, typename fields_tag::tags_list>;
 
-  using apply_full_dg_operator_actions =
-      typename ::elliptic::dg::Actions::DgOperator<
-          System, true, TemporalIdTag, fields_tag, fluxes_tag,
-          operator_applied_to_fields_tag>::apply_actions;
+  using dg_operator =
+      ::elliptic::dg::Actions::DgOperator<System, true, TemporalIdTag,
+                                          fields_tag, fluxes_tag,
+                                          operator_applied_to_fields_tag>;
 
   using background_tag =
       elliptic::Tags::Background<elliptic::analytic_data::Background>;
@@ -386,38 +396,70 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Dim>, background_tag>;
+
+  // These tags are communicated on subdomain overlaps to initialize the
+  // subdomain geometry. AMR updates these tags, so we have to communicate them
+  // after each AMR step.
+  using subdomain_init_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::NeighborMesh<Dim>>;
+  using init_subdomain_action =
+      ::elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
+          System, background_tag, DummyOptionsGroup, false>;
+  using init_random_subdomain_data_action =
+      InitializeRandomSubdomainData<SubdomainOperator,
+                                    typename fields_tag::tags_list>;
+
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<
-                  tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
-                             domain::Tags::InitialExtents<Dim>,
-                             SubdomainOperatorTag<SubdomainOperator>,
-                             subdomain_operator_applied_to_fields_tag,
-                             OverrideBoundaryConditionsTag>>,
-              ::elliptic::dg::Actions::InitializeDomain<Dim>,
-              ::elliptic::dg::Actions::initialize_operator<System,
-                                                           background_tag>,
-              ::elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
-                  System,
-                  tmpl::conditional_t<has_background_fields, background_tag,
-                                      void>,
-                  DummyOptionsGroup>,
-              InitializeRandomSubdomainData<SubdomainOperator,
-                                            typename fields_tag::tags_list>,
-              ExtraInitActions, Parallel::Actions::TerminatePhase>>,
+          tmpl::list<ActionTesting::InitializeDataBox<
+                         tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                                    domain::Tags::InitialExtents<Dim>,
+                                    SubdomainOperatorTag<SubdomainOperator>,
+                                    subdomain_operator_applied_to_fields_tag,
+                                    OverrideBoundaryConditionsTag>>,
+                     ::elliptic::dg::Actions::InitializeDomain<Dim>,
+                     ::elliptic::dg::Actions::initialize_operator<
+                         System, background_tag>,
+                     Initialization::Actions::InitializeItems<
+                         ::amr::Initialization::Initialize<Dim>>,
+                     ExtraInitActions, Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<apply_full_dg_operator_actions,
-                     // Break here so it's easy to apply the subdomain operator
-                     // only on a particular element
-                     Parallel::Actions::TerminatePhase,
-                     ApplySubdomainOperator<SubdomainOperator,
-                                            typename fields_tag::tags_list>,
-                     TestSubdomainOperatorMatrix<
-                         SubdomainOperator, typename fields_tag::tags_list>,
-                     Parallel::Actions::TerminatePhase>>>;
+          tmpl::list<
+              // Init subdomain
+              LinearSolver::Schwarz::Actions::SendOverlapFields<
+                  subdomain_init_tags, DummyOptionsGroup, false, TemporalIdTag>,
+              LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
+                  Dim, subdomain_init_tags, DummyOptionsGroup, false,
+                  TemporalIdTag>,
+              init_subdomain_action, init_random_subdomain_data_action,
+              Parallel::Actions::TerminatePhase,
+              // Full DG operator
+              typename dg_operator::apply_actions,
+              Parallel::Actions::TerminatePhase,
+              // Subdomain operator
+              ApplySubdomainOperator<SubdomainOperator,
+                                     typename fields_tag::tags_list>,
+              TestSubdomainOperatorMatrix<SubdomainOperator,
+                                          typename fields_tag::tags_list>,
+              Parallel::Actions::TerminatePhase>>>;
+};
+
+template <typename Metavariables>
+struct AmrComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockSingletonChare;
+  using array_index = int;
+  using component_being_mocked = ::amr::Component<Metavariables>;
+  using const_global_cache_tags =
+      tmpl::list<::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+                 logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<>>>>>;
 };
 
 template <typename System, typename SubdomainOperator,
@@ -425,17 +467,54 @@ template <typename System, typename SubdomainOperator,
 struct Metavariables {
   using element_array =
       ElementArray<Metavariables, System, SubdomainOperator, ExtraInitActions>;
-  using component_list = tmpl::list<element_array>;
+  using amr_component = AmrComponent<Metavariables>;
+  using component_list = tmpl::list<element_array, amr_component>;
   using const_global_cache_tags = tmpl::list<>;
+  static constexpr size_t volume_dim = System::volume_dim;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<
-            elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
+            elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
         tmpl::pair<elliptic::analytic_data::Background,
-                   tmpl::list<RandomBackground<System::volume_dim>>>>;
+                   tmpl::list<RandomBackground<volume_dim>>>,
+        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random>>>;
   };
+  template <typename Tag>
+  using overlaps_tag =
+      LinearSolver::Schwarz::Tags::Overlaps<Tag, volume_dim, DummyOptionsGroup>;
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using projectors = tmpl::flatten<tmpl::list<
+        ::amr::projectors::DefaultInitialize<tmpl::append<
+            tmpl::list<domain::Tags::InitialExtents<volume_dim>,
+                       domain::Tags::InitialRefinementLevels<volume_dim>,
+                       SubdomainOperatorTag<SubdomainOperator>,
+                       typename element_array::
+                           subdomain_operator_applied_to_fields_tag,
+                       typename element_array::fields_tag>,
+            // Tags communicated on subdomain overlaps. No need to project
+            // these during AMR because they will be communicated.
+            db::wrap_tags_in<overlaps_tag,
+                             typename element_array::subdomain_init_tags>,
+            // Tags initialized on subdomains. No need to project these during
+            // AMR because they will get re-initialized after communication.
+            typename element_array::init_subdomain_action::simple_tags,
+            typename element_array::init_random_subdomain_data_action::
+                simple_tags>>,
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+            OverrideBoundaryConditionsTag, TemporalIdTag,
+            // Work around a segfault because this tag isn't handled
+            // correctly by the testing framework
+            Parallel::Tags::GlobalCacheImpl<Metavariables>>,
+        elliptic::dg::ProjectGeometry<volume_dim>,
+        elliptic::dg::Actions::amr_projectors<
+            System, typename element_array::background_tag>,
+        typename element_array::dg_operator::amr_projectors, ExtraInitActions>>;
+  };
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 };
 
 // The test should work for any elliptic system. For systems with fluxes or
@@ -490,18 +569,30 @@ void test_subdomain_operator(
     const auto element_ids = ::initial_element_ids(initial_ref_levs);
     CAPTURE(element_ids.size());
 
+    // Configure AMR criteria
+    std::vector<std::unique_ptr<::amr::Criterion>> amr_criteria{};
+    amr_criteria.push_back(std::make_unique<::amr::Criteria::Random>(
+        std::unordered_map<::amr::Flag, size_t>{
+            // h-refinement is not supported yet in the action testing framework
+            {::amr::Flag::IncreaseResolution, 1},
+            {::amr::Flag::DoNothing, 1}}));
+
     ActionTesting::MockRuntimeSystem<metavariables> runner{tuples::TaggedTuple<
         domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,
         domain::Tags::ExternalBoundaryConditions<Dim>,
         elliptic::Tags::Background<elliptic::analytic_data::Background>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
+        logging::Tags::Verbosity<DummyOptionsGroup>,
         elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
-        elliptic::dg::Tags::Quadrature, elliptic::dg::Tags::Formulation>{
+        elliptic::dg::Tags::Quadrature, elliptic::dg::Tags::Formulation,
+        ::amr::Criteria::Tags::Criteria, ::amr::Tags::Policies,
+        logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
-        std::make_unique<RandomBackground<Dim>>(), overlap, penalty_parameter,
-        use_massive_dg_operator, quadrature,
-        ::dg::Formulation::StrongInertial}};
+        std::make_unique<RandomBackground<Dim>>(), overlap,
+        ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
+        quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),
+        ::amr::Policies{::amr::Isotropy::Anisotropic}, ::Verbosity::Debug}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {
@@ -517,7 +608,6 @@ void test_subdomain_operator(
                                                   element_id);
       }
     }
-    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     // DataBox shortcuts
     const auto get_tag = [&runner](const ElementId<Dim>& local_element_id,
                                    auto tag_v) -> decltype(auto) {
@@ -533,68 +623,19 @@ void test_subdomain_operator(
           make_not_null(&runner), local_element_id, value);
     };
 
-    // For selection of expensive tests
-    std::uniform_int_distribution<size_t> dist_select_subdomain_center(
-        0, element_ids.size() - 1);
-    const size_t rnd_subdomain_center = dist_select_subdomain_center(gen);
-    size_t subdomain_center_id = 0;
-
-    // Take each element as the subdomain-center in turn
-    for (const auto& subdomain_center : element_ids) {
-      CAPTURE(subdomain_center);
-
-      // First, reset the data on all elements to zero
+    const auto test_subdomain_operator_equals_dg_operator = [&runner,
+                                                             &element_ids,
+                                                             &overlap,
+                                                             &rnd_overlap, &gen,
+                                                             &get_tag,
+                                                             &set_tag]() {
+      ActionTesting::set_phase(make_not_null(&runner),
+                               Parallel::Phase::Testing);
       for (const auto& element_id : element_ids) {
-        set_tag(element_id, fields_tag{},
-                typename fields_tag::type{
-                    get_tag(element_id, domain::Tags::Mesh<Dim>{})
-                        .number_of_grid_points(),
-                    0.});
+        ActionTesting::next_action_if_ready<element_array>(
+            make_not_null(&runner), element_id);
       }
-
-      // Set data on the central element and its neighbors to the subdomain data
-      const auto& subdomain_data =
-          get_tag(subdomain_center, subdomain_data_tag{});
-      const auto& all_overlap_extents =
-          get_tag(subdomain_center,
-                  LinearSolver::Schwarz::Tags::Overlaps<
-                      elliptic::dg::subdomain_operator::Tags::ExtrudingExtent,
-                      Dim, DummyOptionsGroup>{});
-      const auto& central_element =
-          get_tag(subdomain_center, domain::Tags::Element<Dim>{});
-      set_tag(subdomain_center, fields_tag{}, subdomain_data.element_data);
-      for (const auto& [overlap_id, overlap_data] :
-           subdomain_data.overlap_data) {
-        const auto& [direction, neighbor_id] = overlap_id;
-        const auto direction_from_neighbor =
-            central_element.neighbors().at(direction).orientation()(
-                direction.opposite());
-        set_tag(
-            neighbor_id, fields_tag{},
-            LinearSolver::Schwarz::extended_overlap_data(
-                overlap_data,
-                get_tag(neighbor_id, domain::Tags::Mesh<Dim>{}).extents(),
-                all_overlap_extents.at(overlap_id), direction_from_neighbor));
-      }
-
-      // Run actions to compute the full DG-operator
       for (const auto& element_id : element_ids) {
-        CAPTURE(element_id);
-        runner.template mock_distributed_objects<element_array>()
-            .at(element_id)
-            .force_next_action_to_be(0);
-        runner.template mock_distributed_objects<element_array>()
-            .at(element_id)
-            .set_terminate(false);
-        while (not ActionTesting::get_terminate<element_array>(runner,
-                                                               element_id) and
-               ActionTesting::next_action_if_ready<element_array>(
-                   make_not_null(&runner), element_id)) {
-        }
-      }
-      // Break here so all elements have sent mortar data before receiving it
-      for (const auto& element_id : element_ids) {
-        CAPTURE(element_id);
         while (not ActionTesting::get_terminate<element_array>(runner,
                                                                element_id) and
                ActionTesting::next_action_if_ready<element_array>(
@@ -602,56 +643,161 @@ void test_subdomain_operator(
         }
       }
 
-      // Invoke ApplySubdomainOperator action only on the subdomain center
-      ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                                subdomain_center);
+      // For selection of expensive tests
+      std::uniform_int_distribution<size_t> dist_select_subdomain_center(
+          0, element_ids.size() - 1);
+      const auto& rnd_subdomain_center = dist_select_subdomain_center(gen);
+      size_t subdomain_center_id = 0;
 
-      // Test that the subdomain operator and the full DG-operator computed the
-      // same result within the subdomain
-      const auto& subdomain_result =
-          get_tag(subdomain_center, subdomain_operator_applied_to_fields_tag{});
-      Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
-      CHECK_VARIABLES_CUSTOM_APPROX(
-          subdomain_result.element_data,
-          get_tag(subdomain_center, operator_applied_to_fields_tag{}),
-          custom_approx);
-      REQUIRE(subdomain_result.overlap_data.size() ==
-              subdomain_data.overlap_data.size());
-      for (const auto& [overlap_id, overlap_result] :
-           subdomain_result.overlap_data) {
-        CAPTURE(overlap_id);
-        const auto& [direction, neighbor_id] = overlap_id;
-        const auto direction_from_neighbor =
-            central_element.neighbors().at(direction).orientation()(
-                direction.opposite());
-        const auto expected_overlap_result =
-            LinearSolver::Schwarz::data_on_overlap(
-                get_tag(neighbor_id, operator_applied_to_fields_tag{}),
-                get_tag(neighbor_id, domain::Tags::Mesh<Dim>{}).extents(),
-                all_overlap_extents.at(overlap_id), direction_from_neighbor);
-        CHECK_VARIABLES_CUSTOM_APPROX(overlap_result, expected_overlap_result,
-                                      custom_approx);
-      }
+      // Take each element as the subdomain-center in turn
+      for (const auto& subdomain_center : element_ids) {
+        CAPTURE(subdomain_center);
 
-      // Now build the matrix representation of the subdomain operator
-      // explicitly, and apply it to the data to make sure the matrix is
-      // equivalent to the matrix-free operator. This is important to test
-      // because the subdomain operator includes optimizations for when it is
-      // invoked on sparse data, i.e. data that is mostly zero, which is the
-      // case when building it explicitly column-by-column.
-      if (overlap == rnd_overlap and
-          subdomain_center_id == rnd_subdomain_center) {
+        // First, reset the data on all elements to zero
+        for (const auto& element_id : element_ids) {
+          set_tag(element_id, fields_tag{},
+                  typename fields_tag::type{
+                      get_tag(element_id, domain::Tags::Mesh<Dim>{})
+                          .number_of_grid_points(),
+                      0.});
+        }
+
+        // Set data on the central element and its neighbors to the subdomain
+        // data
+        const auto& subdomain_data =
+            get_tag(subdomain_center, subdomain_data_tag{});
+        const auto& all_overlap_extents =
+            get_tag(subdomain_center,
+                    LinearSolver::Schwarz::Tags::Overlaps<
+                        elliptic::dg::subdomain_operator::Tags::ExtrudingExtent,
+                        Dim, DummyOptionsGroup>{});
+        const auto& central_element =
+            get_tag(subdomain_center, domain::Tags::Element<Dim>{});
+        set_tag(subdomain_center, fields_tag{}, subdomain_data.element_data);
+        for (const auto& [overlap_id, overlap_data] :
+             subdomain_data.overlap_data) {
+          const auto& [direction, neighbor_id] = overlap_id;
+          const auto direction_from_neighbor =
+              central_element.neighbors().at(direction).orientation()(
+                  direction.opposite());
+          set_tag(
+              neighbor_id, fields_tag{},
+              LinearSolver::Schwarz::extended_overlap_data(
+                  overlap_data,
+                  get_tag(neighbor_id, domain::Tags::Mesh<Dim>{}).extents(),
+                  all_overlap_extents.at(overlap_id), direction_from_neighbor));
+        }
+
+        // Run actions to compute the full DG-operator
+        for (const auto& element_id : element_ids) {
+          CAPTURE(element_id);
+          runner.template mock_distributed_objects<element_array>()
+              .at(element_id)
+              .force_next_action_to_be(5);
+          runner.template mock_distributed_objects<element_array>()
+              .at(element_id)
+              .set_terminate(false);
+          while (not ActionTesting::get_terminate<element_array>(runner,
+                                                                 element_id) and
+                 ActionTesting::next_action_if_ready<element_array>(
+                     make_not_null(&runner), element_id)) {
+          }
+        }
+        // Break here so all elements have sent mortar data before receiving it
+        for (const auto& element_id : element_ids) {
+          CAPTURE(element_id);
+          while (not ActionTesting::get_terminate<element_array>(runner,
+                                                                 element_id) and
+                 ActionTesting::next_action_if_ready<element_array>(
+                     make_not_null(&runner), element_id)) {
+          }
+        }
+
+        // Invoke ApplySubdomainOperator action only on the subdomain center
         ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                   subdomain_center);
+
+        // Test that the subdomain operator and the full DG-operator computed
+        // the same result within the subdomain
+        const auto& subdomain_result = get_tag(
+            subdomain_center, subdomain_operator_applied_to_fields_tag{});
+        Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+        CHECK_VARIABLES_CUSTOM_APPROX(
+            subdomain_result.element_data,
+            get_tag(subdomain_center, operator_applied_to_fields_tag{}),
+            custom_approx);
+        REQUIRE(subdomain_result.overlap_data.size() ==
+                subdomain_data.overlap_data.size());
+        for (const auto& [overlap_id, overlap_result] :
+             subdomain_result.overlap_data) {
+          CAPTURE(overlap_id);
+          const auto& [direction, neighbor_id] = overlap_id;
+          const auto direction_from_neighbor =
+              central_element.neighbors().at(direction).orientation()(
+                  direction.opposite());
+          const auto expected_overlap_result =
+              LinearSolver::Schwarz::data_on_overlap(
+                  get_tag(neighbor_id, operator_applied_to_fields_tag{}),
+                  get_tag(neighbor_id, domain::Tags::Mesh<Dim>{}).extents(),
+                  all_overlap_extents.at(overlap_id), direction_from_neighbor);
+          CHECK_VARIABLES_CUSTOM_APPROX(overlap_result, expected_overlap_result,
+                                        custom_approx);
+        }
+
+        // Now build the matrix representation of the subdomain operator
+        // explicitly, and apply it to the data to make sure the matrix is
+        // equivalent to the matrix-free operator. This is important to test
+        // because the subdomain operator includes optimizations for when it is
+        // invoked on sparse data, i.e. data that is mostly zero, which is the
+        // case when building it explicitly column-by-column.
+        if (overlap == rnd_overlap and
+            subdomain_center_id == rnd_subdomain_center) {
+          ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                    subdomain_center);
+        }
+        ++subdomain_center_id;
+      }  // loop over subdomain centers
+    };
+
+    test_subdomain_operator_equals_dg_operator();
+
+    INFO("Run AMR!");
+    const auto invoke_all_simple_actions = [&runner, &element_ids]() {
+      bool quiescence = false;
+      while (not quiescence) {
+        quiescence = true;
+        for (const auto& element_id : element_ids) {
+          while (not ActionTesting::is_simple_action_queue_empty<element_array>(
+              runner, element_id)) {
+            ActionTesting::invoke_queued_simple_action<element_array>(
+                make_not_null(&runner), element_id);
+            quiescence = false;
+          }
+        }
       }
-      ++subdomain_center_id;
-    }  // loop over subdomain centers
-  }    // loop over overlaps
+    };
+    using amr_component = typename metavariables::amr_component;
+    ActionTesting::emplace_singleton_component<amr_component>(
+        make_not_null(&runner), ActionTesting::NodeId{0},
+        ActionTesting::LocalCoreId{0});
+    auto& cache = ActionTesting::cache<amr_component>(runner, 0);
+    Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
+        Parallel::get_parallel_component<element_array>(cache));
+    invoke_all_simple_actions();
+    Parallel::simple_action<::amr::Actions::AdjustDomain>(
+        Parallel::get_parallel_component<element_array>(cache));
+    invoke_all_simple_actions();
+
+    // Test again after AMR
+    test_subdomain_operator_equals_dg_operator();
+  }  // loop over overlaps
 }
 
 // Add a constitutive relation for elasticity systems to the DataBox
 template <size_t Dim>
-struct InitializeConstitutiveRelation {
+struct InitializeConstitutiveRelation
+    : tt::ConformsTo<::amr::protocols::Projector> {
+ public:  // Iterative action
   using simple_tags = tmpl::list<Elasticity::Tags::ConstitutiveRelation<Dim>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -669,6 +815,19 @@ struct InitializeConstitutiveRelation {
             Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
                                                                           2.));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using return_tags = tmpl::list<Elasticity::Tags::ConstitutiveRelation<Dim>>;
+  using argument_tags = tmpl::list<>;
+  template <typename... AmrData>
+  static void apply(
+      const gsl::not_null<std::unique_ptr<
+          Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>*>
+          material,
+      const AmrData&... /*amr_data*/) {
+    *material = std::make_unique<
+        Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1., 2.);
   }
 };
 

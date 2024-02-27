@@ -103,6 +103,7 @@ struct InitializeGeometry {
                  domain::Tags::InitialRefinementLevels<Dim>,
                  domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime,
                  elliptic::dg::Tags::Quadrature>;
+  using volume_tags = argument_tags;
   static void apply(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
       gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_meshes,
@@ -140,6 +141,8 @@ struct ProjectGeometry : tt::ConformsTo<::amr::protocols::Projector> {
   using argument_tags =
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
+  using volume_tags =
+      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime>;
 
   // p-refinement
   static void apply(

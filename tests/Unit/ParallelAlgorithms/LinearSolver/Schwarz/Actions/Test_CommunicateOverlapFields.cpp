@@ -64,7 +64,8 @@ struct ElementArray {
               LinearSolver::Schwarz::Actions::SendOverlapFields<
                   tmpl::list<fields_tag>, DummyOptionsGroup, RestrictToOverlap>,
               LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
-                  Dim, tmpl::list<fields_tag>, DummyOptionsGroup>,
+                  Dim, tmpl::list<fields_tag>, DummyOptionsGroup,
+                  RestrictToOverlap>,
               Parallel::Actions::TerminatePhase>>>;
 };
 
