@@ -135,6 +135,8 @@ EventsAndTriggers:
           SubfileName: VolumeData
           VariablesToObserve:
             - Displacement
+            - Strain
+            - Stress
             - PotentialEnergyDensity
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double

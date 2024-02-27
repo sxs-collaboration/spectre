@@ -18,6 +18,7 @@ spectre_target_headers(
   HEADERS
   PotentialEnergy.hpp
   Strain.hpp
+  Stress.hpp
   )
 
 target_link_libraries(

@@ -58,9 +58,17 @@ struct Strain : db::SimpleTag {
 };
 
 /*!
- * \brief Minus the symmetric stress, i.e. \f$-T^{ij}\f$, describing pressure
- * within the elastic material. This tag can be used for the flux in a
- * first-order formulation of the elasticity system.
+ * \brief The symmetric stress, i.e. $T^{ij}$, describing pressure within the
+ * elastic material.
+ */
+template <size_t Dim>
+struct Stress : db::SimpleTag {
+  using type = tnsr::II<DataVector, Dim>;
+};
+
+/*!
+ * \brief Minus the `Stress`, i.e. $-T^{ij}$. This tag can be used for the flux
+ * in a first-order formulation of the elasticity system.
  */
 template <size_t Dim>
 struct MinusStress : db::SimpleTag {

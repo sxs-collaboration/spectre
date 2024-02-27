@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
+#include "PointwiseFunctions/Elasticity/Stress.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -47,11 +48,12 @@ void test_compute_tags(const DataVector& used_for_size) {
   CAPTURE(Dim);
   using strain_tag = Elasticity::Tags::Strain<Dim>;
   using energy_tag = Elasticity::Tags::PotentialEnergyDensity<Dim>;
-  using energy_compute_tag =
-      Elasticity::Tags::PotentialEnergyDensityCompute<Dim>;
   using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<Dim>;
   using coordinates_tag = domain::Tags::Coordinates<Dim, Frame::Inertial>;
-  TestHelpers::db::test_compute_tag<energy_compute_tag>(
+  TestHelpers::db::test_compute_tag<Elasticity::Tags::StressCompute<Dim>>(
+      "Stress");
+  TestHelpers::db::test_compute_tag<
+      Elasticity::Tags::PotentialEnergyDensityCompute<Dim>>(
       "PotentialEnergyDensity");
   const size_t num_points = used_for_size.size();
   {
@@ -64,7 +66,9 @@ void test_compute_tags(const DataVector& used_for_size) {
     const auto box =
         db::create<db::AddSimpleTags<strain_tag, constitutive_relation_tag,
                                      coordinates_tag>,
-                   db::AddComputeTags<energy_compute_tag>>(
+                   db::AddComputeTags<
+                       Elasticity::Tags::StressCompute<Dim>,
+                       Elasticity::Tags::PotentialEnergyDensityCompute<Dim>>>(
             tnsr::ii<DataVector, Dim>{num_points, 1.},
             std::move(constitutive_relation),
             tnsr::I<DataVector, Dim>{num_points, 2.});
