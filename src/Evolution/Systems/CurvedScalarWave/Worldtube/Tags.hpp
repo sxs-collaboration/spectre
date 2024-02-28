@@ -82,6 +82,17 @@ struct Mass {
   using group = SelfForceOptions;
 };
 
+/*!
+ * \brief Whether to apply the acceleration due to the scalar self-force to the
+ * particle
+ */
+struct ApplySelfForce {
+  using type = bool;
+  static constexpr Options::String help{
+      "Whether to apply the acceleration due to the scalar self-force to the "
+      "particle"};
+  using group = SelfForceOptions;
+};
 
 /*!
  * \brief Name of the excision sphere designated to act as a worldtube
@@ -242,6 +253,18 @@ struct Mass : db::SimpleTag {
   static double create_from_options(const double mass) { return mass; };
 };
 
+/*!
+ * \brief Whether to apply the acceleration due to the scalar self-force to the
+ * particle
+ */
+struct ApplySelfForce : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::ApplySelfForce>;
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options(const bool apply_self_force) {
+    return apply_self_force;
+  };
+};
 
 /*!
  * \brief The initial position and velocity of the scalar charge in inertial
