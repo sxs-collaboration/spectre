@@ -104,12 +104,12 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *
  *   The `fluxes_computer` must also have an `apply` function overload that is
  *   evaluated on faces of DG elements. It computes the same fluxes
- * \f$F_\alpha^i\f$, but with the field derivatives replaced by the the face
- * normal times the fields, and with the non-principal (non-derivative) terms
- * set to zero. Having this separate function is an optimization to take
- * advantage of the face normal remaining constant throughout the solve, so it
- * can be "baked in" to the flux. The function takes these arguments in this
- * order:
+ *   \f$F_\alpha^i\f$, but with the field derivatives replaced by the the face
+ *   normal times the fields, and with the non-principal (non-derivative) terms
+ *   set to zero. Having this separate function is an optimization to take
+ *   advantage of the face normal remaining constant throughout the solve, so it
+ *   can be "baked in" to the flux. The function takes these arguments in this
+ *   order:
  *
  *   1. The `primal_fluxes` as not-null pointer
  *   2. The `argument_tags`
@@ -117,10 +117,18 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   4. The `const tnsr::I<DataVector, Dim>& face_normal_vector` ($n^i$)
  *   5. The `primal_fields`
  *
- *   The `fluxes_computer` class must also have an additional `volume_tags` type
- *   alias that lists the subset of `argument_tags` that will be retrieved
- *   directly from the DataBox, instead of retrieving it from the face of an
- *   element, when fluxes are applied on a face.
+ *   The `fluxes_computer` class must also have the following additional
+ *   type aliases and static member variables:
+ *
+ *   - `volume_tags`: the subset of `argument_tags` that will be retrieved
+ *     directly from the DataBox, instead of retrieving it from the face of an
+ *     element, when fluxes are applied on a face.
+ *   - `const_global_cache_tags`: the subset of `argument_tags` that can be
+ *     retrieved from _any_ element's DataBox, because they are stored in the
+ *     global cache.
+ *   - `bool is_trivial`: a boolean indicating whether the fluxes are simply
+ *     the spatial metric, as is the case for the Poisson equation. Some
+ *     computations can be skipped in this case.
  *
  * - `sources_computer`: A class that defines the sources \f$S_\alpha\f$. Must
  *   have an `argument_tags` type alias and an `apply` function that adds the

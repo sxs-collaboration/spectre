@@ -73,6 +73,7 @@ struct Fluxes {
                                  domain::Tags::Element<Dim>>;
   using const_global_cache_tags =
       tmpl::list<Tags::ConstitutiveRelationPerBlockBase>;
+  static constexpr bool is_trivial = false;
   static void apply(
       gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
       const std::vector<

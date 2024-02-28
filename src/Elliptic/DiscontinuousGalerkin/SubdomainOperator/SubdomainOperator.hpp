@@ -148,7 +148,6 @@ struct SubdomainOperator
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
-                 domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
                  ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                  ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
   using apply_args_tags = tmpl::list<
@@ -159,6 +158,8 @@ struct SubdomainOperator
       domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
                                         Frame::Inertial>,
+      domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+      domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<
@@ -402,7 +403,7 @@ struct SubdomainOperator
               args...);
         },
         box, temporal_id, apply_boundary_condition_center, fluxes_args,
-        fluxes_args_on_faces, data_is_zero);
+        data_is_zero);
     // Prepare neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -473,16 +474,6 @@ struct SubdomainOperator
             elliptic::util::apply_at<fluxes_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id);
-        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
-        for (const auto& neighbor_direction :
-             Direction<Dim>::all_directions()) {
-          fluxes_args_on_overlap_faces.emplace(
-              neighbor_direction,
-              elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
-                                       args_tags_from_center>(
-                  get_items, box,
-                  std::forward_as_tuple(overlap_id, neighbor_direction)));
-        }
 
         elliptic::util::apply_at<prepare_args_tags_overlap,
                                  args_tags_from_center>(
@@ -494,7 +485,7 @@ struct SubdomainOperator
                   extended_operand_vars_[overlap_id], args...);
             },
             box, overlap_id, temporal_id, apply_boundary_condition_neighbor,
-            fluxes_args_on_overlap, fluxes_args_on_overlap_faces, data_is_zero);
+            fluxes_args_on_overlap, data_is_zero);
 
         // Copy this neighbor's mortar data to the other side of the mortars. On
         // the other side we either have the central element, or another element
@@ -615,7 +606,8 @@ struct SubdomainOperator
               make_not_null(&central_mortar_data_), operand.element_data,
               central_primal_fluxes_, args...);
         },
-        box, temporal_id, sources_args, data_is_zero);
+        box, temporal_id, fluxes_args_on_faces, sources_args,
+        data_is_zero);
     // Apply on neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -630,6 +622,17 @@ struct SubdomainOperator
           continue;
         }
 
+        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
+        for (const auto& neighbor_direction :
+             Direction<Dim>::all_directions()) {
+          fluxes_args_on_overlap_faces.emplace(
+              neighbor_direction,
+              elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
+                                       args_tags_from_center>(
+                  get_items, box,
+                  std::forward_as_tuple(overlap_id, neighbor_direction)));
+        }
+
         elliptic::util::apply_at<apply_args_tags_overlap,
                                  args_tags_from_center>(
             [this, &overlap_id](const auto&... args) {
@@ -639,7 +642,7 @@ struct SubdomainOperator
                   extended_operand_vars_.at(overlap_id),
                   neighbors_primal_fluxes_.at(overlap_id), args...);
             },
-            box, overlap_id, temporal_id,
+            box, overlap_id, temporal_id, fluxes_args_on_overlap_faces,
             elliptic::util::apply_at<sources_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id),
