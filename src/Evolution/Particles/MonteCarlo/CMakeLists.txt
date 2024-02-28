@@ -23,6 +23,7 @@ spectre_target_headers(
   InverseJacobianInertialToFluidCompute.hpp
   TemplatedLocalFunctions.hpp
   Packet.hpp
+  Tags.hpp
   )
 
 target_link_libraries(
@@ -38,3 +39,5 @@ target_link_libraries(
   Utilities
   PRIVATE
   )
+
+add_subdirectory(Actions)

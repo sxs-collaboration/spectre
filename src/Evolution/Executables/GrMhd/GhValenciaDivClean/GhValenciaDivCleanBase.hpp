@@ -65,6 +65,9 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/MonteCarloInitialization.hpp"
+#include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
@@ -792,6 +795,7 @@ struct GhValenciaDivCleanTemplateBase<
           evolution::dg::Initialization::Domain<3, use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
+      Initialization::Actions::MonteCarlo<2,2>,
       // This conditional is untested and probably doesn't work if
       // `use_dg_subcell` is `false`
       tmpl::conditional_t<

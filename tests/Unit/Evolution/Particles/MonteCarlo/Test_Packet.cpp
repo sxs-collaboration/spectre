@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
@@ -53,6 +54,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
 
   Particles::MonteCarlo::Packet packet(2, 1.0, 0, 0.0, -1.0, -1.0, -1.0, 1.0,
                                        1.0, 0.0, 0.0);
+
+  test_serialization(packet);
 
   packet.renormalize_momentum(inv_spatial_metric, lapse);
   CHECK(packet.momentum_upper_t == 1.0);

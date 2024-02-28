@@ -9,6 +9,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 /// Items related to the evolution of particles
 /// Items related to Monte-Carlo radiation transport
 namespace Particles::MonteCarlo {
@@ -35,25 +41,32 @@ struct Packet {
     momentum[2] = p_z_;
   }
 
+  Packet() {
+    for (size_t d = 0; d < 3; d++) {
+      coordinates[d] = 0.0;
+      momentum[d] = 0.0;
+    }
+  }
+
   /// Species of neutrinos (in the code, just an index used to access the
   /// right interaction rates; typically \f$0=\nu_e, 1=\nu_a, 2=\nu_x\f$)
-  size_t species;
+  size_t species = 0;
 
   /// Number of neutrinos represented by current packet
   /// Note that this number is rescaled so that
   /// `Energy_of_packet = N * Energy_of_neutrinos`
   /// with the packet energy in G=Msun=c=1 units but
   /// the neutrino energy in MeV!
-  double number_of_neutrinos;
+  double number_of_neutrinos = 0.0;
 
   /// Index of the closest point on the FD grid.
-  size_t index_of_closest_grid_point;
+  size_t index_of_closest_grid_point = 0;
 
   /// Current time
-  double time;
+  double time = 0.0;
 
   /// Stores \f$p^t\f$
-  double momentum_upper_t;
+  double momentum_upper_t = 0.0;
 
   /// Coordinates of the packet, in element logical coordinates
   tnsr::I<double, 3, Frame::ElementLogical> coordinates;
@@ -65,6 +78,18 @@ struct Packet {
   void renormalize_momentum(
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& lapse);
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
+
+  bool operator == (const Packet& rhs) const{
+    return
+      (number_of_neutrinos == rhs.number_of_neutrinos) &&
+      (time == rhs.time) &&
+      (momentum_upper_t == rhs.momentum_upper_t) &&
+      (coordinates == rhs.coordinates) &&
+      (momentum == rhs.momentum);
+  }
 };
 
 }  // namespace Particles::MonteCarlo
