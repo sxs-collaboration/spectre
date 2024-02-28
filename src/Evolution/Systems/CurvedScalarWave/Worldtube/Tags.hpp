@@ -64,6 +64,14 @@ struct Charge {
 };
 
 /*!
+ * \brief Options for the scalar self-force
+ */
+struct SelfForceOptions {
+  static constexpr Options::String help = {"Options for the scalar self-force"};
+  using group = Worldtube;
+};
+
+/*!
  * \brief Name of the excision sphere designated to act as a worldtube
  */
 struct ExcisionSphere {
