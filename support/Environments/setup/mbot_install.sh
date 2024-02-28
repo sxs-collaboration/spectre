@@ -6,12 +6,14 @@
 set -e
 
 if [ $# != 1 ]; then
-    echo "You must pass one argument to spectre_setup_modules, which"
+    echo "You must pass one argument to mbot_install, which"
     echo "is the directory where you want the dependencies to be built."
     exit 1
 fi
 
 PARALLEL_MAKE_ARG=64
+INSTALL_DEV_TOOLS=NO # If YES, installs Emacs, tmux
+USE_LUA=YES # Some module systems done support lua modules.
 dep_dir=`realpath $1`
 mkdir -p $dep_dir
 cd $dep_dir
@@ -119,306 +121,337 @@ fi
 # Autotools End
 ################################################################
 
-################################################################
-# pinentry begin
-################################################################
-_PINENTRY_VERSION=1.2.1
-LOCATION=$dep_dir/pinentry/${_PINENTRY_VERSION}
-if [ -d ${LOCATION} ]; then
-    echo "pinentry version ${_PINENTRY_VERSION} already installed"
-else
-    wget https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.47.tar.bz2
-    tar xf libgpg-error-1.47.tar.bz2
-    cd ./libgpg-error-1.47
-    ./configure --prefix=${LOCATION} \
-                --enable-static --disable-shared
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./libgpg-error-1.47.tar.bz2 ./libgpg-error-1.47
+if [ "${INSTALL_DEV_TOOLS}" = "YES" ]; then
+    ################################################################
+    # pinentry begin
+    ################################################################
+    _PINENTRY_VERSION=1.2.1
+    LOCATION=$dep_dir/pinentry/${_PINENTRY_VERSION}
+    if [ -d ${LOCATION} ]; then
+        echo "pinentry version ${_PINENTRY_VERSION} already installed"
+    else
+        wget https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.47.tar.bz2
+        tar xf libgpg-error-1.47.tar.bz2
+        cd ./libgpg-error-1.47
+        ./configure --prefix=${LOCATION} \
+                    --enable-static --disable-shared
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./libgpg-error-1.47.tar.bz2 ./libgpg-error-1.47
 
-    wget https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.6.tar.bz2
-    tar xf libassuan-2.5.6.tar.bz2
-    cd libassuan-2.5.6
-    ./configure --prefix=${LOCATION} --with-libgpg-error-prefix=${LOCATION} \
-                --enable-static --disable-shared
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./libassuan-2.5.6.tar.bz2 ./libassuan-2.5.6
+        wget https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.6.tar.bz2
+        tar xf libassuan-2.5.6.tar.bz2
+        cd libassuan-2.5.6
+        ./configure --prefix=${LOCATION} --with-libgpg-error-prefix=${LOCATION} \
+                    --enable-static --disable-shared
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./libassuan-2.5.6.tar.bz2 ./libassuan-2.5.6
 
-    wget https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-${_PINENTRY_VERSION}.tar.bz2
-    tar xf pinentry-${_PINENTRY_VERSION}.tar.bz2
-    cd pinentry-${_PINENTRY_VERSION}
-    ./configure --prefix=${LOCATION} \
-                --enable-pinentry-tty \
-                --enable-inside-emacs=yes \
-                --with-libgpg-error-prefix=${LOCATION} \
-                --with-libassuan-prefix=${LOCATION} \
-                --disable-pinentry-curses \
-                --disable-fallback-curses \
-                --enable-static --disable-shared
-    make -j${PARALLEL_MAKE_ARG}
-    rm ${LOCATION}/bin/*
-    make install
-    cd ../
-    rm -rf ./pinentry-${_PINENTRY_VERSION}.tar.bz2 \
-       ./pinentry-${_PINENTRY_VERSION}
-    chmod -R 555 ${LOCATION}
-fi
+        wget https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-${_PINENTRY_VERSION}.tar.bz2
+        tar xf pinentry-${_PINENTRY_VERSION}.tar.bz2
+        cd pinentry-${_PINENTRY_VERSION}
+        ./configure --prefix=${LOCATION} \
+                    --enable-pinentry-tty \
+                    --enable-inside-emacs=yes \
+                    --with-libgpg-error-prefix=${LOCATION} \
+                    --with-libassuan-prefix=${LOCATION} \
+                    --disable-pinentry-curses \
+                    --disable-fallback-curses \
+                    --enable-static --disable-shared
+        make -j${PARALLEL_MAKE_ARG}
+        rm ${LOCATION}/bin/*
+        make install
+        cd ../
+        rm -rf ./pinentry-${_PINENTRY_VERSION}.tar.bz2 \
+           ./pinentry-${_PINENTRY_VERSION}
+        chmod -R 555 ${LOCATION}
+    fi
 
-MODULE_FILE=$dep_dir/modules/global/pinentry/${_PINENTRY_VERSION}.lua
-mkdir -p `dirname ${MODULE_FILE}`
-if [ -f ${MODULE_FILE} ]; then
-    echo "Module file ${MODULE_FILE} already exists"
-else
-    cat >${MODULE_FILE} <<EOF
-help([[
-  Pinentry v${_PINENTRY_VERSION}
-]])
-whatis("Sets up your environment so you can use Pinentry (v${_PINENTRY_VERSION})")
+    MODULE_FILE=$dep_dir/modules/global/pinentry/${_PINENTRY_VERSION}
+    mkdir -p `dirname ${MODULE_FILE}`
+    if [ -f ${MODULE_FILE} ]; then
+        echo "Module file ${MODULE_FILE} already exists"
+    else
+        cat >${MODULE_FILE} <<EOF
+#%Module1.0#####################################################################
+##
+## dot modulefile
+##
+proc ModulesHelp { } {
+        global dotversion
+        global apps_path
 
-local apps_path = "${LOCATION}"
+        puts stderr "Sets up pinentry"
+}
+module-whatis "Sets up your environment so you can use Pinentry (v${_PINENTRY_VERSION})"
 
-conflict("pinentry")
+# for Tcl script use only
+set     dotversion      3.2.6
 
-prepend_path("PATH", pathJoin(apps_path, "/bin"))
+set     apps_path       ${LOCATION}
+
+conflict pinentry
+
+prepend-path PATH "\$apps_path/bin"
 EOF
-    chmod -R 555 ${MODULE_FILE}
-fi
-################################################################
-# pinentry end
-################################################################
+        chmod -R 555 ${MODULE_FILE}
+    fi
+    ################################################################
+    # pinentry end
+    ################################################################
 
-################################################################
-# tmux begin
-################################################################
-_TMUX_VERSION=3.3a
-LOCATION=$dep_dir/tmux/${_TMUX_VERSION}
-if [ -d ${LOCATION} ]; then
-    echo "tmux version ${_TMUX_VERSION} already installed"
-else
-    wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
-    tar xf libevent-2.1.12-stable.tar.gz
-    cd ./libevent-2.1.12-stable/
-    ./configure --prefix=${LOCATION} --enable-static --disable-shared --with-pic
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./libevent-2.1.12-stable/ \
-       ./libevent-2.1.12-stable.tar.gz
+    ################################################################
+    # tmux begin
+    ################################################################
+    _TMUX_VERSION=3.3a
+    LOCATION=$dep_dir/tmux/${_TMUX_VERSION}
+    if [ -d ${LOCATION} ]; then
+        echo "tmux version ${_TMUX_VERSION} already installed"
+    else
+        wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
+        tar xf libevent-2.1.12-stable.tar.gz
+        cd ./libevent-2.1.12-stable/
+        ./configure --prefix=${LOCATION} --enable-static --disable-shared --with-pic
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./libevent-2.1.12-stable/ \
+           ./libevent-2.1.12-stable.tar.gz
 
-    wget https://invisible-island.net/datafiles/release/ncurses.tar.gz
-    tar xf ncurses.tar.gz
-    cd ./ncurses-*
-    ./configure --with-termlib --without-shared --with-pic \
-                --enable-pc-files \
-                --with-pkg-config-libdir=${LOCATION}/lib/pkgconfig \
-                --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./ncurses*
+        wget https://invisible-island.net/datafiles/release/ncurses.tar.gz
+        tar xf ncurses.tar.gz
+        cd ./ncurses-*
+        ./configure --with-termlib --without-shared --with-pic \
+                    --enable-pc-files \
+                    --with-pkg-config-libdir=${LOCATION}/lib/pkgconfig \
+                    --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./ncurses*
 
-    wget https://github.com/tmux/tmux/archive/refs/tags/${_TMUX_VERSION}.tar.gz
-    tar xf ${_TMUX_VERSION}.tar.gz
-    cd ./tmux-${_TMUX_VERSION}
-    module unload autotools/${_AUTOTOOLS_VERSION}
-    ./autogen.sh
-    PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${LOCATION}/lib/pkgconfig ./configure \
-                   --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    # Remove any binaries from libevent or ncurses since we don't need them.
-    # This avoids polluting the PATH.
-    rm -f ${LOCATION}/bin/*
-    make install
-    cd ../
-    rm -rf ./${_TMUX_VERSION}.tar.gz ./tmux-${_TMUX_VERSION}
-    module load autotools/${_AUTOTOOLS_VERSION}
+        wget https://github.com/tmux/tmux/archive/refs/tags/${_TMUX_VERSION}.tar.gz
+        tar xf ${_TMUX_VERSION}.tar.gz
+        cd ./tmux-${_TMUX_VERSION}
+        module unload autotools/${_AUTOTOOLS_VERSION}
+        ./autogen.sh
+        PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:${LOCATION}/lib/pkgconfig ./configure \
+                       --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        # Remove any binaries from libevent or ncurses since we don't need them.
+        # This avoids polluting the PATH.
+        rm -f ${LOCATION}/bin/*
+        make install
+        cd ../
+        rm -rf ./${_TMUX_VERSION}.tar.gz ./tmux-${_TMUX_VERSION}
+        module load autotools/${_AUTOTOOLS_VERSION}
 
-    chmod -R 555 ${LOCATION}
-fi
+        chmod -R 555 ${LOCATION}
+    fi
 
-MODULE_FILE=$dep_dir/modules/global/tmux/${_TMUX_VERSION}.lua
-mkdir -p `dirname ${MODULE_FILE}`
-if [ -f ${MODULE_FILE} ]; then
-    echo "Module file ${MODULE_FILE} already exists"
-else
-    cat >${MODULE_FILE} <<EOF
-help([[
-  Tmux v${_TMUX_VERSION}
-]])
-whatis("Sets up your environment so you can use Tmux (v${_TMUX_VERSION})")
+    MODULE_FILE=$dep_dir/modules/global/tmux/${_TMUX_VERSION}
+    mkdir -p `dirname ${MODULE_FILE}`
+    if [ -f ${MODULE_FILE} ]; then
+        echo "Module file ${MODULE_FILE} already exists"
+    else
+        cat >${MODULE_FILE} <<EOF
+#%Module1.0#####################################################################
+##
+## dot modulefile
+##
+proc ModulesHelp { } {
+        global dotversion
+        global apps_path
 
-local apps_path = "${LOCATION}"
+        puts stderr "Sets up tmux"
+}
+module-whatis "Sets up your environment so you can use Tmux (v${_TMUX_VERSION})"
 
-conflict("tmux")
+# for Tcl script use only
+set     dotversion      3.2.6
 
-prepend_path("PATH", pathJoin(apps_path, "/bin"))
+set     apps_path       ${LOCATION}
+
+conflict tmux
+
+prepend-path PATH "\$apps_path/bin"
 EOF
-    chmod -R 555 ${MODULE_FILE}
-fi
-################################################################
-# tmux end
-################################################################
+        chmod -R 555 ${MODULE_FILE}
+    fi
+    ################################################################
+    # tmux end
+    ################################################################
 
-################################################################
-# Emacs begin
-################################################################
-_EMACS_VERSION=29.2
-LOCATION=$dep_dir/emacs/${_EMACS_VERSION}
-if [ -d ${LOCATION} ]; then
-    echo "tmux version ${_TMUX_VERSION} already installed"
-else
-    _BEFORE_CPATH=$CPATH
-    _BEFORE_LIBRARY_PATH=$LIBRARY_PATH
-    _BEFORE_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
-    export CPATH=${LOCATION}/include
-    export LIBRARY_PATH=${LOCATION}/lib/:${LOCATION}/lib64
-    export PKG_CONFIG_PATH=${LOCATION}/lib/pkgconfig:${LOCATION}/lib64/pkgconfig
+    ################################################################
+    # Emacs begin
+    ################################################################
+    _EMACS_VERSION=29.2
+    LOCATION=$dep_dir/emacs/${_EMACS_VERSION}
+    if [ -d ${LOCATION} ]; then
+        echo "tmux version ${_TMUX_VERSION} already installed"
+    else
+        _BEFORE_CPATH=$CPATH
+        _BEFORE_LIBRARY_PATH=$LIBRARY_PATH
+        _BEFORE_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+        export CPATH=${LOCATION}/include
+        export LIBRARY_PATH=${LOCATION}/lib/:${LOCATION}/lib64
+        export PKG_CONFIG_PATH=${LOCATION}/lib/pkgconfig:${LOCATION}/lib64/pkgconfig
 
-    wget https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
-    tar xf gmp-6.3.0.tar.xz
-    cd ./gmp-6.3.0
-    ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./gmp-6.3.0.tar.xz ./gmp-6.3.0
+        wget https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
+        tar xf gmp-6.3.0.tar.xz
+        cd ./gmp-6.3.0
+        ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./gmp-6.3.0.tar.xz ./gmp-6.3.0
 
-    wget https://github.com/akheron/jansson/releases/download/v2.14/jansson-2.14.tar.gz
-    tar xf jansson-2.14.tar.gz
-    cd ./jansson-2.14
-    ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./jansson-2.14.tar.gz ./jansson-2.14
+        wget https://github.com/akheron/jansson/releases/download/v2.14/jansson-2.14.tar.gz
+        tar xf jansson-2.14.tar.gz
+        cd ./jansson-2.14
+        ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./jansson-2.14.tar.gz ./jansson-2.14
 
-    wget https://sqlite.org/2024/sqlite-autoconf-3450100.tar.gz
-    tar xf sqlite-autoconf-3450100.tar.gz
-    cd ./sqlite-autoconf-3450100
-    # Build sqlite shared, but have Emacs link against the system install.
-    # The system install doesn't have the headers, just the library.
-    # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
-    ./configure --with-pic --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./sqlite-autoconf*
+        wget https://sqlite.org/2024/sqlite-autoconf-3450100.tar.gz
+        tar xf sqlite-autoconf-3450100.tar.gz
+        cd ./sqlite-autoconf-3450100
+        # Build sqlite shared, but have Emacs link against the system install.
+        # The system install doesn't have the headers, just the library.
+        # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+        ./configure --with-pic --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./sqlite-autoconf*
 
-    wget https://invisible-island.net/datafiles/release/ncurses.tar.gz
-    tar xf ncurses.tar.gz
-    cd ./ncurses-*
-    mkdir -p ${LOCATION}/lib/pkgconfig
-    ./configure --with-termlib --without-shared --with-pic --prefix=${LOCATION} \
-                --enable-pc-files --with-pkg-config-libdir=${LOCATION}/lib/pkgconfig
-    make -j${PARALLEL_MAKE_ARG}
-    make install
-    cd ../
-    rm -rf ./ncurses*
+        wget https://invisible-island.net/datafiles/release/ncurses.tar.gz
+        tar xf ncurses.tar.gz
+        cd ./ncurses-*
+        mkdir -p ${LOCATION}/lib/pkgconfig
+        ./configure --with-termlib --without-shared --with-pic --prefix=${LOCATION} \
+                    --enable-pc-files --with-pkg-config-libdir=${LOCATION}/lib/pkgconfig
+        make -j${PARALLEL_MAKE_ARG}
+        make install
+        cd ../
+        rm -rf ./ncurses*
 
-    # The below are needed (and not fully working) if GNUTLS is desired.
-    # wget https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
-    # tar xf nettle-3.9.1.tar.gz
-    # cd ./nettle-3.9.1
-    # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
-    # make -j${PARALLEL_MAKE_ARG}
-    # make install
-    # cd ../
-    # rm -rf ./nettle*
+        # The below are needed (and not fully working) if GNUTLS is desired.
+        # wget https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
+        # tar xf nettle-3.9.1.tar.gz
+        # cd ./nettle-3.9.1
+        # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+        # make -j${PARALLEL_MAKE_ARG}
+        # make install
+        # cd ../
+        # rm -rf ./nettle*
 
-    # wget https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.19.0.tar.gz
-    # tar xf libtasn1-4.19.0.tar.gz
-    # cd ./libtasn1-4.19.0
-    # ./configure --disable-shared --enable-static --disable-valgrind-tests \
-        #             --with-pic --prefix=${LOCATION}
-    # make -j${PARALLEL_MAKE_ARG}
-    # make install
-    # cd ../
-    # rm -rf ./libtasn1*
+        # wget https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.19.0.tar.gz
+        # tar xf libtasn1-4.19.0.tar.gz
+        # cd ./libtasn1-4.19.0
+        # ./configure --disable-shared --enable-static --disable-valgrind-tests \
+            #             --with-pic --prefix=${LOCATION}
+        # make -j${PARALLEL_MAKE_ARG}
+        # make install
+        # cd ../
+        # rm -rf ./libtasn1*
 
-    # wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
-    # tar xf expat-2.5.0.tar.bz2
-    # cd ./expat-2.5.0
-    # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
-    # make -j${PARALLEL_MAKE_ARG}
-    # make install
-    # cd ../
-    # rm -rf ./expat*
+        # wget https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.bz2
+        # tar xf expat-2.5.0.tar.bz2
+        # cd ./expat-2.5.0
+        # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+        # make -j${PARALLEL_MAKE_ARG}
+        # make install
+        # cd ../
+        # rm -rf ./expat*
 
-    # wget https://www.nlnetlabs.nl/downloads/unbound/unbound-1.19.0.tar.gz
-    # tar xf unbound-1.19.0.tar.gz
-    # cd ./unbound-1.19.0
-    # ./configure --disable-shared --enable-static --with-pic \
-        #             --with-libexpat=${LOCATION} --prefix=${LOCATION}
-    # make -j${PARALLEL_MAKE_ARG}
-    # make install
-    # cd ../
-    # rm -rf ./unbound*
+        # wget https://www.nlnetlabs.nl/downloads/unbound/unbound-1.19.0.tar.gz
+        # tar xf unbound-1.19.0.tar.gz
+        # cd ./unbound-1.19.0
+        # ./configure --disable-shared --enable-static --with-pic \
+            #             --with-libexpat=${LOCATION} --prefix=${LOCATION}
+        # make -j${PARALLEL_MAKE_ARG}
+        # make install
+        # cd ../
+        # rm -rf ./unbound*
 
-    # wget https://github.com/libffi/libffi/archive/refs/tags/v3.4.4.tar.gz
-    # tar xf v3.4.4.tar.gz
-    # cd libffi-3.4.4
-    # ./autogen.sh
-    # ./configure --prefix=${LOCATION} --disable-docs --with-pic
-    # make -j${PARALLEL_MAKE_ARG}
-    # make install
-    # cd $dep_dir
-    # rm -rf libffi-3.4.4 v3.4.4.tar.gz
+        # wget https://github.com/libffi/libffi/archive/refs/tags/v3.4.4.tar.gz
+        # tar xf v3.4.4.tar.gz
+        # cd libffi-3.4.4
+        # ./autogen.sh
+        # ./configure --prefix=${LOCATION} --disable-docs --with-pic
+        # make -j${PARALLEL_MAKE_ARG}
+        # make install
+        # cd $dep_dir
+        # rm -rf libffi-3.4.4 v3.4.4.tar.gz
 
-    # wget https://github.com/p11-glue/p11-kit/releases/download/0.25.3/p11-kit-0.25.3.tar.xz
-    # ./configure --without-bash-completion --prefix=${LOCATION}
+        # wget https://github.com/p11-glue/p11-kit/releases/download/0.25.3/p11-kit-0.25.3.tar.xz
+        # ./configure --without-bash-completion --prefix=${LOCATION}
 
-    # wget https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutls-3.7.10.tar.xz
+        # wget https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutls-3.7.10.tar.xz
 
-    # Install Emacs!
-    wget https://us.mirrors.cicku.me/gnu/emacs/emacs-${_EMACS_VERSION}.tar.xz
-    tar xf emacs-${_EMACS_VERSION}.tar.xz
-    cd ./emacs-${_EMACS_VERSION}
-    ./configure --without-xpm --without-jpeg --without-tiff --without-gif \
-                --without-png --without-rsvg --without-webp --without-cairo \
-                --without-imagemagick --without-native-image-api \
-                --without-selinux --without-gpm --without-gnutls \
-                --with-json --with-sqlite3=yes \
-                --prefix=${LOCATION}
-    make -j${PARALLEL_MAKE_ARG}
-    # clear bin directory so we only add emacs to the PATH.
-    rm ${LOCATION}/bin/*
-    make install
-    cd ../
-    rm -rf ./emacs-${_EMACS_VERSION}*
+        # Install Emacs!
+        wget https://us.mirrors.cicku.me/gnu/emacs/emacs-${_EMACS_VERSION}.tar.xz
+        tar xf emacs-${_EMACS_VERSION}.tar.xz
+        cd ./emacs-${_EMACS_VERSION}
+        ./configure --without-xpm --without-jpeg --without-tiff --without-gif \
+                    --without-png --without-rsvg --without-webp --without-cairo \
+                    --without-imagemagick --without-native-image-api \
+                    --without-selinux --without-gpm --without-gnutls \
+                    --with-json --with-sqlite3=yes \
+                    --prefix=${LOCATION}
+        make -j${PARALLEL_MAKE_ARG}
+        # clear bin directory so we only add emacs to the PATH.
+        rm ${LOCATION}/bin/*
+        make install
+        cd ../
+        rm -rf ./emacs-${_EMACS_VERSION}*
 
-    chmod -R 555 ${LOCATION}
+        chmod -R 555 ${LOCATION}
 
-    export CPATH=$_BEFORE_CPATH
-    export LIBRARY_PATH=$_BEFORE_LIBRARY_PATH
-    export PKG_CONFIG_PATH=$_BEFORE_PKG_CONFIG_PATH
-fi
+        export CPATH=$_BEFORE_CPATH
+        export LIBRARY_PATH=$_BEFORE_LIBRARY_PATH
+        export PKG_CONFIG_PATH=$_BEFORE_PKG_CONFIG_PATH
+    fi
 
-MODULE_FILE=$dep_dir/modules/global/emacs/${_EMACS_VERSION}.lua
-mkdir -p `dirname ${MODULE_FILE}`
-if [ -f ${MODULE_FILE} ]; then
-    echo "Module file ${MODULE_FILE} already exists"
-else
-    cat >${MODULE_FILE} <<EOF
-help([[
-  Emacs v${_EMACS_VERSION}
-]])
-whatis("Sets up your environment so you can use Emacs (v${_EMACS_VERSION})")
+    MODULE_FILE=$dep_dir/modules/global/emacs/${_EMACS_VERSION}
+    mkdir -p `dirname ${MODULE_FILE}`
+    if [ -f ${MODULE_FILE} ]; then
+        echo "Module file ${MODULE_FILE} already exists"
+    else
+        cat >${MODULE_FILE} <<EOF
+#%Module1.0#####################################################################
+##
+## dot modulefile
+##
+proc ModulesHelp { } {
+        global dotversion
+        global apps_path
 
-local apps_path = "${LOCATION}"
+        puts stderr "Sets up Emacs"
+}
+module-whatis "Sets up your environment so you can use Emacs (v${_EMACS_VERSION})"
 
-conflict("emacs")
+# for Tcl script use only
+set     dotversion      3.2.6
 
-prepend_path("PATH", pathJoin(apps_path, "/bin"))
+set     apps_path       ${LOCATION}
+
+conflict emacs
+
+prepend-path PATH "\$apps_path/bin"
 EOF
-    chmod -R 555 ${MODULE_FILE}
+        chmod -R 555 ${MODULE_FILE}
+    fi
+    ################################################################
+    # Emacs end
+    ################################################################
 fi
-################################################################
-# Emacs end
-################################################################
-
 
 ################################################################
 # GCC Begin
@@ -515,7 +548,7 @@ module load gcc/${_GCC_VERSION}
 INSTALL_GCC_LOCATION=$dep_dir/gcc-${_GCC_VERSION}
 mkdir -p ${INSTALL_GCC_LOCATION}
 ################################################################
-# GCC Begin
+# GCC End
 ################################################################
 
 ################################################################
@@ -2340,7 +2373,7 @@ else
            cmake/${_CMAKE_VERSION} \
            hwloc/${_HWLOC_VERSION} \
            impi/${_IMPI_VERSION}
-    git clone git@github.com:UIUC-PPL/charm.git ${LOCATION}
+    git clone https://github.com/UIUC-PPL/charm.git ${LOCATION}
     cd ${LOCATION}/
     git checkout v${_CHARM_VERSION}
     git apply $SPECTRE_HOME/support/Charm/v${_CHARM_VERSION}.patch
@@ -2351,7 +2384,7 @@ else
     cd $dep_dir
     chmod -R 555 ${LOCATION}
 
-    git clone git@github.com:UIUC-PPL/charm.git ${LOCATION}-tracing
+    git clone https://github.com/UIUC-PPL/charm.git ${LOCATION}-tracing
     cd ${LOCATION}-tracing/
     git checkout v${_CHARM_VERSION}
     git apply $SPECTRE_HOME/support/Charm/v${_CHARM_VERSION}.patch
@@ -2429,7 +2462,7 @@ _write_charm_module "${LOCATION}-tracing/mpi-linux-x86_64-smp-gcc-tracing" "-tra
 cd $dep_dir
 LOCATION=${INSTALL_GCC_LOCATION}/spectre-python/${_PYTHON_VERSION}
 if [ -d ${LOCATION} ]; then
-    echo "charm version ${_CHARM_VERSION} already installed"
+    echo "spectre-python version ${_PYTHON_VERSION} already installed"
 else
     module load python/${_PYTHON_VERSION}
     python -m venv ${LOCATION}
