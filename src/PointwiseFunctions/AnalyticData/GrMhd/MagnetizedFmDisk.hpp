@@ -70,6 +70,21 @@ namespace grmhd::AnalyticData {
  *
  * is the norm of the magnetic field in the fluid frame, with \f$v_i\f$ being
  * the spatial velocity, and \f$W\f$ the Lorentz factor.
+ *
+ * \note When using Kerr-Schild coordinates, the horizon that is at
+ * constant \f$r\f$ is not spherical, but instead spheroidal. This could make
+ * application of boundary condition and computing various fluxes
+ * across the horizon more complicated than they need to be.
+ * Thus, similar to RelativisticEuler::Solutions::FishboneMoncriefDisk
+ * we use Spherical Kerr-Schild coordinates,
+ * see gr::Solutions::SphericalKerrSchild, in which constant \f$r\f$
+ * is spherical. Because we compute variables in Kerr-Schild coordinates,
+ * there is a necessary extra step of transforming them back to
+ * Spherical Kerr-Schild coordinates.
+ *
+ * \warning Spherical Kerr-Schild coordinates and "spherical Kerr-Schild"
+ * coordinates are not same.
+ *
  */
 class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
                          public MarkAsAnalyticData {
@@ -153,38 +168,19 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
   using equation_of_state_type = typename FmDisk::equation_of_state_type;
 
   /// @{
-  /// The grmhd variables in Cartesian Kerr-Schild coordinates at `(x, t)`
-  ///
-  /// \note The functions are optimized for retrieving the hydro variables
-  /// before the metric variables.
+  /// The variables in Cartesian Kerr-Schild coordinates at `(x, t)`.
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          tmpl::list<Tags...> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we
     // need to be threadsafe.
-    constexpr double dummy_time = 0.0;
-    typename FmDisk::IntermediateVariables<
-        DataType,
-        tmpl2::flat_any_v<(
-            std::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            std::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
-        vars(fm_disk_.bh_spin_a_, fm_disk_.background_spacetime_, x, dummy_time,
-             FmDisk::index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::SpatialVelocity<DataType, 3>>{}),
-             FmDisk::index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::LorentzFactor<DataType>>{}));
+    typename FmDisk::IntermediateVariables<DataType> vars(x);
     return {std::move(get<Tags>([this, &x, &vars]() {
       if constexpr (std::is_same_v<hydro::Tags::MagneticField<DataType, 3>,
                                    Tags>) {
-        return variables(x, tmpl::list<Tags>{}, vars,
-                         tmpl::index_of<tmpl::list<Tags...>, Tags>::value);
+        return variables(x, tmpl::list<Tags>{}, make_not_null(&vars));
       } else {
-        return fm_disk_.variables(
-            x, tmpl::list<Tags>{}, vars,
-            tmpl::index_of<tmpl::list<Tags...>, Tags>::value);
+        return fm_disk_.variables(x, tmpl::list<Tags>{}, make_not_null(&vars));
       }
     }()))...};
   }
@@ -194,20 +190,12 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
                                      tmpl::list<Tag> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
-    constexpr double dummy_time = 0.0;
-    typename FmDisk::IntermediateVariables<
-        DataType,
-        std::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            std::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
-        intermediate_vars(fm_disk_.bh_spin_a_, fm_disk_.background_spacetime_,
-                          x, dummy_time, std::numeric_limits<size_t>::max(),
-                          std::numeric_limits<size_t>::max());
+    typename FmDisk::IntermediateVariables<DataType> vars(x);
     if constexpr (std::is_same_v<hydro::Tags::MagneticField<DataType, 3>,
                                  Tag>) {
-      return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
+      return variables(x, tmpl::list<Tag>{}, make_not_null(&vars));
     } else {
-      return fm_disk_.variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
+      return fm_disk_.variables(x, tmpl::list<Tag>{}, make_not_null(&vars));
     }
   }
   /// @}
@@ -220,14 +208,11 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
   }
 
  private:
-  template <typename DataType, bool NeedSpacetime>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-      const typename FmDisk::IntermediateVariables<DataType, NeedSpacetime>&
-          vars,
-      size_t index) const
-      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
+                 gsl::not_null<FmDisk::IntermediateVariables<DataType>*> vars)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   tnsr::I<DataType, 3> unnormalized_magnetic_field(

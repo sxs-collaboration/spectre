@@ -8,6 +8,45 @@ def delta(r_sqrd, m, a):
     return r_sqrd - 2.0 * m * np.sqrt(r_sqrd) + a**2
 
 
+def transformation_matrix(x, a):
+    # Coordinate transformation matrix from SKS to KS.
+    # Returns the P^j_ibar from equation 10 of Spherical-KS documentation.
+    # Note, this assuemes the black hole spin is along z-direction.
+    r_sqrd = boyer_lindquist_r_sqrd(x)
+    r = np.sqrt(r_sqrd)
+    rho = np.sqrt(r_sqrd + a**2)
+    P_ji = np.diag([rho / r, rho / r, 1.0])
+    return P_ji
+
+
+def jacobian_matrix(x, a):
+    # Jacbian matrix for coordinate transformation from SKS to KS.
+    # Returns T^i_jbar from equation 16 of Spherical-KS documentation.
+    # Note, this assuemes the black hole spin is along z-direction.
+    P_ij = transformation_matrix(x, a)
+
+    r_sqrd = boyer_lindquist_r_sqrd(x)
+    r = np.sqrt(r_sqrd)
+    rho = np.sqrt(r_sqrd + a**2)
+
+    F_ik = (-1.0 / (rho * r**3)) * np.diag([a**2, a**2, 0.0])
+    x_vec = np.array(x).T
+
+    T_ij = P_ij + np.outer(np.matmul(F_ik, x_vec), x_vec.T)
+
+    return T_ij.T
+
+
+def inverse_jacobian_matrix(x, a):
+    # Inverse Jacbian matrix for coordinate transformation
+    # from KS to Spherical KS.
+    # Returns S^i_jbar from equation 17 of Spherical-KS documentation.
+    # Note, this assuemes the black hole spin is along z-direction.
+    T_ij = jacobian_matrix(x, a)
+    S_ij = np.linalg.inv(T_ij)
+    return S_ij
+
+
 def sigma(r_sqrd, sin_theta_sqrd, a):
     return r_sqrd + (1.0 - sin_theta_sqrd) * a**2
 
@@ -37,9 +76,9 @@ def boyer_lindquist_gff(r_sqrd, sin_theta_sqrd, m, a):
     )
 
 
-def boyer_lindquist_r_sqrd(x, a):
-    half_diff = 0.5 * (x[0] ** 2 + x[1] ** 2 + x[2] ** 2 - a**2)
-    return half_diff + np.sqrt(half_diff**2 + a**2 * x[2] ** 2)
+def boyer_lindquist_r_sqrd(x):
+    # Here, we assume x is in Spherical-KS coordinates
+    return x[0] ** 2 + x[1] ** 2 + x[2] ** 2
 
 
 def boyer_lindquist_sin_theta_sqrd(z_sqrd, r_sqrd):
@@ -47,17 +86,40 @@ def boyer_lindquist_sin_theta_sqrd(z_sqrd, r_sqrd):
 
 
 def kerr_schild_h(x, m, a):
-    r_sqrd = boyer_lindquist_r_sqrd(x, a)
+    r_sqrd = boyer_lindquist_r_sqrd(x)
     return m * r_sqrd * np.sqrt(r_sqrd) / (r_sqrd**2 + a**2 * x[2] ** 2)
 
 
-def kerr_schild_spatial_null_form(x, m, a):
-    r_sqrd = boyer_lindquist_r_sqrd(x, a)
+def kerr_schild_spatial_null_vec(x, m, a):
+    r_sqrd = boyer_lindquist_r_sqrd(x)
     r = np.sqrt(r_sqrd)
-    denom = 1.0 / (r_sqrd + a**2)
-    return np.array(
-        [(r * x[0] + a * x[1]) * denom, (r * x[1] - a * x[0]) * denom, x[2] / r]
+    rho = np.sqrt(r_sqrd + a**2)
+    denom = 1.0 / rho**2
+    # Again, we assume Spherical-KS coordinates
+    # xbar/r = x/rho, ybar/r = y/rho
+    # where rho^2 = r^2+a^2 and xbar and ybar are Spherical-KS
+    # Thus, we need to stick in the converseion factor of rho/r.
+    conv_fac = rho / r
+    l_vec = np.array(
+        [
+            (r * x[0] * conv_fac + a * x[1] * conv_fac) * denom,
+            (r * x[1] * conv_fac - a * x[0] * conv_fac) * denom,
+            x[2] / r,
+        ]
     )
+    return l_vec
+
+
+def sph_kerr_schild_spatial_null_form(x, m, a):
+    jac = jacobian_matrix(x, a)
+    l_vec = kerr_schild_spatial_null_vec(x, m, a)
+    return jac @ l_vec
+
+
+def sph_kerr_schild_spatial_null_vec(x, m, a):
+    inv_jac = inverse_jacobian_matrix(x, a)
+    l_vec = kerr_schild_spatial_null_vec(x, m, a)
+    return inv_jac.T @ l_vec
 
 
 def kerr_schild_lapse(x, m, a):
@@ -68,20 +130,22 @@ def kerr_schild_lapse(x, m, a):
     )
 
 
-def kerr_schild_shift(x, m, a):
+def sph_kerr_schild_shift(x, m, a):
     null_vector_0 = -1.0
     return (
         -2.0
         * kerr_schild_h(x, m, a)
         * null_vector_0
         * kerr_schild_lapse(x, m, a) ** 2
-    ) * kerr_schild_spatial_null_form(x, m, a)
+    ) * sph_kerr_schild_spatial_null_vec(x, m, a)
 
 
-def kerr_schild_spatial_metric(x, m, a):
+def sph_kerr_schild_spatial_metric(x, m, a):
     prefactor = 2.0 * kerr_schild_h(x, m, a)
-    null_form = kerr_schild_spatial_null_form(x, m, a)
-    return np.identity(x.size) + prefactor * np.outer(null_form, null_form)
+    null_form = sph_kerr_schild_spatial_null_form(x, m, a)
+    T_ij = jacobian_matrix(x, a)
+    result = T_ij @ T_ij.T + prefactor * np.outer(null_form, null_form)
+    return result
 
 
 def angular_momentum(m, a, rmax):
@@ -142,7 +206,7 @@ def specific_enthalpy(
     bh_spin_a = bh_mass * bh_dimless_a
     l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
     Win = potential(l, r_in * r_in, 1.0, bh_mass, bh_spin_a)
-    r_sqrd = boyer_lindquist_r_sqrd(x, bh_spin_a)
+    r_sqrd = boyer_lindquist_r_sqrd(x)
     sin_theta_sqrd = boyer_lindquist_sin_theta_sqrd(x[2] * x[2], r_sqrd)
     result = 1.0
     if np.sqrt(r_sqrd * sin_theta_sqrd) >= r_in:
@@ -251,21 +315,29 @@ def spatial_velocity(
     bh_spin_a = bh_mass * bh_dimless_a
     l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
     Win = potential(l, r_in * r_in, 1.0, bh_mass, bh_spin_a)
-    r_sqrd = boyer_lindquist_r_sqrd(x, bh_spin_a)
+    r_sqrd = boyer_lindquist_r_sqrd(x)
     sin_theta_sqrd = boyer_lindquist_sin_theta_sqrd(x[2] * x[2], r_sqrd)
+    sks_to_ks_factor = np.sqrt(r_sqrd + bh_spin_a**2) / np.sqrt(r_sqrd)
 
     result = np.array([0.0, 0.0, 0.0])
     if np.sqrt(r_sqrd * sin_theta_sqrd) >= r_in:
         W = potential(l, r_sqrd, sin_theta_sqrd, bh_mass, bh_spin_a)
         if W < Win:
-            result += (
-                np.array([-x[1], x[0], 0.0])
+            transport_velocity_ks = (
+                sks_to_ks_factor
+                * np.array([-x[1], x[0], 0.0])
                 * angular_velocity(
                     l, r_sqrd, sin_theta_sqrd, bh_mass, bh_spin_a
                 )
-                + kerr_schild_shift(x, bh_mass, bh_spin_a)
+            )
+            transport_velocity_sks = (
+                inverse_jacobian_matrix(x, bh_spin_a) @ transport_velocity_ks
+            )
+            result += (
+                transport_velocity_sks
+                + sph_kerr_schild_shift(x, bh_mass, bh_spin_a)
             ) / kerr_schild_lapse(x, bh_mass, bh_spin_a)
-    return result
+    return np.array(result)
 
 
 def lorentz_factor(
@@ -279,7 +351,7 @@ def lorentz_factor(
     polytropic_exponent,
 ):
     bh_spin_a = bh_mass * bh_dimless_a
-    spatial_metric = kerr_schild_spatial_metric(x, bh_mass, bh_spin_a)
+    spatial_metric = sph_kerr_schild_spatial_metric(x, bh_mass, bh_spin_a)
     velocity = spatial_velocity(
         x,
         t,

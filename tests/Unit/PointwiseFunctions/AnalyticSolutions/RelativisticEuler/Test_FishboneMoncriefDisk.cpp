@@ -24,7 +24,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -101,7 +101,7 @@ void test_serialize() {
 
 template <typename DataType>
 void test_variables(const DataType& used_for_size) {
-  const double bh_mass = 1.34;
+  const double bh_mass = 1.23;
   const double bh_dimless_spin = 0.94432;
   const double inner_edge_radius = 6.0;
   const double max_pressure_radius = 12.0;
@@ -133,22 +133,22 @@ void test_variables(const DataType& used_for_size) {
   // Test a few of the GR components to make sure that the implementation
   // correctly forwards to the background solution. Not meant to be extensive.
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
-  const gr::Solutions::KerrSchild ks_soln{
+  const gr::Solutions::SphericalKerrSchild sks_soln{
       bh_mass, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}};
   CHECK_ITERABLE_APPROX(
-      get<gr::Tags::Lapse<DataType>>(ks_soln.variables(
-          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})),
+      get<gr::Tags::Lapse<DataType>>(sks_soln.variables(
+          coords, 0.0, gr::Solutions::SphericalKerrSchild::tags<DataType>{})),
       get<gr::Tags::Lapse<DataType>>(disk.variables(
           coords, 0.0, tmpl::list<gr::Tags::Lapse<DataType>>{})));
   CHECK_ITERABLE_APPROX(
-      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(ks_soln.variables(
-          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})),
+      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(sks_soln.variables(
+          coords, 0.0, gr::Solutions::SphericalKerrSchild::tags<DataType>{})),
       get<gr::Tags::SqrtDetSpatialMetric<DataType>>(disk.variables(
           coords, 0.0,
           tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
   const auto expected_spatial_metric =
-      get<gr::Tags::SpatialMetric<DataType, 3>>(ks_soln.variables(
-          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{}));
+      get<gr::Tags::SpatialMetric<DataType, 3>>(sks_soln.variables(
+          coords, 0.0, gr::Solutions::SphericalKerrSchild::tags<DataType>{}));
   const auto spatial_metric =
       get<gr::Tags::SpatialMetric<DataType, 3>>(disk.variables(
           coords, 0.0, tmpl::list<gr::Tags::SpatialMetric<DataType, 3>>{}));
