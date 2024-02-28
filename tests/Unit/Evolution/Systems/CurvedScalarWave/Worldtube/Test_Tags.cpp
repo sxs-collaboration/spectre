@@ -534,11 +534,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
             CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
   CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::Charge>("1.") == 1.);
+  CHECK(TestHelpers::test_option_tag<
+            CurvedScalarWave::Worldtube::OptionTags::Mass>("1.") == 1.);
   TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Charge>(
       "Charge");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
+      "Mass");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::FaceCoordinates<3, Frame::Grid, true>>(

@@ -270,6 +270,7 @@ struct EvolutionMetavars {
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
       CurvedScalarWave::Worldtube::Tags::Charge,
+      CurvedScalarWave::Worldtube::Tags::Mass,
       CurvedScalarWave::Worldtube::Tags::ObserveCoefficientsTrigger>;
 
   using dg_registration_list =

@@ -72,6 +72,18 @@ struct SelfForceOptions {
 };
 
 /*!
+ * \brief The mass of the scalar particle in units of the black hole mass M.
+ */
+struct Mass {
+  using type = double;
+  static constexpr Options::String help{
+      "The mass of the scalar particlein units of the black hole mass M."};
+  static double lower_bound() { return 0.; }
+  using group = SelfForceOptions;
+};
+
+
+/*!
  * \brief Name of the excision sphere designated to act as a worldtube
  */
 struct ExcisionSphere {
@@ -218,6 +230,16 @@ struct Charge : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Charge>;
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double charge) { return charge; };
+};
+
+/*!
+ * \brief The mass of the particle.
+ */
+struct Mass : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::Mass>;
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double mass) { return mass; };
 };
 
 
