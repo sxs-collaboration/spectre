@@ -5,6 +5,7 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/RotatingStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -15,6 +16,7 @@ namespace gh::RelativisticEuler::Solutions {
 using all_solutions = tmpl::list<
     gh::Solutions::WrappedGr<
         ::RelativisticEuler::Solutions::FishboneMoncriefDisk>,
+    gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::RotatingStar>,
     gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::TovStar>>;
 
 }  // namespace gh::RelativisticEuler::Solutions
