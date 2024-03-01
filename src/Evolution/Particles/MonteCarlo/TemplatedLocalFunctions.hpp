@@ -109,6 +109,7 @@ struct TemplatedLocalFunctions {
       const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
       const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
       const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
