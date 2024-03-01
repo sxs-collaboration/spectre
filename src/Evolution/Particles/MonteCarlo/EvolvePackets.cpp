@@ -4,6 +4,7 @@
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 
 namespace Particles::MonteCarlo {
 
@@ -106,19 +107,13 @@ void compute_opacities(const gsl::not_null<double*> absorption_opacity,
   *absorption_opacity = 0.0;
   *scattering_opacity = 0.0;
 }
-void scatter_packet(const gsl::not_null<Packet*> /*packet*/) {
-  // To be implemented
-}
-void diffuse_packet(const gsl::not_null<Packet*> /*packet*/,
-                    const double& /*time_step*/) {
-  // To be implemented
-}
 
 }  // namespace detail
 
 void evolve_packets(
-    const gsl::not_null<std::vector<Packet>*> packets, const double& final_time,
-    const Mesh<3>& mesh,
+    const gsl::not_null<std::vector<Packet>*> packets,
+    const gsl::not_null<std::mt19937*> random_number_generator,
+    const double& final_time, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
@@ -131,7 +126,11 @@ void evolve_packets(
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
-        inverse_jacobian_logical_to_inertial) {
+        inverse_jacobian_logical_to_inertial,
+    const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+        inertial_to_fluid_jacobian,
+    const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+        inertial_to_fluid_inverse_jacobian) {
   // Mesh information. Currently assumes uniform grid without map
   const Index<3>& extents = mesh.extents();
   const std::array<double, 3> bottom_coord_mesh{mesh_coordinates.get(0)[0],
@@ -212,7 +211,9 @@ void evolve_packets(
       // If the next event was a scatter, perform that scatter and
       // continue evolution
       if (dt_min == dt_scattering) {
-        detail::scatter_packet(&packet);
+        // Next event is a scatter. Calculate the time step to the next
+        // non-scattering event, and the scattering optical depth over
+        // that period.
         dt_end_step -= dt_min;
         dt_absorption -= dt_min;
         dt_cell_check -= dt_min;
@@ -225,7 +226,35 @@ void evolve_packets(
         // The scatterig depth of 3.0 was found to be sufficient for diffusion
         // to be accurate (see Foucart 2018, 10.1093/mnras/sty108)
         if (scattering_optical_depth > 3.0) {
-          detail::diffuse_packet(&packet, dt_min);
+          diffuse_packet(&packet, dt_min);
+        } else {
+          // Low optical depth; perform scatterings one by one.
+          do {
+            scatter_packet(&packet, random_number_generator, fluid_frame_energy,
+                           inertial_to_fluid_jacobian,
+                           inertial_to_fluid_inverse_jacobian);
+            // To do once we have opacities: calculate dt_scattering
+            dt_scattering = 10.0 * dt_end_step;
+            dt_min = std::min(dt_scattering, dt_min);
+            // Propagation to the next event, whatever it is
+            detail::evolve_single_packet_on_geodesic(
+                &packet, dt_min, lapse, shift, d_lapse, d_shift,
+                d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
+                inverse_jacobian_logical_to_inertial);
+            dt_end_step -= dt_min;
+            dt_absorption -= dt_min;
+            dt_cell_check -= dt_min;
+            dt_min = dt_end_step;
+            dt_min = std::min(dt_cell_check, dt_min);
+            dt_min = std::min(dt_absorption, dt_min);
+          } while (dt_min > 0.0);
+        }
+        // If absorption is the next event; delete the packet
+        if (dt_min == dt_absorption) {
+          (*packets)[p] = (*packets)[n_packets - 1];
+          packets->pop_back();
+          p--;
+          break;
         }
       }
 

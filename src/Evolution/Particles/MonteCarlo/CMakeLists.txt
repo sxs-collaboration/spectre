@@ -12,6 +12,7 @@ spectre_target_sources(
   InverseJacobianInertialToFluidCompute.cpp
   TemplatedLocalFunctions.cpp
   Packet.cpp
+  Scattering.cpp
   )
 
 spectre_target_headers(
@@ -23,6 +24,7 @@ spectre_target_headers(
   InverseJacobianInertialToFluidCompute.hpp
   TemplatedLocalFunctions.hpp
   Packet.hpp
+  Scattering.hpp
   )
 
 target_link_libraries(
