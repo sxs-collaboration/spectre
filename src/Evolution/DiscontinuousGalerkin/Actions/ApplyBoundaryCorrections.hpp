@@ -184,14 +184,12 @@ bool receive_boundary_data_global_time_stepping(
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
-template <typename Metavariables, bool DenseOutput, typename DbTagsList,
+template <typename System, size_t Dim, bool DenseOutput, typename DbTagsList,
           typename... InboxTags>
 bool receive_boundary_data_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
-
-  using variables_tag = typename Metavariables::system::variables_tag;
+  using variables_tag = typename System::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   // The boundary history coupling computation (which computes the _lifted_
@@ -199,15 +197,15 @@ bool receive_boundary_data_local_time_stepping(
   // using the `NormalDotNumericalFlux` prefix tag. This is because the
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-  using Key = DirectionalId<volume_dim>;
+  using Key = DirectionalId<Dim>;
   std::map<TimeStepId,
            DirectionalIdMap<
-               volume_dim,
-               std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+               Dim,
+               std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
                           std::optional<DataVector>, std::optional<DataVector>,
                           ::TimeStepId, int>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          volume_dim>>(*inboxes);
+          Dim>>(*inboxes);
 
   const auto needed_time = [&box]() {
     const auto& local_next_temporal_id =
@@ -228,25 +226,25 @@ bool receive_boundary_data_local_time_stepping(
   }();
 
   const bool have_all_intermediate_messages = db::mutate<
-      evolution::dg::Tags::MortarDataHistory<volume_dim,
+      evolution::dg::Tags::MortarDataHistory<Dim,
                                              typename dt_variables_tag::type>,
-      evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
-      domain::Tags::NeighborMesh<volume_dim>>(
+      evolution::dg::Tags::MortarNextTemporalId<Dim>,
+      domain::Tags::NeighborMesh<Dim>>(
       [&inbox, &needed_time](
           const gsl::not_null<
               std::unordered_map<Key,
                                  TimeSteppers::BoundaryHistory<
-                                     evolution::dg::MortarData<volume_dim>,
-                                     evolution::dg::MortarData<volume_dim>,
+                                     evolution::dg::MortarData<Dim>,
+                                     evolution::dg::MortarData<Dim>,
                                      typename dt_variables_tag::type>,
                                  boost::hash<Key>>*>
               boundary_data_history,
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
               mortar_next_time_step_id,
-          const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
+          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
               neighbor_mesh,
-          const Element<volume_dim>& element) {
+          const Element<Dim>& element) {
         // Remove neighbor meshes for neighbors that don't exist anymore
         domain::remove_nonexistent_neighbors(neighbor_mesh, element);
 
@@ -261,7 +259,7 @@ bool receive_boundary_data_local_time_stepping(
                received_mortar_data =
                    received_data->second.erase(received_mortar_data)) {
             const auto& mortar_id = received_mortar_data->first;
-            MortarData<Metavariables::volume_dim> neighbor_mortar_data{};
+            MortarData<Dim> neighbor_mortar_data{};
             // Insert:
             // - the current TimeStepId of the neighbor
             // - the current face mesh of the neighbor
@@ -302,18 +300,18 @@ bool receive_boundary_data_local_time_stepping(
         }
         return true;
       },
-      box, db::get<::domain::Tags::Element<volume_dim>>(*box));
+      box, db::get<::domain::Tags::Element<Dim>>(*box));
 
   if (not have_all_intermediate_messages) {
     return false;
   }
 
   return alg::all_of(
-      db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box),
+      db::get<evolution::dg::Tags::MortarNextTemporalId<Dim>>(*box),
       [&needed_time](
           const std::pair<Key, TimeStepId>& mortar_id_and_next_temporal_id) {
         return mortar_id_and_next_temporal_id.first.id ==
-                   ElementId<volume_dim>::external_boundary_id() or
+                   ElementId<Dim>::external_boundary_id() or
                not needed_time(mortar_id_and_next_temporal_id.second);
       });
 }
@@ -423,7 +421,7 @@ struct ApplyBoundaryCorrections {
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*component*/) {
     if constexpr (local_time_stepping) {
-      return receive_boundary_data_local_time_stepping<Metavariables,
+      return receive_boundary_data_local_time_stepping<System, VolumeDim,
                                                        DenseOutput>(box,
                                                                     inboxes);
     } else {
@@ -833,7 +831,7 @@ struct ApplyLtsBoundaryCorrections {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not receive_boundary_data_local_time_stepping<Metavariables, false>(
+    if (not receive_boundary_data_local_time_stepping<System, VolumeDim, false>(
             make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
