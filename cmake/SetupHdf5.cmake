@@ -62,6 +62,43 @@ else()
     "https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md")
 endif()
 
+include(CheckCXXSourceRuns)
+set(CMAKE_REQUIRED_LIBRARIES hdf5::hdf5)
+# Logic from src/Utilities/ErrorHandling/FloatingPointExceptions.cpp
+check_cxx_source_runs(
+  [=[
+#include <hdf5.h>
+
+#ifdef __APPLE__
+#ifndef __arm64__
+#define SPECTRE_FPE_CSR 1
+#include <xmmintrin.h>
+#endif
+#else
+#define SPECTRE_FPE_FENV 1
+#include <cfenv>
+#endif
+
+int main(int /*argc*/, char** /*argv*/) {
+#if SPECTRE_FPE_CSR
+  _mm_setcsr(_MM_MASK_MASK &
+             ~(_MM_MASK_OVERFLOW | _MM_MASK_INVALID | _MM_MASK_DIV_ZERO));
+#elif SPECTRE_FPE_FENV
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
+  H5Tcopy(H5T_NATIVE_DOUBLE);
+  return 0;
+}
+]=]
+  HDF5_INIT_WITHOUT_FPES
+  )
+if(NOT HDF5_INIT_WITHOUT_FPES)
+  message(FATAL_ERROR
+    "The HDF5 library triggers FPEs during initialization.  See upstream bug "
+    "https://github.com/HDFGroup/hdf5/issues/3831.  Either switch to an "
+    "unaffected version or apply the patch referenced from that issue.")
+endif()
+
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   hdf5::hdf5
