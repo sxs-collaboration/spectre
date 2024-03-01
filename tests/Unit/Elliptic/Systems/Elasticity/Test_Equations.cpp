@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Elasticity/Actions/InitializeConstitutiveRelation.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
@@ -64,24 +65,26 @@ void test_computers(const DataVector& used_for_size) {
   using deriv_field_tag = ::Tags::deriv<Elasticity::Tags::Displacement<Dim>,
                                         tmpl::size_t<Dim>, Frame::Inertial>;
   using field_flux_tag = Elasticity::Tags::MinusStress<Dim>;
-  using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<Dim>;
+  using constitutive_relation_tag =
+      Elasticity::Tags::ConstitutiveRelationPerBlock<Dim>;
   using coordinates_tag = domain::Tags::Coordinates<Dim, Frame::Inertial>;
   const size_t num_points = used_for_size.size();
   {
     INFO("Fluxes" << Dim << "D");
-    std::unique_ptr<
-        Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>
-        constitutive_relation = std::make_unique<
-            Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
-                                                                          2.);
-    auto box = db::create<
-        db::AddSimpleTags<field_tag, deriv_field_tag, field_flux_tag,
-                          constitutive_relation_tag, coordinates_tag>>(
+    const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>
+        constitutive_relation{1., 2.};
+    std::vector<std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<Dim>>>
+        constitutive_relations{};
+    constitutive_relations.push_back(constitutive_relation.get_clone());
+    auto box = db::create<db::AddSimpleTags<
+        field_tag, deriv_field_tag, field_flux_tag, constitutive_relation_tag,
+        domain::Tags::Element<Dim>, coordinates_tag>>(
         tnsr::I<DataVector, Dim>{num_points, 1.},
         tnsr::iJ<DataVector, Dim>{num_points, 2.},
         tnsr::II<DataVector, Dim>{num_points,
                                   std::numeric_limits<double>::signaling_NaN()},
-        std::move(constitutive_relation),
+        std::move(constitutive_relations), Element<Dim>{ElementId<Dim>{0}, {}},
         tnsr::I<DataVector, Dim>{num_points, 6.});
 
     const Elasticity::Fluxes<Dim> fluxes_computer{};
@@ -92,9 +95,9 @@ void test_computers(const DataVector& used_for_size) {
         get<deriv_field_tag>(box));
     auto expected_field_flux = tnsr::II<DataVector, Dim>{
         num_points, std::numeric_limits<double>::signaling_NaN()};
-    Elasticity::primal_fluxes(
-        make_not_null(&expected_field_flux), get<deriv_field_tag>(box),
-        get<constitutive_relation_tag>(box), get<coordinates_tag>(box));
+    Elasticity::primal_fluxes(make_not_null(&expected_field_flux),
+                              get<deriv_field_tag>(box), constitutive_relation,
+                              get<coordinates_tag>(box));
     CHECK(get<field_flux_tag>(box) == expected_field_flux);
   }
 }

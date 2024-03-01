@@ -68,6 +68,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Domain
+  DomainCreators
   Interpolation
   Parallel
   Spectral

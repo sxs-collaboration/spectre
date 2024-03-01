@@ -81,6 +81,9 @@ struct Var0TimesThreeCompute : db::ComputeTag,
 
 struct TestSectionIdTag {};
 
+// Name for option parsing
+struct ObserveMyNorms {};
+
 struct MockContributeReductionData {
   struct Results {
     observers::ObservationId observation_id;
@@ -151,12 +154,12 @@ struct MockObserverComponent {
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
-template <typename ArraySectionIdTag>
+template <typename ArraySectionIdTag, typename OptionName = void>
 using ObserveNormsEvent = Events::ObserveNorms<
     tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
-    tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag>;
+    tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag, OptionName>;
 
-template <size_t Dim, typename ArraySectionIdTag>
+template <size_t Dim, typename ArraySectionIdTag, typename OptionName = void>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
@@ -164,8 +167,8 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<Event, tmpl::list<ObserveNormsEvent<ArraySectionIdTag>>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        Event, tmpl::list<ObserveNormsEvent<ArraySectionIdTag, OptionName>>>>;
   };
 };
 
@@ -300,7 +303,6 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   CHECK(results.volume_integral_values[1] == approx(41.0));
   CHECK(results.volume_integral_values[2] == approx(68.0));
   CHECK(results.volume_integral_values[3] == approx(95.0));
-
 }
 }  // namespace
 
@@ -373,6 +375,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
   auto serialized_event = serialize_and_deserialize(factory_event);
   test<void>(std::move(serialized_event), Spectral::Basis::Legendre,
              Spectral::Quadrature::GaussLobatto, std::nullopt);
+
+  {
+    INFO("Test option name");
+    // Test option name
+    TestHelpers::test_creation<std::unique_ptr<Event>,
+                               Metavariables<3, void, ObserveMyNorms>>(
+        R"(
+  ObserveMyNorms:
+    SubfileName: reduction0
+    TensorsToObserve:
+    - Name: Var0
+      NormType: Max
+      Components: Individual
+        )");
+  }
 
   test<void>(std::make_unique<ObserveNormsEvent<void>>(ObserveNormsEvent<void>{
                  "reduction0",

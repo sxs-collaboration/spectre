@@ -12,13 +12,13 @@
 #include <utility>
 #include <vector>
 
+#include "Domain/Creators/BlockGroups.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
-#include "Utilities/StdHelpers.hpp"
 
 namespace evolution::dg::subcell {
 SubcellOptions::SubcellOptions(
@@ -49,41 +49,17 @@ SubcellOptions::SubcellOptions(
 
   const auto& only_dg_block_and_group_names =
       subcell_options_with_block_names.only_dg_block_and_group_names_;
-  const auto block_names_vector = domain_creator.block_names();
-  const auto group_names = domain_creator.block_groups();
-  std::unordered_set<std::string> block_names{};
-  // Add blocks from block groups into block_names. Use an unordered_set
-  // to elide duplicates.
-  for (const auto& block_or_group_name :
-       only_dg_block_and_group_names.value_or(std::vector<std::string>{})) {
-    if (const auto block_group_it = group_names.find(block_or_group_name);
-        block_group_it != group_names.end()) {
-      block_names.insert(block_group_it->second.begin(),
-                         block_group_it->second.end());
-    } else if (const auto block_name_it =
-                   std::find(block_names_vector.begin(),
-                             block_names_vector.end(), block_or_group_name);
-               block_name_it != block_names_vector.end()) {
-      block_names.insert(*block_name_it);
-    } else {
-      using ::operator<<;
-      ERROR_NO_TRACE(
-          "The block or group '"
-          << block_or_group_name
-          << "' is not one of the block names or groups of the domain. "
-             "The known block groups are "
-          << keys_of(group_names) << " and the known block names are "
-          << block_names_vector);
-    }
-  }
+  const auto block_names = domain_creator.block_names();
+  const auto only_dg_block_names = domain::expand_block_groups_to_block_names(
+      only_dg_block_and_group_names.value_or(std::vector<std::string>{}),
+      block_names, domain_creator.block_groups());
   only_dg_block_ids_ = std::vector<size_t>{};
-  only_dg_block_ids_.value().reserve(block_names.size());
+  only_dg_block_ids_.value().reserve(only_dg_block_names.size());
   // Get the block ID of each block name
-  for (const auto& block_name : block_names) {
-    only_dg_block_ids_.value().push_back(static_cast<size_t>(
-        std::distance(block_names_vector.begin(),
-                      std::find(block_names_vector.begin(),
-                                block_names_vector.end(), block_name))));
+  for (const auto& block_name : only_dg_block_names) {
+    only_dg_block_ids_.value().push_back(static_cast<size_t>(std::distance(
+        block_names.begin(),
+        std::find(block_names.begin(), block_names.end(), block_name))));
   }
   // Sort the block IDs just so they're easier to deal with.
   alg::sort(only_dg_block_ids_.value());

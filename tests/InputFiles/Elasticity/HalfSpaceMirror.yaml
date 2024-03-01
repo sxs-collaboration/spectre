@@ -36,7 +36,10 @@ Background: &solution
     RelativeTolerance: 1e-10
 
 Material:
-  IsotropicHomogeneous: *fused_silica
+  Layer0:
+    IsotropicHomogeneous: *fused_silica
+  Layer1:
+    IsotropicHomogeneous: *fused_silica
 
 InitialGuess: Zero
 
@@ -52,9 +55,9 @@ DomainCreator:
     InitialGridPoints: [2, 3, 3]
     UseEquiangularMap: True
     RadialPartitioning: []
-    PartitioningInZ: []
+    PartitioningInZ: [0.1]
     RadialDistribution: [Linear]
-    DistributionInZ: [Linear]
+    DistributionInZ: [Linear, Linear]
     BoundaryConditions:
       LowerZ:
         AnalyticSolution:
@@ -83,23 +86,23 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 1
+      MaxIterations: 2
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
-    Verbosity: Verbose
+    Verbosity: Quiet
 
   Multigrid:
     Iterations: 1
     MaxLevels: Auto
     PreSmoothing: True
     PostSmoothingAtBottom: True
-    Verbosity: Quiet
+    Verbosity: Silent
     OutputVolumeData: False
 
   SchwarzSmoother:
     Iterations: 3
     MaxOverlap: 2
-    Verbosity: Verbose
+    Verbosity: Silent
     SubdomainSolver:
       Gmres:
         ConvergenceCriteria:
@@ -119,18 +122,20 @@ LinearSolver:
 EventsAndTriggers:
   - Trigger: HasConverged
     Events:
-      - ObserveNorms:
+      - ObserveNorms: &error_norms
           SubfileName: ErrorNorms
           TensorsToObserve:
             - Name: Error(Displacement)
               NormType: L2Norm
               Components: Sum
-      - ObserveNorms:
+      - ObserveNorms: &volume_integrals
           SubfileName: VolumeIntegrals
           TensorsToObserve:
             - Name: PotentialEnergyDensity
               NormType: VolumeIntegral
               Components: Individual
+      - ObserveNormsPerLayer: *error_norms
+      - ObserveNormsPerLayer: *volume_integrals
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:

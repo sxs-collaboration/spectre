@@ -152,10 +152,16 @@ SPECTRE_TEST_CASE(
     INFO("Test elasticity system with bent beam");
     using system = Elasticity::FirstOrderSystem<2>;
     // Verify that the solution numerically solves the system
+    std::vector<std::unique_ptr<
+        Elasticity::ConstitutiveRelations::ConstitutiveRelation<2>>>
+        constitutive_relations{};
+    constitutive_relations.push_back(constitutive_relation.get_clone());
+    const Element<2> element{ElementId<2>{0}, {}};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, mesh, coord_map,
         std::numeric_limits<double>::epsilon() * 100.,
-        std::make_tuple(constitutive_relation, inertial_coords));
+        std::make_tuple(std::move(constitutive_relations), element,
+                        inertial_coords));
   };
 
   {

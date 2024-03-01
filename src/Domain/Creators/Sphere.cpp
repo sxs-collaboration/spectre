@@ -187,8 +187,8 @@ Sphere::Sphere(
              << num_blocks_ << " but is " << block_names_.size() << ".");
 
   // Expand initial refinement and number of grid points over all blocks
-  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names_,
-                                                       block_groups_};
+  const ExpandOverBlocks<std::array<size_t, 3>> expand_over_blocks{
+      block_names_, block_groups_};
   try {
     initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
   } catch (const std::exception& error) {

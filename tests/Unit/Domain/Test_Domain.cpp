@@ -519,8 +519,8 @@ Domain<3> create_serialized_domain() {
   add_outer_region("OuterShell");         // 10 blocks
 
   // Expand initial refinement and number of grid points over all blocks
-  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
-                                                       block_groups};
+  const ExpandOverBlocks<std::array<size_t, 3>> expand_over_blocks{
+      block_names, block_groups};
 
   using BCO = domain::creators::BinaryCompactObject;
 

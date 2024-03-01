@@ -14,6 +14,7 @@
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/Solver.hpp"
+#include "Elliptic/Systems/Elasticity/Actions/InitializeConstitutiveRelation.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
@@ -78,8 +79,10 @@ struct Metavariables {
                  error_compute>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tags =
-      tmpl::list<Elasticity::Tags::ConstitutiveRelation<volume_dim>>;
+  using const_global_cache_tags = tmpl::list<>;
+
+  // Just a name in the input file
+  struct ObserveNormsPerLayer {};
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -98,12 +101,17 @@ struct Metavariables {
             Elasticity::ConstitutiveRelations::ConstitutiveRelation<volume_dim>,
             Elasticity::ConstitutiveRelations::standard_constitutive_relations<
                 volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, observer_compute_tags,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<
+                    volume_dim, observe_fields, observer_compute_tags,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>,
+                // Observation per material layer
+                ::Events::ObserveNorms<observe_fields, observer_compute_tags,
+                                       Elasticity::Tags::MaterialLayerName,
+                                       ObserveNormsPerLayer>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename solver::linear_solver::options_group>>,
         tmpl::pair<PhaseChange, tmpl::list<PhaseControl::VisitAndReturn<
@@ -118,6 +126,7 @@ struct Metavariables {
 
   using initialization_actions =
       tmpl::push_back<typename solver::initialization_actions,
+                      Elasticity::Actions::InitializeConstitutiveRelation<Dim>,
                       Parallel::Actions::TerminatePhase>;
 
   using register_actions =

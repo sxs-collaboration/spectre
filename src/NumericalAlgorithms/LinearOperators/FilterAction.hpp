@@ -13,10 +13,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Domain/Creators/BlockGroups.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -121,28 +123,13 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     // Only do this check if filtering is enabled. A `nullopt` means all blocks
     // are allowed to do filtering
     if (enable and filter_helper.blocks_to_filter().has_value()) {
-      const auto& blocks_to_filter = filter_helper.blocks_to_filter().value();
-
-      // If nothing in the loop sets this to true, then our block isn't in the
-      // blocks to filter, so we shouldn't filter in this element
-      bool block_is_in_blocks_to_filter = false;
-      for (const std::string& block_to_filter : blocks_to_filter) {
-        // First check if the block to filter is our current block. If it is,
-        // then we do want to filter.
-        if (block_to_filter == block_name) {
-          block_is_in_blocks_to_filter = true;
-          break;
-        } else if (block_groups.count(block_to_filter) == 1 and
-                   block_groups.at(block_to_filter).count(block_name) == 1) {
-          // If the block to filter isn't our current block, then we need to
-          // check if the block to filter is a block group. If it is, check that
-          // our block is in the block group. If it is, then we enable filtering
-          block_is_in_blocks_to_filter = true;
-          break;
-        }
-      }
-
-      enable = block_is_in_blocks_to_filter;
+      // Enable filtering for this block if it's in any of the listed groups
+      enable = alg::any_of(
+          filter_helper.blocks_to_filter().value(),
+          [&block_name, &block_groups](const std::string& block_to_filter) {
+            return domain::block_is_in_group(block_name, block_to_filter,
+                                             block_groups);
+          });
     }
 
     if (not enable) {
