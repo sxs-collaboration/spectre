@@ -34,6 +34,17 @@ void time_derivative_momentum_geodesic(
   }
 }
 
+// Functions to be implemented to complete implementation of Monte-Carlo
+// time step
+void compute_opacities(const gsl::not_null<double*> absorption_opacity,
+                       const gsl::not_null<double*> scattering_opacity,
+                       const double& /*fluid_frame_energy*/) {
+  *absorption_opacity = 0.0;
+  *scattering_opacity = 0.0;
+}
+
+}  // namespace detail
+
 void evolve_single_packet_on_geodesic(
     const gsl::not_null<Packet*> packet, const double& time_step,
     const Scalar<DataVector>& lapse,
@@ -99,17 +110,6 @@ void evolve_single_packet_on_geodesic(
   packet->time += time_step;
 }
 
-// Functions to be implemented to complete implementation of Monte-Carlo
-// time step
-void compute_opacities(const gsl::not_null<double*> absorption_opacity,
-                       const gsl::not_null<double*> scattering_opacity,
-                       const double& /*fluid_frame_energy*/) {
-  *absorption_opacity = 0.0;
-  *scattering_opacity = 0.0;
-}
-
-}  // namespace detail
-
 void evolve_packets(
     const gsl::not_null<std::vector<Packet>*> packets,
     const gsl::not_null<std::mt19937*> random_number_generator,
@@ -122,6 +122,7 @@ void evolve_packets(
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -131,6 +132,17 @@ void evolve_packets(
         inertial_to_fluid_jacobian,
     const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
         inertial_to_fluid_inverse_jacobian) {
+  // Struct used for diffusion pre-computations
+  const DiffusionMonteCarloParameters diffusion_params;
+  DataVector prefactor_diffusion_time_step = get(lapse) * 0.0;
+  DataVector prefactor_diffusion_four_velocity = get(lapse) * 0.0;
+  DataVector prefactor_diffusion_time_vector = get(lapse) * 0.0;
+
+  DiffusionPrecomputeForElement(
+      &prefactor_diffusion_time_vector, &prefactor_diffusion_four_velocity,
+      &prefactor_diffusion_time_step, lorentz_factor,
+      lower_spatial_four_velocity, lapse, shift, spatial_metric);
+
   // Mesh information. Currently assumes uniform grid without map
   const Index<3>& extents = mesh.extents();
   const std::array<double, 3> bottom_coord_mesh{mesh_coordinates.get(0)[0],
@@ -204,10 +216,10 @@ void evolve_packets(
         break;
       }
       // Propagation to the next event, whatever it is
-      detail::evolve_single_packet_on_geodesic(
-          &packet, dt_min, lapse, shift, d_lapse, d_shift, d_inv_spatial_metric,
-          inv_spatial_metric, mesh_velocity,
-          inverse_jacobian_logical_to_inertial);
+      evolve_single_packet_on_geodesic(&packet, dt_min, lapse, shift, d_lapse,
+                                       d_shift, d_inv_spatial_metric,
+                                       inv_spatial_metric, mesh_velocity,
+                                       inverse_jacobian_logical_to_inertial);
       // If the next event was a scatter, perform that scatter and
       // continue evolution
       if (dt_min == dt_scattering) {
@@ -226,7 +238,15 @@ void evolve_packets(
         // The scatterig depth of 3.0 was found to be sufficient for diffusion
         // to be accurate (see Foucart 2018, 10.1093/mnras/sty108)
         if (scattering_optical_depth > 3.0) {
-          diffuse_packet(&packet, dt_min);
+          diffuse_packet(
+              &packet, random_number_generator, &fluid_frame_energy, dt_min,
+              diffusion_params, scattering_opacity, lorentz_factor,
+              lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
+              d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
+              mesh_velocity, inverse_jacobian_logical_to_inertial,
+              inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian,
+              prefactor_diffusion_time_step, prefactor_diffusion_four_velocity,
+              prefactor_diffusion_time_vector);
         } else {
           // Low optical depth; perform scatterings one by one.
           do {
@@ -237,7 +257,7 @@ void evolve_packets(
             dt_scattering = 10.0 * dt_end_step;
             dt_min = std::min(dt_scattering, dt_min);
             // Propagation to the next event, whatever it is
-            detail::evolve_single_packet_on_geodesic(
+            evolve_single_packet_on_geodesic(
                 &packet, dt_min, lapse, shift, d_lapse, d_shift,
                 d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
                 inverse_jacobian_logical_to_inertial);
@@ -266,6 +286,11 @@ void evolve_packets(
                            gsl::at(dx_mesh, d) +
                        0.5);
       }
+      // In SpEC, we update a packet index after a full time step;
+      // only the opacities are updated mid-step. Decide whether to do
+      // the same here once we handle ghost zone (the main reason not to
+      // update is to limit the amount of ghost zone information we
+      // store.
       packet.index_of_closest_grid_point =
           closest_point_index_3d[0] +
           extents[0] * (closest_point_index_3d[1] +

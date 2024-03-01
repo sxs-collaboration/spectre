@@ -94,6 +94,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
   inv_spatial_metric.get(0, 0) = 1.0;
   inv_spatial_metric.get(1, 1) = 1.0;
   inv_spatial_metric.get(2, 2) = 1.0;
+  tnsr::ii<DataVector, 3, Frame::Inertial> spatial_metric =
+    make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  spatial_metric.get(0, 0) = 1.0;
+  spatial_metric.get(1, 1) = 1.0;
+  spatial_metric.get(2, 2) = 1.0;
 
   tnsr::I<DataVector, 3, Frame::Inertial> shift =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
@@ -154,7 +159,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
   Particles::MonteCarlo::evolve_packets(
     &packets, &generator, 1.5, mesh, mesh_coordinates, lorentz_factor,
     lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-    d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
+    d_inv_spatial_metric, spatial_metric, inv_spatial_metric, mesh_velocity,
     inverse_jacobian, jacobian_inertial_to_fluid,
     inverse_jacobian_inertial_to_fluid);
   CHECK(packets[0].species == 2);
