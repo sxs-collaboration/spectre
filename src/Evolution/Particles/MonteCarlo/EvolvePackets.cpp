@@ -11,8 +11,8 @@ namespace detail {
 
 // Time derivative of p_i in a packet, according to geodesic equation
 void time_derivative_momentum_geodesic(
-    gsl::not_null<std::array<double, 3>*> dt_momentum, const Packet& packet,
-    const Scalar<DataVector>& lapse,
+    const gsl::not_null<std::array<double, 3>*> dt_momentum,
+    const Packet& packet, const Scalar<DataVector>& lapse,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric) {
@@ -34,7 +34,7 @@ void time_derivative_momentum_geodesic(
 }
 
 void evolve_single_packet_on_geodesic(
-    gsl::not_null<Packet*> packet, const double& time_step,
+    const gsl::not_null<Packet*> packet, const double& time_step,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -43,7 +43,8 @@ void evolve_single_packet_on_geodesic(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian) {
+                          Frame::Inertial>&
+        inverse_jacobian_logical_to_inertial) {
   const size_t& closest_point_index = packet->index_of_closest_grid_point;
   // Temporary variables
   std::array<double, 3> dpdt{0, 0, 0};
@@ -86,7 +87,7 @@ void evolve_single_packet_on_geodesic(
     for (size_t j = 0; j < 3; j++) {
       gsl::at(dxdt_logical, i) +=
           gsl::at(dxdt_inertial, j) *
-          inverse_jacobian.get(i, j)[closest_point_index];
+          inverse_jacobian_logical_to_inertial.get(i, j)[closest_point_index];
     }
   }
   // Take full time step
@@ -99,7 +100,6 @@ void evolve_single_packet_on_geodesic(
 
 // Functions to be implemented to complete implementation of Monte-Carlo
 // time step
-double compute_fluid_frame_energy(const Packet& /*packet*/) { return -1.0; }
 void compute_opacities(const gsl::not_null<double*> absorption_opacity,
                        const gsl::not_null<double*> scattering_opacity,
                        const double& /*fluid_frame_energy*/) {
@@ -117,9 +117,11 @@ void diffuse_packet(const gsl::not_null<Packet*> /*packet*/,
 }  // namespace detail
 
 void evolve_packets(
-    gsl::not_null<std::vector<Packet>*> packets, const double& final_time,
+    const gsl::not_null<std::vector<Packet>*> packets, const double& final_time,
     const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -128,7 +130,8 @@ void evolve_packets(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian) {
+                          Frame::Inertial>&
+        inverse_jacobian_logical_to_inertial) {
   // Mesh information. Currently assumes uniform grid without map
   const Index<3>& extents = mesh.extents();
   const std::array<double, 3> bottom_coord_mesh{mesh_coordinates.get(0)[0],
@@ -165,7 +168,10 @@ void evolve_packets(
     while (dt_end_step > 0.05 * (final_time - initial_time)) {
       // Get fluid frame energy of neutrinos in packet, then retrieve
       // opacities
-      fluid_frame_energy = detail::compute_fluid_frame_energy(packet);
+      packet.renormalize_momentum(inv_spatial_metric, lapse);
+      fluid_frame_energy = compute_fluid_frame_energy(
+          packet, lorentz_factor, lower_spatial_four_velocity, lapse,
+          inv_spatial_metric);
       detail::compute_opacities(&absorption_opacity, &scattering_opacity,
                                 fluid_frame_energy);
 
@@ -201,7 +207,8 @@ void evolve_packets(
       // Propagation to the next event, whatever it is
       detail::evolve_single_packet_on_geodesic(
           &packet, dt_min, lapse, shift, d_lapse, d_shift, d_inv_spatial_metric,
-          inv_spatial_metric, mesh_velocity, inverse_jacobian);
+          inv_spatial_metric, mesh_velocity,
+          inverse_jacobian_logical_to_inertial);
       // If the next event was a scatter, perform that scatter and
       // continue evolution
       if (dt_min == dt_scattering) {

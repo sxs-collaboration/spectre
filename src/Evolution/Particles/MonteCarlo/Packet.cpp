@@ -20,4 +20,22 @@ void Packet::renormalize_momentum(
       sqrt(momentum_upper_t) / get(lapse)[index_of_closest_grid_point];
 }
 
+double compute_fluid_frame_energy(
+    const Packet& packet, const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
+    const Scalar<DataVector>& lapse,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric) {
+  const size_t idx = packet.index_of_closest_grid_point;
+  double fluid_frame_energy =
+      get(lorentz_factor)[idx] * get(lapse)[idx] * packet.momentum_upper_t;
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      fluid_frame_energy -= inv_spatial_metric.get(i, j)[idx] *
+                            lower_spatial_four_velocity.get(i)[idx] *
+                            packet.momentum[j];
+    }
+  }
+  return fluid_frame_energy;
+}
+
 }  // namespace Particles::MonteCarlo

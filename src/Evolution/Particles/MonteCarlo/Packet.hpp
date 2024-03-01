@@ -61,10 +61,28 @@ struct Packet {
   /// Spatial components of the 4-momentum \f$p_i\f$, in Inertial coordinates
   tnsr::i<double, 3, Frame::Inertial> momentum;
 
-  /// Recalculte \f$p^t\f$ using the fact that the 4-momentum is a null vector
+  /*!
+   * Recalculte \f$p^t\f$ using the fact that the 4-momentum is a null vector
+   * \f{align}{
+   * p^t = \sqrt{\gamma^{ij} p_i p_j}/\alpha
+   * \f}
+   */
   void renormalize_momentum(
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& lapse);
 };
+
+/*!
+ * Calculate energy of neutrinos in a frame comoving with the fluid
+ *
+ * \f{align}{
+ * E = W \alpha p^t - \gamma^{ij} u_i p_j
+ * \f}
+ */
+double compute_fluid_frame_energy(
+    const Packet& packet, const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
+    const Scalar<DataVector>& lapse,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric);
 
 }  // namespace Particles::MonteCarlo
