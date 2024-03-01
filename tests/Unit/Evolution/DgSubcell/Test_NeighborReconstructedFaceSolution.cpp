@@ -127,7 +127,9 @@ void test() {
                           std::nullopt,   {},           4};
     }
   }
-  evolution::dg::subcell::neighbor_reconstructed_face_solution<metavars>(
+  evolution::dg::subcell::neighbor_reconstructed_face_solution<
+      Dim,
+      typename metavars::SubcellOptions::DgComputeSubcellNeighborPackagedData>(
       make_not_null(&box), make_not_null(&mortar_data_from_neighbors));
   for (size_t d = 0; d < Dim; ++d) {
     CAPTURE(d);

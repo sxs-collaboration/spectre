@@ -67,15 +67,15 @@ struct TimeStepper;
 namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
-template <typename Metavariables, typename DbTagsList>
+template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData,
+          typename DbTagsList>
 void neighbor_reconstructed_face_solution(
     gsl::not_null<db::DataBox<DbTagsList>*> box,
     gsl::not_null<std::pair<
         const TimeStepId,
         DirectionalIdMap<
-            Metavariables::volume_dim,
-            std::tuple<Mesh<Metavariables::volume_dim>,
-                       Mesh<Metavariables::volume_dim - 1>,
+            VolumeDim,
+            std::tuple<Mesh<VolumeDim>, Mesh<VolumeDim - 1>,
                        std::optional<DataVector>, std::optional<DataVector>,
                        ::TimeStepId, int>>>*>
         received_temporal_id_and_data);
@@ -129,7 +129,9 @@ bool receive_boundary_data_global_time_stepping(
 
   // Move inbox contents into the DataBox
   if constexpr (using_subcell_v<Metavariables>) {
-    evolution::dg::subcell::neighbor_reconstructed_face_solution<Metavariables>(
+    evolution::dg::subcell::neighbor_reconstructed_face_solution<
+        volume_dim, typename Metavariables::SubcellOptions::
+                        DgComputeSubcellNeighborPackagedData>(
         box, make_not_null(&*received_temporal_id_and_data));
     evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
         box, *received_temporal_id_and_data);
