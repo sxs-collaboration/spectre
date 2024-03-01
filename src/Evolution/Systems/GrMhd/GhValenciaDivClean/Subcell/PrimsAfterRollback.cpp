@@ -25,7 +25,6 @@
 
 namespace grmhd::GhValenciaDivClean::subcell {
 template <typename OrderedListOfRecoverySchemes>
-template <size_t ThermodynamicDim>
 void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
     const bool did_rollback, const Mesh<3>& dg_mesh,
@@ -35,7 +34,7 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
         primitive_from_conservative_options) {
   if (did_rollback) {
@@ -111,9 +110,8 @@ using KastaunThenNewmanThenPalenzuela =
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATION(r, data)                                                \
-  template void PrimsAfterRollback<RECOVERY(data)>::apply<THERMO_DIM(data)>(  \
+  template void PrimsAfterRollback<RECOVERY(data)>::apply(                    \
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>          \
           prim_vars,                                                          \
       bool did_rollback, const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh, \
@@ -123,7 +121,7 @@ using KastaunThenNewmanThenPalenzuela =
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                 \
       const Scalar<DataVector>& tilde_phi,                                    \
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,       \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const EquationsOfState::EquationOfState<true, 3>& eos,                  \
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&        \
           primitive_from_conservative_options);
 GENERATE_INSTANTIATIONS(
@@ -131,8 +129,7 @@ GENERATE_INSTANTIATIONS(
     (tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    (1, 2, 3))
+     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela))
 #undef INSTANTIATION
 #undef THERMO_DIM
 #undef RECOVERY

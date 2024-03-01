@@ -129,12 +129,10 @@ void test(const gsl::not_null<std::mt19937*> gen,
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>, ::domain::Tags::Mesh<3>,
-      evolution::dg::subcell::Tags::Mesh<3>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      evolution::dg::subcell::Tags::Mesh<3>, hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       did_rollback, subcell_cons, dg_prims, spatial_metric, inv_spatial_metric,
-      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, std::move(eos),
+      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, eos->promote_to_3d_eos(),
       primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<

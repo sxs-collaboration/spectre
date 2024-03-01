@@ -60,10 +60,9 @@ struct PrimsAfterRollback {
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      hydro::Tags::EquationOfStateBase,
+      hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
       bool did_rollback, const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
@@ -75,7 +74,7 @@ struct PrimsAfterRollback {
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<true, 3>& eos,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
 };
