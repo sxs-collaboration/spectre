@@ -740,8 +740,9 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
                    compute_item_parent_tags>>([&result](auto tag_v) {
     // We choose to always work with the associated simple tags, so we need
     // to get the base tag _if_ we have a compute tag.
+    using parent_tag_compute = tmpl::type_from<decltype(tag_v)>;
     using parent_tag = detail::get_base<tmpl::type_from<decltype(tag_v)>>;
-    using subitems = typename Subitems<parent_tag>::type;
+    using subitems = typename Subitems<parent_tag_compute>::type;
     const std::string parent_tag_name = pretty_type::get_name<parent_tag>();
     const std::vector<std::string> subitem_tag_names =
         pretty_type::vector_of_get_names(subitems{});
@@ -771,6 +772,13 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
                         tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
         for (const std::string& argument_tag : argument_tags) {
           result.tags_and_dependents[argument_tag].push_back(simple_tag);
+        }
+        // If this compute tag is a subitem of another compute tag, then we
+        // need to make the parent aware that this tag depends on it.
+        if (result.subitem_to_parent_tag.find(simple_tag) !=
+            result.subitem_to_parent_tag.end()) {
+          result.tags_and_dependents[result.subitem_to_parent_tag[simple_tag]]
+              .push_back(simple_tag);
         }
         result.tags_and_reset_functions[simple_tag] =
             &DataBox::template reset_compute_item<compute_tag>;
