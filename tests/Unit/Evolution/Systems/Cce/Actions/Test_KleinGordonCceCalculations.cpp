@@ -24,7 +24,18 @@ using swsh_volume_tags_to_generate =
     tmpl::list<Tags::Exp2Beta, Tags::BondiR, Tags::BondiK, Tags::EthRDividedByR,
                Tags::EthEthRDividedByR, Tags::EthEthbarRDividedByR,
                Tags::BondiJ, Tags::Dy<Tags::KleinGordonPsi>,
-               Tags::KleinGordonPsi, Tags::Dy<Tags::Dy<Tags::KleinGordonPsi>>>;
+               Tags::KleinGordonPsi, Tags::Dy<Tags::Dy<Tags::KleinGordonPsi>>,
+               Tags::BondiU, Tags::Dy<Tags::BondiU>, Tags::Dy<Tags::BondiW>,
+               Tags::DuRDividedByR, Tags::BondiW,
+               Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                                Spectral::Swsh::Tags::Ethbar>,
+               Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                                Spectral::Swsh::Tags::Ethbar>,
+               Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                                Spectral::Swsh::Tags::Eth>,
+               Spectral::Swsh::Tags::Derivative<
+                   ::Tags::Multiplies<Tags::BondiJ, Tags::BondiJbar>,
+                   Spectral::Swsh::Tags::Eth>>;
 
 using swsh_boundary_tags_to_generate =
     tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
@@ -46,7 +57,9 @@ using swsh_volume_tags_to_compute =
                Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
                                                 Spectral::Swsh::Tags::EthEth>,
                Spectral::Swsh::Tags::Derivative<
-                   Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>;
+                   Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>,
+               Tags::PoleOfIntegrand<Tags::KleinGordonPi>,
+               Tags::RegularIntegrand<Tags::KleinGordonPi>>;
 
 using swsh_boundary_tags_to_compute =
     tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>>;
@@ -95,7 +108,12 @@ struct mock_kg_characteristic_evolution {
                   tmpl::bind<::Actions::MutateApply,
                              tmpl::bind<ComputeKleinGordonSource, tmpl::_1>>>,
               ::Actions::MutateApply<
-                  GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>>>>;
+                  GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>,
+              tmpl::transform<
+                  integrand_terms_to_compute_for_bondi_variable<
+                      Tags::KleinGordonPi>,
+                  tmpl::bind<::Actions::MutateApply,
+                             tmpl::bind<ComputeBondiIntegrand, tmpl::_1>>>>>>;
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
@@ -109,8 +127,11 @@ struct metavariables {
 // This unit test is to validate the automatic calling chain of Klein-Gordon Cce
 // calculations, including the action
 // `CalculateIntegrandInputsForTag<Tags::KleinGordonPi>`, the mutators
-// `ComputeKleinGordonSource` and
-// `GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>`. The test involves
+// `ComputeKleinGordonSource`,
+// `GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>`,
+// `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>`, and
+// `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`. The test
+// involves
 // (a) Fills a bunch of variables with random numbers (filtered so that there is
 // no aliasing in highest modes).
 // (b) Puts those variables in two places: the MockRuntimeSystem runner and a
@@ -218,7 +239,7 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
 
   runner.set_phase(Parallel::Phase::Evolve);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 9; i++) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
 
@@ -311,6 +332,23 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
             expected_box);
     CHECK(computed_result == expected_result);
   }
+
+  // tests for
+  // `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>` and
+  // `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`
+  tmpl::for_each<
+      integrand_terms_to_compute_for_bondi_variable<Tags::KleinGordonPi>>(
+      [&expected_box, &runner](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        db::mutate_apply<ComputeBondiIntegrand<tag>>(
+            make_not_null(&expected_box));
+
+        auto computed_result =
+            ActionTesting::get_databox_tag<component, tag>(runner, 0);
+
+        auto expected_result = db::get<tag>(expected_box);
+        CHECK(computed_result == expected_result);
+      });
 }
 }  // namespace
 
