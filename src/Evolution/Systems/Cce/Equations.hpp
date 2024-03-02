@@ -83,6 +83,52 @@ struct integrand_terms_to_compute_for_bondi_variable_impl<Tags::BondiH> {
                           Tags::LinearFactor<Tags::BondiH>,
                           Tags::LinearFactorForConjugate<Tags::BondiH>>;
 };
+
+template <>
+struct integrand_terms_to_compute_for_bondi_variable_impl<Tags::KleinGordonPi> {
+  using type = tmpl::list<Tags::PoleOfIntegrand<Tags::KleinGordonPi>,
+                          Tags::RegularIntegrand<Tags::KleinGordonPi>>;
+};
+
+void klein_gordon_rhs_npsi1(
+    gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> result,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& eth_ethbar_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k);
+
+void klein_gordon_rhs_npsi2(
+    gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> result,
+    const SpinWeighted<ComplexDataVector, 2>& j,
+    const SpinWeighted<ComplexDataVector, 2>& eth_eth_kg_psi,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi,
+    const SpinWeighted<ComplexDataVector, 1>& ethbar_j);
+
+void klein_gordon_rhs_npsi3(
+    gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> result,
+    const SpinWeighted<ComplexDataVector, 1>& eth_k,
+    const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi);
+
+void klein_gordon_rhs_npsi4_divided_by_one_minues_y_squared(
+    gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> result,
+    const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi,
+    const SpinWeighted<ComplexDataVector, 1>& dy_bondi_u,
+    const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_u,
+    const SpinWeighted<ComplexDataVector, 1>& eth_dy_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& dy_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r);
+
+void klein_gordon_rhs_tau(
+    gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> result,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y,
+    const SpinWeighted<ComplexDataVector, 0>& dy_w,
+    const SpinWeighted<ComplexDataVector, 0>& dy_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& dy_dy_kg_psi,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_w,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r);
 }  // namespace detail
 
 /// \brief A struct for providing a `tmpl::list` of integrand tags that need to
@@ -952,5 +998,145 @@ struct ComputeBondiIntegrand<Tags::LinearFactorForConjugate<Tags::BondiH>> {
       const SpinWeighted<ComplexDataVector, 2>& dy_j,
       const SpinWeighted<ComplexDataVector, 2>& j,
       const SpinWeighted<ComplexDataVector, 0>& one_minus_y);
+};
+
+/*!
+ *\brief Computes the pole part of the integrand (right-hand side) of the
+ * equation which determines the radial (y) dependence of the scalar quantity
+ * \f$\Pi\f$.
+ *
+ * \details The evolution equation for \f$\Pi\f$ is written as
+ * \f[(1 - y) \partial_y \Pi + \Pi = A_\Pi + (1 - y) B_\Pi.\f]
+ * We refer to \f$A_\Pi\f$ as the "pole part" of the integrand and \f$B_\Pi\f$
+ * as the "regular part". The pole part is computed by this function, and has
+ * the expression
+ * \f[A_\Pi = - \Re \left(U \bar{\eth}\psi\right).\f]
+ */
+template <>
+struct ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>> {
+ public:
+  using pre_swsh_derivative_tags = tmpl::list<>;
+  using swsh_derivative_tags =
+      tmpl::list<Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                  Spectral::Swsh::Tags::Eth>>;
+  using integration_independent_tags = tmpl::list<Tags::BondiU>;
+
+  using return_tags = tmpl::list<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>;
+  using argument_tags =
+      tmpl::append<pre_swsh_derivative_tags, swsh_derivative_tags,
+                   integration_independent_tags>;
+
+  template <typename... Args>
+  static void apply(
+      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+          pole_of_integrand_for_kg_pi,
+      const Args&... args) {
+    apply_impl(make_not_null(&get(*pole_of_integrand_for_kg_pi)), get(args)...);
+  }
+
+ private:
+  static void apply_impl(gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>
+                             pole_of_integrand_for_kg_pi,
+                         const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi,
+                         const SpinWeighted<ComplexDataVector, 1>& bondi_u);
+};
+
+/*!
+ * \brief Computes the regular part of the integrand (right-hand side) of the
+ * equation which determines the radial (y) dependence of the scalar quantity
+ * \f$\Pi\f$.
+ *
+ * \details The evolution equation for \f$\Pi\f$ is written as
+ * \f[(1 - y) \partial_y \Pi + \Pi = A_\Pi + (1 - y) B_\Pi.\f]
+ * We refer to \f$A_\Pi\f$ as the "pole part" of the integrand and \f$B_\Pi\f$
+ * as the "regular part". The regular part is computed by this function, and has
+ * the expression:
+ * \f[ B_\Pi = \frac{1}{4R}e^{2\beta}\left(N_{\psi 1}-N_{\psi 2} +N_{\psi
+ * 3}\right) -\frac{R}{2}\frac{N_{\psi 4}}{(1-y)^2}
+ * +\tau+\frac{\partial_{u}R}{R}(1-y)\partial_y^2\psi, \f]
+ * where
+ * \f{align*}{
+ * & N_{\psi 1}= K(2\Re \eth\beta\bar{\eth}\psi + \eth\bar{\eth}\psi) \\
+ * & N_{\psi 2}=\Re \bar{J}\eth\eth\psi + 2\Re \bar{\eth}\beta \bar{\eth}\psi
+ * J + \Re \bar{\eth}J\bar{\eth}\psi \\
+ * & N_{\psi 3}=\Re \eth K\bar{\eth}\psi \\
+ * & N_{\psi 4}=2\Re (\bar{\eth}\psi ) \partial_rU + 2\Re \eth
+ * \bar{U}\partial_r\psi + 4\Re \bar{U}\eth\partial_r\psi \\
+ * & \tau=\frac{1}{2}(1-y)\partial_y W\partial_y\psi +
+ * \frac{(1-y)^2}{4R}\partial_y^2\psi +
+ * \frac{1}{2}(1-y)W\partial_y^2\psi + \frac{1}{2}W\partial_y\psi
+ * \f}
+ */
+template <>
+struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>> {
+ public:
+  using pre_swsh_derivative_tags =
+      tmpl::list<Tags::Dy<Tags::Dy<Tags::KleinGordonPsi>>,
+                 Tags::Dy<Tags::KleinGordonPsi>, Tags::Dy<Tags::BondiU>,
+                 Tags::Dy<Tags::BondiW>>;
+  using swsh_derivative_tags =
+      tmpl::list<Spectral::Swsh::Tags::Derivative<
+                     Tags::Dy<Tags::KleinGordonPsi>, Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                  Spectral::Swsh::Tags::EthEth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                                  Spectral::Swsh::Tags::Ethbar>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                                  Spectral::Swsh::Tags::Ethbar>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<
+                     ::Tags::Multiplies<Tags::BondiJ, Tags::BondiJbar>,
+                     Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<
+                     Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>;
+  using integration_independent_tags =
+      tmpl::list<Tags::BondiJ, Tags::Exp2Beta, Tags::DuRDividedByR,
+                 Tags::OneMinusY, Tags::EthRDividedByR, Tags::BondiR,
+                 Tags::BondiK, Tags::BondiU, Tags::BondiW>;
+
+  using return_tags = tmpl::list<Tags::RegularIntegrand<Tags::KleinGordonPi>>;
+  using argument_tags =
+      tmpl::append<pre_swsh_derivative_tags, swsh_derivative_tags,
+                   integration_independent_tags>;
+
+  template <typename... Args>
+  static void apply(
+      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+          regular_integrand_for_kg_pi,
+      const Args&... args) {
+    apply_impl(make_not_null(&get(*regular_integrand_for_kg_pi)), get(args)...);
+  }
+
+ private:
+  static void apply_impl(
+      gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>
+          regular_integrand_for_kg_pi,
+      // pre_swsh_derivative_tags
+      const SpinWeighted<ComplexDataVector, 0>& dy_dy_kg_psi,
+      const SpinWeighted<ComplexDataVector, 0>& dy_kg_psi,
+      const SpinWeighted<ComplexDataVector, 1>& dy_bondi_u,
+      const SpinWeighted<ComplexDataVector, 0>& dy_w,
+      // swsh_derivative_tags
+      const SpinWeighted<ComplexDataVector, 1>& eth_dy_kg_psi,
+      const SpinWeighted<ComplexDataVector, 2>& eth_eth_kg_psi,
+      const SpinWeighted<ComplexDataVector, 1>& eth_kg_psi,
+      const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
+      const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
+      const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+      const SpinWeighted<ComplexDataVector, 1>& eth_j_jbar,
+      const SpinWeighted<ComplexDataVector, 0>& eth_ethbar_kg_psi,
+      // integration_independent_tags
+      const SpinWeighted<ComplexDataVector, 2>& j,
+      const SpinWeighted<ComplexDataVector, 0>& exp2beta,
+      const SpinWeighted<ComplexDataVector, 0>& du_r_divided_by_r,
+      const SpinWeighted<ComplexDataVector, 0>& one_minus_y,
+      const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
+      const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+      const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+      const SpinWeighted<ComplexDataVector, 1>& bondi_u,
+      const SpinWeighted<ComplexDataVector, 0>& bondi_w);
 };
 }  // namespace Cce
