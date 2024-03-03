@@ -45,7 +45,6 @@ void Flattener<RecoverySchemesList>::pup(PUP::er& p) {
 }
 
 template <typename RecoverySchemesList>
-template <size_t ThermodynamicDim>
 void Flattener<RecoverySchemesList>::operator()(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_ye,
@@ -59,10 +58,9 @@ void Flattener<RecoverySchemesList>::operator()(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Mesh<3>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_inv_jacobian,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
-        primitive_from_conservative_options)
-    const {
+        primitive_from_conservative_options) const {
   // Create a temporary variable for each field's cell average.
   // These temporaries live on the stack and should have minimal cost.
   double mean_tilde_d = std::numeric_limits<double>::signaling_NaN();
@@ -302,26 +300,6 @@ using KastaunThenNewmanThenPalenzuela =
 GENERATE_INSTANTIATIONS(INSTANTIATION, ORDERED_RECOVERY_LIST)
 #undef INSTANTIATION
 
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                              \
-  template void Flattener<RECOVERY(data)>::operator()<THERMO_DIM(data)>(    \
-      gsl::not_null<Scalar<DataVector>*> tilde_d,                           \
-      gsl::not_null<Scalar<DataVector>*> tilde_ye,                          \
-      gsl::not_null<Scalar<DataVector>*> tilde_tau,                         \
-      gsl::not_null<tnsr::i<DataVector, 3>*> tilde_s,                       \
-      gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> primitives,  \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,               \
-      const Scalar<DataVector>& tilde_phi,                                  \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                    \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,   \
-      const Mesh<3>& mesh,                                                  \
-      const Scalar<DataVector>& det_logical_to_inertial_inv_jacobian,       \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
-        primitive_from_conservative_options) const;
-GENERATE_INSTANTIATIONS(INSTANTIATION, ORDERED_RECOVERY_LIST, (1, 2))
-#undef INSTANTIATION
 #undef THERMO_DIM
 #undef RECOVERY
 #undef ORDERED_RECOVERY_LIST

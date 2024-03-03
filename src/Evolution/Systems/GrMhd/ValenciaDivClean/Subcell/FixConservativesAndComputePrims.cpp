@@ -21,7 +21,6 @@
 
 namespace grmhd::ValenciaDivClean::subcell {
 template <typename OrderedListOfRecoverySchemes>
-template <size_t ThermodynamicDim>
 void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<bool*> needed_fixing,
     const gsl::not_null<typename System::variables_tag::type*>
@@ -29,7 +28,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
         primitive_vars_ptr,
     const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
@@ -83,30 +82,15 @@ using KastaunThenNewmanThenPalenzuela =
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template void                                                             \
-  FixConservativesAndComputePrims<RECOVERY(data)>::apply<THERMO_DIM(data)>( \
-      const gsl::not_null<bool*> needed_fixing,                             \
-      const gsl::not_null<typename System::variables_tag::type*>            \
-          conserved_vars_ptr,                                               \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>        \
-          primitive_vars_ptr,                                               \
-      const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,   \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                    \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
-          primitive_from_conservative_options);
+#define INSTANTIATION(r, data) \
+  template struct FixConservativesAndComputePrims<RECOVERY(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,
                          tmpl::list<PrimitiveRecoverySchemes::NewmanHamlin>,
                          tmpl::list<PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-                         NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-                        (1, 2, 3))
+                         NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela))
 
 #undef INSTANTIATION
 #undef THERMO_DIM

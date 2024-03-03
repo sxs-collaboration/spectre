@@ -32,7 +32,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
                      Spectral::Quadrature::GaussLobatto);
   const size_t num_points = mesh.number_of_grid_points();
 
-  EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
+  const EquationsOfState::Equilibrium3D ideal_fluid{
+      EquationsOfState::IdealFluid<true>{4.0 / 3.0}};
   const Scalar<DataVector> tilde_phi(num_points, 0.);
   tnsr::I<DataVector, 3> tilde_b;
   get<0>(tilde_b) = DataVector(num_points, 0.02);

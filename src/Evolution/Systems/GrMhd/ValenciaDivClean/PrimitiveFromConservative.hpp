@@ -7,15 +7,11 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
 
 /// \cond
 namespace gsl {
@@ -73,10 +69,10 @@ struct PrimitiveFromConservative {
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      hydro::Tags::EquationOfStateBase,
+      hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <bool EnforcePhysicality = true, size_t ThermodynamicDim>
+  template <bool EnforcePhysicality = true>
   static bool apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -95,12 +91,34 @@ struct PrimitiveFromConservative {
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state,
+      const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
 
  private:
+  template <bool EnforcePhysicality, typename EosType>
+  static bool impl(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
+      gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> temperature,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+      const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+      const Scalar<DataVector>& tilde_phi,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const EosType& equation_of_state,
+      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+          primitive_from_conservative_options);
+
   // Use Kastaun hydro inversion if B is dynamically unimportant
   static constexpr bool use_hydro_optimization = true;
 };

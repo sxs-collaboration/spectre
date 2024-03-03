@@ -49,14 +49,13 @@ struct PrimitiveRecoveryData;
  */
 class KastaunEtAlHydro {
  public:
-  template <bool EnforcePhysicality, size_t ThermodynamicDim>
+  template <bool EnforcePhysicality, typename EosType>
   static std::optional<PrimitiveRecoveryData> apply(
       double initial_guess_pressure, double tau,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor, double electron_fraction,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state,
+      const EosType& equation_of_state,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
 

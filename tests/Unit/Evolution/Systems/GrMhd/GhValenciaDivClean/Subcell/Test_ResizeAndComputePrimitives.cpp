@@ -79,8 +79,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
   const Scalar<DataVector> sqrt_det_spatial_metric{
       sqrt(get(determinant(spatial_metric)))};
 
-  std::unique_ptr<EquationsOfState::get_eos_base<EquationOfStateType>> eos =
-      std::make_unique<EquationOfStateType>(input_eos);
+  auto eos = input_eos.get_clone();
   auto prim_vars = make_with_random_values<PrimVars>(
       gen, dist,
       start_on_dg ? dg_mesh.number_of_grid_points()
@@ -170,9 +169,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::ActiveGrid, cons_tag, prim_tag,
       gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
-      evolution::dg::subcell::Tags::Mesh<3>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::get_eos_base<EquationOfStateType>>>,
+      evolution::dg::subcell::Tags::Mesh<3>, hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       active_grid, cons_vars, prim_vars, spacetime_metric, dg_mesh,
       subcell_mesh, std::move(eos), primitive_from_conservative_options);
@@ -223,19 +220,15 @@ SPECTRE_TEST_CASE(
   // Use a small range of random values since we need recovery to succeed and we
   // also reconstruct to the DG grid from the FD grid and need to maintain a
   // somewhat reasonable state on both grids.
-  const EquationsOfState::PolytropicFluid<true> polytropic_eos(1.4, 5.0 / 3.0);
   const EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
-      wrapped_3d_polytropic_eos(polytropic_eos);
+      wrapped_3d_polytropic_eos(
+          EquationsOfState::PolytropicFluid<true>(1.4, 5.0 / 3.0));
   std::uniform_real_distribution<> dist(0.5, 0.505);
   for (const auto active_grid : {evolution::dg::subcell::ActiveGrid::Dg,
                                  evolution::dg::subcell::ActiveGrid::Subcell}) {
     test(make_not_null(&gen), make_not_null(&dist), active_grid, false,
-         polytropic_eos);
-    test(make_not_null(&gen), make_not_null(&dist), active_grid, false,
          wrapped_3d_polytropic_eos);
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      test(make_not_null(&gen), make_not_null(&dist), active_grid, true,
-           polytropic_eos);
       test(make_not_null(&gen), make_not_null(&dist), active_grid, true,
            wrapped_3d_polytropic_eos);
     }

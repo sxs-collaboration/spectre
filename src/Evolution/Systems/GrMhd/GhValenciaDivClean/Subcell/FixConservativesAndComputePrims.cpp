@@ -26,7 +26,6 @@
 
 namespace grmhd::GhValenciaDivClean::subcell {
 template <typename OrderedListOfRecoverySchemes>
-template <size_t ThermodynamicDim>
 void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<bool*> needed_fixing,
     const gsl::not_null<typename System::variables_tag::type*>
@@ -35,7 +34,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
         primitive_vars_ptr,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
     const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
         primitive_from_conservative_options) {
   CAPTURE_FOR_ERROR(subcell_coords);
@@ -122,31 +121,17 @@ using KastaunThenNewmanThenPalenzuela =
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template void                                                             \
-  FixConservativesAndComputePrims<RECOVERY(data)>::apply<THERMO_DIM(data)>( \
-      const gsl::not_null<bool*> needed_fixing,                             \
-      const gsl::not_null<typename System::variables_tag::type*>            \
-          conserved_vars_ptr,                                               \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>        \
-          primitive_vars_ptr,                                               \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,        \
-      const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&      \
-          primitive_from_conservative_options);
+#define INSTANTIATION(r, data) \
+  template struct FixConservativesAndComputePrims<RECOVERY(data)>;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    (1, 2, 3))
+     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela))
 
 #undef INSTANTIATION
-#undef THERMO_DIM
 #undef RECOVERY
 }  // namespace grmhd::GhValenciaDivClean::subcell

@@ -25,7 +25,6 @@
 
 namespace grmhd::GhValenciaDivClean::subcell {
 template <typename OrderedListOfRecoverySchemes>
-template <size_t ThermodynamicDim>
 void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
     const evolution::dg::subcell::ActiveGrid active_grid,
@@ -36,9 +35,9 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
-      primitive_from_conservative_options) {
+        primitive_from_conservative_options) {
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
     const size_t num_grid_points = dg_mesh.number_of_grid_points();
     // Reconstruct a copy of the pressure from the FD grid to the DG grid to
@@ -112,31 +111,16 @@ using KastaunThenNewmanThenPalenzuela =
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                               \
-  template void                                                              \
-  ResizeAndComputePrims<RECOVERY(data)>::apply<THERMO_DIM(data)>(            \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>         \
-          prim_vars,                                                         \
-      const evolution::dg::subcell::ActiveGrid active_grid,                  \
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                   \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
-      const Scalar<DataVector>& tilde_tau,                                   \
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
-      const Scalar<DataVector>& tilde_phi,                                   \
-      const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,      \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,  \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
-          primitive_from_conservative_options);
+#define INSTANTIATION(r, data) \
+  template struct ResizeAndComputePrims<RECOVERY(data)>;
+
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    (1, 2, 3))
+     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela))
+
 #undef INSTANTIATION
-#undef THERMO_DIM
 #undef RECOVERY
 }  // namespace grmhd::GhValenciaDivClean::subcell

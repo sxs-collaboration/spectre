@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.hpp"
 
 #include <cmath>
@@ -15,11 +17,10 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/GenerateInstantiations.hpp"
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
-namespace {
+namespace KastaunEtAlHydro_detail {
 
 struct Primitives {
   const double rest_mass_density;
@@ -28,16 +29,14 @@ struct Primitives {
   const double specific_internal_energy;
 };
 
-template <size_t ThermodynamicDim, bool EnforcePhysicality>
+template <typename EosType, bool EnforcePhysicality>
 class FunctionOfZ {
  public:
   FunctionOfZ(const double tau, const double momentum_density_squared,
               const double /* momentum_density_dot_magnetic_field */,
               const double /* magnetic_field_squared */,
               const double rest_mass_density_times_lorentz_factor,
-              const double electron_fraction,
-              const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                  equation_of_state,
+              const double electron_fraction, const EosType& equation_of_state,
               const double lorentz_max)
       : q_(tau / rest_mass_density_times_lorentz_factor),
         r_squared_(momentum_density_squared /
@@ -55,7 +54,7 @@ class FunctionOfZ {
     const double kmax = 2. * std::sqrt(v_0_squared) / (1. + v_0_squared);
 
     double eps_min{};
-    if constexpr (ThermodynamicDim == 3) {
+    if constexpr (EosType::thermodynamic_dim == 3) {
       eps_min = equation_of_state_.specific_internal_energy_lower_bound(
           rho_min, electron_fraction);
     } else {
@@ -88,13 +87,12 @@ class FunctionOfZ {
   bool state_is_unphysical_ = false;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
-  const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-      equation_of_state_;
+  const EosType& equation_of_state_;
 };
 
-template <size_t ThermodynamicDim, bool EnforcePhysicality>
+template <typename EosType, bool EnforcePhysicality>
 std::pair<double, double>
-FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::root_bracket() {
+FunctionOfZ<EosType, EnforcePhysicality>::root_bracket() {
   auto k = r_ / (q_ + 1.);
 
   const double rho_min = equation_of_state_.rest_mass_density_lower_bound();
@@ -115,8 +113,8 @@ FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::root_bracket() {
   return {lower_bound, upper_bound};
 }
 
-template <size_t ThermodynamicDim, bool EnforcePhysicality>
-Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
+template <typename EosType, bool EnforcePhysicality>
+Primitives FunctionOfZ<EosType, EnforcePhysicality>::primitives(
     double z) const {
   // Compute Lorentz factor, note that z = lorentz * v
   const double w_hat = std::sqrt(1. + z * z);
@@ -129,7 +127,7 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
 
   // Equation (C14) and (C16)
   double epsilon_hat = w_hat * q_ - z * (r_ - z / (1. + w_hat));
-  if constexpr (ThermodynamicDim == 3) {
+  if constexpr (EosType::thermodynamic_dim == 3) {
     epsilon_hat =
         std::clamp(epsilon_hat,
                    equation_of_state_.specific_internal_energy_lower_bound(
@@ -145,7 +143,7 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
 
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();
-  if constexpr (ThermodynamicDim == 1) {
+  if constexpr (EosType::thermodynamic_dim == 1) {
     // Note: we do not reset epsilon to satisfy the EOS because in that case
     // we are not guaranteed to be able to find a solution. That's because
     // the conserved-variable solution is inconsistent with the restrictive
@@ -153,10 +151,10 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
     // specific internal energy and specific enthalpy using the EOS.
     p_hat =
         get(equation_of_state_.pressure_from_density(Scalar<double>(rho_hat)));
-  } else if constexpr (ThermodynamicDim == 2) {
+  } else if constexpr (EosType::thermodynamic_dim == 2) {
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
-  } else if constexpr (ThermodynamicDim == 3) {
+  } else if constexpr (EosType::thermodynamic_dim == 3) {
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat),
         Scalar<double>(electron_fraction_)));
@@ -164,9 +162,8 @@ Primitives FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::primitives(
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat};
 }
 
-template <size_t ThermodynamicDim, bool EnforcePhysicality>
-double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
-    double z) const {
+template <typename EosType, bool EnforcePhysicality>
+double FunctionOfZ<EosType, EnforcePhysicality>::operator()(double z) const {
   const auto [rho_hat, w_hat, p_hat, epsilon_hat] = primitives(z);
   // Equation (C5)
   const double a_hat = p_hat / (rho_hat * (1.0 + epsilon_hat));
@@ -175,30 +172,29 @@ double FunctionOfZ<ThermodynamicDim, EnforcePhysicality>::operator()(
   // Equations (C22)
   return z - r_ / h_hat;
 }
-}  // namespace
+}  // namespace KastaunEtAlHydro_detail
 
-template <bool EnforcePhysicality, size_t ThermodynamicDim>
+template <bool EnforcePhysicality, typename EosType>
 std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
     const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
-    const double electron_fraction,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state,
+    const double electron_fraction, const EosType& equation_of_state,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
         primitive_from_conservative_options) {
   // Master function see Equation (44)
-  auto f_of_z = FunctionOfZ<ThermodynamicDim, EnforcePhysicality>{
-      tau,
-      momentum_density_squared,
-      momentum_density_dot_magnetic_field,
-      magnetic_field_squared,
-      rest_mass_density_times_lorentz_factor,
-      electron_fraction,
-      equation_of_state,
-      primitive_from_conservative_options.kastaun_max_lorentz_factor()};
+  auto f_of_z =
+      KastaunEtAlHydro_detail::FunctionOfZ<EosType, EnforcePhysicality>{
+          tau,
+          momentum_density_squared,
+          momentum_density_dot_magnetic_field,
+          magnetic_field_squared,
+          rest_mass_density_times_lorentz_factor,
+          electron_fraction,
+          equation_of_state,
+          primitive_from_conservative_options.kastaun_max_lorentz_factor()};
 
   if (f_of_z.has_no_root()) {
     return std::nullopt;
@@ -233,27 +229,3 @@ std::optional<PrimitiveRecoveryData> KastaunEtAlHydro::apply(
       electron_fraction};
 }
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
-
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(_, data)                                                \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
-                             PrimitiveRecoveryData>                           \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAlHydro::apply< \
-      PHYSICALITY(data), THERMODIM(data)>(                                    \
-      const double initial_guess_pressure, const double tau,                  \
-      const double momentum_density_squared,                                  \
-      const double momentum_density_dot_magnetic_field,                       \
-      const double magnetic_field_squared,                                    \
-      const double rest_mass_density_times_lorentz_factor,                    \
-      const double electron_fraction,                                         \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
-          equation_of_state,                                                  \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&        \
-          primitive_from_conservative_options);
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
-
-#undef INSTANTIATION
-#undef THERMODIM
-#undef PHYSICALITY

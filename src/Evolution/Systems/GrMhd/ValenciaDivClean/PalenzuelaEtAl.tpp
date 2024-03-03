@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 
 #include <cmath>
@@ -12,23 +14,20 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/GenerateInstantiations.hpp"
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
-namespace {
+namespace PalenzuelaEtAl_detail {
 
 // note q,r,s,t,x are defined in the documentation
-template <size_t ThermodynamicDim>
+template <typename EosType>
 class FunctionOfX {
  public:
   FunctionOfX(const double tau, const double momentum_density_squared,
               const double momentum_density_dot_magnetic_field,
               const double magnetic_field_squared,
               const double rest_mass_density_times_lorentz_factor,
-              const double electron_fraction,
-              const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                  equation_of_state)
+              const double electron_fraction, const EosType& equation_of_state)
       : q_(tau / rest_mass_density_times_lorentz_factor),
         r_(momentum_density_squared /
            square(rest_mass_density_times_lorentz_factor)),
@@ -67,15 +66,15 @@ class FunctionOfX {
     const double current_specific_internal_energy =
         specific_internal_energy(x, current_lorentz_factor);
     double current_pressure = std::numeric_limits<double>::signaling_NaN();
-    if constexpr (ThermodynamicDim == 1) {
+    if constexpr (EosType::thermodynamic_dim == 1) {
       current_pressure = get(equation_of_state_.pressure_from_density(
           Scalar<double>(current_rest_mass_density)));
-    } else if constexpr (ThermodynamicDim == 2) {
+    } else if constexpr (EosType::thermodynamic_dim == 2) {
       current_pressure =
           get(equation_of_state_.pressure_from_density_and_energy(
               Scalar<double>(current_rest_mass_density),
               Scalar<double>(current_specific_internal_energy)));
-    } else if constexpr (ThermodynamicDim == 3) {
+    } else if constexpr (EosType::thermodynamic_dim == 3) {
       current_pressure =
           get(equation_of_state_.pressure_from_density_and_energy(
               Scalar<double>(current_rest_mass_density),
@@ -95,21 +94,18 @@ class FunctionOfX {
   const double t_squared_;
   const double rest_mass_density_times_lorentz_factor_;
   const double electron_fraction_;
-  const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-      equation_of_state_;
+  const EosType& equation_of_state_;
 };
-}  // namespace
+}  // namespace PalenzuelaEtAl_detail
 
-template <bool EnforcePhysicality, size_t ThermodynamicDim>
+template <bool EnforcePhysicality, typename EosType>
 std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     const double /*initial_guess_pressure*/, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
-    const double electron_fraction,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state,
+    const double electron_fraction, const EosType& equation_of_state,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
     /*primitive_from_conservative_options*/) {
   const double lower_bound =
@@ -118,14 +114,14 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
   const double upper_bound = (2.0 * tau - magnetic_field_squared) /
                                  rest_mass_density_times_lorentz_factor +
                              2.0;
-  const auto f_of_x =
-      FunctionOfX<ThermodynamicDim>{tau,
-                                    momentum_density_squared,
-                                    momentum_density_dot_magnetic_field,
-                                    magnetic_field_squared,
-                                    rest_mass_density_times_lorentz_factor,
-                                    electron_fraction,
-                                    equation_of_state};
+  const auto f_of_x = PalenzuelaEtAl_detail::FunctionOfX<EosType>{
+      tau,
+      momentum_density_squared,
+      momentum_density_dot_magnetic_field,
+      magnetic_field_squared,
+      rest_mass_density_times_lorentz_factor,
+      electron_fraction,
+      equation_of_state};
   double specific_enthalpy_times_lorentz_factor =
       std::numeric_limits<double>::signaling_NaN();
   try {
@@ -144,17 +140,17 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
   double pressure = std::numeric_limits<double>::signaling_NaN();
   double specific_internal_energy = f_of_x.specific_internal_energy(
       specific_enthalpy_times_lorentz_factor, lorentz_factor);
-  if constexpr (ThermodynamicDim == 1) {
+  if constexpr (EosType::thermodynamic_dim == 1) {
     pressure = get(equation_of_state.pressure_from_density(
         Scalar<double>(rest_mass_density)));
     specific_internal_energy =
         get(equation_of_state.specific_internal_energy_from_density(
             Scalar<double>(rest_mass_density)));
-  } else if constexpr (ThermodynamicDim == 2) {
+  } else if constexpr (EosType::thermodynamic_dim == 2) {
     pressure = get(equation_of_state.pressure_from_density_and_energy(
         Scalar<double>(rest_mass_density),
         Scalar<double>(specific_internal_energy)));
-  } else if constexpr (ThermodynamicDim == 3) {
+  } else if constexpr (EosType::thermodynamic_dim == 3) {
     pressure = get(equation_of_state.pressure_from_density_and_energy(
         Scalar<double>(rest_mass_density),
         Scalar<double>(specific_internal_energy),
@@ -170,26 +166,3 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                electron_fraction};
 }
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
-
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(_, data)                                               \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                             PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl::apply<  \
-      PHYSICALITY(data), THERMODIM(data)>(                                   \
-      const double /*initial_guess_pressure*/, const double tau,             \
-      const double momentum_density_squared,                                 \
-      const double momentum_density_dot_magnetic_field,                      \
-      const double magnetic_field_squared,                                   \
-      const double rest_mass_density_times_lorentz_factor,                   \
-      const double electron_fraction,                                        \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state,                                                 \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
-          primitive_from_conservative_options);
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
-
-#undef INSTANTIATION
-#undef THERMODIM

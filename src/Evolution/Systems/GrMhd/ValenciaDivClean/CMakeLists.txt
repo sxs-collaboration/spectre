@@ -14,10 +14,6 @@ spectre_target_sources(
   FixConservatives.cpp
   Flattener.cpp
   Fluxes.cpp
-  KastaunEtAl.cpp
-  KastaunEtAlHydro.cpp
-  NewmanHamlin.cpp
-  PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
   PrimitiveFromConservativeOptions.cpp
   SetVariablesNeededFixingToFalse.cpp
@@ -38,9 +34,13 @@ spectre_target_headers(
   Flattener.hpp
   Fluxes.hpp
   KastaunEtAl.hpp
+  KastaunEtAl.tpp
   KastaunEtAlHydro.hpp
+  KastaunEtAlHydro.tpp
   NewmanHamlin.hpp
+  NewmanHamlin.tpp
   PalenzuelaEtAl.hpp
+  PalenzuelaEtAl.tpp
   PrimitiveFromConservative.hpp
   PrimitiveFromConservativeOptions.hpp
   PrimitiveRecoveryData.hpp

@@ -56,7 +56,8 @@ void test(const TestThis test_this, const int expected_tci_status,
   CAPTURE(test_this);
   CAPTURE(expected_tci_status);
   CAPTURE(element_stays_on_dg);
-  const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
+  const EquationsOfState::Barotropic3D eos{
+      EquationsOfState::PolytropicFluid<true>{100.0, 2.0}};
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
@@ -72,11 +73,14 @@ void test(const TestThis test_this, const int expected_tci_status,
     get(get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars)) = 1.0e-12;
   }
   get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prim_vars) =
-      eos.specific_internal_energy_from_density(
-          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
+      eos.specific_internal_energy_from_density_and_temperature(
+          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
+          Scalar<DataVector>{}, Scalar<DataVector>{});
   get(get<hydro::Tags::LorentzFactor<DataVector>>(prim_vars)) = 1.0;
-  get<hydro::Tags::Pressure<DataVector>>(prim_vars) = eos.pressure_from_density(
-      get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
+  get<hydro::Tags::Pressure<DataVector>>(prim_vars) =
+      eos.pressure_from_density_and_temperature(
+          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
+          Scalar<DataVector>{}, Scalar<DataVector>{});
   // set magnetic field to tiny but non-zero value
   for (size_t i = 0; i < 3; ++i) {
     get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(prim_vars)
@@ -128,8 +132,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       ::Tags::Variables<typename ConsVars::tags_list>,
       ::Tags::Variables<typename PrimVars::tags_list>, ::domain::Tags::Mesh<3>,
       ::evolution::dg::subcell::Tags::Mesh<3>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      hydro::Tags::GrmhdEquationOfState,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
@@ -138,10 +141,9 @@ void test(const TestThis test_this, const int expected_tci_status,
       evolution::dg::subcell::Tags::DataForRdmpTci,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       ConsVars{mesh.number_of_grid_points()}, prim_vars, mesh, subcell_mesh,
-      std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
-          std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
-      sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, tci_options,
-      subcell_options, evolution::dg::subcell::RdmpTciData{},
+      eos.get_clone(), sqrt_det_spatial_metric, spatial_metric,
+      inv_spatial_metric, tci_options, subcell_options,
+      evolution::dg::subcell::RdmpTciData{},
       primitive_from_conservative_options);
 
   db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(

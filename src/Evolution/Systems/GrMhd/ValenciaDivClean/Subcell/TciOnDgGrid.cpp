@@ -29,7 +29,6 @@
 
 namespace grmhd::ValenciaDivClean::subcell {
 template <typename RecoveryScheme>
-template <size_t ThermodynamicDim>
 std::tuple<int, evolution::dg::subcell::RdmpTciData>
 TciOnDgGrid<RecoveryScheme>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
@@ -41,7 +40,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<true, 3>& eos,
     const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const TciOptions& tci_options,
@@ -285,37 +284,5 @@ GENERATE_INSTANTIATIONS(
      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl))
 #undef INSTANTIATION
-
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                               \
-  template std::tuple<int, evolution::dg::subcell::RdmpTciData>              \
-  TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(                      \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>         \
-          dg_prim_vars,                                                      \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
-      const Scalar<DataVector>& tilde_tau,                                   \
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
-      const Scalar<DataVector>& tilde_phi,                                   \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,  \
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                   \
-      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,         \
-      const TciOptions& tci_options,                                         \
-      const evolution::dg::subcell::SubcellOptions& subcell_options,         \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
-          primitive_from_conservative_options,                               \
-      const double persson_exponent, const bool element_stays_on_dg);
-
-GENERATE_INSTANTIATIONS(
-    INSTANTIATION,
-    (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
-     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
-     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl),
-    (1, 2, 3))
-#undef INSTANTIATION
-#undef THERMO_DIM
 #undef RECOVERY
 }  // namespace grmhd::ValenciaDivClean::subcell

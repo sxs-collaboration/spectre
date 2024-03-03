@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 
 #include <algorithm>
@@ -12,23 +14,20 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
-template <bool EnforcePhysicality, size_t ThermodynamicDim>
+template <bool EnforcePhysicality, typename EosType>
 std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double initial_guess_for_pressure, const double tau,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
-    const double electron_fraction,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state,
+    const double electron_fraction, const EosType& equation_of_state,
     const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
     /*primitive_from_conservative_options*/) {
   const double total_energy_density =
@@ -115,17 +114,17 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
 
     if (converged) {
       double current_specific_internal_energy{};
-      if constexpr (ThermodynamicDim == 1) {
+      if constexpr (EosType::thermodynamic_dim == 1) {
         current_specific_internal_energy =
             get(equation_of_state.specific_internal_energy_from_density(
                 Scalar<double>(current_rest_mass_density)));
-      } else if constexpr (ThermodynamicDim == 2) {
+      } else if constexpr (EosType::thermodynamic_dim == 2) {
         current_specific_internal_energy =
             get(equation_of_state
                     .specific_internal_energy_from_density_and_pressure(
                         Scalar<double>(current_rest_mass_density),
                         Scalar<double>(current_pressure)));
-      } else if constexpr (ThermodynamicDim == 3) {
+      } else if constexpr (EosType::thermodynamic_dim == 3) {
         current_specific_internal_energy =
             (rho_h_w_squared / square(current_lorentz_factor) -
              current_pressure) /
@@ -152,10 +151,10 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       return std::nullopt;
     }
 
-    if constexpr (ThermodynamicDim == 1) {
+    if constexpr (EosType::thermodynamic_dim == 1) {
       current_pressure = get(equation_of_state.pressure_from_density(
           Scalar<double>(current_rest_mass_density)));
-    } else if constexpr (ThermodynamicDim == 2) {
+    } else if constexpr (EosType::thermodynamic_dim == 2) {
       current_pressure =
           get(equation_of_state.pressure_from_density_and_enthalpy(
               Scalar<double>(current_rest_mass_density),
@@ -163,7 +162,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       if (UNLIKELY(current_pressure <= 0.0)) {
         return std::nullopt;
       }
-    } else if constexpr (ThermodynamicDim == 3) {
+    } else if constexpr (EosType::thermodynamic_dim == 3) {
       const Scalar<double> local_internal_energy(
           current_specific_enthalpy -
           current_pressure / current_rest_mass_density - 1.0);
@@ -199,26 +198,3 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
   }  // while loop
 }
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
-
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(_, data)                                               \
-  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                             PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin::apply<    \
-      PHYSICALITY(data), THERMODIM(data)>(                                   \
-      const double initial_guess_pressure, const double tau,                 \
-      const double momentum_density_squared,                                 \
-      const double momentum_density_dot_magnetic_field,                      \
-      const double magnetic_field_squared,                                   \
-      const double rest_mass_density_times_lorentz_factor,                   \
-      const double electron_fraction,                                        \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state,                                                 \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
-          primitive_from_conservative_options);
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false))
-
-#undef INSTANTIATION
-#undef THERMODIM
