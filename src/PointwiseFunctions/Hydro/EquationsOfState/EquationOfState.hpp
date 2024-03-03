@@ -162,6 +162,8 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
       const EquationOfState<IsRelativistic, 1>& rhs) const = 0;
   virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
   promote_to_3d_eos() const = 0;
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const { return true; }
   /// @{
   /*!
    * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
@@ -343,6 +345,9 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
   promote_to_3d_eos() const = 0;
+
+  /// \brief Returns `true` if the EOS is barotropic
+  virtual bool is_barotropic() const = 0;
 
   /// @{
   /*!
@@ -540,6 +545,9 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
   promote_to_3d_eos() {
     return this->get_clone();
   }
+
+  /// \brief Returns `true` if the EOS is barotropic
+  virtual bool is_barotropic() const = 0;
 
   /// @{
   /*!

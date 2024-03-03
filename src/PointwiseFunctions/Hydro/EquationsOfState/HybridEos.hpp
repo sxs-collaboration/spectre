@@ -102,6 +102,9 @@ class HybridEos
   std::unique_ptr<EquationOfState<is_relativistic, 3>> promote_to_3d_eos()
       const override;
 
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const override { return false; }
+
   bool operator==(const HybridEos<ColdEquationOfState>& rhs) const;
 
   bool operator!=(const HybridEos<ColdEquationOfState>& rhs) const;

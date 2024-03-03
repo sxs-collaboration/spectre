@@ -62,6 +62,9 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
 
   bool is_equal(const EquationOfState<IsRelativistic, 2>& rhs) const override;
 
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const override { return false; }
+
   bool operator==(const DarkEnergyFluid<IsRelativistic>& rhs) const;
 
   bool operator!=(const DarkEnergyFluid<IsRelativistic>& rhs) const;
