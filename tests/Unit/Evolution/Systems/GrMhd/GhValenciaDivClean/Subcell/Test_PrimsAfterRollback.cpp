@@ -148,12 +148,11 @@ void test(const gsl::not_null<std::mt19937*> gen,
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::DidRollback, cons_tag, prim_tag,
       gr::Tags::SpacetimeMetric<DataVector, 3>, ::domain::Tags::Mesh<3>,
-      evolution::dg::subcell::Tags::Mesh<3>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::get_eos_base<EquationOfStateType>>>,
+      evolution::dg::subcell::Tags::Mesh<3>, hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       did_rollback, subcell_cons, dg_prims, spacetime_metric, dg_mesh,
-      subcell_mesh, std::move(eos), primitive_from_conservative_options);
+      subcell_mesh, eos->promote_to_3d_eos(),
+      primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,

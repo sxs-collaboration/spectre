@@ -16,28 +16,28 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAlHydro.tpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.tpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
-
 namespace grmhd::ValenciaDivClean {
-
 template <typename OrderedListOfPrimitiveRecoverySchemes, bool ErrorOnFailure>
-template <bool EnforcePhysicality, size_t ThermodynamicDim>
+template <bool EnforcePhysicality>
 bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
                                ErrorOnFailure>::
     apply(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
@@ -59,10 +59,55 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
           const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
           const Scalar<DataVector>& sqrt_det_spatial_metric,
-          const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-              equation_of_state,
+          const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
           const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
               primitive_from_conservative_options) {
+  return call_with_dynamic_type<
+      bool, typename EquationsOfState::detail::DerivedClasses<true, 3>::type>(
+      &equation_of_state, [&](const auto* const derived_eos) {
+        return impl<EnforcePhysicality>(
+            rest_mass_density, electron_fraction, specific_internal_energy,
+            spatial_velocity, magnetic_field, divergence_cleaning_field,
+            lorentz_factor, pressure, temperature, tilde_d, tilde_ye, tilde_tau,
+            tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+            sqrt_det_spatial_metric, *derived_eos,
+            primitive_from_conservative_options);
+      });
+}
+
+// If EnforceBarotropic then we assume the EOS is barotropic and enforce that
+// condition.
+template <typename OrderedListOfPrimitiveRecoverySchemes, bool ErrorOnFailure>
+template <bool EnforcePhysicality, typename EosType>
+bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
+                               ErrorOnFailure>::
+    impl(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+         const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+         const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+         const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+             spatial_velocity,
+         const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+             magnetic_field,
+         const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+         const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+         const gsl::not_null<Scalar<DataVector>*> pressure,
+         const gsl::not_null<Scalar<DataVector>*> temperature,
+         const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+         const Scalar<DataVector>& tilde_tau,
+         const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+         const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+         const Scalar<DataVector>& tilde_phi,
+         const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+         const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+         const Scalar<DataVector>& sqrt_det_spatial_metric,
+         const EosType& equation_of_state,
+         const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+             primitive_from_conservative_options) {
+  static_assert(EosType::thermodynamic_dim == 3);
+  static_assert(EosType::is_relativistic);
+  constexpr bool eos_is_barotropic =
+      tt::is_a_v<EquationsOfState::Barotropic3D, EosType>;
+
   get(*divergence_cleaning_field) =
       get(tilde_phi) / get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
@@ -121,58 +166,29 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     // Quick exit from inversion in low-density regions where we will
     // apply atmosphere corrections anyways.
     if (rest_mass_density_times_lorentz_factor[s] < cutoffD) {
-      if constexpr (ThermodynamicDim == 3) {
-        const double specific_energy_at_point =
-            equation_of_state.specific_internal_energy_lower_bound(
-                floorD, get(*electron_fraction)[s]);
-        const double pressure_at_point =
-            get(equation_of_state.pressure_from_density_and_energy(
-                Scalar<double>{floorD},
-                Scalar<double>{specific_energy_at_point},
-                Scalar<double>{get(*electron_fraction)[s]}));
-        const double enthalpy_density_at_point =
-            floorD + specific_energy_at_point * floorD + pressure_at_point;
-        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
-            floorD,
-            1.0,
-            pressure_at_point,
-            specific_energy_at_point,
-            enthalpy_density_at_point,
-            get(*electron_fraction)[s]};
-      } else if constexpr (ThermodynamicDim == 2) {
-        const double specific_energy_at_point =
+      double specific_energy_at_point =
+          equation_of_state.specific_internal_energy_lower_bound(
+              floorD, get(*electron_fraction)[s]);
+      if constexpr (eos_is_barotropic) {
+        specific_energy_at_point =
             get(equation_of_state
                     .specific_internal_energy_from_density_and_temperature(
-                        Scalar<double>{floorD}, Scalar<double>{0.0}));
-        const double pressure_at_point =
-            get(equation_of_state.pressure_from_density_and_energy(
-                Scalar<double>{floorD},
-                Scalar<double>{specific_energy_at_point}));
-        const double enthalpy_density_at_point =
-            floorD + specific_energy_at_point * floorD + pressure_at_point;
-        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
-            floorD,
-            1.0,
-            pressure_at_point,
-            specific_energy_at_point,
-            enthalpy_density_at_point,
-            get(*electron_fraction)[s]};
-      } else if constexpr (ThermodynamicDim == 1) {
-        const double specific_energy_at_point =
-            get(equation_of_state.specific_internal_energy_from_density(
-                Scalar<double>{floorD}));
-        const double pressure_at_point = get(
-            equation_of_state.pressure_from_density(Scalar<double>{floorD}));
-        const double enthalpy_density_at_point =
-            floorD + specific_energy_at_point * floorD + pressure_at_point;
-        primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
-            floorD,
-            1.0,
-            pressure_at_point,
-            specific_energy_at_point,
-            enthalpy_density_at_point,
-            get(*electron_fraction)[s]};
+                        Scalar<double>{floorD}, Scalar<double>{0.0},
+                        Scalar<double>{0.1}));
       }
+      const double pressure_at_point =
+          get(equation_of_state.pressure_from_density_and_energy(
+              Scalar<double>{floorD}, Scalar<double>{specific_energy_at_point},
+              Scalar<double>{get(*electron_fraction)[s]}));
+      const double enthalpy_density_at_point =
+          floorD + specific_energy_at_point * floorD + pressure_at_point;
+      primitive_data = PrimitiveRecoverySchemes::PrimitiveRecoveryData{
+          floorD,
+          1.0,
+          pressure_at_point,
+          specific_energy_at_point,
+          enthalpy_density_at_point,
+          get(*electron_fraction)[s]};
     } else {
       // not in atmosphere.
       auto apply_scheme = [&pressure, &primitive_data, &tau,
@@ -185,8 +201,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
         using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
         if (not primitive_data.has_value()) {
           primitive_data =
-              primitive_recovery_scheme::template apply<EnforcePhysicality,
-                                                        ThermodynamicDim>(
+              primitive_recovery_scheme::template apply<EnforcePhysicality>(
                   get(*pressure)[s], tau[s], get(momentum_density_squared)[s],
                   get(momentum_density_dot_magnetic_field)[s],
                   get(magnetic_field_squared)[s],
@@ -225,7 +240,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
-      if constexpr (ThermodynamicDim != 1) {
+      if constexpr (not eos_is_barotropic) {
         get(*specific_internal_energy)[s] =
             primitive_data.value().specific_internal_energy;
       }
@@ -254,22 +269,19 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
     }
   }
-  if constexpr (ThermodynamicDim == 1) {
+  if constexpr (eos_is_barotropic) {
     // Since the primitive recovery scheme is not restricted to lie on the
     // EOS-satisfying sub-manifold, we project back to the sub-manifold by
     // recomputing the specific internal energy from the EOS.
+    //
+    // Note: default construction for T and Y_e must be okay since the EOS is
+    // barotropic.
     *specific_internal_energy =
-        equation_of_state.specific_internal_energy_from_density(
-            *rest_mass_density);
-    *temperature =
-        equation_of_state.temperature_from_density(*rest_mass_density);
-  } else if constexpr (ThermodynamicDim == 2) {
-    *temperature = equation_of_state.temperature_from_density_and_energy(
-        *rest_mass_density, *specific_internal_energy);
-  } else if constexpr (ThermodynamicDim == 3) {
-    *temperature = equation_of_state.temperature_from_density_and_energy(
-        *rest_mass_density, *specific_internal_energy, *electron_fraction);
+        equation_of_state.specific_internal_energy_from_density_and_temperature(
+            *rest_mass_density, Scalar<DataVector>{}, Scalar<DataVector>{});
   }
+  *temperature = equation_of_state.temperature_from_density_and_energy(
+      *rest_mass_density, *specific_internal_energy, *electron_fraction);
   return true;
 }
 }  // namespace grmhd::ValenciaDivClean
@@ -300,37 +312,35 @@ GENERATE_INSTANTIATIONS(
 
 #undef INSTANTIATION
 
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define PHYSICALITY(data) BOOST_PP_TUPLE_ELEM(3, data)
-
-#define INSTANTIATION(_, data)                                               \
-  template bool grmhd::ValenciaDivClean::PrimitiveFromConservative<          \
-      RECOVERY(data), ERROR_ON_FAILURE(data)>::apply<PHYSICALITY(data),      \
-                                                     THERMODIM(data)>(       \
-      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,            \
-      const gsl::not_null<Scalar<DataVector>*> electron_fraction,            \
-      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,     \
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>          \
-          spatial_velocity,                                                  \
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>          \
-          magnetic_field,                                                    \
-      const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,    \
-      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,               \
-      const gsl::not_null<Scalar<DataVector>*> pressure,                     \
-      const gsl::not_null<Scalar<DataVector>*> temperature,                  \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
-      const Scalar<DataVector>& tilde_tau,                                   \
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
-      const Scalar<DataVector>& tilde_phi,                                   \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state,                                                 \
-      const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&       \
-          primitive_from_conservative_options);
+#define INSTANTIATION(_, data)                                                 \
+  template bool grmhd::ValenciaDivClean::PrimitiveFromConservative<            \
+      RECOVERY(data), ERROR_ON_FAILURE(data)>::                                \
+      apply<PHYSICALITY(data)>(                                                \
+          const gsl::not_null<Scalar<DataVector>*> rest_mass_density,          \
+          const gsl::not_null<Scalar<DataVector>*> electron_fraction,          \
+          const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,   \
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>        \
+              spatial_velocity,                                                \
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>        \
+              magnetic_field,                                                  \
+          const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,  \
+          const gsl::not_null<Scalar<DataVector>*> lorentz_factor,             \
+          const gsl::not_null<Scalar<DataVector>*> pressure,                   \
+          const gsl::not_null<Scalar<DataVector>*> temperature,                \
+          const Scalar<DataVector>& tilde_d,                                   \
+          const Scalar<DataVector>& tilde_ye,                                  \
+          const Scalar<DataVector>& tilde_tau,                                 \
+          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,              \
+          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,              \
+          const Scalar<DataVector>& tilde_phi,                                 \
+          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,      \
+          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,  \
+          const Scalar<DataVector>& sqrt_det_spatial_metric,                   \
+          const EquationsOfState::EquationOfState<true, 3>& equation_of_state, \
+          const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&     \
+              primitive_from_conservative_options);
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
@@ -342,7 +352,7 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<
          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanHamlinThenPalenzuelaEtAl, KastaunThenNewmanThenPalenzuela),
-    (true, false), (1, 2, 3), (true, false))
+    (true, false), (true, false))
 
 #undef INSTANTIATION
 #undef THERMODIM

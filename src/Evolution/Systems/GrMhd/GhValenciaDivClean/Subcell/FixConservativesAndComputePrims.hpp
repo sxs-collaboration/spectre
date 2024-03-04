@@ -44,10 +44,9 @@ struct FixConservativesAndComputePrims {
   using argument_tags = tmpl::list<
       evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-      hydro::Tags::EquationOfStateBase,
+      hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<bool*> needed_fixing,
       gsl::not_null<typename System::variables_tag::type*> conserved_vars_ptr,
@@ -55,7 +54,7 @@ struct FixConservativesAndComputePrims {
           primitive_vars_ptr,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
       const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<true, 3>& eos,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
 };

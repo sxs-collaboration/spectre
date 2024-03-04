@@ -70,10 +70,9 @@ struct ResizeAndComputePrims {
       grmhd::ValenciaDivClean::Tags::TildeB<>,
       grmhd::ValenciaDivClean::Tags::TildePhi,
       gr::Tags::SpacetimeMetric<DataVector, 3>,
-      hydro::Tags::EquationOfStateBase,
+      hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
       evolution::dg::subcell::ActiveGrid active_grid, const Mesh<3>& dg_mesh,
@@ -83,7 +82,7 @@ struct ResizeAndComputePrims {
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_phi,
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<true, 3>& eos,
       const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
           primitive_from_conservative_options);
 };

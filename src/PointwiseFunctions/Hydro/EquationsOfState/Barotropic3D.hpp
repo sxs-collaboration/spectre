@@ -84,6 +84,9 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   bool is_equal(const EquationOfState<ColdEquilEos::is_relativistic, 3>& rhs)
       const override;
 
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const override { return true; }
+
   bool operator==(const Barotropic3D<ColdEquilEos>& rhs) const;
 
   bool operator!=(const Barotropic3D<ColdEquilEos>& rhs) const;

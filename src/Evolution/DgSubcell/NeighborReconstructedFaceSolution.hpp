@@ -58,20 +58,19 @@ namespace evolution::dg::subcell {
  * the last argument to
  * `Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::apply`.
  */
-template <typename Metavariables, typename DbTagsList>
+template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData,
+          typename DbTagsList>
 void neighbor_reconstructed_face_solution(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<std::pair<
         const TimeStepId,
         DirectionalIdMap<
-            Metavariables::volume_dim,
-            std::tuple<Mesh<Metavariables::volume_dim>,
-                       Mesh<Metavariables::volume_dim - 1>,
+            VolumeDim,
+            std::tuple<Mesh<VolumeDim>, Mesh<VolumeDim - 1>,
                        std::optional<DataVector>, std::optional<DataVector>,
                        ::TimeStepId, int>>>*>
         received_temporal_id_and_data) {
-  constexpr size_t volume_dim = Metavariables::volume_dim;
-  db::mutate<subcell::Tags::GhostDataForReconstruction<volume_dim>,
+  db::mutate<subcell::Tags::GhostDataForReconstruction<VolumeDim>,
              subcell::Tags::DataForRdmpTci>(
       [&received_temporal_id_and_data](const auto subcell_ghost_data_ptr,
                                        const auto rdmp_tci_data_ptr) {
@@ -128,16 +127,16 @@ void neighbor_reconstructed_face_solution(
         }
       },
       box);
-  std::vector<DirectionalId<volume_dim>> mortars_to_reconstruct_to{};
+  std::vector<DirectionalId<VolumeDim>> mortars_to_reconstruct_to{};
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
     if (not std::get<3>(received_mortar_data.second).has_value()) {
       mortars_to_reconstruct_to.push_back(mortar_id);
     }
   }
-  DirectionalIdMap<volume_dim, DataVector> neighbor_reconstructed_evolved_vars =
-      Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::
-          apply(*box, mortars_to_reconstruct_to);
+  DirectionalIdMap<VolumeDim, DataVector> neighbor_reconstructed_evolved_vars =
+      DgComputeSubcellNeighborPackagedData::apply(*box,
+                                                  mortars_to_reconstruct_to);
   ASSERT(neighbor_reconstructed_evolved_vars.size() ==
              mortars_to_reconstruct_to.size(),
          "Should have reconstructed "

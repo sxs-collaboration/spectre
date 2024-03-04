@@ -32,6 +32,7 @@ struct ElectronFraction;
 struct EquationOfStateBase;
 template <typename EquationOfStateType>
 struct EquationOfState;
+struct GrmhdEquationOfState;
 template <typename DataType>
 struct InversePlasmaBeta;
 template <typename DataType>

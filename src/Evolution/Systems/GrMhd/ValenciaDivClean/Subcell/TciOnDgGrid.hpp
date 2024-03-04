@@ -145,13 +145,12 @@ class TciOnDgGrid {
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<3>,
+      hydro::Tags::GrmhdEquationOfState, domain::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
       evolution::dg::subcell::Tags::SubcellOptions<3>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>;
 
-  template <size_t ThermodynamicDim>
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
@@ -162,7 +161,7 @@ class TciOnDgGrid {
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<true, 3>& eos,
       const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const TciOptions& tci_options,

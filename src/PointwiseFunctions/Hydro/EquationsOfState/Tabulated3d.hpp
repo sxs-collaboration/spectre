@@ -126,6 +126,9 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
 
   bool is_equal(const EquationOfState<IsRelativistic, 3>& rhs) const override;
 
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const override { return false; }
+
   bool operator==(const Tabulated3D<IsRelativistic>& rhs) const;
 
   bool operator!=(const Tabulated3D<IsRelativistic>& rhs) const;

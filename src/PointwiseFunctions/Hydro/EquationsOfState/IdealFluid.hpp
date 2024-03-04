@@ -82,6 +82,9 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
   std::unique_ptr<EquationOfState<IsRelativistic, 3>> promote_to_3d_eos()
       const override;
 
+  /// \brief Returns `true` if the EOS is barotropic
+  bool is_barotropic() const override { return false; }
+
   bool operator==(const IdealFluid<IsRelativistic>& rhs) const;
 
   bool operator!=(const IdealFluid<IsRelativistic>& rhs) const;

@@ -74,18 +74,22 @@ void test(const gsl::not_null<std::mt19937*> gen,
   const Scalar<DataVector> sqrt_det_spatial_metric{
       sqrt(get(determinant(spatial_metric)))};
 
-  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
-      std::make_unique<EquationsOfState::PolytropicFluid<true>>(1.4, 5.0 / 3.0);
+  const auto eos = EquationsOfState::Barotropic3D{
+      EquationsOfState::PolytropicFluid<true>{
+          1.4,
+          5.0 / 3.0}}.get_clone();
   auto prim_vars = make_with_random_values<PrimVars>(
       gen, dist,
       start_on_dg ? dg_mesh.number_of_grid_points()
                   : subcell_mesh.number_of_grid_points());
   get<hydro::Tags::Pressure<DataVector>>(prim_vars) =
-      eos->pressure_from_density(
-          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
+      eos->pressure_from_density_and_temperature(
+          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
+          Scalar<DataVector>{}, Scalar<DataVector>{});
   get<hydro::Tags::SpecificInternalEnergy<DataVector>>(prim_vars) =
-      eos->specific_internal_energy_from_density(
-          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars));
+      eos->specific_internal_energy_from_density_and_temperature(
+          get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars),
+          Scalar<DataVector>{}, Scalar<DataVector>{});
   {
     const auto& spatial_velocity =
         get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
@@ -148,12 +152,10 @@ void test(const gsl::not_null<std::mt19937*> gen,
       gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>, ::domain::Tags::Mesh<3>,
-      evolution::dg::subcell::Tags::Mesh<3>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+      evolution::dg::subcell::Tags::Mesh<3>, hydro::Tags::GrmhdEquationOfState,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       active_grid, cons_vars, prim_vars, spatial_metric, inv_spatial_metric,
-      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, std::move(eos),
+      sqrt_det_spatial_metric, dg_mesh, subcell_mesh, eos->get_clone(),
       primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
@@ -189,7 +191,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildePhi>(cons_vars), spatial_metric,
         inv_spatial_metric, sqrt_det_spatial_metric,
-        db::get<hydro::Tags::EquationOfStateBase>(box),
+        db::get<hydro::Tags::GrmhdEquationOfState>(box),
         primitive_from_conservative_options);
   }
   CHECK_VARIABLES_APPROX(db::get<prim_tag>(box), prim_vars);

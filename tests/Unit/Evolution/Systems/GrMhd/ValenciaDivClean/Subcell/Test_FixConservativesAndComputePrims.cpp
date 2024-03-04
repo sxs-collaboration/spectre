@@ -45,7 +45,8 @@ SPECTRE_TEST_CASE(
   get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(cons_vars))[0] = 2.e-13;
   get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(cons_vars))[0] = 1.e-7;
 
-  const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
+  const EquationsOfState::Barotropic3D eos{
+      EquationsOfState::PolytropicFluid<true>{100.0, 2.0}};
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
@@ -59,19 +60,14 @@ SPECTRE_TEST_CASE(
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       typename System::variables_tag, typename System::primitive_variables_tag,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
-      gr::Tags::SpatialMetric<DataVector, 3>,
+      hydro::Tags::GrmhdEquationOfState, gr::Tags::SpatialMetric<DataVector, 3>,
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       grmhd::ValenciaDivClean::Tags::PrimitiveFromConservativeOptions>>(
       false, cons_vars,
       typename System::primitive_variables_tag::type{num_pts, 1.0e-4},
-      variable_fixer,
-      std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
-          std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
-      spatial_metric, inverse_spatial_metric, sqrt_det_spatial_metric,
-      primitive_from_conservative_options);
+      variable_fixer, eos.get_clone(), spatial_metric, inverse_spatial_metric,
+      sqrt_det_spatial_metric, primitive_from_conservative_options);
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>;
