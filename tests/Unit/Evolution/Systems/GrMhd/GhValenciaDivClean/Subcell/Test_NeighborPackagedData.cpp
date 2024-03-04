@@ -261,8 +261,7 @@ double test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<
               grmhd::GhValenciaDivClean::System>,
-          hydro::Tags::EquationOfState<
-              std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
+          hydro::Tags::GrmhdEquationOfState,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
@@ -305,7 +304,7 @@ double test(const size_t num_dg_pts) {
       std::unique_ptr<
           grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<BoundaryCorrection>()},
-      soln.equation_of_state().get_clone(), dg_prim_vars,
+      soln.equation_of_state().promote_to_3d_eos(), dg_prim_vars,
       // Set incorrect size for dt variables because they should get resized.
       Variables<typename dt_variables_tag::tags_list>{}, initial_variables,
       neighbor_data, 1.0, std::move(element_map), moving_mesh_map.get_clone(),

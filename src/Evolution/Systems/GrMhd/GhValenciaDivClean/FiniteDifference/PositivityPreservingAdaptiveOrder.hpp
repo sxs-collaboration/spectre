@@ -157,7 +157,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
                  typename System::variables_tag,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<dim>,
+                 hydro::Tags::GrmhdEquationOfState, domain::Tags::Element<dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
                  evolution::dg::subcell::Tags::Mesh<dim>>;
 

@@ -56,8 +56,7 @@ struct MockElementArray {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<::Tags::Variables<all_hydro_vars>,
-                         hydro::Tags::EquationOfState<std::unique_ptr<
-                             EquationsOfState::EquationOfState<true, 1>>>,
+                         hydro::Tags::GrmhdEquationOfState,
                          gr::Tags::InverseSpatialMetric<DataVector, 3>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -161,7 +160,7 @@ void test_numeric_initial_data(const NumericInitialData& initial_data,
       determinant_and_inverse(spatial_metric).second;
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
-      {Variables<all_hydro_vars>{num_points}, eos.get_clone(),
+      {Variables<all_hydro_vars>{num_points}, eos.promote_to_3d_eos(),
        inv_spatial_metric});
 
   const auto get_element_tag = [&runner,

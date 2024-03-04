@@ -4,10 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
-#include <limits>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <variant>
 
@@ -68,9 +66,7 @@ struct MockElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<
                   ::Tags::Variables<all_ghmhd_vars>,
-                  hydro::Tags::EquationOfState<std::unique_ptr<
-                      EquationsOfState::EquationOfState<true, 1>>>,
-                  domain::Tags::Mesh<3>,
+                  hydro::Tags::GrmhdEquationOfState, domain::Tags::Mesh<3>,
                   domain::Tags::Coordinates<3, Frame::Inertial>,
                   domain::Tags::InverseJacobian<3, Frame::ElementLogical,
                                                 Frame::Inertial>,
@@ -168,7 +164,7 @@ void test_set_initial_data(
       1.e-3,
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100., 2.)};
   const double star_radius = tov_star.radial_solution().outer_radius();
-  const auto& eos = tov_star.equation_of_state();
+  const auto eos = tov_star.equation_of_state().promote_to_3d_eos();
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -198,7 +194,7 @@ void test_set_initial_data(
       make_not_null(&runner), element_id,
       {Variables<all_ghmhd_vars>{subcell_active ? subcell_num_points
                                                 : dg_num_points},
-       eos.get_clone(), dg_mesh, dg_coords, dg_inv_jacobian, 0., active_grid,
+       eos->get_clone(), dg_mesh, dg_coords, dg_inv_jacobian, 0., active_grid,
        subcell_coords, subcell_inv_jacobian});
   auto tov_vars = tov_star.variables(
       active_coords, 0.,

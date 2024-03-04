@@ -175,7 +175,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(box),
         get<grmhd::ValenciaDivClean::Tags::TildePhi>(box), spatial_metric,
         inv_spatial_metric, sqrt_det_spatial_metric,
-        db::get<hydro::Tags::EquationOfStateBase>(box),
+        db::get<hydro::Tags::GrmhdEquationOfState>(box),
         primitive_from_conservative_options);
     CHECK_VARIABLES_APPROX(db::get<prim_tag>(box), expected_subcell_prims);
   } else {

@@ -150,7 +150,7 @@ struct NeighborPackagedData {
                   evolution::dg::Actions::detail::NormalVector<3>>>>;
 
           const auto& element = db::get<domain::Tags::Element<3>>(box);
-          const auto& eos = get<hydro::Tags::EquationOfStateBase>(box);
+          const auto& eos = get<hydro::Tags::GrmhdEquationOfState>(box);
 
           using dg_package_field_tags =
               typename DerivedCorrection::dg_package_field_tags;

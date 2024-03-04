@@ -246,7 +246,7 @@ double test(const size_t num_dg_pts) {
           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
           evolution::dg::subcell::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
-          hydro::Tags::EquationOfState<EquationsOfState::PolytropicFluid<true>>,
+          hydro::Tags::GrmhdEquationOfState,
           typename System::spacetime_variables_tag,
           typename System::primitive_variables_tag, variables_tag,
           evolution::dg::subcell::Tags::OnSubcellFaces<
@@ -266,7 +266,8 @@ double test(const size_t num_dg_pts) {
           grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<
               grmhd::ValenciaDivClean::BoundaryCorrections::Hll>()},
-      soln.equation_of_state(), dg_spacetime_vars, dg_prim_vars,
+      soln.equation_of_state().promote_to_3d_eos(), dg_spacetime_vars,
+      dg_prim_vars,
       typename variables_tag::type{dg_mesh.number_of_grid_points()},
       face_centered_gr_tags(subcell_mesh, time, element_map, moving_mesh_map,
                             functions_of_time, soln),
