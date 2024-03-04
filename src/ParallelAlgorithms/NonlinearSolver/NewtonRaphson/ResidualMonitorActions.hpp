@@ -138,15 +138,31 @@ struct CheckResidualMagnitude {
               std::variant<double, Convergence::HasConverged>{
                   next_step_length});
           return;
-        } else if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
-                            ::Verbosity::Quiet)) {
-          Parallel::printf(
-              "%s(%zu): WARNING: Failed to sufficiently decrease the residual "
-              "in %zu globalization steps. This is usually indicative of an "
-              "ill-posed problem, for example when the linearization of the "
-              "nonlinear operator is not computed correctly.\n",
-              pretty_type::name<OptionsGroup>(), iteration_id,
-              globalization_iteration_id);
+        } else {
+          // We have performed the maximum number of globalization steps without
+          // sufficiently decreasing the residual. The step length is so small
+          // now that the algorithm won't be converging anymore. Treat this as
+          // an error and stop the Newton-Raphson algorithm.
+          Convergence::HasConverged convergence_error{
+              Convergence::Reason::Error,
+              "Failed to sufficiently decrease the residual in " +
+                  std::to_string(globalization_iteration_id) +
+                  " globalization steps. This is usually indicative of an "
+                  "ill-posed problem, for example when the linearization of "
+                  "the nonlinear operator is not computed correctly.",
+              iteration_id};
+          if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
+                       ::Verbosity::Quiet)) {
+            Parallel::printf("%s(%zu): WARNING: %s\n",
+                             pretty_type::name<OptionsGroup>(), iteration_id,
+                             convergence_error.error_message());
+          }
+          Parallel::receive_data<Tags::GlobalizationResult<OptionsGroup>>(
+              Parallel::get_parallel_component<BroadcastTarget>(cache),
+              iteration_id,
+              std::variant<double, Convergence::HasConverged>{
+                  std::move(convergence_error)});
+          return;
         }  // min_step_length
       }    // sufficient decrease condition
     }      // initial iteration
