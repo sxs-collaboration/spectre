@@ -83,15 +83,21 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
     Subcell:
-      PerssonTci:
-        Exponent: 4.0
-        NumHighestModes: 1
-      RdmpDelta0: 1.0e-7
-      RdmpEpsilon: 1.0e-3
-      AlwaysUseSubcells: false
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: false
+        UseHalo: false
+        OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim
-      UseHalo: false
-      OnlyDgBlocksAndGroups: None
       FiniteDifferenceDerivativeOrder: 2
     TciOptions:
       MinimumValueOfD: 1.0e-20

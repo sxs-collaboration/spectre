@@ -250,7 +250,7 @@ void test(const bool always_use_subcell, const bool interior_element,
                allow_subcell_in_block
                    ? std::optional<std::vector<std::string>>{}
                    : std::optional{std::vector<std::string>{"Block0"}},
-               ::fd::DerivativeOrder::Two},
+               ::fd::DerivativeOrder::Two, 1, 1, 1},
            TestCreator<Dim>{}}}};
   metavars::FdInitialDataTci::invoked = false;
   metavars::SetInitialRdmpData::invoked = false;

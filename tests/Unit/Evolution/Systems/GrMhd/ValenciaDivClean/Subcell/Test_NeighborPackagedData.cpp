@@ -275,7 +275,7 @@ double test(const size_t num_dg_pts) {
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, ::fd::DerivativeOrder::Two});
+          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   std::vector<DirectionalId<3>> mortars_to_reconstruct_to{};

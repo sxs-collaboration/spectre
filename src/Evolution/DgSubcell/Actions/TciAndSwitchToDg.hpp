@@ -193,7 +193,10 @@ struct TciAndSwitchToDg {
     // subcell, so effectively a finite difference/volume code.
     const bool only_need_rdmp_data =
         db::get<subcell::Tags::DidRollback>(box) or
-        (time_step_id.substep() != 0 or time_step_id.slab_number() < 0);
+        (time_step_id.substep() != 0 or time_step_id.slab_number() < 0)
+
+        or db::get<evolution::dg::subcell::Tags::StepsSinceTciCall>(box) + 1 <
+               subcell_options.number_of_steps_between_tci_calls();
     if (UNLIKELY(db::get<subcell::Tags::DidRollback>(box))) {
       db::mutate<subcell::Tags::DidRollback>(
           [](const gsl::not_null<bool*> did_rollback) {
@@ -214,17 +217,29 @@ struct TciAndSwitchToDg {
     db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci,
                evolution::dg::subcell::Tags::TciCallsSinceRollback,
                evolution::dg::subcell::Tags::StepsSinceTciCall>(
-        [only_need_rdmp_data, &tci_result](
+        [only_need_rdmp_data, &subcell_options, &tci_result](
             const auto rdmp_data_ptr,
             const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
             const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
           (*tci_calls_since_rollback_ptr) += (only_need_rdmp_data ? 0 : 1);
-          (*steps_since_tci_call_ptr) += (only_need_rdmp_data ? 0 : 1);
+          if ((*steps_since_tci_call_ptr) + 1 <
+              subcell_options.number_of_steps_between_tci_calls()) {
+            (*steps_since_tci_call_ptr) += 1;
+          } else {
+            (*steps_since_tci_call_ptr) = 0;
+          }
         },
         make_not_null(&box));
 
-    if (only_need_rdmp_data) {
+    // Use <= for TciCallsSinceRollback since we've already incremented the
+    // count in a mutate call above. This means that if this is the first TCI
+    // call after a rollback, TciCallsSinceRollback will be 1, not 0. We also
+    // require that `subcell_options.min_tci_calls_after_rollback() >= 1`, so
+    // 1 TCI call means only one step was taken after a rollback.
+    if (only_need_rdmp_data or
+        db::get<evolution::dg::subcell::Tags::TciCallsSinceRollback>(box) <=
+            subcell_options.min_tci_calls_after_rollback()) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
@@ -259,16 +274,36 @@ struct TciAndSwitchToDg {
     //            boundaries where there is no history.
     const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
     const bool is_substep_method = time_stepper.number_of_substeps() != 1;
+    const bool is_multistep_method = time_stepper.number_of_past_steps() != 0;
     ASSERT(time_stepper.number_of_substeps() != 0,
            "Don't know how to handle a time stepper with zero substeps. This "
            "might be totally fine, but the case should be thought about.");
+    ASSERT(subcell_options.min_clear_tci_before_dg() > 0,
+           "The value of 'subcell_options.min_clear_tci_before_dg()' must be "
+           "at least 1");
     if (const auto& tci_history = db::get<subcell::Tags::TciGridHistory>(box);
         not cell_is_troubled and
-        (is_substep_method or
-         (tci_history.size() == time_stepper.order() and
-          alg::all_of(tci_history, [](const ActiveGrid tci_grid_decision) {
-            return tci_grid_decision == ActiveGrid::Dg;
-          })))) {
+
+        (((is_substep_method and
+           tci_history.size() == subcell_options.min_clear_tci_before_dg() - 1)
+
+          or
+
+          (is_multistep_method and
+           tci_history.size() ==
+               std::max(subcell_options.min_clear_tci_before_dg(),
+                        // Use `number_of_past_steps()` instead of
+                        // `number_of_past_steps()+number_of_substeps()`
+                        // since we only perform this check if we are on
+                        // substep 0 (i.e. starting a new step).
+                        time_stepper.number_of_past_steps() + 1)))
+
+         and alg::all_of(tci_history,
+                         [](const ActiveGrid tci_grid_decision) {
+                           return tci_grid_decision == ActiveGrid::Dg;
+                         })
+
+             )) {
       db::mutate<
           variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
           Tags::ActiveGrid, subcell::Tags::GhostDataForReconstruction<Dim>,
@@ -318,24 +353,42 @@ struct TciAndSwitchToDg {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not is_substep_method) {
-      // For multistep methods we need to record the TCI decision history.
-      // We track the TCI decision, not which grid we are on because for
-      // multistep methods we need the discontinuity to clear the entire
-      // history before we can switch back to DG.
-      db::mutate<evolution::dg::subcell::Tags::TciGridHistory>(
-          [cell_is_troubled,
-           &time_stepper](const gsl::not_null<
-                          std::deque<evolution::dg::subcell::ActiveGrid>*>
-                              tci_grid_history) {
-            tci_grid_history->push_front(cell_is_troubled ? ActiveGrid::Subcell
-                                                          : ActiveGrid::Dg);
-            if (tci_grid_history->size() > time_stepper.order()) {
-              tci_grid_history->pop_back();
-            }
-          },
-          make_not_null(&box));
-    }
+    // We record the TCI history for a couple reasons.
+    //
+    // For multistep methods we track the TCI decision because we need the
+    // discontinuity to clear the entire history before we can switch back to
+    // DG.
+    //
+    // For substep methods tracking the TCI history allows us to stay on FD a
+    // bit longer to allow the solution to smoothen a bit more before going
+    // back to DG.
+    db::mutate<evolution::dg::subcell::Tags::TciGridHistory>(
+        [cell_is_troubled, &subcell_options, &time_stepper](
+            const gsl::not_null<std::deque<evolution::dg::subcell::ActiveGrid>*>
+                tci_grid_history) {
+          tci_grid_history->push_front(cell_is_troubled ? ActiveGrid::Subcell
+                                                        : ActiveGrid::Dg);
+          if (tci_grid_history->size() >
+              std::max(subcell_options.min_clear_tci_before_dg() - 1,
+                       // Use `number_of_past_steps()` instead of
+                       // `number_of_past_steps()+number_of_substeps()`
+                       // since we only perform this check if we are on
+                       // substep 0 (i.e. starting a new step).
+                       time_stepper.number_of_past_steps() + 1)) {
+            tci_grid_history->pop_back();
+          }
+          ASSERT(tci_grid_history->size() <=
+                     std::max(subcell_options.min_clear_tci_before_dg() - 1,
+                              time_stepper.number_of_past_steps() + 1),
+                 "The TCI history is not being correctly cleared. This is an "
+                 "internal bug. Please file an issue.\n"
+                 "tci_grid_history->size(): "
+                     << tci_grid_history->size() << "\nExpected: "
+                     << std::max(subcell_options.min_clear_tci_before_dg() - 1,
+                                 time_stepper.number_of_past_steps() + 1));
+        },
+        make_not_null(&box));
+
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -74,7 +74,10 @@ void test(const TestThis test_this, const int expected_tci_status) {
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,
-      fd::DerivativeOrder::Two};
+      fd::DerivativeOrder::Two,
+      1,
+      1,
+      1};
 
   const ForceFree::subcell::TciOptions tci_options{1.0e-10};
 

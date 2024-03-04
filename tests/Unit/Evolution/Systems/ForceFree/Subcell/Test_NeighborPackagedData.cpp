@@ -301,7 +301,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, ::fd::DerivativeOrder::Two});
+          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
 
   // Compute the packaged data
   std::vector<DirectionalId<3>> mortars_to_reconstruct_to{};

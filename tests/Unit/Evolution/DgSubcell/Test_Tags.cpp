@@ -257,7 +257,10 @@ void test(const bool moving_mesh) {
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
           false,
           {},
-          ::fd::DerivativeOrder::Two});
+          ::fd::DerivativeOrder::Two,
+          1,
+          1,
+          1});
   const auto check_box = [&active_coords_box, &grid_to_inertial_map,
                           &moving_mesh,
                           &tci_decision](const Mesh<Dim>& expected_mesh) {

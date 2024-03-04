@@ -213,7 +213,10 @@ void test_impl(
     const bool in_substep,
     const evolution::dg::subcell::fd::ReconstructionMethod recons_method,
     const bool use_halo, const bool neighbor_is_troubled,
-    const bool test_block_id_assert) {
+    const bool test_block_id_assert,
+    const size_t number_of_steps_between_tci_calls,
+    const size_t min_tci_calls_after_rollback,
+    const size_t minimum_clear_tcis) {
   CAPTURE(Dim);
   CAPTURE(multistep_time_stepper);
   CAPTURE(rdmp_fails);
@@ -226,6 +229,9 @@ void test_impl(
   CAPTURE(use_halo);
   CAPTURE(neighbor_is_troubled);
   CAPTURE(test_block_id_assert);
+  CAPTURE(number_of_steps_between_tci_calls);
+  CAPTURE(min_tci_calls_after_rollback);
+  CAPTURE(minimum_clear_tcis);
   if (in_substep and multistep_time_stepper) {
     ERROR("Can't both be taking a substep and using a multistep time stepper");
   }
@@ -245,7 +251,8 @@ void test_impl(
           test_block_id_assert
               ? std::optional{std::vector<std::string>{"Block0"}}
               : std::optional<std::vector<std::string>>{},
-          ::fd::DerivativeOrder::Two},
+          ::fd::DerivativeOrder::Two, number_of_steps_between_tci_calls,
+          min_tci_calls_after_rollback, minimum_clear_tcis},
       TestCreator<Dim>{}}}};
 
   TimeStepId time_step_id{false, self_starting ? -1 : 1, Slab{1.0, 2.0}.end()};
@@ -272,7 +279,10 @@ void test_impl(
   // limit
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{{2.0}, {-2.0}};
   std::deque<evolution::dg::subcell::ActiveGrid> tci_grid_history{};
-  for (size_t i = 0; i < time_stepper->order(); ++i) {
+  for (size_t i = 0; i < time_stepper->order() and
+                     (multistep_time_stepper or
+                      (not multistep_time_stepper and minimum_clear_tcis > 1));
+       ++i) {
     tci_grid_history.push_back(evolution::dg::subcell::ActiveGrid::Dg);
   }
 
@@ -366,12 +376,18 @@ void test_impl(
   // doing self-start, took a substep, or already did rollback from DG to FD.
   const bool avoid_tci = always_use_subcell;
   const bool avoid_switch_to_dg =
-      avoid_tci or self_starting or time_step_id.substep() != 0 or did_rollback;
+      avoid_tci or self_starting or time_step_id.substep() != 0 or
+      did_rollback or
+      number_of_steps_between_tci_calls > steps_since_tci_call or
+      min_tci_calls_after_rollback > tci_calls_since_rollback;
 
   CHECK_FALSE(ActionTesting::get_databox_tag<
               comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
 
-  CHECK(metavars::tci_rdmp_data_only == avoid_switch_to_dg);
+  CAPTURE(metavars::tci_rdmp_data_only);
+  CHECK((metavars::tci_rdmp_data_only or
+         min_tci_calls_after_rollback > tci_calls_since_rollback) ==
+        avoid_switch_to_dg);
 
   if (avoid_tci) {
     CHECK_FALSE(metavars::tci_invoked);
@@ -379,24 +395,32 @@ void test_impl(
 
   // Check ActiveGrid
   if (avoid_switch_to_dg or rdmp_fails or tci_fails or
-      (use_halo and neighbor_is_troubled)) {
+      (use_halo and neighbor_is_troubled) or
+
+      (minimum_clear_tcis > time_stepper->order() and
+       not(not multistep_time_stepper and minimum_clear_tcis > 1))) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
     CHECK(cell_centered_flux_from_box.has_value());
     if (avoid_switch_to_dg) {
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
-                runner, 0) == tci_calls_since_rollback);
-      CHECK(ActionTesting::get_databox_tag<
-                comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(
-                runner, 0) == steps_since_tci_call);
+                runner, 0) ==
+            (min_tci_calls_after_rollback > tci_calls_since_rollback and
+                     not metavars::tci_rdmp_data_only
+                 ? tci_calls_since_rollback + 1
+                 : tci_calls_since_rollback));
     } else {
       CHECK(ActionTesting::get_databox_tag<
                 comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
                 runner, 0) == tci_calls_since_rollback + 1);
-      CHECK(ActionTesting::get_databox_tag<
-                comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(
-                runner, 0) == steps_since_tci_call + 1);
     }
+    CHECK(
+        ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(runner, 0) ==
+        (number_of_steps_between_tci_calls > steps_since_tci_call and
+                 not always_use_subcell
+             ? steps_since_tci_call + 1
+             : (always_use_subcell ? steps_since_tci_call : 0)));
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
     CHECK(not cell_centered_flux_from_box.has_value());
@@ -404,6 +428,9 @@ void test_impl(
     CHECK(ActionTesting::get_databox_tag<
               comp, evolution::dg::subcell::Tags::TciCallsSinceRollback>(
               runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<
+              comp, evolution::dg::subcell::Tags::StepsSinceTciCall>(runner,
+                                                                     0) == 0);
   }
 
   if (not avoid_switch_to_dg) {
@@ -467,19 +494,32 @@ void test_impl(
             original_record);
     }
     if (avoid_switch_to_dg) {
-      CHECK(tci_grid_history_from_box.front() ==
-            evolution::dg::subcell::ActiveGrid::Dg);
+      if (multistep_time_stepper or
+          (not multistep_time_stepper and minimum_clear_tcis > 1)) {
+        REQUIRE(not tci_grid_history_from_box.empty());
+        CHECK(tci_grid_history_from_box.front() ==
+              evolution::dg::subcell::ActiveGrid::Dg);
+      }
     } else if (multistep_time_stepper) {
+      REQUIRE(not tci_grid_history_from_box.empty());
+      CHECK(tci_grid_history_from_box.front() ==
+            (minimum_clear_tcis > time_stepper->order() and not tci_fails and
+                     not rdmp_fails and not(neighbor_is_troubled and use_halo)
+                 ? evolution::dg::subcell::ActiveGrid::Dg
+                 : evolution::dg::subcell::ActiveGrid::Subcell));
+    } else {
+      REQUIRE(not tci_grid_history_from_box.empty());
       CHECK(tci_grid_history_from_box.front() ==
             evolution::dg::subcell::ActiveGrid::Subcell);
-    } else {
-      // substep time steppers don't need to keep track of the history right now
-      // because we restrict subcell to DG changes only on step boundaries.
-      CHECK(tci_grid_history_from_box.front() ==
-            evolution::dg::subcell::ActiveGrid::Dg);
     }
     if (multistep_time_stepper) {
-      CHECK(tci_grid_history_from_box.size() == time_stepper->order());
+      CHECK(tci_grid_history_from_box.size() ==
+            (minimum_clear_tcis > time_stepper->order() and
+                     not always_use_subcell and
+                     not metavars::tci_rdmp_data_only and
+                     min_tci_calls_after_rollback <= tci_calls_since_rollback
+                 ? minimum_clear_tcis - 1
+                 : time_stepper->order()));
     }
   }
   CHECK(ActionTesting::get_databox_tag<
@@ -505,26 +545,52 @@ void test() {
                             AllDimsAtOnce,
                         evolution::dg::subcell::fd::ReconstructionMethod::
                             DimByDim}) {
-                    test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
-                                   tci_fails, did_rollback, always_use_subcell,
-                                   self_starting, false, recons_method,
-                                   use_halo, neighbor_is_troubled, false);
-                    if (not use_multistep_time_stepper) {
-                      test_impl<Dim>(
-                          use_multistep_time_stepper, rdmp_fails, tci_fails,
-                          did_rollback, always_use_subcell, self_starting, true,
-                          recons_method, use_halo, neighbor_is_troubled, false);
-                    }
+                    for (const size_t number_of_steps_between_tci_calls :
+                         {1_st, 305_st}) {
+                      for (const size_t min_tci_calls_after_rollback :
+                           {1_st, 105_st}) {
+                        for (const size_t minimum_clear_tcis : {1_st, 4_st}) {
+                          if (Dim != 1 and
+                              (number_of_steps_between_tci_calls != 1 or
+                               min_tci_calls_after_rollback != 1 or
+                               minimum_clear_tcis != 1)) {
+                            // These parts don't depend on dimensionality and
+                            // just increase test time considerably.
+                            continue;
+                          }
+                          test_impl<Dim>(
+                              use_multistep_time_stepper, rdmp_fails, tci_fails,
+                              did_rollback, always_use_subcell, self_starting,
+                              false, recons_method, use_halo,
+                              neighbor_is_troubled, false,
+                              number_of_steps_between_tci_calls,
+                              min_tci_calls_after_rollback, minimum_clear_tcis);
+                          if (not use_multistep_time_stepper) {
+                            test_impl<Dim>(use_multistep_time_stepper,
+                                           rdmp_fails, tci_fails, did_rollback,
+                                           always_use_subcell, self_starting,
+                                           true, recons_method, use_halo,
+                                           neighbor_is_troubled, false,
+                                           number_of_steps_between_tci_calls,
+                                           min_tci_calls_after_rollback,
+                                           minimum_clear_tcis);
+                          }
 #ifdef SPECTRE_DEBUG
-                    if (not tested_block_id_assert) {
-                      test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
-                                     tci_fails, did_rollback,
-                                     always_use_subcell, self_starting, false,
-                                     recons_method, use_halo,
-                                     neighbor_is_troubled, true);
-                      tested_block_id_assert = true;
-                    }
+                          if (not tested_block_id_assert) {
+                            test_impl<Dim>(use_multistep_time_stepper,
+                                           rdmp_fails, tci_fails, did_rollback,
+                                           always_use_subcell, self_starting,
+                                           false, recons_method, use_halo,
+                                           neighbor_is_troubled, true,
+                                           number_of_steps_between_tci_calls,
+                                           min_tci_calls_after_rollback,
+                                           minimum_clear_tcis);
+                            tested_block_id_assert = true;
+                          }
 #endif
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -536,7 +602,7 @@ void test() {
   }
 }
 
-// [[TimeOut, 10]]
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
                   "[Evolution][Unit]") {
   // 1. check that if we are in self-start nothing happens.

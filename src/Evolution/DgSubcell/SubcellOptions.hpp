@@ -31,9 +31,18 @@ namespace evolution::dg::subcell {
  */
 class SubcellOptions {
  public:
+  /// Parameters related to the troubled cell indicator (TCI) that determines
+  /// when to switch between DG and FD.
+  struct TroubledCellIndicator {
+    static constexpr Options::String help =
+        "Parameters related to the troubled cell indicator (TCI) that "
+        "determines when to switch between DG and FD.";
+  };
+
   struct PerssonTci {
     static constexpr Options::String help =
         "Parameters related to the Persson TCI";
+    using group = TroubledCellIndicator;
   };
   /// The exponent \f$\alpha\f$ passed to the Persson troubled-cell indicator
   struct PerssonExponent {
@@ -56,23 +65,30 @@ class SubcellOptions {
     using group = PerssonTci;
   };
 
+  struct RdmpTci {
+    static constexpr Options::String help =
+        "Parameters related to the relaxed discrete maximum principle TCI";
+    using group = TroubledCellIndicator;
+  };
   /// The \f$\delta_0\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator
   struct RdmpDelta0 {
-    static std::string name() { return "RdmpDelta0"; }
+    static std::string name() { return "Delta0"; }
     static constexpr Options::String help{"Absolute jump tolerance parameter."};
     using type = double;
     static type lower_bound() { return 0.0; }
+    using group = RdmpTci;
   };
   /// The \f$\epsilon\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator
   struct RdmpEpsilon {
-    static std::string name() { return "RdmpEpsilon"; }
+    static std::string name() { return "Epsilon"; }
     static constexpr Options::String help{
         "The jump-dependent relaxation constant."};
     using type = double;
     static type lower_bound() { return 0.0; }
     static type upper_bound() { return 1.0; }
+    using group = RdmpTci;
   };
   /// If true, then we always use the subcell method, not DG.
   struct AlwaysUseSubcells {
@@ -80,6 +96,7 @@ class SubcellOptions {
         "If true, then always use the subcell method (e.g. finite-difference) "
         "instead of DG."};
     using type = bool;
+    using group = TroubledCellIndicator;
   };
   /// Method to use for reconstructing the DG solution from the subcell
   /// solution.
@@ -105,6 +122,7 @@ class SubcellOptions {
         "This provides a buffer of FD subcells so that as a discontinuity "
         "moves from one element to another we do not get any Gibbs "
         "phenomenon."};
+    using group = TroubledCellIndicator;
   };
 
   /// \brief A list of block names on which to never do subcell.
@@ -116,6 +134,7 @@ class SubcellOptions {
     static constexpr Options::String help = {
         "A list of block and group names on which to never do subcell.\n"
         "Set to 'None' to not restrict where FD can be used."};
+    using group = TroubledCellIndicator;
   };
 
   /// \brief The order of the FD derivative used.
@@ -132,11 +151,49 @@ class SubcellOptions {
         "its reconstruction order."};
   };
 
-  using options =
-      tmpl::list<PerssonExponent, PerssonNumHighestModes, RdmpDelta0,
-                 RdmpEpsilon, AlwaysUseSubcells,
-                 SubcellToDgReconstructionMethod, UseHalo,
-                 OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder>;
+  struct FdToDgTci {
+    static constexpr Options::String help =
+        "Options related to how quickly we switch from FD to DG.";
+    using group = TroubledCellIndicator;
+  };
+  /// The number of time steps taken between calls to the TCI to check if we
+  /// can go back to the DG grid. A value of `1` means every time step, while
+  /// `2` means every other time step.
+  struct NumberOfStepsBetweenTciCalls {
+    static constexpr Options::String help{
+        "The number of time steps taken between calls to the TCI to check if "
+        "we can go back to the DG grid. A value of `1` means every time step, "
+        "while `2` means every other time step."};
+    using type = size_t;
+    static constexpr type lower_bound() { return 1; }
+    using group = FdToDgTci;
+  };
+  /// The number of time steps/TCI calls after a switch from DG to FD before we
+  /// allow switching back to DG.
+  struct MinTciCallsAfterRollback {
+    static constexpr Options::String help{
+        "The number of time steps/TCI calls after a switch from DG to FD "
+        "before we allow switching back to DG."};
+    using type = size_t;
+    static constexpr type lower_bound() { return 1; }
+    using group = FdToDgTci;
+  };
+  /// The number of time steps/TCI calls that the TCI needs to have decided
+  /// switching to DG is fine before we actually do the switch.
+  struct MinimumClearTcis {
+    static constexpr Options::String help{
+        "The number of time steps/TCI calls that the TCI needs to have decided "
+        "switching to DG is fine before we actually do the switch."};
+    using type = size_t;
+    static constexpr type lower_bound() { return 1; }
+    using group = FdToDgTci;
+  };
+
+  using options = tmpl::list<
+      PerssonExponent, PerssonNumHighestModes, RdmpDelta0, RdmpEpsilon,
+      AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo,
+      OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder,
+      NumberOfStepsBetweenTciCalls, MinTciCallsAfterRollback, MinimumClearTcis>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -147,7 +204,9 @@ class SubcellOptions {
       double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
       fd::ReconstructionMethod recons_method, bool use_halo,
       std::optional<std::vector<std::string>> only_dg_block_and_group_names,
-      ::fd::DerivativeOrder finite_difference_derivative_order);
+      ::fd::DerivativeOrder finite_difference_derivative_order,
+      size_t number_of_steps_between_tci_calls,
+      size_t min_tci_calls_after_rollback, size_t min_clear_tci_before_dg);
 
   /// \brief Given an existing SubcellOptions that was created from block and
   /// group names, create one that stores block IDs.
@@ -194,6 +253,29 @@ class SubcellOptions {
     return finite_difference_derivative_order_;
   }
 
+  /// The number of time steps between when we check the TCI to see if we can
+  /// switch from FD back to DG.
+  size_t number_of_steps_between_tci_calls() const {
+    return number_of_steps_between_tci_calls_;
+  }
+
+  /// The number of time steps after a rollback before we check the TCI to see
+  /// if we can switch from FD back to DG.
+  size_t min_tci_calls_after_rollback() const {
+    return min_tci_calls_after_rollback_;
+  }
+
+  /// The number of times the TCI must have flagged that we can switch back to
+  /// DG before doing so.
+  ///
+  /// Note that if we only check the TCI every
+  /// `number_of_steps_between_tci_calls()` then it takes
+  /// `number_of_steps_between_tci_calls * min_clear_tci_before_dg` time steps
+  /// before switching from FD back to DG.
+  ///
+  /// `0 means
+  size_t min_clear_tci_before_dg() const { return min_clear_tci_before_dg_; }
+
  private:
   friend bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
@@ -209,6 +291,9 @@ class SubcellOptions {
   std::optional<std::vector<std::string>> only_dg_block_and_group_names_{};
   std::optional<std::vector<size_t>> only_dg_block_ids_{};
   ::fd::DerivativeOrder finite_difference_derivative_order_{};
+  size_t number_of_steps_between_tci_calls_{1};
+  size_t min_tci_calls_after_rollback_{1};
+  size_t min_clear_tci_before_dg_{0};
 };
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);

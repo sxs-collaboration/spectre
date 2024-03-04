@@ -72,7 +72,10 @@ void test(const TestThis test_this) {
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,
-      fd::DerivativeOrder::Two};
+      fd::DerivativeOrder::Two,
+      1,
+      1,
+      1};
 
   if (test_this == TestThis::PerssonEnergyDensity) {
     get(get<Pressure>(subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
