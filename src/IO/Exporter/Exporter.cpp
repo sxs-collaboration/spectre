@@ -74,6 +74,7 @@ void interpolate_to_points(
         for (size_t i = 0; i < float_component_data.size(); ++i) {
           double_component_data[i] = float_component_data[i];
         }
+        tensor_data.push_back(std::move(double_component_data));
       }
     }
   }
