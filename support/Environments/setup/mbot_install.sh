@@ -1469,6 +1469,7 @@ else
     mkdir -p ${LOCATION}
     cmake  -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTING=OFF \
            -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+           -D CMAKE_POSITION_INDEPENDENT_CODE=YES \
            -D CMAKE_INSTALL_PREFIX=${LOCATION}
     cmake --build build/ --target install
     cd $dep_dir
@@ -1746,7 +1747,7 @@ else
 
     GCC_DIR=$(dirname $(dirname `which gcc`))
     cmake -S ../llvm -B ./ \
-          -D LLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt;lldb;lld" \
+          -D LLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt;lldb" \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=${LOCATION} \
           -D LLVM_BUILD_LLVM_DYLIB=ON \
@@ -1794,7 +1795,7 @@ proc ModulesHelp { } {
         global apps_path
 
         puts stderr "\tThe LLVM project, including extras like clang-tidy,"
-        puts stderr "\tclang-format, libc++, lld, and even templight."
+        puts stderr "\tclang-format, libc++, and even templight."
         puts stderr "\tSets LLVM_HOME to be \$apps_path"
         puts stderr "\tDoes NOT define CC, and CXX to be LLVM clang compiler"
         puts stderr "\tPrepends \$apps_path/bin to PATH"
