@@ -27,6 +27,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+#include "Parallel/Printf.hpp"
+
 /// \cond
 namespace PUP {
 class er;
@@ -69,15 +71,14 @@ struct TovVariables
   using Base::coords;
   using Base::eos;
   using Base::radial_solution;
-
+  const RelativisticEuler::Solutions::TovStar& tov_star;
   const std::array<double, 3> star_center;
+  const tnsr::I<DataType, 3>& x;
+  const DataType& radius;
   const double euler_enthalpy_constant;
   // Note this is not the angular velocity of the star around its axis, that
   // is zero in this case.
   const double orbital_angular_velocity;
-  const tnsr::I<DataType, 3>& x;
-  const DataType& radius;
-  const RelativisticEuler::Solutions::TovStar& tov_star;
 
   TovVariables(const tnsr::I<DataType, 3>& local_x,
                const DataType& local_radius,
@@ -205,7 +206,7 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
   TovStar& operator=(const TovStar&) = default;
   TovStar(TovStar&&) = default;
   TovStar& operator=(TovStar&&) = default;
-  ~TovStar() = default;
+  ~TovStar() override = default;
 
   // We do not a priori know what the central density will be, a (likely poor)
   // guess we use here is that the central enthalpy is equal to the constant
@@ -218,10 +219,15 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
           std::array<double, 3> star_center, double orbital_angular_velocity)
       : star_center_(std::move(star_center)),
         euler_enthalpy_constant_(euler_enthalpy_constant),
-        orbital_angular_velocity_(orbital_angular_velocity),
-        tov_star_(get(equation_of_state->rest_mass_density_from_enthalpy(
-                      Scalar<double>(euler_enthalpy_constant))),
-                  std::move(equation_of_state), coordinate_system){};
+        orbital_angular_velocity_(orbital_angular_velocity) {
+    auto central_density =
+        get(equation_of_state->rest_mass_density_from_enthalpy(
+            Scalar<double>(euler_enthalpy_constant)));
+    tov_star_ = RelEulerTovStar(central_density, std::move(equation_of_state),
+                                coordinate_system);
+    Parallel::printf("TOV star radius is %f",
+                     tov_star_.radial_solution().outer_radius());
+  }
 
   const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
     return tov_star_.equation_of_state();

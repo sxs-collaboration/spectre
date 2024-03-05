@@ -10,6 +10,7 @@ add_spectre_executable(
 )
 
 set(LIBS_TO_LINK
+  Charmxx::main
   Convergence
   CoordinateMaps
   DiscontinuousGalerkin

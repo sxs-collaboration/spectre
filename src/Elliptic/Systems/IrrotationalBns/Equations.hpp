@@ -99,6 +99,7 @@ struct Fluxes<Geometry::FlatCartesian> {
   // Order is prmal
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
+                    const Scalar<DataVector>& velocity_potential,
                     const tnsr::i<DataVector, 3>& auxiliary_velocity);
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_on_face,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
@@ -123,6 +124,7 @@ struct Fluxes<Geometry::Curved> {
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& inverse_spatial_metric,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
+                    const Scalar<DataVector>& velocity_potential,
                     const tnsr::i<DataVector, 3>& auxiliary_velocity);
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_on_face,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,
@@ -144,6 +146,7 @@ struct Sources<Geometry::FlatCartesian> {
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_potential,
       const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
+      const Scalar<DataVector>& velocity_potential,
       const tnsr::I<DataVector, 3>& flux_for_potential);
 };
 

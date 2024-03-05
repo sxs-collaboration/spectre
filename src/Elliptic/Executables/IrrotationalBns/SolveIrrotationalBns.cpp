@@ -9,6 +9,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 #include "Parallel/Printf.hpp"
@@ -17,7 +18,6 @@
 using metavariables = Metavariables;
 
 extern "C" void CkRegisterMainModule() {
-  Parallel::printf("Before main module registration\n");
   Parallel::charmxx::register_main_module<metavariables>();
   Parallel::charmxx::register_init_node_and_proc(
       {&domain::creators::register_derived_with_charm,
@@ -25,6 +25,7 @@ extern "C" void CkRegisterMainModule() {
        &register_derived_classes_with_charm<
            metavariables::solver::schwarz_smoother::subdomain_solver>,
        &elliptic::subdomain_preconditioners::register_derived_with_charm,
+       &EquationsOfState::register_derived_with_charm,
        &register_factory_classes_with_charm<metavariables>},
       {});
 }

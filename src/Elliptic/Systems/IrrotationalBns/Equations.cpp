@@ -83,6 +83,7 @@ void add_curved_potential_sources(
 void Fluxes<Geometry::FlatCartesian>::apply(
     gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
     const tnsr::II<DataVector, 3>& rotational_shift_stress,
+    const Scalar<DataVector>& /*velocity_potential*/,
     const tnsr::i<DataVector, 3>& auxiliary_velocity) {
   flat_potential_fluxes(flux_for_potential, rotational_shift_stress,
                         auxiliary_velocity);
@@ -105,6 +106,7 @@ void Fluxes<Geometry::Curved>::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
     const tnsr::II<DataVector, 3>& inverse_spatial_metric,
     const tnsr::II<DataVector, 3>& rotational_shift_stress,
+    const Scalar<DataVector>& /*velocity_potential*/,
     const tnsr::i<DataVector, 3>& auxiliary_velocity) {
   curved_potential_fluxes(flux_for_potential, rotational_shift_stress,
                           inverse_spatial_metric, auxiliary_velocity);
@@ -126,12 +128,12 @@ void Fluxes<Geometry::Curved>::apply(
 void Sources<Geometry::FlatCartesian>::apply(
     const gsl::not_null<Scalar<DataVector>*> equation_for_potential,
     const tnsr::i<DataVector, 3>& log_deriv_of_lapse_over_specific_enthalpy,
+    const Scalar<DataVector>& /*velocity_potential*/,
     const tnsr::I<DataVector, 3>& flux_for_potential) {
   add_flat_potential_sources(equation_for_potential,
                              log_deriv_of_lapse_over_specific_enthalpy,
                              flux_for_potential);
 }
-
 
 void Sources<Geometry::Curved>::apply(
     const gsl::not_null<Scalar<DataVector>*> equation_for_potential,
