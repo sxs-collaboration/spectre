@@ -89,11 +89,11 @@ void append_element_extents_and_connectivity(
       return;
     }
     // Extents are (l+1, 2l+1)
-    const size_t l = element.extents[0] - 1;
+    const int l = static_cast<int>(element.extents[0] - 1);
 
     // Connect max(phi) and min(phi) by adding more quads
     // to total_connectivity
-    for (size_t j = 0; j < l; ++j) {
+    for (int j = 0; j < l; ++j) {
       total_connectivity->push_back(j);
       total_connectivity->push_back(j + 1);
       total_connectivity->push_back(2 * l * (l + 1) + j + 1);
@@ -108,58 +108,37 @@ void append_element_extents_and_connectivity(
     // varying faster than phi.
     std::vector<int> top_pole_points{};
     std::vector<int> bottom_pole_points{};
-    for (size_t k = 0; k < (2 * l + 1); ++k) {
+    for (int k = 0; k < (2 * l + 1); ++k) {
       top_pole_points.push_back(k * (l + 1));
       bottom_pole_points.push_back(k * (l + 1) + l);
     }
 
-    // Fill the poles with triangles. Start by connecting
-    // points 0,1,2, 2,3,4, etc. into small triangles,
-    // then connect points 0,2,4, 4,6,8, etc.,
-    // etc., until fewer than 3 points remain.
-    const size_t number_of_points_near_poles = top_pole_points.size();
-    size_t to_next_triangle_point = 1;
-    while (number_of_points_near_poles / to_next_triangle_point >= 3) {
-      for (size_t point_starting_triangle = 0;
-           point_starting_triangle <
-           number_of_points_near_poles - 2 * to_next_triangle_point;
-           point_starting_triangle += 2 * to_next_triangle_point) {
-        pole_connectivity->push_back(
-            gsl::at(top_pole_points, point_starting_triangle));
-        pole_connectivity->push_back(gsl::at(
-            top_pole_points, point_starting_triangle + to_next_triangle_point));
-        pole_connectivity->push_back(
-            gsl::at(top_pole_points,
-                    point_starting_triangle + 2 * to_next_triangle_point));
-        pole_connectivity->push_back(
-            gsl::at(bottom_pole_points, point_starting_triangle));
-        pole_connectivity->push_back(
-            gsl::at(bottom_pole_points,
-                    point_starting_triangle + to_next_triangle_point));
-        pole_connectivity->push_back(
-            gsl::at(bottom_pole_points,
-                    point_starting_triangle + 2 * to_next_triangle_point));
-      }
-      // If odd number of points, add triangle closing
-      // point at max(phi) and point at min(phi)
-      if (number_of_points_near_poles % 2 != 0 and
-          2 * to_next_triangle_point < number_of_points_near_poles) {
-        pole_connectivity->push_back(
-            gsl::at(top_pole_points,
-                    number_of_points_near_poles - 2 * to_next_triangle_point));
-        pole_connectivity->push_back(
-            gsl::at(top_pole_points,
-                    number_of_points_near_poles - to_next_triangle_point));
-        pole_connectivity->push_back(gsl::at(top_pole_points, 0));
-        pole_connectivity->push_back(
-            gsl::at(bottom_pole_points,
-                    number_of_points_near_poles - 2 * to_next_triangle_point));
-        pole_connectivity->push_back(
-            gsl::at(bottom_pole_points,
-                    number_of_points_near_poles - to_next_triangle_point));
-        pole_connectivity->push_back(gsl::at(bottom_pole_points, 0));
-      }
-      to_next_triangle_point += 1;
+    const size_t number_of_pole_points = top_pole_points.size();
+    if (number_of_pole_points < 3) {
+      ERROR_NO_TRACE(
+          "Cannot write a 2D surface to file with l=0. Must have at least "
+          "l=1.");
+    }
+
+    // Fill poles with triangles in a fan pattern. Choose the root point that is
+    // common with all triangles to be the first point for each pole
+    const int top_root_point = top_pole_points[0];
+    const int bottom_root_point = bottom_pole_points[0];
+
+    // We end such that the last triangle we make has indices (0, N-2, N-1)
+    // given number_of_pole_points = N
+    for (size_t i = 1; i <= number_of_pole_points - 2; i++) {
+      int top_second_point = gsl::at(top_pole_points, i);
+      int top_third_point = gsl::at(top_pole_points, i + 1);
+      int bottom_second_point = gsl::at(bottom_pole_points, i);
+      int bottom_third_point = gsl::at(bottom_pole_points, i + 1);
+
+      pole_connectivity->push_back(top_root_point);
+      pole_connectivity->push_back(top_second_point);
+      pole_connectivity->push_back(top_third_point);
+      pole_connectivity->push_back(bottom_root_point);
+      pole_connectivity->push_back(bottom_second_point);
+      pole_connectivity->push_back(bottom_third_point);
     }
   }
 }
