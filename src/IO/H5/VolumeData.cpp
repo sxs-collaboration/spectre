@@ -84,82 +84,82 @@ void append_element_extents_and_connectivity(
   // If element is 2D and the bases are both SphericalHarmonic,
   // then add extra connections to close the surface.
   if (dim == 2) {
-    if (element.basis[0] == Spectral::Basis::SphericalHarmonic and
-        element.basis[1] == Spectral::Basis::SphericalHarmonic) {
-      // Extents are (l+1, 2l+1)
-      const size_t l = element.extents[0] - 1;
+    if (not(element.basis[0] == Spectral::Basis::SphericalHarmonic and
+            element.basis[1] == Spectral::Basis::SphericalHarmonic)) {
+      return;
+    }
+    // Extents are (l+1, 2l+1)
+    const size_t l = element.extents[0] - 1;
 
-      // Connect max(phi) and min(phi) by adding more quads
-      // to total_connectivity
-      for (size_t j = 0; j < l; ++j) {
-        total_connectivity->push_back(j);
-        total_connectivity->push_back(j + 1);
-        total_connectivity->push_back(2 * l * (l + 1) + j + 1);
-        total_connectivity->push_back((2 * l) * (l + 1) + j);
-      }
+    // Connect max(phi) and min(phi) by adding more quads
+    // to total_connectivity
+    for (size_t j = 0; j < l; ++j) {
+      total_connectivity->push_back(j);
+      total_connectivity->push_back(j + 1);
+      total_connectivity->push_back(2 * l * (l + 1) + j + 1);
+      total_connectivity->push_back((2 * l) * (l + 1) + j);
+    }
 
-      // Add a new connectivity output for filling the poles
-      // First, get the points at min(theta), which define the
-      // boundary of the top pole to fill, and the points at
-      // max(theta), which define the boundary of the bottom
-      // pole to fill. Note: points are stored with theta
-      // varying faster than phi.
-      std::vector<int> top_pole_points{};
-      std::vector<int> bottom_pole_points{};
-      for (size_t k = 0; k < (2 * l + 1); ++k) {
-        top_pole_points.push_back(k * (l + 1));
-        bottom_pole_points.push_back(k * (l + 1) + l);
-      }
+    // Add a new connectivity output for filling the poles
+    // First, get the points at min(theta), which define the
+    // boundary of the top pole to fill, and the points at
+    // max(theta), which define the boundary of the bottom
+    // pole to fill. Note: points are stored with theta
+    // varying faster than phi.
+    std::vector<int> top_pole_points{};
+    std::vector<int> bottom_pole_points{};
+    for (size_t k = 0; k < (2 * l + 1); ++k) {
+      top_pole_points.push_back(k * (l + 1));
+      bottom_pole_points.push_back(k * (l + 1) + l);
+    }
 
-      // Fill the poles with triangles. Start by connecting
-      // points 0,1,2, 2,3,4, etc. into small triangles,
-      // then connect points 0,2,4, 4,6,8, etc.,
-      // etc., until fewer than 3 points remain.
-      const size_t number_of_points_near_poles = top_pole_points.size();
-      size_t to_next_triangle_point = 1;
-      while (number_of_points_near_poles / to_next_triangle_point >= 3) {
-        for (size_t point_starting_triangle = 0;
-             point_starting_triangle <
-             number_of_points_near_poles - 2 * to_next_triangle_point;
-             point_starting_triangle += 2 * to_next_triangle_point) {
-          pole_connectivity->push_back(
-              gsl::at(top_pole_points, point_starting_triangle));
-          pole_connectivity->push_back(
-              gsl::at(top_pole_points,
-                      point_starting_triangle + to_next_triangle_point));
-          pole_connectivity->push_back(
-              gsl::at(top_pole_points,
-                      point_starting_triangle + 2 * to_next_triangle_point));
-          pole_connectivity->push_back(
-              gsl::at(bottom_pole_points, point_starting_triangle));
-          pole_connectivity->push_back(
-              gsl::at(bottom_pole_points,
-                      point_starting_triangle + to_next_triangle_point));
-          pole_connectivity->push_back(
-              gsl::at(bottom_pole_points,
-                      point_starting_triangle + 2 * to_next_triangle_point));
-        }
-        // If odd number of points, add triangle closing
-        // point at max(phi) and point at min(phi)
-        if (number_of_points_near_poles % 2 != 0 and
-            2 * to_next_triangle_point < number_of_points_near_poles) {
-          pole_connectivity->push_back(gsl::at(
-              top_pole_points,
-              number_of_points_near_poles - 2 * to_next_triangle_point));
-          pole_connectivity->push_back(
-              gsl::at(top_pole_points,
-                      number_of_points_near_poles - to_next_triangle_point));
-          pole_connectivity->push_back(gsl::at(top_pole_points, 0));
-          pole_connectivity->push_back(gsl::at(
-              bottom_pole_points,
-              number_of_points_near_poles - 2 * to_next_triangle_point));
-          pole_connectivity->push_back(
-              gsl::at(bottom_pole_points,
-                      number_of_points_near_poles - to_next_triangle_point));
-          pole_connectivity->push_back(gsl::at(bottom_pole_points, 0));
-        }
-        to_next_triangle_point += 1;
+    // Fill the poles with triangles. Start by connecting
+    // points 0,1,2, 2,3,4, etc. into small triangles,
+    // then connect points 0,2,4, 4,6,8, etc.,
+    // etc., until fewer than 3 points remain.
+    const size_t number_of_points_near_poles = top_pole_points.size();
+    size_t to_next_triangle_point = 1;
+    while (number_of_points_near_poles / to_next_triangle_point >= 3) {
+      for (size_t point_starting_triangle = 0;
+           point_starting_triangle <
+           number_of_points_near_poles - 2 * to_next_triangle_point;
+           point_starting_triangle += 2 * to_next_triangle_point) {
+        pole_connectivity->push_back(
+            gsl::at(top_pole_points, point_starting_triangle));
+        pole_connectivity->push_back(gsl::at(
+            top_pole_points, point_starting_triangle + to_next_triangle_point));
+        pole_connectivity->push_back(
+            gsl::at(top_pole_points,
+                    point_starting_triangle + 2 * to_next_triangle_point));
+        pole_connectivity->push_back(
+            gsl::at(bottom_pole_points, point_starting_triangle));
+        pole_connectivity->push_back(
+            gsl::at(bottom_pole_points,
+                    point_starting_triangle + to_next_triangle_point));
+        pole_connectivity->push_back(
+            gsl::at(bottom_pole_points,
+                    point_starting_triangle + 2 * to_next_triangle_point));
       }
+      // If odd number of points, add triangle closing
+      // point at max(phi) and point at min(phi)
+      if (number_of_points_near_poles % 2 != 0 and
+          2 * to_next_triangle_point < number_of_points_near_poles) {
+        pole_connectivity->push_back(
+            gsl::at(top_pole_points,
+                    number_of_points_near_poles - 2 * to_next_triangle_point));
+        pole_connectivity->push_back(
+            gsl::at(top_pole_points,
+                    number_of_points_near_poles - to_next_triangle_point));
+        pole_connectivity->push_back(gsl::at(top_pole_points, 0));
+        pole_connectivity->push_back(
+            gsl::at(bottom_pole_points,
+                    number_of_points_near_poles - 2 * to_next_triangle_point));
+        pole_connectivity->push_back(
+            gsl::at(bottom_pole_points,
+                    number_of_points_near_poles - to_next_triangle_point));
+        pole_connectivity->push_back(gsl::at(bottom_pole_points, 0));
+      }
+      to_next_triangle_point += 1;
     }
   }
 }
@@ -402,8 +402,7 @@ void VolumeData::extend_connectivity_data(
 
 void VolumeData::write_tensor_component(
     const size_t observation_id, const std::string& component_name,
-    const DataVector& contiguous_tensor_data,
-    const bool overwrite_existing) {
+    const DataVector& contiguous_tensor_data, const bool overwrite_existing) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
