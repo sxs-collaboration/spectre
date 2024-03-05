@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   EvolveMonteCarloPackets.cpp
+  InverseJacobianInertialToFluidCompute.cpp
   MonteCarloPacket.cpp
   )
 
@@ -17,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   EvolveMonteCarloPackets.hpp
+  InverseJacobianInertialToFluidCompute.hpp
   MonteCarloPacket.hpp
   )
 

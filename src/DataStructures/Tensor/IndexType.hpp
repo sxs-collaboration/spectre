@@ -41,6 +41,7 @@ struct FrameIsPhysical {};
 
 struct BlockLogical {};
 struct ElementLogical {};
+struct Fluid {};
 struct Grid {};
 struct Inertial : FrameIsPhysical {};
 struct Distorted {};
@@ -82,6 +83,10 @@ inline std::ostream& operator<<(std::ostream& os,
   return os << "ElementLogical";
 }
 inline std::ostream& operator<<(std::ostream& os,
+                                const Frame::Fluid& /*meta*/) {
+  return os << "Fluid";
+}
+inline std::ostream& operator<<(std::ostream& os,
                                 const Frame::Grid& /*meta*/) {
   return os << "Grid";
 }
@@ -119,6 +124,11 @@ inline std::string prefix<Frame::BlockLogical>() {
 template <>
 inline std::string prefix<Frame::ElementLogical>() {
   return "ElementLogical_";
+}
+
+template <>
+inline std::string prefix<Frame::Fluid>() {
+  return "Fluid_";
 }
 
 template <>
