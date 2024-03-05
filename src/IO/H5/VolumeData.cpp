@@ -43,7 +43,7 @@
 
 namespace h5 {
 namespace {
-// Append the element extents and connectevity to the total extents and
+// Append the element extents and connectivity to the total extents and
 // connectivity
 void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
@@ -279,7 +279,7 @@ void VolumeData::write_volume_data(
               alg::transform(
                   element.basis, std::back_inserter(bases),
                   [](const Spectral::Basis t) { return static_cast<int>(t); });
-              // append element quadraature
+              // append element quadrature
               alg::transform(element.quadrature,
                              std::back_inserter(quadratures),
                              [](const Spectral::Quadrature t) {
