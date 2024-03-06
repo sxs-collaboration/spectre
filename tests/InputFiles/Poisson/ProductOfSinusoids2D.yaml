@@ -10,10 +10,18 @@ ExpectedOutput:
   - PoissonProductOfSinusoids2DVolume0.h5
 OutputFileChecks:
   - Label: Discretization error
-    Subfile: /ErrorNorms.dat
+    Subfile: ErrorNorms.dat
     FileGlob: PoissonProductOfSinusoids2DReductions.h5
-    SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.005
+    ExpectedData:
+      - [1, 24, 7.40220330081702e+00, 3.70906457380056e-03]
+    AbsoluteTolerance: 1e-12
+  - Label: Linear solver convergence
+    Subfile: GmresResiduals.dat
+    FileGlob: PoissonProductOfSinusoids2DReductions.h5
+    ExpectedData:
+      - [0, 2.30405926122538e+01]
+      - [1, 0.]
+    AbsoluteTolerance: 1e-12
 
 ---
 

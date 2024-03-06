@@ -11,10 +11,32 @@ ExpectedOutput:
   - KerrSchildVolume0.h5
 OutputFileChecks:
   - Label: Discretization error
-    Subfile: /ErrorNorms.dat
+    Subfile: ErrorNorms.dat
     FileGlob: KerrSchildReductions.h5
-    SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.04
+    ExpectedData:
+      - [
+          5,
+          384,
+          4.20277018789526e+03,
+          1.09488565564726e-03,
+          5.31467293519265e-03,
+          1.17765764073955e-02,
+          2.00607960424956e-03,
+          4.80423457412180e-03,
+          2.39573111152042e-02,
+        ]
+    AbsoluteTolerance: 1e-10
+  - Label: Nonlinear solver convergence
+    Subfile: NewtonRaphsonResiduals.dat
+    FileGlob: KerrSchildReductions.h5
+    ExpectedData:
+      - [0, 0, 6.86317921700308e+01, 1.]
+      - [1, 0, 2.54081356038966e+00, 1.]
+      - [2, 0, 1.06821671508785e-01, 1.]
+      - [3, 0, 5.29758557594090e-04, 1.]
+      - [4, 0, 1.23004570709784e-08, 1.]
+      - [5, 0, 7.83806401935946e-13, 1.]
+    AbsoluteTolerance: 1e-10
 
 ---
 

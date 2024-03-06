@@ -12,10 +12,20 @@ ExpectedOutput:
   - SubdomainMatrix_[B0,(L1I1)].txt
 OutputFileChecks:
   - Label: Discretization error
-    Subfile: /ErrorNorms.dat
+    Subfile: ErrorNorms.dat
     FileGlob: PoissonProductOfSinusoids1DReductions.h5
-    SkipColumns: [0, 1, 2]
-    AbsoluteTolerance: 0.005
+    ExpectedData:
+      - [3, 8, 4.71238898038469e+00, 4.14037391064113e-03]
+    AbsoluteTolerance: 1e-12
+  - Label: Linear solver convergence
+    Subfile: GmresResiduals.dat
+    FileGlob: PoissonProductOfSinusoids1DReductions.h5
+    ExpectedData:
+      - [0, 1.21812092038592e+01]
+      - [1, 1.57971714780159e-03]
+      - [2, 2.51555146884164e-07]
+      - [3, 0.]
+    AbsoluteTolerance: 1e-12
 
 ---
 
