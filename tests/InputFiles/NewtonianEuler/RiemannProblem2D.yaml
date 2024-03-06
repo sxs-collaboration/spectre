@@ -21,6 +21,18 @@ Evolution:
 
 PhaseChangeAndTriggers:
 
+AnalyticSolution: &InitialData
+  RiemannProblem:
+    AdiabaticIndex: 1.4
+    InitialPosition: 0.25
+    LeftMassDensity: 1.0
+    LeftVelocity: [0.0, 0.5]
+    LeftPressure: 1.0
+    RightMassDensity: 0.125
+    RightVelocity: [0.0, 0.2]
+    RightPressure: 0.1
+    PressureStarTol: 1e-9
+
 DomainCreator:
   Rectangle:
     LowerBound: [-0.25, 0.0]
@@ -28,7 +40,10 @@ DomainCreator:
     InitialRefinement: [4, 0]
     InitialGridPoints: [2, 2]
     TimeDependence: None
-    BoundaryCondition: DirichletAnalytic
+    BoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription:
+          *InitialData
 
 SpatialDiscretization:
   BoundaryCorrection:
@@ -60,18 +75,6 @@ SpatialDiscretization:
 EvolutionSystem:
   SourceTerm:
     NoSource:
-
-AnalyticSolution:
-  RiemannProblem:
-    AdiabaticIndex: 1.4
-    InitialPosition: 0.25
-    LeftMassDensity: 1.0
-    LeftVelocity: [0.0, 0.5]
-    LeftPressure: 1.0
-    RightMassDensity: 0.125
-    RightVelocity: [0.0, 0.2]
-    RightPressure: 0.1
-    PressureStarTol: 1e-9
 
 EventsAndTriggers:
   - Trigger:

@@ -21,6 +21,7 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -43,7 +44,13 @@ namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic final : public BoundaryCondition<Dim> {
  public:
-  using options = tmpl::list<>;
+  /// \brief What analytic solution/data to prescribe.
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+  using options = tmpl::list<AnalyticPrescription>;
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions using either analytic solution or "
       "analytic data."};
@@ -51,11 +58,15 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
   DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
-  DirichletAnalytic(const DirichletAnalytic&) = default;
-  DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
+  DirichletAnalytic(const DirichletAnalytic&);
+  DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
+
+  explicit DirichletAnalytic(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
@@ -72,10 +83,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
-  template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
       gsl::not_null<Scalar<DataVector>*> mass_density,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -96,44 +105,9 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-        return analytic_solution_or_data.variables(
-            coords, time,
-            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                       hydro::Tags::SpatialVelocity<DataVector, Dim>,
-                       hydro::Tags::Pressure<DataVector>,
-                       hydro::Tags::SpecificInternalEnergy<DataVector>>{});
+      double time) const;
 
-      } else {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            coords,
-            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                       hydro::Tags::SpatialVelocity<DataVector, Dim>,
-                       hydro::Tags::Pressure<DataVector>,
-                       hydro::Tags::SpecificInternalEnergy<DataVector>>{});
-      }
-    }();
-
-    *mass_density =
-        get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
-    *velocity =
-        get<hydro::Tags::SpatialVelocity<DataVector, Dim>>(boundary_values);
-    *specific_internal_energy =
-        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(boundary_values);
-
-    ConservativeFromPrimitive<Dim>::apply(mass_density, momentum_density,
-                                          energy_density, *mass_density,
-                                          *velocity, *specific_internal_energy);
-    ComputeFluxes<Dim>::apply(
-        flux_mass_density, flux_momentum_density, flux_energy_density,
-        *momentum_density, *energy_density, *velocity,
-        get<hydro::Tags::Pressure<DataVector>>(boundary_values));
-
-    return {};
-  }
+ private:
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
 }  // namespace NewtonianEuler::BoundaryConditions

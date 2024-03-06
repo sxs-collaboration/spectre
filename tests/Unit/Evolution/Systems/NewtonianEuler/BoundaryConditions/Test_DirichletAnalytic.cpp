@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
@@ -26,6 +27,19 @@
 namespace helpers = TestHelpers::evolution::dg;
 
 namespace {
+template <size_t Dim>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
+                   tmpl::list<NewtonianEuler::BoundaryConditions::
+                                  DirichletAnalytic<Dim>>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   NewtonianEuler::InitialData::initial_data_list<Dim>>>;
+  };
+};
+
 template <size_t Dim>
 struct ConvertSmoothFlow {
   using unpacked_container = int;
@@ -109,6 +123,8 @@ struct ConvertKhInstability {
 template <size_t Dim>
 void test() {
   CAPTURE(Dim);
+  register_classes_with_charm(
+      NewtonianEuler::InitialData::initial_data_list<Dim>{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
       Tags::Time,
@@ -120,7 +136,7 @@ void test() {
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
       NewtonianEuler::System<Dim>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
-      tmpl::list<ConvertSmoothFlow<Dim>>>(
+      tmpl::list<ConvertSmoothFlow<Dim>>, tmpl::list<>, Metavariables<Dim>>(
       make_not_null(&gen),
       "Evolution.Systems.NewtonianEuler.BoundaryConditions.DirichletAnalytic",
       tuples::TaggedTuple<
@@ -150,8 +166,24 @@ void test() {
           "soln_energy_density", "soln_flux_mass_density",
           "soln_flux_momentum_density", "soln_flux_energy_density",
           "soln_velocity", "soln_specific_internal_energy"},
-      "DirichletAnalytic:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5},
-      box_analytic_soln, tuples::TaggedTuple<>{});
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    SmoothFlow:\n"
+      "      MeanVelocity: [0.9" +
+          (Dim == 1   ? std::string{}
+           : Dim == 2 ? std::string{", 0.4"}
+                      : std::string{", 0.4, -0.1"}) +
+          "]\n"
+          "      WaveVector: [0.1" +
+          (Dim == 1   ? std::string{}
+           : Dim == 2 ? std::string{", 1.1"}
+                      : std::string{", 1.1, 2.1"}) +
+          "]\n"
+          "      Pressure: 1.0\n"
+          "      AdiabaticIndex: 1.66666666666667\n"
+          "      PerturbationSize: 0.2\n",
+      Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_soln,
+      tuples::TaggedTuple<>{});
 
   if constexpr (Dim > 1) {
     // KH-instability is only implemented in 2d and 3d. If/when we have 1d
@@ -166,7 +198,8 @@ void test() {
         NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
         NewtonianEuler::System<Dim>,
         tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
-        tmpl::list<ConvertKhInstability<Dim>>>(
+        tmpl::list<ConvertKhInstability<Dim>>, tmpl::list<>,
+        Metavariables<Dim>>(
         make_not_null(&gen),
         "Evolution.Systems.NewtonianEuler.BoundaryConditions.DirichletAnalytic",
         tuples::TaggedTuple<
@@ -196,8 +229,21 @@ void test() {
             "data_energy_density", "data_flux_mass_density",
             "data_flux_momentum_density", "data_flux_energy_density",
             "data_velocity", "data_specific_internal_energy"},
-        "DirichletAnalytic:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5},
-        box_analytic_data, tuples::TaggedTuple<>{});
+        "DirichletAnalytic:\n"
+        "  AnalyticPrescription:\n"
+        "    KhInstability:\n"
+        "      AdiabaticIndex: 1.4\n"
+        "      StripBimedianHeight: 0.5\n"
+        "      StripThickness: 0.5\n"
+        "      StripDensity: 2.0\n"
+        "      StripVelocity: 0.5\n"
+        "      BackgroundDensity: 1.0\n"
+        "      BackgroundVelocity: -0.5\n"
+        "      Pressure: 2.5\n"
+        "      PerturbAmplitude: 0.1\n"
+        "      PerturbWidth: 0.03\n",
+        Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_data,
+        tuples::TaggedTuple<>{});
   }
 }
 }  // namespace

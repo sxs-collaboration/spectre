@@ -53,6 +53,8 @@ target_link_libraries(
   Serialization
   PRIVATE
   FiniteDifference
+  NewtonianEulerAnalyticData
+  NewtonianEulerSolutions
   )
 
 add_subdirectory(BoundaryConditions)

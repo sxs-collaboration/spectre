@@ -40,6 +40,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
@@ -218,6 +219,8 @@ struct EvolutionMetavars {
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<NewtonianEuler::Sources::Source<Dim>,
                    NewtonianEuler::Sources::all_sources<Dim>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   NewtonianEuler::InitialData::initial_data_list<Dim>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
