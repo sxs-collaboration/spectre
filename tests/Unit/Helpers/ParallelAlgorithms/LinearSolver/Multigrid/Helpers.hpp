@@ -90,8 +90,8 @@ struct InitializeElement {
                  elliptic::dg::Tags::Quadrature>;
   using simple_tags =
       tmpl::list<::domain::Tags::Mesh<1>,
-                 ::domain::Tags::Coordinates<1, Frame::Inertial>, fields_tag,
-                 sources_tag>;
+                 ::domain::Tags::Coordinates<1, Frame::Inertial>,
+                 ::domain::Tags::Element<1>, fields_tag, sources_tag>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -114,10 +114,12 @@ struct InitializeElement {
     const ElementMap<1, Frame::Inertial> element_map{
         element_id, block.stationary_map().get_clone()};
     auto inertial_coords = element_map(logical_coords);
+    // Only needed for element ID, so don't initialize neighbors
+    Element<1> element{element_id, {}};
     // Initialize data
     const size_t element_index = helpers_distributed::get_index(element_id);
     const size_t multigrid_level = element_id.grid_index();
-    const auto& source =
+    auto source =
         multigrid_level == 0
             ? typename sources_tag::type(
                   gsl::at(get<helpers_distributed::Source>(box), element_index))
@@ -126,7 +128,7 @@ struct InitializeElement {
     auto initial_fields = typename fields_tag::type{num_points, 0.};
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(inertial_coords),
-        std::move(initial_fields), std::move(source));
+        std::move(element), std::move(initial_fields), std::move(source));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

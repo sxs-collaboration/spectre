@@ -147,7 +147,7 @@ struct Solver {
 
   /// Precondition each linear solver iteration with a multigrid V-cycle
   using multigrid = LinearSolver::multigrid::Multigrid<
-      volume_dim, typename linear_solver::operand_tag,
+      Metavariables, typename linear_solver::operand_tag,
       OptionTags::MultigridGroup, elliptic::dg::Tags::Massive,
       typename linear_solver::preconditioner_source_tag>;
 

@@ -17,6 +17,7 @@ spectre_target_headers(
   HEADERS
   ElementActions.hpp
   ElementsAllocator.hpp
+  ElementsRegistration.hpp
   Hierarchy.hpp
   Multigrid.hpp
   ObserveVolumeData.hpp
