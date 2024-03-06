@@ -229,6 +229,10 @@ struct SubdomainOperator
                                const BoundaryConditionsBase&,
                                boost::hash<std::pair<size_t, Direction<Dim>>>>&
           override_boundary_conditions = {}) const {
+    result->destructive_resize(operand);
+    central_mortar_data_.clear();
+    neighbors_mortar_data_.clear();
+
     // Used to retrieve items out of the DataBox to forward to functions. This
     // replaces a long series of db::get calls.
     const auto get_items = [](const auto&... args) {
