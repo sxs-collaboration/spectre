@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -23,8 +24,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace NewtonianEuler {
-namespace AnalyticData {
+namespace NewtonianEuler::AnalyticData {
 
 /*!
  * \brief Initial data to simulate the Kelvin-Helmholtz instability.
@@ -97,7 +97,8 @@ namespace AnalyticData {
  * the \f$z-\f$axis.
  */
 template <size_t Dim>
-class KhInstability : public MarkAsAnalyticData {
+class KhInstability : public evolution::initial_data::InitialData,
+                      public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
   using source_term_type = Sources::NoSource;
@@ -185,11 +186,20 @@ class KhInstability : public MarkAsAnalyticData {
       "Initial data to simulate the KH instability."};
 
   KhInstability() = default;
-  KhInstability(const KhInstability& /*rhs*/) = delete;
-  KhInstability& operator=(const KhInstability& /*rhs*/) = delete;
+  KhInstability(const KhInstability& /*rhs*/) = default;
+  KhInstability& operator=(const KhInstability& /*rhs*/) = default;
   KhInstability(KhInstability&& /*rhs*/) = default;
   KhInstability& operator=(KhInstability&& /*rhs*/) = default;
-  ~KhInstability() = default;
+  ~KhInstability() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit KhInstability(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(KhInstability);
+  /// \endcond
 
   KhInstability(double adiabatic_index, double strip_bimedian_height,
                 double strip_thickness, double strip_density,
@@ -209,8 +219,8 @@ class KhInstability : public MarkAsAnalyticData {
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   /// @{
@@ -259,5 +269,4 @@ class KhInstability : public MarkAsAnalyticData {
 template <size_t Dim>
 bool operator!=(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs);
 
-}  // namespace AnalyticData
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::AnalyticData

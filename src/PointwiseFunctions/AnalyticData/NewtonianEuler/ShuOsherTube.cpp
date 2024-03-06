@@ -43,7 +43,19 @@ ShuOsherTube::ShuOsherTube(const double jump_position,
          "The sinusoid amplitude must be less than 1 but is " << epsilon_);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> ShuOsherTube::get_clone()
+    const {
+  return std::make_unique<ShuOsherTube>(*this);
+}
+
+ShuOsherTube::ShuOsherTube(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg) {}
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID ShuOsherTube::my_PUP_ID = 0;
+
 void ShuOsherTube::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
   p | mass_density_l_;
   p | velocity_l_;
   p | pressure_l_;

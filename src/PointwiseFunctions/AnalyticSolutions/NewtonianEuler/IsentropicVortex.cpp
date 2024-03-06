@@ -50,7 +50,22 @@ IsentropicVortex<Dim>::IsentropicVortex(
 }
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+IsentropicVortex<Dim>::get_clone() const {
+  return std::make_unique<IsentropicVortex>(*this);
+}
+
+template <size_t Dim>
+IsentropicVortex<Dim>::IsentropicVortex(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID IsentropicVortex<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
 void IsentropicVortex<Dim>::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | adiabatic_index_;
   p | center_;
   p | mean_velocity_;

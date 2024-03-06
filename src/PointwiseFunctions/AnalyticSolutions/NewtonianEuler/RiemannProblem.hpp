@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -26,8 +27,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 /*!
  * \brief Analytic solution to the Riemann Problem
@@ -126,7 +126,8 @@ namespace Solutions {
  * speed of the contact discontinuity (\f$u_*\f$).
  */
 template <size_t Dim>
-class RiemannProblem : public MarkAsAnalyticSolution {
+class RiemannProblem : public evolution::initial_data::InitialData,
+                       public MarkAsAnalyticSolution {
   enum class Side { Left, Right };
   enum PropagationAxis { X = 0, Y = 1, Z = 2 };
 
@@ -244,7 +245,16 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = default;
   RiemannProblem(RiemannProblem&& /*rhs*/) = default;
   RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
-  ~RiemannProblem() = default;
+  ~RiemannProblem() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit RiemannProblem(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(RiemannProblem);
+  /// \endcond
 
   RiemannProblem(double adiabatic_index, double initial_position,
                  double left_mass_density,
@@ -276,8 +286,8 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
   // Retrieve these member variables for testing purposes.
   constexpr std::array<double, 2> diagnostic_star_region_values() const {
@@ -407,5 +417,4 @@ class RiemannProblem : public MarkAsAnalyticSolution {
 template <size_t Dim>
 bool operator!=(const RiemannProblem<Dim>& lhs, const RiemannProblem<Dim>& rhs);
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions

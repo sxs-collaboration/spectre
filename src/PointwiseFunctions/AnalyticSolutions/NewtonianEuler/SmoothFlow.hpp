@@ -50,7 +50,8 @@ namespace NewtonianEuler::Solutions {
  * where the pressure is held constant.
  */
 template <size_t Dim>
-class SmoothFlow : virtual public MarkAsAnalyticSolution,
+class SmoothFlow : public evolution::initial_data::InitialData,
+                   virtual public MarkAsAnalyticSolution,
                    private hydro::Solutions::SmoothFlow<Dim, false> {
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, false>;
 
@@ -65,13 +66,20 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = default;
   SmoothFlow(SmoothFlow&& /*rhs*/) = default;
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
-  ~SmoothFlow() = default;
+  ~SmoothFlow() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit SmoothFlow(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SmoothFlow);
+  /// \endcond
 
   SmoothFlow(const std::array<double, Dim>& mean_velocity,
              const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size);
-
-  explicit SmoothFlow(CkMigrateMessage* msg);
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;
@@ -125,8 +133,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
     return {tuples::get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   template <size_t SpatialDim>

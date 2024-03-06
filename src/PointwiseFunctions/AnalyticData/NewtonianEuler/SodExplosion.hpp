@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -49,7 +50,8 @@ namespace NewtonianEuler::AnalyticData {
  * where the initial discontinuity is can be chosen arbitrarily.
  */
 template <size_t Dim>
-class SodExplosion : public MarkAsAnalyticData {
+class SodExplosion : public evolution::initial_data::InitialData,
+                     public MarkAsAnalyticData {
  public:
   static_assert(Dim > 1, "Sod explosion is a 2d and 3d problem.");
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
@@ -94,11 +96,20 @@ class SodExplosion : public MarkAsAnalyticData {
       "Cylindrical or spherical Sod explosion."};
 
   SodExplosion() = default;
-  SodExplosion(const SodExplosion& /*rhs*/) = delete;
-  SodExplosion& operator=(const SodExplosion& /*rhs*/) = delete;
+  SodExplosion(const SodExplosion& /*rhs*/) = default;
+  SodExplosion& operator=(const SodExplosion& /*rhs*/) = default;
   SodExplosion(SodExplosion&& /*rhs*/) = default;
   SodExplosion& operator=(SodExplosion&& /*rhs*/) = default;
-  ~SodExplosion() = default;
+  ~SodExplosion() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit SodExplosion(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SodExplosion);
+  /// \endcond
 
   SodExplosion(double initial_radius, double inner_mass_density,
                double inner_pressure, double outer_mass_density,
@@ -116,8 +127,8 @@ class SodExplosion : public MarkAsAnalyticData {
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   tuples::TaggedTuple<Tags::MassDensity<DataVector>> variables(

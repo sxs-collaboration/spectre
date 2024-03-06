@@ -28,12 +28,24 @@ SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
                   perturbation_size} {}
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) : smooth_flow(msg) {}
+SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg), smooth_flow(msg) {}
+
+template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+SmoothFlow<Dim>::get_clone() const {
+  return std::make_unique<SmoothFlow>(*this);
+}
 
 template <size_t Dim>
 void SmoothFlow<Dim>::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
   smooth_flow::pup(p);
 }
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID SmoothFlow<Dim>::my_PUP_ID = 0;
 
 template <size_t Dim>
 bool operator==(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {
