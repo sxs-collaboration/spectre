@@ -32,8 +32,10 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -392,11 +394,31 @@ struct StoreMatrixColumn {
   }
 };
 
+template <typename IterationIdTag, typename OperandTag,
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag>
+struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
+  using return_tags = tmpl::list<Tags::TotalNumPoints, Tags::LocalFirstIndex,
+                                 IterationIdTag, OperandTag>;
+  using argument_tags = tmpl::list<>;
+
+  template <typename... AmrData>
+  static void apply(const gsl::not_null<size_t*> /*unused*/,
+                    const AmrData&... /*amr_data*/) {
+    // Nothing to do. Everything gets initialized at the start of the algorithm.
+  }
+};
+
 /*!
  * \brief Build the explicit matrix representation of the linear operator.
  *
  * This is useful for debugging and analysis only, not to actually solve the
  * elliptic problem (that should happen iteratively).
+ *
+ * Add the `actions` to the action list to build the matrix. The
+ * `ApplyOperatorActions` template parameter are the actions that apply the
+ * linear operator to the `OperandTag`. Also add the `amr_projectors` to the
+ * list of AMR projectors and the `register_actions`
  *
  * \tparam IterationIdTag Used to keep track of the iteration over all matrix
  * columns. Should be the same that's used to identify iterations in the
@@ -405,32 +427,36 @@ struct StoreMatrixColumn {
  * all points over the course of the iteration.
  * \tparam OperatorAppliedToOperandTag Where the `ApplyOperatorActions` store
  * the result of applying the linear operator to the `OperandTag`.
- * \tparam ApplyOperatorActions The actions that apply the linear operator to
- * the `OperandTag`.
  * \tparam CoordsTag The tag of the coordinates observed alongside the matrix
  * for volume data visualization.
  * \tparam ArraySectionIdTag Can identify a subset of elements that this
  * algorithm should run over, e.g. in a multigrid setting.
  */
 template <typename IterationIdTag, typename OperandTag,
-          typename OperatorAppliedToOperandTag, typename ApplyOperatorActions,
-          typename CoordsTag, typename ArraySectionIdTag = void>
-using build_matrix_actions = tmpl::list<
-    CollectTotalNumPoints<IterationIdTag, OperandTag,
-                          OperatorAppliedToOperandTag, CoordsTag,
-                          ArraySectionIdTag>,
-    // PrepareBuildMatrix is called on reduction broadcast
-    SetUnitVector<IterationIdTag, OperandTag, OperatorAppliedToOperandTag,
-                  CoordsTag, ArraySectionIdTag>,
-    ApplyOperatorActions,
-    StoreMatrixColumn<IterationIdTag, OperandTag, OperatorAppliedToOperandTag,
-                      CoordsTag, ArraySectionIdTag>>;
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag = void>
+struct BuildMatrix {
+  template <typename ApplyOperatorActions>
+  using actions = tmpl::list<
+      CollectTotalNumPoints<IterationIdTag, OperandTag,
+                            OperatorAppliedToOperandTag, CoordsTag,
+                            ArraySectionIdTag>,
+      // PrepareBuildMatrix is called on reduction broadcast
+      SetUnitVector<IterationIdTag, OperandTag, OperatorAppliedToOperandTag,
+                    CoordsTag, ArraySectionIdTag>,
+      ApplyOperatorActions,
+      StoreMatrixColumn<IterationIdTag, OperandTag, OperatorAppliedToOperandTag,
+                        CoordsTag, ArraySectionIdTag>>;
 
-/// \brief Add to the register phase to enable observations
-template <typename ArraySectionIdTag = void>
-using build_matrix_register =
-    tmpl::list<observers::Actions::RegisterWithObservers<
-        detail::RegisterWithVolumeObserver<ArraySectionIdTag>>>;
+  using amr_projectors =
+      tmpl::list<ProjectBuildMatrix<IterationIdTag, OperandTag,
+                                    OperatorAppliedToOperandTag, CoordsTag,
+                                    ArraySectionIdTag>>;
+
+  /// Add to the register phase to enable observations
+  using register_actions = tmpl::list<observers::Actions::RegisterWithObservers<
+      detail::RegisterWithVolumeObserver<ArraySectionIdTag>>>;
+};
 
 }  // namespace Actions
 }  // namespace LinearSolver

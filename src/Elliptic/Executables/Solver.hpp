@@ -194,8 +194,33 @@ struct Solver {
           tmpl::conditional_t<is_linear, tmpl::list<>, nonlinear_solver>,
           linear_solver, multigrid, schwarz_smoother>>>;
 
+  template <bool Linearized>
+  using dg_operator = elliptic::dg::Actions::DgOperator<
+      system, Linearized,
+      tmpl::conditional_t<Linearized, linear_solver_iteration_id,
+                          nonlinear_solver_iteration_id>,
+      tmpl::conditional_t<Linearized, vars_tag, fields_tag>,
+      tmpl::conditional_t<Linearized, fluxes_vars_tag, fluxes_tag>,
+      tmpl::conditional_t<Linearized, operator_applied_to_vars_tag,
+                          operator_applied_to_fields_tag>>;
+
+  using build_matrix = LinearSolver::Actions::BuildMatrix<
+      linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+      LinearSolver::multigrid::Tags::IsFinestGrid>;
+
+  using build_matrix_actions = typename build_matrix::template actions<
+      typename dg_operator<true>::apply_actions>;
+
   // For labeling the yaml option for RandomizeVariables
   struct RandomizeInitialGuess {};
+
+  using init_analytic_solution_action =
+      elliptic::Actions::InitializeOptionalAnalyticSolution<
+          volume_dim, background_tag,
+          tmpl::append<typename system::primal_fields,
+                       typename system::primal_fluxes>,
+          elliptic::analytic_data::AnalyticSolution>;
 
   using initialization_actions = tmpl::list<
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
@@ -207,11 +232,7 @@ struct Solver {
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
-      elliptic::Actions::InitializeOptionalAnalyticSolution<
-          volume_dim, background_tag,
-          tmpl::append<typename system::primal_fields,
-                       typename system::primal_fluxes>,
-          elliptic::analytic_data::AnalyticSolution>,
+      init_analytic_solution_action,
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
       tmpl::conditional_t<
           is_linear, tmpl::list<>,
@@ -222,28 +243,10 @@ struct Solver {
                                                     fluxes_tag>>>>>;
 
   using register_actions = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<is_linear,
-                          LinearSolver::Actions::build_matrix_register<
-                              LinearSolver::multigrid::Tags::IsFinestGrid>,
+      tmpl::conditional_t<is_linear, typename build_matrix::register_actions,
                           typename nonlinear_solver::register_element>,
       typename multigrid::register_element,
       typename schwarz_smoother::register_element>>;
-
-  template <bool Linearized>
-  using dg_operator = elliptic::dg::Actions::DgOperator<
-      system, Linearized,
-      tmpl::conditional_t<Linearized, linear_solver_iteration_id,
-                          nonlinear_solver_iteration_id>,
-      tmpl::conditional_t<Linearized, vars_tag, fields_tag>,
-      tmpl::conditional_t<Linearized, fluxes_vars_tag, fluxes_tag>,
-      tmpl::conditional_t<Linearized, operator_applied_to_vars_tag,
-                          operator_applied_to_fields_tag>>;
-
-  using build_matrix_actions = LinearSolver::Actions::build_matrix_actions<
-      linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
-      typename dg_operator<true>::apply_actions,
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
-      LinearSolver::multigrid::Tags::IsFinestGrid>;
 
   template <typename Label>
   using smooth_actions = typename schwarz_smoother::template solve<
