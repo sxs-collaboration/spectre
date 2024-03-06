@@ -32,6 +32,7 @@ spectre_target_headers(
   CharmRegistration.hpp
   CreateFromOptions.hpp
   DistributedObject.hpp
+  DomainDiagnosticInfo.hpp
   ElementRegistration.hpp
   ExitCode.hpp
   GetSection.hpp

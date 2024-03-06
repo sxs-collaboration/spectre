@@ -17,7 +17,6 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
-#include "Domain/DiagnosticInfo.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -26,6 +25,7 @@
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/DomainDiagnosticInfo.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
@@ -159,10 +159,10 @@ struct DefaultElementsAllocator
     }
     element_array.doneInserting();
 
-    Parallel::printf(
-        "\n%s\n", domain::diagnostic_info(
-                      domain, local_cache, elements_per_core, elements_per_node,
-                      grid_points_per_core, grid_points_per_node));
+    Parallel::printf("\n%s\n", domain::diagnostic_info(
+                                   domain.blocks().size(), local_cache,
+                                   elements_per_core, elements_per_node,
+                                   grid_points_per_core, grid_points_per_node));
   }
 };
 
