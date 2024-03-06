@@ -415,6 +415,7 @@ void test_puncture_field() {
   const tnsr::I<double, Dim, Frame::Inertial> charge_pos{{7.1, 0., 0.}};
   const tnsr::I<double, Dim, Frame::Inertial> charge_vel{{0.1, 0.2, 0.}};
   const tnsr::I<double, Dim, Frame::Inertial> charge_acc{{0.1, 0.2, 0.}};
+  const double charge = 0.1;
   const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2> pos_vel{
       {charge_pos, charge_vel}};
 
@@ -427,11 +428,12 @@ void test_puncture_field() {
   const auto box_abutting = db::create<
       db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
                         Tags::ParticlePositionVelocity<Dim>,
-                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder>,
+                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder,
+                        Tags::Charge>,
       db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
       std::make_optional<tnsr::I<DataVector, Dim, Frame::Inertial>>(
           random_points),
-      pos_vel, charge_acc, order);
+      pos_vel, charge_acc, order, charge);
 
   const auto singular_field = get<Tags::PunctureField<Dim>>(box_abutting);
 
@@ -443,14 +445,16 @@ void test_puncture_field() {
       expected{};
   puncture_field(make_not_null(&expected), random_points, charge_pos,
                  charge_vel, charge_acc, 1., order);
+  expected *= charge;
   CHECK_VARIABLES_APPROX(singular_field.value(), expected);
   std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> nullopt{};
   const auto box_not_abutting = db::create<
       db::AddSimpleTags<Tags::FaceCoordinates<Dim, Frame::Inertial, true>,
                         Tags::ParticlePositionVelocity<Dim>,
-                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder>,
-      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(nullopt, pos_vel,
-                                                           charge_acc, order);
+                        Tags::GeodesicAcceleration<Dim>, Tags::ExpansionOrder,
+                        Tags::Charge>,
+      db::AddComputeTags<Tags::PunctureFieldCompute<Dim>>>(
+      nullopt, pos_vel, charge_acc, order, charge);
   const auto puncture_field_nullopt =
       get<Tags::PunctureField<Dim>>(box_not_abutting);
   CHECK(not puncture_field_nullopt.has_value());
@@ -528,9 +532,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
         "Worldtube");
   CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
+  CHECK(TestHelpers::test_option_tag<
+            CurvedScalarWave::Worldtube::OptionTags::Charge>("1.") == 1.);
+  CHECK(TestHelpers::test_option_tag<
+            CurvedScalarWave::Worldtube::OptionTags::Mass>("1.") == 1.);
+  CHECK(TestHelpers::test_option_tag<
+            CurvedScalarWave::Worldtube::OptionTags::ApplySelfForce>("true") ==
+        true);
   TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Charge>(
+      "Charge");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
+      "Mass");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::ApplySelfForce>("ApplySelfForce");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::FaceCoordinates<3, Frame::Grid, true>>(
