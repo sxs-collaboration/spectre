@@ -33,11 +33,10 @@
 
 namespace {
 void test_strahlkorper() {
-  constexpr size_t l_max = 12;
-  constexpr size_t m_max = 12;
+  constexpr size_t l_max = 8;
   constexpr double sphere_radius = 4.0;
   constexpr std::array<double, 3> center{{5.0, 6.0, 7.0}};
-  const ylm::Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max,
+  const ylm::Strahlkorper<Frame::Inertial> strahlkorper{l_max, l_max,
                                                         sphere_radius, center};
   const ylm::Spherepack& ylm = strahlkorper.ylm_spherepack();
   const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
@@ -98,6 +97,41 @@ void test_strahlkorper() {
       {"InertialCoordinates_x", "InertialCoordinates_y",
        "InertialCoordinates_z", "TestScalar"},
       {{0, 1, 2, 3}}, {}, observation_values[0]);
+
+  // Check pole connectivity
+  DataVector connectivity_data{};
+  {
+    h5::H5File<h5::AccessType::ReadOnly> strahlkorper_file{h5_file_name};
+    const auto& volume_file =
+        strahlkorper_file.get<h5::VolumeData>("/element_data", version_number);
+    const auto h5_connectivity =
+        volume_file.get_tensor_component(4444, "pole_connectivity").data;
+    connectivity_data = get<0>(h5_connectivity);
+    strahlkorper_file.close_current_object();
+  }
+
+  // Every 3 numbers is a triangle:
+  // root, root + n * (l + 1), root * (n + 1) * (l + 1)
+  // clang-format off
+  const DataVector expected_connectivity = {{
+      0., 9.,   18.,    8., 17.,  26.,
+      0., 18.,  27.,    8., 26.,  35.,
+      0., 27.,  36.,    8., 35.,  44.,
+      0., 36.,  45.,    8., 44.,  53.,
+      0., 45.,  54.,    8., 53.,  62.,
+      0., 54.,  63.,    8., 62.,  71.,
+      0., 63.,  72.,    8., 71.,  80.,
+      0., 72.,  81.,    8., 80.,  89.,
+      0., 81.,  90.,    8., 89.,  98.,
+      0., 90.,  99.,    8., 98.,  107.,
+      0., 99.,  108.,   8., 107., 116.,
+      0., 108., 117.,   8., 116., 125.,
+      0., 117., 126.,   8., 125., 134.,
+      0., 126., 135.,   8., 134., 143.,
+      0., 135., 144.,   8., 143., 152.}};
+  // clang-format on
+
+  CHECK(connectivity_data == expected_connectivity);
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
