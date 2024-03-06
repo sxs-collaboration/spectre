@@ -9,6 +9,7 @@ class PlotCommands(click.MultiCommand):
         return [
             "along-line",
             "dat",
+            "memory-monitors",
             "power-monitors",
             "size-control",
         ]
@@ -24,6 +25,12 @@ class PlotCommands(click.MultiCommand):
             from spectre.Visualization.PlotDatFile import plot_dat_command
 
             return plot_dat_command
+        elif name == "memory-monitors":
+            from spectre.Visualization.PlotMemoryMonitors import (
+                plot_memory_monitors_command,
+            )
+
+            return plot_memory_monitors_command
         elif name == "power-monitors":
             from spectre.Visualization.PlotPowerMonitors import (
                 plot_power_monitors_command,
