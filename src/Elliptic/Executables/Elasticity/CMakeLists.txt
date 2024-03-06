@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  AmrCriteria
   Charmxx::main
   ConstitutiveRelations
   Convergence
@@ -25,6 +26,7 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  ParallelAmr
   ParallelLinearSolver
   ParallelMultigrid
   ParallelSchwarz

@@ -4,7 +4,7 @@
 Executable: SolvePoisson3D
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 60
   Priority: High
 ExpectedOutput:
   - LorentzianReductions.h5
@@ -14,21 +14,11 @@ OutputFileChecks:
     Subfile: ErrorNorms.dat
     FileGlob: LorentzianReductions.h5
     ExpectedData:
-      - [6, 2808, 2.09439617691359e+34, 4.06585234592450e-02]
+      - [0, 1625, 3.14162705992265e+34, 1.28010014008500e-01]
+      - [1, 1625, 3.14162705992265e+34, 7.44115187323337e-02]
+      - [2, 2808, 2.09439617691359e+34, 1.40173310841862e-02]
     AbsoluteTolerance: 0.
-    RelativeTolerance: 1e-12
-  - Label: Linear solver convergence
-    Subfile: GmresResiduals.dat
-    FileGlob: LorentzianReductions.h5
-    ExpectedData:
-      - [0, 1.65600110447685e+00]
-      - [1, 2.10813044818694e-01]
-      - [2, 1.78150596490335e-01]
-      - [3, 1.49290348080966e-01]
-      - [4, 1.67729890706225e-02]
-      - [5, 1.99526909375260e-03]
-      - [6, 3.92043529725646e-04]
-    AbsoluteTolerance: 1e-10
+    RelativeTolerance: 1e-4
 
 ---
 
@@ -42,12 +32,12 @@ RandomizeInitialGuess: None
 
 DomainCreator:
   Sphere:
-    InnerRadius: 10
+    InnerRadius: 5.
     OuterRadius: &outer_radius 1e9
     Interior:
       FillWithSphericity: 0.
     InitialRefinement: 0
-    InitialGridPoints: 6
+    InitialGridPoints: 5
     UseEquiangularMap: True
     EquatorialCompression: None
     RadialPartitioning: [&outer_shell_inner_radius 20.]
@@ -58,6 +48,28 @@ DomainCreator:
       AnalyticSolution:
         Solution: *solution
         Field: Dirichlet
+
+Amr:
+  Verbosity: Verbose
+  Criteria:
+    - IncreaseResolution
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 2
+
+PhaseChangeAndTriggers:
+  # Run AMR in every iteration, but not on the initial guess
+  - Trigger:
+      EveryNIterations:
+        N: 1
+        Offset: 1
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
 
 Discretization:
   DiscontinuousGalerkin:
@@ -73,9 +85,9 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 10
+      MaxIterations: 100
       RelativeResidual: 0.
-      AbsoluteResidual: 1.e-3
+      AbsoluteResidual: 1.e-5
     Verbosity: Quiet
 
   Multigrid:
@@ -84,7 +96,7 @@ LinearSolver:
     PreSmoothing: True
     PostSmoothingAtBottom: False
     Verbosity: Silent
-    OutputVolumeData: True
+    OutputVolumeData: False
 
   SchwarzSmoother:
     Iterations: 3
@@ -101,7 +113,7 @@ RadiallyCompressedCoordinates:
   Compression: *outer_shell_distribution
 
 EventsAndTriggers:
-  - Trigger: HasConverged
+  - Trigger: Always
     Events:
       - ObserveNorms:
           SubfileName: ErrorNorms
@@ -119,8 +131,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
-
-PhaseChangeAndTriggers:
 
 BuildMatrix:
   MatrixSubfileName: Matrix
