@@ -70,7 +70,8 @@ struct MockElementArray {
                   typename CurvedScalarWave::System<Dim>::variables_tag,
                   ::Tags::TimeStepId, Tags::ParticlePositionVelocity<Dim>>,
               db::AddComputeTags<
-                  Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>>>>>,
+                  Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>,
+                  Tags::FaceQuantitiesCompute>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::SendToWorldtube>>>;
 };
