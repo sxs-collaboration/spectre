@@ -25,7 +25,7 @@ SPECTRE_TEST_CASE(
   const DataVector used_for_size(5);
   MAKE_GENERATOR(generator);
 
-  const double epsilon_approx = 5.e-12;
+  const double epsilon_approx = 5.e-13;
 
   const auto lapse =
       TestHelpers::gr::random_lapse(make_not_null(&generator), used_for_size);
@@ -72,21 +72,27 @@ SPECTRE_TEST_CASE(
   }
 
   // Test that we have orthonormal tetrads
-  DataVector dot_product(used_for_size);
-  DataVector expected_dot_product(used_for_size);
+  DataVector dot_product_error(used_for_size);
+  DataVector norm(used_for_size);
   for (size_t a = 0; a < 4; a++) {
     for (size_t b = a; b < 4; b++) {
-      dot_product = 0.0;
+      dot_product_error = 0.0;
+      norm = 0.0;
       for (size_t d = 0; d < 4; d++) {
         for (size_t dd = 0; dd < 4; dd++) {
-          dot_product += spacetime_metric.get(d, dd) *
-                         inverse_jacobian.get(d, a) *
-                         inverse_jacobian.get(dd, b);
+          dot_product_error += spacetime_metric.get(d, dd) *
+                               inverse_jacobian.get(d, a) *
+                               inverse_jacobian.get(dd, b);
+          norm += abs(spacetime_metric.get(d, dd) *
+                      inverse_jacobian.get(d, a) *
+                      inverse_jacobian.get(dd, b));
         }
       }
-      expected_dot_product = (a == b ? (a == 0 ? -1.0 : 1.0) : 0.0);
+      dot_product_error -= (a == b ? (a == 0 ? -1.0 : 1.0) : 0.0);
+      dot_product_error = dot_product_error / norm;
+      norm = 0.0;
       CHECK_ITERABLE_CUSTOM_APPROX(
-          dot_product, expected_dot_product,
+          dot_product_error, norm,
           Approx::custom().epsilon(epsilon_approx).scale(1.0));
     }
   }
