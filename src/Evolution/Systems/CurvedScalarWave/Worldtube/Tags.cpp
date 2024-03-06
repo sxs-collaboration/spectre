@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/AreaElement.hpp"
 #include "Domain/ExcisionSphere.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
@@ -207,6 +208,60 @@ void BackgroundQuantitiesCompute<Dim>::function(
   get<gr::Tags::SpacetimeMetric<double, Dim>>(*result) = std::move(metric);
   get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(*result) =
       std::move(inverse_metric);
+}
+
+void FaceQuantitiesCompute::function(
+    gsl::not_null<return_type*> result, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi, const tnsr::i<DataVector, Dim>& phi,
+    const tnsr::I<DataVector, Dim>& shift, const Scalar<DataVector>& lapse,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& inv_jacobian,
+    const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
+    const Mesh<Dim>& mesh) {
+  const auto direction = excision_sphere.abutting_direction(element.id());
+  if (not direction.has_value()) {
+    result->reset();
+    return;
+  }
+  const auto face_mesh = mesh.slice_away(direction->dimension());
+  const size_t face_size = face_mesh.number_of_grid_points();
+  const auto slice_index = index_to_slice_at(mesh.extents(), direction.value());
+  const auto sliced_dim = direction.value().dimension();
+  Variables<tags_to_slice_to_face> vars_on_face(face_size);
+  // we use a templated lambda here. This could also be solved with a
+  // non-owning variables but this has less overhead.
+  const auto slice_to_face =
+      [&vars_on_face, &mesh, &sliced_dim, &slice_index]<typename tag_to_slice>(
+          const typename tag_to_slice::type& volume_field) ->
+      typename tag_to_slice::type& {
+        data_on_slice(make_not_null(&get<tag_to_slice>(vars_on_face)),
+                      volume_field, mesh.extents(), sliced_dim, slice_index);
+        return get<tag_to_slice>(vars_on_face);
+      };
+  const auto& face_psi =
+      slice_to_face.operator()<CurvedScalarWave::Tags::Psi>(psi);
+  const auto& face_pi =
+      slice_to_face.operator()<CurvedScalarWave::Tags::Pi>(pi);
+  const auto& face_phi =
+      slice_to_face.operator()<CurvedScalarWave::Tags::Phi<Dim>>(phi);
+  const auto& face_shift =
+      slice_to_face.operator()<gr::Tags::Shift<DataVector, Dim>>(shift);
+  const auto& face_lapse =
+      slice_to_face.operator()<gr::Tags::Lapse<DataVector>>(lapse);
+  const auto& face_inv_jacobian =
+      slice_to_face.operator()<domain::Tags::InverseJacobian<
+          Dim, Frame::ElementLogical, Frame::Inertial>>(inv_jacobian);
+
+  if (not result->has_value()) {
+    result->emplace(face_size);
+  }
+  get<CurvedScalarWave::Tags::Psi>(result->value()) = face_psi;
+  get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(result->value())) =
+      -get(face_lapse) * get(face_pi) + get(dot_product(face_shift, face_phi));
+  euclidean_area_element(
+      make_not_null(
+          &get<gr::surfaces::Tags::AreaElement<DataVector>>(result->value())),
+      face_inv_jacobian, direction.value());
 }
 
 template struct BackgroundQuantitiesCompute<3>;

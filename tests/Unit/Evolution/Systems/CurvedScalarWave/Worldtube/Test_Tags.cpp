@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/AreaElement.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -24,6 +25,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/PunctureField.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
@@ -468,6 +470,97 @@ void test_background_quantities_compute() {
   CHECK(get(normalization) == approx(-1.));
 }
 
+void test_face_quantities_compute() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+  const double worldtube_radius = 1.5;
+  const size_t initial_refinement = 1;
+  const size_t initial_extent = 4;
+  const domain::creators::Sphere shell{worldtube_radius,
+                                       3.,
+                                       domain::creators::Sphere::Excision{},
+                                       initial_refinement,
+                                       initial_extent,
+                                       true};
+  const auto shell_domain = shell.create_domain();
+  const auto excision_sphere =
+      shell_domain.excision_spheres().at("ExcisionSphere");
+  const auto& initial_refinements = shell.initial_refinement_levels();
+  const auto& initial_extents = shell.initial_extents();
+  const auto element_ids = initial_element_ids(initial_refinements);
+  const auto& blocks = shell_domain.blocks();
+  std::uniform_real_distribution<> dist(-1., 1.);
+  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+
+  for (const auto& element_id : element_ids) {
+    const auto& my_block = blocks.at(element_id.block_id());
+    const auto element = domain::Initialization::create_initial_element(
+        element_id, my_block, initial_refinements);
+    const auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, element_id, quadrature);
+    const ElementMap element_map(element_id,
+                                 my_block.stationary_map().get_clone());
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto inertial_coords = element_map(logical_coords);
+    const auto inertial_inv_jacobian = element_map.inv_jacobian(logical_coords);
+    const size_t grid_size = mesh.number_of_grid_points();
+    const DataVector used_for_size(grid_size);
+    const auto lapse = make_with_random_values<Scalar<DataVector>>(
+        make_not_null(&gen), dist, used_for_size);
+    const auto shift =
+        make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+            make_not_null(&gen), dist, used_for_size);
+    const auto evolved_vars = make_with_random_values<
+        CurvedScalarWave::System<Dim>::variables_tag::type>(
+        make_not_null(&gen), dist, used_for_size);
+
+    const auto box = db::create<
+        db::AddSimpleTags<CurvedScalarWave::System<Dim>::variables_tag,
+                          gr::Tags::Shift<DataVector, Dim>,
+                          gr::Tags::Lapse<DataVector>,
+                          domain::Tags::InverseJacobian<
+                              Dim, Frame::ElementLogical, Frame::Inertial>,
+                          Tags::ExcisionSphere<Dim>, domain::Tags::Element<Dim>,
+                          domain::Tags::Mesh<Dim>>,
+        db::AddComputeTags<Tags::FaceQuantitiesCompute>>(
+        evolved_vars, shift, lapse, inertial_inv_jacobian, excision_sphere,
+        element, mesh);
+    const auto& direction = excision_sphere.abutting_direction(element_id);
+    const auto& face_quantities = db::get<Tags::FaceQuantities>(box);
+    if (not direction.has_value()) {
+      CHECK(not face_quantities.has_value());
+    } else {
+      CHECK(face_quantities.has_value());
+      // here, we compute the `FaceQuantities` in the volume and slice them
+      // after
+      const auto& psi = get<CurvedScalarWave::Tags::Psi>(evolved_vars);
+      const auto& pi = get<CurvedScalarWave::Tags::Pi>(evolved_vars);
+      const auto& phi = get<CurvedScalarWave::Tags::Phi<Dim>>(evolved_vars);
+      const auto dt_psi =
+          tenex::evaluate(shift(ti::I) * phi(ti::i) - lapse() * pi());
+      const auto slice_index =
+          index_to_slice_at(mesh.extents(), direction.value());
+      const auto sliced_dim = direction.value().dimension();
+      const auto face_psi =
+          data_on_slice(psi, mesh.extents(), sliced_dim, slice_index);
+      const auto face_dt_psi =
+          data_on_slice(dt_psi, mesh.extents(), sliced_dim, slice_index);
+      const auto face_inv_jacobian = data_on_slice(
+          inertial_inv_jacobian, mesh.extents(), sliced_dim, slice_index);
+      const auto area_element =
+          euclidean_area_element(face_inv_jacobian, direction.value());
+      CHECK_ITERABLE_APPROX(
+          face_psi, get<CurvedScalarWave::Tags::Psi>(face_quantities.value()));
+      CHECK_ITERABLE_APPROX(face_dt_psi,
+                            get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(
+                                face_quantities.value()));
+      CHECK_ITERABLE_APPROX(area_element,
+                            get<gr::surfaces::Tags::AreaElement<DataVector>>(
+                                face_quantities.value()));
+    }
+  }
+}
+
 void test_puncture_field() {
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
@@ -643,6 +736,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   test_evolved_particle_position_velocity_compute();
   test_geodesic_acceleration_compute();
   test_background_quantities_compute();
+  test_face_quantities_compute();
   test_puncture_field();
   test_check_input_file();
 }
