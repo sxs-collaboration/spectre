@@ -142,6 +142,10 @@ struct Multigrid {
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,
       detail::InitializeElement<Dim, FieldsTag, OptionsGroup, SourceTag>>;
 
+  using amr_projectors =
+      tmpl::list<initialize_element,
+                 detail::ProjectMultigridSections<Metavariables>>;
+
   using register_element =
       tmpl::list<detail::RegisterElement<Dim, OptionsGroup>,
                  async_solvers::RegisterElement<FieldsTag, OptionsGroup,

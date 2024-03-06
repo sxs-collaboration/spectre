@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <map>
 #include <optional>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/ApplyMatrices.hpp"
@@ -27,6 +28,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Actions/RestrictFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Hierarchy.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
@@ -35,7 +37,9 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace LinearSolver::multigrid::detail {
 
@@ -50,7 +54,12 @@ struct PostSmoothingBeginLabel {};
 
 template <size_t Dim, typename FieldsTag, typename OptionsGroup,
           typename SourceTag>
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
+ private:
+  using VolumeDataVars =
+      typename Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>::type;
+
+ public:  // Iterable action
   using simple_tags_from_options =
       tmpl::list<Tags::ChildrenRefinementLevels<Dim>,
                  Tags::ParentRefinementLevels<Dim>>;
@@ -72,49 +81,92 @@ struct InitializeElement {
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    db::mutate_apply<InitializeElement>(make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::InitialRefinementLevels<Dim>,
+                 Tags::OutputVolumeData<OptionsGroup>>;
+  using return_tags = tmpl::append<simple_tags, simple_tags_from_options>;
+
+  template <typename... AmrData>
+  static void apply(
+      const gsl::not_null<std::optional<ElementId<Dim>>*> parent_id,
+      const gsl::not_null<std::unordered_set<ElementId<Dim>>*> child_ids,
+      const gsl::not_null<std::optional<Mesh<Dim>>*> parent_mesh,
+      const gsl::not_null<std::optional<std::string>*> observation_key_level,
+      const gsl::not_null<std::optional<std::string>*>
+          observation_key_is_finest_grid,
+      const gsl::not_null<size_t*> observation_id,
+      const gsl::not_null<VolumeDataVars*> volume_data_for_output,
+      const gsl::not_null<std::vector<std::array<size_t, Dim>>*>
+          children_refinement_levels,
+      const gsl::not_null<std::vector<std::array<size_t, Dim>>*>
+          parent_refinement_levels,
+      const Mesh<Dim>& mesh, const Element<Dim>& element,
+      const std::vector<std::array<size_t, Dim>> initial_refinement_levels,
+      const bool output_volume_data, const AmrData&... amr_data) {
     // Note: The following initialization code assumes that all elements in a
     // block have the same p-refinement. This is true for initial domains, but
     // will be broken by AMR.
 
+    const auto& element_id = element.id();
     const size_t multigrid_level = element_id.grid_index();
     const bool is_finest_grid = multigrid_level == 0;
-    const bool is_coarsest_grid =
-        db::get<domain::Tags::InitialRefinementLevels<Dim>>(box) ==
-        db::get<Tags::ParentRefinementLevels<Dim>>(box);
 
-    std::optional<ElementId<Dim>> parent_id =
-        is_coarsest_grid ? std::nullopt
-                         : std::make_optional(multigrid::parent_id(element_id));
-    std::unordered_set<ElementId<Dim>> child_ids = multigrid::child_ids(
-        element_id, db::get<Tags::ChildrenRefinementLevels<Dim>>(
-                        box)[element_id.block_id()]);
+    if constexpr (sizeof...(AmrData) == 0) {
+      // Initialization: use initial domain to set up multigrid hierarchy
+      const bool is_coarsest_grid =
+          initial_refinement_levels == *parent_refinement_levels;
+      *parent_id = is_coarsest_grid
+                       ? std::nullopt
+                       : std::make_optional(multigrid::parent_id(element_id));
+      *child_ids = multigrid::child_ids(
+          element_id, (*children_refinement_levels)[element_id.block_id()]);
+      *parent_mesh = is_coarsest_grid ? std::nullopt : std::make_optional(mesh);
+      *observation_id = 0;
+    } else {
+      // AMR: make sure we only have a single multigrid level. To support AMR
+      // fully, we have to send AMR decisions to coarser grids to refine those
+      // as well.
+      (void)parent_id;
+      (void)child_ids;
+      (void)parent_mesh;
+      (void)parent_refinement_levels;
+      (void)children_refinement_levels;
+      if (not is_finest_grid) {
+        ERROR_NO_TRACE(
+            "AMR is not supported in the multigrid algorithm yet. Set the "
+            "'Multigrid.MaxLevels' to 1.");
+      }
+      // Preserve state of observation ID
+      if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {
+        // h-refinement: copy from the parent
+        *observation_id = get<Tags::ObservationId<OptionsGroup>>(amr_data...);
+      } else if constexpr (tt::is_a_v<std::unordered_map, AmrData...>) {
+        // h-coarsening: copy from one of the children (doesn't matter which)
+        *observation_id =
+            get<Tags::ObservationId<OptionsGroup>>(amr_data.begin()->second...);
+      } else {
+        (void)observation_id;
+      }
+    }
 
-    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    std::optional<Mesh<Dim>> parent_mesh =
-        is_coarsest_grid ? std::nullopt : std::make_optional(mesh);
-
-    auto observation_key_level = std::make_optional(
+    *observation_key_level =
         is_finest_grid ? std::string{""}
-                       : (std::string{"Level"} + get_output(multigrid_level)));
-    auto observation_key_is_finest_grid =
+                       : (std::string{"Level"} + get_output(multigrid_level));
+    *observation_key_is_finest_grid =
         is_finest_grid ? std::make_optional(std::string{""}) : std::nullopt;
 
     // Initialize volume data output
-    using VolumeDataVars =
-        typename Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>::type;
-    VolumeDataVars volume_data{};
-    if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
-      volume_data.initialize(mesh.number_of_grid_points());
+    if (output_volume_data) {
+      volume_data_for_output->initialize(mesh.number_of_grid_points());
     }
-
-    Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(parent_id), std::move(child_ids),
-        std::move(parent_mesh), std::move(observation_key_level),
-        std::move(observation_key_is_finest_grid), size_t{0},
-        std::move(volume_data));
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -262,9 +314,10 @@ struct SkipPostSmoothingAtBottom {
     const size_t first_action_after_post_smoothing_index = tmpl::index_of<
         ActionList,
         SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>>::value;
-    const size_t post_smoothing_begin_index = tmpl::index_of<
-        ActionList,
-        ::Actions::Label<PostSmoothingBeginLabel>>::value + 1;
+    const size_t post_smoothing_begin_index =
+        tmpl::index_of<ActionList,
+                       ::Actions::Label<PostSmoothingBeginLabel>>::value +
+        1;
     const size_t this_action_index =
         tmpl::index_of<ActionList, SkipPostSmoothingAtBottom>::value;
     return {Parallel::AlgorithmExecution::Continue,
