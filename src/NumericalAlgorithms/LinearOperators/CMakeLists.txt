@@ -29,7 +29,6 @@ spectre_target_headers(
   Divergence.hpp
   Divergence.tpp
   ExponentialFilter.hpp
-  FilterAction.hpp
   IndefiniteIntegral.hpp
   Linearize.hpp
   MeanValue.hpp

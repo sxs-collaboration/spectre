@@ -34,6 +34,7 @@ target_link_libraries(
   )
 
 set(LIBS_TO_LINK
+  Actions
   Charmxx::main
   CoordinateMaps
   DiscontinuousGalerkin

@@ -28,7 +28,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
-#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,6 +36,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/FilterAction.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"

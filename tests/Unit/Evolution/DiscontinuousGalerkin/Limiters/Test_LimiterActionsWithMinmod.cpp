@@ -30,7 +30,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -39,7 +38,8 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"          // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/LimiterActions.hpp"  // IWYU pragma: keep
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

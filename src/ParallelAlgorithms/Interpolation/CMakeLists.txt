@@ -45,6 +45,7 @@ target_link_libraries(
   SphericalHarmonics
   Utilities
   INTERFACE
+  Actions
   EventsAndTriggers
   )
 
