@@ -26,6 +26,7 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -251,6 +252,22 @@ void bind_impl(py::module& m) {  // NOLINT
         py::arg("cov_deriv_extrinsic_curvature"),
         py::arg("unit_interface_normal_vector"), py::arg("projection_IJ"),
         py::arg("projection_ij"), py::arg("projection_Ij"), py::arg("sign"));
+
+  m.def(
+      "weyl_type_D1",
+      static_cast<tnsr::ii<DataVector, 3, Frame::Inertial> (*)(
+          const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+          const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+          const tnsr::II<DataVector, 3, Frame::Inertial>&)>(&gr::weyl_type_D1),
+      py::arg("weyl_electric"), py::arg("spatial_metric"),
+      py::arg("inverse_spatial_metric"));
+
+  m.def("weyl_type_D1_scalar",
+        static_cast<Scalar<DataVector> (*)(
+            const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+            const tnsr::II<DataVector, 3, Frame::Inertial>&)>(
+            &gr::weyl_type_D1_scalar),
+        py::arg("weyl_type_D1"), py::arg("inverse_spatial_metric"));
 }
 }  // namespace
 

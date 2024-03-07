@@ -267,6 +267,23 @@ class TestBindings(unittest.TestCase):
         )
         npt.assert_allclose(weyl_mag_scalar, 0)
 
+    def test_weyl_type_D1(self):
+        weyl_electric = tnsr.ii[DataVector, 3](num_points=1, fill=-1.0)
+        spatial_metric = tnsr.ii[DataVector, 3](num_points=1, fill=0.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=-1.0)
+        weyl_D1 = weyl_type_D1(
+            weyl_electric, spatial_metric, inverse_spatial_metric
+        )
+        npt.assert_allclose(weyl_D1, 0)
+
+    def test_weyl_type_D1_scalar(self):
+        weyl_type_D1 = tnsr.ii[DataVector, 3](num_points=1, fill=1.0)
+        inverse_spatial_metric = tnsr.II[DataVector, 3](num_points=1, fill=0.0)
+        weyl_D1_scalar = weyl_type_D1_scalar(
+            weyl_type_D1, inverse_spatial_metric
+        )
+        npt.assert_allclose(weyl_D1_scalar, 0)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
