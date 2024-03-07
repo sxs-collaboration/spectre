@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -58,8 +59,13 @@ PolytropicFluid<IsRelativistic>::get_clone() const {
 template <bool IsRelativistic>
 std::unique_ptr<EquationOfState<IsRelativistic, 3>>
 PolytropicFluid<IsRelativistic>::promote_to_3d_eos() const {
-  return std::make_unique<Barotropic3D<PolytropicFluid<IsRelativistic>>>(
-      Barotropic3D(*this));
+  return std::make_unique<Barotropic3D<PolytropicFluid<IsRelativistic>>>(*this);
+}
+
+template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 2>>
+PolytropicFluid<IsRelativistic>::promote_to_2d_eos() const {
+  return std::make_unique<Barotropic2D<PolytropicFluid<IsRelativistic>>>(*this);
 }
 
 template <bool IsRelativistic>

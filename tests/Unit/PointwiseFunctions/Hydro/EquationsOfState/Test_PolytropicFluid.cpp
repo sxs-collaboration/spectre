@@ -13,6 +13,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
@@ -80,6 +81,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
   CHECK(eos != other_type_eos);
   CHECK(*eos.promote_to_3d_eos() ==
         EoS::Barotropic3D<EoS::PolytropicFluid<true>>(eos));
+  CHECK(*eos.promote_to_2d_eos() ==
+        EoS::Barotropic2D<EoS::PolytropicFluid<true>>(eos));
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   TestHelpers::EquationsOfState::check(EoS::PolytropicFluid<true>{100.0, 2.0},

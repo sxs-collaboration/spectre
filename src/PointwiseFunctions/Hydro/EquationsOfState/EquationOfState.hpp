@@ -170,8 +170,15 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 1>& rhs) const = 0;
+
+  /// Create a 3D EOS from the 1D EOS
   virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
   promote_to_3d_eos() const = 0;
+
+  /// Create a 2D EOS from the 1D EOS
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 2>>
+  promote_to_2d_eos() const = 0;
+
   /// \brief Returns `true` if the EOS is barotropic
   bool is_barotropic() const { return true; }
   /// @{
@@ -352,6 +359,11 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 2>& rhs) const = 0;
+
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 2>>
+  promote_to_2d_eos() const {
+    return this->get_clone();
+  }
 
   virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
   promote_to_3d_eos() const = 0;

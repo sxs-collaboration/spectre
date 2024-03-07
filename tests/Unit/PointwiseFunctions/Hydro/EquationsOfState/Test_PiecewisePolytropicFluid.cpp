@@ -13,6 +13,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
@@ -339,9 +340,12 @@ SPECTRE_TEST_CASE(
   CHECK(eos != other_eos);
   // Different eos types should NOT match
   CHECK(eos != other_type_eos);
-  // Check the correct 3D EoS is got
+  // Check the correct 3D EoS is obtained
   CHECK(*eos.promote_to_3d_eos() ==
         EoS::Barotropic3D<EoS::PiecewisePolytropicFluid<true>>(eos));
+  // Check the correct 2D EoS is obtained
+  CHECK(*eos.promote_to_2d_eos() ==
+        EoS::Barotropic2D<EoS::PiecewisePolytropicFluid<true>>(eos));
   // Check baryon density
   CHECK(eos.baryon_mass() ==
         approx(hydro::units::geometric::default_baryon_mass));
