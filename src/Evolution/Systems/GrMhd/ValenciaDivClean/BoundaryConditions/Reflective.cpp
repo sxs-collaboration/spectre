@@ -442,7 +442,7 @@ void Reflective::fd_ghost_impl(
       for (size_t i = 0; i < 3; ++i) {
         if (i == dim_direction) {
           get<LorentzFactorTimesSpatialVelocity>(outermost_prim_vars).get(i) =
-              -1.0 * get(get_boundary_val(interior_lorentz_factor)) *
+              -get(get_boundary_val(interior_lorentz_factor)) *
               get_boundary_val(interior_spatial_velocity).get(i);
           get<MagneticField>(outermost_prim_vars).get(i) =
               -1.0 * get_boundary_val(interior_magnetic_field).get(i);
@@ -464,7 +464,7 @@ void Reflective::fd_ghost_impl(
             get<LorentzFactorTimesSpatialVelocity>(outermost_prim_vars).get(i) =
                 get(get_boundary_val(interior_lorentz_factor)) *
                 min(normal_spatial_velocity_at_boundary,
-                    normal_spatial_velocity_at_boundary * -1.0);
+                    -normal_spatial_velocity_at_boundary);
             get<MagneticField>(outermost_prim_vars).get(i) =
                 min(get_boundary_val(interior_magnetic_field).get(i),
                     -1.0 * get_boundary_val(interior_magnetic_field).get(i));
@@ -472,7 +472,7 @@ void Reflective::fd_ghost_impl(
             get<LorentzFactorTimesSpatialVelocity>(outermost_prim_vars).get(i) =
                 get(get_boundary_val(interior_lorentz_factor)) *
                 max(normal_spatial_velocity_at_boundary,
-                    normal_spatial_velocity_at_boundary * -1.0);
+                    -normal_spatial_velocity_at_boundary);
             get<MagneticField>(outermost_prim_vars).get(i) =
                 max(get_boundary_val(interior_magnetic_field).get(i),
                     -1.0 * get_boundary_val(interior_magnetic_field).get(i));

@@ -25,11 +25,11 @@
 
 namespace helpers = ::TestHelpers::evolution::dg;
 namespace {
-void test_stuffs(bool reflect_both) {
+void test_stuffs(const bool reflect_both) {
   MAKE_GENERATOR(gen);
 
   const auto face_mesh_index = Index<2>{2};
-  DataVector used_for_size{face_mesh_index.product()};
+  const DataVector used_for_size{face_mesh_index.product()};
   std::uniform_real_distribution<> dist(0.5, 1.0);
 
   const auto spatial_metric =
@@ -43,7 +43,7 @@ void test_stuffs(bool reflect_both) {
           spatial_metric, sqrt_det_spatial_metric);
 
   // for factory string
-  std::string reflect_both_str = (reflect_both) ? "true" : "false";
+  const std::string reflect_both_str = (reflect_both) ? "true" : "false";
 
   helpers::test_boundary_condition_with_python<
       grmhd::ValenciaDivClean::BoundaryConditions::Reflective,
@@ -108,5 +108,5 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.Reflective", "[Unit][GrMhd]") {
   // Test for two cases of Reflective.reflect_both
 
   test_stuffs(true);
-  test_stuffs(true);
+  test_stuffs(false);
 }
