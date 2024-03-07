@@ -4,7 +4,6 @@
 # See LICENSE.txt for details.
 
 import logging
-import os
 from typing import Sequence
 
 import click
@@ -15,6 +14,10 @@ from spectre.IO.Exporter import interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles_command,
     parse_point,
+)
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,16 +43,6 @@ def points_on_line(
 
 @click.command(name="along-line")
 @open_volfiles_command(obs_id_required=True, multiple_vars=True)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(file_okay=True, dir_okay=False, writable=True),
-    help=(
-        "Name of the output plot file. If unspecified, the plot is "
-        "shown interactively, which only works on machines with a "
-        "window server."
-    ),
-)
 @click.option(
     "--line-start",
     "-A",
@@ -90,30 +83,18 @@ def points_on_line(
         " has an effect if multiple files are specified."
     ),
 )
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_along_line_command(
     h5_files,
     subfile_name,
     obs_id,
     obs_time,
     vars,
-    output,
     line_start,
     line_end,
     num_samples,
     num_threads,
-    stylesheet,
 ):
     """Plot variables along a line through volume data
 
@@ -155,10 +136,6 @@ def plot_along_line_command(
         B_label = ", ".join(f"{x:g}" for x in line_end)
         x_label = f"$({A_label})$ to $({B_label})$"
 
-    # Apply stylesheet
-    if stylesheet is not None:
-        plt.style.use(stylesheet)
-
     # Select plotting parameters. Any further customization of the plotting
     # style can be done with a stylesheet.
     plot_kwargs = dict(
@@ -178,17 +155,6 @@ def plot_along_line_command(
     plt.xlim(x[0], x[-1])
     plt.xlabel(x_label)
     plt.legend()
-
-    if output:
-        plt.savefig(output, format="pdf", bbox_inches="tight")
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
 
 
 if __name__ == "__main__":

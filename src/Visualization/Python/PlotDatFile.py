@@ -4,7 +4,6 @@
 # See LICENSE.txt for details.
 
 import logging
-import os
 
 import click
 import h5py
@@ -12,6 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rich
 
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
+)
 from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
@@ -54,16 +57,6 @@ def parse_functions(ctx, param, all_values):
     help=(
         "The dat subfile to read. "
         "If unspecified, all available dat subfiles will be printed."
-    ),
-)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(file_okay=True, dir_okay=False, writable=True),
-    help=(
-        "Name of the output plot file. If unspecified, the plot is "
-        "shown interactively, which only works on machines with a "
-        "window server."
     ),
 )
 @click.option(
@@ -117,26 +110,14 @@ def parse_functions(ctx, param, all_values):
 @click.option(
     "--title", "-t", help="Title of the graph.", show_default="subfile name"
 )
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_dat_command(
     h5_file,
     subfile_name,
-    output,
     legend_only,
     functions,
     x_axis,
-    stylesheet,
     x_label,
     y_label,
     x_logscale,
@@ -146,8 +127,6 @@ def plot_dat_command(
     title,
 ):
     """Plot columns in '.dat' datasets in H5 files"""
-    _rich_traceback_guard = True  # Hide traceback until here
-
     with h5py.File(h5_file, "r") as h5file:
         # Print available subfiles and exit
         if subfile_name is None:
@@ -209,10 +188,6 @@ def plot_dat_command(
             rich.print(table)
             return
 
-        # Apply stylesheet
-        if stylesheet is not None:
-            plt.style.use(stylesheet)
-
         # Select plotting parameters. Any further customization of the plotting
         # style can be done with a stylesheet.
         plot_kwargs = dict(
@@ -249,17 +224,6 @@ def plot_dat_command(
     if y_bounds:
         plt.ylim(*y_bounds)
     plt.title(title if title else subfile_name[:-4])
-
-    if output:
-        plt.savefig(output, format="pdf", bbox_inches="tight")
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
 
 
 if __name__ == "__main__":

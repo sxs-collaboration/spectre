@@ -10,6 +10,7 @@ spectre_python_add_module(
   GenerateXdmf.py
   InterpolateToMesh.py
   OpenVolfiles.py
+  Plot.py
   PlotAlongLine.py
   PlotDatFile.py
   PlotMemoryMonitors.py

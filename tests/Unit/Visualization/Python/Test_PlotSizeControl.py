@@ -75,6 +75,7 @@ class TestPlotSizeControl(unittest.TestCase):
 
     def test_plot_size(self):
         # Just one h5 file
+        output_file_name = os.path.join(self.work_dir, "SingleFileB.pdf")
         result = self.runner.invoke(
             plot_size_control_command,
             [
@@ -82,7 +83,7 @@ class TestPlotSizeControl(unittest.TestCase):
                 "-d",
                 "B",
                 "-o",
-                os.path.join(self.work_dir, "SingleFile"),
+                output_file_name,
                 "--x-bounds",
                 "0.0",
                 "3.0",
@@ -94,11 +95,11 @@ class TestPlotSizeControl(unittest.TestCase):
             catch_exceptions=False,
         )
 
-        output_file_name = os.path.join(self.work_dir, "SingleFileB.pdf")
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertTrue(os.path.exists(output_file_name))
 
         # Multiple h5 files
+        output_file_name = os.path.join(self.work_dir, "MultiFileB.pdf")
         result = self.runner.invoke(
             plot_size_control_command,
             [
@@ -107,7 +108,7 @@ class TestPlotSizeControl(unittest.TestCase):
                 "-d",
                 "B",
                 "-o",
-                os.path.join(self.work_dir, "MultiFileB"),
+                output_file_name,
                 "--x-bounds",
                 "0.0",
                 "3.0",
@@ -119,7 +120,6 @@ class TestPlotSizeControl(unittest.TestCase):
             catch_exceptions=False,
         )
 
-        output_file_name = os.path.join(self.work_dir, "MultiFileB.pdf")
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertTrue(os.path.exists(output_file_name))
 

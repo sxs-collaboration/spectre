@@ -4,7 +4,6 @@
 # See LICENSE.txt for details.
 
 import logging
-import os
 from typing import Optional, Sequence
 
 import click
@@ -13,6 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
+)
 from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 
 logger = logging.getLogger(__name__)
@@ -33,17 +36,6 @@ logger = logging.getLogger(__name__)
         " used when there is only one black hole in the simulation."
     ),
 )
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(file_okay=True, dir_okay=False, writable=True),
-    help=(
-        "Name of the output image. The '--object-label' will be added"
-        " automatically to the end of the output. Also the suffix '.pdf' will"
-        " be added if necessary. If unspecified, the plot is shown"
-        " interactively, which only works on machines with a window server."
-    ),
-)
 # Plotting options
 @click.option(
     "--x-bounds",
@@ -60,26 +52,14 @@ logger = logging.getLogger(__name__)
     "-t",
     help="Title of the graph.",
 )
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_size_control_command(
     reduction_files: Sequence[str],
     object_label: str,
-    output: Optional[str],
     x_bounds: Optional[Sequence[float]],
     x_label: Optional[str],
     title: Optional[str],
-    stylesheet,
 ):
     """
     Plot diagnostic information regarding the Size control system.
@@ -118,10 +98,6 @@ def plot_size_control_command(
         data = data[
             (data["Time"] >= x_bounds[0]) & (data["Time"] <= x_bounds[1])
         ]
-
-    # Apply stylesheet
-    if stylesheet is not None:
-        plt.style.use(stylesheet)
 
     # Set up plots
     fig, axes = plt.subplots(7, 1, sharex=True)
@@ -214,21 +190,6 @@ def plot_size_control_command(
             )
         else:
             axes[i].legend(loc="center left", bbox_to_anchor=(1, 0.5))
-
-    if output:
-        output = output.split(".pdf")[0]
-        if not output.endswith(f"{object_label}"):
-            output += f"{object_label}"
-        output += ".pdf"
-        fig.savefig(output, format="pdf", bbox_inches="tight")
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
 
 
 if __name__ == "__main__":

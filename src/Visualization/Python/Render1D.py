@@ -23,6 +23,7 @@ from spectre.Domain import (
 )
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.Spectral import Basis
+from spectre.Visualization.Plot import apply_stylesheet_command
 from spectre.Visualization.PlotDatFile import parse_functions
 
 logger = logging.getLogger(__name__)
@@ -274,18 +275,7 @@ def plot_element(
 @click.option(
     "--title", "-t", help="Title of the graph.", show_default="subfile name"
 )
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
 @click.option("--show-collocation-points", is_flag=True)
 @click.option("--show-element-boundaries", is_flag=True)
 @click.option("--show-basis-polynomials", is_flag=True)
@@ -302,7 +292,6 @@ def render_1d_command(
     x_bounds,
     y_bounds,
     title,
-    stylesheet,
     step,
     interval,
     **plot_element_kwargs,
@@ -350,10 +339,6 @@ def render_1d_command(
     if not vars:
         vars = {var: var for var in all_vars}
     plot_element_kwargs["vars"] = vars
-
-    # Apply stylesheet
-    if stylesheet is not None:
-        plt.style.use(stylesheet)
 
     # Evaluate property cycles for each variable (by default this is just
     # 'color'). We do multiple plotting commands per variable (at least one per

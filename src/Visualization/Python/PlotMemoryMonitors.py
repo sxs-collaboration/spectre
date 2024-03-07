@@ -13,6 +13,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
+)
 from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 
 logger = logging.getLogger(__name__)
@@ -23,16 +27,6 @@ logger = logging.getLogger(__name__)
     "reduction_files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
-)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(file_okay=True, dir_okay=False, writable=True),
-    help=(
-        "Name of the output plot file. If unspecified, the plot is "
-        "shown interactively, which only works on machines with a "
-        "window server."
-    ),
 )
 # Plotting options
 @click.option(
@@ -52,25 +46,13 @@ logger = logging.getLogger(__name__)
     nargs=2,
     help="The lower and upper bounds of the x-axis.",
 )
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_memory_monitors_command(
     reduction_files: Sequence[str],
-    output: Optional[str],
     use_mb: bool,
     x_label: Optional[str],
     x_bounds: Optional[Sequence[float]],
-    stylesheet,
 ):
     """
     Plot the memory usage of a simulation from the MemoryMonitors data in the
@@ -173,9 +155,6 @@ def plot_memory_monitors_command(
     divisor = 1.0 if use_mb else 1000.0
 
     # Start plotting
-    if stylesheet is not None:
-        plt.style.use(stylesheet)
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
@@ -213,19 +192,6 @@ def plot_memory_monitors_command(
     )
     for line in leg.get_lines():
         line.set_linewidth(1.0)
-
-    if output is not None:
-        output = output.split(".pdf")[0]
-        output += ".pdf"
-        fig.savefig(output, format="pdf", bbox_inches="tight")
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
 
 
 if __name__ == "__main__":

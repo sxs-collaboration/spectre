@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 import logging
-import os
 from itertools import cycle
 from typing import Iterable, Optional, Sequence, Union
 
@@ -21,6 +20,10 @@ from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
     parse_point,
+)
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
 )
 
 logger = logging.getLogger(__name__)
@@ -292,28 +295,8 @@ def plot_power_monitors(
         "'--elements' / '-e' patterns."
     ),
 )
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(writable=True),
-    help=(
-        "Name of the output plot file. If unspecified, the plot is "
-        "shown interactively, which only works on machines with a "
-        "window server."
-    ),
-)
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_power_monitors_command(
     h5_files,
     subfile_name,
@@ -324,8 +307,6 @@ def plot_power_monitors_command(
     block_or_group_names,
     list_elements,
     element_patterns,
-    output,
-    stylesheet,
 ):
     """Plot power monitors from volume data
 
@@ -405,12 +386,6 @@ def plot_power_monitors_command(
     # Close the H5 file because we're done with preprocessing
     open_h5_file.close()
 
-    # Apply stylesheets
-    stylesheets = [os.path.join(os.path.dirname(__file__), "plots.mplstyle")]
-    if stylesheet is not None:
-        stylesheets.append(stylesheet)
-    plt.style.use(stylesheets)
-
     # Plot!
     import rich.progress
 
@@ -435,17 +410,6 @@ def plot_power_monitors_command(
             element_patterns=element_patterns,
         )
         progress.update(task_id, completed=len(h5_files))
-
-    if output:
-        plt.savefig(output)
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
 
 
 if __name__ == "__main__":
