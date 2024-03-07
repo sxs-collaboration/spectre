@@ -67,18 +67,18 @@ template <size_t Dim>
 struct Fluxes {
   using argument_tags =
       tmpl::list<Tags::ConstitutiveRelationPerBlockBase,
-                 domain::Tags::Element<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
-  using volume_tags = tmpl::list<Tags::ConstitutiveRelationPerBlockBase,
-                                 domain::Tags::Element<Dim>>;
-  using const_global_cache_tags =
-      tmpl::list<Tags::ConstitutiveRelationPerBlockBase>;
+  using volume_tags = tmpl::list<Tags::ConstitutiveRelationPerBlockBase>;
+  using const_global_cache_tags = volume_tags;
+  static constexpr bool is_trivial = false;
+  static constexpr bool is_discontinuous = true;
   static void apply(
       gsl::not_null<tnsr::II<DataVector, Dim>*> minus_stress,
       const std::vector<
           std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
           constitutive_relation_per_block,
-      const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
+      const tnsr::I<DataVector, Dim>& coordinates,
+      const ElementId<Dim>& element_id,
       const tnsr::I<DataVector, Dim>& displacement,
       const tnsr::iJ<DataVector, Dim>& deriv_displacement);
   static void apply(
@@ -86,7 +86,8 @@ struct Fluxes {
       const std::vector<
           std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&
           constitutive_relation_per_block,
-      const Element<Dim>& element, const tnsr::I<DataVector, Dim>& coordinates,
+      const tnsr::I<DataVector, Dim>& coordinates,
+      const ElementId<Dim>& element_id,
       const tnsr::i<DataVector, Dim>& face_normal,
       const tnsr::I<DataVector, Dim>& face_normal_vector,
       const tnsr::I<DataVector, Dim>& displacement);

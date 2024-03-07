@@ -17,6 +17,7 @@
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
@@ -56,6 +57,7 @@
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/CartesianProduct.hpp"
@@ -579,6 +581,7 @@ void test_dg_operator(
 
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
   // Needed for Brick
   using VariantType = std::variant<
@@ -1107,37 +1110,137 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       }
     }
   }
-
-  // The following are tests for smaller units of functionality
   {
-    INFO("Zero boundary data");
-    const auto direction = Direction<2>::lower_xi();
-    const Mesh<2> mesh{
-        {5, 3}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-    const Mesh<1> mortar_mesh{4, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto};
-    const ::dg::MortarSize<1> mortar_size{{Spectral::MortarSize::LowerHalf}};
-    const Scalar<DataVector> face_normal_magnitude{{{{1., 2., 3.}}}};
-    const auto boundary_data =
-        elliptic::dg::zero_boundary_data_on_mortar<tmpl::list<ScalarFieldTag>,
-                                                   tmpl::list<AuxFieldTag<2>>>(
-            direction, mesh, face_normal_magnitude, mortar_mesh, mortar_size);
-    CHECK(get(get<::Tags::NormalDotFlux<ScalarFieldTag>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<0>(get<::Tags::NormalDotFlux<AuxFieldTag<2>>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<1>(get<::Tags::NormalDotFlux<AuxFieldTag<2>>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get(get<elliptic::dg::Tags::NormalDotFluxForJump<ScalarFieldTag>>(
-              boundary_data.field_data)) == DataVector{4_st, 0.});
-    CHECK(get<elliptic::dg::Tags::PerpendicularNumPoints>(
-              boundary_data.extra_data) == 5);
-    const DataVector expected_element_size{2., 1., 2. / 3.};
-    const auto expected_element_size_on_mortar =
-        apply_matrices(Spectral::projection_matrix_parent_to_child(
-                           mesh.slice_away(0), mortar_mesh, mortar_size),
-                       expected_element_size, Index<1>{3});
-    CHECK(get(get<elliptic::dg::Tags::ElementSize>(boundary_data.field_data)) ==
-          expected_element_size_on_mortar);
+    INFO("3D sphere");
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
+    Poisson::Solutions::Lorentzian<3> analytic_solution{0.};
+    {
+      INFO("Regression tests");
+      const domain::creators::Sphere domain_creator{
+          1.,
+          3.,
+          domain::creators::Sphere::InnerCube{0.},
+          0_st,
+          3_st,
+          true,
+          {},
+          {},
+          domain::CoordinateMaps::Distribution::Linear,
+          ShellWedges::All,
+          std::nullopt,
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet)};
+      const ElementId<3> center_id{6};
+      const ElementId<3> wedge_id{0};
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
+      using OperatorVars =
+          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      Vars vars_rnd_center{27};
+      get(get<Var<Poisson::Tags::Field>>(vars_rnd_center)) = DataVector{
+          0.09649087905837017, 0.8726189695670388,  0.2550997406970058,
+          0.9371182951233519,  0.6633191884394125,  0.7910467053506253,
+          0.8976248825657923,  0.8253597552079079,  0.2614810810491418,
+          0.37703802268313935, 0.18811315681728424, 0.9286960528710335,
+          0.7799863844018025,  0.29158508058745125, 0.3078187493178257,
+          0.11582259489772695, 0.9504180903537383,  0.6290805984444998,
+          0.4156900249686264,  0.6322967693109368,  0.17729543326351738,
+          0.30252861325858027, 0.0700623995180415,  0.7014453661500705,
+          0.09301082210249478, 0.2507901753830596,  0.7325836921946847};
+      Vars vars_rnd_wedge{27};
+      get(get<Var<Poisson::Tags::Field>>(vars_rnd_wedge)) = DataVector{
+          0.33924615234165656, 0.8449024556165292,  0.4541579237278579,
+          0.8205705845059463,  0.35547255892487073, 0.015009371066981636,
+          0.9211805795375337,  0.4002407787315444,  0.0024764405702156767,
+          0.8731417034578796,  0.5033095307249483,  0.3680070578003968,
+          0.176441382310489,   0.6746744554291877,  0.6668359104611603,
+          0.8208960531956108,  0.6243130189945111,  0.19954959587642307,
+          0.7370176442442482,  0.4477495010295536,  0.8282274072733592,
+          0.9199607746918792,  0.9635732092068038,  0.3504092315426307,
+          0.11524312515866864, 0.17417975746930436, 0.5870281973363631};
+      OperatorVars expected_operator_vars_rnd_center{27, 0.};
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+          expected_operator_vars_rnd_center)) =
+          DataVector{0.13900947487894668719,   2.8012452842448594126,
+                     0.70606635684663743291,   3.0110762308109988439,
+                     2.2653131088752034294,    2.4389044697636719228,
+                     2.8069304514918704818,    2.5816683614488340481,
+                     0.63609994355853216597,   1.0496348030246254179,
+                     0.060338632695005833817,  2.9890473588327037824,
+                     2.5568233674986675652,    0.39929198048901121121,
+                     0.71163724792443083800,   0.023791492919156290164,
+                     3.3146326096778735426,    1.9211926341751801584,
+                     0.77620065471560839576,   0.91371751068503725968,
+                     -0.033856352764628408480, -0.22189988085469286583,
+                     -0.98838426761034614554,  2.0433388956068792019,
+                     -0.76756810709326805942,  -0.037296848003322793930,
+                     2.2419306171966684182};
+      OperatorVars expected_operator_vars_rnd_wedge{27, 0.};
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+          expected_operator_vars_rnd_wedge)) =
+          DataVector{0.16499268635017833029, 1.8644717241195962742,
+                     0.50779733947485694578, 1.8863114030787757613,
+                     -2.7740067251377729107, -1.4130776603409314074,
+                     1.9928746337497433849,  0.63283835581422620553,
+                     -1.0343599185085030623, 5.8966821182729969308,
+                     5.5504203240642899786,  2.6011964191689305181,
+                     3.3040790531837145316,  20.091810674690414373,
+                     8.0212451646648474934,  5.1144424758479178905,
+                     6.8301727856302010267,  1.0869453410405538474,
+                     5.2284593589347760911,  9.3539358392378026963,
+                     5.7609110245159351749,  19.038783549101548687,
+                     95.952139513786036673,  8.0688375547259152398,
+                     0.69551590983732591855, 4.0994207069118830944,
+                     4.2071397513902919485};
+      // Large tolerances for the comparison to the analytic solution because
+      // this regression test runs at very low resolution. Below is another
+      // analytic-solution test at higher resolution. The hard-coded numbers
+      // are compared at higher (default) precision.
+      Approx analytic_solution_aux_approx =
+          Approx::custom().epsilon(0.3).scale(1.);
+      Approx analytic_solution_operator_approx =
+          Approx::custom().epsilon(0.3).scale(1.);
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, true,
+          Spectral::Quadrature::GaussLobatto, analytic_solution,
+          analytic_solution_aux_approx, analytic_solution_operator_approx,
+          {{{{center_id, std::move(vars_rnd_center)},
+             {wedge_id, std::move(vars_rnd_wedge)}},
+            {},
+            {{center_id, std::move(expected_operator_vars_rnd_center)},
+             {wedge_id, std::move(expected_operator_vars_rnd_wedge)}}}});
+    }
+    {
+      INFO("Higher-resolution analytic-solution tests");
+      const domain::creators::Sphere domain_creator{
+          1.,
+          3.,
+          domain::creators::Sphere::InnerCube{0.},
+          0_st,
+          12_st,
+          true,
+          {},
+          {},
+          domain::CoordinateMaps::Distribution::Linear,
+          ShellWedges::All,
+          std::nullopt,
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet)};
+      Approx analytic_solution_aux_approx =
+          Approx::custom().epsilon(1.e-4).scale(1.);
+      Approx analytic_solution_operator_approx =
+          Approx::custom().epsilon(1.e-4).scale(1.);
+      for (const auto quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, true, quadrature,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, {}, true);
+      }
+    }
   }
 }

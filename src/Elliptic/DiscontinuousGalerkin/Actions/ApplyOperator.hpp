@@ -170,10 +170,6 @@ struct PrepareAndSendMortarData<
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    // Used to retrieve items out of the DataBox to forward to functions
-    const auto get_items = [](const auto&... args) {
-      return std::forward_as_tuple(args...);
-    };
     const auto& temporal_id = db::get<TemporalIdTag>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
@@ -230,18 +226,6 @@ struct PrepareAndSendMortarData<
                                typename PrimalFieldsTag::type::tags_list,
                                tmpl::size_t<Dim>, Frame::Inertial>>
         deriv_fields{num_points};
-    using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
-    using fluxes_args_volume_tags =
-        typename System::fluxes_computer::volume_tags;
-    DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
-        fluxes_args_on_faces{};
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      fluxes_args_on_faces.emplace(
-          direction, elliptic::util::apply_at<
-                         domain::make_faces_tags<Dim, fluxes_args_tags,
-                                                 fluxes_args_volume_tags>,
-                         fluxes_args_volume_tags>(get_items, box, direction));
-    }
     elliptic::dg::prepare_mortar_data<System, Linearized>(
         make_not_null(&deriv_fields), make_not_null(&primal_fluxes),
         make_not_null(&all_mortar_data), db::get<PrimalFieldsTag>(box), element,
@@ -249,15 +233,10 @@ struct PrepareAndSendMortarData<
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
-        db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
-            box),
-        db::get<domain::Tags::Faces<
-            Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         mortar_meshes,
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
         temporal_id, apply_boundary_condition,
-        std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),
-        fluxes_args_on_faces);
+        std::forward_as_tuple(db::get<FluxesArgsTags>(box)...));
 
     // Move the mutated data back into the DataBox
     db::mutate<PrimalFluxesTag, all_mortar_data_tag>(
@@ -373,7 +352,24 @@ struct ReceiveMortarDataAndApplyOperator<
           make_not_null(&box));
     }
 
+    // Used to retrieve items out of the DataBox to forward to functions
+    const auto get_items = [](const auto&... args) {
+      return std::forward_as_tuple(args...);
+    };
+
     // Apply DG operator
+    using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
+    using fluxes_args_volume_tags =
+        typename System::fluxes_computer::volume_tags;
+    DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
+        fluxes_args_on_faces{};
+    for (const auto& direction : Direction<Dim>::all_directions()) {
+      fluxes_args_on_faces.emplace(
+          direction, elliptic::util::apply_at<
+                         domain::make_faces_tags<Dim, fluxes_args_tags,
+                                                 fluxes_args_volume_tags>,
+                         fluxes_args_volume_tags>(get_items, box, direction));
+    }
     db::mutate<OperatorAppliedToFieldsTag, all_mortar_data_tag>(
         [](const auto&... args) {
           elliptic::dg::apply_operator<System, Linearized>(args...);
@@ -390,6 +386,9 @@ struct ReceiveMortarDataAndApplyOperator<
             box),
         db::get<domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
                                                   Frame::Inertial>>(box),
+        db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
+        db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>>(
+            box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         db::get<domain::Tags::Faces<
@@ -403,9 +402,10 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
                                     Frame::ElementLogical, Frame::Inertial>,
                                 Dim>>(box),
-        db::get<elliptic::dg::Tags::PenaltyParameter>(box),
+        db::get<::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>(box),
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), temporal_id,
+        fluxes_args_on_faces,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -632,7 +632,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                                    Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
-        db::get<elliptic::dg::Tags::PenaltyParameter>(box),
+        db::get<::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>(box),
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), apply_boundary_condition,
         std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),

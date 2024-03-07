@@ -1,0 +1,174 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveElasticity3D
+Testing:
+  Check: parse
+ExpectedOutput:
+  - MirrorReductions.h5
+  - MirrorVolume0.h5
+OutputFileChecks:
+  - Label: Volume integrals
+    Subfile: VolumeIntegrals.dat
+    FileGlob: MirrorReductions.h5
+    SkipColumns: [0, 1, 2]
+    ExpectedData: [[1.47912989657707e-02]]
+    AbsoluteTolerance: 1.e-4
+  - Label: Coating integrals
+    Subfile: VolumeIntegralsLayer0.dat
+    FileGlob: MirrorReductions.h5
+    SkipColumns: [0, 1, 2]
+    ExpectedData: [[3.12266515383387e-04]]
+    AbsoluteTolerance: 1.e-4
+  - Label: Substrate integrals
+    Subfile: VolumeIntegralsLayer1.dat
+    FileGlob: MirrorReductions.h5
+    SkipColumns: [0, 1, 2]
+    ExpectedData: [[1.44790324503873e-02]]
+    AbsoluteTolerance: 1.e-4
+
+---
+
+Background:
+  # Only used to compute errors, which quantify how far away the solution is
+  # from the half-space mirror solution. Has no effect on the numerical
+  # simulation.
+  &half_space_mirror
+  HalfSpaceMirror:
+    BeamWidth: &beam_width 0.17677669534
+    Material: &fused_silica
+      BulkModulus: 36.36363636363637
+      ShearModulus: 30.76923076923077
+    IntegrationIntervals: 350
+    AbsoluteTolerance: 1e-12
+    RelativeTolerance: 1e-10
+
+InitialGuess: *half_space_mirror  # Or: Zero
+
+RandomizeInitialGuess: None
+
+Material:
+  Layer0: &algaas
+    CubicCrystal:
+      C_11: 119.94
+      C_12: 55.38
+      C_44: 59.15
+    # Or: effective-isotropic approximation
+    # IsotropicHomogeneous:
+    #   BulkModulus: 92.59263333
+    #   ShearModulus: 37.8788
+  Layer1:
+    IsotropicHomogeneous: *fused_silica
+
+DomainCreator:
+  Cylinder:
+    InnerRadius: 0.2
+    OuterRadius: 12.5
+    LowerZBound: 0.
+    UpperZBound: 12.50683
+    # Order: [r, phi, z]
+    InitialRefinement:
+      Layer0: [0, 0, 0]
+      Layer1: [0, 0, 2]
+    InitialGridPoints:
+      Layer0: [5, 5, 3]
+      Layer1: [5, 5, 5]
+    UseEquiangularMap: True
+    RadialPartitioning: [0.7]
+    PartitioningInZ: [&coating_thickness 0.00683]
+    RadialDistribution: [Linear, Logarithmic]
+    DistributionInZ: [Linear, Logarithmic]
+    BoundaryConditions:
+      LowerZ:
+        LaserBeam:
+          BeamWidth: *beam_width
+      UpperZ: Fixed
+      Mantle: Free
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+    Quadrature: GaussLobatto
+    Formulation: StrongInertial
+
+Observers:
+  VolumeFileName: "MirrorVolume"
+  ReductionFileName: "MirrorReductions"
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 1000
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-4
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    ObservePerCoreReductions: False
+
+EventsAndTriggers:
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms: &error_norms
+          SubfileName: ErrorNorms
+          TensorsToObserve:
+            - Name: Error(Displacement)
+              NormType: L2Norm
+              Components: Sum
+      - ObserveNorms: &volume_integrals
+          SubfileName: VolumeIntegrals
+          TensorsToObserve:
+            - Name: PotentialEnergyDensity
+              NormType: VolumeIntegral
+              Components: Individual
+      - ObserveNormsPerLayer: *error_norms
+      - ObserveNormsPerLayer: *volume_integrals
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Displacement
+            - Strain
+            - Stress
+            - PotentialEnergyDensity
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+
+PhaseChangeAndTriggers:
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+BuildMatrix:
+  MatrixSubfileName: Matrix
+  Verbosity: Verbose

@@ -36,6 +36,7 @@
 #include "Domain/Tags/Faces.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Domain/Tags/SurfaceJacobian.hpp"
+#include "Elliptic/DiscontinuousGalerkin/Penalty.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
@@ -220,6 +221,19 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
     const Mesh<Dim - 1>& mortar_mesh,
     const ::dg::MortarSize<Dim - 1>& mortar_size,
     const Direction<Dim>& direction);
+
+template <size_t Dim>
+void mortar_jacobian(
+    gsl::not_null<Scalar<DataVector>*> mortar_jacobian,
+    gsl::not_null<Scalar<DataVector>*> perpendicular_element_size,
+    const Mesh<Dim - 1>& mortar_mesh,
+    const ::dg::MortarSize<Dim - 1>& mortar_size,
+    const Direction<Dim>& direction,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+        mortar_logical_coords,
+    const std::optional<tnsr::II<DataVector, Dim>>& inv_metric_on_mortar,
+    const ElementMap<Dim, Frame::Inertial>& element_map,
+    const domain::FunctionsOfTimeMap& functions_of_time);
 }  // namespace detail
 
 /// Initialize the geometry on faces and mortars for the elliptic DG operator
@@ -263,18 +277,21 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
                  ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
                  ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
                                      Frame::ElementLogical, Frame::Inertial>,
-                                 Dim>>>;
+                                 Dim>,
+                 ::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>>;
   using argument_tags = tmpl::append<
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::NeighborMesh<Dim>, domain::Tags::ElementMap<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
-                 domain::Tags::FunctionsOfTime>,
+                 domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime,
+                 elliptic::dg::Tags::PenaltyParameter>,
       tmpl::conditional_t<
           std::is_same_v<BackgroundTag, void>, tmpl::list<>,
           tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
   using volume_tags = tmpl::append<
-      tmpl::list<domain::Tags::FunctionsOfTime>,
+      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTime,
+                 elliptic::dg::Tags::PenaltyParameter>,
       tmpl::conditional_t<
           std::is_same_v<BackgroundTag, void>, tmpl::list<>,
           tmpl::list<BackgroundTag, Parallel::Tags::Metavariables>>>;
@@ -302,19 +319,22 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
           mortar_sizes,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           mortar_jacobians,
+      const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
+          penalty_factors,
       const Mesh<Dim>& mesh, const Element<Dim>& element,
       const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
       const ElementMap<Dim, Frame::Inertial>& element_map,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
+      const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      const AmrData&... amr_data) {
+      const double penalty_parameter, const AmrData&... amr_data) {
     apply(face_directions, faces_inertial_coords, face_normals,
           face_normal_vectors, face_normal_magnitudes, face_jacobians,
           face_jacobian_times_inv_jacobian, deriv_unnormalized_face_normals,
-          mortar_meshes, mortar_sizes, mortar_jacobians, mesh, element,
-          neighbor_meshes, element_map, inv_jacobian, functions_of_time,
-          nullptr, nullptr, amr_data...);
+          mortar_meshes, mortar_sizes, mortar_jacobians, penalty_factors, mesh,
+          element, neighbor_meshes, element_map, inv_jacobian, domain,
+          functions_of_time, penalty_parameter, nullptr, nullptr, amr_data...);
   }
   template <typename Background, typename Metavariables, typename... AmrData>
   static void apply(
@@ -340,36 +360,39 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
           mortar_sizes,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           mortar_jacobians,
+      const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
+          penalty_factors,
       const Mesh<Dim>& mesh, const Element<Dim>& element,
       const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
       const ElementMap<Dim, Frame::Inertial>& element_map,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
+      const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      const Background& background, const Metavariables& /*meta*/,
-      const AmrData&... /*amr_data*/) {
+      const double penalty_parameter, const Background& background,
+      const Metavariables& /*meta*/, const AmrData&... /*amr_data*/) {
     static_assert(std::is_same_v<InvMetricTag, void> or
                       not(std::is_same_v<Background, std::nullptr_t>),
                   "Supply an analytic background from which the 'InvMetricTag' "
                   "can be retrieved");
     [[maybe_unused]] const auto get_inv_metric =
         [&background]([[maybe_unused]] const tnsr::I<DataVector, Dim>&
-                          local_inertial_coords) {
-          if constexpr (not std::is_same_v<InvMetricTag, void>) {
-            using factory_classes = typename std::decay_t<
-                Metavariables>::factory_creation::factory_classes;
-            return call_with_dynamic_type<
-                tnsr::II<DataVector, Dim>,
-                tmpl::at<factory_classes, Background>>(
-                &background,
-                [&local_inertial_coords](const auto* const derived) {
-                  return get<InvMetricTag>(derived->variables(
-                      local_inertial_coords, tmpl::list<InvMetricTag>{}));
-                });
-          } else {
-            (void)background;
-          }
-        };
+                          local_inertial_coords)
+        -> std::optional<tnsr::II<DataVector, Dim>> {
+      if constexpr (not std::is_same_v<InvMetricTag, void>) {
+        using factory_classes = typename std::decay_t<
+            Metavariables>::factory_creation::factory_classes;
+        return call_with_dynamic_type<tnsr::II<DataVector, Dim>,
+                                      tmpl::at<factory_classes, Background>>(
+            &background, [&local_inertial_coords](const auto* const derived) {
+              return get<InvMetricTag>(derived->variables(
+                  local_inertial_coords, tmpl::list<InvMetricTag>{}));
+            });
+      } else {
+        (void)background;
+        return std::nullopt;
+      }
+    };
     ASSERT(std::equal(mesh.quadrature().begin() + 1, mesh.quadrature().end(),
                       mesh.quadrature().begin()),
            "This function is implemented assuming the quadrature is isotropic");
@@ -402,7 +425,7 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
           face_normal_vector.get(d) = face_normal.get(d);
         }
       } else {
-        const auto inv_metric_on_face = get_inv_metric(face_inertial_coords);
+        const auto inv_metric_on_face = *get_inv_metric(face_inertial_coords);
         magnitude(make_not_null(&face_normal_magnitude), face_normal,
                   inv_metric_on_face);
         for (size_t d = 0; d < Dim; ++d) {
@@ -426,54 +449,84 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
     mortar_meshes->clear();
     mortar_sizes->clear();
     mortar_jacobians->clear();
+    penalty_factors->clear();
     const auto& element_id = element.id();
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const auto& orientation = neighbors.orientation();
       for (const auto& neighbor_id : neighbors) {
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
+        const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
         mortar_meshes->emplace(
-            mortar_id,
-            ::dg::mortar_mesh(
-                face_mesh,
-                orientation.inverse_map()(neighbor_meshes.at(mortar_id))
-                    .slice_away(direction.dimension())));
+            mortar_id, ::dg::mortar_mesh(
+                           face_mesh, orientation.inverse_map()(neighbor_mesh)
+                                          .slice_away(direction.dimension())));
         mortar_sizes->emplace(
             mortar_id, ::dg::mortar_size(element_id, neighbor_id,
                                          direction.dimension(), orientation));
         // Mortar Jacobian
         const auto& mortar_mesh = mortar_meshes->at(mortar_id);
         const auto& mortar_size = mortar_sizes->at(mortar_id);
+        const auto mortar_logical_coords = detail::mortar_logical_coordinates(
+            mortar_mesh, mortar_size, direction);
+        const auto mortar_inertial_coords =
+            element_map(mortar_logical_coords, 0., functions_of_time);
+        Scalar<DataVector> perpendicular_element_size{};
         if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
-          const auto mortar_logical_coords = detail::mortar_logical_coordinates(
-              mortar_mesh, mortar_size, direction);
           auto& mortar_jacobian = (*mortar_jacobians)[mortar_id];
-          mortar_jacobian = determinant(element_map.jacobian(
-              mortar_logical_coords, 0., functions_of_time));
-          // These factors of two account for the mortar size
-          for (const auto& mortar_size_i : mortar_size) {
-            if (mortar_size_i != Spectral::MortarSize::Full) {
-              get(mortar_jacobian) *= 0.5;
-            }
-          }
-          const auto inv_jacobian_on_mortar = element_map.inv_jacobian(
-              mortar_logical_coords, 0., functions_of_time);
-          const auto unnormalized_mortar_normal = unnormalized_face_normal(
-              mortar_mesh, inv_jacobian_on_mortar, direction);
-          Scalar<DataVector> mortar_normal_magnitude{};
-          if constexpr (std::is_same_v<InvMetricTag, void>) {
-            magnitude(make_not_null(&mortar_normal_magnitude),
-                      unnormalized_mortar_normal);
-          } else {
-            const auto mortar_inertial_coords =
-                element_map(mortar_logical_coords, 0., functions_of_time);
-            const auto inv_metric_on_mortar =
-                get_inv_metric(mortar_inertial_coords);
-            magnitude(make_not_null(&mortar_normal_magnitude),
-                      unnormalized_mortar_normal, inv_metric_on_mortar);
-          }
-          get(mortar_jacobian) *= get(mortar_normal_magnitude);
+          detail::mortar_jacobian(make_not_null(&mortar_jacobian),
+                                  make_not_null(&perpendicular_element_size),
+                                  mortar_mesh, mortar_size, direction,
+                                  mortar_logical_coords,
+                                  get_inv_metric(mortar_inertial_coords),
+                                  element_map, functions_of_time);
+        } else {
+          // Mortar is identical to face, and we have computed the face normal
+          // magnitude already above
+          get(perpendicular_element_size) =
+              2. / get(face_normal_magnitudes->at(direction));
         }
+        // Penalty factor
+        // The penalty factor (like all quantities on mortars) must agree when
+        // calculated on both sides of the mortar. So we switch perspective to
+        // the neighbor here.
+        const auto direction_in_neighbor = orientation(direction).opposite();
+        const auto reoriented_mortar_mesh = ::dg::mortar_mesh(
+            orientation(mesh).slice_away(direction_in_neighbor.dimension()),
+            neighbor_mesh.slice_away(direction_in_neighbor.dimension()));
+        const auto mortar_size_in_neighbor = ::dg::mortar_size(
+            neighbor_id, element_id, direction_in_neighbor.dimension(),
+            orientation.inverse_map());
+        const auto mortar_logical_coords_in_neighbor =
+            detail::mortar_logical_coordinates(reoriented_mortar_mesh,
+                                               mortar_size_in_neighbor,
+                                               direction_in_neighbor);
+        const ElementMap<Dim, Frame::Inertial> neighbor_element_map{
+            neighbor_id, domain.blocks()[neighbor_id.block_id()]};
+        const auto reoriented_mortar_inertial_coords = neighbor_element_map(
+            mortar_logical_coords_in_neighbor, 0., functions_of_time);
+        Scalar<DataVector> buffer{};
+        Scalar<DataVector> reoriented_neighbor_element_size{};
+        detail::mortar_jacobian(
+            make_not_null(&buffer),
+            make_not_null(&reoriented_neighbor_element_size),
+            reoriented_mortar_mesh, mortar_size_in_neighbor,
+            direction_in_neighbor, mortar_logical_coords_in_neighbor,
+            get_inv_metric(reoriented_mortar_inertial_coords),
+            neighbor_element_map, functions_of_time);
+        // Orient the result back to the perspective of this element
+        const auto neighbor_element_size = orient_variables_on_slice(
+            get(reoriented_neighbor_element_size),
+            reoriented_mortar_mesh.extents(), direction_in_neighbor.dimension(),
+            orientation.inverse_map());
+        penalty_factors->emplace(
+            mortar_id, elliptic::dg::penalty(
+                           blaze::min(get(perpendicular_element_size),
+                                      neighbor_element_size),
+                           std::max(mesh.extents(direction.dimension()),
+                                    neighbor_mesh.extents(
+                                        direction_in_neighbor.dimension())),
+                           penalty_parameter));
       }  // neighbors
     }    // internal directions
     // Mortars (external directions)
@@ -484,6 +537,11 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
       mortar_meshes->emplace(mortar_id, face_mesh);
       mortar_sizes->emplace(mortar_id,
                             make_array<Dim - 1>(Spectral::MortarSize::Full));
+      penalty_factors->emplace(
+          mortar_id,
+          elliptic::dg::penalty(2. / get(face_normal_magnitudes->at(direction)),
+                                mesh.extents(direction.dimension()),
+                                penalty_parameter));
     }  // external directions
   }
 };

@@ -148,9 +148,6 @@ struct SubdomainOperator
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
-                 domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
-                 domain::Tags::Faces<
-                     Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
                  ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                  ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
   using apply_args_tags = tmpl::list<
@@ -161,6 +158,8 @@ struct SubdomainOperator
       domain::Tags::DetJacobian<Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::DetTimesInvJacobian<Dim, Frame::ElementLogical,
                                         Frame::Inertial>,
+      domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+      domain::Tags::Faces<Dim, domain::Tags::FaceNormalVector<Dim>>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<
@@ -173,8 +172,8 @@ struct SubdomainOperator
       ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
                                                        Frame::Inertial>,
                       Dim>,
-      elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
-      elliptic::dg::Tags::Formulation>;
+      ::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>,
+      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>;
   using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
   using sources_args_tags =
       elliptic::get_sources_argument_tags<System, linearized>;
@@ -187,8 +186,7 @@ struct SubdomainOperator
   // when evaluating neighbors
   using args_tags_from_center = tmpl::remove_duplicates<tmpl::push_back<
       typename System::fluxes_computer::const_global_cache_tags,
-      elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive,
-      elliptic::dg::Tags::Formulation>>;
+      elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>>;
 
   // Data on neighbors is stored in the central element's DataBox in
   // `LinearSolver::Schwarz::Tags::Overlaps` maps, so we wrap the argument tags
@@ -405,7 +403,7 @@ struct SubdomainOperator
               args...);
         },
         box, temporal_id, apply_boundary_condition_center, fluxes_args,
-        fluxes_args_on_faces, data_is_zero);
+        data_is_zero);
     // Prepare neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -418,8 +416,6 @@ struct SubdomainOperator
         const auto& neighbor_mesh = all_neighbor_meshes.at(overlap_id);
         const auto& mortar_id = overlap_id;
         const auto& mortar_mesh = central_mortar_meshes.at(mortar_id);
-        const ::dg::MortarId<Dim> mortar_id_from_neighbor{
-            direction_from_neighbor, central_element.id()};
         const bool neighbor_data_is_zero = data_is_zero(neighbor_id);
 
         // Intercept empty overlaps. In the unlikely case that overlaps have
@@ -429,25 +425,11 @@ struct SubdomainOperator
         // with neighbors is necessary. We can just handle the mortar between
         // central element and neighbor and continue.
         if (UNLIKELY(overlap_extent == 0)) {
-          const auto& mortar_mesh_from_neighbor =
-              all_neighbor_mortar_meshes.at(overlap_id)
-                  .at(mortar_id_from_neighbor);
-          const auto& mortar_size_from_neighbor =
-              all_neighbor_mortar_sizes.at(overlap_id)
-                  .at(mortar_id_from_neighbor);
-          auto remote_boundary_data =
-              elliptic::dg::zero_boundary_data_on_mortar<
-                  typename System::primal_fields,
-                  typename System::primal_fluxes>(
-                  direction_from_neighbor, neighbor_mesh,
-                  all_neighbor_face_normal_magnitudes.at(overlap_id)
-                      .at(direction_from_neighbor),
-                  mortar_mesh_from_neighbor, mortar_size_from_neighbor);
-          if (not orientation.is_aligned()) {
-            remote_boundary_data.orient_on_slice(
-                mortar_mesh_from_neighbor.extents(),
-                direction_from_neighbor.dimension(), orientation.inverse_map());
-          }
+          elliptic::dg::BoundaryData<typename System::primal_fields,
+                                     typename System::primal_fluxes>
+              remote_boundary_data{};
+          remote_boundary_data.field_data.initialize(
+              mortar_mesh.number_of_grid_points(), 0.);
           central_mortar_data_.at(mortar_id).remote_insert(
               temporal_id, std::move(remote_boundary_data));
           continue;
@@ -492,16 +474,6 @@ struct SubdomainOperator
             elliptic::util::apply_at<fluxes_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id);
-        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
-        for (const auto& neighbor_direction :
-             Direction<Dim>::all_directions()) {
-          fluxes_args_on_overlap_faces.emplace(
-              neighbor_direction,
-              elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
-                                       args_tags_from_center>(
-                  get_items, box,
-                  std::forward_as_tuple(overlap_id, neighbor_direction)));
-        }
 
         elliptic::util::apply_at<prepare_args_tags_overlap,
                                  args_tags_from_center>(
@@ -513,7 +485,7 @@ struct SubdomainOperator
                   extended_operand_vars_[overlap_id], args...);
             },
             box, overlap_id, temporal_id, apply_boundary_condition_neighbor,
-            fluxes_args_on_overlap, fluxes_args_on_overlap_faces, data_is_zero);
+            fluxes_args_on_overlap, data_is_zero);
 
         // Copy this neighbor's mortar data to the other side of the mortars. On
         // the other side we either have the central element, or another element
@@ -611,24 +583,11 @@ struct SubdomainOperator
             const auto& neighbors_neighbor_mortar_mesh =
                 all_neighbors_neighbor_mortar_meshes.at(overlap_id)
                     .at(neighbor_mortar_id);
-            auto zero_mortar_data = elliptic::dg::zero_boundary_data_on_mortar<
-                typename System::primal_fields, typename System::primal_fluxes>(
-                neighbors_neighbor_direction,
-                all_neighbors_neighbor_meshes.at(overlap_id)
-                    .at(neighbor_mortar_id),
-                all_neighbors_neighbor_face_normal_magnitudes.at(overlap_id)
-                    .at(neighbor_mortar_id),
-                neighbors_neighbor_mortar_mesh,
-                all_neighbors_neighbor_mortar_sizes.at(overlap_id)
-                    .at(neighbor_mortar_id));
-            // The data is zero, but auxiliary quantities such as the face
-            // normal magnitude may need re-orientation
-            if (not neighbor_orientation.is_aligned()) {
-              zero_mortar_data.orient_on_slice(
-                  neighbors_neighbor_mortar_mesh.extents(),
-                  neighbors_neighbor_direction.dimension(),
-                  neighbor_orientation.inverse_map());
-            }
+            elliptic::dg::BoundaryData<typename System::primal_fields,
+                                       typename System::primal_fluxes>
+                zero_mortar_data{};
+            zero_mortar_data.field_data.initialize(
+                neighbors_neighbor_mortar_mesh.number_of_grid_points(), 0.);
             neighbors_mortar_data_.at(overlap_id)
                 .at(neighbor_mortar_id)
                 .remote_insert(temporal_id, std::move(zero_mortar_data));
@@ -647,7 +606,8 @@ struct SubdomainOperator
               make_not_null(&central_mortar_data_), operand.element_data,
               central_primal_fluxes_, args...);
         },
-        box, temporal_id, sources_args, data_is_zero);
+        box, temporal_id, fluxes_args_on_faces, sources_args,
+        data_is_zero);
     // Apply on neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -662,6 +622,17 @@ struct SubdomainOperator
           continue;
         }
 
+        DirectionMap<Dim, FluxesArgs> fluxes_args_on_overlap_faces{};
+        for (const auto& neighbor_direction :
+             Direction<Dim>::all_directions()) {
+          fluxes_args_on_overlap_faces.emplace(
+              neighbor_direction,
+              elliptic::util::apply_at<fluxes_args_tags_overlap_faces,
+                                       args_tags_from_center>(
+                  get_items, box,
+                  std::forward_as_tuple(overlap_id, neighbor_direction)));
+        }
+
         elliptic::util::apply_at<apply_args_tags_overlap,
                                  args_tags_from_center>(
             [this, &overlap_id](const auto&... args) {
@@ -671,7 +642,7 @@ struct SubdomainOperator
                   extended_operand_vars_.at(overlap_id),
                   neighbors_primal_fluxes_.at(overlap_id), args...);
             },
-            box, overlap_id, temporal_id,
+            box, overlap_id, temporal_id, fluxes_args_on_overlap_faces,
             elliptic::util::apply_at<sources_args_tags_overlap,
                                      args_tags_from_center>(get_items, box,
                                                             overlap_id),
