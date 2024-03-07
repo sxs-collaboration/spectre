@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EquationsOfState")
 
 set(LIBRARY_SOURCES
+  Test_Barotropic2D.cpp
   Test_Barotropic3D.cpp
   Test_DarkEnergyFluid.cpp
   Test_Enthalpy.cpp

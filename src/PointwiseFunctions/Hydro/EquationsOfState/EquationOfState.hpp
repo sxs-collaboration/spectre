@@ -20,6 +20,8 @@
 
 /// \cond
 namespace EquationsOfState {
+template <typename ColdEos>
+class Barotropic2D;
 template <typename ColdEquilEos>
 class Barotropic3D;
 template <bool IsRelativistic>
@@ -65,14 +67,22 @@ struct DerivedClasses<false, 1> {
 
 template <>
 struct DerivedClasses<true, 2> {
-  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>,
-                          HybridEos<PolytropicFluid<true>>, HybridEos<Spectral>,
-                          HybridEos<Enthalpy<Spectral>>>;
+  using type =
+      tmpl::list<Barotropic2D<PolytropicFluid<true>>, Barotropic2D<Spectral>,
+                 Barotropic2D<Enthalpy<Spectral>>,
+                 Barotropic2D<PiecewisePolytropicFluid<true>>,
+                 Barotropic2D<Enthalpy<Enthalpy<Spectral>>>,
+                 Barotropic2D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
+                 DarkEnergyFluid<true>, IdealFluid<true>,
+                 HybridEos<PolytropicFluid<true>>, HybridEos<Spectral>,
+                 HybridEos<Enthalpy<Spectral>>>;
 };
 
 template <>
 struct DerivedClasses<false, 2> {
-  using type = tmpl::list<IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
+  using type = tmpl::list<Barotropic2D<PolytropicFluid<false>>,
+                          Barotropic2D<PiecewisePolytropicFluid<false>>,
+                          IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
 };
 
 template <>
@@ -80,14 +90,14 @@ struct DerivedClasses<true, 3> {
   using type =
       tmpl::list<Tabulated3D<true>, Barotropic3D<PolytropicFluid<true>>,
                  Barotropic3D<Spectral>, Barotropic3D<Enthalpy<Spectral>>,
+                 Barotropic3D<PiecewisePolytropicFluid<true>>,
+                 Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
+                 Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>,
                  Equilibrium3D<HybridEos<PolytropicFluid<true>>>,
                  Equilibrium3D<HybridEos<Spectral>>,
                  Equilibrium3D<HybridEos<Enthalpy<Spectral>>>,
                  Equilibrium3D<DarkEnergyFluid<true>>,
-                 Equilibrium3D<IdealFluid<true>>,
-                 Barotropic3D<PiecewisePolytropicFluid<true>>,
-                 Barotropic3D<Enthalpy<Enthalpy<Spectral>>>,
-                 Barotropic3D<Enthalpy<Enthalpy<Enthalpy<Spectral>>>>>;
+                 Equilibrium3D<IdealFluid<true>>>;
 };
 
 template <>
