@@ -123,9 +123,21 @@ struct AdjustDomain {
     const auto& verbosity =
         db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box);
 
-    // Check for h-refinement
-    if (alg::any_of(my_amr_flags,
-                    [](amr::Flag flag) { return flag == amr::Flag::Split; })) {
+    if (alg::all_of(my_amr_flags, [](amr::Flag flag) {
+          return flag == amr::Flag::Undefined;
+        })) {
+      // AMR flags are undefined. This state can be reached when the AMR
+      // component broadcasts the `AdjustDomain` simple action to the entire
+      // element array, then some of those elements run the simple action and
+      // create new child elements, and then the broadcast also arrives at these
+      // new elements for some reason (seems like a Charm++ bug). The AMR flags
+      // will be undefined in this case, so we just ignore the broadcast and
+      // return early here.
+      return;
+    } else if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
+                 return flag == amr::Flag::Split;
+               })) {
+      // h-refinement
       using ::operator<<;
       ASSERT(alg::count(my_amr_flags, amr::Flag::Join) == 0,
              "Element " << element_id
@@ -146,6 +158,7 @@ struct AdjustDomain {
     } else if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
                  return flag == amr::Flag::Join;
                })) {
+      // h-coarsening
       // Only one element should create the new parent
       if (amr::is_child_that_creates_parent(element_id, my_amr_flags)) {
         auto parent_id = amr::id_of_parent(element_id, my_amr_flags);
@@ -164,6 +177,7 @@ struct AdjustDomain {
       }
 
     } else {
+      // Neither h-refinement nor h-coarsening. This element will remain.
       const auto old_mesh_and_element =
           std::make_pair(db::get<::domain::Tags::Mesh<volume_dim>>(box),
                          db::get<::domain::Tags::Element<volume_dim>>(box));
