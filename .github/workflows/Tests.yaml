@@ -270,7 +270,9 @@ jobs:
           echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
           git diff -U0 $UPSTREAM_HASH |
-            clang-tidy-diff -path build -p1 -use-color
+            clang-tidy-diff -path build -p1 -use-color \
+            -extra-arg=-I/usr/include/hdf5/serial
+
 
   # Build the documentation and check for problems, then upload as a workflow
   # artifact and deploy to gh-pages.

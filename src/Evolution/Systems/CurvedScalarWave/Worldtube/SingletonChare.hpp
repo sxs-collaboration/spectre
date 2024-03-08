@@ -73,7 +73,8 @@ struct WorldtubeSingleton {
           Initialization::InitializeElementFacesGridCoordinates<Dim>>,
       ::Initialization::Actions::AddComputeTags<
           tmpl::list<Tags::EvolvedParticlePositionVelocityCompute<Dim>,
-                     Tags::GeodesicAccelerationCompute<Dim>>>,
+                     Tags::GeodesicAccelerationCompute<Dim>,
+                     Tags::BackgroundQuantitiesCompute<Dim>>>,
       Parallel::Actions::TerminatePhase>;
 
   struct worldtube_system {
