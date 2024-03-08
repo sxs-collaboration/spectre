@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ComovingCharSpeedDerivative.cpp
   Info.cpp
   AhSpeed.cpp
   DeltaR.cpp
@@ -18,6 +19,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ComovingCharSpeedDerivative.hpp
   Info.hpp
   State.hpp
   StateHistory.hpp
