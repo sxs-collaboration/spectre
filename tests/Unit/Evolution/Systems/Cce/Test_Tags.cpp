@@ -113,6 +113,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
       "ScriPlus(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::ScriPlusFactor<SomeTag>>(
       "ScriPlusFactor(SomeTag)");
+  TestHelpers::db::test_prefix_tag<Cce::Tags::KleinGordonSource<SomeTag>>(
+      "KleinGordonSource(SomeTag)");
   TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::KleinGordonPsi>>(
       "KGPi");
 }

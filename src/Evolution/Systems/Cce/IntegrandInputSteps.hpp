@@ -156,6 +156,22 @@ struct TagsToComputeForImpl<Tags::BondiH> {
                                        Spectral::Swsh::Tags::Ethbar>>;
   using second_swsh_derivative_tags = tmpl::list<>;
 };
+
+template <>
+struct TagsToComputeForImpl<Tags::KleinGordonSource<Tags::BondiBeta>> {
+  using pre_swsh_derivative_tags = tmpl::list<Tags::Dy<Tags::KleinGordonPsi>>;
+  using swsh_derivative_tags = tmpl::list<>;
+  using second_swsh_derivative_tags = tmpl::list<>;
+};
+
+template <>
+struct TagsToComputeForImpl<Tags::KleinGordonSource<Tags::BondiQ>> {
+  using pre_swsh_derivative_tags = tmpl::list<>;
+  using swsh_derivative_tags =
+      tmpl::list<Spectral::Swsh::Tags::Derivative<Tags::KleinGordonPsi,
+                                                  Spectral::Swsh::Tags::Eth>>;
+  using second_swsh_derivative_tags = tmpl::list<>;
+};
 }  // namespace detail
 
 /*!

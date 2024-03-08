@@ -66,6 +66,49 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
                                             evolved_coordinates_variables_tag,
                                             coord_vars_selector>>;
 
+  using klein_gordon_pre_swsh_derivative_tags =
+      tmpl::list<Cce::Tags::Dy<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>,
+                 Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>;
+
+  using klein_gordon_swsh_derivative_tags = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::EthEth>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::KleinGordonPsi,
+                                       Spectral::Swsh::Tags::EthEthbar>>;
+  using klein_gordon_transform_buffer_tags = tmpl::list<
+      Spectral::Swsh::Tags::SwshTransform<Cce::Tags::KleinGordonPsi>,
+      Spectral::Swsh::Tags::SwshTransform<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::Eth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::Ethbar>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>, Spectral::Swsh::Tags::Eth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::Dy<Cce::Tags::KleinGordonPsi>,
+          Spectral::Swsh::Tags::Ethbar>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEth>>,
+      Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
+          Cce::Tags::KleinGordonPsi, Spectral::Swsh::Tags::EthEthbar>>>;
+
+  using klein_gordon_source_tags = tmpl::flatten<
+      tmpl::transform<Cce::bondi_hypersurface_step_tags,
+                      tmpl::bind<Cce::Tags::KleinGordonSource, tmpl::_1>>>;
+
+  using klein_gordon_cce_integrand_tags =
+      tmpl::list<Cce::Tags::PoleOfIntegrand<Cce::Tags::KleinGordonPi>,
+                 Cce::Tags::RegularIntegrand<Cce::Tags::KleinGordonPi>>;
+
   using component_list =
       tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
                  cce_boundary_component,
