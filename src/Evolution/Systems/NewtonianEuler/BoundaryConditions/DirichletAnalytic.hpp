@@ -77,20 +77,20 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
 
   template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
-      const gsl::not_null<Scalar<DataVector>*> mass_density,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<Scalar<DataVector>*> mass_density,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           momentum_density,
-      const gsl::not_null<Scalar<DataVector>*> energy_density,
+      gsl::not_null<Scalar<DataVector>*> energy_density,
 
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           flux_mass_density,
-      const gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
           flux_momentum_density,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           flux_energy_density,
 
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
-      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
 
       const std::optional<
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
@@ -102,33 +102,36 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
-            tmpl::list<Tags::MassDensity<DataVector>,
-                       Tags::Velocity<DataVector, Dim>,
-                       Tags::Pressure<DataVector>,
-                       Tags::SpecificInternalEnergy<DataVector>>{});
+            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                       hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                       hydro::Tags::Pressure<DataVector>,
+                       hydro::Tags::SpecificInternalEnergy<DataVector>>{});
 
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
-            coords, tmpl::list<Tags::MassDensity<DataVector>,
-                               Tags::Velocity<DataVector, Dim>,
-                               Tags::Pressure<DataVector>,
-                               Tags::SpecificInternalEnergy<DataVector>>{});
+            coords,
+            tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                       hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                       hydro::Tags::Pressure<DataVector>,
+                       hydro::Tags::SpecificInternalEnergy<DataVector>>{});
       }
     }();
 
-    *mass_density = get<Tags::MassDensity<DataVector>>(boundary_values);
-    *velocity = get<Tags::Velocity<DataVector, Dim>>(boundary_values);
+    *mass_density =
+        get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
+    *velocity =
+        get<hydro::Tags::SpatialVelocity<DataVector, Dim>>(boundary_values);
     *specific_internal_energy =
-        get<Tags::SpecificInternalEnergy<DataVector>>(boundary_values);
+        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(boundary_values);
 
     ConservativeFromPrimitive<Dim>::apply(mass_density, momentum_density,
                                           energy_density, *mass_density,
                                           *velocity, *specific_internal_energy);
-    ComputeFluxes<Dim>::apply(flux_mass_density, flux_momentum_density,
-                              flux_energy_density, *momentum_density,
-                              *energy_density, *velocity,
-                              get<Tags::Pressure<DataVector>>(boundary_values));
+    ComputeFluxes<Dim>::apply(
+        flux_mass_density, flux_momentum_density, flux_energy_density,
+        *momentum_density, *energy_density, *velocity,
+        get<hydro::Tags::Pressure<DataVector>>(boundary_values));
 
     return {};
   }

@@ -100,9 +100,10 @@ bool operator!=(const SodExplosion<Dim>& lhs, const SodExplosion<Dim>& rhs) {
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<Tags::MassDensity<DataVector>> SodExplosion<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataVector>>
+SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const {
+    tmpl::list<hydro::Tags::RestMassDensity<DataVector>> /*meta*/) const {
   auto mass_density = make_with_value<Scalar<DataVector>>(x, 0.0);
   std::array<double, Dim> coords{};
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -117,20 +118,22 @@ tuples::TaggedTuple<Tags::MassDensity<DataVector>> SodExplosion<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<Tags::Velocity<DataVector, Dim, Frame::Inertial>>
+tuples::TaggedTuple<
+    hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>
 SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Velocity<DataVector, Dim, Frame::Inertial>> /*meta*/)
-    const {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim,
+                                            Frame::Inertial>> /*meta*/) const {
   auto velocity = make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(
       get<0>(x), 0.0);
   return velocity;
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<Tags::Pressure<DataVector>> SodExplosion<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::Pressure<DataVector>>
+SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const {
+    tmpl::list<hydro::Tags::Pressure<DataVector>> /*meta*/) const {
   auto pressure = make_with_value<Scalar<DataVector>>(x, 0.0);
   std::array<double, Dim> coords{};
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -145,15 +148,16 @@ tuples::TaggedTuple<Tags::Pressure<DataVector>> SodExplosion<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataVector>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataVector>>
 SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/) const {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataVector>> /*meta*/)
+    const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
-      get<Tags::MassDensity<DataVector>>(
-          variables(x, tmpl::list<Tags::MassDensity<DataVector>>{})),
-      get<Tags::Pressure<DataVector>>(
-          variables(x, tmpl::list<Tags::Pressure<DataVector>>{})));
+      get<hydro::Tags::RestMassDensity<DataVector>>(
+          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataVector>>{})),
+      get<hydro::Tags::Pressure<DataVector>>(
+          variables(x, tmpl::list<hydro::Tags::Pressure<DataVector>>{})));
 }
 
 template class SodExplosion<2>;

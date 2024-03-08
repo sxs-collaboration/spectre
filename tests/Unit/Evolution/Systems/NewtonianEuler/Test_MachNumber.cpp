@@ -34,9 +34,9 @@ void test_in_databox(const Scalar<DataType>& mass_density,
       NewtonianEuler::Tags::MachNumberCompute<DataType, Dim>>("MachNumber");
 
   const auto box = db::create<
-      db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
-                        NewtonianEuler::Tags::Velocity<DataType, Dim>,
-                        NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
+      db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
+                        hydro::Tags::SpatialVelocity<DataType, Dim>,
+                        hydro::Tags::SpecificInternalEnergy<DataType>,
                         hydro::Tags::EquationOfState<EquationOfStateType>>,
       db::AddComputeTags<
           NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>,

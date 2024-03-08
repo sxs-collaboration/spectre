@@ -41,23 +41,9 @@ struct SmoothFlowProxy : NewtonianEuler::Solutions::SmoothFlow<Dim> {
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>
-  using ne_variables_tags =
-      tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim>,
-                 NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
-                 NewtonianEuler::Tags::Pressure<DataType>>;
-
-  template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
   primitive_variables(const tnsr::I<DataType, Dim>& x, const double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
-  }
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<ne_variables_tags<DataType>>
-  ne_primitive_variables(const tnsr::I<DataType, Dim>& x,
-                         const double t) const {
-    return this->variables(x, t, ne_variables_tags<DataType>{});
   }
 };
 
@@ -78,15 +64,6 @@ void test_solution(const DataType& used_for_size,
       "Hydro.SmoothFlow",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "specific_enthalpy"},
-      {{{-15., 15.}}},
-      std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
-                      perturbation_size),
-      used_for_size);
-  pypp::check_with_random_values<1>(
-      &SmoothFlowProxy<Dim>::template ne_primitive_variables<DataType>,
-      solution, "Hydro.SmoothFlow",
-      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),

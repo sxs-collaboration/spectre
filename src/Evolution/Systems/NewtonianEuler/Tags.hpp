@@ -20,13 +20,6 @@ class DataVector;
 namespace NewtonianEuler {
 /// %Tags for the conservative formulation of the Newtonian Euler system
 namespace Tags {
-
-/// The mass density of the fluid.
-template <typename DataType>
-struct MassDensity : db::SimpleTag {
-  using type = Scalar<DataType>;
-};
-
 /// The mass density of the fluid (as a conservative variable).
 struct MassDensityCons : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -44,34 +37,9 @@ struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-/// The macroscopic or flow velocity of the fluid.
-template <typename DataType, size_t Dim, typename Fr>
-struct Velocity : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() { return Frame::prefix<Fr>() + "Velocity"; }
-};
-
-/// The specific internal energy of the fluid.
-template <typename DataType>
-struct SpecificInternalEnergy : db::SimpleTag {
-  using type = Scalar<DataType>;
-};
-
-/// The fluid pressure.
-template <typename DataType>
-struct Pressure : db::SimpleTag {
-  using type = Scalar<DataType>;
-};
-
 /// The sound speed.
 template <typename DataType>
 struct SoundSpeed : db::SimpleTag {
-  using type = Scalar<DataType>;
-};
-
-/// The square of the sound speed.
-template <typename DataType>
-struct SoundSpeedSquared : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 

@@ -13,6 +13,7 @@
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,9 +32,10 @@ void VortexPerturbation::apply(
   const size_t number_of_grid_points = get<0>(x).size();
   const auto vortex_primitives = vortex.variables(
       x, time,
-      tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, 3>,
-                 Tags::SpecificInternalEnergy<DataVector>,
-                 Tags::Pressure<DataVector>>{});
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>>{});
   Variables<
       tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3, Frame::Inertial>,
                  ::Tags::TempScalar<2>>>
@@ -47,9 +49,9 @@ void VortexPerturbation::apply(
       make_not_null(&vortex_mass_density_cons),
       make_not_null(&vortex_momentum_density),
       make_not_null(&vortex_energy_density),
-      get<Tags::MassDensity<DataVector>>(vortex_primitives),
-      get<Tags::Velocity<DataVector, 3>>(vortex_primitives),
-      get<Tags::SpecificInternalEnergy<DataVector>>(vortex_primitives));
+      get<hydro::Tags::RestMassDensity<DataVector>>(vortex_primitives),
+      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(vortex_primitives),
+      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vortex_primitives));
 
   // We save the precomputed value of dv_z/dz in source_mass_density_cons
   // in order to save an allocation
@@ -65,9 +67,9 @@ void VortexPerturbation::apply(
 
   get(*source_energy_density) =
       (get(vortex_energy_density) +
-       get(get<Tags::Pressure<DataVector>>(vortex_primitives)) +
+       get(get<hydro::Tags::Pressure<DataVector>>(vortex_primitives)) +
        vortex_momentum_density.get(2) *
-           get<2>(get<Tags::Velocity<DataVector, 3>>(
+           get<2>(get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
                vortex_primitives))) *
       get(*source_mass_density_cons);
 

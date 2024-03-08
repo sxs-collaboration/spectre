@@ -90,10 +90,11 @@ void test_prim_reconstructor_impl(
   using MomentumDensity = ne::Tags::MomentumDensity<Dim>;
 
   // Primitive vars tags
-  using MassDensity = ne::Tags::MassDensity<DataVector>;
-  using Velocity = ne::Tags::Velocity<DataVector, Dim>;
-  using SpecificInternalEnergy = ne::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = ne::Tags::Pressure<DataVector>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   using prims_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;

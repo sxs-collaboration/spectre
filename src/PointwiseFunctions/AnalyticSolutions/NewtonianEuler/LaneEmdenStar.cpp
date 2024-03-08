@@ -97,30 +97,32 @@ Scalar<DataType> LaneEmdenStar::precompute_mass_density(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::MassDensity<DataType>> LaneEmdenStar::variables(
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+LaneEmdenStar::variables(
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
     const Scalar<DataType>& mass_density) const {
   return mass_density;
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, 3>> LaneEmdenStar::variables(
-    tmpl::list<Tags::Velocity<DataType, 3>> /*meta*/,
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
+LaneEmdenStar::variables(
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
     const Scalar<DataType>& mass_density) const {
   return make_with_value<tnsr::I<DataType, 3>>(get(mass_density), 0.0);
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::Pressure<DataType>> LaneEmdenStar::variables(
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> LaneEmdenStar::variables(
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
     const Scalar<DataType>& mass_density) const {
   return equation_of_state_.pressure_from_density(mass_density);
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 LaneEmdenStar::variables(
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
     const Scalar<DataType>& mass_density) const {
   return equation_of_state_.specific_internal_energy_from_density(mass_density);
 }
@@ -145,20 +147,22 @@ bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) {
       const tnsr::I<DTYPE(data), 3>& x) const;                               \
   template Scalar<DTYPE(data)> LaneEmdenStar::precompute_mass_density(       \
       const tnsr::I<DTYPE(data), 3>& x) const;                               \
-  template tuples::TaggedTuple<Tags::MassDensity<DTYPE(data)>>               \
+  template tuples::TaggedTuple<hydro::Tags::RestMassDensity<DTYPE(data)>>    \
   LaneEmdenStar::variables(                                                  \
-      tmpl::list<Tags::MassDensity<DTYPE(data)>> /*meta*/,                   \
+      tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,        \
       const Scalar<DTYPE(data)>& mass_density) const;                        \
-  template tuples::TaggedTuple<Tags::Velocity<DTYPE(data), 3>>               \
+  template tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> \
   LaneEmdenStar::variables(                                                  \
-      tmpl::list<Tags::Velocity<DTYPE(data), 3>> /*meta*/,                   \
+      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,     \
       const Scalar<DTYPE(data)>& mass_density) const;                        \
-  template tuples::TaggedTuple<Tags::Pressure<DTYPE(data)>>                  \
-  LaneEmdenStar::variables(tmpl::list<Tags::Pressure<DTYPE(data)>> /*meta*/, \
-                           const Scalar<DTYPE(data)>& mass_density) const;   \
-  template tuples::TaggedTuple<Tags::SpecificInternalEnergy<DTYPE(data)>>    \
+  template tuples::TaggedTuple<hydro::Tags::Pressure<DTYPE(data)>>           \
   LaneEmdenStar::variables(                                                  \
-      tmpl::list<Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,        \
+      tmpl::list<hydro::Tags::Pressure<DTYPE(data)>> /*meta*/,               \
+      const Scalar<DTYPE(data)>& mass_density) const;                        \
+  template tuples::TaggedTuple<                                              \
+      hydro::Tags::SpecificInternalEnergy<DTYPE(data)>>                      \
+  LaneEmdenStar::variables(                                                  \
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/, \
       const Scalar<DTYPE(data)>& mass_density) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

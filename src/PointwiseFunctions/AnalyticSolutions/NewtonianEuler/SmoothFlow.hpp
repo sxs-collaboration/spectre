@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
@@ -87,40 +86,6 @@ class SmoothFlow : public evolution::initial_data::InitialData,
 
   // Overload the variables function from the base class.
   using smooth_flow::variables;
-
-  template <typename DataType>
-  tuples::TaggedTuple<Tags::MassDensity<DataType>> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
-    return {tuples::get<hydro::Tags::RestMassDensity<DataType>>(
-        variables(x, t, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}))};
-  }
-
-  template <typename DataType>
-  tuples::TaggedTuple<Tags::Velocity<DataType, Dim>> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/) const {
-    return {tuples::get<hydro::Tags::SpatialVelocity<DataType, Dim>>(variables(
-        x, t, tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>>{}))};
-  }
-
-  template <typename DataType>
-  tuples::TaggedTuple<Tags::Pressure<DataType>> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
-    return {tuples::get<hydro::Tags::Pressure<DataType>>(
-        variables(x, t, tmpl::list<hydro::Tags::Pressure<DataType>>{}))};
-  }
-
-  template <typename DataType>
-  tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
-    return {
-        tuples::get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
-            x, t,
-            tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{}))};
-  }
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>

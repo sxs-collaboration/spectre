@@ -67,10 +67,10 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags = tmpl::list<>;
-  using dg_interior_primitive_variables_tags = tmpl::list<
-      NewtonianEuler::Tags::MassDensity<DataVector>,
-      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Inertial>,
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>;
+  using dg_interior_primitive_variables_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>>;
   using dg_gridless_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;
 
   template <size_t ThermodynamicDim>

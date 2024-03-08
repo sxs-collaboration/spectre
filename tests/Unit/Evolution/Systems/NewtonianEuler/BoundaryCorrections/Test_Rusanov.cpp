@@ -85,8 +85,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       equation_of_state};
   tuples::TaggedTuple<
       helpers::Tags::Range<NewtonianEuler::Tags::MassDensityCons>,
-      helpers::Tags::Range<
-          NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>
+      helpers::Tags::Range<hydro::Tags::SpecificInternalEnergy<DataVector>>>
       ranges{std::array<double, 2>{{1.0e-30, 1.0}},
              std::array<double, 2>{{1.0e-30, 1.0}}};
 

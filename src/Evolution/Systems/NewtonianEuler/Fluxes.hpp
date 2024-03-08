@@ -5,18 +5,11 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::EnergyDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MomentumDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensityCons
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Pressure
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
-// IWYU pragma: no_forward_declare Tags::Flux
-// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 namespace gsl {
@@ -61,7 +54,8 @@ struct ComputeFluxes {
 
   using argument_tags =
       tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
-                 Tags::Velocity<DataVector, Dim>, Tags::Pressure<DataVector>>;
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::Pressure<DataVector>>;
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_cons_flux,

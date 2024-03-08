@@ -86,9 +86,8 @@ void test(EosType& eos) {
       db::create<db::AddSimpleTags<hydro::Tags::EquationOfState<EosType>>>(eos);
 
   const tuples::TaggedTuple<
-      helpers::Tags::Range<NewtonianEuler::Tags::MassDensity<DataVector>>,
-      helpers::Tags::Range<
-          NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>
+      helpers::Tags::Range<hydro::Tags::RestMassDensity<DataVector>>,
+      helpers::Tags::Range<hydro::Tags::SpecificInternalEnergy<DataVector>>>
       ranges{std::array{1.0e-30, 1.0}, std::array{1.0e-30, 1.0}};
 
   helpers::test_boundary_condition_with_python<

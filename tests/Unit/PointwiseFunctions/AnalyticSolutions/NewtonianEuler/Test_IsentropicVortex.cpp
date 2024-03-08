@@ -36,10 +36,10 @@ struct IsentropicVortexProxy
 
   template <typename DataType>
   using variables_tags =
-      tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim>,
-                 NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
-                 NewtonianEuler::Tags::Pressure<DataType>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>

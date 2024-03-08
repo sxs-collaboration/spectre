@@ -28,7 +28,7 @@ void test_in_databox(const tnsr::I<DataType, Dim>& velocity) {
       "SpecificKineticEnergy");
 
   const auto box = db::create<
-      db::AddSimpleTags<NewtonianEuler::Tags::Velocity<DataType, Dim>>,
+      db::AddSimpleTags<hydro::Tags::SpatialVelocity<DataType, Dim>>,
       db::AddComputeTags<
           NewtonianEuler::Tags::SpecificKineticEnergyCompute<DataType, Dim>>>(
       velocity);

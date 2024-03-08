@@ -11,12 +11,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -131,23 +131,25 @@ class SodExplosion : public evolution::initial_data::InitialData,
   void pup(PUP::er& /*p*/) override;
 
  private:
-  tuples::TaggedTuple<Tags::MassDensity<DataVector>> variables(
+  tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataVector>> variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const;
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>> /*meta*/) const;
 
-  tuples::TaggedTuple<Tags::Velocity<DataVector, Dim, Frame::Inertial>>
+  tuples::TaggedTuple<
+      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>
+  variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+            tmpl::list<hydro::Tags::SpatialVelocity<
+                DataVector, Dim, Frame::Inertial>> /*meta*/) const;
+
+  tuples::TaggedTuple<hydro::Tags::Pressure<DataVector>> variables(
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      tmpl::list<hydro::Tags::Pressure<DataVector>> /*meta*/) const;
+
+  tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataVector>>
   variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::Velocity<DataVector, Dim, Frame::Inertial>> /*meta*/)
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataVector>> /*meta*/)
       const;
-
-  tuples::TaggedTuple<Tags::Pressure<DataVector>> variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const;
-
-  tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataVector>> variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/) const;
 
   template <size_t SpatialDim>
   friend bool

@@ -368,10 +368,11 @@ double RiemannProblem<Dim>::Rarefaction::pressure(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/, const Wave& left,
-    const Wave& right) const {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
+    const Wave& left, const Wave& right) const {
   auto mass_density = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
   const double u_star_times_t = velocity_star_ * t;
   for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
@@ -385,11 +386,11 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/, const Wave& left,
-    const Wave& right) const {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/,
+    const Wave& left, const Wave& right) const {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       get<0>(x_shifted), 0.0);
 
@@ -424,9 +425,10 @@ RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Pressure<DataType>> RiemannProblem<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
+RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/, const Wave& left,
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/, const Wave& left,
     const Wave& right) const {
   auto pressure = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
   const double u_star_times_t = velocity_star_ * t;
@@ -442,17 +444,18 @@ tuples::TaggedTuple<Tags::Pressure<DataType>> RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
     const Wave& left, const Wave& right) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
-      get<Tags::MassDensity<DataType>>(
-          variables(x_shifted, t, tmpl::list<Tags::MassDensity<DataType>>{},
-                    left, right)),
-      get<Tags::Pressure<DataType>>(variables(
-          x_shifted, t, tmpl::list<Tags::Pressure<DataType>>{}, left, right)));
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          x_shifted, t, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{},
+          left, right)),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(x_shifted, t, tmpl::list<hydro::Tags::Pressure<DataType>>{},
+                    left, right)));
 }
 
 template <size_t Dim>
@@ -494,8 +497,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
           const Wave& left, const Wave& right) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
-                        (Tags::MassDensity, Tags::Pressure,
-                         Tags::SpecificInternalEnergy))
+                        (hydro::Tags::RestMassDensity, hydro::Tags::Pressure,
+                         hydro::Tags::SpecificInternalEnergy))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)> >         \
@@ -505,7 +508,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
           const Wave& left, const Wave& right) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
-                        (Tags::Velocity))
+                        (hydro::Tags::SpatialVelocity))
 
 #undef DIM
 #undef DTYPE

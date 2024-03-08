@@ -38,7 +38,8 @@ struct SpecificKineticEnergyCompute : SpecificKineticEnergy<DataType>,
                                       db::ComputeTag {
   using base = SpecificKineticEnergy<DataType>;
 
-  using argument_tags = tmpl::list<Velocity<DataType, Dim, Fr>>;
+  using argument_tags =
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim, Fr>>;
 
   using return_type = Scalar<DataType>;
 

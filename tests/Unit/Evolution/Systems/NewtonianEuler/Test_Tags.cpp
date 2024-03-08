@@ -22,24 +22,12 @@ void test_tags() {
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::MassDensityCons>(
       "MassDensityCons");
   TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::MassDensity<DataVector>>("MassDensity");
-  TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::MomentumDensity<Dim, Frame::Grid>>(
       "Grid_MomentumDensity");
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::EnergyDensity>(
       "EnergyDensity");
   TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::ElementLogical>>(
-      "ElementLogical_Velocity");
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>(
-      "SpecificInternalEnergy");
-  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::Pressure<DataVector>>(
-      "Pressure");
-  TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::SoundSpeed<DataVector>>("SoundSpeed");
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::SoundSpeedSquared<DataVector>>("SoundSpeedSquared");
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::CharacteristicSpeeds<Dim>>("CharacteristicSpeeds");
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VMinus>("VMinus");

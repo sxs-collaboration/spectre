@@ -11,22 +11,12 @@
 namespace NewtonianEuler {
 namespace Tags {
 
-template <typename DataType>
-struct MassDensity;
 struct MassDensityCons;
 template <size_t Dim, typename Fr = Frame::Inertial>
 struct MomentumDensity;
 struct EnergyDensity;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
-struct Velocity;
-template <typename DataType>
-struct SpecificInternalEnergy;
-template <typename DataType>
-struct Pressure;
 template <typename DataType>
 struct SoundSpeed;
-template <typename DataType>
-struct SoundSpeedSquared;
 
 template <size_t Dim>
 struct CharacteristicSpeeds;

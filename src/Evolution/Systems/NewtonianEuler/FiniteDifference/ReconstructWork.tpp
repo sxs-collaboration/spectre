@@ -12,9 +12,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -22,6 +22,7 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -44,10 +45,11 @@ void reconstruct_prims_work(
   using MomentumDensity = Tags::MomentumDensity<Dim>;
 
   // Primitive vars tags
-  using MassDensity = Tags::MassDensity<DataVector>;
-  using Velocity = Tags::Velocity<DataVector, Dim>;
-  using SpecificInternalEnergy = Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = Tags::Pressure<DataVector>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   using prim_tags_for_reconstruction =
       tmpl::list<MassDensity, Velocity, Pressure>;
@@ -173,10 +175,11 @@ void reconstruct_fd_neighbor_work(
   using MomentumDensity = Tags::MomentumDensity<Dim>;
 
   // Primitive vars tags
-  using MassDensity = Tags::MassDensity<DataVector>;
-  using Velocity = Tags::Velocity<DataVector, Dim>;
-  using SpecificInternalEnergy = Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = Tags::Pressure<DataVector>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
+  using SpecificInternalEnergy =
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   using prim_tags_for_reconstruction =
       tmpl::list<MassDensity, Velocity, Pressure>;

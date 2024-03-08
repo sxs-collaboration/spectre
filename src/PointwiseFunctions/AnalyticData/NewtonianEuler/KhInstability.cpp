@@ -84,9 +84,10 @@ void KhInstability<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::MassDensity<DataType>> KhInstability<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   auto result = make_with_value<Scalar<DataType>>(x, 0.0);
   const size_t n_pts = get_size(get<0>(x));
   for (size_t s = 0; s < n_pts; ++s) {
@@ -101,10 +102,12 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> KhInstability<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<
+    hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>
 KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/) const {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim,
+                                            Frame::Inertial>> /*meta*/) const {
   auto result =
       make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(x, 0.0);
 
@@ -133,22 +136,23 @@ KhInstability<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
-      get<Tags::MassDensity<DataType>>(
-          variables(x, tmpl::list<Tags::MassDensity<DataType>>{})),
-      get<Tags::Pressure<DataType>>(
-          variables(x, tmpl::list<Tags::Pressure<DataType>>{})));
+      get<hydro::Tags::RestMassDensity<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Pressure<DataType>> KhInstability<Dim>::variables(
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
+KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return make_with_value<Scalar<DataType>>(x, pressure_);
 }
 
@@ -193,8 +197,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
           tmpl::list<TAG(data) < DTYPE(data)> >) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
-                        (Tags::MassDensity, Tags::SpecificInternalEnergy,
-                         Tags::Pressure))
+                        (hydro::Tags::RestMassDensity,
+                         hydro::Tags::SpecificInternalEnergy,
+                         hydro::Tags::Pressure))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
@@ -205,7 +210,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
           const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
-                        (Tags::Velocity))
+                        (hydro::Tags::SpatialVelocity))
 
 #undef INSTANTIATE_VELOCITY
 #undef INSTANTIATE_SCALARS

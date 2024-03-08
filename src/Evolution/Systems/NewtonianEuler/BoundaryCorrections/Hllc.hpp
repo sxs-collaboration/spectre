@@ -205,16 +205,18 @@ class Hllc final : public BoundaryCorrection<Dim> {
 
   std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
-  using dg_package_field_tags = tmpl::list<
-      Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
-      Tags::Pressure<DataVector>, ::Tags::NormalDotFlux<Tags::MassDensityCons>,
-      ::Tags::NormalDotFlux<Tags::MomentumDensity<Dim>>,
-      ::Tags::NormalDotFlux<Tags::EnergyDensity>, InterfaceUnitNormal,
-      NormalDotVelocity, LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
+  using dg_package_field_tags =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity, hydro::Tags::Pressure<DataVector>,
+                 ::Tags::NormalDotFlux<Tags::MassDensityCons>,
+                 ::Tags::NormalDotFlux<Tags::MomentumDensity<Dim>>,
+                 ::Tags::NormalDotFlux<Tags::EnergyDensity>,
+                 InterfaceUnitNormal, NormalDotVelocity,
+                 LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_primitive_tags =
-      tmpl::list<NewtonianEuler::Tags::Velocity<DataVector, Dim>,
-                 NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>;
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::EquationOfStateBase>;
 

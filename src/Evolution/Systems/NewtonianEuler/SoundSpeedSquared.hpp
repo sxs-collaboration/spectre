@@ -45,7 +45,7 @@ namespace Tags {
 /// Can be retrieved using `NewtonianEuler::Tags::SoundSpeed`
 template <typename DataType>
 struct SoundSpeedCompute : SoundSpeed<DataType>, db::ComputeTag {
-  using argument_tags = tmpl::list<SoundSpeedSquared<DataType>>;
+  using argument_tags = tmpl::list<hydro::Tags::SoundSpeedSquared<DataType>>;
 
   using return_type = Scalar<DataType>;
 
@@ -62,9 +62,11 @@ struct SoundSpeedCompute : SoundSpeed<DataType>, db::ComputeTag {
 ///
 /// Can be retrieved using `NewtonianEuler::Tags::SoundSpeedSquared`
 template <typename DataType>
-struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
+struct SoundSpeedSquaredCompute : hydro::Tags::SoundSpeedSquared<DataType>,
+                                  db::ComputeTag {
   using argument_tags =
-      tmpl::list<MassDensity<DataType>, SpecificInternalEnergy<DataType>,
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::EquationOfStateBase>;
 
   using return_type = Scalar<DataType>;
@@ -78,7 +80,7 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
                         equation_of_state);
   }
 
-  using base = SoundSpeedSquared<DataType>;
+  using base = hydro::Tags::SoundSpeedSquared<DataType>;
 };
 }  // namespace Tags
 }  // namespace NewtonianEuler

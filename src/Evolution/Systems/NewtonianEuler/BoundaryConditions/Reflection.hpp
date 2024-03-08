@@ -15,6 +15,7 @@
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -84,26 +85,27 @@ class Reflection final : public BoundaryCondition<Dim> {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags = tmpl::list<>;
   using dg_interior_primitive_variables_tags =
-      tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
-                 Tags::SpecificInternalEnergy<DataVector>,
-                 Tags::Pressure<DataVector>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_ghost(
-      const gsl::not_null<Scalar<DataVector>*> mass_density,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<Scalar<DataVector>*> mass_density,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           momentum_density,
-      const gsl::not_null<Scalar<DataVector>*> energy_density,
+      gsl::not_null<Scalar<DataVector>*> energy_density,
 
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           flux_mass_density,
-      const gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
           flux_momentum_density,
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           flux_energy_density,
 
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
-      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
 
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           face_mesh_velocity,

@@ -11,11 +11,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -155,24 +155,26 @@ class ShuOsherTube : public evolution::initial_data::InitialData,
  private:
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
-                 tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
+                 tmpl::list<hydro::Tags::SpatialVelocity<
+                     DataType, 1, Frame::Inertial>> /*meta*/) const
+      -> tuples::TaggedTuple<
+          hydro::Tags::SpatialVelocity<DataType, 1, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 1, Frame::Inertial>& x,
-      tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/) const
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, 1, Frame::Inertial>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
-                 tmpl::list<Tags::Pressure<DataType>> /*meta*/) const
-      -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
-                 tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)

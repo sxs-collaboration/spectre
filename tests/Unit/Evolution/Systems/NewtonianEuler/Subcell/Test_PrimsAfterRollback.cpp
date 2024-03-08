@@ -38,11 +38,11 @@ void test(const gsl::not_null<std::mt19937*> gen,
   using EnergyDensity = NewtonianEuler::Tags::EnergyDensity;
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
 
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   using cons_tags = tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>;
   using ConsVars = Variables<cons_tags>;

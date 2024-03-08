@@ -38,9 +38,11 @@ struct System {
   using gradient_variables = tmpl::list<>;
   // Compute item for pressure not currently implemented in SpECTRE,
   // so its simple tag is passed along with the primitive variables.
-  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
-      Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
-      Tags::SpecificInternalEnergy<DataVector>, Tags::Pressure<DataVector>>>;
+  using primitive_variables_tag = ::Tags::Variables<
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>>>;
 
   using compute_volume_time_derivative_terms =
       TimeDerivativeTerms<Dim, InitialDataType>;

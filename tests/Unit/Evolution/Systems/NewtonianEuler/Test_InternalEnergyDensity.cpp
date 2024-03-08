@@ -29,8 +29,8 @@ void test_in_databox(const Scalar<DataType>& mass_density,
       NewtonianEuler::Tags::InternalEnergyDensityCompute<DataType>>(
       "InternalEnergyDensity");
   const auto box = db::create<
-      db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
-                        NewtonianEuler::Tags::SpecificInternalEnergy<DataType>>,
+      db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
+                        hydro::Tags::SpecificInternalEnergy<DataType>>,
       db::AddComputeTags<
           NewtonianEuler::Tags::InternalEnergyDensityCompute<DataType>>>(
       mass_density, specific_internal_energy);

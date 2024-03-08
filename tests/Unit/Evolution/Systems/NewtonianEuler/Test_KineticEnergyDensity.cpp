@@ -31,8 +31,8 @@ void test_in_databox(const Scalar<DataType>& mass_density,
       "KineticEnergyDensity");
 
   const auto box = db::create<
-      db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
-                        NewtonianEuler::Tags::Velocity<DataType, Dim>>,
+      db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
+                        hydro::Tags::SpatialVelocity<DataType, Dim>>,
       db::AddComputeTags<
           NewtonianEuler::Tags::KineticEnergyDensityCompute<DataType, Dim>>>(
       mass_density, velocity);

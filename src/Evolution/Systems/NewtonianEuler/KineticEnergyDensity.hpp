@@ -42,7 +42,8 @@ struct KineticEnergyDensityCompute : KineticEnergyDensity<DataType>,
   using base = KineticEnergyDensity<DataType>;
 
   using argument_tags =
-      tmpl::list<MassDensity<DataType>, Velocity<DataType, Dim, Fr>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim, Fr>>;
 
   using return_type = Scalar<DataType>;
 

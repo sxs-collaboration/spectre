@@ -15,6 +15,7 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -44,8 +45,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
           expected_fluxes)),
       get<NewtonianEuler::Tags::MomentumDensity<Dim>>(vars),
       get<NewtonianEuler::Tags::EnergyDensity>(vars),
-      get<NewtonianEuler::Tags::Velocity<DataVector, Dim>>(vars),
-      get<NewtonianEuler::Tags::Pressure<DataVector>>(vars));
+      get<hydro::Tags::SpatialVelocity<DataVector, Dim>>(vars),
+      get<hydro::Tags::Pressure<DataVector>>(vars));
 
   NewtonianEuler::subcell::compute_fluxes<Dim>(make_not_null(&vars));
 
