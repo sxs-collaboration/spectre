@@ -193,6 +193,12 @@ void partial_derivatives(
                           DerivativeFrame>& inverse_jacobian) {
   using DerivativeTags =
       tmpl::front<tmpl::split_at<VariableTags, tmpl::size<ResultTags>>>;
+  static_assert(
+      std::is_same_v<
+          tmpl::transform<ResultTags, tmpl::bind<tmpl::type_from, tmpl::_1>>,
+          tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
+                                           tmpl::size_t<Dim>, DerivativeFrame>,
+                          tmpl::bind<tmpl::type_from, tmpl::_1>>>);
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
