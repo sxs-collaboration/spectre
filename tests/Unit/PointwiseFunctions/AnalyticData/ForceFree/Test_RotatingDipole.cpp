@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -120,8 +121,16 @@ SPECTRE_TEST_CASE(
   const auto random_coords =
       make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
           make_not_null(&gen), dist, used_for_size);
-  const Scalar<DataVector> mask_from_python{pypp::call<Scalar<DataVector>>(
-      "RotatingDipole", "InteriorMask", random_coords)};
-  CHECK(solution.interior_mask(random_coords) == mask_from_python);
+
+  const DataVector r_squared = get(dot_product(random_coords, random_coords));
+
+  if (min(r_squared) < 1.0) {
+    const Scalar<DataVector> mask_from_python{pypp::call<Scalar<DataVector>>(
+        "RotatingDipole", "InteriorMask", random_coords)};
+    CHECK(solution.interior_mask(random_coords) == mask_from_python);
+  } else {
+    CHECK(solution.interior_mask(random_coords) ==
+          std::optional<Scalar<DataVector>>{});
+  }
 }
 }  // namespace
