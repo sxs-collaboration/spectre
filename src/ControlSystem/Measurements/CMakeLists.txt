@@ -25,6 +25,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Actions
   ApparentHorizonFinder
   ControlSystem
   DataStructures

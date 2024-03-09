@@ -109,8 +109,9 @@ bool functions_of_time_are_ready_algorithm_callback(
     const Component* component_p, const double time,
     const std::optional<std::unordered_set<std::string>>& functions_to_check =
         std::nullopt) {
-  using ProxyType = std::decay_t<decltype(
-      ::Parallel::get_parallel_component<Component>(cache)[array_index])>;
+  using ProxyType =
+      std::decay_t<decltype(::Parallel::get_parallel_component<Component>(
+          cache)[array_index])>;
   return detail::functions_of_time_are_ready_impl<
       CacheTag, Parallel::PerformAlgorithmCallback<ProxyType>>(
       cache, array_index, component_p, time, functions_to_check);
@@ -132,8 +133,9 @@ bool functions_of_time_are_ready_simple_action_callback(
     const Component* component_p, const double time,
     const std::optional<std::unordered_set<std::string>>& functions_to_check,
     Args&&... args) {
-  using ProxyType = std::decay_t<decltype(
-      ::Parallel::get_parallel_component<Component>(cache)[array_index])>;
+  using ProxyType =
+      std::decay_t<decltype(::Parallel::get_parallel_component<Component>(
+          cache)[array_index])>;
   return detail::functions_of_time_are_ready_impl<
       CacheTag,
       Parallel::SimpleActionCallback<SimpleAction, ProxyType, Args...>>(

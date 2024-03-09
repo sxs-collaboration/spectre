@@ -24,7 +24,6 @@ spectre_target_headers(
   HEADERS
   FixedSpeedCubic.hpp
   FunctionOfTime.hpp
-  FunctionsOfTimeAreReady.hpp
   OptionTags.hpp
   OutputTimeBounds.hpp
   PiecewisePolynomial.hpp

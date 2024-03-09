@@ -11,8 +11,11 @@ spectre_target_headers(
   HEADERS
   AddComputeTags.hpp
   AddSimpleTags.hpp
+  FilterAction.hpp
+  FunctionsOfTimeAreReady.hpp
   Goto.hpp
   InitializeItems.hpp
+  LimiterActions.hpp
   MutateApply.hpp
   RandomizeVariables.hpp
   SetData.hpp
@@ -25,9 +28,13 @@ target_link_libraries(
   INTERFACE
   DataStructures
   Domain
+  DomainCreators
+  DomainStructure
   ErrorHandling
   FunctionsOfTime
+  Parallel
   Serialization
+  Spectral
   Utilities
   )
 

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "Domain/Domain.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
@@ -19,8 +18,8 @@
 namespace domain {
 /// Returns a `std::string` with diagnostic information about how elements and
 /// grid points are distributed on the nodes and cores.
-template <size_t Dim, typename Metavariables>
-std::string diagnostic_info(const Domain<Dim>& domain,
+template <typename Metavariables>
+std::string diagnostic_info(const size_t total_number_of_blocks,
                             const Parallel::GlobalCache<Metavariables>& cache,
                             const std::vector<size_t>& elements_per_core,
                             const std::vector<size_t>& elements_per_node,
@@ -30,7 +29,6 @@ std::string diagnostic_info(const Domain<Dim>& domain,
       alg::accumulate(elements_per_node, 0_st);
   const size_t total_number_of_grid_points =
       alg::accumulate(grid_points_per_node, 0_st);
-  const size_t total_number_of_blocks = domain.blocks().size();
   const size_t number_of_cores = Parallel::number_of_procs<size_t>(cache);
   const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(cache);
 

@@ -7,10 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "Domain/Block.hpp"
-#include "Domain/DiagnosticInfo.hpp"
-#include "Domain/Domain.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/DomainDiagnosticInfo.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Utilities/Numeric.hpp"
@@ -50,11 +48,11 @@ void test_diagnostic_info() {
     starting_core = ending_core;
   }
 
-  const Domain<3> domain{std::vector<Block<3>>(13)};
+  const size_t total_number_of_blocks = 13;
 
-  const std::string info =
-      diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                      grid_points_per_core, grid_points_per_node);
+  const std::string info = diagnostic_info(
+      total_number_of_blocks, cache, elements_per_core, elements_per_node,
+      grid_points_per_core, grid_points_per_node);
 
   const std::string expected_info =
       "----- Domain Info -----\n"
@@ -74,11 +72,11 @@ void test_diagnostic_info() {
 #ifdef SPECTRE_DEBUG
   elements_per_core[0] += 1;
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of elements determined from elements_per_core ("));
@@ -86,11 +84,11 @@ void test_diagnostic_info() {
   elements_per_core[0] -= 1;
   grid_points_per_core[0] += 1;
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of grid points determined from grid_points_per_core ("));
@@ -100,11 +98,11 @@ void test_diagnostic_info() {
   // cores is different, otherwise we would hit a different ASSERT first.
   elements_per_core.push_back(0);
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of cores determined from elements_per_core ("));
@@ -112,11 +110,11 @@ void test_diagnostic_info() {
   elements_per_core.pop_back();
   grid_points_per_core.push_back(0);
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of cores determined from grid_points_per_core ("));
@@ -124,11 +122,11 @@ void test_diagnostic_info() {
   grid_points_per_core.pop_back();
   elements_per_node.push_back(0);
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of nodes determined from elements_per_node ("));
@@ -136,11 +134,11 @@ void test_diagnostic_info() {
   elements_per_node.pop_back();
   grid_points_per_node.push_back(0);
   CHECK_THROWS_WITH(
-      ([&domain, &cache, &elements_per_core, &elements_per_node,
-        &grid_points_per_core, &grid_points_per_node]() {
-        [[maybe_unused]] const std::string bad_info =
-            diagnostic_info(domain, cache, elements_per_core, elements_per_node,
-                            grid_points_per_core, grid_points_per_node);
+      ([&cache, &elements_per_core, &elements_per_node, &grid_points_per_core,
+        &grid_points_per_node]() {
+        [[maybe_unused]] const std::string bad_info = diagnostic_info(
+            total_number_of_blocks, cache, elements_per_core, elements_per_node,
+            grid_points_per_core, grid_points_per_node);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Number of nodes determined from grid_points_per_node ("));

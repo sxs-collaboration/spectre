@@ -25,7 +25,6 @@ spectre_target_headers(
   HEADERS
   HwenoImpl.hpp
   Krivodonova.hpp
-  LimiterActions.hpp
   Limiters.hpp
   Minmod.hpp
   MinmodHelpers.hpp

@@ -8,8 +8,8 @@
 #include <string>
 #include <type_traits>
 
-#include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/GetComputeItemsOnSource.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
