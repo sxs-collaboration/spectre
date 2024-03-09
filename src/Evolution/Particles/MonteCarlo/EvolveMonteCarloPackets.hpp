@@ -29,7 +29,7 @@ void time_derivative_momentum_geodesic(
 
 // Advances a single packet by time time_step along a geodesic
 void evolve_single_packet_on_geodesic(
-    gsl::not_null<Packet*> packet, const double& time_step,
+    gsl::not_null<Packet*> packet, const double& final_time,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -40,6 +40,15 @@ void evolve_single_packet_on_geodesic(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inverse_jacobian);
 
+// Functions to be implemented to complete implementation of Monte-Carlo
+// time step
+double compute_fluid_frame_energy(const Packet& /*packet*/);
+void compute_opacities(gsl::not_null<double*> absorption_opacity,
+                       gsl::not_null<double*> scattering_opacity,
+                       const double& /*fluid_frame_energy*/);
+void scatter_packet(gsl::not_null<Packet*> /*packet*/);
+void diffuse_packet(gsl::not_null<Packet*> /*packet*/,
+                    const double& /*time_step*/);
 }  // namespace detail
 
 void evolve_packets(
