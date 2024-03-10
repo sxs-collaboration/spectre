@@ -30,7 +30,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       NewtonianEuler::BoundaryConditions::Reflection<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianEuler::System<Dim, NewtonianEuler::Solutions::SmoothFlow<Dim>>,
+      NewtonianEuler::System<Dim>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>>(
       make_not_null(&gen),
       "Evolution.Systems.NewtonianEuler.BoundaryConditions.Reflection",

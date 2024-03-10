@@ -46,7 +46,7 @@
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/Minmod.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/PrimitiveGhostData.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/PrimsAfterRollback.hpp"
@@ -143,9 +143,7 @@ struct EvolutionMetavars {
       typename initial_data::equation_of_state_type>;
   using equation_of_state_type = typename std::unique_ptr<eos_base>;
 
-  using source_term_type = typename initial_data::source_term_type;
-
-  using system = NewtonianEuler::System<Dim, initial_data>;
+  using system = NewtonianEuler::System<Dim>;
 
   using temporal_id = Tags::TimeStepId;
   using TimeStepperBase = TimeStepper;
@@ -163,10 +161,6 @@ struct EvolutionMetavars {
 
   using equation_of_state_tag =
       hydro::Tags::EquationOfState<equation_of_state_type>;
-
-  using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
-  static constexpr bool has_source_terms =
-      not std::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
 
   using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 
@@ -222,6 +216,8 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<NewtonianEuler::Sources::Source<Dim>,
+                   NewtonianEuler::Sources::all_sources<Dim>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
@@ -417,7 +413,7 @@ struct EvolutionMetavars {
           tmpl::list<NewtonianEuler::fd::Tags::Reconstructor<volume_dim>>,
           tmpl::list<>>,
       initial_data_tag, equation_of_state_tag,
-      tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>>;
+      NewtonianEuler::Tags::SourceTerm<Dim>>;
 
   static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};

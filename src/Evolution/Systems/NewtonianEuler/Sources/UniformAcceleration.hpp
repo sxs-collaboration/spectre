@@ -7,7 +7,9 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Source.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "Options/String.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,8 +26,7 @@ struct not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Sources {
+namespace NewtonianEuler::Sources {
 
 /*!
  * \brief Source generated from an external uniform acceleration.
@@ -51,30 +52,52 @@ namespace Sources {
  * and \f$e\f$ is the energy density.
  */
 template <size_t Dim>
-struct UniformAcceleration {
+class UniformAcceleration : public Source<Dim> {
+ public:
+  /// The applied acceleration
+  struct Acceleration {
+    using type = std::array<double, Dim>;
+    static constexpr Options::String help = {"The applied accerelation."};
+  };
+
+  using options = tmpl::list<Acceleration>;
+
+  static constexpr Options::String help = {
+      "Source terms corresponding to a uniform acceleration."};
+
   UniformAcceleration() = default;
   UniformAcceleration(const UniformAcceleration& /*rhs*/) = default;
   UniformAcceleration& operator=(const UniformAcceleration& /*rhs*/) = default;
   UniformAcceleration(UniformAcceleration&& /*rhs*/) = default;
   UniformAcceleration& operator=(UniformAcceleration&& /*rhs*/) = default;
-  ~UniformAcceleration() = default;
+  ~UniformAcceleration() override = default;
 
   explicit UniformAcceleration(
       const std::array<double, Dim>& acceleration_field);
 
+  /// \cond
+  explicit UniformAcceleration(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(UniformAcceleration);
+  /// \endcond
+
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/);
+  void pup(PUP::er& p) override;
 
-  using sourced_variables =
-      tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity>;
+  auto get_clone() const -> std::unique_ptr<Source<Dim>> override;
 
-  using argument_tags =
-      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>>;
-
-  void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
-             gsl::not_null<Scalar<DataVector>*> source_energy_density,
-             const Scalar<DataVector>& mass_density_cons,
-             const tnsr::I<DataVector, Dim>& momentum_density) const;
+  void operator()(
+      gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
+      gsl::not_null<Scalar<DataVector>*> source_energy_density,
+      const Scalar<DataVector>& mass_density_cons,
+      const tnsr::I<DataVector, Dim>& momentum_density,
+      const Scalar<DataVector>& energy_density,
+      const tnsr::I<DataVector, Dim>& velocity,
+      const Scalar<DataVector>& pressure,
+      const Scalar<DataVector>& specific_internal_energy,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
+      const tnsr::I<DataVector, Dim>& coords, double time) const override;
 
  private:
   template <size_t SpatialDim>
@@ -89,5 +112,4 @@ struct UniformAcceleration {
 template <size_t Dim>
 bool operator!=(const UniformAcceleration<Dim>& lhs,
                 const UniformAcceleration<Dim>& rhs);
-}  // namespace Sources
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Sources

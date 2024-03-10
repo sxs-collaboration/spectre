@@ -23,56 +23,43 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler::Sources {
-void VortexPerturbation::apply(
+VortexPerturbation::VortexPerturbation(const double perturbation_amplitude)
+    : perturbation_amplitude_(perturbation_amplitude) {}
+
+VortexPerturbation::VortexPerturbation(CkMigrateMessage* msg) : Source{msg} {}
+
+void VortexPerturbation::pup(PUP::er& p) {
+  Source::pup(p);
+  p | perturbation_amplitude_;
+}
+
+auto VortexPerturbation::get_clone() const -> std::unique_ptr<Source<3>> {
+  return std::make_unique<VortexPerturbation>(*this);
+}
+
+void VortexPerturbation::operator()(
     const gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
     const gsl::not_null<Scalar<DataVector>*> source_energy_density,
-    const NewtonianEuler::Solutions::IsentropicVortex<3>& vortex,
-    const tnsr::I<DataVector, 3>& x, const double time) {
-  const size_t number_of_grid_points = get<0>(x).size();
-  const auto vortex_primitives = vortex.variables(
-      x, time,
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3>,
-                 hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::Pressure<DataVector>>{});
-  Variables<
-      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3, Frame::Inertial>,
-                 ::Tags::TempScalar<2>>>
-      temp_buffer(number_of_grid_points);
-  auto& vortex_mass_density_cons = get<::Tags::TempScalar<0>>(temp_buffer);
-  auto& vortex_momentum_density =
-      get<::Tags::TempI<1, 3, Frame::Inertial>>(temp_buffer);
-  auto& vortex_energy_density = get<::Tags::TempScalar<2>>(temp_buffer);
+    const Scalar<DataVector>& mass_density_cons,
+    const tnsr::I<DataVector, 3>& momentum_density,
+    const Scalar<DataVector>& energy_density,
+    const tnsr::I<DataVector, 3>& velocity, const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& /*specific_internal_energy*/,
+    const EquationsOfState::EquationOfState<false, 2>& /*eos*/,
+    const tnsr::I<DataVector, 3>& coords, const double /*time*/) const {
+  const Scalar<DataVector> dvz_by_dz{perturbation_amplitude_ *
+                                     cos(get<2>(coords))};
 
-  NewtonianEuler::ConservativeFromPrimitive<3>::apply(
-      make_not_null(&vortex_mass_density_cons),
-      make_not_null(&vortex_momentum_density),
-      make_not_null(&vortex_energy_density),
-      get<hydro::Tags::RestMassDensity<DataVector>>(vortex_primitives),
-      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(vortex_primitives),
-      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vortex_primitives));
-
-  // We save the precomputed value of dv_z/dz in source_mass_density_cons
-  // in order to save an allocation
-  get(*source_mass_density_cons) =
-      vortex.perturbation_amplitude() *
-      vortex.deriv_of_perturbation_profile(get<2>(x));
-
+  get(*source_mass_density_cons) += get(mass_density_cons) * get(dvz_by_dz);
   for (size_t i = 0; i < 3; ++i) {
-    source_momentum_density->get(i) =
-        vortex_momentum_density.get(i) * get(*source_mass_density_cons);
+    source_momentum_density->get(i) += momentum_density.get(i) * get(dvz_by_dz);
   }
-  source_momentum_density->get(2) *= 2.0;
-
-  get(*source_energy_density) =
-      (get(vortex_energy_density) +
-       get(get<hydro::Tags::Pressure<DataVector>>(vortex_primitives)) +
-       vortex_momentum_density.get(2) *
-           get<2>(get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
-               vortex_primitives))) *
-      get(*source_mass_density_cons);
-
-  get(*source_mass_density_cons) *= get(vortex_mass_density_cons);
+  get(*source_energy_density) += (get(energy_density) + get(pressure) +
+                                  get<2>(velocity) * get<2>(momentum_density)) *
+                                 get(dvz_by_dz);
 }
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID VortexPerturbation::my_PUP_ID = 0;
 }  // namespace NewtonianEuler::Sources

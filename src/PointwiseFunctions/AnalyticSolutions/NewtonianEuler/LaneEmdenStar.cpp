@@ -45,7 +45,6 @@ void LaneEmdenStar::pup(PUP::er& p) {
   p | central_mass_density_;
   p | polytropic_constant_;
   p | equation_of_state_;
-  p | source_term_;
 }
 
 template <typename DataType>
@@ -130,8 +129,6 @@ LaneEmdenStar::variables(
 bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) {
   // There is no comparison operator for the EoS, but should be okay as
   // the `polytropic_constant`s are compared.
-  // There is no comparison operator for the LaneEmdenGravitationalField source
-  // term, but this should also be okay as it holds no data.
   return lhs.central_mass_density_ == rhs.central_mass_density_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_;
 }

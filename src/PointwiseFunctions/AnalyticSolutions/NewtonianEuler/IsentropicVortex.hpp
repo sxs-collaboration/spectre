@@ -9,8 +9,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -97,9 +95,6 @@ class IsentropicVortex : public evolution::initial_data::InitialData,
 
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
-  using source_term_type =
-      tmpl::conditional_t<3 == Dim, Sources::VortexPerturbation,
-                          Sources::NoSource>;
 
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
@@ -194,8 +189,6 @@ class IsentropicVortex : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  const source_term_type& source_term() const { return source_term_; }
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) override;
 
@@ -257,8 +250,6 @@ class IsentropicVortex : public evolution::initial_data::InitialData,
   // so the relation between the pressure and the mass density is polytropic,
   // where the polytropic exponent corresponds to the adiabatic index.
   EquationsOfState::PolytropicFluid<false> equation_of_state_{};
-
-  source_term_type source_term_{};
 };
 
 template <size_t Dim>

@@ -32,7 +32,6 @@
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -220,21 +219,30 @@ struct TimeDerivative {
 
     // Now compute the actual time derivatives.
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, evolved_vars_tag>;
-    using source_argument_tags = tmpl::conditional_t<
-        metavariables::has_source_terms,
-        tmpl::replace<
-            tmpl::push_front<
-                typename metavariables::source_term_type::argument_tags,
-                Tags::SourceTerm<typename metavariables::initial_data>>,
-            ::domain::Tags::Coordinates<Dim, Frame::Inertial>,
-            ::evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>,
-        tmpl::list<>>;
+    using source_argument_tags = tmpl::list<
+        Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
+        hydro::Tags::SpatialVelocity<DataVector, Dim>,
+        hydro::Tags::Pressure<DataVector>,
+        hydro::Tags::SpecificInternalEnergy<DataVector>,
+        hydro::Tags::EquationOfStateBase,
+        evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>,
+        ::Tags::Time, NewtonianEuler::Tags::SourceTerm<Dim>>;
     db::mutate_apply<tmpl::list<dt_variables_tag>, source_argument_tags>(
         [&num_pts, &boundary_corrections, &subcell_mesh, &one_over_delta_xi,
          &cell_centered_logical_to_grid_inv_jacobian =
              db::get<evolution::dg::subcell::fd::Tags::
-                         InverseJacobianLogicalToGrid<Dim>>(*box)](
-            const auto dt_vars_ptr, const auto&... source_args) {
+                         InverseJacobianLogicalToGrid<Dim>>(
+                 *box)]<size_t ThermodynamicDim>(
+            const auto dt_vars_ptr, const Scalar<DataVector>& mass_density_cons,
+            const tnsr::I<DataVector, Dim>& momentum_density,
+            const Scalar<DataVector>& energy_density,
+            const tnsr::I<DataVector, Dim>& velocity,
+            const Scalar<DataVector>& pressure,
+            const Scalar<DataVector>& specific_internal_energy,
+            const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
+                eos,
+            const tnsr::I<DataVector, Dim>& coords, const double time,
+            const Sources::Source<Dim>& source) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
           using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
@@ -244,14 +252,11 @@ struct TimeDerivative {
           auto& dt_momentum = get<::Tags::dt<MomentumDensity>>(*dt_vars_ptr);
           auto& dt_energy = get<::Tags::dt<EnergyDensity>>(*dt_vars_ptr);
 
-          if constexpr (metavariables::has_source_terms) {
-            sources_impl(
-                std::make_tuple(make_not_null(&dt_mass),
-                                make_not_null(&dt_momentum),
-                                make_not_null(&dt_energy)),
-                typename metavariables::source_term_type::sourced_variables{},
-                source_args...);
-          }
+          const auto eos_2d = eos.promote_to_2d_eos();
+          source(make_not_null(&dt_mass), make_not_null(&dt_momentum),
+                 make_not_null(&dt_energy), mass_density_cons, momentum_density,
+                 energy_density, velocity, pressure, specific_internal_energy,
+                 *eos_2d, coords, time);
 
           for (size_t dim = 0; dim < Dim; ++dim) {
             Scalar<DataVector>& mass_density_correction =

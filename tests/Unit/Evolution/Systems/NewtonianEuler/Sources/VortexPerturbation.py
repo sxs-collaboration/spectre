@@ -2,127 +2,40 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-from PointwiseFunctions.AnalyticSolutions.NewtonianEuler.IsentropicVortex import (
-    deriv_of_perturbation_profile,
-    mass_density,
-    pressure,
-    specific_internal_energy,
-    velocity,
-)
 
 
 def source_mass_density_cons(
+    mass_density,
+    momentum_density,
+    energy_density,
+    pressure,
     x,
-    t,
-    adiabatic_index,
     perturbation_amplitude,
-    vortex_center,
-    vortex_mean_velocity,
-    vortex_strength,
 ):
-    return (
-        perturbation_amplitude
-        * mass_density(
-            x,
-            t,
-            adiabatic_index,
-            vortex_center,
-            vortex_mean_velocity,
-            vortex_strength,
-            perturbation_amplitude,
-        )
-        * deriv_of_perturbation_profile(x[2])
-    )
+    return perturbation_amplitude * mass_density * np.cos(x[2])
 
 
 def source_momentum_density(
+    mass_density,
+    momentum_density,
+    energy_density,
+    pressure,
     x,
-    t,
-    adiabatic_index,
     perturbation_amplitude,
-    vortex_center,
-    vortex_mean_velocity,
-    vortex_strength,
 ):
-    result = (
-        perturbation_amplitude
-        * velocity(
-            x,
-            t,
-            adiabatic_index,
-            vortex_center,
-            vortex_mean_velocity,
-            vortex_strength,
-            perturbation_amplitude,
-        )
-        * mass_density(
-            x,
-            t,
-            adiabatic_index,
-            vortex_center,
-            vortex_mean_velocity,
-            vortex_strength,
-            perturbation_amplitude,
-        )
-        * deriv_of_perturbation_profile(x[2])
-    )
-    result[2] *= 2.0
-    return result
+    return momentum_density * perturbation_amplitude * np.cos(x[2])
 
 
 def source_energy_density(
+    mass_density,
+    momentum_density,
+    energy_density,
+    pressure,
     x,
-    t,
-    adiabatic_index,
     perturbation_amplitude,
-    vortex_center,
-    vortex_mean_velocity,
-    vortex_strength,
 ):
-    dens = mass_density(
-        x,
-        t,
-        adiabatic_index,
-        vortex_center,
-        vortex_mean_velocity,
-        vortex_strength,
-        perturbation_amplitude,
-    )
-    veloc = velocity(
-        x,
-        t,
-        adiabatic_index,
-        vortex_center,
-        vortex_mean_velocity,
-        vortex_strength,
-        perturbation_amplitude,
-    )
     return (
-        perturbation_amplitude
-        * (
-            dens
-            * (
-                0.5 * np.dot(veloc, veloc)
-                + specific_internal_energy(
-                    x,
-                    t,
-                    adiabatic_index,
-                    vortex_center,
-                    vortex_mean_velocity,
-                    vortex_strength,
-                    perturbation_amplitude,
-                )
-            )
-            + pressure(
-                x,
-                t,
-                adiabatic_index,
-                vortex_center,
-                vortex_mean_velocity,
-                vortex_strength,
-                perturbation_amplitude,
-            )
-            + dens * (veloc[2]) ** 2
-        )
-        * deriv_of_perturbation_profile(x[2])
+        (energy_density + pressure + momentum_density[2] ** 2 / mass_density)
+        * perturbation_amplitude
+        * np.cos(x[2])
     )

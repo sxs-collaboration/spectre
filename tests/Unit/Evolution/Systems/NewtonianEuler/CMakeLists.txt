@@ -32,7 +32,6 @@ set(LIBRARY_SOURCES
   Test_PrimitiveFromConservative.cpp
   Test_RamPressure.cpp
   Test_SoundSpeedSquared.cpp
-  Test_Sources.cpp
   Test_SpecificKineticEnergy.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp

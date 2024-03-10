@@ -89,16 +89,14 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       ranges{std::array<double, 2>{{1.0e-30, 1.0}},
              std::array<double, 2>{{1.0e-30, 1.0}}};
 
-  helpers::test_boundary_correction_conservation<
-      NewtonianEuler::System<Dim, DummyInitialData>>(
+  helpers::test_boundary_correction_conservation<NewtonianEuler::System<Dim>>(
       gen, NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, DummyInitialData>,
-      tmpl::list<ConvertPolytropic, ConvertIdeal>>(
+      NewtonianEuler::System<Dim>, tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       NewtonianEuler::BoundaryCorrections::Rusanov<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
@@ -110,8 +108,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       "Rusanov:");
 
   helpers::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, DummyInitialData>,
-      tmpl::list<ConvertPolytropic, ConvertIdeal>>(
+      NewtonianEuler::System<Dim>, tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",
       dynamic_cast<const NewtonianEuler::BoundaryCorrections::Rusanov<Dim>&>(
           *rusanov),

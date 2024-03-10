@@ -6,20 +6,17 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma: no_include <complex>
 
 namespace NewtonianEuler::Solutions {
 
@@ -72,7 +69,6 @@ void IsentropicVortex<Dim>::pup(PUP::er& p) {
   p | perturbation_amplitude_;
   p | strength_;
   p | equation_of_state_;
-  p | source_term_;
 }
 
 // Can be any smooth function of z. For testing purposes, we choose sin(z).
@@ -161,7 +157,7 @@ IsentropicVortex<Dim>::variables(
 template <size_t Dim>
 bool operator==(const IsentropicVortex<Dim>& lhs,
                 const IsentropicVortex<Dim>& rhs) {
-  // No comparison for equation_of_state_ or source_term_. Comparing individual
+  // No comparison for equation_of_state_. Comparing individual
   // members should suffice.
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
          lhs.center_ == rhs.center_ and

@@ -34,7 +34,6 @@ spectre_target_headers(
   PrimitiveFromConservative.hpp
   RamPressure.hpp
   SoundSpeedSquared.hpp
-  Sources.hpp
   SpecificKineticEnergy.hpp
   System.hpp
   Tags.hpp

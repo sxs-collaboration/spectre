@@ -4,6 +4,10 @@
 import numpy as np
 
 
+def source_mass_density(mass_density, momentum_density, acceleration_field):
+    return mass_density * 0.0
+
+
 def source_momentum_density(mass_density, momentum_density, acceleration_field):
     return mass_density * np.array(acceleration_field)
 

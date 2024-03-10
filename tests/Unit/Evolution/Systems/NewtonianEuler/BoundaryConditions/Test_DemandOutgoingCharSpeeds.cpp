@@ -93,7 +93,7 @@ void test(EosType& eos) {
   helpers::test_boundary_condition_with_python<
       NewtonianEuler::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianEuler::System<Dim, DummyInitialData>,
+      NewtonianEuler::System<Dim>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       make_not_null(&gen),

@@ -48,10 +48,8 @@ void test_tags() {
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::SpecificKineticEnergy<DataVector>>(
       "SpecificKineticEnergy");
-  TestHelpers::db::test_base_tag<NewtonianEuler::Tags::SourceTermBase>(
-      "SourceTermBase");
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::SourceTerm<SomeInitialDataType>>("SourceTerm");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::SourceTerm<Dim>>(
+      "SourceTerm");
 }
 }  // namespace
 

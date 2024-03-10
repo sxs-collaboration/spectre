@@ -112,14 +112,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
                    mean_velocity_3d, "[-0.04, 0.14, 0.3]",
                    perturbation_amplitude, "0.5");
 
-  static_assert(
-      std::is_same_v<
-          NewtonianEuler::Solutions::IsentropicVortex<3>::source_term_type,
-          NewtonianEuler::Sources::VortexPerturbation>);
-  static_assert(
-      std::is_same_v<
-          NewtonianEuler::Solutions::IsentropicVortex<2>::source_term_type,
-          NewtonianEuler::Sources::NoSource>);
   NewtonianEuler::Solutions::IsentropicVortex<3> vortex(
       1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 0.05, 1.7);
 

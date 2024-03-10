@@ -6,7 +6,6 @@
 #include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/LaneEmdenGravitationalField.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -49,7 +48,6 @@ class LaneEmdenStar : public evolution::initial_data::InitialData,
                       public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
-  using source_term_type = Sources::LaneEmdenGravitationalField;
 
   /// The central mass density of the star.
   struct CentralMassDensity {
@@ -114,10 +112,6 @@ class LaneEmdenStar : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  const Sources::LaneEmdenGravitationalField& source_term() const {
-    return source_term_;
-  }
-
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) override;
 
@@ -150,7 +144,6 @@ class LaneEmdenStar : public evolution::initial_data::InitialData,
   double central_mass_density_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<false> equation_of_state_{};
-  Sources::LaneEmdenGravitationalField source_term_{};
 };
 
 bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs);

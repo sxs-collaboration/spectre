@@ -29,7 +29,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Hydro
-  NewtonianEuler
   Options
   Utilities
   )
