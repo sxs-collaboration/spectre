@@ -98,6 +98,7 @@ INPUT = @PROJECT_SOURCE_DIR@/docs/Installation \
         @PROJECT_SOURCE_DIR@/docs/Examples \
         @PROJECT_SOURCE_DIR@/docs/Contributing \
         @PROJECT_SOURCE_DIR@/docs/DevGuide \
+        @PROJECT_SOURCE_DIR@/docs/Gallery.md \
         @PROJECT_SOURCE_DIR@/docs/PublicationPolicy.md \
         @PROJECT_SOURCE_DIR@/docs/Changelog.md \
         @PROJECT_SOURCE_DIR@/docs \
