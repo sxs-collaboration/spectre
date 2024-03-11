@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FfeBreakdown.cpp
+  MagnetosphericWald.cpp
   RotatingDipole.cpp
   )
 
@@ -19,6 +20,7 @@ spectre_target_headers(
   AnalyticData.hpp
   Factory.hpp
   FfeBreakdown.hpp
+  MagnetosphericWald.hpp
   RotatingDipole.hpp
   )
 

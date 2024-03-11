@@ -5,6 +5,7 @@ set(LIBRARY "Test_ForceFreeAnalyticData")
 
 set(LIBRARY_SOURCES
   Test_FfeBreakdown.cpp
+  Test_MagnetosphericWald.cpp
   Test_RotatingDipole.cpp
   )
 
