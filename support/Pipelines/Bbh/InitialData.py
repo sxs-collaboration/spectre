@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import click
+import rich_click
 from rich.pretty import pretty_repr
 
 from spectre.support.Schedule import schedule, scheduler_options
@@ -207,6 +208,26 @@ def generate_id(
 def generate_id_command(**kwargs):
     _rich_traceback_guard = True  # Hide traceback until here
     generate_id(**kwargs)
+
+
+rich_click.rich_click.OPTION_GROUPS["spectre bbh generate-id"] = [
+    dict(
+        name="Initial data parameters",
+        options=[
+            "--mass-ratio",
+            "--separation",
+            "--orbital-angular-velocity",
+            "--radial-expansion-velocity",
+        ],
+    ),
+    dict(
+        name="Resolution", options=["--refinement-level", "--polynomial-order"]
+    ),
+    dict(
+        name="Next",
+        options=["--evolve"],
+    ),
+]
 
 
 if __name__ == "__main__":
