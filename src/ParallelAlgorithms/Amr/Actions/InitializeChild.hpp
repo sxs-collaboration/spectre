@@ -80,7 +80,13 @@ struct InitializeChild {
     tmpl::for_each<typename Metavariables::amr::projectors>(
         [&box, &parent_items](auto projector_v) {
           using projector = typename decltype(projector_v)::type;
-          db::mutate_apply<projector>(make_not_null(&box), parent_items);
+          try {
+            db::mutate_apply<projector>(make_not_null(&box), parent_items);
+          } catch (std::exception& e) {
+            ERROR("Error in AMR projector '"
+                  << pretty_type::get_name<projector>() << "':\n"
+                  << e.what());
+          }
         });
 
     Parallel::register_element<ParallelComponent>(box, cache, child_id);
