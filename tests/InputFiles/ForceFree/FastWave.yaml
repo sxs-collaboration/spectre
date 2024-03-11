@@ -59,6 +59,13 @@ Limiter:
     TvbConstant: 0.0
     DisableForDebugging: false
 
+Filtering:
+  ExpFilter0:
+    Alpha: 36
+    HalfPower: 50
+    Enable: false
+    BlocksToFilter: All
+
 Observers:
   VolumeFileName: "ForceFreeFastWaveVolume"
   ReductionFileName: "ForceFreeFastWaveReductions"
