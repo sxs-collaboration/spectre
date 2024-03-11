@@ -1,11 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Framework/TestingFramework.hpp"
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Particles/MonteCarlo/EvolveMonteCarloPackets.hpp"
-#include "Evolution/Particles/MonteCarlo/MonteCarloPacket.hpp"
-#include "Framework/TestingFramework.hpp"
+#include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
+#include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
@@ -50,8 +51,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
   mesh_coordinates.get(1) = DataVector{-1., -1., 1., 1., -1., -1., 1., 1.};
   mesh_coordinates.get(2) = DataVector{-1., -1., -1., -1., 1., 1., 1., 1.};
 
-  Particles::MonteCarlo::Packet packet(1.0, 0, 0.0, -1.0, -1.0, -1.0, 1.0, 1.0,
-                                       0.0, 0.0);
+  Particles::MonteCarlo::Packet packet(2, 1.0, 0, 0.0, -1.0, -1.0, -1.0, 1.0,
+                                       1.0, 0.0, 0.0);
 
   packet.renormalize_momentum(inv_spatial_metric, lapse);
   CHECK(packet.momentum_upper_t == 1.0);
@@ -61,6 +62,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
       &packets, 1.5, mesh, mesh_coordinates, lapse, shift, d_lapse, d_shift,
       d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
       inverse_jacobian);
+  CHECK(packets[0].species == 2);
   CHECK(packets[0].coordinates.get(0) == 0.5);
   CHECK(packets[0].coordinates.get(1) == -1.0);
   CHECK(packets[0].coordinates.get(2) == -1.0);

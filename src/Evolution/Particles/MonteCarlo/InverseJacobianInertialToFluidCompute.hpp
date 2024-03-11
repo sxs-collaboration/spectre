@@ -17,9 +17,10 @@ struct Inertial;
 
 namespace Particles::MonteCarlo {
 
-// Inverse Jacobian of the map from inertial coordinate to an orthonormal frame
-// comoving with the fluid. That frame uses the 4-velocity as its time axis, and
-// constructs the other members of the tetrads using Gram-Schmidt's algorithm.
+/// Inverse Jacobian of the map from inertial coordinate to an orthonormal frame
+/// comoving with the fluid. That frame uses the 4-velocity as its time axis,
+/// and constructs the other members of the tetrads using Gram-Schmidt's
+/// algorithm.
 struct InverseJacobianInertialToFluidCompute
     : domain::Tags::InverseJacobian<4, Frame::Inertial, Frame::Fluid>,
       db::ComputeTag {

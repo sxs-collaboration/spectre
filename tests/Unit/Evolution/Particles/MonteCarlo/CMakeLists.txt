@@ -5,7 +5,8 @@ set(LIBRARY "Test_MonteCarlo")
 
 set(LIBRARY_SOURCES
   Test_InverseJacobianInertialToFluid.cpp
-  Test_MonteCarloPacket.cpp
+  Test_EmitPackets.cpp
+  Test_Packet.cpp
   )
 
 add_test_library(
