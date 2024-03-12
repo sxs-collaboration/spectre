@@ -25,14 +25,28 @@ namespace hydro {
 
 /// %Tags for options of hydrodynamic systems.
 namespace OptionTags {
+/// The equation of state of the fluid.
+template <bool IsRelativistic, size_t ThermoDim>
+struct InitialDataEquationOfState {
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
+  static std::string name() { return "EquationOfState"; }
+  static constexpr Options::String help = {
+      "Options for the equation of state used for the initial data."};
+};
 
 /// The equation of state of the fluid.
 template <bool IsRelativistic, size_t ThermoDim>
 struct EquationOfState {
-  using type = std::unique_ptr<
-      EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
-  static constexpr Options::String help = {"The equation of state to use"};
+  struct FromInitialData {};
+  using type = Options::Auto<std::unique_ptr<EquationsOfState::EquationOfState<
+                                 IsRelativistic, ThermoDim>>,
+                             FromInitialData>;
+
+  static constexpr Options::String help = {
+      "The equation of state to use during the evolution."};
 };
+
 struct GrmhdEquationOfState {
   struct FromInitialData {};
   using type =
@@ -97,19 +111,62 @@ struct EquationOfStateBase : db::BaseTag {};
 
 /// The equation of state retrieved from the analytic solution / data in the
 /// input file
-template <typename EquationOfStateType>
+template <bool IsRelativistic, size_t ThermodynamicDim>
 struct EquationOfState : EquationOfStateBase, db::SimpleTag {
-  using type = EquationOfStateType;
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
 
   template <typename Metavariables>
-  using option_tags = tmpl::list<
-      tmpl::front<typename Metavariables::initial_data_tag::option_tags>>;
+  using option_tags =
+      tmpl::list<OptionTags::EquationOfState<IsRelativistic, ThermodynamicDim>,
+                 ::evolution::initial_data::OptionTags::InitialData>;
   static constexpr bool pass_metavariables = true;
 
   template <typename Metavariables>
   static type create_from_options(
-      const typename Metavariables::initial_data_tag::type& initial_data) {
-    return initial_data.equation_of_state().get_clone();
+      const std::optional<type>& eos,
+      const std::unique_ptr<::evolution::initial_data::InitialData>&
+          initial_data) {
+    if (eos.has_value()) {
+      return eos.value()->get_clone();
+    } else {
+      return call_with_dynamic_type<
+          type,
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   ::evolution::initial_data::InitialData>>(
+          initial_data.get(), [](const auto* const derived_initial_data) {
+            if constexpr (::evolution::is_numeric_initial_data_v<
+                              std::decay_t<decltype(*derived_initial_data)>>) {
+              ERROR(
+                  "Equation of State cannot currently be parsed from numeric"
+                  "initial data, please explicitly specify the equation of "
+                  "state for the evolution in the input file.");
+              if constexpr (ThermodynamicDim == 1) {
+                return std::make_unique<
+                    EquationsOfState::PolytropicFluid<IsRelativistic>>(100.0,
+                                                                       2.0);
+              } else if constexpr (ThermodynamicDim == 2) {
+                return std::make_unique<
+                    EquationsOfState::IdealFluid<IsRelativistic>>(2.0);
+              } else if constexpr (ThermodynamicDim == 3) {
+                return std::make_unique<EquationsOfState::Barotropic3D<
+                    EquationsOfState::PolytropicFluid<IsRelativistic>>>(
+                    EquationsOfState::PolytropicFluid<IsRelativistic>(100.0,
+                                                                      2.0));
+              }
+            } else {
+              if constexpr (ThermodynamicDim == 3) {
+                return derived_initial_data->equation_of_state()
+                    .promote_to_3d_eos();
+              } else if constexpr (ThermodynamicDim == 2) {
+                return derived_initial_data->equation_of_state()
+                    .promote_to_2d_eos();
+              } else {
+                return derived_initial_data->equation_of_state().get_clone();
+              }
+            }
+          });
+    }
   }
 };
 

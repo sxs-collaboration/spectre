@@ -22,7 +22,11 @@ Evolution:
 
 PhaseChangeAndTriggers:
 
-AnalyticSolution: &InitialData
+EquationOfState:
+  IdealFluid:
+    AdiabaticIndex: 1.4
+
+InitialData: &InitialData
   RiemannProblem:
     AdiabaticIndex: 1.4
     InitialPosition: 0.25

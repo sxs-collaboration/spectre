@@ -30,7 +30,7 @@ struct DivergenceCleaningField;
 template <typename DataType>
 struct ElectronFraction;
 struct EquationOfStateBase;
-template <typename EquationOfStateType>
+template <bool IsRelativistic, size_t ThermodynamicDim>
 struct EquationOfState;
 struct GrmhdEquationOfState;
 template <typename DataType>

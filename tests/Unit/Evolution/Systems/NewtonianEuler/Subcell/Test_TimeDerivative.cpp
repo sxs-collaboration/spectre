@@ -235,7 +235,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           domain::Tags::ElementMap<dim, Frame::Grid>,
           evolution::dg::subcell::Tags::Mesh<dim>, fd::Tags::Reconstructor<dim>,
           evolution::Tags::BoundaryCorrection<system>,
-          hydro::Tags::EquationOfState<eos>,
+          hydro::Tags::EquationOfState<false, eos::thermodynamic_dim>,
           typename system::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
@@ -290,7 +290,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       std::unique_ptr<
           NewtonianEuler::BoundaryCorrections::BoundaryCorrection<dim>>{
           std::make_unique<NewtonianEuler::BoundaryCorrections::Hll<dim>>()},
-      soln.equation_of_state(), cell_centered_prim_vars,
+      soln.equation_of_state().get_clone(), cell_centered_prim_vars,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       typename variables_tag::type{}, neighbor_data,

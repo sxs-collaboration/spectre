@@ -66,10 +66,9 @@ void test(const gsl::not_null<std::mt19937*> gen,
       evolution::dg::subcell::Tags::DidRollback, ::Tags::Variables<cons_tags>,
       ::Tags::Variables<prim_tags>, ::domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<false, 1>>>>>(
-      did_rollback, cons_vars, expected_prim_vars, dg_mesh, subcell_mesh,
-      std::move(eos));
+      hydro::Tags::EquationOfState<false, 1>>>(did_rollback, cons_vars,
+                                               expected_prim_vars, dg_mesh,
+                                               subcell_mesh, std::move(eos));
 
   db::mutate_apply<NewtonianEuler::subcell::PrimsAfterRollback<Dim>>(
       make_not_null(&box));

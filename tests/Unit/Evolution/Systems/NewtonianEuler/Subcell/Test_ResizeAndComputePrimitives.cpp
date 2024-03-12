@@ -73,8 +73,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
       evolution::dg::subcell::Tags::ActiveGrid, ::Tags::Variables<cons_tags>,
       ::Tags::Variables<prim_tags>, ::domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
-      hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<false, 1>>>>>(
+      hydro::Tags::EquationOfState<false, 1>>>(
       active_grid, cons_vars, prim_vars, dg_mesh, subcell_mesh, std::move(eos));
 
   db::mutate_apply<NewtonianEuler::subcell::ResizeAndComputePrims<Dim>>(
