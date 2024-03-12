@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.Tags",
                   "[Unit][Evolution]") {

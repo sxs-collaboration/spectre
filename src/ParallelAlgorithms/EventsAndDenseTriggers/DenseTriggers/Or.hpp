@@ -9,10 +9,10 @@
 #include <pup.h>
 #include <vector>
 
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -30,7 +30,8 @@ struct DataBox;
 struct TimeStepId;
 }  // namespace Tags
 namespace db {
-template <typename TagsList> class DataBox;
+template <typename TagsList>
+class DataBox;
 }  // namespace db
 /// \endcond
 

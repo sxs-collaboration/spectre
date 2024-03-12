@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Filter.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Filter.hpp"
 
 #include <pup_stl.h>
 #include <utility>

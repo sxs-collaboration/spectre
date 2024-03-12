@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Or.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Or.hpp"
 
 #include <pup_stl.h>
 #include <utility>

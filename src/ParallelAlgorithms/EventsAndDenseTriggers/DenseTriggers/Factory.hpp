@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Filter.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Or.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Filter.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Or.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
 
 namespace DenseTriggers {
 using standard_dense_triggers =

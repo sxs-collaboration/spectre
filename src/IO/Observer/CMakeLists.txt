@@ -45,6 +45,7 @@ target_link_libraries(
   Serialization
   Utilities
   INTERFACE
+  EventsAndDenseTriggers
   EventsAndTriggers
   )
 

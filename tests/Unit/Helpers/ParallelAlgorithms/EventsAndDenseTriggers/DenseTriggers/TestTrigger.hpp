@@ -11,9 +11,9 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

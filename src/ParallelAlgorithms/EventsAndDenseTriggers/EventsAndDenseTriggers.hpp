@@ -11,9 +11,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -329,7 +329,7 @@ struct Options::create_from_yaml<evolution::EventsAndDenseTriggers> {
   using type = evolution::EventsAndDenseTriggers;
   template <typename Metavariables>
   static type create(const Options::Option& options) {
-    return type(options.parse_as<typename type::ConstructionType,
-                                 Metavariables>());
+    return type(
+        options.parse_as<typename type::ConstructionType, Metavariables>());
   }
 };
