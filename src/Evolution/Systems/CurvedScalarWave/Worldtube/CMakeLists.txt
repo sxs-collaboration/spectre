@@ -12,6 +12,7 @@ spectre_target_sources(
   PunctureField.cpp
   PunctureFieldOrder0.cpp
   PunctureFieldOrder1.cpp
+  SelfForce.cpp
   )
 
 spectre_target_headers(
@@ -22,6 +23,7 @@ spectre_target_headers(
   SingletonChare.hpp
   Tags.hpp
   PunctureField.hpp
+  SelfForce.hpp
   Worldtube.hpp
   )
 

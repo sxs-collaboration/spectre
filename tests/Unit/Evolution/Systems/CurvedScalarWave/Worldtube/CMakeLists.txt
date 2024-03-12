@@ -5,6 +5,7 @@ set(LIBRARY "Test_ScalarWaveWorldtube")
 
 set(LIBRARY_SOURCES
   Test_PunctureField.cpp
+  Test_SelfForce.cpp
   Test_Tags.cpp
   ElementActions/Test_SendToWorldtube.cpp
   ElementActions/Test_ReceiveWorldtubeData.cpp
