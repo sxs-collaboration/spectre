@@ -41,6 +41,39 @@
 
 namespace {
 
+void test_element_logical_coordinates() {
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 1, Frame::BlockLogical>{{{0.5}}},
+            ElementId<1>{0, {{{1, 0}}}}) == std::nullopt);
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 1, Frame::BlockLogical>{{{0.5}}},
+            ElementId<1>{0, {{{1, 1}}}}) ==
+        tnsr::I<double, 1, Frame::ElementLogical>{{{0.}}});
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 1, Frame::BlockLogical>{{{0.}}},
+            ElementId<1>{0, {{{1, 0}}}}) ==
+        tnsr::I<double, 1, Frame::ElementLogical>{{{1.}}});
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 1, Frame::BlockLogical>{{{0.}}},
+            ElementId<1>{0, {{{1, 1}}}}) ==
+        tnsr::I<double, 1, Frame::ElementLogical>{{{-1.}}});
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 2, Frame::BlockLogical>{{{-0.5, -0.5}}},
+            ElementId<2>{0, {{{1, 0}, {1, 0}}}}) ==
+        tnsr::I<double, 2, Frame::ElementLogical>{{{0., 0.}}});
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 2, Frame::BlockLogical>{{{-0.5, -0.5}}},
+            ElementId<2>{0, {{{1, 0}, {1, 1}}}}) == std::nullopt);
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 2, Frame::BlockLogical>{{{0., 0.5}}},
+            ElementId<2>{0, {{{1, 0}, {1, 1}}}}) ==
+        tnsr::I<double, 2, Frame::ElementLogical>{{{1., 0.}}});
+  CHECK(element_logical_coordinates(
+            tnsr::I<double, 3, Frame::BlockLogical>{{{0., 0.5, 1.}}},
+            ElementId<3>{0, {{{1, 0}, {1, 1}, {1, 1}}}}) ==
+        tnsr::I<double, 3, Frame::ElementLogical>{{{1., 0., 1.}}});
+}
+
 template <size_t Dim>
 void fuzzy_test_block_and_element_logical_coordinates(
     const Domain<Dim>& domain,
@@ -792,6 +825,7 @@ void test_block_logical_coordinates_with_roundoff_error() {
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
                   "[Domain][Unit]") {
+  test_element_logical_coordinates();
   test_block_and_element_logical_coordinates1();
   test_block_and_element_logical_coordinates3();
   fuzzy_test_block_and_element_logical_coordinates3(20);

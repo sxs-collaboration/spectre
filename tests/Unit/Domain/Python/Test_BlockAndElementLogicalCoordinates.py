@@ -5,6 +5,7 @@ import os
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
@@ -20,6 +21,22 @@ from spectre.Informer import unit_test_src_path
 
 
 class TestBlockAndElementLogicalCoordinates(unittest.TestCase):
+    def test_element_logical_coordinates(self):
+        block_logical_coords = tnsr.I[float, 3, Frame.BlockLogical](
+            [0.0, -0.5, 0.25]
+        )
+        self.assertIsNone(
+            element_logical_coordinates(
+                block_logical_coords, ElementId[3]("[B0,(L1I0,L1I1,L1I1)]")
+            )
+        )
+        logical_coords = np.array(
+            element_logical_coordinates(
+                block_logical_coords, ElementId[3]("[B0,(L1I0,L1I0,L1I1)]")
+            )
+        )
+        npt.assert_allclose(logical_coords, [1.0, 0.0, -0.5])
+
     def test_block_and_element_logical_coordinates(self):
         volfile_name = os.path.join(
             unit_test_src_path(), "Visualization/Python/VolTestData0.h5"
