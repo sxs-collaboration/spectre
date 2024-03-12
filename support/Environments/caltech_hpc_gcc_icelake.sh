@@ -5,7 +5,7 @@
 
 spectre_setup_modules() {
     module use /central/groups/sxs/modules
-    echo "Place the following line in you '~/.bashrc' so you don't have to "
+    echo "Place the following line in your '~/.bashrc' so you don't have to "
     echo "run 'spectre_setup_modules' every time you log in:"
     echo ""
     echo "module use /central/groups/sxs/modules"
@@ -13,12 +13,12 @@ spectre_setup_modules() {
 
 spectre_load_modules() {
     module use /central/groups/sxs/modules
-    module load libraries/spectre-deps/icelake-2024-02 > /dev/null 2>&1
+    module load libraries/spectre-deps/icelake-2024-02
 }
 
 spectre_unload_modules() {
     module use /central/groups/sxs/modules
-    module unload libraries/spectre-deps/icelake-2024-02 > /dev/null 2>&1
+    module unload libraries/spectre-deps/icelake-2024-02
 }
 
 spectre_run_cmake() {
@@ -26,7 +26,7 @@ spectre_run_cmake() {
         echo "You must set SPECTRE_HOME to the cloned SpECTRE directory"
         return 1
     fi
-    spectre_load_modules > /dev/null 2>&1
+    spectre_load_modules
 
     # Note that choosing the memory allocator to be JEMALLOC is important. When
     # using the SYSTEM allocator, during BBH runs dumping volume data too often

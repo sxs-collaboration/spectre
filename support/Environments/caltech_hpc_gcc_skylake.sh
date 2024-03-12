@@ -5,7 +5,7 @@
 
 spectre_setup_modules() {
     module use /central/groups/sxs/modules/
-    echo "Place the following line in you '~/.bashrc' so you don't have to "
+    echo "Place the following line in your '~/.bashrc' so you don't have to "
     echo "run 'spectre_setup_modules' every time you log in:"
     echo ""
     echo "module use /central/groups/sxs/modules/"
@@ -13,12 +13,12 @@ spectre_setup_modules() {
 
 spectre_load_modules() {
     module use /central/groups/sxs/modules/
-    module load libraries/spectre-deps/skylake-2024-02
+    module load libraries/spectre-deps/skylake-2024-03
 }
 
 spectre_unload_modules() {
     module use /central/groups/sxs/modules/
-    module unload libraries/spectre-deps/skylake-2024-02
+    module unload libraries/spectre-deps/skylake-2024-03
 }
 
 spectre_run_cmake() {

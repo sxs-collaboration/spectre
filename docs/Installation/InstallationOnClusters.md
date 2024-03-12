@@ -93,7 +93,7 @@ To ensure you get an entire node to build on, use the following commands.
 
 1. For Skylake Intel nodes
 ```
-srun -t 02:00:00 -N 1 -c 56 -D . --pty /bin/bash
+srun --partition=expansion -t 02:00:00 -N 1 -c 56 -D . --pty /bin/bash
 ```
 2. For Icelake Intel nodes
 ```
@@ -102,8 +102,13 @@ srun --partition=expansion --constraint=icelake -t 02:00:00 \
 ```
 
 If you are part of the SXS collaboration, you can add `-A sxs` to bill the SXS
-allocation. Be sure to re-source the correct environment files once you get the
-interactive node shell.
+allocation. Also, if you are part of the collaboration, you can use our
+reserved nodes by specifying `--reservation=sxs`. However, our reserved nodes
+are Skylake nodes only, so adding the reservation flag won't work for the
+Icelake nodes.
+
+Be sure to re-source the correct environment files once you get the interactive
+node shell.
 
 ## Ocean at Fullerton
 
