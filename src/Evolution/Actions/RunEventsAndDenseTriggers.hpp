@@ -204,7 +204,8 @@ struct RunEventsAndDenseTriggers {
 
     const auto step_end =
         time_step_id.step_time() + db::get<::Tags::TimeStep>(box);
-    const evolution_less<double> before{time_step_id.time_runs_forward()};
+    const evolution_less_equal<double> before_equal{
+        time_step_id.time_runs_forward()};
 
     using postprocessor_return_tags =
         tmpl::join<tmpl::transform<Postprocessors, get_return_tags<tmpl::_1>>>;
@@ -223,7 +224,7 @@ struct RunEventsAndDenseTriggers {
 
     for (;;) {
       const double next_trigger = events_and_dense_triggers.next_trigger(box);
-      if (before(step_end.value(), next_trigger)) {
+      if (before_equal(step_end.value(), next_trigger)) {
         return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
 

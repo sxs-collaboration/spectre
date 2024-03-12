@@ -184,10 +184,6 @@ template <typename T>
 bool AdamsMoultonPc::dense_update_u_impl(const gsl::not_null<T*> u,
                                          const ConstUntypedHistory<T>& history,
                                          const double time) const {
-  // Special case required to handle the initial time.
-  if (time == history.back().time_step_id.step_time().value()) {
-    return true;
-  }
   if (history.at_step_start()) {
     return false;
   }

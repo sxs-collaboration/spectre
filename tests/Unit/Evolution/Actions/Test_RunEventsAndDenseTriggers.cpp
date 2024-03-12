@@ -434,6 +434,20 @@ void test(const bool time_runs_forward) {
   check_not_reached(true);
   check_not_reached(false);
 
+  // Triggers at the end of the step (should not run)
+  const auto check_step_end = [&set_up_component, &start_time, &step_size](
+                                  const std::optional<bool>& is_triggered) {
+    MockRuntimeSystem runner{
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
+    set_up_component(
+        &runner, {{start_time + step_size, is_triggered, std::nullopt, false}});
+    CHECK(run_if_ready(make_not_null(&runner)));
+    TestEvent::check_calls({});
+  };
+  check_step_end(std::nullopt);
+  check_step_end(true);
+  check_step_end(false);
+
   // Trigger isn't ready
   {
     MockRuntimeSystem runner{
