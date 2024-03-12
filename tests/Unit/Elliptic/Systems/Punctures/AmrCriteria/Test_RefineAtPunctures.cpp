@@ -63,20 +63,26 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
 
     const domain::creators::Brick domain_creator{{{0., 0., 0.}},
                                                  {{1., 1., 1.}},
-                                                 {{1, 1, 1}},
+                                                 {{2, 2, 2}},
                                                  {{3, 3, 3}},
                                                  {{false, false, false}}};
-    const Puncture puncture{// Position
-                            {{0.25, 0.25, 0.25}},
-                            // Mass, spin, etc are irrelevant
-                            1.,
-                            {{0.1, 0.2, 0.3}},
-                            {{0.4, 0.5, 0.6}}};
+    const Puncture puncture_within{// Position within an element
+                                   {{0.2, 0.2, 0.2}},
+                                   // Mass, spin, etc are irrelevant
+                                   1.,
+                                   {{0.1, 0.2, 0.3}},
+                                   {{0.4, 0.5, 0.6}}};
+    const Puncture puncture_boundary{// Position on an element boundary
+                                     {{0.5, 0.5, 0.5}},
+                                     // Mass, spin, etc are irrelevant
+                                     1.,
+                                     {{0.1, 0.2, 0.3}},
+                                     {{0.4, 0.5, 0.6}}};
     auto databox =
         db::create<tmpl::list<background_tag, domain::Tags::Domain<3>>>(
             std::unique_ptr<elliptic::analytic_data::Background>(
                 std::make_unique<MultiplePunctures>(
-                    std::vector<Puncture>{puncture})),
+                    std::vector<Puncture>{puncture_within, puncture_boundary})),
             domain_creator.create_domain());
     ObservationBox<
         tmpl::list<>,
@@ -85,18 +91,40 @@ SPECTRE_TEST_CASE("Unit.Punctures.AmrCriteria.RefineAtPunctures",
     Parallel::GlobalCache<Metavariables> empty_cache{};
 
     {
-      INFO("Element with puncture");
-      const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
+      INFO("Element with puncture within");
+      const ElementId<3> element_id{0, {{{2, 0}, {2, 0}, {2, 0}}}};
       const auto expected_flags = make_array<3>(amr::Flag::Split);
       auto flags = criterion.evaluate(box, empty_cache, element_id);
       CHECK(flags == expected_flags);
     }
     {
-      INFO("Element without puncture");
-      const ElementId<3> element_id{0, {{{1, 1}, {1, 0}, {1, 0}}}};
+      INFO("Elements with puncture on boundary");
+      const auto expected_flags = make_array<3>(amr::Flag::Split);
+      for (const auto& element_id :
+           {ElementId<3>{0, {{{2, 1}, {2, 1}, {2, 1}}}},
+            ElementId<3>{0, {{{2, 2}, {2, 1}, {2, 1}}}},
+            ElementId<3>{0, {{{2, 1}, {2, 2}, {2, 1}}}},
+            ElementId<3>{0, {{{2, 2}, {2, 2}, {2, 1}}}},
+            ElementId<3>{0, {{{2, 1}, {2, 1}, {2, 2}}}},
+            ElementId<3>{0, {{{2, 2}, {2, 1}, {2, 2}}}},
+            ElementId<3>{0, {{{2, 1}, {2, 2}, {2, 2}}}},
+            ElementId<3>{0, {{{2, 2}, {2, 2}, {2, 2}}}}}) {
+        CAPTURE(element_id);
+        auto flags = criterion.evaluate(box, empty_cache, element_id);
+        CHECK(flags == expected_flags);
+      }
+    }
+    {
+      INFO("Elements without puncture");
       const auto expected_flags = make_array<3>(amr::Flag::DoNothing);
-      auto flags = criterion.evaluate(box, empty_cache, element_id);
-      CHECK(flags == expected_flags);
+      for (const auto& element_id :
+           {ElementId<3>{0, {{{2, 1}, {2, 0}, {2, 0}}}},
+            ElementId<3>{0, {{{2, 3}, {2, 3}, {2, 3}}}},
+            ElementId<3>{0, {{{2, 3}, {2, 0}, {2, 0}}}},
+            ElementId<3>{0, {{{2, 0}, {2, 3}, {2, 1}}}}}) {
+        auto flags = criterion.evaluate(box, empty_cache, element_id);
+        CHECK(flags == expected_flags);
+      }
     }
   }
 }

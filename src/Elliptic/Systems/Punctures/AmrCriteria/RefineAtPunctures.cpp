@@ -26,25 +26,21 @@ std::array<amr::Flag, 3> RefineAtPunctures::impl(
       dynamic_cast<const Punctures::AnalyticData::MultiplePunctures&>(
           background)
           .punctures();
-  // Collect all puncture positions
-  tnsr::I<DataVector, 3> puncture_positions{punctures.size()};
-  for (size_t i = 0; i < punctures.size(); ++i) {
-    for (size_t d = 0; d < 3; ++d) {
-      puncture_positions.get(d)[i] = gsl::at(punctures.at(i).position, d);
+  // Split (h-refine) the element if it contains a puncture
+  const auto& block = domain.blocks()[element_id.block_id()];
+  for (const auto& puncture : punctures) {
+    // Check if the puncture is in the block
+    const auto block_logical_coords = block_logical_coordinates_single_point(
+        tnsr::I<double, 3>{puncture.position}, block);
+    if (not block_logical_coords.has_value()) {
+      continue;
+    }
+    // Check if the puncture is in the element
+    if (element_logical_coordinates(*block_logical_coords, element_id)) {
+      return make_array<3>(amr::Flag::Split);
     }
   }
-  // Use inverse coordinate maps to check if any of the punctures is in this
-  // element
-  const auto block_logical_coords =
-      block_logical_coordinates(domain, puncture_positions);
-  const auto element_logical_coords =
-      element_logical_coordinates({element_id}, block_logical_coords);
-  // Split (h-refine) the element if it contains a puncture
-  if (element_logical_coords.find(element_id) != element_logical_coords.end()) {
-    return make_array<3>(amr::Flag::Split);
-  } else {
-    return make_array<3>(amr::Flag::DoNothing);
-  }
+  return make_array<3>(amr::Flag::DoNothing);
 }
 
 PUP::able::PUP_ID RefineAtPunctures::my_PUP_ID = 0;  // NOLINT
