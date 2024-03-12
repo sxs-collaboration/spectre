@@ -33,6 +33,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
@@ -535,11 +536,9 @@ std::string DataBox<tmpl::list<Tags...>>::print_items() const {
     os << "----------\n";
     os << "Name:  " << pretty_type::get_name<tag>() << "\n";
     os << "Type:  " << pretty_type::get_name<type>() << "\n";
-    if constexpr (tt::is_streamable_v<std::ostringstream, type>) {
-      os << "Value: " << this->get<tag>() << "\n";
-    } else {
-      os << "Value: UNSTREAMABLE\n";
-    }
+    os << "Value: ";
+    print_value(os, this->get<tag>());
+    os << "\n";
   };
   tmpl::for_each<mutable_item_creation_tags>(print_item);
   if constexpr (PrintImmutableItems) {

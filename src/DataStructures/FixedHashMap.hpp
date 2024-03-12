@@ -601,7 +601,11 @@ std::ostream& operator<<(
       [](std::ostream& out,
          const typename FixedHashMap<MaxSize, Key, ValueType, Hash,
                                      KeyEqual>::value_type& entry) {
-        out << "[" << entry.first << "," << entry.second << "]";
+        out << "[";
+        print_value(out, entry.first);
+        out << ",";
+        print_value(out, entry.second);
+        out << "]";
       });
   return os;
 }
