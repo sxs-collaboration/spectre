@@ -1,14 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <boost/preprocessor/control/if.hpp>
+#include <optional>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
-#include "Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
-#include "PointwiseFunctions/AnalyticData/NewtonianEuler/KhInstability.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Actions::detail {

@@ -18,6 +18,7 @@ spectre_target_sources(
   RamPressure.cpp
   SoundSpeedSquared.cpp
   SpecificKineticEnergy.cpp
+  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -48,6 +49,7 @@ target_link_libraries(
   DgSubcell
   Domain
   ErrorHandling
+  Evolution
   Hydro
   Options
   Serialization
