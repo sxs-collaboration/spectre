@@ -3,6 +3,8 @@
 
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 
+#include <pup.h>
+
 namespace Particles::MonteCarlo {
 
 void Packet::renormalize_momentum(
@@ -18,6 +20,16 @@ void Packet::renormalize_momentum(
   }
   momentum_upper_t =
       sqrt(momentum_upper_t) / get(lapse)[index_of_closest_grid_point];
+}
+
+// NOLINTNEXTLINE(google-runtime-references)
+void Packet::pup(PUP::er& p) {
+  p | number_of_neutrinos;
+  p | index_of_closest_grid_point;
+  p | time;
+  p | momentum_upper_t;
+  p | coordinates;
+  p | momentum;
 }
 
 }  // namespace Particles::MonteCarlo
