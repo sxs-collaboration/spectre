@@ -63,8 +63,8 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_newtonian_euler_executable SUFFIX DIM INITIAL_DATA)
-  set(EXECUTABLE "EvolveNewtonianEuler${SUFFIX}${DIM}D")
+function(add_newtonian_euler_executable DIM)
+  set(EXECUTABLE "EvolveNewtonianEuler${DIM}D")
   add_spectre_executable(
     ${EXECUTABLE}
     EXCLUDE_FROM_ALL
@@ -74,63 +74,10 @@ function(add_newtonian_euler_executable SUFFIX DIM INITIAL_DATA)
     ${EXECUTABLE}
     PRIVATE
     DIM=${DIM}
-    INITIAL_DATA=${INITIAL_DATA}
     )
   target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction()
 
-function(add_riemann_problem_executable DIM)
-  add_newtonian_euler_executable(
-    RiemannProblem
-    ${DIM}
-    NewtonianEuler::Solutions::RiemannProblem<${DIM}>
-    )
-endfunction(add_riemann_problem_executable)
-
-add_riemann_problem_executable(1)
-add_riemann_problem_executable(2)
-add_riemann_problem_executable(3)
-
-function(add_isentropic_vortex_executable DIM)
-  add_newtonian_euler_executable(
-    IsentropicVortex
-    ${DIM}
-    NewtonianEuler::Solutions::IsentropicVortex<${DIM}>
-    )
-endfunction(add_isentropic_vortex_executable)
-
-add_isentropic_vortex_executable(2)
-add_isentropic_vortex_executable(3)
-
-function(add_lane_emden_executable)
-  add_newtonian_euler_executable(
-    LaneEmdenStar
-    3
-    NewtonianEuler::Solutions::LaneEmdenStar
-    )
-endfunction(add_lane_emden_executable)
-
-add_lane_emden_executable()
-
-function(add_kh_instability_executable DIM)
-  add_newtonian_euler_executable(
-    KhInstability
-    ${DIM}
-    NewtonianEuler::AnalyticData::KhInstability<${DIM}>
-    )
-endfunction(add_kh_instability_executable)
-
-add_kh_instability_executable(2)
-add_kh_instability_executable(3)
-
-function(add_smooth_flow_executable DIM)
-  add_newtonian_euler_executable(
-    SmoothFlow
-    ${DIM}
-    NewtonianEuler::Solutions::SmoothFlow<${DIM}>
-    )
-endfunction(add_smooth_flow_executable)
-
-add_smooth_flow_executable(1)
-add_smooth_flow_executable(2)
-add_smooth_flow_executable(3)
+add_newtonian_euler_executable(1)
+add_newtonian_euler_executable(2)
+add_newtonian_euler_executable(3)
