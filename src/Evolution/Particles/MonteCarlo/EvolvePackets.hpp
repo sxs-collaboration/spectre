@@ -38,7 +38,8 @@ void evolve_single_packet_on_geodesic(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian);
+                          Frame::Inertial>&
+        inverse_jacobian_logical_to_inertial);
 
 // Functions to be implemented to complete implementation of Monte-Carlo
 // time step
@@ -57,6 +58,8 @@ void evolve_packets(
     gsl::not_null<std::vector<Packet>*> packets, const double& time_step,
     const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -65,6 +68,7 @@ void evolve_packets(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian);
+                          Frame::Inertial>&
+        inverse_jacobian_logical_to_inertial);
 
 }  // namespace Particles::MonteCarlo
