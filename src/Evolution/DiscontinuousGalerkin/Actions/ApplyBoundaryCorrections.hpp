@@ -242,7 +242,7 @@ bool receive_boundary_data_local_time_stepping(
               boundary_data_history,
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-              mortar_next_time_step_id,
+              mortar_next_time_step_ids,
           const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
               neighbor_mesh,
           const Element<Dim>& element) {
@@ -250,16 +250,22 @@ bool receive_boundary_data_local_time_stepping(
         domain::remove_nonexistent_neighbors(neighbor_mesh, element);
 
         // Move received boundary data into boundary history.
-        for (auto received_data = inbox.begin();
-             received_data != inbox.end() and needed_time(received_data->first);
-             received_data = inbox.erase(received_data)) {
-          const auto& receive_temporal_id = received_data->first;
-          // Loop over all mortars for which we received data at this time
-          for (auto received_mortar_data = received_data->second.begin();
-               received_mortar_data != received_data->second.end();
-               received_mortar_data =
-                   received_data->second.erase(received_mortar_data)) {
-            const auto& mortar_id = received_mortar_data->first;
+        for (auto& [mortar_id, mortar_next_time_step_id] :
+             *mortar_next_time_step_ids) {
+          if (mortar_id.id == ElementId<Dim>::external_boundary_id()) {
+            continue;
+          }
+          while (needed_time(mortar_next_time_step_id)) {
+            const auto time_entry = inbox.find(mortar_next_time_step_id);
+            if (time_entry == inbox.end()) {
+              return false;
+            }
+            const auto received_mortar_data =
+                time_entry->second.find(mortar_id);
+            if (received_mortar_data == time_entry->second.end()) {
+              return false;
+            }
+
             MortarData<Dim> neighbor_mortar_data{};
             // Insert:
             // - the current TimeStepId of the neighbor
@@ -268,53 +274,33 @@ bool receive_boundary_data_local_time_stepping(
             ASSERT(std::get<3>(received_mortar_data->second).has_value(),
                    "Did not receive boundary correction data from the "
                    "neighbor\nMortarId: "
-                       << mortar_id << "\nTimeStepId: " << receive_temporal_id);
-            ASSERT(
-                mortar_next_time_step_id->at(mortar_id) >= receive_temporal_id,
-                "Expected to receive mortar data on mortar "
-                    << mortar_id << " at time "
-                    << mortar_next_time_step_id->at(mortar_id)
-                    << " but actually received at time "
-                    << receive_temporal_id);
-            if (mortar_next_time_step_id->at(mortar_id) !=
-                receive_temporal_id) {
-              // We've received messages from our neighbor
-              // out-of-order.  They are always sent in-order, but
-              // messages are not guaranteed to be received in the
-              // order they were sent.
-              return false;
-            }
+                       << mortar_id
+                       << "\nTimeStepId: " << mortar_next_time_step_id);
             neighbor_mesh->insert_or_assign(
                 mortar_id, std::get<0>(received_mortar_data->second));
-            mortar_next_time_step_id->at(mortar_id) =
-                std::get<4>(received_mortar_data->second);
             neighbor_mortar_data.insert_neighbor_mortar_data(
-                receive_temporal_id, std::get<1>(received_mortar_data->second),
+                mortar_next_time_step_id,
+                std::get<1>(received_mortar_data->second),
                 std::move(*std::get<3>(received_mortar_data->second)));
             // We don't yet communicate the integration order, because
             // we don't have any variable-order methods.  The
             // fixed-order methods ignore the field.
             boundary_data_history->at(mortar_id).remote().insert(
-                receive_temporal_id, std::numeric_limits<size_t>::max(),
+                mortar_next_time_step_id, std::numeric_limits<size_t>::max(),
                 std::move(neighbor_mortar_data));
+            mortar_next_time_step_id =
+                std::get<4>(received_mortar_data->second);
+            time_entry->second.erase(received_mortar_data);
+            if (time_entry->second.empty()) {
+              inbox.erase(time_entry);
+            }
           }
         }
         return true;
       },
       box, db::get<::domain::Tags::Element<Dim>>(*box));
 
-  if (not have_all_intermediate_messages) {
-    return false;
-  }
-
-  return alg::all_of(
-      db::get<evolution::dg::Tags::MortarNextTemporalId<Dim>>(*box),
-      [&needed_time](
-          const std::pair<Key, TimeStepId>& mortar_id_and_next_temporal_id) {
-        return mortar_id_and_next_temporal_id.first.id ==
-                   ElementId<Dim>::external_boundary_id() or
-               not needed_time(mortar_id_and_next_temporal_id.second);
-      });
+  return have_all_intermediate_messages;
 }
 
 /// Apply corrections from boundary communication.
