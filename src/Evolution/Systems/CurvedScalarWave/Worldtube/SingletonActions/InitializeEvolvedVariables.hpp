@@ -2,9 +2,7 @@
 // See LICENSE.txt for details.
 
 #pragma once
-
 #include <cstddef>
-
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -12,18 +10,16 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
-
 /// \cond
 namespace Tags {
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
 /// \endcond
-
 namespace CurvedScalarWave::Worldtube::Initialization {
 /*!
  * \brief Initializes the time stepper and evolved variables used by the
- * worldtube system.
+ * worldtube system. Also sets `Tags::CurrentIteration` to 0.
  *
  * \details Sets the initial position and velocity of the particle to the values
  * specified in the input file. The time stepper history is set analogous to the
@@ -36,7 +32,7 @@ struct InitializeEvolvedVariables {
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
   using simple_tags =
-      tmpl::list<variables_tag, dt_variables_tag,
+      tmpl::list<variables_tag, dt_variables_tag, Tags::CurrentIteration,
                  ::Tags::HistoryEvolvedVariables<variables_tag>>;
   using return_tags = simple_tags;
 
@@ -54,11 +50,12 @@ struct InitializeEvolvedVariables {
           Variables<tmpl::list<::Tags::dt<Tags::EvolvedPosition<Dim>>,
                                ::Tags::dt<Tags::EvolvedVelocity<Dim>>>>*>
           dt_evolved_vars,
+      const gsl::not_null<size_t*> current_iteration,
       const gsl::not_null<::Tags::HistoryEvolvedVariables<variables_tag>::type*>
           time_stepper_history,
       const TimeStepper& time_stepper,
-
       const std::array<tnsr::I<double, Dim>, 2>& initial_pos_and_vel) {
+    *current_iteration = 0;
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
     *time_stepper_history =
