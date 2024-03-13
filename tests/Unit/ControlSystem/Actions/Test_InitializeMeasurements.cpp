@@ -138,8 +138,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using simple_tags_from_options =
-      tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
+  using simple_tags_from_options = tmpl::list<::Tags::EventsAndDenseTriggers>;
 
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time, Tags::TimeStep>;
   using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
@@ -230,7 +229,7 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0,
       {Tags::TimeStepId::type{true, 0, {}}, initial_time, initial_time_step},
-      evolution::Tags::EventsAndDenseTriggers::type{});
+      ::Tags::EventsAndDenseTriggers::type{});
 
   // InitializeRunEventsAndDenseTriggers
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -273,7 +272,7 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   }
 
   auto& events_and_dense_triggers =
-      db::get_mutable_reference<evolution::Tags::EventsAndDenseTriggers>(
+      db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
           make_not_null(&box));
   // This call initializes events_and_dense_triggers internals
   events_and_dense_triggers.next_trigger(box);
@@ -281,9 +280,8 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache, 0,
                                            component_p) ==
         (ab_active or c_active
-             ? evolution::EventsAndDenseTriggers::TriggeringState::
-                   NeedsEvolvedVariables
-             : evolution::EventsAndDenseTriggers::TriggeringState::Ready));
+             ? EventsAndDenseTriggers::TriggeringState::NeedsEvolvedVariables
+             : EventsAndDenseTriggers::TriggeringState::Ready));
 
   using ListAB = tmpl::list<SystemA, SystemB>;
   using ListC = tmpl::list<SystemC>;

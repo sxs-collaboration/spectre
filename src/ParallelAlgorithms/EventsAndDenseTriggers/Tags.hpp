@@ -9,7 +9,6 @@
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace evolution {
 namespace OptionTags {
 /*!
  * \ingroup EventsAndTriggersGroup
@@ -17,7 +16,7 @@ namespace OptionTags {
  * OptionTags::EventsAndTriggers
  */
 struct EventsAndDenseTriggers {
-  using type = evolution::EventsAndDenseTriggers;
+  using type = ::EventsAndDenseTriggers;
   static constexpr Options::String help = "Events to run at arbitrary times";
 };
 }  // namespace OptionTags
@@ -28,7 +27,7 @@ namespace Tags {
  * \brief The Event%s to run based on DenseTrigger%s
  */
 struct EventsAndDenseTriggers : db::SimpleTag {
-  using type = evolution::EventsAndDenseTriggers;
+  using type = ::EventsAndDenseTriggers;
   using option_tags = tmpl::list<OptionTags::EventsAndDenseTriggers>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) {
@@ -36,4 +35,3 @@ struct EventsAndDenseTriggers : db::SimpleTag {
   }
 };
 }  // namespace Tags
-}  // namespace evolution

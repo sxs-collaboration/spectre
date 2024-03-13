@@ -137,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   // element.
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::Time, evolution::Tags::PreviousTriggerTime,
+                        Tags::Time, ::Tags::PreviousTriggerTime,
                         control_system::TestHelpers::SomeTagOnElement>>(
       Metavariables{}, 1.234, std::optional<double>{}, 5.678);
 

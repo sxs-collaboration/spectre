@@ -34,7 +34,6 @@ struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 
-namespace evolution {
 namespace Tags {
 /*!
  * \ingroup EventsAndTriggersGroup
@@ -247,7 +246,7 @@ void EventsAndDenseTriggers::run_events(
 
   for (auto& trigger_entry : events_and_triggers_) {
     if (trigger_entry.is_triggered == std::optional{true}) {
-      db::mutate<::evolution::Tags::PreviousTriggerTime>(
+      db::mutate<::Tags::PreviousTriggerTime>(
           [&trigger_entry](const gsl::not_null<std::optional<double>*>
                                previous_trigger_time) {
             *previous_trigger_time =
@@ -258,7 +257,7 @@ void EventsAndDenseTriggers::run_events(
         event->run(make_not_null(&observation_box), cache, array_index,
                    component, observation_value);
       }
-      db::mutate<::evolution::Tags::PreviousTriggerTime>(
+      db::mutate<::Tags::PreviousTriggerTime>(
           [](const gsl::not_null<std::optional<double>*>
                  previous_trigger_time) {
             *previous_trigger_time =
@@ -322,11 +321,10 @@ void EventsAndDenseTriggers::initialize(const db::DataBox<DbTags>& box) {
     trigger_record.next_check = next_check_;
   }
 }
-}  // namespace evolution
 
 template <>
-struct Options::create_from_yaml<evolution::EventsAndDenseTriggers> {
-  using type = evolution::EventsAndDenseTriggers;
+struct Options::create_from_yaml<EventsAndDenseTriggers> {
+  using type = EventsAndDenseTriggers;
   template <typename Metavariables>
   static type create(const Options::Option& options) {
     return type(

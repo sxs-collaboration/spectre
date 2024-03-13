@@ -26,9 +26,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace evolution::Tags {
+namespace Tags {
 struct PreviousTriggerTime;
-}  // namespace evolution::Tags
+}  // namespace Tags
 
 namespace control_system::TestHelpers {
 namespace TestStructs_detail {
@@ -65,7 +65,7 @@ class TestEvent : public ::Event {
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::conditional_t<
       CallRunCallbacks,
-      tmpl::list<::Tags::Time, evolution::Tags::PreviousTriggerTime,
+      tmpl::list<::Tags::Time, ::Tags::PreviousTriggerTime,
                  control_system::TestHelpers::SomeTagOnElement>,
       tmpl::list<>>;
 
