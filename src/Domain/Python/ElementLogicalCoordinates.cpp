@@ -31,12 +31,23 @@ namespace domain::py_bindings {
 namespace {
 template <size_t Dim>
 void bind_element_logical_coordinates_impl(py::module& m) {  // NOLINT
+  m.def("element_logical_coordinates",
+        py::overload_cast<const tnsr::I<double, Dim, Frame::BlockLogical>&,
+                          const ElementId<Dim>&>(
+            &element_logical_coordinates<Dim>),
+        py::arg("x_block_logical"), py::arg("element_id"));
   py::class_<ElementLogicalCoordHolder<Dim>>(
       m, ("ElementLogicalCoordHolder" + get_output(Dim) + "D").c_str())
       .def_readonly("element_logical_coords",
                     &ElementLogicalCoordHolder<Dim>::element_logical_coords)
       .def_readonly("offsets", &ElementLogicalCoordHolder<Dim>::offsets);
-  m.def("element_logical_coordinates", &element_logical_coordinates<Dim>,
+  m.def("element_logical_coordinates",
+        py::overload_cast<
+            const std::vector<ElementId<Dim>>&,
+            const std::vector<std::optional<
+                IdPair<domain::BlockId,
+                       tnsr::I<double, Dim, typename Frame::BlockLogical>>>>&>(
+            &element_logical_coordinates<Dim>),
         py::arg("element_ids"), py::arg("block_coord_holders"));
 }
 }  // namespace

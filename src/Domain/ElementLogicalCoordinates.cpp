@@ -19,6 +19,26 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
+template <size_t Dim>
+std::optional<tnsr::I<double, Dim, Frame::ElementLogical>>
+element_logical_coordinates(
+    const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
+    const ElementId<Dim>& element_id) {
+  tnsr::I<double, Dim, Frame::ElementLogical> x_element_logical{};
+  for (size_t d = 0; d < Dim; ++d) {
+    // Check if the point is outside the element
+    const double up = element_id.segment_id(d).endpoint(Side::Upper);
+    const double lo = element_id.segment_id(d).endpoint(Side::Lower);
+    if (x_block_logical.get(d) < lo or x_block_logical.get(d) > up) {
+      return std::nullopt;
+    }
+    // Map to element logical coords
+    x_element_logical.get(d) =
+        (2.0 * x_block_logical.get(d) - up - lo) / (up - lo);
+  }
+  return x_element_logical;
+}
+
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
@@ -70,8 +90,13 @@ element_logical_coordinates(
       if (element_id.block_id() == block_id.get_index()) {
         // This element is in this block; now check if the point is in
         // this element.
+        const auto x_elem =
+            element_logical_coordinates(x_block_logical, element_id);
+        if (not x_elem.has_value()) {
+          continue;
+        }
+        // Disambiguate points on shared element boundaries
         bool is_contained = true;
-        auto x_elem = make_array<Dim>(0.0);
         for (size_t d = 0; d < Dim; ++d) {
           const double up = element_id.segment_id(d).endpoint(Side::Upper);
           const double lo = element_id.segment_id(d).endpoint(Side::Lower);
@@ -80,12 +105,10 @@ element_logical_coordinates(
             is_contained = false;
             break;
           }
-          // Map to element coords
-          gsl::at(x_elem, d) = (2.0 * x_block_log - up - lo) / (up - lo);
         }
         if (is_contained) {
           for (size_t d = 0; d < Dim; ++d) {
-            gsl::at(x_element_logical[index], d).push_back(gsl::at(x_elem, d));
+            gsl::at(x_element_logical[index], d).push_back(x_elem->get(d));
           }
           offsets[index].push_back(offset);
           // Found a matching element, so we don't need to check other
@@ -119,12 +142,16 @@ element_logical_coordinates(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                        \
-  template std::unordered_map<ElementId<DIM(data)>,                 \
-                              ElementLogicalCoordHolder<DIM(data)>> \
-  element_logical_coordinates(                                      \
-      const std::vector<ElementId<DIM(data)>>& element_ids,         \
-      const std::vector<block_logical_coord_holder<DIM(data)>>&     \
+#define INSTANTIATE(_, data)                                                  \
+  template std::optional<tnsr::I<double, DIM(data), Frame::ElementLogical>>   \
+  element_logical_coordinates(                                                \
+      const tnsr::I<double, DIM(data), Frame::BlockLogical>& x_block_logical, \
+      const ElementId<DIM(data)>& element_id);                                \
+  template std::unordered_map<ElementId<DIM(data)>,                           \
+                              ElementLogicalCoordHolder<DIM(data)>>           \
+  element_logical_coordinates(                                                \
+      const std::vector<ElementId<DIM(data)>>& element_ids,                   \
+      const std::vector<block_logical_coord_holder<DIM(data)>>&               \
           block_coord_holders);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

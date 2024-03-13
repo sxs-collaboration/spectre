@@ -21,6 +21,23 @@ template <typename IdType, typename DataType>
 class IdPair;
 /// \endcond
 
+/*!
+ * \brief Map block logical coordinates to element logical coordinates
+ *
+ * If the point is outside the element, returns std::nullopt. Otherwise, returns
+ * the element logical coordinates of the point.
+ *
+ * Points on the element boundary are considered to be in the element and will
+ * have element logical coordinates of -1 or 1. See the other function overload
+ * for handling multiple points and disambiguating points on shared element
+ * boundaries.
+ */
+template <size_t Dim>
+std::optional<tnsr::I<double, Dim, Frame::ElementLogical>>
+element_logical_coordinates(
+    const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
+    const ElementId<Dim>& element_id);
+
 /// \ingroup ComputationalDomainGroup
 ///
 /// Holds element logical coordinates of an arbitrary set of points on
