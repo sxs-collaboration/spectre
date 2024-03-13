@@ -463,6 +463,11 @@ void VectorImpl<T, VectorType, StaticSize>::clear() {
 
 template <typename T, typename VectorType, size_t StaticSize>
 void VectorImpl<T, VectorType, StaticSize>::pup(PUP::er& p) {  // NOLINT
+  if (p.isSizing() and not owning_) {
+    auto my_size = size();
+    p | my_size;
+    return;
+  }
   ASSERT(owning_, "Cannot pup a non-owning vector!");
   auto my_size = size();
   p | my_size;
