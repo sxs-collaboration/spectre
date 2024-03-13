@@ -25,10 +25,10 @@ void UpdateAcceleration::apply(
     const Scalar<double>& dt_psi_monopole,
     const tnsr::i<double, Dim, Frame::Inertial>& psi_dipole,
     const double charge, const std::optional<double> mass,
-    const bool apply_self_force) {
+    const size_t max_iterations) {
   tnsr::I<double, Dim> self_force_acc(0.);
   const auto& particle_velocity = pos_vel.at(1);
-  if (apply_self_force) {
+  if (max_iterations > 0) {
     const auto& inverse_metric =
         get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(background);
     const auto& dilation_factor = get<Tags::TimeDilationFactor>(background);
