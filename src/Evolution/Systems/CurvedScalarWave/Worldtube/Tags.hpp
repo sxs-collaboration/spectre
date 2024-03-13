@@ -25,6 +25,7 @@
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -66,34 +67,31 @@ struct Charge {
 };
 
 /*!
- * \brief Options for the scalar self-force
+ * \brief Options for the scalar self-force. Select `None` for a purely geodesic
+ * evolution
  */
 struct SelfForceOptions {
-  static constexpr Options::String help = {"Options for the scalar self-force"};
+  static constexpr Options::String help = {
+      "Options for the scalar self-force. Select `None` for a purely geodesic "
+      "evolution"};
   using group = Worldtube;
-};
+  using type = Options::Auto<SelfForceOptions, Options::AutoLabel::None>;
 
-/*!
- * \brief The mass of the scalar particle in units of the black hole mass M.
- */
-struct Mass {
-  using type = double;
-  static constexpr Options::String help{
-      "The mass of the scalar particlein units of the black hole mass M."};
-  static double lower_bound() { return 0.; }
-  using group = SelfForceOptions;
-};
+  /*!
+   * \brief The mass of the scalar particle in units of the black hole mass M.
+   */
+  struct Mass {
+    using type = double;
+    static constexpr Options::String help{
+        "The mass of the scalar particle in units of the black hole mass M."};
+    static double lower_bound() { return 0.; }
+  };
 
-/*!
- * \brief Whether to apply the acceleration due to the scalar self-force to the
- * particle
- */
-struct ApplySelfForce {
-  using type = bool;
-  static constexpr Options::String help{
-      "Whether to apply the acceleration due to the scalar self-force to the "
-      "particle"};
-  using group = SelfForceOptions;
+  void pup(PUP::er& p) { p | mass; }
+
+  using options = tmpl::list<Mass>;
+
+  double mass{};
 };
 
 /*!
@@ -246,13 +244,33 @@ struct Charge : db::SimpleTag {
 };
 
 /*!
- * \brief The mass of the particle.
+ * \brief Whether to apply the acceleration due to the scalar self-force to the
+ * particle
+ */
+struct ApplySelfForce : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value();
+  };
+};
+
+/*!
+ * \brief The mass of the scalar charge. Only has a value is `ApplySelfForce` is
+ * true.
  */
 struct Mass : db::SimpleTag {
-  using type = double;
-  using option_tags = tmpl::list<OptionTags::Mass>;
+  using type = std::optional<double>;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double mass) { return mass; };
+  static std::optional<double> create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value()
+               ? std::make_optional(self_force_options->mass)
+               : std::nullopt;
+  }
 };
 
 /*!

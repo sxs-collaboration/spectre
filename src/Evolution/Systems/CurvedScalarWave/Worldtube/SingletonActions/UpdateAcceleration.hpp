@@ -52,7 +52,7 @@ struct UpdateAcceleration {
       const tnsr::I<double, Dim, Frame::Inertial>& geodesic_acc,
       const Scalar<double>& dt_psi_monopole,
       const tnsr::i<double, Dim, Frame::Inertial>& psi_dipole, double charge,
-      double mass, bool apply_self_force);
+      std::optional<double> mass, bool apply_self_force);
 };
 
 }  // namespace CurvedScalarWave::Worldtube
