@@ -281,6 +281,13 @@ struct MaxIterations : db::SimpleTag {
     return self_force_options.has_value() ? self_force_options->iterations : 0;
   }
 };
+
+/*!
+ * \brief The current number of iterations that has been applied to the
+ * acceleration of the particle.
+ */
+struct CurrentIteration : db::SimpleTag {
+  using type = size_t;
 };
 
 /*!
