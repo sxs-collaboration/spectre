@@ -65,7 +65,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.UpdateAcceleration",
       Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>,
       Tags::Charge, Tags::Mass, Tags::ApplySelfForce>>(
       std::move(dt_evolved_vars), pos_vel, background_quantities, geodesic_acc,
-      dt_psi_monopole, psi_dipole, 1., 1., apply_self_force);
+      dt_psi_monopole, psi_dipole, 1., std::make_optional(1.),
+      apply_self_force);
 
   db::mutate_apply<UpdateAcceleration>(make_not_null(&box));
   const auto& dt_vars = db::get<dt_variables_tag>(box);

@@ -678,6 +678,12 @@ void test_check_input_file() {
   }
 }
 
+void test_self_force_options() {
+  const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
+      "Mass: 0.1");
+  CHECK(options.mass == 0.1);
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -689,11 +695,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
             CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
   CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::Charge>("1.") == 1.);
-  CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::Mass>("1.") == 1.);
-  CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::ApplySelfForce>("true") ==
-        true);
   TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
@@ -729,6 +730,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::BackgroundQuantities<3>>(
       "BackgroundQuantities");
   test_excision_sphere_tag();
+  test_self_force_options();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
