@@ -76,12 +76,13 @@ class TestPlotMemoryMonitors(unittest.TestCase):
 
     def test_plot_size(self):
         # Just one h5 file
+        output_file_name = os.path.join(self.work_dir, "SingleFile.pdf")
         result = self.runner.invoke(
             plot_memory_monitors_command,
             [
                 os.path.join(self.work_dir, self.reductions_file_names[0]),
                 "-o",
-                os.path.join(self.work_dir, "SingleFile"),
+                output_file_name,
                 "--x-bounds",
                 "0.0",
                 "3.0",
@@ -91,26 +92,23 @@ class TestPlotMemoryMonitors(unittest.TestCase):
             ],
             catch_exceptions=False,
         )
-
-        output_file_name = os.path.join(self.work_dir, "SingleFile.pdf")
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertTrue(os.path.exists(output_file_name))
 
         # Multiple h5 files
+        output_file_name = os.path.join(self.work_dir, "MultiFile.pdf")
         result = self.runner.invoke(
             plot_memory_monitors_command,
             [
                 os.path.join(self.work_dir, self.reductions_file_names[0]),
                 os.path.join(self.work_dir, self.reductions_file_names[1]),
                 "-o",
-                os.path.join(self.work_dir, "MultiFile"),
+                output_file_name,
                 "--x-label",
                 "Time (M)",
             ],
             catch_exceptions=False,
         )
-
-        output_file_name = os.path.join(self.work_dir, "MultiFile.pdf")
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertTrue(os.path.exists(output_file_name))
 

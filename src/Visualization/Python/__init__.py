@@ -12,6 +12,7 @@ class PlotCommands(click.MultiCommand):
             "memory-monitors",
             "power-monitors",
             "size-control",
+            "slice",
         ]
 
     def get_command(self, ctx, name):
@@ -43,6 +44,10 @@ class PlotCommands(click.MultiCommand):
             )
 
             return plot_size_control_command
+        elif name == "slice":
+            from spectre.Visualization.PlotSlice import plot_slice_command
+
+            return plot_slice_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise click.UsageError(

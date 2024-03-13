@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
   // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   // Interpolate data
   const auto interpolated_data = spectre::Exporter::interpolate_to_points<3>(
-      files_glob_pattern, subfile_name, step, {field}, {{{x}, {y}, {z}}});
+      files_glob_pattern, subfile_name,
+      spectre::Exporter::ObservationStep{step}, {field}, {{{x}, {y}, {z}}});
   const double result = interpolated_data[0][0];
   // Check result
   if (std::abs(result - expected) < 1.e-10) {

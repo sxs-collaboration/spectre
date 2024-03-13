@@ -9,11 +9,14 @@ spectre_python_add_module(
   __init__.py
   GenerateXdmf.py
   InterpolateToMesh.py
+  OpenVolfiles.py
+  Plot.py
   PlotAlongLine.py
   PlotDatFile.py
   PlotMemoryMonitors.py
   PlotPowerMonitors.py
   PlotSizeControl.py
+  PlotSlice.py
   plots.mplstyle
   ReadH5.py
   ReadInputFile.py

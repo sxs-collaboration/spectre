@@ -122,13 +122,37 @@ void interpolate_to_points(
     }
   }
 }
+
+// Determines the selected observation ID in the volume data file, given either
+// an `ObservationId` directly or an `ObservationStep`.
+struct SelectObservation {
+  size_t operator()(const ObservationId observation_id) const {
+    return observation_id.value;
+  }
+  size_t operator()(const ObservationStep observation_step) const {
+    int step = observation_step.value;
+    const auto obs_ids = volfile.list_observation_ids();
+    if (step < 0) {
+      step += static_cast<int>(obs_ids.size());
+    }
+    if (step < 0 or static_cast<size_t>(step) >= obs_ids.size()) {
+      ERROR_NO_TRACE("Invalid observation step: "
+                     << observation_step.value << ". There are "
+                     << obs_ids.size() << " observations in the file.");
+    }
+    return obs_ids[static_cast<size_t>(step)];
+  }
+  const h5::VolumeData& volfile;
+};
+
 }  // namespace
 
 template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    std::string subfile_name, int observation_step,
+    std::string subfile_name,
+    const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
     const std::optional<size_t> num_threads) {
@@ -166,21 +190,13 @@ std::vector<std::vector<double>> interpolate_to_points(
     ERROR_NO_TRACE("Mismatched dimensions: expected "
                    << Dim << "D volume data, but got " << dim << "D.");
   }
-  // Get observation ID. This currently assumes that all volume files contain
-  // the same observations. For generalizing to volume files across multiple
-  // segments, see the Python function `Visualization.ReadH5:select_observation`
-  // and possibly move it to C++.
-  const auto obs_ids = first_volfile.list_observation_ids();
-  if (observation_step < 0) {
-    observation_step += static_cast<int>(obs_ids.size());
-  }
-  if (observation_step < 0 or
-      static_cast<size_t>(observation_step) >= obs_ids.size()) {
-    ERROR_NO_TRACE("Invalid observation step: "
-                   << observation_step << ". There are " << obs_ids.size()
-                   << " observations in the file.");
-  }
-  const size_t obs_id = obs_ids[static_cast<size_t>(observation_step)];
+  // Get observation ID
+  // This currently assumes that all volume files contain the same observations,
+  // so we only look into the first file. For generalizing to volume files
+  // across multiple segments, see the Python function
+  // `Visualization.ReadH5:select_observation` and possibly move it to C++.
+  const size_t obs_id =
+      std::visit(SelectObservation{first_volfile}, observation);
   // Get domain, time, functions of time
   const auto domain =
       deserialize<Domain<Dim>>(first_volfile.get_domain(obs_id)->data());
@@ -262,7 +278,8 @@ std::vector<std::vector<double>> interpolate_to_points(
   template std::vector<std::vector<double>> interpolate_to_points<DIM(data)>( \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
-      std::string subfile_name, int observation_step,                         \
+      std::string subfile_name,                                               \
+      const std::variant<ObservationId, ObservationStep>& observation,        \
       const std::vector<std::string>& tensor_components,                      \
       const std::array<std::vector<double>, DIM(data)>& target_points,        \
       const std::optional<size_t> num_threads);

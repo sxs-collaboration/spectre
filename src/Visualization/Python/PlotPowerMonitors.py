@@ -1,9 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import fnmatch
 import logging
-import os
 from itertools import cycle
 from typing import Iterable, Optional, Sequence, Union
 
@@ -18,7 +16,15 @@ from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 from spectre.Spectral import Basis
-from spectre.Visualization.ReadH5 import select_observation
+from spectre.Visualization.OpenVolfiles import (
+    open_volfiles,
+    open_volfiles_command,
+    parse_point,
+)
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -251,44 +257,8 @@ def plot_power_monitors(
     ax_colspan.set_xlabel("Time" if plot_over_time else "Mode number")
 
 
-def parse_step(ctx, param, value):
-    if value is None:
-        return None
-    if value.lower() == "last":
-        return -1
-    return int(value)
-
-
 @click.command(name="power-monitors")
-@click.argument(
-    "h5_files",
-    nargs=-1,
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-)
-@click.option(
-    "--subfile-name",
-    "-d",
-    help="Name of volume data subfile within the h5 files.",
-)
-@click.option(
-    "--step",
-    callback=parse_step,
-    help=(
-        "Observation step number. Specify '-1' or 'last' "
-        "for the last step in the file (default). "
-        "Mutually exclusive with '--time'."
-    ),
-)
-@click.option(
-    "--time",
-    type=float,
-    help=(
-        "Observation time. "
-        "The observation step closest to the specified "
-        "time is selected. "
-        "Mutually exclusive with '--step'."
-    ),
-)
+@open_volfiles_command(obs_id_required=False, multiple_vars=True)
 @click.option(
     "--list-blocks",
     is_flag=True,
@@ -325,58 +295,18 @@ def parse_step(ctx, param, value):
         "'--elements' / '-e' patterns."
     ),
 )
-@click.option(
-    "--list-vars",
-    "-l",
-    is_flag=True,
-    help="Print available variables and exit.",
-)
-@click.option(
-    "--var",
-    "-y",
-    "vars_patterns",
-    multiple=True,
-    help=(
-        "Variables to plot. List any tensor components "
-        "in the volume data file, such as 'Shift_x'. "
-        "Also accepts glob patterns like 'Shift_*'."
-    ),
-)
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(writable=True),
-    help=(
-        "Name of the output plot file. If unspecified, the plot is "
-        "shown interactively, which only works on machines with a "
-        "window server."
-    ),
-)
-@click.option(
-    "--stylesheet",
-    "-s",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    envvar="SPECTRE_MPL_STYLESHEET",
-    help=(
-        "Select a matplotlib stylesheet for customization of the plot, such "
-        "as linestyle cycles, linewidth, fontsize, legend, etc. "
-        "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
-        "environment variable."
-    ),
-)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
 def plot_power_monitors_command(
     h5_files,
     subfile_name,
-    step,
-    time,
+    obs_id,
+    obs_time,
+    vars,
     list_blocks,
     block_or_group_names,
     list_elements,
     element_patterns,
-    list_vars,
-    vars_patterns,
-    output,
-    stylesheet,
 ):
     """Plot power monitors from volume data
 
@@ -395,45 +325,15 @@ def plot_power_monitors_command(
     documentation of the 'Wedge' map to understand which logical direction is
     radial in spherical shells.
     """
-    # Script should be a noop if input files are empty
-    if not h5_files:
-        return
-
-    open_h5_files = [spectre_h5.H5File(filename, "r") for filename in h5_files]
-
-    # Print available subfile names and exit
-    if not subfile_name:
-        import rich.columns
-
-        rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
-        return
-
-    if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name.rstrip(".vol")
-    if not subfile_name.startswith("/"):
-        subfile_name = "/" + subfile_name
-
-    volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
-    dim = volfiles[0].get_dimension()
-
-    # Select observation
-    if step is None and time is None:
-        # Plot power monitors over time
-        obs_id = None
-    else:
-        obs_id, obs_value = select_observation(volfiles, step=step, time=time)
-        # Keep processing only volfiles that contain the selected observation
-        volfiles = [
-            volfile
-            for volfile in volfiles
-            if obs_id in volfile.list_observation_ids()
-        ]
 
     # Print available blocks and groups
+    open_h5_file = spectre_h5.H5File(h5_files[0], "r")
+    volfile = open_h5_file.get_vol(subfile_name)
+    dim = volfile.get_dimension()
     any_obs_id = (
-        obs_id if obs_id is not None else volfiles[0].list_observation_ids()[0]
+        obs_id if obs_id is not None else volfile.list_observation_ids()[0]
     )
-    domain = deserialize_domain[dim](volfiles[0].get_domain(any_obs_id))
+    domain = deserialize_domain[dim](volfile.get_domain(any_obs_id))
     all_block_groups = list(domain.block_groups.keys())
     all_block_names = [block.name for block in domain.blocks]
     if list_blocks or not block_or_group_names:
@@ -458,7 +358,9 @@ def plot_power_monitors_command(
             set(
                 element.id
                 for element in iter_elements(
-                    volfiles, obs_id, element_patterns=element_patterns
+                    open_volfiles(h5_files, subfile_name, obs_id),
+                    obs_id,
+                    element_patterns=element_patterns,
                 )
             )
         )
@@ -481,31 +383,8 @@ def plot_power_monitors_command(
             console.print(rich.columns.Columns(element_ids))
         return
 
-    # Print available variables and exit
-    all_vars = volfiles[0].list_tensor_components(any_obs_id)
-    if list_vars or not vars_patterns:
-        import rich.columns
-
-        rich.print(rich.columns.Columns(all_vars))
-        return
-    # Expand globs in vars
-    vars = []
-    for var_pattern in vars_patterns:
-        matched_vars = fnmatch.filter(all_vars, var_pattern)
-        if not matched_vars:
-            raise click.UsageError(
-                f"The pattern '{var_pattern}' matches no variables. "
-                f"Available variables are: {all_vars}"
-            )
-        vars.extend(matched_vars)
-    # Remove duplicates. Ordering is lost, but that's not important here.
-    vars = list(set(vars))
-
-    # Apply stylesheets
-    stylesheets = [os.path.join(os.path.dirname(__file__), "plots.mplstyle")]
-    if stylesheet is not None:
-        stylesheets.append(stylesheet)
-    plt.style.use(stylesheets)
+    # Close the H5 file because we're done with preprocessing
+    open_h5_file.close()
 
     # Plot!
     import rich.progress
@@ -515,10 +394,12 @@ def plot_power_monitors_command(
         rich.progress.BarColumn(),
         rich.progress.MofNCompleteColumn(),
         rich.progress.TimeRemainingColumn(),
-        disable=(len(volfiles) == 1),
+        disable=(len(h5_files) == 1),
     )
     task_id = progress.add_task("Processing files")
-    volfiles_progress = progress.track(volfiles, task_id=task_id)
+    volfiles_progress = progress.track(
+        open_volfiles(h5_files, subfile_name, obs_id), task_id=task_id
+    )
     with progress:
         plot_power_monitors(
             volfiles_progress,
@@ -528,18 +409,7 @@ def plot_power_monitors_command(
             block_or_group_names=block_or_group_names,
             element_patterns=element_patterns,
         )
-        progress.update(task_id, completed=len(volfiles))
-
-    if output:
-        plt.savefig(output)
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
-            )
-        plt.show()
+        progress.update(task_id, completed=len(h5_files))
 
 
 if __name__ == "__main__":

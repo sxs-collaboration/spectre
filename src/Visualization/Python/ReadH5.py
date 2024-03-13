@@ -169,3 +169,26 @@ def select_observation(
                 f"step {min_step} at t = {obs_value:g}"
             )
         return obs_id, obs_value
+
+
+def list_observations(
+    volfiles: Union["spectre.IO.H5.H5Vol", Iterable["spectre.IO.H5.H5Vol"]],
+) -> Tuple[List[int], List[float]]:
+    """Returns all observations in the 'volfiles' and their times"""
+    try:
+        iter(volfiles)
+    except TypeError:
+        volfiles = [volfiles]
+
+    all_obs_ids = []
+    all_obs_times = []
+    for volfile in volfiles:
+        obs_ids = [
+            obs_id
+            for obs_id in volfile.list_observation_ids()
+            if obs_id not in all_obs_ids
+        ]
+        obs_values = list(map(volfile.get_observation_value, obs_ids))
+        all_obs_ids.extend(obs_ids)
+        all_obs_times.extend(obs_values)
+    return all_obs_ids, all_obs_times
