@@ -21,6 +21,7 @@ target_link_libraries(
   ApparentHorizonFinder
   FiniteDifference
   GeneralRelativitySolutions
+  InterpolationHelpers
   LinearOperators
   Logging
   ObserverHelpers

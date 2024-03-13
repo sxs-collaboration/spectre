@@ -37,4 +37,5 @@ target_link_libraries(
   CceHelpers
   GeneralRelativitySolutions
   Interpolation
+  InterpolationHelpers
   )
