@@ -44,6 +44,7 @@ target_link_libraries(
   Observer
   Options
   Parallel
+  ParallelAmr
   ParallelLinearSolver
   Spectral
   )

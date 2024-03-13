@@ -4,7 +4,7 @@
 Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 90
   Priority: High
 ExpectedOutput:
   - KerrSchildReductions.h5
@@ -15,27 +15,45 @@ OutputFileChecks:
     FileGlob: KerrSchildReductions.h5
     ExpectedData:
       - [
-          5,
+          0,
           384,
           4.20277018789526e+03,
-          1.09488565564726e-03,
-          5.31467293519265e-03,
-          1.17765764073955e-02,
-          2.00607960424956e-03,
-          4.80423457412180e-03,
-          2.39573111152042e-02,
+          0.00000000000000e+00,
+          2.16998022741518e-01,
+          3.75478040264121e-01,
+        ]
+      - [
+          1,
+          384,
+          4.20277018789526e+03,
+          1.09488566071970e-03,
+          5.31467285484924e-03,
+          1.17765764810308e-02,
+        ]
+      - [
+          2,
+          750,
+          4.17021935018685e+03,
+          1.00730328853184e-04,
+          4.72781860739432e-04,
+          1.17830554422638e-03,
         ]
     AbsoluteTolerance: 1e-10
   - Label: Nonlinear solver convergence
     Subfile: NewtonRaphsonResiduals.dat
     FileGlob: KerrSchildReductions.h5
     ExpectedData:
+      # AMR iteration 0
       - [0, 0, 6.86317921700308e+01, 1.]
       - [1, 0, 2.54081356038966e+00, 1.]
       - [2, 0, 1.06821671508785e-01, 1.]
       - [3, 0, 5.29758557594090e-04, 1.]
       - [4, 0, 1.23004570709784e-08, 1.]
-      - [5, 0, 7.83806401935946e-13, 1.]
+      # AMR iteration 1
+      - [0, 0, 3.22212957410157e+00, 1.]
+      - [1, 0, 2.70099316920737e-02, 1.]
+      - [2, 0, 2.09933729188050e-06, 1.]
+      - [3, 0, 3.13426600315318e-11, 1.]
     AbsoluteTolerance: 1e-10
 
 ---
@@ -93,6 +111,28 @@ DomainCreator:
         LapseTimesConformalFactorMinusOne: Dirichlet
         ShiftExcess: Dirichlet
 
+Amr:
+  Verbosity: Verbose
+  Criteria:
+    - IncreaseResolution
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 2
+
+PhaseChangeAndTriggers:
+  # Run AMR in every iteration, but not on the initial guess
+  - Trigger:
+      EveryNIterations:
+        N: 1
+        Offset: 1
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
+
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
@@ -112,7 +152,7 @@ NonlinearSolver:
       # iterations, so 20 is a safe setting).
       MaxIterations: 20
       RelativeResidual: 0.
-      AbsoluteResidual: 1.e-10
+      AbsoluteResidual: 1.e-6
     SufficientDecrease: 1.e-4
     MaxGlobalizationSteps: 40
     DampingFactor: 1.
@@ -128,7 +168,7 @@ LinearSolver:
 
   Multigrid:
     Iterations: 1
-    MaxLevels: Auto
+    MaxLevels: 1
     PreSmoothing: True
     PostSmoothingAtBottom: False
     Verbosity: Silent
@@ -158,7 +198,7 @@ LinearSolver:
 RadiallyCompressedCoordinates: None
 
 EventsAndTriggers:
-  - Trigger: HasConverged
+  - Trigger: Always
     Events:
       - ObserveNorms:
           SubfileName: ErrorNorms
@@ -172,15 +212,8 @@ EventsAndTriggers:
             - Name: Error(ShiftExcess)
               NormType: L2Norm
               Components: Sum
-            - Name: Error(Flux(ConformalFactorMinusOne))
-              NormType: L2Norm
-              Components: Sum
-            - Name: Error(Flux(LapseTimesConformalFactorMinusOne))
-              NormType: L2Norm
-              Components: Sum
-            - Name: Error(LongitudinalShiftExcess)
-              NormType: L2Norm
-              Components: Sum
+  - Trigger: HasConverged
+    Events:
       - ObserveNorms:
           SubfileName: Norms
           TensorsToObserve:

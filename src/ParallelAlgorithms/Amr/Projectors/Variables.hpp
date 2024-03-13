@@ -57,10 +57,11 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
   // h-refinement
   template <typename... Tags>
   static void apply(const gsl::not_null<typename VariablesTags::type*>... vars,
-                    const Element<Dim>& element, const Mesh<Dim>& mesh,
+                    const Element<Dim>& element, const Mesh<Dim>& child_mesh,
                     const tuples::TaggedTuple<Tags...>& parent_items) {
     const auto& element_id = element.id();
     const auto& parent_id = get<domain::Tags::Element<Dim>>(parent_items).id();
+    const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
     std::array<Spectral::ChildSize, Dim> child_sizes{Spectral::ChildSize::Full};
     for (size_t d = 0; d < Dim; ++d) {
       if (parent_id.segment_id(d) == element_id.segment_id(d)) {
@@ -77,11 +78,11 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
       }
     }
     const auto prolongation_matrices =
-        Spectral::projection_matrix_parent_to_child(mesh, mesh, child_sizes);
-    const auto& parent_extents = mesh.extents();
+        Spectral::projection_matrix_parent_to_child(parent_mesh, child_mesh,
+                                                    child_sizes);
     expand_pack((*vars = apply_matrices(prolongation_matrices,
                                         get<VariablesTags>(parent_items),
-                                        parent_extents))...);
+                                        parent_mesh.extents()))...);
   }
 
   // h-coarsening

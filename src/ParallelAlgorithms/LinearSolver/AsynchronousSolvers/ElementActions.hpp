@@ -35,6 +35,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Functional.hpp"
@@ -137,7 +138,7 @@ void contribute_to_residual_observation(
 }
 
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
  private:
   using fields_tag = FieldsTag;
   using operator_applied_to_fields_tag =
@@ -148,7 +149,7 @@ struct InitializeElement {
   using residual_magnitude_square_tag =
       LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
- public:
+ public:  // Iterable action
   using const_global_cache_tags =
       tmpl::list<Convergence::Tags::Iterations<OptionsGroup>>;
 
@@ -174,6 +175,17 @@ struct InitializeElement {
         tmpl::list<Convergence::Tags::IterationId<OptionsGroup>>>(
         make_not_null(&box), std::numeric_limits<size_t>::max());
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags = tmpl::list<>;
+  using return_tags = simple_tags;
+
+  template <typename... AmrData>
+  static void apply(const gsl::not_null<size_t*> /*unused*/,
+                    const AmrData&... /*all_items*/) {
+    // No need to reset or initialize any of the items during AMR because they
+    // will be set in `PrepareSolve`. AMR can't happen _during_ a solve.
   }
 };
 

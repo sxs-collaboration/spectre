@@ -95,6 +95,18 @@ DomainCreator:
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
       OuterShell:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
 
+Amr:
+  Verbosity: Verbose
+  Criteria: []
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 1
+
+PhaseChangeAndTriggers: []
+
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
@@ -111,9 +123,9 @@ NonlinearSolver:
     ConvergenceCriteria:
       MaxIterations: 20
       RelativeResidual: 0.
-      AbsoluteResidual: 1.e-10
+      AbsoluteResidual: 1.e-8
     SufficientDecrease: 1.e-4
-    MaxGlobalizationSteps: 40
+    MaxGlobalizationSteps: 10
     DampingFactor: 1.
     Verbosity: Verbose
 
@@ -122,7 +134,7 @@ LinearSolver:
     ConvergenceCriteria:
       MaxIterations: 100
       RelativeResidual: 1.e-3
-      AbsoluteResidual: 1.e-11
+      AbsoluteResidual: 1.e-10
     Verbosity: Quiet
 
   Multigrid:

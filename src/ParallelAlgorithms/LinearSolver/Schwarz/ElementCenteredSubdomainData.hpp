@@ -85,6 +85,16 @@ struct ElementCenteredSubdomainData {
       element_data.initialize(
           used_for_size.element_data.number_of_grid_points());
     }
+    // Erase overlaps that don't exist in `used_for_size`
+    for (auto it = overlap_data.cbegin(); it != overlap_data.cend();) {
+      if (used_for_size.overlap_data.find(it->first) ==
+          used_for_size.overlap_data.end()) {
+        it = overlap_data.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    // Insert or resize overlaps to match `used_for_size`
     for (const auto& [overlap_id, used_for_overlap_size] :
          used_for_size.overlap_data) {
       if (UNLIKELY(overlap_data[overlap_id].number_of_grid_points() !=

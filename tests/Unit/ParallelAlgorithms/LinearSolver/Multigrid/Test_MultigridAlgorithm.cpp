@@ -16,6 +16,7 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
@@ -55,7 +56,7 @@ struct Metavariables {
 
   // [setup_smoother]
   using multigrid = LinearSolver::multigrid::Multigrid<
-      volume_dim, helpers_mg::fields_tag, MultigridSolver,
+      Metavariables, helpers_mg::fields_tag, MultigridSolver,
       helpers_mg::OperatorIsMassive, helpers_mg::sources_tag>;
 
   using smoother = LinearSolver::Richardson::Richardson<
@@ -102,23 +103,28 @@ struct Metavariables {
   using test_actions =
       tmpl::list<helpers_mg::TestResult<typename multigrid::options_group>>;
 
+  using dg_element_array = elliptic::DgElementArray<
+      Metavariables,
+      tmpl::list<
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                 initialization_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Testing, test_actions>>,
+      LinearSolver::multigrid::ElementsAllocator<1, MultigridSolver>>;
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = dg_element_array;
+  };
+
   using component_list = tmpl::flatten<tmpl::list<
       typename multigrid::component_list, typename smoother::component_list,
-      elliptic::DgElementArray<
-          Metavariables,
-          tmpl::list<
-              Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                     initialization_actions>,
-              Parallel::PhaseActions<Parallel::Phase::Register,
-                                     register_actions>,
-              Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
-              Parallel::PhaseActions<Parallel::Phase::Testing, test_actions>>,
-          LinearSolver::multigrid::ElementsAllocator<1, MultigridSolver>>,
-      observers::Observer<Metavariables>,
+      dg_element_array, observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>,
       helpers::OutputCleaner<Metavariables>>>;
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::list<multigrid, smoother>>;
+
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
   // NOLINTNEXTLINE(google-runtime-references)

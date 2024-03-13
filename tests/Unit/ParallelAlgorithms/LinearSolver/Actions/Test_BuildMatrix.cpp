@@ -88,32 +88,33 @@ struct Metavariables {
         tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
   };
 
-  using build_matrix_actions = LinearSolver::Actions::build_matrix_actions<
+  using build_matrix = LinearSolver::Actions::BuildMatrix<
       Convergence::Tags::IterationId<IterationIdLabel>,
       helpers_distributed::fields_tag,
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                          helpers_distributed::fields_tag>,
-      helpers_distributed::ComputeOperatorAction<
-          helpers_distributed::fields_tag>,
       domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>;
+
+  using build_matrix_actions = typename build_matrix::template actions<
+      helpers_distributed::ComputeOperatorAction<
+          helpers_distributed::fields_tag>>;
 
   using element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<
-          Parallel::PhaseActions<
-              Parallel::Phase::Initialization,
-              tmpl::list<helpers_distributed::InitializeElement,
-                         Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::Register,
-              tmpl::push_back<LinearSolver::Actions::build_matrix_register<>,
-                              Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::BuildMatrix,
-              tmpl::push_back<build_matrix_actions,
-                              Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<Parallel::Phase::Testing,
-                                 tmpl::list<TestResult>>>>;
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<helpers_distributed::InitializeElement,
+                                Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<build_matrix::register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::BuildMatrix,
+                     tmpl::push_back<build_matrix_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<Parallel::Phase::Testing,
+                                        tmpl::list<TestResult>>>>;
 
   using component_list =
       tmpl::list<element_array, observers::Observer<Metavariables>,

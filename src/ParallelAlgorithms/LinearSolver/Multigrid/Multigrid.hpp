@@ -11,6 +11,7 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementActions.hpp"
+#include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsRegistration.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ObserveVolumeData.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -109,12 +110,19 @@ struct VcycleUpLabel {};
  * top-most finest grid (the "original" grid that represents the overall
  * solution) the algorithm applies the smoothing and the corrections from the
  * coarser grids directly to the solution fields.
+ *
+ * \par AMR
+ * AMR is not yet fully supported by the multigrid solver. When AMR is enabled,
+ * only a single multigrid level can be used (the finest grid). To support AMR
+ * fully, we have to send AMR decisions to coarser grids to refine those as
+ * well.
  */
-template <size_t Dim, typename FieldsTag, typename OptionsGroup,
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
           typename ResidualIsMassiveTag,
           typename SourceTag =
               db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
 struct Multigrid {
+  static constexpr size_t Dim = Metavariables::volume_dim;
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
   using source_tag = SourceTag;
@@ -124,7 +132,8 @@ struct Multigrid {
   using smooth_source_tag = source_tag;
   using smooth_fields_tag = fields_tag;
 
-  using component_list = tmpl::list<>;
+  using component_list = tmpl::list<
+      detail::ElementsRegistrationComponent<Metavariables, OptionsGroup>>;
 
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<async_solvers::reduction_data>>;
@@ -133,8 +142,13 @@ struct Multigrid {
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,
       detail::InitializeElement<Dim, FieldsTag, OptionsGroup, SourceTag>>;
 
+  using amr_projectors =
+      tmpl::list<initialize_element,
+                 detail::ProjectMultigridSections<Metavariables>>;
+
   using register_element =
-      tmpl::list<async_solvers::RegisterElement<FieldsTag, OptionsGroup,
+      tmpl::list<detail::RegisterElement<Dim, OptionsGroup>,
+                 async_solvers::RegisterElement<FieldsTag, OptionsGroup,
                                                 SourceTag, Tags::IsFinestGrid>,
                  observers::Actions::RegisterWithObservers<
                      detail::RegisterWithVolumeObserver<OptionsGroup>>>;

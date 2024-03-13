@@ -115,9 +115,10 @@ void test_h_refine() {
   db::mutate_apply<amr::projectors::ProjectVariables<
       Dim, tmpl::list<VariablesTag<0>, VariablesTag<1>>>>(
       make_not_null(&box),
-      tuples::TaggedTuple<domain::Tags::Element<Dim>, VariablesTag<0>,
-                          VariablesTag<1>>(
-          parent_element, std::move(parent_var_0), std::move(parent_var_1)));
+      tuples::TaggedTuple<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                          VariablesTag<0>, VariablesTag<1>>(
+          parent_element, mesh, std::move(parent_var_0),
+          std::move(parent_var_1)));
 
   CHECK_VARIABLES_APPROX(db::get<VariablesTag<0>>(box), child_var_0);
   CHECK_VARIABLES_APPROX(db::get<VariablesTag<1>>(box), child_var_1);

@@ -243,7 +243,7 @@ struct AdjustDomain {
                                           old_mesh_and_element);
             } catch (std::exception& e) {
               ERROR("Error in AMR projector '"
-                    << pretty_type::short_name<projector>() << "':\n"
+                    << pretty_type::get_name<projector>() << "':\n"
                     << e.what());
             }
           });

@@ -160,7 +160,17 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
 
-PhaseChangeAndTriggers:
+Amr:
+  Verbosity: Quiet
+  Criteria: []
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 1
+
+PhaseChangeAndTriggers: []
 
 Parallelization:
   ElementDistribution: NumGridPoints

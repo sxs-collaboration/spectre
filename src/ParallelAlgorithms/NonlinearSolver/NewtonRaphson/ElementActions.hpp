@@ -25,6 +25,7 @@
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/ResidualMonitorActions.hpp"
@@ -36,6 +37,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -71,7 +73,7 @@ using ResidualReductionData = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
 
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
  private:
   using fields_tag = FieldsTag;
   using source_tag = SourceTag;
@@ -82,7 +84,7 @@ struct InitializeElement {
   using globalization_fields_tag =
       db::add_tag_prefix<NonlinearSolver::Tags::Globalization, fields_tag>;
 
- public:
+ public:  // Iterable action
   using simple_tags =
       tmpl::list<Convergence::Tags::IterationId<OptionsGroup>,
                  Convergence::Tags::HasConverged<OptionsGroup>,
@@ -112,6 +114,17 @@ struct InitializeElement {
         std::numeric_limits<size_t>::max(),
         std::numeric_limits<double>::signaling_NaN());
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags = tmpl::list<>;
+  using return_tags = simple_tags;
+
+  template <typename... AmrData>
+  static void apply(const gsl::not_null<size_t*> /*unused*/,
+                    const AmrData&... /*all_items*/) {
+    // No need to reset or initialize any of the items during AMR because they
+    // will be set in `PrepareSolve` below. AMR can't happen _during_ a solve.
   }
 };
 

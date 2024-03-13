@@ -19,6 +19,7 @@ target_link_libraries(
   Convergence
   Initialization
   LinearSolver
+  ParallelAmr
   Serialization
   SystemUtilities
   PUBLIC

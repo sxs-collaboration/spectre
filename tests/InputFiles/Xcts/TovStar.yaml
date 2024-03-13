@@ -4,7 +4,7 @@
 Executable: SolveXcts
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 60
   Priority: High
 ExpectedOutput:
   - TovStarReductions.h5
@@ -157,3 +157,15 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
+
+Amr:
+  Verbosity: Quiet
+  Criteria: []
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 1
+
+PhaseChangeAndTriggers: []

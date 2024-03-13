@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   Charmxx::main
+  AmrCriteria
   Convergence
   CoordinateMaps
   DiscontinuousGalerkin
@@ -20,6 +21,7 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  ParallelAmr
   ParallelLinearSolver
   ParallelMultigrid
   ParallelSchwarz

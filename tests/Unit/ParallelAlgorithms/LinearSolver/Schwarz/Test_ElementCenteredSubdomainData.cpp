@@ -93,6 +93,17 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.ElementCenteredSubdomainData",
               subdomain_data1, 1.) ==
           make_subdomain_data({1., 1., 1.}, {1., 1.}, {1.}));
   }
+  SECTION("Resizing") {
+    const DirectionalId<1> extra_id{Direction<1>::upper_xi(),
+                                    ElementId<1>{1, {{{2, 2}}}}};
+    subdomain_data1.overlap_data.erase(west_id);
+    subdomain_data1.overlap_data.emplace(extra_id, 3);
+    subdomain_data1.destructive_resize(subdomain_data2);
+    CHECK(subdomain_data1.overlap_data.size() == 2);
+    CHECK(subdomain_data1.overlap_data.count(extra_id) == 0);
+    CHECK(subdomain_data1.overlap_data.count(west_id) == 1);
+    CHECK(subdomain_data1.overlap_data.count(east_id) == 1);
+  }
 }
 
 }  // namespace LinearSolver::Schwarz

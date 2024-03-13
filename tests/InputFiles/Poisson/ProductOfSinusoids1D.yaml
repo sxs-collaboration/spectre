@@ -10,22 +10,44 @@ ExpectedOutput:
   - PoissonProductOfSinusoids1DVolume0.h5
   - SubdomainMatrix_[B0,(L1I0)].txt
   - SubdomainMatrix_[B0,(L1I1)].txt
+  - SubdomainMatrix_[B0,(L2I0)].txt
+  - SubdomainMatrix_[B0,(L2I1)].txt
+  - SubdomainMatrix_[B0,(L2I2)].txt
+  - SubdomainMatrix_[B0,(L2I3)].txt
 OutputFileChecks:
   - Label: Discretization error
     Subfile: ErrorNorms.dat
     FileGlob: PoissonProductOfSinusoids1DReductions.h5
     ExpectedData:
-      - [3, 8, 4.71238898038469e+00, 4.14037391064113e-03]
-    AbsoluteTolerance: 1e-12
+      - [0, 8, 4.71238898038469e+00, 7.07106781186548e-01]
+      - [1, 8, 4.71238898038469e+00, 4.14037391064113e-03]
+      - [2, 16, 4.71238898038469e+00, 1.96421037243931e-04]
+      - [3, 20, 4.71238898038469e+00, 1.47125554015345e-05]
+    AbsoluteTolerance: 1e-8
   - Label: Linear solver convergence
     Subfile: GmresResiduals.dat
     FileGlob: PoissonProductOfSinusoids1DReductions.h5
     ExpectedData:
+      # AMR iteration 0
       - [0, 1.21812092038592e+01]
-      - [1, 1.57971714780159e-03]
-      - [2, 2.51555146884164e-07]
-      - [3, 0.]
-    AbsoluteTolerance: 1e-12
+      - [1, 2.13145442174570e-01]
+      - [2, 5.92367126759950e-03]
+      - [3, 3.20539282132934e-08]
+      # AMR iteration 1
+      - [0, 2.09447729412913e-01]
+      - [1, 2.46546953964650e-03]
+      - [2, 8.48550910654618e-04]
+      - [3, 2.44047574357982e-04]
+      - [4, 2.63835241157592e-05]
+      - [5, 2.07844911429961e-07]
+      # AMR iteration 2
+      - [0, 3.15882858760581e-02]
+      - [1, 7.82175835835042e-04]
+      - [2, 1.13099440899420e-04]
+      - [3, 5.55444538380480e-05]
+      - [4, 1.11628047012794e-05]
+      - [5, 1.65458379564807e-08]
+    AbsoluteTolerance: 1e-8
 
 ---
 
@@ -64,6 +86,40 @@ DomainCreator:
           Solution: *solution
           Field: Neumann
 
+Amr:
+  Verbosity: Debug
+  Criteria:
+    - DriveToTarget:
+        # First AMR iteration will split the 2 elements in 4
+        TargetRefinementLevels: [2]
+        # Second AMR iteration will increase num points from 4 to 5
+        TargetNumberOfGridPoints: [5]
+        OscillationAtTarget: [DoNothing]
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 3
+
+PhaseChangeAndTriggers:
+  # Build explicit matrix representation for initial domain
+  - Trigger:
+      EveryNIterations:
+        N: 100
+        Offset: 0
+    PhaseChanges:
+      - VisitAndReturn(BuildMatrix)
+  # Run AMR in every iteration, but not on the initial guess
+  - Trigger:
+      EveryNIterations:
+        N: 1
+        Offset: 1
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
+
 Discretization:
   DiscontinuousGalerkin:
     PenaltyParameter: 1.
@@ -78,23 +134,23 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 3
+      MaxIterations: 10
       RelativeResidual: 1.e-10
-      AbsoluteResidual: 1.e-10
+      AbsoluteResidual: 1.e-6
     Verbosity: Verbose
 
   Multigrid:
     Iterations: 1
-    MaxLevels: Auto
+    MaxLevels: 1
     PreSmoothing: True
     PostSmoothingAtBottom: False
-    Verbosity: Quiet
+    Verbosity: Silent
     OutputVolumeData: True
 
   SchwarzSmoother:
     Iterations: 3
     MaxOverlap: 2
-    Verbosity: Quiet
+    Verbosity: Silent
     SubdomainSolver:
       ExplicitInverse:
         WriteMatrixToFile: "SubdomainMatrix"
@@ -103,7 +159,7 @@ LinearSolver:
 RadiallyCompressedCoordinates: None
 
 EventsAndTriggers:
-  - Trigger: HasConverged
+  - Trigger: Always
     Events:
       - ObserveNorms:
           SubfileName: ErrorNorms
@@ -117,11 +173,6 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
-
-PhaseChangeAndTriggers:
-  - Trigger: Always
-    PhaseChanges:
-      - VisitAndReturn(BuildMatrix)
 
 BuildMatrix:
   MatrixSubfileName: Matrix

@@ -9,6 +9,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -21,6 +22,8 @@ extern "C" void CkRegisterMainModule() {
            Metavariables::solver::schwarz_smoother::subdomain_solver>,
        &elliptic::subdomain_preconditioners::register_derived_with_charm,
        &EquationsOfState::register_derived_with_charm,
-       &register_factory_classes_with_charm<Metavariables>},
+       &register_factory_classes_with_charm<Metavariables>,
+       &::amr::register_callbacks<Metavariables,
+                                  typename Metavariables::amr::element_array>},
       {});
 }

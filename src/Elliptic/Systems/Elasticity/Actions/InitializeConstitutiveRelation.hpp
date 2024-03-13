@@ -26,10 +26,12 @@
 #include "IO/Observer/Tags.hpp"
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -144,8 +146,9 @@ namespace Actions {
  * `Elasticity::Tags::ConstitutiveRelation<Dim>`.
  */
 template <size_t Dim>
-struct InitializeConstitutiveRelation {
- public:
+struct InitializeConstitutiveRelation
+    : tt::ConformsTo<amr::protocols::Projector> {
+ public:  // Iterable action
   using const_global_cache_tags =
       tmpl::list<Tags::ConstitutiveRelationPerBlock<Dim>,
                  Tags::MaterialBlockGroups<Dim>>;
@@ -166,17 +169,19 @@ struct InitializeConstitutiveRelation {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
- public:
+ public:  // amr::protocols::Projector
   using return_tags = simple_tags;
   using argument_tags =
       tmpl::list<Tags::MaterialBlockGroups<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::Domain<Dim>>;
 
+  template <typename... AmrData>
   static void apply(
       const gsl::not_null<std::optional<std::string>*> material_layer_name,
       const gsl::not_null<std::optional<std::string>*> observation_key,
       const std::unordered_set<std::string>& material_block_groups,
-      const Element<Dim>& element, const Domain<Dim>& domain) {
+      const Element<Dim>& element, const Domain<Dim>& domain,
+      const AmrData&... /*unused*/) {
     const auto& block = domain.blocks()[element.id().block_id()];
     // Check if this element is in a material layer
     *material_layer_name = [&material_block_groups, &domain,

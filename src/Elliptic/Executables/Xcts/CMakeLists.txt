@@ -12,6 +12,7 @@ add_spectre_executable(
 target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
+  AmrCriteria
   Charmxx::main
   Convergence
   CoordinateMaps
@@ -35,6 +36,7 @@ target_link_libraries(
   Observer
   Options
   Parallel
+  ParallelAmr
   ParallelLinearSolver
   ParallelMultigrid
   ParallelNonlinearSolver

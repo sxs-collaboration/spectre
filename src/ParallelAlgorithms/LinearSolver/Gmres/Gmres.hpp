@@ -127,6 +127,8 @@ struct Gmres {
 
   using register_element = tmpl::list<>;
 
+  using amr_projectors = initialize_element;
+
   template <typename ApplyOperatorActions,
             typename ObserveActions = tmpl::list<>,
             typename Label = OptionsGroup>

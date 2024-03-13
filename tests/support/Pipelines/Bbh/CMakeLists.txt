@@ -22,11 +22,11 @@ spectre_add_python_bindings_test(
 if (BUILD_PYTHON_BINDINGS)
   set_tests_properties(
     "support.Pipelines.Bbh.InitialData"
-    PROPERTIES TIMEOUT 40)
+    PROPERTIES TIMEOUT 60)
   set_tests_properties(
     "support.Pipelines.Bbh.Inspiral"
-    PROPERTIES TIMEOUT 40)
+    PROPERTIES TIMEOUT 60)
   set_tests_properties(
     "support.Pipelines.Bbh.Ringdown"
-    PROPERTIES TIMEOUT 40)
+    PROPERTIES TIMEOUT 60)
 endif()

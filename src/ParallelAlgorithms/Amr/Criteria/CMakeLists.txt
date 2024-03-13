@@ -25,6 +25,7 @@ spectre_target_headers(
   Criteria.hpp
   Criterion.hpp
   DriveToTarget.hpp
+  Factory.hpp
   IncreaseResolution.hpp
   Loehner.hpp
   Persson.hpp

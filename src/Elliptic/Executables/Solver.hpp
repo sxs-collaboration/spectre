@@ -13,6 +13,8 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/Actions/RunEventsAndTriggers.hpp"
+#include "Elliptic/Amr/Actions.hpp"
 #include "Elliptic/BoundaryConditions/Tags/BoundaryFields.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
@@ -26,8 +28,15 @@
 #include "IO/Observer/Helpers.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/String.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/BuildMatrix.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -124,6 +133,10 @@ struct Solver {
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>,
       db::add_tag_prefix<NonlinearSolver::Tags::OperatorAppliedTo, fields_tag>>;
 
+  // For AMR iterations
+  using amr_iteration_id =
+      Convergence::Tags::IterationId<::amr::OptionTags::AmrGroup>;
+
   /// The nonlinear solver algorithm
   using nonlinear_solver = NonlinearSolver::newton_raphson::NewtonRaphson<
       Metavariables, fields_tag, OptionTags::NewtonRaphsonGroup,
@@ -147,7 +160,7 @@ struct Solver {
 
   /// Precondition each linear solver iteration with a multigrid V-cycle
   using multigrid = LinearSolver::multigrid::Multigrid<
-      volume_dim, typename linear_solver::operand_tag,
+      Metavariables, typename linear_solver::operand_tag,
       OptionTags::MultigridGroup, elliptic::dg::Tags::Massive,
       typename linear_solver::preconditioner_source_tag>;
 
@@ -194,41 +207,6 @@ struct Solver {
           tmpl::conditional_t<is_linear, tmpl::list<>, nonlinear_solver>,
           linear_solver, multigrid, schwarz_smoother>>>;
 
-  // For labeling the yaml option for RandomizeVariables
-  struct RandomizeInitialGuess {};
-
-  using initialization_actions = tmpl::list<
-      elliptic::dg::Actions::InitializeDomain<volume_dim>,
-      tmpl::conditional_t<is_linear, tmpl::list<>,
-                          typename nonlinear_solver::initialize_element>,
-      typename linear_solver::initialize_element,
-      typename multigrid::initialize_element,
-      typename schwarz_smoother::initialize_element,
-      elliptic::Actions::InitializeFields<system, initial_guess_tag>,
-      ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
-      elliptic::Actions::InitializeFixedSources<system, background_tag>,
-      elliptic::Actions::InitializeOptionalAnalyticSolution<
-          volume_dim, background_tag,
-          tmpl::append<typename system::primal_fields,
-                       typename system::primal_fluxes>,
-          elliptic::analytic_data::AnalyticSolution>,
-      elliptic::dg::Actions::initialize_operator<system, background_tag>,
-      tmpl::conditional_t<
-          is_linear, tmpl::list<>,
-          ::Initialization::Actions::AddComputeTags<tmpl::list<
-              // For linearized boundary conditions
-              elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
-              elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
-                                                    fluxes_tag>>>>>;
-
-  using register_actions = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<is_linear,
-                          LinearSolver::Actions::build_matrix_register<
-                              LinearSolver::multigrid::Tags::IsFinestGrid>,
-                          typename nonlinear_solver::register_element>,
-      typename multigrid::register_element,
-      typename schwarz_smoother::register_element>>;
-
   template <bool Linearized>
   using dg_operator = elliptic::dg::Actions::DgOperator<
       system, Linearized,
@@ -239,11 +217,52 @@ struct Solver {
       tmpl::conditional_t<Linearized, operator_applied_to_vars_tag,
                           operator_applied_to_fields_tag>>;
 
-  using build_matrix_actions = LinearSolver::Actions::build_matrix_actions<
+  using build_matrix = LinearSolver::Actions::BuildMatrix<
       linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
-      typename dg_operator<true>::apply_actions,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
       LinearSolver::multigrid::Tags::IsFinestGrid>;
+
+  using build_matrix_actions = typename build_matrix::template actions<
+      typename dg_operator<true>::apply_actions>;
+
+  // For labeling the yaml option for RandomizeVariables
+  struct RandomizeInitialGuess {};
+
+  using init_analytic_solution_action =
+      elliptic::Actions::InitializeOptionalAnalyticSolution<
+          volume_dim, background_tag,
+          tmpl::append<typename system::primal_fields,
+                       typename system::primal_fluxes>,
+          elliptic::analytic_data::AnalyticSolution>;
+
+  using initialization_actions = tmpl::list<
+      elliptic::dg::Actions::InitializeDomain<volume_dim>,
+      tmpl::conditional_t<is_linear, tmpl::list<>,
+                          typename nonlinear_solver::initialize_element>,
+      typename linear_solver::initialize_element,
+      typename multigrid::initialize_element,
+      typename schwarz_smoother::initialize_element,
+      Initialization::Actions::InitializeItems<
+          ::amr::Initialization::Initialize<volume_dim>,
+          elliptic::amr::Actions::Initialize>,
+      elliptic::Actions::InitializeFields<system, initial_guess_tag>,
+      ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
+      elliptic::Actions::InitializeFixedSources<system, background_tag>,
+      init_analytic_solution_action,
+      elliptic::dg::Actions::initialize_operator<system, background_tag>,
+      tmpl::conditional_t<
+          is_linear, tmpl::list<>,
+          ::Initialization::Actions::AddComputeTags<tmpl::list<
+              // For linearized boundary conditions
+              elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
+              elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
+                                                    fluxes_tag>>>>>;
+
+  using register_actions = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<is_linear, typename build_matrix::register_actions,
+                          typename nonlinear_solver::register_element>,
+      typename multigrid::register_element,
+      typename schwarz_smoother::register_element>>;
 
   template <typename Label>
   using smooth_actions = typename schwarz_smoother::template solve<
@@ -315,13 +334,22 @@ struct Solver {
 
   template <typename StepActions>
   using solve_actions = tmpl::flatten<tmpl::list<
+      // Observe initial state
+      elliptic::Actions::RunEventsAndTriggers<amr_iteration_id>,
+      // Stop AMR iterations if complete
+      elliptic::amr::Actions::StopAmr,
+      // Run AMR or other phase changes if requested
+      PhaseControl::Actions::ExecutePhaseChange, StepActions,
+      // Increment AMR iteration ID
+      elliptic::amr::Actions::IncrementIterationId,
       // Communicate subdomain geometry and initialize subdomain to account for
       // domain changes
       LinearSolver::Schwarz::Actions::SendOverlapFields<
-          subdomain_init_tags, typename schwarz_smoother::options_group, false>,
+          subdomain_init_tags, typename schwarz_smoother::options_group, false,
+          amr_iteration_id>,
       LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
           volume_dim, subdomain_init_tags,
-          typename schwarz_smoother::options_group, false>,
+          typename schwarz_smoother::options_group, false, amr_iteration_id>,
       init_subdomain_action,
       // Linear or nonlinear solve
       tmpl::conditional_t<
@@ -338,16 +366,51 @@ struct Solver {
                   ImposeInhomogeneousBoundaryConditionsOnSource<
                       system, fixed_sources_tag>,
               // Krylov solve
-              linear_solve_actions<StepActions>>,
+              linear_solve_actions<tmpl::list<>>>,
           // Nonlinear solve
-          nonlinear_solve_actions<StepActions>>>>;
+          nonlinear_solve_actions<tmpl::list<>>>>>;
+
+  template <typename Tag>
+  using overlaps_tag =
+      LinearSolver::Schwarz::Tags::Overlaps<Tag, volume_dim,
+                                            OptionTags::SchwarzSmootherGroup>;
+
+  using amr_projectors = tmpl::flatten<tmpl::list<
+      elliptic::dg::ProjectGeometry<volume_dim>,
+      tmpl::conditional_t<is_linear, tmpl::list<>,
+                          typename nonlinear_solver::amr_projectors>,
+      typename linear_solver::amr_projectors,
+      typename multigrid::amr_projectors,
+      typename schwarz_smoother::amr_projectors,
+      ::amr::projectors::DefaultInitialize<tmpl::append<
+          tmpl::list<domain::Tags::InitialExtents<volume_dim>,
+                     domain::Tags::InitialRefinementLevels<volume_dim>>,
+          // Tags communicated on subdomain overlaps. No need to project
+          // these during AMR because they will be communicated.
+          db::wrap_tags_in<
+              overlaps_tag,
+              tmpl::append<subdomain_init_tags,
+                           tmpl::conditional_t<is_linear, tmpl::list<>,
+                                               communicated_overlap_tags>>>,
+          // Tags initialized on subdomains. No need to project these during
+          // AMR because they will get re-initialized after communication.
+          typename init_subdomain_action::simple_tags>>,
+      ::amr::projectors::ProjectVariables<volume_dim, fields_tag>,
+      elliptic::Actions::InitializeFixedSources<system, background_tag>,
+      init_analytic_solution_action,
+      elliptic::dg::Actions::amr_projectors<system, background_tag>,
+      typename dg_operator<true>::amr_projectors,
+      tmpl::conditional_t<is_linear, typename build_matrix::amr_projectors,
+                          typename dg_operator<false>::amr_projectors>,
+      elliptic::amr::Actions::Initialize>>;
 
   using component_list = tmpl::flatten<
       tmpl::list<tmpl::conditional_t<is_linear, tmpl::list<>,
                                      typename nonlinear_solver::component_list>,
                  typename linear_solver::component_list,
                  typename multigrid::component_list,
-                 typename schwarz_smoother::component_list>>;
+                 typename schwarz_smoother::component_list,
+                 ::amr::Component<Metavariables>>>;
 };
 
 }  // namespace elliptic
