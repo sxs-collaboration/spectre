@@ -394,6 +394,9 @@ ENV SPECTRE_HOME /work/spectre
 ENV PATH $SPECTRE_HOME/build/bin:$PATH
 ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
 
+# Set the CLI as entrypoint
+ENTRYPOINT ["spectre"]
+CMD ["--help"]
 
 # Build a demo image with extra software used in the tutorials.
 FROM deploy AS demo
