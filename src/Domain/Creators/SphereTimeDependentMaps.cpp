@@ -146,7 +146,7 @@ TimeDependentMapOptions::create_functions_of_time(
 
   // RotationMap FunctionOfTime
   if (rotation_map_options_.has_value()) {
-    for (size_t i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 4; i++) {
       initial_quaternion_value[i] =
           gsl::at(gsl::at(rotation_map_options_.value().initial_values, 0), i);
       initial_quaternion_first_derivative_value[i] =
