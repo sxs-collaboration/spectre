@@ -35,3 +35,26 @@ This page highlights some visualizations of SpECTRE simulations.
 Here's an image of an adaptively refined mesh:
 
 <img src="https://drive.google.com/thumbnail?id=1ivR2Wbu_RYvHih098waKi6jqx637pSUn&sz=w600"/>
+
+## Binary Black Holes
+
+### Overview
+
+Simulations of two black holes orbiting each other and eventually merging using
+the SpECTRE code. SpECTRE uses the Generalized Harmonic formulation of
+Einstein's equations of general relativity to solve this problem. Since we
+expect the solution of Einstein's equations to be smooth for the BBH problem,
+we represent our solution using the Discontinuous Galerkin (DG) method because
+of it's ability to represent smooth functions to high accuracy. Also, DG allows
+SpECTRE to parallelize the BBH problem to exascale.
+
+\htmlonly
+<figure>
+<img src="https://drive.google.com/thumbnail?id=1Ccz_ZDPTpIsLXh_lGotGBdSLEnc7a__f&sz=w1200"/>
+<figcaption>
+Apparent horizons of an equal mass non-spinning BBH. The
+colorful surface represents the lapse value in the equatorial plane and the
+arrows depict the shift vector. Image credit: Alex Carpenter, CSUF
+</figcaption>
+</figure>
+\endhtmlonly
