@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.OutputTimeBounds",
   serialize_and_deserialize(functions_of_time);
 
   const std::string result =
-      domain::FunctionsOfTime::ouput_time_bounds(functions_of_time);
+      domain::FunctionsOfTime::output_time_bounds(functions_of_time);
   const std::string aang_line =
       " Aang: (0.0000000000000000e+00,1.0000000000000000e+00)\n";
   const std::string sokka_line =

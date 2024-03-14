@@ -23,7 +23,7 @@ namespace domain::FunctionsOfTime {
  * \endcode
  *
  */
-std::string ouput_time_bounds(
+std::string output_time_bounds(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time);
