@@ -19,10 +19,10 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
@@ -34,13 +34,11 @@
 /// \cond
 namespace Tags {
 struct TimeStep;
+struct EventsAndDenseTriggers;
 }  // namespace Tags
 namespace domain::Tags {
 struct FunctionsOfTime;
 }  // namespace domain::Tags
-namespace evolution::Tags {
-struct EventsAndDenseTriggers;
-}  // namespace evolution::Tags
 namespace tuples {
 template <typename... Tags>
 class TaggedTuple;
@@ -103,8 +101,8 @@ struct InitializeMeasurements {
           make_not_null(&box));
     });
 
-    db::mutate<evolution::Tags::EventsAndDenseTriggers>(
-        [](const gsl::not_null<evolution::EventsAndDenseTriggers*>
+    db::mutate<::Tags::EventsAndDenseTriggers>(
+        [](const gsl::not_null<EventsAndDenseTriggers*>
                events_and_dense_triggers) {
           tmpl::for_each<metafunctions::measurements_t<ControlSystems>>(
               [&events_and_dense_triggers](auto measurement_v) {

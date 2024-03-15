@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Times.hpp"
 
 #include <optional>
 #include <pup_stl.h>

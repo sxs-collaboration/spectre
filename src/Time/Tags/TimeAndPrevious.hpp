@@ -16,10 +16,8 @@
 /// \cond
 namespace Tags {
 struct Time;
-}  // namespace Tags
-namespace evolution::Tags {
 struct PreviousTriggerTime;
-}  // namespace evolution::Tags
+}  // namespace Tags
 /// \endcond
 
 namespace Tags {
@@ -29,9 +27,9 @@ namespace Tags {
 /// \brief Tag for the current and previous time as doubles
 ///
 /// \warning The previous time is calculated via the value of the
-/// ::evolution::Tags::PreviousTriggerTime. Therefore, this tag can only be
+/// ::Tags::PreviousTriggerTime. Therefore, this tag can only be
 /// used in the context of dense triggers as that is where the
-/// ::evolution::Tags::PreviousTriggerTime tag is set. Any Events that request
+/// ::Tags::PreviousTriggerTime tag is set. Any Events that request
 /// this tag in their `argument_tags` type alias, must be triggered by a
 /// DenseTrigger.
 ///
@@ -46,8 +44,7 @@ struct TimeAndPrevious : db::SimpleTag {
 
 template <size_t Index>
 struct TimeAndPreviousCompute : TimeAndPrevious<Index>, db::ComputeTag {
-  using argument_tags =
-      tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime>;
+  using argument_tags = tmpl::list<::Tags::Time, ::Tags::PreviousTriggerTime>;
   using base = TimeAndPrevious<Index>;
   using return_type = LinkedMessageId<double>;
 

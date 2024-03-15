@@ -7,13 +7,13 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
+#include "Helpers/ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/Time.hpp"
@@ -72,8 +72,7 @@ class TestEvent : public Event {
 
   using return_tags = tmpl::list<EventCount>;
   using argument_tags =
-      tmpl::list<Tags::Time, evolution::Tags::PreviousTriggerTime,
-                 AddTwoToTime>;
+      tmpl::list<Tags::Time, ::Tags::PreviousTriggerTime, AddTwoToTime>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   void operator()(const gsl::not_null<int*> event_count, const double time,
@@ -173,8 +172,8 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   }
 
   auto events_and_dense_triggers =
-      TestHelpers::test_creation<evolution::EventsAndDenseTriggers,
-                                 Metavariables>(creation_string);
+      TestHelpers::test_creation<EventsAndDenseTriggers, Metavariables>(
+          creation_string);
   if (add_event) {
     events_and_dense_triggers.add_trigger_and_events(
         std::make_unique<TriggerB>(),
@@ -185,7 +184,7 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
-      Tags::Time, evolution::Tags::PreviousTriggerTime, TriggerA::IsTriggered,
+      Tags::Time, ::Tags::PreviousTriggerTime, TriggerA::IsTriggered,
       TriggerA::NextCheck, TriggerB::IsTriggered, TriggerB::NextCheck,
       EventA::IsReady, EventB::IsReady, EventC::IsReady, EventCount>>(
       Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
@@ -214,7 +213,7 @@ void do_test(const bool time_runs_forward, const bool add_event) {
     set_tag(EventCount{}, 0);
   };
 
-  using TriggeringState = evolution::EventsAndDenseTriggers::TriggeringState;
+  using TriggeringState = EventsAndDenseTriggers::TriggeringState;
   CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache,
                                            array_index, component) ==
@@ -319,8 +318,8 @@ void do_test(const bool time_runs_forward, const bool add_event) {
         TriggeringState::NeedsEvolvedVariables);
 
   const auto finish_checks = [&array_index, &box, &cache, &check_events,
-                              &component, &time_sign](
-                                 evolution::EventsAndDenseTriggers eadt) {
+                              &component,
+                              &time_sign](EventsAndDenseTriggers eadt) {
     EventA::event_ran = false;
     CHECK(eadt.next_trigger(box) == 3.0 * time_sign);
     CHECK(eadt.is_ready(make_not_null(&box), cache, array_index, component) ==
@@ -389,8 +388,8 @@ struct MutatingMetavariables {
 };
 
 void test_mutating_trigger() {
-  evolution::EventsAndDenseTriggers events_and_dense_triggers(
-      make_vector(evolution::EventsAndDenseTriggers::TriggerAndEvents{
+  EventsAndDenseTriggers events_and_dense_triggers(
+      make_vector(EventsAndDenseTriggers::TriggerAndEvents{
           std::make_unique<MutatingTrigger>(),
           make_vector<std::unique_ptr<Event>>(
               std::make_unique<TestEvent<EventLabels::A>>())}));
@@ -400,7 +399,7 @@ void test_mutating_trigger() {
   const int* component = nullptr;
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<MutatingMetavariables>,
-      Tags::TimeStepId, Tags::Time, evolution::Tags::PreviousTriggerTime,
+      Tags::TimeStepId, Tags::Time, ::Tags::PreviousTriggerTime,
       EventA::IsReady, MutatingTrigger::WasCalled>>(
       MutatingMetavariables{}, TimeStepId(true, 0, Slab(0.0, 1.0).start()),
       -1.0, std::optional<double>{}, false, false);

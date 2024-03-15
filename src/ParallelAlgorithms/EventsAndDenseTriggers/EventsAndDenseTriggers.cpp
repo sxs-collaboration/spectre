@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 
 #include <algorithm>
 #include <pup.h>
@@ -9,7 +9,6 @@
 
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-namespace evolution {
 void EventsAndDenseTriggers::TriggerRecord::pup(PUP::er& p) {
   p | next_check;
   p | is_triggered;
@@ -49,4 +48,3 @@ bool EventsAndDenseTriggers::initialized() const {
   const ScopedFpeState disable_fpes(false);
   return not std::isnan(next_check_);
 }
-}  // namespace evolution

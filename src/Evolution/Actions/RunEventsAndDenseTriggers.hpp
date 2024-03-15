@@ -10,10 +10,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
-#include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -199,7 +199,7 @@ struct RunEventsAndDenseTriggers {
     }
 
     auto& events_and_dense_triggers =
-        db::get_mutable_reference<::evolution::Tags::EventsAndDenseTriggers>(
+        db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
             make_not_null(&box));
 
     const auto step_end =
@@ -300,9 +300,8 @@ struct RunEventsAndDenseTriggers {
 };
 
 struct InitializeRunEventsAndDenseTriggers {
-  using simple_tags_from_options =
-      tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
-  using simple_tags = tmpl::list<Tags::PreviousTriggerTime>;
+  using simple_tags_from_options = tmpl::list<::Tags::EventsAndDenseTriggers>;
+  using simple_tags = tmpl::list<::Tags::PreviousTriggerTime>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -322,21 +321,21 @@ struct InitializeRunEventsAndDenseTriggers {
 /// AMR change
 ///
 /// Mutates:
-///   - evolution::Tags::EventsAndDenseTriggers
+///   - ::Tags::EventsAndDenseTriggers
 ///   - Tags::PreviousTriggerTime
 ///
 /// For p-refinement:
 ///   - Leaves both items unchanged
 struct ProjectRunEventsAndDenseTriggers
     : tt::ConformsTo<amr::protocols::Projector> {
-  using return_tags = tmpl::list<evolution::Tags::EventsAndDenseTriggers,
-                                 Tags::PreviousTriggerTime>;
+  using return_tags =
+      tmpl::list<::Tags::EventsAndDenseTriggers, ::Tags::PreviousTriggerTime>;
   using argument_tags = tmpl::list<>;
 
   template <size_t Dim>
   static void apply(
       const gsl::not_null<
-          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+          EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
       const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
       const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {
     // do not need to update anything
@@ -345,7 +344,7 @@ struct ProjectRunEventsAndDenseTriggers
   template <typename... Tags>
   static void apply(
       const gsl::not_null<
-          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+          EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
       const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
       const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
     ERROR("h-refinement not implemented yet");
@@ -354,7 +353,7 @@ struct ProjectRunEventsAndDenseTriggers
   template <size_t Dim, typename... Tags>
   static void apply(
       const gsl::not_null<
-          evolution::EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+          EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
       const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
       const std::unordered_map<ElementId<Dim>, tuples::TaggedTuple<Tags...>>&
       /*children_items*/) {

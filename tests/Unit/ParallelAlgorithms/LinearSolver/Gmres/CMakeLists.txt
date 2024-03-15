@@ -15,6 +15,7 @@ target_link_libraries(
   PRIVATE
   Convergence
   DataStructures
+  LinearSolverHelpers
   Logging
   Observer
   ParallelLinearSolver

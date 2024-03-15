@@ -31,15 +31,15 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
-#include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -270,9 +270,9 @@ struct Component {
   using variables_tag = typename metavariables::system::variables_tag;
   using simple_tags_from_options =
       tmpl::push_front<extra_data, Tags::TimeStepId, Tags::TimeStep, Tags::Time,
-                       evolution::Tags::PreviousTriggerTime, variables_tag,
+                       ::Tags::PreviousTriggerTime, variables_tag,
                        Tags::HistoryEvolvedVariables<variables_tag>,
-                       evolution::Tags::EventsAndDenseTriggers,
+                       ::Tags::EventsAndDenseTriggers,
                        domain::Tags::NeighborMesh<1>, domain::Tags::Element<1>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
@@ -361,8 +361,7 @@ void test(const bool time_runs_forward) {
         History history(1);
         history.insert(time_step_id, initial_vars, deriv_vars);
 
-        evolution::EventsAndDenseTriggers::ConstructionType
-            events_and_dense_triggers{};
+        EventsAndDenseTriggers::ConstructionType events_and_dense_triggers{};
         events_and_dense_triggers.reserve(triggers.size());
         for (auto [trigger_time, is_triggered, next_trigger,
                    needs_evolved_variables] : triggers) {
@@ -378,8 +377,7 @@ void test(const bool time_runs_forward) {
               runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
               0, {}, time_step_id, exact_step_size, start_time,
               std::optional<double>{}, stored_vars, std::move(history),
-              evolution::EventsAndDenseTriggers(
-                  std::move(events_and_dense_triggers)),
+              EventsAndDenseTriggers(std::move(events_and_dense_triggers)),
               typename domain::Tags::NeighborMesh<1>::type{},
               Element<1>{ElementId<1>{0}, {}},
               get<tmpl::type_from<decltype(tags_v)>>(initial_extra_data)...);
@@ -714,7 +712,7 @@ struct PostprocessEvolved {
 };
 }  // namespace test_cases
 
-evolution::EventsAndDenseTriggers make_events_and_dense_triggers() {
+EventsAndDenseTriggers make_events_and_dense_triggers() {
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(true, 0, slab.start() + slab.duration() / 2);
   const TimeDelta exact_step_size = slab.duration() / 4;
@@ -724,8 +722,7 @@ evolution::EventsAndDenseTriggers make_events_and_dense_triggers() {
   const double second_trigger = start_time + 0.75 * step_size;
   const double done_time = std::numeric_limits<double>::infinity();
 
-  evolution::EventsAndDenseTriggers::ConstructionType
-      events_and_dense_triggers{};
+  EventsAndDenseTriggers::ConstructionType events_and_dense_triggers{};
   const std::vector<
       std::tuple<double, std::optional<bool>, std::optional<double>, bool>>
       triggers{{step_center, true, done_time, true},
@@ -739,15 +736,13 @@ evolution::EventsAndDenseTriggers make_events_and_dense_triggers() {
          make_vector<std::unique_ptr<Event>>(
              std::make_unique<TestEvent>(needs_evolved_variables))});
   }
-  return evolution::EventsAndDenseTriggers(
-      std::move(events_and_dense_triggers));
+  return EventsAndDenseTriggers(std::move(events_and_dense_triggers));
 }
 
 void test_p_refine() {
-  auto box =
-      db::create<db::AddSimpleTags<evolution::Tags::EventsAndDenseTriggers,
-                                   evolution::Tags::PreviousTriggerTime>>(
-          make_events_and_dense_triggers(), std::optional<double>{});
+  auto box = db::create<db::AddSimpleTags<::Tags::EventsAndDenseTriggers,
+                                          ::Tags::PreviousTriggerTime>>(
+      make_events_and_dense_triggers(), std::optional<double>{});
 
   const Element<1> element{ElementId<1>{0}, DirectionMap<1, Neighbors<1>>{}};
   const Mesh<1> mesh{2, Spectral::Basis::Legendre,
@@ -755,12 +750,12 @@ void test_p_refine() {
   db::mutate_apply<evolution::Actions::ProjectRunEventsAndDenseTriggers>(
       make_not_null(&box), std::make_pair(mesh, element));
 
-  // There is no comparison operator for evolution::EventsAndDenseTriggers
+  // There is no comparison operator for EventsAndDenseTriggers
   // const auto expected_events_and_dense_triggers =
   //     make_events_and_dense_triggers();
-  // CHECK(db::get<evolution::Tags::EventsAndDenseTriggers>(box) ==
+  // CHECK(db::get<::Tags::EventsAndDenseTriggers>(box) ==
   //       expected_events_and_dense_triggers);
-  CHECK(db::get<evolution::Tags::PreviousTriggerTime>(box) == std::nullopt);
+  CHECK(db::get<::Tags::PreviousTriggerTime>(box) == std::nullopt);
 }
 }  // namespace
 

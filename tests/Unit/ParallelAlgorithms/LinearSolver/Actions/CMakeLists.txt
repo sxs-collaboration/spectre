@@ -29,6 +29,7 @@ target_link_libraries(
   DomainCreators
   DomainStructure
   H5
+  LinearSolverHelpers
   Options
   Parallel
   ParallelLinearSolver

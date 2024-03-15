@@ -8,8 +8,8 @@
 #include <pup.h>
 #include <string>
 
-#include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -24,7 +24,8 @@ namespace Tags {
 struct DataBox;
 }  // namespace Tags
 namespace db {
-template <typename TagsList> class DataBox;
+template <typename TagsList>
+class DataBox;
 }  // namespace db
 /// \endcond
 

@@ -19,18 +19,13 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Protocols/ElementRegistrar.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
-
-/// \cond
-namespace evolution::Tags {
-struct EventsAndDenseTriggers;
-}  // namespace evolution::Tags
-/// \endcond
 
 namespace observers {
 namespace detail {
@@ -151,11 +146,10 @@ struct RegisterEventsWithObservers
       triggers_and_events.for_each_event(collect_observations);
     }
 
-    if constexpr (db::tag_is_retrievable_v<
-                      evolution::Tags::EventsAndDenseTriggers,
-                      db::DataBox<DbTagList>>) {
+    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndDenseTriggers,
+                                           db::DataBox<DbTagList>>) {
       const auto& triggers_and_events =
-          db::get<evolution::Tags::EventsAndDenseTriggers>(box);
+          db::get<::Tags::EventsAndDenseTriggers>(box);
       triggers_and_events.for_each_event(collect_observations);
     }
 

@@ -21,6 +21,7 @@ set(INTEGRATION_TEST_LINK_LIBRARIES
   DataStructures
   ErrorHandling
   Informer
+  NonlinearSolverHelpers
   ParallelLinearSolver
   ParallelNonlinearSolver
   )

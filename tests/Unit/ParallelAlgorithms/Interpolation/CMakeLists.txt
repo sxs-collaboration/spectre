@@ -47,6 +47,7 @@ target_link_libraries(
   GrSurfaces
   H5
   Interpolation
+  InterpolationHelpers
   IoTestHelpers
   Logging
   MathFunctions

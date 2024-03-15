@@ -55,9 +55,9 @@ struct Coordinates;
 namespace grmhd::ValenciaDivClean::Tags {
 struct TildeD;
 }  // namespace grmhd::ValenciaDivClean::Tags
-namespace evolution::Tags {
+namespace Tags {
 struct PreviousTriggerTime;
-}  // namespace evolution::Tags
+}  // namespace Tags
 /// \endcond
 
 namespace control_system {
@@ -126,7 +126,7 @@ class BNSEvent : public ::Event {
 
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime,
+      tmpl::list<::Tags::Time, ::Tags::PreviousTriggerTime,
                  ::Events::Tags::ObserverMesh<3>,
                  ::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                         Frame::Inertial>,

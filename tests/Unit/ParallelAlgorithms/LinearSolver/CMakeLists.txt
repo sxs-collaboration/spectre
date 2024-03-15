@@ -23,6 +23,7 @@ set(INTEGRATION_TEST_LINK_LIBRARIES
   DataStructures
   ErrorHandling
   Informer
+  LinearSolverHelpers
   Observer
   Parallel
   ParallelLinearSolver

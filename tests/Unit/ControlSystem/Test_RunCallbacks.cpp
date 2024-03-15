@@ -12,7 +12,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
-#include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
@@ -21,6 +20,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -137,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
   // element.
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::Time, evolution::Tags::PreviousTriggerTime,
+                        Tags::Time, ::Tags::PreviousTriggerTime,
                         control_system::TestHelpers::SomeTagOnElement>>(
       Metavariables{}, 1.234, std::optional<double>{}, 5.678);
 

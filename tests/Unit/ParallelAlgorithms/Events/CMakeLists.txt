@@ -23,6 +23,7 @@ target_link_libraries(
   ErrorHandling
   Events
   EventsAndTriggers
+  EventsHelpers
   H5
   Interpolation
   Observer
