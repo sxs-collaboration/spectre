@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace {
@@ -81,6 +82,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
   const Mesh<3> mesh(2, Spectral::Basis::FiniteDifference,
                      Spectral::Quadrature::CellCentered);
 
+  MAKE_GENERATOR(generator);
+
   // Minkowski metric
   Scalar<DataVector> lapse{DataVector{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}};
   Scalar<DataVector> lorentz_factor{
@@ -106,7 +109,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
   // Mesh velocity set to std::null for now
   const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>> mesh_velocity =
       std::nullopt;
+
   // Jacobian set to identity for now
+  InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>
+      inverse_jacobian_inertial_to_fluid = make_with_value<
+          InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>>(lapse,
+                                                                         0.0);
+  inverse_jacobian_inertial_to_fluid.get(0, 0) = 1.0;
+  inverse_jacobian_inertial_to_fluid.get(1, 1) = 1.0;
+  inverse_jacobian_inertial_to_fluid.get(2, 2) = 1.0;
+  inverse_jacobian_inertial_to_fluid.get(3, 3) = 1.0;
+  Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>
+      jacobian_inertial_to_fluid = make_with_value<
+          Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>>(lapse, 0.0);
+  jacobian_inertial_to_fluid.get(0, 0) = 1.0;
+  jacobian_inertial_to_fluid.get(1, 1) = 1.0;
+  jacobian_inertial_to_fluid.get(2, 2) = 1.0;
+  jacobian_inertial_to_fluid.get(3, 3) = 1.0;
+
+  // Logical to inertial inverse jacobian, also identity for now
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       inverse_jacobian =
           make_with_value<InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -131,10 +152,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarlo", "[Unit][Evolution]") {
 
   std::vector<Particles::MonteCarlo::Packet> packets{packet};
   Particles::MonteCarlo::evolve_packets(
-      &packets, 1.5, mesh, mesh_coordinates, lorentz_factor,
-      lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-      d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
-      inverse_jacobian);
+    &packets, &generator, 1.5, mesh, mesh_coordinates, lorentz_factor,
+    lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
+    d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
+    inverse_jacobian, jacobian_inertial_to_fluid,
+    inverse_jacobian_inertial_to_fluid);
+  CHECK(packets[0].species == 2);
   CHECK(packets[0].coordinates.get(0) == 0.5);
   CHECK(packets[0].coordinates.get(1) == -1.0);
   CHECK(packets[0].coordinates.get(2) == -1.0);

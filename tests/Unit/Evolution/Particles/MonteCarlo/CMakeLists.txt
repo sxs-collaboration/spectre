@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_InverseJacobianInertialToFluid.cpp
   Test_EmitPackets.cpp
   Test_Packet.cpp
+  Test_Scattering.cpp
   )
 
 add_test_library(
