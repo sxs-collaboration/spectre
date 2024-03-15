@@ -3263,6 +3263,42 @@ void test_output() {
   remove_whitespace(output_stream);
   remove_whitespace(expected_stream);
   CHECK(output_stream == expected_stream);
+  const auto item_size = box.size_of_items();
+  CHECK(item_size.size() == 5);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag0") == 8);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag1") == 32);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag2") == 24);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag4Compute") ==
+        8);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag5Compute") ==
+        28);
+
+  const auto box_with_ptrs =
+      db::create<db::AddSimpleTags<test_databox_tags::Pointer>,
+                 db::AddComputeTags<test_databox_tags::PointerToCounterCompute,
+                                    test_databox_tags::PointerToSumCompute>>(
+          std::make_unique<int>(3));
+  const auto item_size_ptrs = box_with_ptrs.size_of_items();
+  CHECK(item_size_ptrs.size() == 3);
+  CHECK(item_size_ptrs.at(
+            "(anonymous namespace)::test_databox_tags::Pointer") == 4);
+  CHECK(item_size_ptrs.at(
+            "(anonymous "
+            "namespace)::test_databox_tags::PointerToCounterCompute") == 0);
+  CHECK(item_size_ptrs.at(
+            "(anonymous namespace)::test_databox_tags::PointerToSumCompute") ==
+        0);
+  db::get<test_databox_tags::PointerToSumCompute>(box_with_ptrs);
+  const auto item_size_ptrs_after = box_with_ptrs.size_of_items();
+  CHECK(item_size_ptrs_after.size() == 3);
+  CHECK(item_size_ptrs_after.at(
+            "(anonymous namespace)::test_databox_tags::Pointer") == 4);
+  CHECK(item_size_ptrs_after.at(
+            "(anonymous "
+            "namespace)::test_databox_tags::PointerToCounterCompute") == 4);
+  CHECK(item_size_ptrs_after.at(
+            "(anonymous namespace)::test_databox_tags::PointerToSumCompute") ==
+        4);
 }
 
 void test_exception_safety() {
