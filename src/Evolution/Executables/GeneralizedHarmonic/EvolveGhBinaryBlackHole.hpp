@@ -14,6 +14,7 @@
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
+#include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Size.hpp"
 #include "ControlSystem/Trigger.hpp"
@@ -318,6 +319,7 @@ struct EvolutionMetavars {
   using control_systems =
       tmpl::list<control_system::Systems::Rotation<3, both_horizons>,
                  control_system::Systems::Expansion<2, both_horizons>,
+                 control_system::Systems::Translation<2, both_horizons>,
                  control_system::Systems::Shape<::domain::ObjectLabel::A, 2,
                                                 both_horizons>,
                  control_system::Systems::Shape<::domain::ObjectLabel::B, 2,
