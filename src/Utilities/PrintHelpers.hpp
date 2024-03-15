@@ -10,6 +10,21 @@
 #include <utility>
 #include <vector>
 
+#include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
+
+/// \ingroup UtilitiesGroup
+/// \brief Either streams `value` or the string "UNSTREAMABLE"
+template <typename StreamType, typename T>
+StreamType& print_value(StreamType& os, const T& value) {
+  if constexpr (tt::is_streamable_v<StreamType, T>) {
+    os << value;
+  } else {
+    os << "UNSTREAMABLE";
+  }
+  return os;
+}
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Applies the function f(out, it) to each item from begin to
@@ -42,7 +57,7 @@ void sequence_print_helper(std::ostream& out, ForwardIt begin,
       out, std::move(begin), end,
       [](std::ostream& os,
          const typename std::iterator_traits<ForwardIt>::value_type& it) {
-        os << it;
+        print_value(os, it);
       });
 }
 
@@ -71,7 +86,7 @@ void unordered_print_helper(std::ostream& out, ForwardIt begin,
       out, std::move(begin), end,
       [](std::ostream& os,
          const typename std::iterator_traits<ForwardIt>::value_type& it) {
-        os << it;
+        print_value(os, it);
       });
 }
 /// @}

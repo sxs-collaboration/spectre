@@ -30,13 +30,15 @@
 #include "Utilities/TypeTraits/IsStreamable.hpp"
 
 namespace StdHelpers_detail {
+
 // Helper classes for operator<< for tuples
 template <size_t N>
 struct TuplePrinter {
   template <typename... Args>
   static std::ostream& print(std::ostream& os, const std::tuple<Args...>& t) {
     TuplePrinter<N - 1>::print(os, t);
-    os << "," << std::get<N - 1>(t);
+    os << ",";
+    print_value(os, std::get<N - 1>(t));
     return os;
   }
 };
@@ -45,7 +47,7 @@ template <>
 struct TuplePrinter<1> {
   template <typename... Args>
   static std::ostream& print(std::ostream& os, const std::tuple<Args...>& t) {
-    os << std::get<0>(t);
+    print_value(os, std::get<0>(t));
     return os;
   }
 };
@@ -124,7 +126,11 @@ inline std::ostream& operator<<(std::ostream& os,
       os, begin(m), end(m),
       [](std::ostream& out,
          const typename std::unordered_map<K, V, H>::value_type& value) {
-        out << "[" << value.first << "," << value.second << "]";
+        out << "[";
+        print_value(out, value.first);
+        out << ",";
+        print_value(out, value.second);
+        out << "]";
       });
   return os;
 }
@@ -139,7 +145,11 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
       os, begin(m), end(m),
       [](std::ostream& out,
          const typename std::map<K, V, C>::value_type& value) {
-        out << "[" << value.first << "," << value.second << "]";
+        out << "[";
+        print_value(out, value.first);
+        out << ",";
+        print_value(out, value.second);
+        out << "]";
       });
   return os;
 }
@@ -200,7 +210,12 @@ inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t) {
  */
 template <typename T, typename U>
 inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
-  return os << "(" << t.first << ", " << t.second << ")";
+  os << "(";
+  print_value(os, t.first);
+  os << ", ";
+  print_value(os, t.second);
+  os << ")";
+  return os;
 }
 
 /*!
@@ -211,7 +226,8 @@ template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::optional<T>& t) {
   // Match boost::optional behavior and print "--" when invalid
   if (t.has_value()) {
-    return os << t.value();
+    print_value(os, t.value());
+    return os;
   } else {
     return os << "--";
   }
@@ -241,7 +257,7 @@ inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
       os, begin(m), end(m),
       [](std::ostream& out,
          const typename std::unordered_map<K, V, H>::value_type& value) {
-        out << value.first;
+        print_value(out, value.first);
       });
   return os.str();
 }
@@ -257,7 +273,7 @@ inline std::string keys_of(const std::map<K, V, C>& m) {
       os, begin(m), end(m),
       [](std::ostream& out,
          const typename std::map<K, V, C>::value_type& value) {
-        out << value.first;
+        print_value(out, value.first);
       });
   return os.str();
 }

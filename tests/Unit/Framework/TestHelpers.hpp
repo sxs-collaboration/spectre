@@ -311,6 +311,27 @@ numerical_derivative(const Invocable& function,
          (0.75 / delta) * (function(x_1ahead) - function(x_1behind));
 }
 
+struct NonStreamable {
+  int value{0};
+};
+
+template <>
+struct std::hash<NonStreamable> {
+  std::size_t operator()(const NonStreamable& ns) const {
+    return std::hash<int>{}(ns.value);
+  }
+};
+
+inline bool operator==(const NonStreamable& a, const NonStreamable& b) {
+  return a.value == b.value;
+}
+inline bool operator!=(const NonStreamable& a, const NonStreamable& b) {
+  return not(a == b);
+}
+inline bool operator<(const NonStreamable& a, const NonStreamable& b) {
+  return a.value < b.value;
+}
+
 struct NonCopyable {
   constexpr NonCopyable() = default;
   constexpr NonCopyable(const NonCopyable&) = delete;

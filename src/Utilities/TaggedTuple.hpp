@@ -13,9 +13,8 @@
 
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/PrintHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "Utilities/TypeTraits/IsStreamable.hpp"
 
 /// \cond
 namespace PUP {
@@ -704,11 +703,9 @@ std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
     os << "----------\n";
     os << "Name:  " << pretty_type::get_name<tag>() << "\n";
     os << "Type:  " << pretty_type::get_name<type>() << "\n";
-    if constexpr (tt::is_streamable_v<std::ostringstream, type>) {
-      os << "Value: " << get<tag>(t) << "\n";
-    } else {
-      os << "Value: UNSTREAMABLE\n";
-    }
+    os << "Value: ";
+    print_value(os, get<tag>(t));
+    os << "\n";
   };
   tmpl::for_each<tmpl::list<Tags...>>(print_item);
   return os;
