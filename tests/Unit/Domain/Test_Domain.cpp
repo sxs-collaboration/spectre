@@ -665,6 +665,7 @@ Domain<3> create_serialized_domain() {
       TimeDepOps::ExpansionMapOptions{
           {{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
       TimeDepOps::RotationMapOptions{{0.0, 0.0, 1.5264577062000000e-02}},
+      std::nullopt,
       TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
       TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}};
 
@@ -676,7 +677,8 @@ Domain<3> create_serialized_domain() {
       std::array{x_coord_a, 0.0, 0.0}, std::array{x_coord_b, 0.0, 0.0}};
 
   time_dependent_options.build_maps(centers, inner_outer_radii_A,
-                                    inner_outer_radii_B, outer_radius);
+                                    inner_outer_radii_B, envelope_radius,
+                                    outer_radius);
 
   const size_t number_of_blocks = 44;
 
@@ -692,26 +694,28 @@ Domain<3> create_serialized_domain() {
 
   grid_to_inertial_block_maps[number_of_blocks - 1] =
       time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::None>(
-          false);
+          false, false);
 
   grid_to_inertial_block_maps[0] =
-      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::A>(true);
+      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::A>(true,
+                                                                          true);
   grid_to_distorted_block_maps[0] =
       time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::A>(
           true);
   distorted_to_inertial_block_maps[0] =
       time_dependent_options.distorted_to_inertial_map<domain::ObjectLabel::A>(
-          true);
+          true, true);
 
   const size_t first_block_object_B = 12;
   grid_to_inertial_block_maps[first_block_object_B] =
-      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::B>(true);
+      time_dependent_options.grid_to_inertial_map<domain::ObjectLabel::B>(true,
+                                                                          true);
   grid_to_distorted_block_maps[first_block_object_B] =
       time_dependent_options.grid_to_distorted_map<domain::ObjectLabel::B>(
           true);
   distorted_to_inertial_block_maps[first_block_object_B] =
       time_dependent_options.distorted_to_inertial_map<domain::ObjectLabel::B>(
-          true);
+          true, true);
 
   for (size_t block = 1; block < number_of_blocks - 1; ++block) {
     if (block < 6) {

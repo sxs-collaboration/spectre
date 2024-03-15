@@ -373,7 +373,9 @@ std::string create_option_string(
                    "      AsymptoticVelocityOuterBoundary: -0.1\n"
                    "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
                    "    RotationMap:\n"
-                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"s +
+                   "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+                   "    TranslationMap:\n"
+                   "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.]]\n"s +
                        (excise_A
                             ? "    ShapeMapA:\n"
                               "      LMax: 8\n"
@@ -570,7 +572,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
       *binary_compact_object, with_boundary_conditions, false, times_to_check);
 
   const auto& blocks = domain.blocks();
-  const auto& final_block = blocks[blocks.size() - 1];
+  const auto& final_envelope_block = excise_B ? blocks[33] : blocks[21];
 
   std::unordered_map<std::string, ExcisionSphere<3>>
       expected_excision_spheres{};
@@ -587,7 +589,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   if (with_time_dependence) {
     expected_excision_spheres.at("ExcisionSphereA")
         .inject_time_dependent_maps(
-            final_block.moving_mesh_grid_to_inertial_map().get_clone());
+            final_envelope_block.moving_mesh_grid_to_inertial_map()
+                .get_clone());
   }
   if (excise_B) {
     expected_excision_spheres.emplace(
@@ -603,7 +606,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
     if (with_time_dependence) {
       expected_excision_spheres.at("ExcisionSphereB")
           .inject_time_dependent_maps(
-              final_block.moving_mesh_grid_to_inertial_map().get_clone());
+              final_envelope_block.moving_mesh_grid_to_inertial_map()
+                  .get_clone());
     }
   }
 

@@ -13,6 +13,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/RotScaleTrans.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
@@ -180,6 +181,7 @@ struct TimeDependentMapOptions {
   // Time-dependent maps
   using Expansion = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
   using Rotation = domain::CoordinateMaps::TimeDependent::Rotation<3>;
+  using RotScaleTrans = domain::CoordinateMaps::TimeDependent::RotScaleTrans<3>;
   using Shape = domain::CoordinateMaps::TimeDependent::Shape;
   using Identity = domain::CoordinateMaps::Identity<3>;
 
@@ -196,7 +198,11 @@ struct TimeDependentMapOptions {
                                Rotation>,
       detail::produce_all_maps<Frame::Grid, Frame::Distorted, Shape>,
       detail::produce_all_maps<Frame::Distorted, Frame::Inertial, Expansion,
-                               Rotation>>;
+                               Rotation>,
+      detail::produce_all_maps<Frame::Grid, Frame::Inertial, Shape,
+                               RotScaleTrans>,
+      detail::produce_all_maps<Frame::Distorted, Frame::Inertial,
+                               RotScaleTrans>>;
 
   /// \brief The initial time of the functions of time.
   struct InitialTime {
@@ -259,6 +265,27 @@ struct TimeDependentMapOptions {
     std::array<double, 3> initial_angular_velocity{};
   };
 
+  // \brief Options for the Translation Map, the outer radius is always set to
+  // the outer boundary of the Domain, so there's no option needed for outer
+  // boundary.
+  struct TranslationMapOptions {
+    using type = Options::Auto<TranslationMapOptions, Options::AutoLabel::None>;
+    static std::string name() { return "TranslationMap"; }
+    static constexpr Options::String help = {
+        "Options for a time-dependent translation map. Specify 'None' to not "
+        "use this map."};
+
+    struct InitialValues {
+      using type = std::array<std::array<double, 3>, 2>;
+      static constexpr Options::String help = {
+          "Initial position and velocity."};
+    };
+
+    using options = tmpl::list<InitialValues>;
+
+    std::array<std::array<double, 3>, 2> initial_values{};
+  };
+
   // We use a type alias here instead of defining the ShapeMapOptions struct
   // because there appears to be a bug in clang-10. If the definition of
   // ShapeMapOptions is here inside TimeDependentMapOptions, on clang-10 there
@@ -273,7 +300,7 @@ struct TimeDependentMapOptions {
 
   using options =
       tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
-                 ShapeMapOptions<domain::ObjectLabel::A>,
+                 TranslationMapOptions, ShapeMapOptions<domain::ObjectLabel::A>,
                  ShapeMapOptions<domain::ObjectLabel::B>>;
   static constexpr Options::String help{
       "The options for all time dependent maps in a binary compact object "
@@ -285,6 +312,7 @@ struct TimeDependentMapOptions {
       double initial_time,
       std::optional<ExpansionMapOptions> expansion_map_options,
       std::optional<RotationMapOptions> rotation_options,
+      std::optional<TranslationMapOptions> translation_options,
       std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A,
       std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B,
       const Options::Context& context = {});
@@ -328,7 +356,7 @@ struct TimeDependentMapOptions {
           object_A_radii,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
           object_B_radii,
-      double domain_outer_radius);
+      double envelope_radius, double domain_outer_radius);
 
   /*!
    * \brief Check whether options were specified in the constructor for the
@@ -360,7 +388,8 @@ struct TimeDependentMapOptions {
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
-      const IncludeDistortedMapType& include_distorted_map) const;
+      const IncludeDistortedMapType& include_distorted_map,
+      bool use_rigid_map) const;
 
   /*!
    * \brief This will construct the maps from the `Frame::Grid` to the
@@ -388,7 +417,8 @@ struct TimeDependentMapOptions {
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      const IncludeDistortedMapType& include_distorted_map) const;
+      const IncludeDistortedMapType& include_distorted_map,
+      bool use_rigid_map) const;
 
   // Names are public because they need to be used when constructing maps in the
   // BCO domain creators themselves
@@ -396,6 +426,7 @@ struct TimeDependentMapOptions {
   inline static const std::string expansion_outer_boundary_name{
       "ExpansionOuterBoundary"};
   inline static const std::string rotation_name{"Rotation"};
+  inline static const std::string translation_name{"Translation"};
   inline static const std::array<std::string, 2> size_names{{"SizeA", "SizeB"}};
   inline static const std::array<std::string, 2> shape_names{
       {"ShapeA", "ShapeB"}};
@@ -406,12 +437,14 @@ struct TimeDependentMapOptions {
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<ExpansionMapOptions> expansion_map_options_{};
   std::optional<RotationMapOptions> rotation_options_{};
+  std::optional<TranslationMapOptions> translation_options_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B_{};
 
   // Maps
   std::optional<Expansion> expansion_map_{};
   std::optional<Rotation> rotation_map_{};
+  std::optional<std::pair<RotScaleTrans, RotScaleTrans>> rot_scale_trans_map_{};
   using ShapeMapType =
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
                           std::array<std::array<std::optional<Shape>, 6>, 2>>;
