@@ -3146,6 +3146,15 @@ void test_output() {
   remove_whitespace(output_stream);
   remove_whitespace(expected_stream);
   CHECK(output_stream == expected_stream);
+  const auto item_size = box.size_of_items();
+  CHECK(item_size.size() == 5);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag0") == 8);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag1") == 32);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag2") == 24);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag4Compute") ==
+        9);
+  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag5Compute") ==
+        29);
 }
 
 void test_exception_safety() {
