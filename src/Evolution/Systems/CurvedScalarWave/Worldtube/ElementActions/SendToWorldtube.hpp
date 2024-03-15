@@ -76,8 +76,6 @@ struct SendToWorldtube {
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>>;
 
-  using inbox_tags = tmpl::list<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>;
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -87,105 +85,83 @@ struct SendToWorldtube {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& puncture_field =
-        db::get<Worldtube::Tags::PunctureField<Dim>>(box);
-    if (puncture_field.has_value()) {
-      const auto& element_id = db::get<domain::Tags::Element<Dim>>(box).id();
-      const auto& excision_sphere = db::get<Tags::ExcisionSphere<Dim>>(box);
-      const auto direction = excision_sphere.abutting_direction(element_id);
-      ASSERT(direction.has_value(), "Should be abutting");
-      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-      const auto face_mesh = mesh.slice_away(direction->dimension());
-      const size_t face_size = face_mesh.number_of_grid_points();
-
-      Variables<tmpl::push_back<tags_to_slice_to_face, ::Tags::TempScalar<0>>>
-          vars_on_face(face_size);
-
-      tmpl::for_each<tags_to_slice_to_face>(
-          [&box, &vars_on_face, &mesh, &direction](auto tag_to_slice_v) {
-            using tag_to_slice = typename decltype(tag_to_slice_v)::type;
-            data_on_slice(make_not_null(&get<tag_to_slice>(vars_on_face)),
-                          db::get<tag_to_slice>(box), mesh.extents(),
-                          direction.value().dimension(),
-                          index_to_slice_at(mesh.extents(), direction.value()));
-          });
-      const auto& face_lapse = get<gr::Tags::Lapse<DataVector>>(vars_on_face);
-      const auto& face_shift =
-          get<gr::Tags::Shift<DataVector, Dim>>(vars_on_face);
-      auto& face_inv_jacobian =
-          get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                            Frame::Inertial>>(vars_on_face);
-      const auto& face_psi = get<CurvedScalarWave::Tags::Psi>(vars_on_face);
-      const auto& face_pi = get<CurvedScalarWave::Tags::Pi>(vars_on_face);
-      const auto& face_phi =
-          get<CurvedScalarWave::Tags::Phi<Dim>>(vars_on_face);
-      // re-use allocations
-      Scalar<DataVector>& area_element =
-          get<::Tags::TempScalar<0>>(vars_on_face);
-      euclidean_area_element(make_not_null(&area_element), face_inv_jacobian,
-                             direction.value());
-      // re-use allocations
-      DataVector& psi_regular_times_det = get<0, 0>(face_inv_jacobian);
-      DataVector& dt_psi_regular_times_det = get<0, 1>(face_inv_jacobian);
-      // the regular field is the full numerical field minus the puncture field
-      psi_regular_times_det =
-          get(face_psi) -
-          get(get<CurvedScalarWave::Tags::Psi>(puncture_field.value()));
-
-      // transform Pi to dt Psi. This is equivalent to the evolution equation
-      // for dt Psi but we need to calculate it again because boundary
-      // corrections from the DG scheme are already applied to the stored value.
-      dt_psi_regular_times_det =
-          -get(face_lapse) * get(face_pi) +
-          get(dot_product(face_shift, face_phi)) -
-          get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(
-              puncture_field.value()));
-
-      psi_regular_times_det *= get(area_element);
-      dt_psi_regular_times_det *= get(area_element);
-      const auto& centered_face_coords =
-          db::get<Tags::FaceCoordinates<Dim, Frame::Inertial, true>>(box);
-      ASSERT(centered_face_coords.has_value(),
-             "Should be an abutting element here, but face coords are not "
-             "calculated!");
-      const auto& x = get<0>(centered_face_coords.value());
-      const auto& y = get<1>(centered_face_coords.value());
-      const auto& z = get<2>(centered_face_coords.value());
-
-      const size_t order = db::get<Worldtube::Tags::ExpansionOrder>(box);
-      const size_t num_modes = (order + 1) * (order + 1);
-      Variables<tags_to_send> Ylm_coefs(num_modes);
-      // re-use allocations
-      auto& theta = get<0, 2>(face_inv_jacobian);
-      auto& phi = get<1, 0>(face_inv_jacobian);
-      auto& spherical_harmonic = get<1, 1>(face_inv_jacobian);
-
-      theta = atan2(hypot(x, y), z);
-      phi = atan2(y, x);
-      size_t index = 0;
-      // project onto spherical harmonics
-      for (size_t l = 0; l <= order; ++l) {
-        for (int m = -l; m <= static_cast<int>(l); ++m, ++index) {
-          spherical_harmonic = ylm::real_spherical_harmonic(theta, phi, l, m);
-          get(get<CurvedScalarWave::Tags::Psi>(Ylm_coefs)).at(index) =
-              definite_integral(psi_regular_times_det * spherical_harmonic,
-                                face_mesh);
-          get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(Ylm_coefs))
-              .at(index) = definite_integral(
-              dt_psi_regular_times_det * spherical_harmonic, face_mesh);
-        }
-      }
-      ASSERT(index == num_modes,
-             "Internal indexing error. "
-                 << num_modes << " modes should have been calculated but "
-                 << index << " modes were computed.");
-
-      auto& worldtube_component = Parallel::get_parallel_component<
-          Worldtube::WorldtubeSingleton<Metavariables>>(cache);
-      Parallel::receive_data<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>(
-          worldtube_component, db::get<::Tags::TimeStepId>(box),
-          std::make_pair(element_id, std::move(Ylm_coefs)));
+    const auto& element_id = db::get<domain::Tags::Element<Dim>>(box).id();
+    const auto& excision_sphere = db::get<Tags::ExcisionSphere<Dim>>(box);
+    const auto direction = excision_sphere.abutting_direction(element_id);
+    if (not direction.has_value()) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    const auto face_mesh = mesh.slice_away(direction->dimension());
+    const size_t face_size = face_mesh.number_of_grid_points();
+
+    Variables<tmpl::list<
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::TempScalar<0>, ::Tags::TempScalar<1>, ::Tags::TempScalar<2>>>
+        temporaries(face_size);
+    auto& psi_regular_times_det =
+        get(get<CurvedScalarWave::Tags::Psi>(temporaries));
+    auto& dt_psi_regular_times_det =
+        get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(temporaries));
+    auto& theta = get(get<::Tags::TempScalar<0>>(temporaries));
+    auto& phi = get(get<::Tags::TempScalar<1>>(temporaries));
+    auto& spherical_harmonic = get(get<::Tags::TempScalar<2>>(temporaries));
+    const auto& face_quantities = db::get<Tags::FaceQuantities>(box).value();
+    const auto& psi_numerical_face =
+        get<CurvedScalarWave::Tags::Psi>(face_quantities);
+    const auto& dt_psi_numerical_face =
+        get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(face_quantities);
+    const auto& area_element =
+        get<gr::surfaces::Tags::AreaElement<DataVector>>(face_quantities);
+    const auto& puncture_field =
+        db::get<Worldtube::Tags::PunctureField<Dim>>(box).value();
+    const auto& psi_puncture = get<CurvedScalarWave::Tags::Psi>(puncture_field);
+    const auto& dt_psi_puncture =
+        get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(puncture_field);
+
+    psi_regular_times_det =
+        (get(psi_numerical_face) - get(psi_puncture)) * get(area_element);
+    dt_psi_regular_times_det =
+        (get(dt_psi_numerical_face) - get(dt_psi_puncture)) * get(area_element);
+    const auto& centered_face_coords =
+        db::get<Tags::FaceCoordinates<Dim, Frame::Inertial, true>>(box);
+    ASSERT(centered_face_coords.has_value(),
+           "Should be an abutting element here, but face coords are not "
+           "calculated!");
+    const auto& x = get<0>(centered_face_coords.value());
+    const auto& y = get<1>(centered_face_coords.value());
+    const auto& z = get<2>(centered_face_coords.value());
+
+    const size_t order = db::get<Worldtube::Tags::ExpansionOrder>(box);
+    const size_t num_modes = (order + 1) * (order + 1);
+    Variables<tags_to_send> Ylm_coefs(num_modes);
+    theta = atan2(hypot(x, y), z);
+    phi = atan2(y, x);
+    size_t index = 0;
+    // project onto spherical harmonics
+    for (size_t l = 0; l <= order; ++l) {
+      // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+      for (int m = -l; m <= static_cast<int>(l); ++m, ++index) {
+        spherical_harmonic = ylm::real_spherical_harmonic(theta, phi, l, m);
+        get(get<CurvedScalarWave::Tags::Psi>(Ylm_coefs)).at(index) =
+            definite_integral(psi_regular_times_det * spherical_harmonic,
+                              face_mesh);
+        get(get<::Tags::dt<CurvedScalarWave::Tags::Psi>>(Ylm_coefs)).at(index) =
+            definite_integral(dt_psi_regular_times_det * spherical_harmonic,
+                              face_mesh);
+      }
+    }
+    ASSERT(index == num_modes, "Internal indexing error. "
+                                   << num_modes
+                                   << " modes should have been calculated but "
+                                   << index << " modes were computed.");
+
+    auto& worldtube_component = Parallel::get_parallel_component<
+        Worldtube::WorldtubeSingleton<Metavariables>>(cache);
+    Parallel::receive_data<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>(
+        worldtube_component, db::get<::Tags::TimeStepId>(box),
+        std::make_pair(element_id, std::move(Ylm_coefs)));
+
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

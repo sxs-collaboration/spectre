@@ -28,6 +28,7 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -468,6 +469,48 @@ struct FaceCoordinatesCompute : FaceCoordinates<Dim, Frame, Centered>,
       const Mesh<Dim>& mesh,
       const std::array<tnsr::I<double, Dim, ::Frame::Inertial>, 2>&
           particle_position_velocity);
+};
+/// @}
+
+/// @{
+/*!
+ * \brief The value of the scalar field and its time derivative on element faces
+ * forming the worldtube boundary, as well as the Euclidean area element of the
+ * face.
+ *
+ * \details If the element does not abut the worldtube, this will be
+ * `std::nullopt`.
+ */
+struct FaceQuantities : db::SimpleTag {
+  using type = std::optional<Variables<tmpl::list<
+      CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+      gr::surfaces::Tags::AreaElement<DataVector>>>>;
+};
+
+struct FaceQuantitiesCompute : FaceQuantities, db::ComputeTag {
+  static constexpr size_t Dim = 3;
+  using base = FaceQuantities;
+  using return_type = std::optional<Variables<tmpl::list<
+      CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+      gr::surfaces::Tags::AreaElement<DataVector>>>>;
+  using tags_to_slice_to_face =
+      tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                 CurvedScalarWave::Tags::Phi<Dim>,
+                 gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>>;
+  using argument_tags = tmpl::flatten<
+      tmpl::list<tags_to_slice_to_face, ExcisionSphere<Dim>,
+                 domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>>>;
+
+  static void function(
+      gsl::not_null<return_type*> result, const Scalar<DataVector>& psi,
+      const Scalar<DataVector>& pi, const tnsr::i<DataVector, Dim>& phi,
+      const tnsr::I<DataVector, Dim>& shift, const Scalar<DataVector>& lapse,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
+      const ::ExcisionSphere<Dim>& excision_sphere, const Element<Dim>& element,
+      const Mesh<Dim>& mesh);
 };
 /// @}
 
