@@ -15,11 +15,13 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateAcceleration.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmToStf.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -126,7 +128,28 @@ struct ReceiveElementData {
         ylm::ylm_to_stf_0(dt_psi_ylm_l0), std::move(psi_stf_l1),
         std::move(dt_psi_stf_l1));
     inbox.erase(time_step_id);
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    if (db::get<Tags::CurrentIteration>(box) <
+        db::get<Tags::MaxIterations>(box) - 1) {
+      db::mutate<Tags::CurrentIteration>(
+          [](const gsl::not_null<size_t*> current_iteration) {
+            *current_iteration += 1;
+          },
+          make_not_null(&box));
+      // still iterating, go to `IterateAccelerationTerms`
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+
+    } else {
+      db::mutate<Tags::CurrentIteration>(
+          [](const gsl::not_null<size_t*> current_iteration) {
+            *current_iteration = 0;
+          },
+          make_not_null(&box));
+      // done iterating
+      return {
+          Parallel::AlgorithmExecution::Continue,
+          tmpl::index_of<ActionList,
+                         ::Actions::MutateApply<UpdateAcceleration>>::value};
+    }
   }
 };
 }  // namespace CurvedScalarWave::Worldtube::Actions

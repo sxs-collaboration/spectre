@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <random>
 #include <unordered_map>
 
@@ -24,10 +25,14 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/IteratePunctureField.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/SendToWorldtube.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/IterateAccelerationTerms.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateAcceleration.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonChare.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -38,6 +43,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
@@ -68,12 +74,16 @@ struct MockElementArray {
                   domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                 Frame::Inertial>,
                   typename CurvedScalarWave::System<Dim>::variables_tag,
-                  ::Tags::TimeStepId, Tags::ParticlePositionVelocity<Dim>>,
+                  ::Tags::TimeStepId, Tags::ParticlePositionVelocity<Dim>,
+                  Tags::CurrentIteration>,
               db::AddComputeTags<
                   Tags::FaceCoordinatesCompute<Dim, Frame::Inertial, true>,
                   Tags::FaceQuantitiesCompute>>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::SendToWorldtube>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<Actions::SendToWorldtube, Actions::IteratePunctureField,
+                     CurvedScalarWave::Worldtube::Actions::
+                         ReceiveWorldtubeData>>>;
 };
 template <typename Metavariables>
 struct MockWorldtubeSingleton {
@@ -81,15 +91,25 @@ struct MockWorldtubeSingleton {
   static constexpr size_t Dim = metavariables::volume_dim;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>>;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              db::AddSimpleTags<Tags::ElementFacesGridCoordinates<Dim>,
-                                ::Tags::TimeStepId>,
+              db::AddSimpleTags<
+                  Tags::ElementFacesGridCoordinates<Dim>, ::Tags::TimeStepId,
+                  Tags::CurrentIteration, Tags::GeodesicAcceleration<Dim>,
+                  CurvedScalarWave::Worldtube::Tags::ParticlePositionVelocity<
+                      Dim>,
+                  Tags::BackgroundQuantities<Dim>, dt_variables_tag>,
               db::AddComputeTags<>>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::ReceiveElementData>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<Actions::ReceiveElementData,
+                     Actions::IterateAccelerationTerms<Metavariables>,
+                     ::Actions::MutateApply<UpdateAcceleration>>>>;
   using component_being_mocked = WorldtubeSingleton<Metavariables>;
 };
 
@@ -99,11 +119,18 @@ struct MockMetavariables {
 
   using component_list = tmpl::list<MockWorldtubeSingleton<MockMetavariables>,
                                     MockElementArray<MockMetavariables>>;
+  using dg_element_array = MockElementArray<MockMetavariables>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Dim>, Tags::ExcisionSphere<Dim>,
-                 Tags::ExpansionOrder>;
+                 Tags::ExpansionOrder, Tags::MaxIterations, Tags::Charge,
+                 Tags::Mass>;
 };
 
+// This test checks that `SendToWorldtube` integrates the regular field on the
+// element surfaces abutting the worldtube and sends this data to the worldtube
+// which reduces it in `ReceiveElementData`. There are several other actions in
+// in the action lists which are needed for the test to compile but are never
+// used. The iterative scheme is test in Test_Iterations.cpp.
 SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(generator);
@@ -136,9 +163,16 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
 
     const auto& initial_refinements = shell.initial_refinement_levels();
     const auto& initial_extents = shell.initial_extents();
+    // self force and therefore iterative scheme is turned off
     tuples::TaggedTuple<domain::Tags::Domain<Dim>, Tags::ExcisionSphere<Dim>,
-                        Tags::ExpansionOrder>
-        tuple_of_opts{shell.create_domain(), excision_sphere, expansion_order};
+                        Tags::ExpansionOrder, Tags::MaxIterations, Tags::Charge,
+                        Tags::Mass>
+        tuple_of_opts{shell.create_domain(),
+                      excision_sphere,
+                      expansion_order,
+                      static_cast<size_t>(0),
+                      0.1,
+                      std::nullopt};
     ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
     const auto element_ids = initial_element_ids(initial_refinements);
     const auto& blocks = shell_domain.blocks();
@@ -163,7 +197,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
             make_not_null(&generator), dist, 0.);
     const Time dummy_time{{1., 2.}, {1, 2}};
     const TimeStepId dummy_time_step_id{true, 123, dummy_time};
-
+    // the particle is at the center of the excision sphere which is the
+    // origin in the Shell domain
+    tnsr::I<double, Dim> particle_position(0.);
+    auto particle_velocity = particle_position;
+    const std::array<tnsr::I<double, Dim>, 2> particle_pos_vel{
+        {std::move(particle_position), std::move(particle_velocity)}};
     for (const auto& element_id : element_ids) {
       const auto& my_block = blocks.at(element_id.block_id());
       auto element = domain::Initialization::create_initial_element(
@@ -199,19 +238,13 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
           is_abutting ? std::make_optional<puncture_field_type>(puncture_field)
                       : std::nullopt;
 
-      // the particle is at the center of the excision sphere which is the
-      // origin in the Shell domain
-      tnsr::I<double, Dim> particle_position(0.);
-      auto particle_velocity = particle_position;
       ActionTesting::emplace_array_component_and_initialize<element_chare>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           element_id,
           {std::move(element), std::move(mesh), inertial_coords,
            std::move(optional_puncture_field), std::move(shift),
            std::move(lapse), std::move(inertial_inv_jacobian), evolved_vars,
-           dummy_time_step_id,
-           std::array<tnsr::I<double, Dim>, 2>{
-               {std::move(particle_position), std::move(particle_velocity)}}});
+           dummy_time_step_id, particle_pos_vel, static_cast<size_t>(0)});
     }
 
     std::unordered_map<ElementId<Dim>, tnsr::I<DataVector, Dim, Frame::Grid>>
@@ -220,9 +253,18 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
         make_not_null(&element_faces_grid_coords), initial_extents,
         initial_refinements, quadrature, shell_domain, excision_sphere);
 
+    // these are all unused
+    tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
+                        gr::Tags::InverseSpacetimeMetric<double, Dim>,
+                        Tags::TimeDilationFactor>
+        background_quantities{};
+    MockWorldtubeSingleton<MockMetavariables<Dim>>::dt_variables_tag::type
+        dt_variables{};
+    tnsr::I<double, Dim> geodesic_acc{};
     ActionTesting::emplace_singleton_component_and_initialize<worldtube_chare>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
-        {element_faces_grid_coords, dummy_time_step_id});
+        {element_faces_grid_coords, dummy_time_step_id, static_cast<size_t>(0),
+         geodesic_acc, particle_pos_vel, background_quantities, dt_variables});
 
     ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 

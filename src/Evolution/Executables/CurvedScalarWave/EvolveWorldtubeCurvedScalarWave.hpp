@@ -38,6 +38,8 @@
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/InitializeConstraintGammas.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/InitializeCurrentIteration.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/IteratePunctureField.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/SendToWorldtube.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
@@ -243,6 +245,7 @@ struct EvolutionMetavars {
   using step_actions = tmpl::flatten<tmpl::list<
       CurvedScalarWave::Actions::CalculateGrVars<system, true>,
       CurvedScalarWave::Worldtube::Actions::SendToWorldtube,
+      CurvedScalarWave::Worldtube::Actions::IteratePunctureField,
       CurvedScalarWave::Worldtube::Actions::ReceiveWorldtubeData,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
@@ -281,6 +284,8 @@ struct EvolutionMetavars {
       Initialization::Actions::NonconservativeSystem<system>,
       CurvedScalarWave::Actions::CalculateGrVars<system, false>,
       Initialization::Actions::AddSimpleTags<
+          CurvedScalarWave::Worldtube::Initialization::
+              InitializeCurrentIteration,
           CurvedScalarWave::Worldtube::Initialization::
               InitializeConstraintDampingGammas<volume_dim>,
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<

@@ -68,17 +68,21 @@ struct ReceiveWorldtubeData {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& puncture_field = db::get<Tags::PunctureField<Dim>>(box);
-    if (puncture_field.has_value()) {
+    const auto& element_id = db::get<domain::Tags::Element<Dim>>(box).id();
+    const auto& excision_sphere = db::get<Tags::ExcisionSphere<Dim>>(box);
+    const auto direction = excision_sphere.abutting_direction(element_id);
+    if (direction.has_value()) {
       const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
       auto& inbox = get<Tags::RegularFieldInbox<Dim>>(inboxes);
       if (not inbox.count(time_step_id)) {
         return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }
-      const auto& element_id = db::get<domain::Tags::Element<Dim>>(box).id();
-      const auto& excision_sphere = db::get<Tags::ExcisionSphere<Dim>>(box);
-      const auto direction = excision_sphere.abutting_direction(element_id);
-      ASSERT(direction.has_value(), "This element should abut the worldtube!");
+      const auto& puncture_field =
+          db::get<Tags::MaxIterations>(box) > 1
+              ? db::get<Tags::IteratedPunctureField<Dim>>(box)
+              : db::get<Tags::PunctureField<Dim>>(box);
+      ASSERT(puncture_field.has_value(),
+             "The puncture field should be initialized!");
 
       const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
       const auto face_mesh = mesh.slice_away(direction->dimension());

@@ -13,6 +13,7 @@ spectre_target_headers(
   HEADERS
   InitializeConstraintGammas.hpp
   InitializeCurrentIteration.hpp
+  IteratePunctureField.hpp
   ReceiveWorldtubeData.hpp
   SendToWorldtube.hpp
 )
