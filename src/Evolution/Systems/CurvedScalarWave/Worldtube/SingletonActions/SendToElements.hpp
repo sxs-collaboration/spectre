@@ -68,19 +68,20 @@ struct SendToElements {
         get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                  Frame::Inertial>>(box);
     const size_t num_coefs = order == 0 ? 1 : 4;
-    for (const auto& [element_id, _] : faces_grid_coords) {
-      Variables<tags_to_send> vars_to_send(num_coefs);
-      get(get<psi_tag>(vars_to_send))[0] = get(psi_l0);
-      get(get<dt_psi_tag>(vars_to_send))[0] = get(dt_psi_l0);
-      if (order > 0) {
-        for (size_t i = 0; i < Dim; ++i) {
-          get(get<psi_tag>(vars_to_send))[i + 1] = psi_l1.get(i);
-          get(get<dt_psi_tag>(vars_to_send))[i + 1] = dt_psi_l1.get(i);
-        }
+    Variables<tags_to_send> vars_to_send(num_coefs);
+    get(get<psi_tag>(vars_to_send))[0] = get(psi_l0);
+    get(get<dt_psi_tag>(vars_to_send))[0] = get(dt_psi_l0);
+    if (order > 0) {
+      for (size_t i = 0; i < Dim; ++i) {
+        get(get<psi_tag>(vars_to_send))[i + 1] = psi_l1.get(i);
+        get(get<dt_psi_tag>(vars_to_send))[i + 1] = dt_psi_l1.get(i);
       }
+    }
+    for (const auto& [element_id, _] : faces_grid_coords) {
+      auto vars_to_send_copy = vars_to_send;
       Parallel::receive_data<Tags::RegularFieldInbox<Dim>>(
           element_proxies[element_id], db::get<::Tags::TimeStepId>(box),
-          std::move(vars_to_send));
+          std::move(vars_to_send_copy));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
