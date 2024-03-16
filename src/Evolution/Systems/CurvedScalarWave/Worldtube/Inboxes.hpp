@@ -94,4 +94,15 @@ struct RegularFieldInbox
     return ss.str();
   }
 };
+
+/*!
+ * \brief Inbox of the element chares that contains the current iteration of the
+ * acceleration of the particle.
+ */
+template <size_t Dim>
+struct SelfForceInbox : Parallel::InboxInserters::Value<SelfForceInbox<Dim>> {
+  using temporal_id = TimeStepId;
+  using type = std::map<temporal_id, Scalar<DataVector>>;
+};
+
 }  // namespace CurvedScalarWave::Worldtube::Tags
