@@ -94,4 +94,28 @@ struct RegularFieldInbox
     return ss.str();
   }
 };
+
+/*!
+ * \brief Inbox of the element chares that contains the current iteration of the
+ * acceleration of the particle.
+ */
+template <size_t Dim>
+struct SelfForceInbox : Parallel::InboxInserters::Value<SelfForceInbox<Dim>> {
+  using temporal_id = TimeStepId;
+  using type = std::map<temporal_id, Scalar<DataVector>>;
+    static std::string output_inbox(const type& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "SelfForceInbox:\n";
+    // We don't really care about the variables, just the times
+    for (const auto& [current_time_step_id, self_force_data] : inbox) {
+      (void)self_force_data;
+      ss << pad << " Time: " << current_time_step_id << "\n";
+    }
+    return ss.str();
+  }
+};
+
 }  // namespace CurvedScalarWave::Worldtube::Tags
