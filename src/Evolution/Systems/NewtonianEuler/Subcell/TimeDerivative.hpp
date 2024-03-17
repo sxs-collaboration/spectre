@@ -231,16 +231,14 @@ struct TimeDerivative {
         [&num_pts, &boundary_corrections, &subcell_mesh, &one_over_delta_xi,
          &cell_centered_logical_to_grid_inv_jacobian =
              db::get<evolution::dg::subcell::fd::Tags::
-                         InverseJacobianLogicalToGrid<Dim>>(
-                 *box)]<size_t ThermodynamicDim>(
+                         InverseJacobianLogicalToGrid<Dim>>(*box)](
             const auto dt_vars_ptr, const Scalar<DataVector>& mass_density_cons,
             const tnsr::I<DataVector, Dim>& momentum_density,
             const Scalar<DataVector>& energy_density,
             const tnsr::I<DataVector, Dim>& velocity,
             const Scalar<DataVector>& pressure,
             const Scalar<DataVector>& specific_internal_energy,
-            const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-                eos,
+            const EquationsOfState::EquationOfState<false, 2>& eos,
             const tnsr::I<DataVector, Dim>& coords, const double time,
             const Sources::Source<Dim>& source) {
           dt_vars_ptr->initialize(num_pts, 0.0);
