@@ -31,15 +31,14 @@ namespace EquationsOfState {
  * The equation of state takes the form
  *
  * \f[
- * p = p (T, rho, Y_e) = p(0, rho, Y_e= Y_{e, \beta})
+ * p = p (\rho , T, Y_e) = p(\rho, 0, Y_e= Y_{e, \beta})
  * \f]
  *
  * where \f$\rho\f$ is the rest mass density, \f$T\f$  the
- * temperatur , and \f$Y_e\f$ is the electron fraction are not
- * used, and therefore this evaluating this EoS at any arbtirary
+ * temperature , and \f$Y_e\f$ the electron fraction. The temperature and
+ * electron fraction are not used, so evaluating this EoS at any arbtirary
  * temeperature or electron fraction is equivalent to evaluating it at
- * temperature 0 and in beta equalibrium
- *
+ * zero temperature and in beta equalibrium.
  */
 template <typename ColdEquilEos>
 class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
