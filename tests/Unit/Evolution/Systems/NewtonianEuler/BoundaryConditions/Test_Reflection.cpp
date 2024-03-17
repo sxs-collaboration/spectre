@@ -52,9 +52,9 @@ void test() {
               ::Tags::Flux<NewtonianEuler::Tags::EnergyDensity,
                            tmpl::size_t<Dim>, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
-              NewtonianEuler::Tags::Velocity<DataVector, Dim>>,
+              hydro::Tags::SpatialVelocity<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<
-              NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>{
+              hydro::Tags::SpecificInternalEnergy<DataVector>>>{
           "error", "mass_density_cons", "momentum_density", "energy_density",
           "flux_mass_density", "flux_momentum_density", "flux_energy_density",
           "velocity", "specific_internal_energy"},

@@ -42,7 +42,8 @@ struct InternalEnergyDensityCompute : InternalEnergyDensity<DataType>,
   using base = InternalEnergyDensity<DataType>;
 
   using argument_tags =
-      tmpl::list<MassDensity<DataType>, SpecificInternalEnergy<DataType>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   using return_type = Scalar<DataType>;
 

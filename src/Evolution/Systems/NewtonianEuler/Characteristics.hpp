@@ -13,16 +13,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"          // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SoundSpeed
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SpecificInternalEnergy
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare hydro::Tags::EquationOfState
 
 /// \cond
 class DataVector;
@@ -155,7 +148,8 @@ template <size_t Dim>
 struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
   using base = CharacteristicSpeeds<Dim>;
   using argument_tags =
-      tmpl::list<Velocity<DataVector, Dim>, SoundSpeed<DataVector>,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 SoundSpeed<DataVector>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   using return_type = std::array<DataVector, Dim + 2>;
@@ -176,7 +170,8 @@ template <size_t Dim>
 struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
                                            db::ComputeTag {
   using argument_tags =
-      tmpl::list<Tags::Velocity<DataVector, Dim>, Tags::SoundSpeed<DataVector>>;
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 Tags::SoundSpeed<DataVector>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,

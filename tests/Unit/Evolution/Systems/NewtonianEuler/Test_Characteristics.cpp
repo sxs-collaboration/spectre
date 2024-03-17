@@ -46,7 +46,7 @@ void test_compute_item_in_databox(const tnsr::I<DataVector, Dim>& velocity,
       "CharacteristicSpeeds");
   const auto box = db::create<
       db::AddSimpleTags<
-          NewtonianEuler::Tags::Velocity<DataVector, Dim>,
+          hydro::Tags::SpatialVelocity<DataVector, Dim>,
           NewtonianEuler::Tags::SoundSpeed<DataVector>,
           ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
       db::AddComputeTags<

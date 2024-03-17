@@ -11,21 +11,19 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
-#include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 /// \endcond
 
@@ -205,24 +203,26 @@ class IsentropicVortex : public evolution::initial_data::InitialData,
   /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  auto variables(tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
+  auto variables(tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
                  const IntermediateVariables<DataType>& vars) const
-      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
-  auto variables(tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-                 const IntermediateVariables<DataType>& vars) const
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
+  auto variables(
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/,
+      const IntermediateVariables<DataType>& vars) const
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>;
 
   template <typename DataType>
-  auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType>& vars) const
-      -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+  auto variables(
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+      const IntermediateVariables<DataType>& vars) const
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
-  auto variables(tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+  auto variables(tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
                  const IntermediateVariables<DataType>& vars) const
-      -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
   /// @}
 
   // Intermediate variables needed to compute the primitives

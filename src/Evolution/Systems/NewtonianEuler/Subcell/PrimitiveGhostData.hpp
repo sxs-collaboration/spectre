@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/VariablesTag.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -30,11 +30,11 @@ namespace NewtonianEuler::subcell {
 template <size_t Dim>
 class PrimitiveGhostVariables {
  private:
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   using prim_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;

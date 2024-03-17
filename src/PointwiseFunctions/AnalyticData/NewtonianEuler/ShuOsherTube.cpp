@@ -86,9 +86,10 @@ bool operator!=(const ShuOsherTube& lhs, const ShuOsherTube& rhs) {
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::MassDensity<DataType>> ShuOsherTube::variables(
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   auto mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
     const double x_s = get_element(get<0>(x), s);
@@ -100,10 +101,10 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> ShuOsherTube::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, 1, Frame::Inertial>>
-ShuOsherTube::variables(
-    const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/) const {
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 1, Frame::Inertial>>
+ShuOsherTube::variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
+                        tmpl::list<hydro::Tags::SpatialVelocity<
+                            DataType, 1, Frame::Inertial>> /*meta*/) const {
   auto velocity =
       make_with_value<tnsr::I<DataType, 1, Frame::Inertial>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -115,9 +116,9 @@ ShuOsherTube::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::Pressure<DataType>> ShuOsherTube::variables(
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
     const double x_s = get_element(get<0>(x), s);
@@ -128,15 +129,15 @@ tuples::TaggedTuple<Tags::Pressure<DataType>> ShuOsherTube::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
-      get<Tags::MassDensity<DataType>>(
-          variables(x, tmpl::list<Tags::MassDensity<DataType>>{})),
-      get<Tags::Pressure<DataType>>(
-          variables(x, tmpl::list<Tags::Pressure<DataType>>{})));
+      get<hydro::Tags::RestMassDensity<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -150,8 +151,8 @@ ShuOsherTube::variables(
           tmpl::list<TAG(data) < DTYPE(data)>>) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
-                        (Tags::MassDensity, Tags::Pressure,
-                         Tags::SpecificInternalEnergy))
+                        (hydro::Tags::RestMassDensity, hydro::Tags::Pressure,
+                         hydro::Tags::SpecificInternalEnergy))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
@@ -162,7 +163,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
           const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1), (double, DataVector),
-                        (Tags::Velocity))
+                        (hydro::Tags::SpatialVelocity))
 
 #undef DIM
 #undef DTYPE

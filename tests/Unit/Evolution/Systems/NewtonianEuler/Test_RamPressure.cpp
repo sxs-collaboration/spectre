@@ -31,12 +31,12 @@ void test_in_databox(const Scalar<DataType>& mass_density,
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::RamPressureCompute<DataType, Dim>>("RamPressure");
 
-  const auto box = db::create<
-      db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
-                        NewtonianEuler::Tags::Velocity<DataType, Dim>>,
-      db::AddComputeTags<
-          NewtonianEuler::Tags::RamPressureCompute<DataType, Dim>>>(
-      mass_density, velocity);
+  const auto box =
+      db::create<db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
+                                   hydro::Tags::SpatialVelocity<DataType, Dim>>,
+                 db::AddComputeTags<
+                     NewtonianEuler::Tags::RamPressureCompute<DataType, Dim>>>(
+          mass_density, velocity);
 
   const auto expected_ram_pressure =
       NewtonianEuler::ram_pressure(mass_density, velocity);

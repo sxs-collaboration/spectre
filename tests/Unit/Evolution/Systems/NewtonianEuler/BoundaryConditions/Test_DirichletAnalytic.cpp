@@ -118,8 +118,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       NewtonianEuler::BoundaryConditions::DirichletAnalytic<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianEuler::System<Dim,
-                             NewtonianEuler::Solutions::SmoothFlow<Dim>>,
+      NewtonianEuler::System<Dim, NewtonianEuler::Solutions::SmoothFlow<Dim>>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertSmoothFlow<Dim>>>(
       make_not_null(&gen),
@@ -144,9 +143,9 @@ void test() {
                            tmpl::size_t<Dim>, Frame::Inertial>>,
 
           helpers::Tags::PythonFunctionName<
-              NewtonianEuler::Tags::Velocity<DataVector, Dim>>,
+              hydro::Tags::SpatialVelocity<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<
-              NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>{
+              hydro::Tags::SpecificInternalEnergy<DataVector>>>{
           "soln_error", "soln_mass_density", "soln_momentum_density",
           "soln_energy_density", "soln_flux_mass_density",
           "soln_flux_momentum_density", "soln_flux_energy_density",
@@ -166,8 +165,7 @@ void test() {
         NewtonianEuler::BoundaryConditions::DirichletAnalytic<Dim>,
         NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
         NewtonianEuler::System<
-            Dim,
-            NewtonianEuler::AnalyticData::KhInstability<Dim>>,
+            Dim, NewtonianEuler::AnalyticData::KhInstability<Dim>>,
         tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
         tmpl::list<ConvertKhInstability<Dim>>>(
         make_not_null(&gen),
@@ -192,9 +190,9 @@ void test() {
                              tmpl::size_t<Dim>, Frame::Inertial>>,
 
             helpers::Tags::PythonFunctionName<
-                NewtonianEuler::Tags::Velocity<DataVector, Dim>>,
+                hydro::Tags::SpatialVelocity<DataVector, Dim>>,
             helpers::Tags::PythonFunctionName<
-                NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>>{
+                hydro::Tags::SpecificInternalEnergy<DataVector>>>{
             "data_error", "data_mass_density", "data_momentum_density",
             "data_energy_density", "data_flux_mass_density",
             "data_flux_momentum_density", "data_flux_energy_density",

@@ -39,7 +39,8 @@ struct MachNumberCompute : MachNumber<DataType>, db::ComputeTag {
   using base = MachNumber<DataType>;
 
   using argument_tags =
-      tmpl::list<Velocity<DataType, Dim, Fr>, SoundSpeed<DataType>>;
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim, Fr>,
+                 SoundSpeed<DataType>>;
 
   using return_type = Scalar<DataType>;
 

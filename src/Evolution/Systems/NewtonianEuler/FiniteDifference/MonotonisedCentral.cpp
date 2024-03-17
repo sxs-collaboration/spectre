@@ -112,17 +112,17 @@ void MonotonisedCentralPrim<Dim>::reconstruct_fd_neighbor(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define TAGS_LIST(data)                                                   \
-  tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<DIM(data)>,     \
-             Tags::EnergyDensity, Tags::MassDensity<DataVector>,          \
-             Tags::Velocity<DataVector, DIM(data)>,                       \
-             Tags::SpecificInternalEnergy<DataVector>,                    \
-             Tags::Pressure<DataVector>,                                  \
-             ::Tags::Flux<Tags::MassDensityCons, tmpl::size_t<DIM(data)>, \
-                          Frame::Inertial>,                               \
-             ::Tags::Flux<Tags::MomentumDensity<DIM(data)>,               \
-                          tmpl::size_t<DIM(data)>, Frame::Inertial>,      \
-             ::Tags::Flux<Tags::EnergyDensity, tmpl::size_t<DIM(data)>,   \
+#define TAGS_LIST(data)                                                     \
+  tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<DIM(data)>,       \
+             Tags::EnergyDensity, hydro::Tags::RestMassDensity<DataVector>, \
+             hydro::Tags::SpatialVelocity<DataVector, DIM(data)>,           \
+             hydro::Tags::SpecificInternalEnergy<DataVector>,               \
+             hydro::Tags::Pressure<DataVector>,                             \
+             ::Tags::Flux<Tags::MassDensityCons, tmpl::size_t<DIM(data)>,   \
+                          Frame::Inertial>,                                 \
+             ::Tags::Flux<Tags::MomentumDensity<DIM(data)>,                 \
+                          tmpl::size_t<DIM(data)>, Frame::Inertial>,        \
+             ::Tags::Flux<Tags::EnergyDensity, tmpl::size_t<DIM(data)>,     \
                           Frame::Inertial>>
 
 #define INSTANTIATION(r, data) template class MonotonisedCentralPrim<DIM(data)>;

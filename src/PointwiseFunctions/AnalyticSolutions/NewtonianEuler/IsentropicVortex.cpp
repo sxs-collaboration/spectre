@@ -106,9 +106,9 @@ IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::MassDensity<DataType>>
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const {
   const double adiabatic_index_minus_one = adiabatic_index_ - 1.0;
   return Scalar<DataType>(pow(1.0 - 0.5 * adiabatic_index_minus_one *
@@ -118,9 +118,9 @@ IsentropicVortex<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>
 IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       vars.y_tilde, 0.0);
@@ -138,23 +138,24 @@ IsentropicVortex<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const {
   return equation_of_state_.specific_internal_energy_from_density(
-      get<Tags::MassDensity<DataType>>(
-          variables(tmpl::list<Tags::MassDensity<DataType>>{}, vars)));
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars)));
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Pressure<DataType>> IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
+IsentropicVortex<Dim>::variables(
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const {
   return equation_of_state_.pressure_from_density(
-      get<Tags::MassDensity<DataType>>(
-          variables(tmpl::list<Tags::MassDensity<DataType>>{}, vars)));
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars)));
 }
 
 template <size_t Dim>
@@ -207,8 +208,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_MEMBERS, (2, 3), (double, DataVector))
           const IntermediateVariables<DTYPE(data)>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
-                        (Tags::MassDensity, Tags::SpecificInternalEnergy,
-                         Tags::Pressure))
+                        (hydro::Tags::RestMassDensity,
+                         hydro::Tags::SpecificInternalEnergy,
+                         hydro::Tags::Pressure))
 
 #define INSTANTIATE_VELOCITY(_, data)                                \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)> > \
@@ -217,7 +219,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
           const IntermediateVariables<DTYPE(data)>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
-                        (Tags::Velocity))
+                        (hydro::Tags::SpatialVelocity))
 
 #undef DIM
 #undef DTYPE

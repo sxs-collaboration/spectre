@@ -192,9 +192,9 @@ std::array<double, 3> test(const size_t num_dg_pts) {
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>::type
       neighbor_data{};
   using prims_to_reconstruct_tags =
-      tmpl::list<NewtonianEuler::Tags::MassDensity<DataVector>,
-                 NewtonianEuler::Tags::Velocity<DataVector, dim>,
-                 NewtonianEuler::Tags::Pressure<DataVector>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, dim>,
+                 hydro::Tags::Pressure<DataVector>>;
   for (const Direction<dim>& direction : Direction<dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=

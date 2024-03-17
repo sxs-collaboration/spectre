@@ -6,15 +6,9 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::EnergyDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensityCons
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MomentumDensity
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SpecificInternalEnergy
-// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
 
 /// \cond
 namespace gsl {
@@ -49,8 +43,9 @@ struct ConservativeFromPrimitive {
                  Tags::EnergyDensity>;
 
   using argument_tags =
-      tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
-                 Tags::SpecificInternalEnergy<DataVector>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>>;
 
   static void apply(gsl::not_null<Scalar<DataVector>*> mass_density_cons,
                     gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,

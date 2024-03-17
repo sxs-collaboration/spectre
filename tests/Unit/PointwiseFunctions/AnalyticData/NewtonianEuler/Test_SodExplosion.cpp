@@ -28,10 +28,10 @@ struct SodExplosionProxy : NewtonianEuler::AnalyticData::SodExplosion<Dim> {
 
   template <typename DataType>
   using variables_tags =
-      tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Inertial>,
-                 NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
-                 NewtonianEuler::Tags::Pressure<DataType>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>>;
 
   tuples::tagged_tuple_from_typelist<variables_tags<DataVector>>
   primitive_variables(

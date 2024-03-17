@@ -22,17 +22,18 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 
 namespace {
 template <size_t Dim>
 void test_subcells(
     const gsl::not_null<std::mt19937*> gen,
     const gsl::not_null<std::uniform_real_distribution<>*> dist) {
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
   using prim_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;
   using PrimVars = Variables<prim_tags>;
@@ -63,11 +64,11 @@ void test_subcells(
 template <size_t Dim>
 void test_dg(const gsl::not_null<std::mt19937*> gen,
              const gsl::not_null<std::uniform_real_distribution<>*> dist) {
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
   using prim_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;
   using PrimVars = Variables<prim_tags>;

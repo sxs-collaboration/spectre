@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -54,7 +55,8 @@ struct TimeDerivativeTerms {
   using SourceTerm = typename InitialDataType::source_term_type;
   using argument_tags_flux =
       tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
-                 Tags::Velocity<DataVector, Dim>, Tags::Pressure<DataVector>>;
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::Pressure<DataVector>>;
 
  public:
   using temporary_tags = tmpl::list<EnthalpyDensity>;

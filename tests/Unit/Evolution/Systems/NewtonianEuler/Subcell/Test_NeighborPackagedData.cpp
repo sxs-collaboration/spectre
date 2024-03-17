@@ -169,9 +169,9 @@ double test(const size_t num_dg_pts) {
   typename evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>::type
       neighbor_data{};
   using prims_to_reconstruct_tags =
-      tmpl::list<NewtonianEuler::Tags::MassDensity<DataVector>,
-                 NewtonianEuler::Tags::Velocity<DataVector, Dim>,
-                 NewtonianEuler::Tags::Pressure<DataVector>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::Pressure<DataVector>>;
   using prim_tags = typename system::primitive_variables_tag::tags_list;
   for (const Direction<Dim>& direction : Direction<Dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);

@@ -7,7 +7,6 @@
 
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/TMPL.hpp"
 

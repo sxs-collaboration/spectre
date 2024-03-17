@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -299,28 +300,30 @@ class RiemannProblem : public evolution::initial_data::InitialData,
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
-                 double t, tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-                 const Wave& left, const Wave& right) const
-      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
-                 double t, tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-                 const Wave& left, const Wave& right) const
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
-                 double t, tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-                 const Wave& left, const Wave& right) const
-      -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
                  double t,
-                 tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
                  const Wave& left, const Wave& right) const
-      -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, double t,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/,
+      const Wave& left, const Wave& right) const
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
+                 double t, tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
+                 const Wave& left, const Wave& right) const
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, double t,
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+      const Wave& left, const Wave& right) const
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
   /// @}
 
   // Any of the two waves propagating on each side of the contact discontinuity.

@@ -11,7 +11,8 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -125,23 +126,23 @@ class LaneEmdenStar : public evolution::initial_data::InitialData,
   Scalar<DataType> precompute_mass_density(const tnsr::I<DataType, 3>& x) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<Tags::MassDensity<DataType>> variables(
-      tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
+  tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>> variables(
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
       const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<Tags::Velocity<DataType, 3>> variables(
-      tmpl::list<Tags::Velocity<DataType, 3>> /*meta*/,
+  tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>> variables(
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
       const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<Tags::Pressure<DataType>> variables(
-      tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+  tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> variables(
+      tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
       const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
-  tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>> variables(
-      tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+  tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>> variables(
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
       const Scalar<DataType>& mass_density) const;
 
   friend bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs);

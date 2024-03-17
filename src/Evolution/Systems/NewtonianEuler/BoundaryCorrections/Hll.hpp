@@ -119,8 +119,8 @@ class Hll final : public BoundaryCorrection<Dim> {
                  LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_primitive_tags =
-      tmpl::list<NewtonianEuler::Tags::Velocity<DataVector, Dim>,
-                 NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>;
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::EquationOfStateBase>;
 

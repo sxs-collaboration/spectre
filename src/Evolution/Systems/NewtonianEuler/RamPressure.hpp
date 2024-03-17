@@ -40,7 +40,8 @@ struct RamPressureCompute : RamPressure<DataType, Dim, Fr>, db::ComputeTag {
   using base = RamPressure<DataType, Dim, Fr>;
 
   using argument_tags =
-      tmpl::list<MassDensity<DataType>, Velocity<DataType, Dim, Fr>>;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim, Fr>>;
 
   using return_type = tnsr::II<DataType, Dim, Fr>;
 

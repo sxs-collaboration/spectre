@@ -48,11 +48,11 @@ namespace NewtonianEuler::subcell {
 template <size_t Dim>
 struct ResizeAndComputePrims {
  private:
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
  public:
   using return_tags = tmpl::list<::Tags::Variables<

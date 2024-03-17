@@ -42,11 +42,11 @@ void test(const TestThis test_this) {
   using EnergyDensity = NewtonianEuler::Tags::EnergyDensity;
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
 
-  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
-  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using MassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using Velocity = hydro::Tags::SpatialVelocity<DataVector, Dim>;
   using SpecificInternalEnergy =
-      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
+      hydro::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
