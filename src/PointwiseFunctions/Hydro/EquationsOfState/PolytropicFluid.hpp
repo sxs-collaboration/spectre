@@ -78,6 +78,9 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   std::unique_ptr<EquationOfState<IsRelativistic, 3>> promote_to_3d_eos()
       const override;
 
+  std::unique_ptr<EquationOfState<IsRelativistic, 2>> promote_to_2d_eos()
+      const override;
+
   bool is_equal(const EquationOfState<IsRelativistic, 1>& rhs) const override;
 
   bool operator==(const PolytropicFluid<IsRelativistic>& rhs) const;

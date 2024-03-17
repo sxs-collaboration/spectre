@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "NumericalAlgorithms/Spectral/Clenshaw.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
@@ -285,8 +286,13 @@ std::unique_ptr<EquationOfState<true, 1>> Enthalpy<LowDensityEoS>::get_clone()
 template <typename LowDensityEoS>
 std::unique_ptr<EquationOfState<true, 3>>
 Enthalpy<LowDensityEoS>::promote_to_3d_eos() const {
-  return std::make_unique<Barotropic3D<Enthalpy<LowDensityEoS>>>(
-      Barotropic3D(*this));
+  return std::make_unique<Barotropic3D<Enthalpy<LowDensityEoS>>>(*this);
+}
+
+template <typename LowDensityEoS>
+std::unique_ptr<EquationOfState<true, 2>>
+Enthalpy<LowDensityEoS>::promote_to_2d_eos() const {
+  return std::make_unique<Barotropic2D<Enthalpy<LowDensityEoS>>>(*this);
 }
 
 template <typename LowDensityEoS>

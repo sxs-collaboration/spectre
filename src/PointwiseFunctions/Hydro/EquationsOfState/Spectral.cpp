@@ -9,7 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
-
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -81,7 +81,11 @@ std::unique_ptr<EquationOfState<true, 1>> Spectral::get_clone() const {
 }
 
 std::unique_ptr<EquationOfState<true, 3>> Spectral::promote_to_3d_eos() const {
-  return std::make_unique<Barotropic3D<Spectral>>(Barotropic3D(*this));
+  return std::make_unique<Barotropic3D<Spectral>>(*this);
+}
+
+std::unique_ptr<EquationOfState<true, 2>> Spectral::promote_to_2d_eos() const {
+  return std::make_unique<Barotropic2D<Spectral>>(*this);
 }
 
 bool Spectral::operator==(const Spectral& rhs) const {

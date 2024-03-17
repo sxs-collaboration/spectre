@@ -25,7 +25,7 @@
 namespace EquationsOfState {
 /*!
  * \ingroup EquationsOfStateGroup
- * \brief A 3D equation of state representing a barotropic fluid.
+ * \brief A 2D equation of state representing a barotropic fluid.
  *
  *
  * The equation of state takes the form
@@ -40,55 +40,56 @@ namespace EquationsOfState {
  * temeperature or electron fraction is equivalent to evaluating it at
  * zero temperature and in beta equalibrium.
  */
-template <typename ColdEquilEos>
-class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
+template <typename ColdEos>
+class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
  public:
-  static constexpr size_t thermodynamic_dim = 3;
-  static constexpr bool is_relativistic = ColdEquilEos::is_relativistic;
+  static constexpr size_t thermodynamic_dim = 2;
+  static constexpr bool is_relativistic = ColdEos::is_relativistic;
 
   static std::string name() {
-    return "Barotropic3D(" + pretty_type::name<ColdEquilEos>() + ")";
+    return "Barotropic2D(" + pretty_type::name<ColdEos>() + ")";
   }
   static constexpr Options::String help = {
-      "An 3D EoS which is independent of electron fraction and temperature. "
+      "A 2D EoS which is independent of electron fraction and temperature. "
       "Contains an underlying 1D EoS which is dependent only "
       "on rest mass density."};
   struct UnderlyingEos {
-    using type = ColdEquilEos;
-    static std::string name() {
-      return pretty_type::short_name<ColdEquilEos>();
-    }
+    using type = ColdEos;
+    static std::string name() { return pretty_type::short_name<ColdEos>(); }
     static constexpr Options::String help{
-        "The underlying Eos which is being represented as a "
-        "3D Eos.  Must be a 1D EoS"};
+        "The underlying EoS which is being represented as a 2D EoS.  Must be a "
+        "1D EoS"};
   };
 
   using options = tmpl::list<UnderlyingEos>;
 
-  Barotropic3D() = default;
-  Barotropic3D(const Barotropic3D&) = default;
-  Barotropic3D& operator=(const Barotropic3D&) = default;
-  Barotropic3D(Barotropic3D&&) = default;
-  Barotropic3D& operator=(Barotropic3D&&) = default;
-  ~Barotropic3D() override = default;
+  Barotropic2D() = default;
+  Barotropic2D(const Barotropic2D&) = default;
+  Barotropic2D& operator=(const Barotropic2D&) = default;
+  Barotropic2D(Barotropic2D&&) = default;
+  Barotropic2D& operator=(Barotropic2D&&) = default;
+  ~Barotropic2D() override = default;
 
-  explicit Barotropic3D(const ColdEquilEos& underlying_eos)
+  explicit Barotropic2D(const ColdEos& underlying_eos)
       : underlying_eos_(underlying_eos){};
 
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Barotropic3D, 3)
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Barotropic2D, 2)
 
-  std::unique_ptr<EquationOfState<ColdEquilEos::is_relativistic, 3>> get_clone()
+  std::unique_ptr<EquationOfState<ColdEos::is_relativistic, 2>> get_clone()
       const override;
 
-  bool is_equal(const EquationOfState<ColdEquilEos::is_relativistic, 3>& rhs)
-      const override;
+  std::unique_ptr<EquationOfState<ColdEos::is_relativistic, 3>>
+  promote_to_3d_eos() const override;
+
+  bool is_equal(
+      const EquationOfState<ColdEos::is_relativistic, 2>& rhs) const override;
 
   /// \brief Returns `true` if the EOS is barotropic
   bool is_barotropic() const override { return true; }
 
-  bool operator==(const Barotropic3D<ColdEquilEos>& rhs) const;
+  bool operator==(const Barotropic2D<ColdEos>& rhs) const;
 
-  bool operator!=(const Barotropic3D<ColdEquilEos>& rhs) const;
+  bool operator!=(const Barotropic2D<ColdEos>& rhs) const;
   /// @{
   /*!
    * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
@@ -96,7 +97,7 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
    */
   Scalar<double> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<double>& rest_mass_density,
-      const Scalar<double>& temperature) const {
+      const Scalar<double>& temperature) const override {
     return underlying_eos_
         .equilibrium_electron_fraction_from_density_temperature(
             rest_mass_density, temperature);
@@ -104,17 +105,15 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
 
   Scalar<DataVector> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<DataVector>& rest_mass_density,
-      const Scalar<DataVector>& temperature) const {
+      const Scalar<DataVector>& temperature) const override {
     return underlying_eos_
         .equilibrium_electron_fraction_from_density_temperature(
             rest_mass_density, temperature);
   }
   /// @}
-  //
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EquationOfState<ColdEquilEos::is_relativistic, 3>),
-      Barotropic3D);
+      SINGLE_ARG(EquationOfState<ColdEos::is_relativistic, 2>), Barotropic2D);
 
   /// The lower bound of the electron fraction that is valid for this EOS
   double electron_fraction_lower_bound() const override { return 0.0; }
@@ -143,8 +142,7 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$ and electron fraction \f$Y_e\f$
   double specific_internal_energy_lower_bound(
-      const double rest_mass_density,
-      const double /*electron_fraction*/) const override {
+      const double rest_mass_density) const override {
     return underlying_eos_.specific_internal_energy_lower_bound(
         rest_mass_density);
   }
@@ -152,8 +150,7 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_upper_bound(
-      const double rest_mass_density,
-      const double /*electron_fraction*/) const override {
+      const double rest_mass_density) const override {
     return underlying_eos_.specific_internal_energy_upper_bound(
         rest_mass_density);
   }
@@ -167,11 +164,12 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   double baryon_mass() const override { return underlying_eos_.baryon_mass(); }
 
  private:
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(3)
-  ColdEquilEos underlying_eos_;
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
+  ColdEos underlying_eos_;
 };
 /// \cond
-template <typename ColdEquilEos>
-PUP::able::PUP_ID EquationsOfState::Barotropic3D<ColdEquilEos>::my_PUP_ID = 0;
+template <typename ColdEos>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID EquationsOfState::Barotropic2D<ColdEos>::my_PUP_ID = 0;
 /// \endcond
 }  // namespace EquationsOfState
