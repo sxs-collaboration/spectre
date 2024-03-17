@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AccelerationTermsOrder0.cpp
+  AccelerationTermsOrder1.cpp
   KerrSchildDerivatives.cpp
   Tags.cpp
   PunctureField.cpp
