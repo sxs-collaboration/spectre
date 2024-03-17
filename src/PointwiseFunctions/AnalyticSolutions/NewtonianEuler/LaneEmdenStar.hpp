@@ -12,6 +12,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -23,8 +24,7 @@ class er;  // IWYU pragma: keep
 
 // IWYU pragma: no_include <pup.h>
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 /*!
  * \brief A static spherically symmetric star in Newtonian gravity
@@ -44,7 +44,8 @@ namespace Solutions {
  * and the mass is \f$M = 4 \pi^2 \alpha^3 \rho_c\f$,
  * where \f$\alpha = \sqrt{\kappa / (2 \pi)}\f$ and \f$G=1\f$.
  */
-class LaneEmdenStar : public MarkAsAnalyticSolution {
+class LaneEmdenStar : public evolution::initial_data::InitialData,
+                      public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
   using source_term_type = Sources::LaneEmdenGravitationalField;
@@ -78,7 +79,16 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
   LaneEmdenStar& operator=(const LaneEmdenStar& /*rhs*/) = default;
   LaneEmdenStar(LaneEmdenStar&& /*rhs*/) = default;
   LaneEmdenStar& operator=(LaneEmdenStar&& /*rhs*/) = default;
-  ~LaneEmdenStar() = default;
+  ~LaneEmdenStar() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit LaneEmdenStar(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(LaneEmdenStar);
+  /// \endcond
 
   LaneEmdenStar(double central_mass_density, double polytropic_constant);
 
@@ -107,8 +117,8 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
     return source_term_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   template <typename DataType>
@@ -144,5 +154,4 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
 
 bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs);
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions

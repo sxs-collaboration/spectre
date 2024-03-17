@@ -264,9 +264,23 @@ class NumericInitialData : public evolution::initial_data::InitialData {
                   Scalar<double>(local_rest_mass_density),
                   Scalar<double>(get(*specific_internal_energy)[i])));
         } else {
-          ERROR(
-              "Only 1d & 2d EOSes implemented for numerical initial data right "
-              "now");
+          // Loaded the electron fraction previously.
+          get(*specific_internal_energy)[i] =
+              get(equation_of_state
+                      .specific_internal_energy_from_density_and_temperature(
+                          Scalar<double>(local_rest_mass_density),
+                          Scalar<double>(0.),
+                          Scalar<double>(get(*electron_fraction)[i])));
+          get(*pressure)[i] =
+              get(equation_of_state.pressure_from_density_and_energy(
+                  Scalar<double>(local_rest_mass_density),
+                  Scalar<double>(get(*specific_internal_energy)[i]),
+                  Scalar<double>(get(*electron_fraction)[i])));
+          get(*temperature)[i] =
+              get(equation_of_state.temperature_from_density_and_energy(
+                  Scalar<double>(local_rest_mass_density),
+                  Scalar<double>(get(*specific_internal_energy)[i]),
+                  Scalar<double>(get(*electron_fraction)[i])));
         }
       }
     }
@@ -369,7 +383,7 @@ struct ReadNumericInitialData {
  * through the DataBox, so it should run after GR initial data has been loaded.
  *
  * \requires This action also requires an equation of state, which is retrieved
- * from the DataBox as `hydro::Tags::EquationOfStateBase`.
+ * from the DataBox as `hydro::Tags::GrmhdEquationOfState`.
  */
 struct SetNumericInitialData {
   static constexpr size_t Dim = 3;
@@ -397,7 +411,7 @@ struct SetNumericInitialData {
     const auto& inv_spatial_metric =
         db::get<gr::Tags::InverseSpatialMetric<DataVector, Dim>>(box);
     const auto& equation_of_state =
-        db::get<hydro::Tags::EquationOfStateBase>(box);
+        db::get<hydro::Tags::GrmhdEquationOfState>(box);
 
     db::mutate<hydro::Tags::RestMassDensity<DataVector>,
                hydro::Tags::ElectronFraction<DataVector>,

@@ -53,7 +53,22 @@ KhInstability<Dim>::KhInstability(
 }
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+KhInstability<Dim>::get_clone() const {
+  return std::make_unique<KhInstability>(*this);
+}
+
+template <size_t Dim>
+KhInstability<Dim>::KhInstability(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg) {}
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID KhInstability<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
 void KhInstability<Dim>::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
   p | adiabatic_index_;
   p | strip_bimedian_height_;
   p | strip_half_thickness_;

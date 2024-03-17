@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -58,7 +59,8 @@ namespace NewtonianEuler::AnalyticData {
  *
  * With these values the usual final time is 1.8.
  */
-class ShuOsherTube : public MarkAsAnalyticData {
+class ShuOsherTube : public evolution::initial_data::InitialData,
+                     public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
   using source_term_type = Sources::NoSource;
@@ -121,11 +123,20 @@ class ShuOsherTube : public MarkAsAnalyticData {
                double pressure_l, double velocity_r, double pressure_r,
                double epsilon, double lambda);
   ShuOsherTube() = default;
-  ShuOsherTube(const ShuOsherTube& /*rhs*/) = delete;
-  ShuOsherTube& operator=(const ShuOsherTube& /*rhs*/) = delete;
+  ShuOsherTube(const ShuOsherTube& /*rhs*/) = default;
+  ShuOsherTube& operator=(const ShuOsherTube& /*rhs*/) = default;
   ShuOsherTube(ShuOsherTube&& /*rhs*/) = default;
   ShuOsherTube& operator=(ShuOsherTube&& /*rhs*/) = default;
-  ~ShuOsherTube() = default;
+  ~ShuOsherTube() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit ShuOsherTube(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(ShuOsherTube);
+  /// \endcond
 
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
@@ -138,8 +149,8 @@ class ShuOsherTube : public MarkAsAnalyticData {
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   template <typename DataType>

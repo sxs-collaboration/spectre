@@ -122,7 +122,7 @@ struct NeighborPackagedData {
         using dg_package_data_argument_tags = fd::tags_list_for_reconstruct;
 
         const auto& element = db::get<domain::Tags::Element<3>>(box);
-        const auto& eos = get<hydro::Tags::EquationOfStateBase>(box);
+        const auto& eos = get<hydro::Tags::GrmhdEquationOfState>(box);
 
         using dg_package_field_tags =
             typename DerivedCorrection::dg_package_field_tags;

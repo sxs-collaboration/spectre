@@ -30,7 +30,18 @@ LaneEmdenStar::LaneEmdenStar(const double central_mass_density,
          "polytropic_constant = " << polytropic_constant);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> LaneEmdenStar::get_clone()
+    const {
+  return std::make_unique<LaneEmdenStar>(*this);
+}
+
+LaneEmdenStar::LaneEmdenStar(CkMigrateMessage* msg) : InitialData(msg) {}
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID LaneEmdenStar::my_PUP_ID = 0;
+
 void LaneEmdenStar::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | central_mass_density_;
   p | polytropic_constant_;
   p | equation_of_state_;

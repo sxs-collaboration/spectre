@@ -144,9 +144,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<3>>,
-                 hydro::Tags::EquationOfStateBase>;
+                 hydro::Tags::GrmhdEquationOfState>;
 
-  using volume_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;
+  using volume_tags = tmpl::list<hydro::Tags::GrmhdEquationOfState>;
 
   using return_type = std::array<DataVector, 9>;
 

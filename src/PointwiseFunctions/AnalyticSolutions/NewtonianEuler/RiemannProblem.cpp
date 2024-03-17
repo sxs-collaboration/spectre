@@ -159,7 +159,22 @@ RiemannProblem<Dim>::RiemannProblem(
 }
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+RiemannProblem<Dim>::get_clone() const {
+  return std::make_unique<RiemannProblem>(*this);
+}
+
+template <size_t Dim>
+RiemannProblem<Dim>::RiemannProblem(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg) {}
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID RiemannProblem<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
 void RiemannProblem<Dim>::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
   p | adiabatic_index_;
   p | initial_position_;
   p | left_initial_data_;

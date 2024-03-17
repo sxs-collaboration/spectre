@@ -313,7 +313,7 @@ struct SetInitialData {
  * start.
  *
  * \requires This action requires an equation of state, which is retrieved from
- * the DataBox as `hydro::Tags::EquationOfStateBase`.
+ * the DataBox as `hydro::Tags::GrmhdEquationOfState`.
  */
 struct ReceiveNumericInitialData {
   static constexpr size_t Dim = 3;
@@ -358,7 +358,7 @@ struct ReceiveNumericInitialData {
                                                 Frame::Inertial>>(box));
     }();
     const auto& equation_of_state =
-        db::get<hydro::Tags::EquationOfStateBase>(box);
+        db::get<hydro::Tags::GrmhdEquationOfState>(box);
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,

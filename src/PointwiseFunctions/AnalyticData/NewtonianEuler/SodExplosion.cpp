@@ -60,7 +60,22 @@ SodExplosion<Dim>::SodExplosion(const double initial_radius,
 }
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+SodExplosion<Dim>::get_clone() const {
+  return std::make_unique<SodExplosion>(*this);
+}
+
+template <size_t Dim>
+SodExplosion<Dim>::SodExplosion(CkMigrateMessage* msg)
+    : evolution::initial_data::InitialData(msg) {}
+
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID SodExplosion<Dim>::my_PUP_ID = 0;
+
+template <size_t Dim>
 void SodExplosion<Dim>::pup(PUP::er& p) {
+  evolution::initial_data::InitialData::pup(p);
   p | initial_radius_;
   p | inner_mass_density_;
   p | inner_pressure_;

@@ -207,7 +207,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(cons_vars),
         get<grmhd::ValenciaDivClean::Tags::TildePhi>(cons_vars), spatial_metric,
         inv_spatial_metric, sqrt_det_spatial_metric,
-        db::get<hydro::Tags::EquationOfStateBase>(box),
+        db::get<hydro::Tags::GrmhdEquationOfState>(box),
         primitive_from_conservative_options);
   }
   CHECK_VARIABLES_APPROX(db::get<prim_tag>(box), prim_vars);

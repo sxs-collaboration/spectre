@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -30,8 +31,7 @@ class er;  // IWYU pragma: keep
 
 // IWYU pragma: no_forward_declare NewtonianEuler::Solutions::IsentropicVortex::IntermediateVariables
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 /*!
  * \brief Newtonian isentropic vortex in Cartesian coordinates
@@ -89,7 +89,8 @@ namespace Solutions {
  * \f$\epsilon \cos{z}\f$.
  */
 template <size_t Dim>
-class IsentropicVortex : public MarkAsAnalyticSolution {
+class IsentropicVortex : public evolution::initial_data::InitialData,
+                         public MarkAsAnalyticSolution {
   static_assert(Dim == 2 or Dim == 3,
                 "IsentropicVortex solution works in 2 and 3 dimensions");
 
@@ -150,7 +151,16 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   IsentropicVortex& operator=(const IsentropicVortex& /*rhs*/) = default;
   IsentropicVortex(IsentropicVortex&& /*rhs*/) = default;
   IsentropicVortex& operator=(IsentropicVortex&& /*rhs*/) = default;
-  ~IsentropicVortex() = default;
+  ~IsentropicVortex() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit IsentropicVortex(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(IsentropicVortex);
+  /// \endcond
 
   IsentropicVortex(double adiabatic_index,
                    const std::array<double, Dim>& center,
@@ -188,8 +198,8 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
   const source_term_type& source_term() const { return source_term_; }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   /// @{
@@ -255,5 +265,4 @@ template <size_t Dim>
 bool operator!=(const IsentropicVortex<Dim>& lhs,
                 const IsentropicVortex<Dim>& rhs);
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions

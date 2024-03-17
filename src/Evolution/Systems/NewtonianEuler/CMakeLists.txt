@@ -24,6 +24,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AllSolutions.hpp
   Characteristics.hpp
   ConservativeFromPrimitive.hpp
   Fluxes.hpp
