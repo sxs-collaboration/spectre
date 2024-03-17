@@ -113,4 +113,29 @@ void acceleration_terms_0(
     const tnsr::I<double, 3>& particle_velocity,
     const tnsr::I<double, 3>& particle_acceleration, double ft, double fx,
     double fy, double dt_ft, double dt_fx, double dt_fy, double bh_mass);
+
+/*!
+ * \brief Computes the acceleration terms of a puncture/singular field
+ * \f$\Psi^\mathcal{P}\f$ of a scalar charge on a generic orbit in Schwarzschild
+ * spacetime.
+ * \details  The values ft, fx, fy are the time, x and y component
+ * of the self force per unit mass f evaluated at the position of the particle;
+ * dt_ft, dt_fx, dt_fy are the respective total time derivatives. Du_f is the
+ * derivative along the four-velocity $u^\mu \nabla_\mu f$ and dt_Du_f is
+ * its total time derivative.
+ *
+ */
+void acceleration_terms_1(
+    gsl::not_null<Variables<tmpl::list<
+        CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+        ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                      Frame::Inertial>>>*>
+        result,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& centered_coords,
+    const tnsr::I<double, 3>& particle_position,
+    const tnsr::I<double, 3>& particle_velocity,
+    const tnsr::I<double, 3>& particle_acceleration, double ft, double fx,
+    double fy, double dt_ft, double dt_fx, double dt_fy, double Du_ft,
+    double Du_fx, double Du_fy, double dt_Du_ft, double dt_Du_fx,
+    double dt_Du_fy, double BH_mass);
 }  // namespace CurvedScalarWave::Worldtube
