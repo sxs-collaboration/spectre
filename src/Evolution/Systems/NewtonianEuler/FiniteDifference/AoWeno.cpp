@@ -69,14 +69,14 @@ template <size_t Dim>
 PUP::able::PUP_ID AoWeno53Prim<Dim>::my_PUP_ID = 0;
 
 template <size_t Dim>
-template <size_t ThermodynamicDim, typename TagsList>
+template <typename TagsList>
 void AoWeno53Prim<Dim>::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, Dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, Dim>*>
         vars_on_upper_face,
     const Variables<prims_tags>& volume_prims,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<false, 2>& eos,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh) const {
@@ -93,11 +93,11 @@ void AoWeno53Prim<Dim>::reconstruct(
 }
 
 template <size_t Dim>
-template <size_t ThermodynamicDim, typename TagsList>
+template <typename TagsList>
 void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<prims_tags>& subcell_volume_prims,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<false, 2>& eos,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
@@ -140,7 +140,6 @@ bool operator==(const AoWeno53Prim<Dim>& lhs, const AoWeno53Prim<Dim>& rhs) {
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TAGS_LIST(data)                                                     \
   tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<DIM(data)>,       \
              Tags::EnergyDensity, hydro::Tags::RestMassDensity<DataVector>, \
@@ -161,32 +160,31 @@ bool operator==(const AoWeno53Prim<Dim>& lhs, const AoWeno53Prim<Dim>& rhs) {
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 
-#define INSTANTIATION(r, data)                                               \
-  template void AoWeno53Prim<DIM(data)>::reconstruct(                        \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>      \
-          vars_on_lower_face,                                                \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>      \
-          vars_on_upper_face,                                                \
-      const Variables<prims_tags>& volume_prims,                             \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
-      const Element<DIM(data)>& element,                                     \
-      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>&  \
-          ghost_data,                                                        \
-      const Mesh<DIM(data)>& subcell_mesh) const;                            \
-  template void AoWeno53Prim<DIM(data)>::reconstruct_fd_neighbor(            \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,               \
-      const Variables<prims_tags>& subcell_volume_prims,                     \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
-      const Element<DIM(data)>& element,                                     \
-      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>&  \
-          ghost_data,                                                        \
-      const Mesh<DIM(data)>& subcell_mesh,                                   \
+#define INSTANTIATION(r, data)                                              \
+  template void AoWeno53Prim<DIM(data)>::reconstruct(                       \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>     \
+          vars_on_lower_face,                                               \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>     \
+          vars_on_upper_face,                                               \
+      const Variables<prims_tags>& volume_prims,                            \
+      const EquationsOfState::EquationOfState<false, 2>& eos,               \
+      const Element<DIM(data)>& element,                                    \
+      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>& \
+          ghost_data,                                                       \
+      const Mesh<DIM(data)>& subcell_mesh) const;                           \
+  template void AoWeno53Prim<DIM(data)>::reconstruct_fd_neighbor(           \
+      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,              \
+      const Variables<prims_tags>& subcell_volume_prims,                    \
+      const EquationsOfState::EquationOfState<false, 2>& eos,               \
+      const Element<DIM(data)>& element,                                    \
+      const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>& \
+          ghost_data,                                                       \
+      const Mesh<DIM(data)>& subcell_mesh,                                  \
       const Direction<DIM(data)> direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef TAGS_LIST
-#undef THERMO_DIM
 #undef DIM
 }  // namespace NewtonianEuler::fd

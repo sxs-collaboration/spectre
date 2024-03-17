@@ -56,11 +56,10 @@ struct TimeDerivativeTerms {
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::EquationOfStateBase,
+                 hydro::Tags::EquationOfState<false, 2>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time,
                  NewtonianEuler::Tags::SourceTerm<Dim>>;
 
-  template <size_t ThermodynamicDim>
   static void apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
@@ -85,7 +84,7 @@ struct TimeDerivativeTerms {
       const tnsr::I<DataVector, Dim>& velocity,
       const Scalar<DataVector>& pressure,
       const Scalar<DataVector>& specific_internal_energy,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
       const tnsr::I<DataVector, Dim>& coords, const double time,
       const Sources::Source<Dim>& source) {
     detail::fluxes_impl(mass_density_cons_flux, momentum_density_flux,
