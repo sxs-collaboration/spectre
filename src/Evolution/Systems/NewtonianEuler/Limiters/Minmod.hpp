@@ -151,7 +151,6 @@ class Minmod {
       ::hydro::Tags::EquationOfStateBase>;
 
   /// \brief Limits the solution on the element.
-  template <size_t ThermodynamicDim>
   bool operator()(
       gsl::not_null<Scalar<DataVector>*> mass_density_cons,
       gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
@@ -161,8 +160,7 @@ class Minmod {
           logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-          equation_of_state,
+      const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
       const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
                                boost::hash<DirectionalId<VolumeDim>>>&
           neighbor_data) const;

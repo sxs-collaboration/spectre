@@ -41,7 +41,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 bool characteristic_simple_weno_impl(
     const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
@@ -49,8 +49,7 @@ bool characteristic_simple_weno_impl(
     const double tvb_constant, const double neighbor_linear_weight,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const std::unordered_map<
         DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
@@ -164,7 +163,7 @@ bool characteristic_simple_weno_impl(
           compute_char_transformation_numerically);
 }
 
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 bool characteristic_hweno_impl(
     const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
@@ -175,8 +174,7 @@ bool characteristic_hweno_impl(
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
     const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
         VolumeDim>::type& normals_and_magnitudes,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const std::unordered_map<
         DirectionalId<VolumeDim>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
@@ -381,7 +379,6 @@ void Weno<VolumeDim>::package_data(
 }
 
 template <size_t VolumeDim>
-template <size_t ThermodynamicDim>
 bool Weno<VolumeDim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
@@ -391,8 +388,7 @@ bool Weno<VolumeDim>::operator()(
     const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
     const typename evolution::dg::Tags::NormalCovectorAndMagnitude<
         VolumeDim>::type& normals_and_magnitudes,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const std::unordered_map<DirectionalId<VolumeDim>, PackagedData,
                              boost::hash<DirectionalId<VolumeDim>>>&
         neighbor_data) const {
@@ -425,11 +421,8 @@ bool Weno<VolumeDim>::operator()(
   const double mean_density = mean_value(get(*mass_density_cons), mesh);
   ASSERT(mean_density > 0.0,
          "Positivity was violated on a cell-average level.");
-  if (ThermodynamicDim == 2) {
-    const double mean_energy = mean_value(get(*energy_density), mesh);
-    ASSERT(mean_energy > 0.0,
-           "Positivity was violated on a cell-average level.");
-  }
+  const double mean_energy = mean_value(get(*energy_density), mesh);
+  ASSERT(mean_energy > 0.0, "Positivity was violated on a cell-average level.");
 #endif  // SPECTRE_DEBUG
 
   bool limiter_activated = false;
@@ -495,15 +488,13 @@ bool Weno<VolumeDim>::operator()(
   // Checks for the post-limiter NewtonianEuler state:
 #ifdef SPECTRE_DEBUG
   ASSERT(min(get(*mass_density_cons)) > 0.0, "Bad density after limiting.");
-  if constexpr (ThermodynamicDim == 2) {
-    const auto specific_internal_energy = Scalar<DataVector>{
-        get(*energy_density) / get(*mass_density_cons) -
-        0.5 * get(dot_product(*momentum_density, *momentum_density)) /
-            square(get(*mass_density_cons))};
-    const auto pressure = equation_of_state.pressure_from_density_and_energy(
-        *mass_density_cons, specific_internal_energy);
-    ASSERT(min(get(pressure)) > 0.0, "Bad energy after limiting.");
-  }
+  const auto specific_internal_energy = Scalar<DataVector>{
+      get(*energy_density) / get(*mass_density_cons) -
+      0.5 * get(dot_product(*momentum_density, *momentum_density)) /
+          square(get(*mass_density_cons))};
+  const auto pressure = equation_of_state.pressure_from_density_and_energy(
+      *mass_density_cons, specific_internal_energy);
+  ASSERT(min(get(pressure)) > 0.0, "Bad energy after limiting.");
 #endif  // SPECTRE_DEBUG
 
   return limiter_activated;
@@ -528,7 +519,6 @@ bool operator!=(const Weno<VolumeDim>& lhs, const Weno<VolumeDim>& rhs) {
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
   template class Weno<DIM(data)>;                                           \
@@ -538,24 +528,5 @@ bool operator!=(const Weno<VolumeDim>& lhs, const Weno<VolumeDim>& rhs) {
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
-
-#define INSTANTIATE(_, data)                                              \
-  template bool Weno<DIM(data)>::operator()(                              \
-      const gsl::not_null<Scalar<DataVector>*>,                           \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,               \
-      const gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&,   \
-      const Element<DIM(data)>&, const std::array<double, DIM(data)>&,    \
-      const Scalar<DataVector>&,                                          \
-      const typename evolution::dg::Tags::NormalCovectorAndMagnitude<DIM( \
-          data)>::type&,                                                  \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&,  \
-      const std::unordered_map<DirectionalId<DIM(data)>, PackagedData,    \
-                               boost::hash<DirectionalId<DIM(data)>>>&) const;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
-
-#undef INSTANTIATE
 #undef DIM
-#undef THERMO_DIM
-
 }  // namespace NewtonianEuler::Limiters

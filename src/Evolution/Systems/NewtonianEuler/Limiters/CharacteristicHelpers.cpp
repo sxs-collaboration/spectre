@@ -30,13 +30,12 @@
 
 namespace NewtonianEuler::Limiters {
 
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_density,
     const tnsr::I<double, VolumeDim>& mean_momentum,
     const Scalar<double>& mean_energy,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const tnsr::i<double, VolumeDim>& unit_vector,
     const bool compute_char_transformation_numerically) {
   // Compute fluid primitives from mean conserved state
@@ -58,21 +57,13 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
 
   Scalar<double> pressure{};
   Scalar<double> kappa_over_density{};
-  if constexpr (ThermodynamicDim == 1) {
-    pressure = equation_of_state.pressure_from_density(mean_density);
-    get(kappa_over_density) =
-        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
-            mean_density)) *
-        get(mean_density) / get(pressure);
-  } else if constexpr (ThermodynamicDim == 2) {
-    pressure = equation_of_state.pressure_from_density_and_energy(
-        mean_density, specific_internal_energy);
-    get(kappa_over_density) =
-        get(equation_of_state
-                .kappa_times_p_over_rho_squared_from_density_and_energy(
-                    mean_density, specific_internal_energy)) *
-        get(mean_density) / get(pressure);
-  }
+  pressure = equation_of_state.pressure_from_density_and_energy(
+      mean_density, specific_internal_energy);
+  get(kappa_over_density) =
+      get(equation_of_state
+              .kappa_times_p_over_rho_squared_from_density_and_energy(
+                  mean_density, specific_internal_energy)) *
+      get(mean_density) / get(pressure);
 
   const Scalar<double> specific_enthalpy{
       {{(get(mean_energy) + get(pressure)) / get(mean_density)}}};
@@ -236,18 +227,16 @@ void conserved_fields_from_characteristic_fields(
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template std::pair<Matrix, Matrix> right_and_left_eigenvectors(       \
-      const Scalar<double>&, const tnsr::I<double, DIM(data)>&,         \
-      const Scalar<double>&,                                            \
-      const EquationsOfState::EquationOfState<false, THERMODIM(data)>&, \
+#define INSTANTIATE(_, data)                                      \
+  template std::pair<Matrix, Matrix> right_and_left_eigenvectors( \
+      const Scalar<double>&, const tnsr::I<double, DIM(data)>&,   \
+      const Scalar<double>&,                                      \
+      const EquationsOfState::EquationOfState<false, 2>&,         \
       const tnsr::i<double, DIM(data)>&, const bool);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
-#undef THERMODIM
 #undef INSTANTIATE
 
 #define INSTANTIATE(_, data)                                               \
