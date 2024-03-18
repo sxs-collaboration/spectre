@@ -359,6 +359,30 @@ using ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iiaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iiAA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iAbb = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iabb = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using Ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
                     index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
                                SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
