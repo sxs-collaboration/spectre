@@ -5,6 +5,7 @@
 
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
+#include "Parallel/Printf/Printf.hpp"
 
 namespace Particles::MonteCarlo {
 
@@ -61,6 +62,14 @@ void evolve_single_packet_on_geodesic(
   // Calculate time derivative of 3-momentum at beginning of time step
   detail::time_derivative_momentum_geodesic(&dpdt, *packet, lapse, d_lapse,
                                             d_shift, d_inv_spatial_metric);
+  // Parallel::printf("Initial coord: %.5f %.5f %.5f\n", packet->coordinates[0],
+  //                  packet->coordinates[1], packet->coordinates[2]);
+  // Parallel::printf("Initial momentum: %.5f %.5f %.5f\n", packet->momentum[0],
+  //                  packet->momentum[1], packet->momentum[2]);
+  // Parallel::printf("dpdt: %.5f %.5f %.5f\n", gsl::at(dpdt, 0), gsl::at(dpdt,
+  // 1),
+  //                  gsl::at(dpdt, 2));
+
   // Take half-step (momentum only, as time derivative is independent of
   // position)
   for (size_t i = 0; i < 3; i++) {
@@ -74,6 +83,12 @@ void evolve_single_packet_on_geodesic(
   // Calculate time derivative of 3-momentum and position at half-step
   detail::time_derivative_momentum_geodesic(&dpdt, *packet, lapse, d_lapse,
                                             d_shift, d_inv_spatial_metric);
+  // Parallel::printf("Half step momentum: %.5f %.5f %.5f\n",
+  // packet->momentum[0],
+  //                 packet->momentum[1], packet->momentum[2]);
+  // Parallel::printf("dpdt: %.5f %.5f %.5f\n", gsl::at(dpdt, 0), gsl::at(dpdt,
+  // 1),
+  //                 gsl::at(dpdt, 2));
   for (size_t i = 0; i < 3; i++) {
     gsl::at(dxdt_inertial, i) = (-1.0) * shift.get(i)[closest_point_index];
     if (mesh_velocity.has_value()) {
@@ -86,6 +101,9 @@ void evolve_single_packet_on_geodesic(
           packet->momentum[j] / packet->momentum_upper_t;
     }
   }
+  // Parallel::printf("dxdt_inert: %.5f %.5f %.5f\n", gsl::at(dxdt_inertial, 0),
+  //                 gsl::at(dxdt_inertial, 1), gsl::at(dxdt_inertial, 2));
+
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       gsl::at(dxdt_logical, i) +=
@@ -93,12 +111,19 @@ void evolve_single_packet_on_geodesic(
           inverse_jacobian_logical_to_inertial.get(i, j)[closest_point_index];
     }
   }
+  // Parallel::printf("dxdt_inert: %.5f %.5f %.5f\n", gsl::at(dxdt_logical, 0),
+  //                 gsl::at(dxdt_logical, 1), gsl::at(dxdt_logical, 2));
+
   // Take full time step
   for (size_t i = 0; i < 3; i++) {
     packet->momentum[i] = gsl::at(p0, i) + gsl::at(dpdt, i) * time_step;
     packet->coordinates[i] += gsl::at(dxdt_logical, i) * time_step;
   }
   packet->time += time_step;
+  // Parallel::printf("Final coord: %.5f %.5f %.5f\n", packet->coordinates[0],
+  //                 packet->coordinates[1], packet->coordinates[2]);
+  // Parallel::printf("Final momentum: %.5f %.5f %.5f\n", packet->momentum[0],
+  //                  packet->momentum[1], packet->momentum[2]);
 }
 
 }  // namespace Particles::MonteCarlo
