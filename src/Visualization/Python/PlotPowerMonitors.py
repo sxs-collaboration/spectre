@@ -396,7 +396,7 @@ def plot_power_monitors_command(
         rich.progress.TimeRemainingColumn(),
         disable=(len(h5_files) == 1),
     )
-    task_id = progress.add_task("Processing files")
+    task_id = progress.add_task("Processing files", total=len(h5_files))
     volfiles_progress = progress.track(
         open_volfiles(h5_files, subfile_name, obs_id), task_id=task_id
     )
