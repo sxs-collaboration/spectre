@@ -121,6 +121,44 @@ void test_derivative_metric() {
   }
 }
 
+void test_second_derivative_inverse_metric() {
+  MAKE_GENERATOR(gen);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  std::uniform_real_distribution<double> pos_dist{2., 10.};
+
+  const gr::Solutions::KerrSchild kerr_schild(1., {{0., 0., 0.}},
+                                              {{0., 0., 0.}});
+
+  const auto test_point =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&pos_dist), 1);
+
+  const auto& dij_imetric =
+      second_spatial_derivative_inverse_ks_metric(test_point);
+
+  const std::array<double, 3> array_point{test_point.get(0), test_point.get(1),
+                                          test_point.get(2)};
+  const double dx = 1e-4;
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b <= a; ++b) {
+      for (size_t j = 0; j < 3; ++j) {
+        for (size_t k = 0; k <= j; ++k) {
+          const auto di_imetric_helper =
+              [a, b, j](const std::array<double, 3>& point) {
+                const tnsr::I<double, 3> tensor_point(point);
+                const auto di_imetric_local =
+                    spatial_derivative_inverse_ks_metric(tensor_point);
+                return di_imetric_local.get(j, a, b);
+              };
+          const auto second_numerical_deriv_imetric_k =
+              numerical_derivative(di_imetric_helper, array_point, k, dx);
+          CHECK(dij_imetric.get(k, j, a, b) ==
+                local_approx(second_numerical_deriv_imetric_k));
+        }
+      }
+    }
+  }
+}
 
 // All the derivatives are checked against finite difference calculations
 SPECTRE_TEST_CASE(
@@ -128,6 +166,7 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   test_derivative_inverse_metric();
   test_derivative_metric();
+  test_second_derivative_inverse_metric();
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube
