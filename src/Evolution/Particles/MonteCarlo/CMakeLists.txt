@@ -21,10 +21,11 @@ spectre_target_headers(
   HEADERS
   EmitPackets.tpp
   EvolvePackets.hpp
+  EvolvePacketsInElement.tpp
   InverseJacobianInertialToFluidCompute.hpp
-  TemplatedLocalFunctions.hpp
   Packet.hpp
   Scattering.hpp
+  TemplatedLocalFunctions.hpp
   )
 
 target_link_libraries(

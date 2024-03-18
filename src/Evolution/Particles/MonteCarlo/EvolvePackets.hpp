@@ -31,9 +31,11 @@ void time_derivative_momentum_geodesic(
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric);
 
+}  // namespace detail
+
 // Advances a single packet by time time_step along a geodesic
 void evolve_single_packet_on_geodesic(
-    gsl::not_null<Packet*> packet, const double& final_time,
+    gsl::not_null<Packet*> packet, double time_step,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
@@ -44,37 +46,5 @@ void evolve_single_packet_on_geodesic(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
         inverse_jacobian_logical_to_inertial);
-
-// Functions to be implemented to complete implementation of Monte-Carlo
-// time step
-double compute_fluid_frame_energy(const Packet& /*packet*/);
-void compute_opacities(gsl::not_null<double*> absorption_opacity,
-                       gsl::not_null<double*> scattering_opacity,
-                       const double& /*fluid_frame_energy*/);
-}  // namespace detail
-
-/// Evolve all packets in the provided std::vector (approximately) to the
-/// end of the current time step.
-void evolve_packets(
-    gsl::not_null<std::vector<Packet>*> packets,
-    gsl::not_null<std::mt19937*> random_number_generator,
-    const double& time_step, const Mesh<3>& mesh,
-    const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
-    const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
-    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                          Frame::Inertial>&
-        inverse_jacobian_logical_to_inertial,
-    const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
-        inertial_to_fluid_jacobian,
-    const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
-        inertial_to_fluid_inverse_jacobian);
 
 }  // namespace Particles::MonteCarlo
