@@ -48,7 +48,7 @@
  * the Bowen-York extrinsic curvature
  *
  * \begin{equation}
- * \bar{A}^{ij} = \frac{3}{2} \frac{1}{r_C} \left(
+ * \bar{A}^{ij} = \frac{3}{2} \frac{1}{r_C^2} \left(
  * 2 P^{(i} n^{j)} - (\delta^{ij} - n^i n^j) P^k n^k
  * + \frac{4}{r_C} n^{(i} \epsilon^{j)kl} S^k n^l\right)
  * \end{equation}
