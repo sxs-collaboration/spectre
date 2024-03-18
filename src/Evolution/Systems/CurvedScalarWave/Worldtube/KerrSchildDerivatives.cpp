@@ -134,5 +134,36 @@ tnsr::iiaa<double, 3> second_spatial_derivative_metric(
   return dij_metric;
 }
 
+tnsr::iAbb<double, 3> spatial_derivative_christoffel(
+    const tnsr::iaa<double, 3>& di_metric,
+    const tnsr::iiaa<double, 3>& dij_metric,
+    const tnsr::AA<double, 3>& inverse_metric,
+    const tnsr::iAA<double, 3>& di_inverse_metric) {
+  tnsr::iAbb<double, 3> di_christoffel{};
+  tnsr::abb<double, 3> d_metric{};
+  tnsr::iabb<double, 3> di_d_metric{};
+  for (size_t a = 0; a <= 3; ++a) {
+    for (size_t b = 0; b <= 3; ++b) {
+      d_metric.get(0, a, b) = 0.;
+      for (size_t i = 0; i < 3; ++i) {
+        d_metric.get(i + 1, a, b) = di_metric.get(i, a, b);
+        di_d_metric.get(i, 0, a, b) = 0.;
+        for (size_t j = 0; j < 3; ++j) {
+          di_d_metric.get(i, j + 1, a, b) = dij_metric.get(i, j, a, b);
+        }
+      }
+    }
+  }
+  tenex::evaluate<ti::i, ti::A, ti::b, ti::c>(
+      make_not_null(&di_christoffel),
+      0.5 * di_inverse_metric(ti::i, ti::A, ti::D) *
+              (d_metric(ti::b, ti::c, ti::d) + d_metric(ti::c, ti::b, ti::d) -
+               d_metric(ti::d, ti::b, ti::c)) +
+          0.5 * inverse_metric(ti::A, ti::D) *
+              (di_d_metric(ti::i, ti::b, ti::c, ti::d) +
+               di_d_metric(ti::i, ti::c, ti::b, ti::d) -
+               di_d_metric(ti::i, ti::d, ti::b, ti::c)));
+  return di_christoffel;
+}
 
 }  // namespace CurvedScalarWave::Worldtube

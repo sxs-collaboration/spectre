@@ -227,6 +227,73 @@ void test_second_derivative_metric() {
   }
 }
 
+void test_derivative_christoffel() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  std::uniform_real_distribution<double> pos_dist{2., 10.};
+
+  const gr::Solutions::KerrSchild kerr_schild(1., {{0., 0., 0.}},
+                                              {{0., 0., 0.}});
+
+  const auto test_point =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&pos_dist), 1);
+  const auto kerr_schild_quantities = kerr_schild.variables(
+      test_point, 0.,
+      tmpl::list<gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
+                 gr::Tags::SpatialMetric<double, Dim>,
+                 gr::Tags::InverseSpatialMetric<double, Dim>,
+                 gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>{});
+  const auto metric = gr::spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::SpatialMetric<double, Dim>>(kerr_schild_quantities));
+  const auto inverse_metric = gr::inverse_spacetime_metric(
+      get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
+      get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
+      get<gr::Tags::InverseSpatialMetric<double, Dim>>(kerr_schild_quantities));
+
+  const auto& di_imetric = spatial_derivative_inverse_ks_metric(test_point);
+  const auto& dij_imetric =
+      second_spatial_derivative_inverse_ks_metric(test_point);
+  const auto di_metric = spatial_derivative_ks_metric(metric, di_imetric);
+  const auto& dij_metric = second_spatial_derivative_metric(
+      metric, di_metric, di_imetric, dij_imetric);
+  const auto di_christoffel = spatial_derivative_christoffel(
+      di_metric, dij_metric, inverse_metric, di_imetric);
+
+  const std::array<double, 3> array_point{test_point.get(0), test_point.get(1),
+                                          test_point.get(2)};
+  const double dx = 1e-4;
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      for (size_t c = 0; c < 4; ++c) {
+        for (size_t j = 0; j < 3; ++j) {
+          const auto christoffel_helper =
+              [&kerr_schild, a, b, c](const std::array<double, 3>& point) {
+                const tnsr::I<double, 3> tensor_point(point);
+                const auto kerr_schild_quantities_local = kerr_schild.variables(
+                    tensor_point, 0.,
+                    tmpl::list<gr::Tags::SpacetimeChristoffelSecondKind<
+                        double, Dim>>{});
+                const auto& christoffel_local =
+                    get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(
+                        kerr_schild_quantities_local);
+                return christoffel_local.get(a, b, c);
+              };
+
+          const auto numerical_deriv_christoffel_j =
+              numerical_derivative(christoffel_helper, array_point, j, dx);
+          CHECK(di_christoffel.get(j, a, b, c) ==
+                local_approx(numerical_deriv_christoffel_j));
+        }
+      }
+    }
+  }
+}
+
+
 // All the derivatives are checked against finite difference calculations
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.CurvedScalarWave.KerrSchildDerivatives",
@@ -235,6 +302,7 @@ SPECTRE_TEST_CASE(
   test_derivative_metric();
   test_second_derivative_inverse_metric();
   test_second_derivative_metric();
+  test_derivative_christoffel();
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube

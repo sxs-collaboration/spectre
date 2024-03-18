@@ -41,4 +41,14 @@ tnsr::iiaa<double, 3> second_spatial_derivative_metric(
     const tnsr::aa<double, 3>& metric, const tnsr::iaa<double, 3>& di_metric,
     const tnsr::iAA<double, 3>& di_inverse_metric,
     const tnsr::iiAA<double, 3>& dij_inverse_metric);
+
+/*!
+ * \brief The spatial derivative of the Christoffel
+ * symbols, $\partial_i \Gamma^\rho_{\mu \nu}$.
+ */
+tnsr::iAbb<double, 3> spatial_derivative_christoffel(
+    const tnsr::iaa<double, 3>& di_metric,
+    const tnsr::iiaa<double, 3>& dij_metric,
+    const tnsr::AA<double, 3>& inverse_metric,
+    const tnsr::iAA<double, 3>& di_inverse_metric);
 }  // namespace CurvedScalarWave::Worldtube
