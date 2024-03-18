@@ -120,5 +120,19 @@ tnsr::iiAA<double, 3> second_spatial_derivative_inverse_ks_metric(
   return dij_imetric;
 }
 
+tnsr::iiaa<double, 3> second_spatial_derivative_metric(
+    const tnsr::aa<double, 3>& metric, const tnsr::iaa<double, 3>& di_metric,
+    const tnsr::iAA<double, 3>& di_inverse_metric,
+    const tnsr::iiAA<double, 3>& dij_inverse_metric) {
+  tnsr::iiaa<double, 3> dij_metric{};
+  tenex::evaluate<ti::j, ti::i, ti::a, ti::b>(
+      make_not_null(&dij_metric),
+      -metric(ti::a, ti::c) * metric(ti::b, ti::d) *
+              dij_inverse_metric(ti::j, ti::i, ti::C, ti::D) -
+          2. * metric(ti::a, ti::c) * di_metric(ti::j, ti::b, ti::d) *
+              di_inverse_metric(ti::i, ti::C, ti::D));
+  return dij_metric;
+}
+
 
 }  // namespace CurvedScalarWave::Worldtube

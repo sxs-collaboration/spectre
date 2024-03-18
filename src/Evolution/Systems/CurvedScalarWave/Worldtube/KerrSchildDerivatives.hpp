@@ -32,4 +32,13 @@ tnsr::iaa<double, 3> spatial_derivative_ks_metric(
  */
 tnsr::iiAA<double, 3> second_spatial_derivative_inverse_ks_metric(
     const tnsr::I<double, 3>& pos);
+
+/*!
+ * \brief The spatial derivative of the spacetime metric,
+ * $\partial_i \partial_j g_{\mu \nu}$.
+ */
+tnsr::iiaa<double, 3> second_spatial_derivative_metric(
+    const tnsr::aa<double, 3>& metric, const tnsr::iaa<double, 3>& di_metric,
+    const tnsr::iAA<double, 3>& di_inverse_metric,
+    const tnsr::iiAA<double, 3>& dij_inverse_metric);
 }  // namespace CurvedScalarWave::Worldtube
