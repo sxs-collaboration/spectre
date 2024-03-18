@@ -54,4 +54,14 @@ tnsr::iAA<double, 3> spatial_derivative_inverse_ks_metric(
   return di_imetric;
 }
 
+tnsr::iaa<double, 3> spatial_derivative_ks_metric(
+    const tnsr::aa<double, 3>& metric,
+    const tnsr::iAA<double, 3>& di_inverse_metric) {
+  tnsr::iaa<double, 3> di_metric{};
+  tenex::evaluate<ti::i, ti::a, ti::b>(
+      make_not_null(&di_metric), -metric(ti::a, ti::c) * metric(ti::b, ti::d) *
+                                     di_inverse_metric(ti::i, ti::C, ti::D));
+  return di_metric;
+}
+
 }  // namespace CurvedScalarWave::Worldtube
