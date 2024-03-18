@@ -293,6 +293,56 @@ void test_derivative_christoffel() {
   }
 }
 
+void test_derivative_contracted_christoffel() {
+  static constexpr size_t Dim = 3;
+  MAKE_GENERATOR(gen);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  std::uniform_real_distribution<double> pos_dist{2., 10.};
+
+  const gr::Solutions::KerrSchild kerr_schild(1., {{0., 0., 0.}},
+                                              {{0., 0., 0.}});
+
+  const auto test_point =
+      make_with_random_values<tnsr::I<double, 3, Frame::Inertial>>(
+          make_not_null(&gen), make_not_null(&pos_dist), 1);
+  const auto di_contracted_christoffel =
+      spatial_derivative_ks_contracted_christoffel(test_point);
+
+  const std::array<double, 3> array_point{test_point.get(0), test_point.get(1),
+                                          test_point.get(2)};
+  const double dx = 1e-4;
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t j = 0; j < 3; ++j) {
+      const auto contracted_christoffel_helper =
+          [&kerr_schild, a](const std::array<double, 3>& point) {
+            const tnsr::I<double, 3> tensor_point(point);
+            const auto kerr_schild_quantities_local = kerr_schild.variables(
+                tensor_point, 0.,
+                tmpl::list<
+                    gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
+                    gr::Tags::SpatialMetric<double, Dim>,
+                    gr::Tags::InverseSpatialMetric<double, Dim>,
+                    gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>{});
+            const auto imetric_local = gr::inverse_spacetime_metric(
+                get<gr::Tags::Lapse<double>>(kerr_schild_quantities_local),
+                get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities_local),
+                get<gr::Tags::InverseSpatialMetric<double, Dim>>(
+                    kerr_schild_quantities_local));
+            const auto& christoffel_local =
+                get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(
+                    kerr_schild_quantities_local);
+            const auto contracted_christoffel_local =
+                trace_last_indices(christoffel_local, imetric_local);
+            return contracted_christoffel_local.get(a);
+          };
+      const auto numerical_deriv_contracted_christoffel_j =
+          numerical_derivative(contracted_christoffel_helper, array_point, j,
+                               dx);
+      CHECK(di_contracted_christoffel.get(j, a) ==
+            local_approx(numerical_deriv_contracted_christoffel_j));
+    }
+  }
+}
 
 // All the derivatives are checked against finite difference calculations
 SPECTRE_TEST_CASE(
@@ -303,6 +353,7 @@ SPECTRE_TEST_CASE(
   test_second_derivative_inverse_metric();
   test_second_derivative_metric();
   test_derivative_christoffel();
+  test_derivative_contracted_christoffel();
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube

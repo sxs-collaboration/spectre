@@ -166,4 +166,26 @@ tnsr::iAbb<double, 3> spatial_derivative_christoffel(
   return di_christoffel;
 }
 
+tnsr::iA<double, 3> spatial_derivative_ks_contracted_christoffel(
+    const tnsr::I<double, 3>& pos) {
+  const double r_sq = get(dot_product(pos, pos));
+  const double r = sqrt(r_sq);
+  const double one_over_r = 1. / r;
+  const double one_over_r_2 = 1. / r_sq;
+  const double one_over_r_3 = cube(one_over_r);
+  const double one_over_r_4 = square(one_over_r_2);
+  const double one_over_r_5 = one_over_r_4 * one_over_r;
+
+  tnsr::iA<double, 3> di_contracted_christoffel{};
+  for (size_t i = 0; i < 3; ++i) {
+    di_contracted_christoffel.get(i, 0) = 4. * pos.get(i) * one_over_r_4;
+    for (size_t j = 0; j < 3; ++j) {
+      di_contracted_christoffel.get(i, j + 1) =
+          -6. * pos.get(i) * pos.get(j) * one_over_r_5;
+    }
+    di_contracted_christoffel.get(i, i + 1) += 2. * one_over_r_3;
+  }
+  return di_contracted_christoffel;
+}
+
 }  // namespace CurvedScalarWave::Worldtube

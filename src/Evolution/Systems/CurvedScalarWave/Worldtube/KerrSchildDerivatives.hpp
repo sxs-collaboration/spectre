@@ -51,4 +51,14 @@ tnsr::iAbb<double, 3> spatial_derivative_christoffel(
     const tnsr::iiaa<double, 3>& dij_metric,
     const tnsr::AA<double, 3>& inverse_metric,
     const tnsr::iAA<double, 3>& di_inverse_metric);
+
+/*!
+ * \brief The spatial derivative of the zero spin Kerr Schild contracted
+ * Christoffel symbols,
+ * $\partial_i g^{\mu \nu} \Gamma^\rho_{\mu \nu}$, assuming a black hole at the
+ * coordinate center with mass M = 1.
+ */
+tnsr::iA<double, 3> spatial_derivative_ks_contracted_christoffel(
+    const tnsr::I<double, 3>& pos);
+
 }  // namespace CurvedScalarWave::Worldtube
