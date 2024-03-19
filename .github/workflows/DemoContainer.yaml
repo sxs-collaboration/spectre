@@ -5,6 +5,17 @@ name: Deploy containers
 
 on:
   workflow_dispatch:
+    inputs:
+      image_name:
+        description: >
+          Image name to push to DockerHub
+        required: true
+        default: 'sxscollaboration/spectre'
+      build_arm:
+        type: boolean
+        description: >
+          Build ARM container in addition to x86_64
+        default: true
 
   workflow_call:
     secrets:
@@ -39,8 +50,10 @@ jobs:
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: deploy
-          tags: sxscollaboration/spectre:deploy,sxscollaboration/spectre:latest
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ inputs.image_name }}:deploy,${{ inputs.image_name }}:latest
+          platforms: >
+            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
+            || 'linux/amd64' }}
       - name: Build and push demo container
         uses: docker/build-push-action@v3
         with:
@@ -48,6 +61,8 @@ jobs:
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: demo
-          tags: sxscollaboration/spectre:demo
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ inputs.image_name }}:demo
+          platforms: >
+            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
+            || 'linux/amd64' }}
 

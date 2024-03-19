@@ -387,12 +387,16 @@ RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
         cd spectre/build \
         && make ${PARALLEL_MAKE_ARG} cli \
         && make ${PARALLEL_MAKE_ARG} CharacteristicExtract \
+        && make ${PARALLEL_MAKE_ARG} SolveXcts \
     ; fi
 
 ENV SPECTRE_HOME /work/spectre
 ENV PATH $SPECTRE_HOME/build/bin:$PATH
 ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
 
+# Set the CLI as entrypoint
+ENTRYPOINT ["spectre"]
+CMD ["--help"]
 
 # Build a demo image with extra software used in the tutorials.
 FROM deploy AS demo
