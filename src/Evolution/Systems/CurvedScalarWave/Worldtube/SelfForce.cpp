@@ -77,6 +77,31 @@ tnsr::A<double, Dim> dt_self_force_per_mass(
            dt_d_psi(ti::b)));
 }
 
+template <size_t Dim>
+tnsr::A<double, Dim> dt2_self_force_per_mass(
+    const tnsr::a<double, Dim>& d_psi, const tnsr::a<double, Dim>& dt_d_psi,
+    const tnsr::a<double, Dim>& dt2_d_psi,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::A<double, Dim>& dt_four_velocity,
+    const tnsr::A<double, Dim>& dt2_four_velocity, double particle_charge,
+    double particle_mass, const tnsr::AA<double, Dim>& inverse_metric,
+    const tnsr::AA<double, Dim>& dt_inverse_metric,
+    const tnsr::AA<double, Dim>& dt2_inverse_metric) {
+  return tenex::evaluate<ti::A>(
+      particle_charge / particle_mass *
+      ((dt2_inverse_metric(ti::A, ti::B) +
+        dt2_four_velocity(ti::A) * four_velocity(ti::B) +
+        dt2_four_velocity(ti::B) * four_velocity(ti::A) +
+        2. * dt_four_velocity(ti::A) * dt_four_velocity(ti::B)) *
+           d_psi(ti::b) +
+       2. * dt_d_psi(ti::b) *
+           (dt_inverse_metric(ti::A, ti::B) +
+            dt_four_velocity(ti::A) * four_velocity(ti::B) +
+            dt_four_velocity(ti::B) * four_velocity(ti::A)) +
+       dt2_d_psi(ti::b) * (inverse_metric(ti::A, ti::B) +
+                           four_velocity(ti::A) * four_velocity(ti::B))));
+}
+
 // Instantiations
 template void self_force_acceleration(
     gsl::not_null<tnsr::I<double, 3>*> self_force_acc,
@@ -102,4 +127,14 @@ template tnsr::A<double, 3> dt_self_force_per_mass(
     const tnsr::A<double, 3>& dt_four_velocity, double particle_charge,
     double particle_mass, const tnsr::AA<double, 3>& inverse_metric,
     const tnsr::AA<double, 3>& dt_inverse_metric);
+
+template tnsr::A<double, 3> dt2_self_force_per_mass(
+    const tnsr::a<double, 3>& d_psi, const tnsr::a<double, 3>& dt_d_psi,
+    const tnsr::a<double, 3>& dt2_d_psi,
+    const tnsr::A<double, 3>& four_velocity,
+    const tnsr::A<double, 3>& dt_four_velocity,
+    const tnsr::A<double, 3>& dt2_four_velocity, double particle_charge,
+    double particle_mass, const tnsr::AA<double, 3>& inverse_metric,
+    const tnsr::AA<double, 3>& dt_inverse_metric,
+    const tnsr::AA<double, 3>& dt2_inverse_metric);
 }  // namespace CurvedScalarWave::Worldtube
