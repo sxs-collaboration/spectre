@@ -102,6 +102,17 @@ tnsr::A<double, Dim> dt2_self_force_per_mass(
                            four_velocity(ti::A) * four_velocity(ti::B))));
 }
 
+template <size_t Dim>
+tnsr::A<double, Dim> Du_self_force_per_mass(
+    const tnsr::A<double, Dim>& self_force,
+    const tnsr::A<double, Dim>& dt_self_force,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::Abb<double, Dim>& christoffel) {
+  return tenex::evaluate<ti::A>(dt_self_force(ti::A) * get<0>(four_velocity) +
+                                christoffel(ti::A, ti::b, ti::c) *
+                                    four_velocity(ti::B) * self_force(ti::C));
+}
+
 // Instantiations
 template void self_force_acceleration(
     gsl::not_null<tnsr::I<double, 3>*> self_force_acc,
@@ -137,4 +148,10 @@ template tnsr::A<double, 3> dt2_self_force_per_mass(
     double particle_mass, const tnsr::AA<double, 3>& inverse_metric,
     const tnsr::AA<double, 3>& dt_inverse_metric,
     const tnsr::AA<double, 3>& dt2_inverse_metric);
+
+template tnsr::A<double, 3> Du_self_force_per_mass(
+    const tnsr::A<double, 3>& self_force,
+    const tnsr::A<double, 3>& dt_self_force,
+    const tnsr::A<double, 3>& four_velocity,
+    const tnsr::Abb<double, 3>& christoffel);
 }  // namespace CurvedScalarWave::Worldtube
