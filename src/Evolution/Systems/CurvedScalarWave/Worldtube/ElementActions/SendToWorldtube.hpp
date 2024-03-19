@@ -22,6 +22,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonChare.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
@@ -161,8 +162,27 @@ struct SendToWorldtube {
     Parallel::receive_data<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>(
         worldtube_component, db::get<::Tags::TimeStepId>(box),
         std::make_pair(element_id, std::move(Ylm_coefs)));
+    if (db::get<Tags::ApplySelfForce>(box) and
+        db::get<Tags::CurrentIteration>(box) <
+            db::get<Tags::MaxIterations>(box) - 1) {
+      db::mutate<Tags::CurrentIteration>(
+          [](const gsl::not_null<size_t*> current_iteration) {
+            *current_iteration += 1;
+          },
+          make_not_null(&box));
+      // still iterating, go to `IteratePunctureField`
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    } else {
+      db::mutate<Tags::CurrentIteration>(
+          [](const gsl::not_null<size_t*> current_iteration) {
+            *current_iteration = 0;
+          },
+          make_not_null(&box));
+      // done iterating, get data for BCs
+      return {Parallel::AlgorithmExecution::Continue,
+              tmpl::index_of<ActionList, ReceiveWorldtubeData>::value};
+    }
   }
 };
 }  // namespace CurvedScalarWave::Worldtube::Actions

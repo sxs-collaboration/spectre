@@ -10,6 +10,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ChangeSlabSize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeElementFacesGridCoordinates.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/InitializeEvolvedVariables.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/IterateAccelerationTerms.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ObserveWorldtubeSolution.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/ReceiveElementData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
@@ -85,6 +86,7 @@ struct WorldtubeSingleton {
   };
   using step_actions =
       tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
+                 Actions::IterateAccelerationTerms<Metavariables>,
                  ::Actions::MutateApply<UpdateAcceleration>,
                  ::Actions::RecordTimeStepperData<worldtube_system>,
                  ::Actions::UpdateU<worldtube_system>,

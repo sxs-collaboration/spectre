@@ -678,6 +678,14 @@ void test_check_input_file() {
   }
 }
 
+void test_self_force_options() {
+  const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
+      "Mass: 0.1\n"
+      "Iterations: 3");
+  CHECK(options.mass == 0.1);
+  CHECK(options.iterations == 3);
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -689,11 +697,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
             CurvedScalarWave::Worldtube::OptionTags::ExpansionOrder>("0") == 0);
   CHECK(TestHelpers::test_option_tag<
             CurvedScalarWave::Worldtube::OptionTags::Charge>("1.") == 1.);
-  CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::Mass>("1.") == 1.);
-  CHECK(TestHelpers::test_option_tag<
-            CurvedScalarWave::Worldtube::OptionTags::ApplySelfForce>("true") ==
-        true);
   TestHelpers::db::test_simple_tag<Tags::ExcisionSphere<3>>("ExcisionSphere");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder>("ExpansionOrder");
@@ -701,6 +704,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "Charge");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
       "Mass");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::CurrentIteration>("CurrentIteration");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::ApplySelfForce>("ApplySelfForce");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
@@ -718,6 +725,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::EvolvedPosition<3>>("EvolvedPosition");
   TestHelpers::db::test_simple_tag<Tags::EvolvedVelocity<3>>("EvolvedVelocity");
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
+  TestHelpers::db::test_simple_tag<Tags::IteratedPunctureField<3>>(
+      "IteratedPunctureField");
   TestHelpers::db::test_simple_tag<
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
@@ -729,6 +738,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::BackgroundQuantities<3>>(
       "BackgroundQuantities");
   test_excision_sphere_tag();
+  test_self_force_options();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();
