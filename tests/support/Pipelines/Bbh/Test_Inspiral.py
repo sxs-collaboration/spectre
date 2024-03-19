@@ -27,6 +27,8 @@ class TestInspiral(unittest.TestCase):
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
             mass_ratio=1.5,
+            dimensionless_spin_a=[0.0, 0.0, 0.0],
+            dimensionless_spin_b=[0.0, 0.0, 0.0],
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,

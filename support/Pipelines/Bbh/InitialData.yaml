@@ -29,12 +29,18 @@ Background: &background
     ObjectLeft: &kerr_left
       KerrSchild:
         Mass: {{ MassLeft }}
-        Spin: [0., 0., 0.]
+        Spin:
+          - {{ DimensionlessSpinLeft_x }}
+          - {{ DimensionlessSpinLeft_y }}
+          - {{ DimensionlessSpinLeft_z }}
         Center: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: {{ MassRight }}
-        Spin: [0., 0., 0.]
+        Spin:
+          - {{ DimensionlessSpinRight_x }}
+          - {{ DimensionlessSpinRight_y }}
+          - {{ DimensionlessSpinRight_z }}
         Center: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
@@ -53,7 +59,10 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
             Center: [*x_right, 0., 0.]
-            Rotation: [0., 0., 0.]
+            Rotation:
+              - {{ HorizonRotationRight_x }}
+              - {{ HorizonRotationRight_y }}
+              - {{ HorizonRotationRight_z }}
             Lapse: *kerr_right
             NegativeExpansion: *kerr_right
       UseLogarithmicMap: True
@@ -65,7 +74,10 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
             Center: [*x_left, 0., 0.]
-            Rotation: [0., 0., 0.]
+            Rotation:
+              - {{ HorizonRotationLeft_x }}
+              - {{ HorizonRotationLeft_y }}
+              - {{ HorizonRotationLeft_z }}
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
       UseLogarithmicMap: True

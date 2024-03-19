@@ -6,6 +6,7 @@ import shutil
 import unittest
 from pathlib import Path
 
+import numpy.testing as npt
 import yaml
 from click.testing import CliRunner
 
@@ -28,6 +29,8 @@ class TestInitialData(unittest.TestCase):
     def test_generate_id(self):
         params = id_parameters(
             mass_ratio=1.5,
+            dimensionless_spin_a=[0.1, 0.2, 0.3],
+            dimensionless_spin_b=[0.4, 0.5, 0.6],
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -42,6 +45,22 @@ class TestInitialData(unittest.TestCase):
         self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.712)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
+        self.assertEqual(
+            [params[f"DimensionlessSpinRight_{xyz}"] for xyz in "xyz"],
+            [0.1, 0.2, 0.3],
+        )
+        self.assertEqual(
+            [params[f"DimensionlessSpinLeft_{xyz}"] for xyz in "xyz"],
+            [0.4, 0.5, 0.6],
+        )
+        npt.assert_allclose(
+            [params[f"HorizonRotationRight_{xyz}"] for xyz in "xyz"],
+            [-0.043236994315732, -0.086473988631464, -0.119710982947196],
+        )
+        npt.assert_allclose(
+            [params[f"HorizonRotationLeft_{xyz}"] for xyz in "xyz"],
+            [-0.337933017966707, -0.422416272458383, -0.49689952695006],
+        )
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # COM is zero
@@ -55,6 +74,14 @@ class TestInitialData(unittest.TestCase):
         common_args = [
             "--mass-ratio",
             "1.5",
+            "--chi-A",
+            "0.1",
+            "0.2",
+            "0.3",
+            "--chi-B",
+            "0.4",
+            "0.5",
+            "0.6",
             "--separation",
             "20",
             "--orbital-angular-velocity",

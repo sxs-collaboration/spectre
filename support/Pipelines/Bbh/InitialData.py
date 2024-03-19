@@ -3,9 +3,10 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Sequence, Union
 
 import click
+import numpy as np
 from rich.pretty import pretty_repr
 
 from spectre.support.Schedule import schedule, scheduler_options
@@ -17,6 +18,8 @@ ID_INPUT_FILE_TEMPLATE = Path(__file__).parent / "InitialData.yaml"
 
 def id_parameters(
     mass_ratio: float,
+    dimensionless_spin_a: Sequence[float],
+    dimensionless_spin_b: Sequence[float],
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
@@ -29,6 +32,8 @@ def id_parameters(
 
     Arguments:
       mass_ratio: Defined as q = M_A / M_B >= 1.
+      dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
+      dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
       separation: Coordinate separation D of the black holes.
       orbital_angular_velocity: Omega_0.
       radial_expansion_velocity: adot_0.
@@ -44,6 +49,14 @@ def id_parameters(
     M_B = 1.0 / (1.0 + mass_ratio)
     x_A = separation / (1.0 + mass_ratio)
     x_B = x_A - separation
+    chi_A = np.asarray(dimensionless_spin_a)
+    r_plus_A = M_A * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
+    Omega_A = -0.5 * chi_A / r_plus_A
+    Omega_A[2] += orbital_angular_velocity
+    chi_B = np.asarray(dimensionless_spin_b)
+    r_plus_B = M_B * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
+    Omega_B = -0.5 * chi_B / r_plus_B
+    Omega_B[2] += orbital_angular_velocity
     return {
         "MassRight": M_A,
         "MassLeft": M_B,
@@ -53,6 +66,18 @@ def id_parameters(
         "ExcisionRadiusLeft": 0.89 * 2.0 * M_B,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
+        "DimensionlessSpinRight_x": chi_A[0],
+        "DimensionlessSpinRight_y": chi_A[1],
+        "DimensionlessSpinRight_z": chi_A[2],
+        "DimensionlessSpinLeft_x": chi_B[0],
+        "DimensionlessSpinLeft_y": chi_B[1],
+        "DimensionlessSpinLeft_z": chi_B[2],
+        "HorizonRotationRight_x": Omega_A[0],
+        "HorizonRotationRight_y": Omega_A[1],
+        "HorizonRotationRight_z": Omega_A[2],
+        "HorizonRotationLeft_x": Omega_B[0],
+        "HorizonRotationLeft_y": Omega_B[1],
+        "HorizonRotationLeft_z": Omega_B[2],
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
@@ -61,6 +86,8 @@ def id_parameters(
 
 def generate_id(
     mass_ratio: float,
+    dimensionless_spin_a: Sequence[float],
+    dimensionless_spin_b: Sequence[float],
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
@@ -109,6 +136,8 @@ def generate_id(
     # Determine initial data parameters from options
     id_params = id_parameters(
         mass_ratio=mass_ratio,
+        dimensionless_spin_a=dimensionless_spin_a,
+        dimensionless_spin_b=dimensionless_spin_b,
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
@@ -135,6 +164,22 @@ def generate_id(
     "-q",
     type=float,
     help="Mass ratio of the binary, defined as q = M_A / M_B >= 1.",
+    required=True,
+)
+@click.option(
+    "--dimensionless-spin-A",
+    "--chi-A",
+    type=float,
+    nargs=3,
+    help="Dimensionless spin of the larger black hole, chi_A.",
+    required=True,
+)
+@click.option(
+    "--dimensionless-spin-B",
+    "--chi-B",
+    type=float,
+    nargs=3,
+    help="Dimensionless spin of the smaller black hole, chi_B.",
     required=True,
 )
 @click.option(
