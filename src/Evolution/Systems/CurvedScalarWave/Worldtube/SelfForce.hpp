@@ -105,4 +105,19 @@ tnsr::A<double, Dim> Du_self_force_per_mass(
     const tnsr::A<double, Dim>& dt_self_force,
     const tnsr::A<double, Dim>& four_velocity,
     const tnsr::Abb<double, Dim>& christoffel);
+/*!
+ * \brief Computes the time derivative of the covariant derivative of the scalar
+ * self-force per unit mass $f^\alpha$, see `Du_self_force_per_mass`, along the
+ * four velocity $u^\beta$, i.e.
+ * $\frac{d}{dt}u^\beta \nabla_\beta f^\alpha$.
+ */
+template <size_t Dim>
+tnsr::A<double, Dim> dt_Du_self_force_per_mass(
+    const tnsr::A<double, Dim>& self_force,
+    const tnsr::A<double, Dim>& dt_self_force,
+    const tnsr::A<double, Dim>& dt2_self_force,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::A<double, Dim>& dt_four_velocity,
+    const tnsr::Abb<double, Dim>& christoffel,
+    const tnsr::Abb<double, Dim>& dt_christoffel);
 }  // namespace CurvedScalarWave::Worldtube

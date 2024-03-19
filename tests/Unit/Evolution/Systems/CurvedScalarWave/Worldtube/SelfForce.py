@@ -100,3 +100,25 @@ def Du_self_force_per_mass(
     return Du_self_force_per_mass
 
 
+def dt_Du_self_force_per_mass(
+    self_force,
+    dt_self_force,
+    dt2_self_force,
+    four_velocity,
+    dt_four_velocity,
+    christoffel,
+    dt_christoffel,
+):
+    dt_Du_self_force_per_mass = (
+        dt_four_velocity[0] * dt_self_force + dt2_self_force * four_velocity[0]
+    )
+    dt_Du_self_force_per_mass += np.einsum(
+        "ijk,j,k", dt_christoffel, four_velocity, self_force
+    )
+    dt_Du_self_force_per_mass += np.einsum(
+        "ijk,j,k", christoffel, dt_four_velocity, self_force
+    )
+    dt_Du_self_force_per_mass += np.einsum(
+        "ijk,j,k", christoffel, four_velocity, dt_self_force
+    )
+    return dt_Du_self_force_per_mass

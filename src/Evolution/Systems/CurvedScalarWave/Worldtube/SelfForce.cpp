@@ -113,6 +113,26 @@ tnsr::A<double, Dim> Du_self_force_per_mass(
                                     four_velocity(ti::B) * self_force(ti::C));
 }
 
+template <size_t Dim>
+tnsr::A<double, Dim> dt_Du_self_force_per_mass(
+    const tnsr::A<double, Dim>& self_force,
+    const tnsr::A<double, Dim>& dt_self_force,
+    const tnsr::A<double, Dim>& dt2_self_force,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::A<double, Dim>& dt_four_velocity,
+    const tnsr::Abb<double, Dim>& christoffel,
+    const tnsr::Abb<double, Dim>& dt_christoffel) {
+  return tenex::evaluate<ti::A>(
+      dt2_self_force(ti::A) * get<0>(four_velocity) +
+      dt_self_force(ti::A) * get<0>(dt_four_velocity) +
+      dt_christoffel(ti::A, ti::b, ti::c) * four_velocity(ti::B) *
+          self_force(ti::C) +
+      christoffel(ti::A, ti::b, ti::c) * dt_four_velocity(ti::B) *
+          self_force(ti::C) +
+      christoffel(ti::A, ti::b, ti::c) * four_velocity(ti::B) *
+          dt_self_force(ti::C));
+}
+
 // Instantiations
 template void self_force_acceleration(
     gsl::not_null<tnsr::I<double, 3>*> self_force_acc,
@@ -154,4 +174,13 @@ template tnsr::A<double, 3> Du_self_force_per_mass(
     const tnsr::A<double, 3>& dt_self_force,
     const tnsr::A<double, 3>& four_velocity,
     const tnsr::Abb<double, 3>& christoffel);
+
+template tnsr::A<double, 3> dt_Du_self_force_per_mass(
+    const tnsr::A<double, 3>& self_force,
+    const tnsr::A<double, 3>& dt_self_force,
+    const tnsr::A<double, 3>& dt2_self_force,
+    const tnsr::A<double, 3>& four_velocity,
+    const tnsr::A<double, 3>& dt_four_velocity,
+    const tnsr::Abb<double, 3>& christoffel,
+    const tnsr::Abb<double, 3>& dt_christoffel);
 }  // namespace CurvedScalarWave::Worldtube
