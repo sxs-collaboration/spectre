@@ -24,3 +24,28 @@ def self_force_per_mass(d_psi, four_velocity, charge, mass, inverse_metric):
     )
     return charge / mass * self_force_per_mass
 
+
+def dt_self_force_per_mass(
+    d_psi,
+    dt_d_psi,
+    four_velocity,
+    dt_four_velocity,
+    charge,
+    mass,
+    inverse_metric,
+    dt_inverse_metric,
+):
+    dt_self_force_per_mass = np.einsum("ij,j", dt_inverse_metric, d_psi)
+    dt_self_force_per_mass += np.einsum("ij,j", inverse_metric, dt_d_psi)
+
+    dt_self_force_per_mass += np.einsum(
+        "i,j,j", dt_four_velocity, four_velocity, d_psi
+    )
+    dt_self_force_per_mass += np.einsum(
+        "i,j,j", four_velocity, dt_four_velocity, d_psi
+    )
+    dt_self_force_per_mass += np.einsum(
+        "i,j,j", four_velocity, four_velocity, dt_d_psi
+    )
+    return charge / mass * dt_self_force_per_mass
+
