@@ -143,6 +143,12 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     # Strip wrapping quotation marks of each element of the list
     # TEST_STRINGS
     string(REGEX REPLACE "^\"(.*)\"$" "\\1" TEST_STRINGS "${TEST_STRINGS}")
+    # If a test name went on multiple lines, there will either be a sequence
+    # .";" or ";". from the line break (after replacing all the whitespace with
+    # ;) Remove these from the test string
+    string(REPLACE ".\";\"" "." TEST_STRINGS "${TEST_STRINGS}")
+    string(REPLACE "\";\"." "." TEST_STRINGS "${TEST_STRINGS}")
+    # Remove the last set of quotation marks
     string(REPLACE "\";\"" ";" TEST_STRINGS "${TEST_STRINGS}")
 
     # Validate that a test name and tags have been provided

@@ -107,7 +107,7 @@ void test_psi_4(const RealDataType& used_for_size_real,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Psi4.",
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Psi4",
                   "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env("PointwiseFunctions/");
 

@@ -99,10 +99,18 @@ def parse_source_file(file_name):
         # Capture the name of the test into the first group and the tags into
         # the second. For example,
         # "Unit.My.Test", "[Unit][My]"
-        # group(1) == Unit.My.Test
+        # test_name == Unit.My.Test
         # group(2) == [Unit][My]
-        parsed_name = re.search(r'"(.*)",[\s]*"(.*)"', test_name)
-        test_name = parsed_name.group(1)
+        #
+        # Also handle cases where the name is very long and goes onto multiple
+        # lines,
+        # "Unit.My.Test.Name."
+        #     "Is.Very.Long",
+        # "[Unit][My]"
+        # test_name == Unit.My.Test.Name.Is.Very.Long
+        # group(2) == [Unit][My]
+        parsed_name = re.search(r'"(.*)",[\s]*"(.*)"', test_name, re.S)
+        test_name = "".join(parsed_name.group(1).replace('"', "").split())
         for disallowed_name in disallowed_test_name_portions:
             if test_name.lower().find(disallowed_name.lower()) != -1:
                 print(

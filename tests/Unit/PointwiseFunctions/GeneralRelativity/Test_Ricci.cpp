@@ -91,7 +91,7 @@ void test_ricci_scalar(const DataType& used_for_size) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci.",
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci",
                   "[PointwiseFunctions][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/GeneralRelativity/");
