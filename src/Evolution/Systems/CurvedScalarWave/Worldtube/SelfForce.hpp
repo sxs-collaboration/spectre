@@ -48,4 +48,22 @@ tnsr::I<double, Dim> self_force_acceleration(
     const Scalar<double>& dilation_factor);
 
 /// @}
+/*!
+ * \brief Computes the scalar self-force per unit mass
+ *
+ * \details It is given by
+ * \begin{equation}
+ * f^\alpha = \frac{q}{\mu} (g^{\alpha \beta} + u^\alpha u^\beta) \partial_\beta
+ * \Psi^R
+ * \end{equation}
+ * where $\Psi^R$ is the regular field at the position of the particle, $q$ is
+ * the particle's charge, $\mu$ is the particle's mass, $u^\alpha$ is the
+ * four-velocity and $g^{\alpha \beta}$ is the inverse spacetime metric in the
+ * inertial frame, evaluated at the position of the particle.
+ */
+template <size_t Dim>
+tnsr::A<double, Dim> self_force_per_mass(
+    const tnsr::a<double, Dim>& d_psi,
+    const tnsr::A<double, Dim>& four_velocity, double particle_charge,
+    double particle_mass, const tnsr::AA<double, Dim>& inverse_metric);
 }  // namespace CurvedScalarWave::Worldtube

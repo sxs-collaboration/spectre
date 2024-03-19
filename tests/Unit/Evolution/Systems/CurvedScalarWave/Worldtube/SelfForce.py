@@ -5,13 +5,7 @@ import numpy as np
 
 
 def self_force_acceleration(
-    dt_psi_monopole,
-    psi_dipole,
-    vel,
-    charge,
-    mass,
-    inverse_metric,
-    dilation,
+    dt_psi_monopole, psi_dipole, vel, charge, mass, inverse_metric, dilation
 ):
     # Prepend extra value so dimensions work out for einsum.
     # The 0th component does not affect the final result
@@ -21,3 +15,12 @@ def self_force_acceleration(
     self_force_acc -= np.einsum("i,j,j", four_vel, inverse_metric[0], d_psi)
     self_force_acc *= charge / mass / dilation**2
     return self_force_acc[1:]
+
+
+def self_force_per_mass(d_psi, four_velocity, charge, mass, inverse_metric):
+    self_force_per_mass = np.einsum("ij,j", inverse_metric, d_psi)
+    self_force_per_mass += np.einsum(
+        "i,j,j", four_velocity, four_velocity, d_psi
+    )
+    return charge / mass * self_force_per_mass
+

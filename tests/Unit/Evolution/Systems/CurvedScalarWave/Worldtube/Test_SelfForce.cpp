@@ -16,8 +16,6 @@ namespace CurvedScalarWave::Worldtube {
 namespace {
 
 void test_self_force_acceleration() {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/CurvedScalarWave/Worldtube"};
   pypp::check_with_random_values<1>(
       static_cast<tnsr::I<double, 3> (*)(
           const Scalar<double>&, const tnsr::i<double, 3>&,
@@ -27,9 +25,21 @@ void test_self_force_acceleration() {
       "SelfForce", "self_force_acceleration", {{{-2.0, 2.0}}}, 1);
 }
 
+void test_self_force_per_mass() {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::A<double, 3> (*)(
+          const tnsr::a<double, 3>&, const tnsr::A<double, 3>&, const double,
+          const double, const tnsr::AA<double, 3>&)>(self_force_per_mass<3>),
+      "SelfForce", "self_force_per_mass", {{{-2.0, 2.0}}}, 1);
+}
+
+
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.SelfForce",
                   "[Unit][Evolution]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/CurvedScalarWave/Worldtube"};
   test_self_force_acceleration();
+  test_self_force_per_mass();
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube

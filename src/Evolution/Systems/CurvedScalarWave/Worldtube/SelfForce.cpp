@@ -49,6 +49,16 @@ tnsr::I<double, Dim> self_force_acceleration(
   return self_force_acc;
 }
 
+template <size_t Dim>
+tnsr::A<double, Dim> self_force_per_mass(
+    const tnsr::a<double, Dim>& d_psi,
+    const tnsr::A<double, Dim>& four_velocity, const double particle_charge,
+    const double particle_mass, const tnsr::AA<double, Dim>& inverse_metric) {
+  return tenex::evaluate<ti::B>(particle_charge / particle_mass * d_psi(ti::a) *
+                                (inverse_metric(ti::A, ti::B) +
+                                 four_velocity(ti::A) * four_velocity(ti::B)));
+}
+
 // Instantiations
 template void self_force_acceleration(
     gsl::not_null<tnsr::I<double, 3>*> self_force_acc,
@@ -62,4 +72,10 @@ template tnsr::I<double, 3> self_force_acceleration(
     const tnsr::I<double, 3>& particle_velocity, const double particle_charge,
     const double particle_mass, const tnsr::AA<double, 3>& inverse_metric,
     const Scalar<double>& dilation_factor);
+
+template tnsr::A<double, 3> self_force_per_mass(
+    const tnsr::a<double, 3>& d_psi, const tnsr::A<double, 3>& four_velocity,
+    const double particle_charge, const double particle_mass,
+    const tnsr::AA<double, 3>& inverse_metric);
+
 }  // namespace CurvedScalarWave::Worldtube
