@@ -36,8 +36,10 @@ def points_on_line(
     Returns: An array of shape (dim, num_points) with uniformly spaced points
       on the line.
     """
+    line_start = np.array(line_start)
+    line_end = np.array(line_end)
     line_parameter = np.linspace(0, 1, num_points)
-    normal = np.asarray(line_end) - np.asarray(line_start)
+    normal = line_end - line_start
     return line_start[:, np.newaxis] + np.outer(normal, line_parameter)
 
 

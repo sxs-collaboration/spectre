@@ -120,7 +120,7 @@ struct MultiplePuncturesVariables {
  * constraint for the conformal traceless extrinsic curvature is:
  *
  * \begin{equation}
- * \bar{A}^{ij} = \frac{3}{2} \sum_I \frac{1}{r_I} \left(
+ * \bar{A}^{ij} = \frac{3}{2} \sum_I \frac{1}{r_I^2} \left(
  * 2 P_I^{(i} n_I^{j)} - (\delta^{ij} - n_I^i n_I^j) P_I^k n_I^k
  * + \frac{4}{r_I} n_I^{(i} \epsilon^{j)kl} S_I^k n_I^l\right)
  * \end{equation}
