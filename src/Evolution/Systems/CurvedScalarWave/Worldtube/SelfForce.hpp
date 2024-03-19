@@ -79,4 +79,18 @@ tnsr::A<double, Dim> dt_self_force_per_mass(
     double particle_mass, const tnsr::AA<double, Dim>& inverse_metric,
     const tnsr::AA<double, Dim>& dt_inverse_metric);
 
+/*!
+ * \brief Computes the second time derivative of scalar self-force per unit
+ * mass, see `self_force_per_mass`, by applying the chain rule.
+ */
+template <size_t Dim>
+tnsr::A<double, Dim> dt2_self_force_per_mass(
+    const tnsr::a<double, Dim>& d_psi, const tnsr::a<double, Dim>& dt_d_psi,
+    const tnsr::a<double, Dim>& dt2_d_psi,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::A<double, Dim>& dt_four_velocity,
+    const tnsr::A<double, Dim>& dt2_four_velocity, double particle_charge,
+    double particle_mass, const tnsr::AA<double, Dim>& inverse_metric,
+    const tnsr::AA<double, Dim>& dt_inverse_metric,
+    const tnsr::AA<double, Dim>& dt2_inverse_metric);
 }  // namespace CurvedScalarWave::Worldtube
