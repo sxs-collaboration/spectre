@@ -645,7 +645,7 @@ struct EvolutionMetavars {
         Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
 
     const std::string time_bounds =
-        ::domain::FunctionsOfTime::ouput_time_bounds(functions_of_time);
+        ::domain::FunctionsOfTime::output_time_bounds(functions_of_time);
 
     Parallel::printf("%s\n", time_bounds);
 
