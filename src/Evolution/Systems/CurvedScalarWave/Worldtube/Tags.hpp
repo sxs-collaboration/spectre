@@ -253,22 +253,8 @@ struct Charge : db::SimpleTag {
 };
 
 /*!
- * \brief Whether to apply the acceleration due to the scalar self-force to the
- * particle
- */
-struct ApplySelfForce : db::SimpleTag {
-  using type = bool;
-  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
-  static constexpr bool pass_metavariables = false;
-  static bool create_from_options(
-      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
-    return self_force_options.has_value();
-  };
-};
-
-/*!
- * \brief The mass of the scalar charge. Only has a value is `ApplySelfForce` is
- * true.
+ * \brief The mass of the scalar charge. Only has a value if the scalar self
+ * force is applied.
  */
 struct Mass : db::SimpleTag {
   using type = std::optional<double>;

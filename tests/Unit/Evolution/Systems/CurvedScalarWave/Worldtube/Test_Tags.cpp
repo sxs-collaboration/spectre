@@ -708,8 +708,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::CurrentIteration>("CurrentIteration");
-  TestHelpers::db::test_simple_tag<
-      CurvedScalarWave::Worldtube::Tags::ApplySelfForce>("ApplySelfForce");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
       "ElementFacesGridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::FaceCoordinates<3, Frame::Grid, true>>(
