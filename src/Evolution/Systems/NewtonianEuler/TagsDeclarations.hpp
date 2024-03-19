@@ -36,10 +36,8 @@ struct RamPressure;
 template <typename DataType>
 struct SpecificKineticEnergy;
 
-struct SourceTermBase;
-template <typename InitialDataType>
+template <size_t Dim>
 struct SourceTerm;
-
 }  // namespace Tags
 }  // namespace NewtonianEuler
 /// \endcond

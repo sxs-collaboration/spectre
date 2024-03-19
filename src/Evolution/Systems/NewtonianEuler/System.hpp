@@ -20,7 +20,7 @@
 /// \brief Items related to evolving the Newtonian Euler system
 namespace NewtonianEuler {
 
-template <size_t Dim, typename InitialDataType>
+template <size_t Dim>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
@@ -44,8 +44,7 @@ struct System {
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::Pressure<DataVector>>>;
 
-  using compute_volume_time_derivative_terms =
-      TimeDerivativeTerms<Dim, InitialDataType>;
+  using compute_volume_time_derivative_terms = TimeDerivativeTerms<Dim>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative = PrimitiveFromConservative<Dim>;

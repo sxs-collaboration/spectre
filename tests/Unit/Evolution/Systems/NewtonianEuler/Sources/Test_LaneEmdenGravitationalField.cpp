@@ -11,7 +11,7 @@
 #include "Evolution/Systems/NewtonianEuler/Sources/LaneEmdenGravitationalField.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -25,20 +25,27 @@ struct LaneEmdenGravitationalFieldProxy
       LaneEmdenGravitationalField;
   LaneEmdenGravitationalFieldProxy(const double central_mass_density,
                                    const double polytropic_index)
-      : star_(central_mass_density, polytropic_index) {}
+      : LaneEmdenGravitationalField(central_mass_density, polytropic_index) {}
 
-  void apply_helper(
+  void apply(
       const gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
       const gsl::not_null<Scalar<DataVector>*> source_energy_density,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, 3>& momentum_density,
-      const tnsr::I<DataVector, 3>& x) const {
-    this->apply(source_momentum_density, source_energy_density,
-                mass_density_cons, momentum_density, star_, x);
+      const tnsr::I<DataVector, 3>& coords) const {
+    get(*source_energy_density) = 0.0;
+    for (size_t i = 0; i < 3; ++i) {
+      source_momentum_density->get(i) = 0.0;
+    }
+    // EOS is unused
+    const EquationsOfState::IdealFluid<false> eos{5.0 / 3.0};
+    Scalar<DataVector> source_mass_density_cons{};
+    static_cast<const NewtonianEuler::Sources::LaneEmdenGravitationalField&>(
+        *this)(make_not_null(&source_mass_density_cons),
+               source_momentum_density, source_energy_density,
+               mass_density_cons, momentum_density, {}, {}, {}, {}, eos, coords,
+               0.0);
   }
-
- private:
-  NewtonianEuler::Solutions::LaneEmdenStar star_{};
 };
 
 void test_sources() {
@@ -49,7 +56,7 @@ void test_sources() {
   LaneEmdenGravitationalFieldProxy source_proxy(central_mass_density,
                                                 polytropic_constant);
   pypp::check_with_random_values<3>(
-      &LaneEmdenGravitationalFieldProxy::apply_helper, source_proxy,
+      &LaneEmdenGravitationalFieldProxy::apply, source_proxy,
       "Evolution.Systems.NewtonianEuler.Sources.LaneEmdenGravitationalField",
       {"source_momentum_density", "source_energy_density"},
       {{{0.0, 3.0},

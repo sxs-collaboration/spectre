@@ -32,6 +32,5 @@ target_link_libraries(
   ErrorHandling
   Hydro
   HydroSolutions
-  NewtonianEuler
   Options
   )

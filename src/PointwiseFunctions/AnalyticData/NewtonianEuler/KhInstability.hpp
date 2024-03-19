@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -101,7 +100,6 @@ class KhInstability : public evolution::initial_data::InitialData,
                       public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
-  using source_term_type = Sources::NoSource;
 
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {

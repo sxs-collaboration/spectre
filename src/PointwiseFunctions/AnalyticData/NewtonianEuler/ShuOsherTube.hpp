@@ -10,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -63,7 +62,6 @@ class ShuOsherTube : public evolution::initial_data::InitialData,
                      public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
-  using source_term_type = Sources::NoSource;
 
   /// Initial postition of the discontinuity
   struct JumpPosition {

@@ -10,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -55,7 +54,6 @@ class SodExplosion : public evolution::initial_data::InitialData,
  public:
   static_assert(Dim > 1, "Sod explosion is a 2d and 3d problem.");
   using equation_of_state_type = EquationsOfState::IdealFluid<false>;
-  using source_term_type = Sources::NoSource;
 
   /// Initial radius of the discontinuity
   struct InitialRadius {

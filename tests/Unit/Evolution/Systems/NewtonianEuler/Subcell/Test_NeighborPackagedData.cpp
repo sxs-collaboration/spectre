@@ -136,14 +136,14 @@ auto make_element<3>() {
 template <size_t Dim>
 struct MetaVars {
   using solution = NewtonianEuler::Solutions::SmoothFlow<Dim>;
-  using system = NewtonianEuler::System<Dim, solution>;
+  using system = NewtonianEuler::System<Dim>;
 };
 
 template <size_t Dim>
 double test(const size_t num_dg_pts) {
   using solution = NewtonianEuler::Solutions::SmoothFlow<Dim>;
   using eos = typename solution::equation_of_state_type;
-  using system = NewtonianEuler::System<Dim, solution>;
+  using system = NewtonianEuler::System<Dim>;
   using variables_tag = typename system::variables_tag;
   const auto coordinate_map = make_coord_map<Dim>();
   const auto moving_mesh_map =

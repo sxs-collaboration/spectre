@@ -16,6 +16,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   NewtonianEulerSolutions
+  NewtonianEulerSources
   Options
   Utilities
   )

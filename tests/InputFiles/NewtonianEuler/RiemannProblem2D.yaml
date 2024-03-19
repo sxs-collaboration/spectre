@@ -57,6 +57,10 @@ SpatialDiscretization:
     Reconstructor:
       MonotonisedCentralPrim:
 
+EvolutionSystem:
+  SourceTerm:
+    NoSource:
+
 AnalyticSolution:
   RiemannProblem:
     AdiabaticIndex: 1.4

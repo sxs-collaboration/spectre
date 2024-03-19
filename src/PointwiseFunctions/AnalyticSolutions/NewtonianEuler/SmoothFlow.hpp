@@ -8,7 +8,6 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
@@ -82,7 +81,6 @@ class SmoothFlow : public evolution::initial_data::InitialData,
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;
-  using source_term_type = Sources::NoSource;
 
   // Overload the variables function from the base class.
   using smooth_flow::variables;

@@ -118,7 +118,7 @@ void test() {
   helpers::test_boundary_condition_with_python<
       NewtonianEuler::BoundaryConditions::DirichletAnalytic<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
-      NewtonianEuler::System<Dim, NewtonianEuler::Solutions::SmoothFlow<Dim>>,
+      NewtonianEuler::System<Dim>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertSmoothFlow<Dim>>>(
       make_not_null(&gen),
@@ -164,8 +164,7 @@ void test() {
     helpers::test_boundary_condition_with_python<
         NewtonianEuler::BoundaryConditions::DirichletAnalytic<Dim>,
         NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
-        NewtonianEuler::System<
-            Dim, NewtonianEuler::AnalyticData::KhInstability<Dim>>,
+        NewtonianEuler::System<Dim>,
         tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
         tmpl::list<ConvertKhInstability<Dim>>>(
         make_not_null(&gen),

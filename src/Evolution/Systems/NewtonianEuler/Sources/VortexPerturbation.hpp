@@ -8,7 +8,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Source.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,8 +37,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace NewtonianEuler {
-namespace Sources {
+namespace NewtonianEuler::Sources {
 
 /*!
  * \brief Source generating a modified isentropic vortex.
@@ -68,32 +69,57 @@ namespace Sources {
  * and \f$p\f$ is its pressure. These quantities are readily obtained
  * from the primitive variables, whose expressions are those in
  * Solutions::IsentropicVortex
+ *
+ * Currently \f$v_z(z)=sin(z)\f$ is hard-coded.
  */
-struct VortexPerturbation {
+class VortexPerturbation : public Source<3> {
+ public:
+  /// The perturbation amplitude
+  struct PerturbationAmplitude {
+    using type = double;
+    static constexpr Options::String help = {"The perturbation amplitude."};
+  };
+
+  using options = tmpl::list<PerturbationAmplitude>;
+
+  static constexpr Options::String help = {
+      "Source terms corresponding to a vortex perturbation. Should be used "
+      "with the IsentropicVortex solution."};
+
+  explicit VortexPerturbation(double perturbation_amplitude);
+
   VortexPerturbation() = default;
   VortexPerturbation(const VortexPerturbation& /*rhs*/) = default;
   VortexPerturbation& operator=(const VortexPerturbation& /*rhs*/) = default;
   VortexPerturbation(VortexPerturbation&& /*rhs*/) = default;
   VortexPerturbation& operator=(VortexPerturbation&& /*rhs*/) = default;
-  ~VortexPerturbation() = default;
+  ~VortexPerturbation() override = default;
+
+  /// \cond
+  explicit VortexPerturbation(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(VortexPerturbation);
+  /// \endcond
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) {}
+  void pup(PUP::er& p) override;
 
-  using sourced_variables =
-      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<3>,
-                 Tags::EnergyDensity>;
+  auto get_clone() const -> std::unique_ptr<Source<3>> override;
 
-  using argument_tags = tmpl::list<
-      ::Tags::AnalyticSolution<NewtonianEuler::Solutions::IsentropicVortex<3>>,
-      domain::Tags::Coordinates<3, Frame::Inertial>, ::Tags::Time>;
-
-  static void apply(
+  void operator()(
       gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
       gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
       gsl::not_null<Scalar<DataVector>*> source_energy_density,
-      const NewtonianEuler::Solutions::IsentropicVortex<3>& vortex,
-      const tnsr::I<DataVector, 3>& x, double time);
+      const Scalar<DataVector>& mass_density_cons,
+      const tnsr::I<DataVector, 3>& momentum_density,
+      const Scalar<DataVector>& energy_density,
+      const tnsr::I<DataVector, 3>& velocity,
+      const Scalar<DataVector>& pressure,
+      const Scalar<DataVector>& specific_internal_energy,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
+      const tnsr::I<DataVector, 3>& coords, double time) const override;
+
+ private:
+  double perturbation_amplitude_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace Sources
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Sources

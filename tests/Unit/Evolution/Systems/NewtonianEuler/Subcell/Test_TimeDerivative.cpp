@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/Systems/NewtonianEuler/Sources/LaneEmdenGravitationalField.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -40,6 +41,7 @@
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/AoWeno.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
@@ -47,6 +49,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -131,11 +134,8 @@ template <size_t Dim>
 struct SmoothFlowMetaVars {
   static constexpr size_t volume_dim = Dim;
   using initial_data = NewtonianEuler::Solutions::SmoothFlow<Dim>;
-  using source_term_type = typename initial_data::source_term_type;
-  using system = NewtonianEuler::System<Dim, initial_data>;
-  using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
-  static constexpr bool has_source_terms =
-      not std::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
+  using system = NewtonianEuler::System<Dim>;
+  using source_term_tag = NewtonianEuler::Tags::SourceTerm<Dim>;
   static auto solution() {
     return initial_data{make_array<Dim>(0.0), make_array<Dim>(-0.2), 0.5, 1.5,
                         0.01};
@@ -145,10 +145,8 @@ struct SmoothFlowMetaVars {
 struct LaneEmdenStarMetaVars {
   static constexpr size_t volume_dim = 3;
   using initial_data = NewtonianEuler::Solutions::LaneEmdenStar;
-  using source_term_type = typename initial_data::source_term_type;
-  using system = NewtonianEuler::System<3, initial_data>;
-  using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
-  static constexpr bool has_source_terms = true;
+  using system = NewtonianEuler::System<3>;
+  using source_term_tag = NewtonianEuler::Tags::SourceTerm<3>;
   static auto solution() { return initial_data{0.7, 250.0}; }
 };
 
@@ -269,8 +267,21 @@ std::array<double, 3> test(const size_t num_dg_pts) {
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       dim, Frame::Grid, Frame::Inertial>,
                   dim>>>(
-      metavariables{}, typename metavariables::source_term_tag::type{}, soln,
-      element,
+      metavariables{},
+
+      []() -> std::unique_ptr<::NewtonianEuler::Sources::Source<dim>> {
+        if constexpr (std::is_same_v<
+                          solution,
+                          NewtonianEuler::Solutions::SmoothFlow<dim>>) {
+          return std::make_unique<::NewtonianEuler::Sources::NoSource<dim>>();
+        } else {
+          return std::make_unique<
+              ::NewtonianEuler::Sources::LaneEmdenGravitationalField>(0.7,
+                                                                      250.0);
+        }
+      }(),
+
+      soln, element,
       ElementMap<dim, Frame::Grid>{element_map.element_id(),
                                    element_map.block_map().get_clone()},
       subcell_mesh,

@@ -8,16 +8,26 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Source.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
-#include "PointwiseFunctions/AnalyticData/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Evolution/Tags.hpp"
+#include "Options/String.hpp"
 
 /// \cond
 class DataVector;
 /// \endcond
 
 namespace NewtonianEuler {
+/// %OptionTags for the conservative formulation of the Newtonian Euler system
+namespace OptionTags {
+template <size_t Dim>
+struct SourceTerm {
+  using type = std::unique_ptr<NewtonianEuler::Sources::Source<Dim>>;
+  static constexpr Options::String help = "The source term to be used.";
+  using group = ::evolution::OptionTags::SystemGroup;
+};
+}  // namespace OptionTags
+
 /// %Tags for the conservative formulation of the Newtonian Euler system
 namespace Tags {
 /// The mass density of the fluid (as a conservative variable).
@@ -94,21 +104,16 @@ struct SpecificKineticEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/// Base tag for the source term
-struct SourceTermBase : db::BaseTag {};
-
 /// The source term in the evolution equations
-template <typename InitialDataType>
-struct SourceTerm : SourceTermBase, db::SimpleTag {
-  using type = typename InitialDataType::source_term_type;
-  using option_tags = tmpl::list<
-      tmpl::conditional_t<is_analytic_solution_v<InitialDataType>,
-                          ::OptionTags::AnalyticSolution<InitialDataType>,
-                          ::OptionTags::AnalyticData<InitialDataType>>>;
+template <size_t Dim>
+struct SourceTerm : db::SimpleTag {
+  using type = std::unique_ptr<NewtonianEuler::Sources::Source<Dim>>;
+
+  using option_tags = tmpl::list<OptionTags::SourceTerm<Dim>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const InitialDataType& initial_data) {
-    return initial_data.source_term();
+  static type create_from_options(const type& source_term) {
+    return source_term->get_clone();
   }
 };
 

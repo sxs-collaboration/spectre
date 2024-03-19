@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/Source.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,7 +34,9 @@ struct FourthArg : db::SimpleTag {
 
 // Some source term where all three conservative quantities are sourced.
 template <size_t Dim>
-struct SomeSourceType {
+struct SomeSourceType : public ::NewtonianEuler::Sources::Source<Dim> {
+  void operator()() const override {}
+
   static constexpr size_t volume_dim = Dim;
   using sourced_variables =
       tmpl::list<::NewtonianEuler::Tags::MassDensityCons,
