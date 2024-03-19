@@ -66,44 +66,6 @@ Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
 }
 
 template <typename Frame>
-Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
-                                  const Strahlkorper& another_strahlkorper)
-    : l_max_(l_max),
-      m_max_(m_max),
-      ylm_(l_max, m_max),
-      center_(another_strahlkorper.center_),
-      strahlkorper_coefs_(another_strahlkorper.ylm_.prolong_or_restrict(
-          another_strahlkorper.strahlkorper_coefs_, ylm_)) {}
-
-template <typename Frame>
-Strahlkorper<Frame>::Strahlkorper(DataVector coefs,
-                                  const Strahlkorper& another_strahlkorper)
-    : l_max_(another_strahlkorper.l_max_),
-      m_max_(another_strahlkorper.m_max_),
-      ylm_(another_strahlkorper.ylm_),
-      center_(another_strahlkorper.center_),
-      strahlkorper_coefs_(std::move(coefs)) {
-  ASSERT(
-      strahlkorper_coefs_.size() == another_strahlkorper.ylm_.spectral_size(),
-      "Bad size " << strahlkorper_coefs_.size() << ", expected "
-                  << another_strahlkorper.ylm_.spectral_size());
-}
-
-template <typename Frame>
-Strahlkorper<Frame>::Strahlkorper(DataVector coefs,
-                                  Strahlkorper&& another_strahlkorper)
-    : l_max_(another_strahlkorper.l_max_),
-      m_max_(another_strahlkorper.m_max_),
-      ylm_(std::move(another_strahlkorper.ylm_)),
-      // clang-tidy: do not std::move trivially constructable types
-      center_(std::move(another_strahlkorper.center_)),  // NOLINT
-      strahlkorper_coefs_(std::move(coefs)) {
-  ASSERT(strahlkorper_coefs_.size() == ylm_.spectral_size(),
-         "Bad size " << strahlkorper_coefs_.size() << ", expected "
-                     << ylm_.spectral_size());
-}
-
-template <typename Frame>
 void Strahlkorper<Frame>::pup(PUP::er& p) {
   p | l_max_;
   p | m_max_;

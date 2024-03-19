@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 /// \cond
 namespace PUP {
@@ -88,18 +89,51 @@ class Strahlkorper {
                         std::array<double, 3> center);
 
   /// Prolong or restrict another surface to the given `l_max` and `m_max`.
+  template <typename OtherFrame>
   Strahlkorper(size_t l_max, size_t m_max,
-               const Strahlkorper& another_strahlkorper);
+               const Strahlkorper<OtherFrame>& another_strahlkorper)
+      : l_max_(l_max),
+        m_max_(m_max),
+        ylm_(l_max, m_max),
+        center_(another_strahlkorper.expansion_center()),
+        strahlkorper_coefs_(
+            another_strahlkorper.ylm_spherepack().prolong_or_restrict(
+                another_strahlkorper.coefficients(), ylm_)) {}
 
   /// Construct a Strahlkorper from another Strahlkorper,
   /// but explicitly specifying the coefficients.
   /// Here coefficients are in the same storage scheme
   /// as the `coefficients()` member function returns.
-  Strahlkorper(DataVector coefs, const Strahlkorper& another_strahlkorper);
+  template <typename OtherFrame>
+  Strahlkorper(DataVector coefs,
+               const Strahlkorper<OtherFrame>& another_strahlkorper)
+      : l_max_(another_strahlkorper.l_max()),
+        m_max_(another_strahlkorper.m_max()),
+        ylm_(another_strahlkorper.ylm_spherepack()),
+        center_(another_strahlkorper.expansion_center()),
+        strahlkorper_coefs_(std::move(coefs)) {
+    ASSERT(
+        strahlkorper_coefs_.size() ==
+            another_strahlkorper.ylm_spherepack().spectral_size(),
+        "Bad size " << strahlkorper_coefs_.size() << ", expected "
+                    << another_strahlkorper.ylm_spherepack().spectral_size());
+  }
 
   /// Move-construct a Strahlkorper from another Strahlkorper,
   /// explicitly specifying the coefficients.
-  Strahlkorper(DataVector coefs, Strahlkorper&& another_strahlkorper);
+  template <typename OtherFrame>
+  Strahlkorper(DataVector coefs,
+               Strahlkorper<OtherFrame>&& another_strahlkorper)
+      : l_max_(another_strahlkorper.l_max()),
+        m_max_(another_strahlkorper.m_max()),
+        ylm_(std::move(another_strahlkorper.ylm_spherepack())),
+        // clang-tidy: do not std::move trivially constructable types
+        center_(std::move(another_strahlkorper.expansion_center())),  // NOLINT
+        strahlkorper_coefs_(std::move(coefs)) {
+    ASSERT(strahlkorper_coefs_.size() == ylm_.spectral_size(),
+           "Bad size " << strahlkorper_coefs_.size() << ", expected "
+                       << ylm_.spectral_size());
+  }
 
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
@@ -186,7 +220,7 @@ struct Strahlkorper {
   using type = ylm::Strahlkorper<Frame>;
   static constexpr Options::String help{"A star-shaped surface"};
 };
-} // namespace OptionTags
+}  // namespace OptionTags
 
 template <typename Frame>
 bool operator==(const Strahlkorper<Frame>& lhs,
