@@ -93,4 +93,16 @@ tnsr::A<double, Dim> dt2_self_force_per_mass(
     double particle_mass, const tnsr::AA<double, Dim>& inverse_metric,
     const tnsr::AA<double, Dim>& dt_inverse_metric,
     const tnsr::AA<double, Dim>& dt2_inverse_metric);
+
+/*!
+ * \brief Computes the covariant derivative of the scalar self-force per unit
+ * mass $f^\alpha$, see `self_force_per_mass`, along the four velocity
+ * $u^\beta$, i.e. $u^\beta \nabla_\beta f^\alpha$.
+ */
+template <size_t Dim>
+tnsr::A<double, Dim> Du_self_force_per_mass(
+    const tnsr::A<double, Dim>& self_force,
+    const tnsr::A<double, Dim>& dt_self_force,
+    const tnsr::A<double, Dim>& four_velocity,
+    const tnsr::Abb<double, Dim>& christoffel);
 }  // namespace CurvedScalarWave::Worldtube

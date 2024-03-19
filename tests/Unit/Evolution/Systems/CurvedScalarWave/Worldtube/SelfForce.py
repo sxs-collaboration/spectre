@@ -89,3 +89,14 @@ def dt2_self_force_per_mass(
     )
     return charge / mass * dt2_self_force_per_mass
 
+
+def Du_self_force_per_mass(
+    self_force, dt_self_force, four_velocity, christoffel
+):
+    Du_self_force_per_mass = four_velocity[0] * dt_self_force
+    Du_self_force_per_mass += np.einsum(
+        "ijk,j,k", christoffel, four_velocity, self_force
+    )
+    return Du_self_force_per_mass
+
+
