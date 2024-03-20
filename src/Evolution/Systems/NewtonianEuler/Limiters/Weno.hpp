@@ -167,7 +167,7 @@ class Weno {
       domain::Tags::SizeOfElement<VolumeDim>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<VolumeDim>,
-      ::hydro::Tags::EquationOfStateBase>;
+      ::hydro::Tags::EquationOfState<false, 2>>;
 
   /// \brief Limit the solution on the element
   bool operator()(

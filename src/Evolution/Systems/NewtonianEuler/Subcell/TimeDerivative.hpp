@@ -224,7 +224,7 @@ struct TimeDerivative {
         hydro::Tags::SpatialVelocity<DataVector, Dim>,
         hydro::Tags::Pressure<DataVector>,
         hydro::Tags::SpecificInternalEnergy<DataVector>,
-        hydro::Tags::EquationOfStateBase,
+        hydro::Tags::EquationOfState<false, 2>,
         evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>,
         ::Tags::Time, NewtonianEuler::Tags::SourceTerm<Dim>>;
     db::mutate_apply<tmpl::list<dt_variables_tag>, source_argument_tags>(

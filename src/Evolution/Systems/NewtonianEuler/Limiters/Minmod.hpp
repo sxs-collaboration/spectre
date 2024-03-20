@@ -148,7 +148,7 @@ class Minmod {
       domain::Tags::Coordinates<VolumeDim, Frame::ElementLogical>,
       domain::Tags::SizeOfElement<VolumeDim>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
-      ::hydro::Tags::EquationOfStateBase>;
+      ::hydro::Tags::EquationOfState<false, 2>>;
 
   /// \brief Limits the solution on the element.
   bool operator()(

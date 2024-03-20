@@ -126,7 +126,7 @@ struct NeighborPackagedData {
                          dg_package_data_temporary_tags>;
 
         const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-        const auto& eos = get<hydro::Tags::EquationOfStateBase>(box);
+        const auto& eos = get<hydro::Tags::EquationOfState<false, 2>>(box);
 
         using dg_package_field_tags =
             typename DerivedCorrection::dg_package_field_tags;

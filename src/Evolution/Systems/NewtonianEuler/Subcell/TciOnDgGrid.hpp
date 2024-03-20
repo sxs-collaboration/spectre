@@ -67,13 +67,13 @@ class TciOnDgGrid {
  public:
   using return_tags = tmpl::list<::Tags::Variables<
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>>;
-  using argument_tags =
-      tmpl::list<::Tags::Variables<tmpl::list<MassDensityCons, MomentumDensity,
-                                              EnergyDensity>>,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
+  using argument_tags = tmpl::list<
+      ::Tags::Variables<
+          tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>,
+      hydro::Tags::EquationOfState<false, 2>, domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::DataForRdmpTci,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<

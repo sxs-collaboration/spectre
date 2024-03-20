@@ -62,7 +62,7 @@ struct ResizeAndComputePrims {
                  domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>, Tags::MassDensityCons,
                  Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
-                 hydro::Tags::EquationOfStateBase>;
+                 hydro::Tags::EquationOfState<false, 2>>;
 
   static void apply(
       gsl::not_null<Variables<

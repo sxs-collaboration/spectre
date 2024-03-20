@@ -50,7 +50,7 @@ struct PrimitiveFromConservative {
 
   using argument_tags =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
-                 Tags::EnergyDensity, hydro::Tags::EquationOfStateBase>;
+                 Tags::EnergyDensity, hydro::Tags::EquationOfState<false, 2>>;
 
   template <size_t ThermodynamicDim>
   static void apply(
