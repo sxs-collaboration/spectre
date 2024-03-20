@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
@@ -61,9 +61,9 @@ namespace ScalarAdvection::subcell {
  */
 
 struct NeighborPackagedData {
-  template <size_t Dim, typename DbTagsList>
+  template <size_t Dim>
   static DirectionalIdMap<Dim, DataVector> apply(
-      const db::DataBox<DbTagsList>& box,
+      const db::Access& box,
       const std::vector<DirectionalId<Dim>>& mortars_to_reconstruct_to) {
     // The object to return
     DirectionalIdMap<Dim, DataVector> neighbor_package_data{};

@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
@@ -58,10 +58,9 @@ namespace evolution::dg::subcell {
  * the last argument to
  * `Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::apply`.
  */
-template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData,
-          typename DbTagsList>
+template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData>
 void neighbor_reconstructed_face_solution(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const gsl::not_null<db::Access*> box,
     const gsl::not_null<std::pair<
         const TimeStepId,
         DirectionalIdMap<

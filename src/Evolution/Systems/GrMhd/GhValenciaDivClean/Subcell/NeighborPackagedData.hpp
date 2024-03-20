@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -69,9 +69,8 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * velocity on the faces instead of re-slicing/projecting.
  */
 struct NeighborPackagedData {
-  template <typename DbTagsList>
   static DirectionalIdMap<3, DataVector> apply(
-      const db::DataBox<DbTagsList>& box,
+      const db::Access& box,
       const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;

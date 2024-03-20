@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
@@ -67,10 +68,9 @@ struct TimeStepper;
 namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
-template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData,
-          typename DbTagsList>
+template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData>
 void neighbor_reconstructed_face_solution(
-    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
         const TimeStepId,
         DirectionalIdMap<
@@ -132,7 +132,7 @@ bool receive_boundary_data_global_time_stepping(
     evolution::dg::subcell::neighbor_reconstructed_face_solution<
         volume_dim, typename Metavariables::SubcellOptions::
                         DgComputeSubcellNeighborPackagedData>(
-        box, make_not_null(&*received_temporal_id_and_data));
+        &db::as_access(*box), make_not_null(&*received_temporal_id_and_data));
     evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
         box, *received_temporal_id_and_data);
   }

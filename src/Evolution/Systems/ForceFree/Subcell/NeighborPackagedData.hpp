@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
@@ -64,9 +64,8 @@ namespace ForceFree::subcell {
  * if one element is doing DG, then we aren't at a shock.
  */
 struct NeighborPackagedData {
-  template <typename DbTagsList>
   static DirectionalIdMap<3, DataVector> apply(
-      const db::DataBox<DbTagsList>& box,
+      const db::Access& box,
       const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
     using evolved_vars_tags = typename System::variables_tag::tags_list;
     using fluxes_tags = typename Fluxes::return_tags;

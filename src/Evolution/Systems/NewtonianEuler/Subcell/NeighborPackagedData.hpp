@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -64,12 +64,11 @@ namespace NewtonianEuler::subcell {
  * if one element is doing DG, then we aren't at a shock.
  */
 struct NeighborPackagedData {
-  template <size_t Dim, typename DbTagsList>
+  template <size_t Dim>
   static DirectionalIdMap<Dim, DataVector> apply(
-      const db::DataBox<DbTagsList>& box,
+      const db::Access& box,
       const std::vector<DirectionalId<Dim>>& mortars_to_reconstruct_to) {
-    using system = typename std::decay_t<decltype(
-        db::get<Parallel::Tags::Metavariables>(box))>::system;
+    using system = NewtonianEuler::System<Dim>;
     using evolved_vars_tag = typename system::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename system::primitive_variables_tag::tags_list;

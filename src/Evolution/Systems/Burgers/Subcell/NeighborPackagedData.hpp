@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
@@ -55,9 +55,8 @@ namespace Burgers::subcell {
  * and if one element is doing DG, then we aren't at a shock.
  */
 struct NeighborPackagedData {
-  template <typename DbTagsList>
   static DirectionalIdMap<1, DataVector> apply(
-      const db::DataBox<DbTagsList>& box,
+      const db::Access& box,
       const std::vector<DirectionalId<1>>& mortars_to_reconstruct_to) {
     // The object to return
     DirectionalIdMap<1, DataVector> neighbor_package_data{};
