@@ -15,7 +15,7 @@ target_link_libraries(
   Boost::boost
   Boost::program_options
   ErrorHandling
-  Parallel
+  Printf
   Time
   Utilities
   )

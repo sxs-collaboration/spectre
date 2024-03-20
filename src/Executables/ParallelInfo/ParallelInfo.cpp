@@ -9,7 +9,7 @@
 #include <string>
 
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/System/Exit.hpp"

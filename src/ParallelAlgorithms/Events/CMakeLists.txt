@@ -48,5 +48,6 @@ target_link_libraries(
   EventsAndTriggers
   H5
   Interpolation
+  Printf
   Spectral
   )

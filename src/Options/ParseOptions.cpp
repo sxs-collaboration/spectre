@@ -15,7 +15,7 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"

@@ -6,7 +6,7 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace control_system::Actions {

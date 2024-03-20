@@ -40,6 +40,7 @@ target_link_libraries(
   Options
   Parallel
   ParallelLinearSolver
+  Printf
   Spectral
   SystemUtilities
   )

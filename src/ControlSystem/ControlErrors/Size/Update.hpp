@@ -15,7 +15,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace control_system::size {

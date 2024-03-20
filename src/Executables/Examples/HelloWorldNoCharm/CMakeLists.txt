@@ -13,5 +13,5 @@ target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
   DataStructures
-  Parallel # Only for printf
+  Printf
   )

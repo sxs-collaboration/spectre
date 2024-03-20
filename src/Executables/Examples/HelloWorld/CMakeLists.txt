@@ -17,6 +17,7 @@ target_link_libraries(
   Informer
   Options
   Parallel
+  Printf
   SystemUtilities
   Utilities
   )

@@ -30,5 +30,6 @@ target_link_libraries(
   ErrorHandling
   GSL::gsl
   Logging
+  Printf
   Simd
   )

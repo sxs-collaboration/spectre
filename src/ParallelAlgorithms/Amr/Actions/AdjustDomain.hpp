@@ -27,6 +27,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Tags/DistributedObjectTags.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"

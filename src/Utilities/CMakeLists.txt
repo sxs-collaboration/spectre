@@ -93,6 +93,8 @@ target_link_libraries(
   Boost::boost
   Brigand
   ErrorHandling
+  PRIVATE
+  Printf
   )
 
 # Libxsmm is disabled in Debug mode (see Blas.hpp).
