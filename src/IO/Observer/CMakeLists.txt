@@ -42,6 +42,7 @@ target_link_libraries(
   H5
   Options
   Parallel
+  Printf
   Serialization
   Utilities
   INTERFACE

@@ -30,7 +30,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"

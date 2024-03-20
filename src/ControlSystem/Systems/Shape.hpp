@@ -27,6 +27,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

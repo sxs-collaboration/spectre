@@ -21,7 +21,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"

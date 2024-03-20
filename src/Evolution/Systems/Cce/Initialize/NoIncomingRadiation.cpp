@@ -15,7 +15,6 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"

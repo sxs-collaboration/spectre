@@ -71,6 +71,7 @@ target_link_libraries(
   Observer
   Options
   ParallelInterpolation
+  Printf
   Serialization
   Spectral
   Utilities

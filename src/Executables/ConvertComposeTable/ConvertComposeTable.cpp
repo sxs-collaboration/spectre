@@ -9,7 +9,7 @@
 #include "IO/ComposeTable.hpp"
 #include "IO/H5/EosTable.hpp"
 #include "IO/H5/File.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 
 // Charm looks for this function but since we build without a main function or
 // main module we just have it be empty

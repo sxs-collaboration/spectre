@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

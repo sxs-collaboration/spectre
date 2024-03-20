@@ -18,7 +18,7 @@
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace Cce {

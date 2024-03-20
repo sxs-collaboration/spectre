@@ -13,7 +13,7 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/MakeString.hpp"

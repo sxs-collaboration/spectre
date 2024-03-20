@@ -30,7 +30,7 @@
 #include "Options/OptionsDetails.hpp"
 #include "Options/ParseError.hpp"
 #include "Options/Tags.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

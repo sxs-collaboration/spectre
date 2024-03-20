@@ -13,7 +13,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/LineSearch.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/Tags/InboxTags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Observe.hpp"

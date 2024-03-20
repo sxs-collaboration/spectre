@@ -38,7 +38,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "Parallel/Tags/DistributedObjectTags.hpp"
 #include "Parallel/Tags/Metavariables.hpp"

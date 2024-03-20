@@ -38,6 +38,7 @@ target_link_libraries(
   LinearAlgebra
   Logging
   Options
+  Printf
   SphericalHarmonics
   PRIVATE
   CoordinateMaps

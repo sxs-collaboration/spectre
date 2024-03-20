@@ -37,6 +37,7 @@ target_link_libraries(
   ErrorHandling
   InitialDataUtilities
   Options
+  Printf
   Serialization
   Spectral
   Time

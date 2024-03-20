@@ -22,6 +22,7 @@ target_link_libraries(
   DataStructures
   Initialization
   Logging
+  Printf
   Serialization
   Utilities
   )

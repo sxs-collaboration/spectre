@@ -66,6 +66,7 @@ target_link_libraries(
   PRIVATE
   Informer
   IO
+  Printf
   )
 
 add_subdirectory(Python)

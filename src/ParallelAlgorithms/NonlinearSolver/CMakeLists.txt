@@ -29,6 +29,7 @@ target_link_libraries(
   Parallel
   ParallelAmr
   ParallelLinearSolver
+  Printf
   Serialization
   SystemUtilities
   )
