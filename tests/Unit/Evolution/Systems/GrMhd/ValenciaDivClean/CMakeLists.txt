@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
   BoundaryConditions/Test_HydroFreeOutflow.cpp
   BoundaryConditions/Test_Periodic.cpp
+  BoundaryConditions/Test_Reflective.cpp
   BoundaryCorrections/Test_Hll.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_BoundaryConditionGhostData.cpp
