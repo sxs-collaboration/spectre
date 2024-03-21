@@ -16,7 +16,6 @@
 #include "Domain/FlatLogicalMetric.hpp"
 #include "Domain/JacobianDiagnostic.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
-#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
@@ -262,7 +261,7 @@ struct SetMeshType {
 };
 }  // namespace Initialization
 
-template <size_t Dim, bool EnableTimeDependentMaps>
+template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using TimeStepperBase = TimeStepper;
@@ -272,10 +271,6 @@ struct Metavariables {
 
   // A placeholder system for the domain creators
   struct system {};
-
-  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
-    static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
-  };
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "

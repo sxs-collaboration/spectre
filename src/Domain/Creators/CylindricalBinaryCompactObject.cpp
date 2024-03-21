@@ -62,6 +62,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     bool use_equiangular_map,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_grid_points,
+    std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         inner_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -77,7 +78,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       outer_radius_(outer_radius),
       use_equiangular_map_(use_equiangular_map),
       inner_boundary_condition_(std::move(inner_boundary_condition)),
-      outer_boundary_condition_(std::move(outer_boundary_condition)) {
+      outer_boundary_condition_(std::move(outer_boundary_condition)),
+      time_dependent_options_(std::move(time_dependent_options)) {
   if (center_A_[2] <= 0.0) {
     PARSE_ERROR(
         context,
@@ -384,29 +386,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
       swap_refinement_and_grid_points_xi_zeta(current_block++);
     }
   }
-}
 
-CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
-    std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
-    std::array<double, 3> center_A, std::array<double, 3> center_B,
-    double radius_A, double radius_B, bool include_inner_sphere_A,
-    bool include_inner_sphere_B, bool include_outer_sphere, double outer_radius,
-    bool use_equiangular_map,
-    const typename InitialRefinement::type& initial_refinement,
-    const typename InitialGridPoints::type& initial_grid_points,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        inner_boundary_condition,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        outer_boundary_condition,
-    const Options::Context& context)
-    : CylindricalBinaryCompactObject(
-          center_A, center_B, radius_A, radius_B, include_inner_sphere_A,
-          include_inner_sphere_B, include_outer_sphere, outer_radius,
-          use_equiangular_map, initial_refinement, initial_grid_points,
-          std::move(inner_boundary_condition),
-          std::move(outer_boundary_condition), context) {
-  time_dependent_options_ = std::move(time_dependent_options);
-
+  // Build time-dependent maps
   // The size map, which is applied from the grid to distorted frame, currently
   // needs to start and stop at certain radii around each excision. If the inner
   // spheres aren't included, the outer radii would have to be in the middle of

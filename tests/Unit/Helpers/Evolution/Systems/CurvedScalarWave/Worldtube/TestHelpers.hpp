@@ -8,19 +8,14 @@
 
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Protocols/Metavariables.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TestHelpers::CurvedScalarWave::Worldtube {
 struct Metavariables {
-  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
-    static constexpr bool enable_time_dependent_maps = true;
-  };
   using system =
       TestHelpers::domain::BoundaryConditions::SystemWithBoundaryConditions<3>;
   struct factory_creation

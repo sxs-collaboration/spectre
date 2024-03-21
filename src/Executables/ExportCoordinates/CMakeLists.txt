@@ -22,12 +22,8 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_export_coordinates_executable DIM TIME_DEPENDENT)
-  if(TIME_DEPENDENT STREQUAL "true")
-    set(EXECUTABLE "ExportTimeDependentCoordinates${DIM}D")
-  else()
-    set(EXECUTABLE "ExportCoordinates${DIM}D")
-  endif()
+function(add_export_coordinates_executable DIM)
+  set(EXECUTABLE "ExportCoordinates${DIM}D")
   add_spectre_executable(
     ${EXECUTABLE}
     EXCLUDE_FROM_ALL
@@ -37,12 +33,10 @@ function(add_export_coordinates_executable DIM TIME_DEPENDENT)
     ${EXECUTABLE}
     PRIVATE
     DIM=${DIM}
-    TIME_DEPENDENT=${TIME_DEPENDENT}
     )
   target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
 endfunction()
 
-add_export_coordinates_executable(1 false)
-add_export_coordinates_executable(2 false)
-add_export_coordinates_executable(3 false)
-add_export_coordinates_executable(3 true)
+add_export_coordinates_executable(1)
+add_export_coordinates_executable(2)
+add_export_coordinates_executable(3)
