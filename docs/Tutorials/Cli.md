@@ -16,3 +16,20 @@ compile the `cli` target in your build directory. Then run:
 
 All available commands are listed in the [Python documentation](py/cli.html).
 
+## Autocompletion
+
+The CLI supports autocompletion for Bash, Zsh, and Fish. Depending on your
+shell, source the corresponding file:
+
+```sh
+# In the build directory:
+# - Bash:
+. ./bin/python/shell-completion.bash
+# - Fish:
+cp ./bin/python/shell-completion.fish ~/.config/fish/completions/spectre.fish
+# - Zsh:
+. ./bin/python/shell-completion.zsh
+```
+
+You may want to source the shell completion script on startup, e.g., in your
+`.bashrc` or `.zshrc` file.
