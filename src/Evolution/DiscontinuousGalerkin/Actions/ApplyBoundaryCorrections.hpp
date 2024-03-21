@@ -79,9 +79,9 @@ void neighbor_reconstructed_face_solution(
                        std::optional<DataVector>, std::optional<DataVector>,
                        ::TimeStepId, int>>>*>
         received_temporal_id_and_data);
-template <size_t Dim, typename DbTagsList>
+template <size_t Dim>
 void neighbor_tci_decision(
-    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    gsl::not_null<db::Access*> box,
     const std::pair<
         const TimeStepId,
         DirectionalIdMap<
@@ -134,7 +134,7 @@ bool receive_boundary_data_global_time_stepping(
                         DgComputeSubcellNeighborPackagedData>(
         &db::as_access(*box), make_not_null(&*received_temporal_id_and_data));
     evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
-        box, *received_temporal_id_and_data);
+        make_not_null(&db::as_access(*box)), *received_temporal_id_and_data);
   }
 
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,

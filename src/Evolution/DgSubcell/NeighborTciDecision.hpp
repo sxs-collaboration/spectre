@@ -8,7 +8,7 @@
 #include <tuple>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
@@ -25,9 +25,9 @@ namespace evolution::dg::subcell {
  * \brief Copies the neighbors' TCI decisions into
  * `subcell::Tags::NeighborTciDecisions<Dim>`
  */
-template <size_t Dim, typename DbTagsList>
+template <size_t Dim>
 void neighbor_tci_decision(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const gsl::not_null<db::Access*> box,
     const std::pair<
         const TimeStepId,
         DirectionalIdMap<
