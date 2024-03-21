@@ -21,7 +21,9 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/InitialData/IrrotationalBns.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -57,7 +59,9 @@ using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     IrrotationalBns::Tags::RotationalShift<DataType>,
     IrrotationalBns::Tags::DerivLogLapseOverSpecificEnthalpy<DataType>,
     IrrotationalBns::Tags::RotationalShiftStress<DataType>,
-    gr::Tags::SpatialMetric<DataType, 3>>>;
+    gr::Tags::SpatialMetric<DataType, 3>,
+    gr::Tags::InverseSpatialMetric<DataType, 3>,
+    gr::Tags::SpatialChristoffelSecondKindContracted<DataType, 3>>>;
 
 template <typename DataType, StarRegion Region = StarRegion::Interior>
 struct TovVariables
@@ -71,10 +75,11 @@ struct TovVariables
   using Base::coords;
   using Base::eos;
   using Base::radial_solution;
-  const RelativisticEuler::Solutions::TovStar& tov_star;
+
   const std::array<double, 3> star_center;
   const tnsr::I<DataType, 3>& x;
   const DataType& radius;
+  const RelativisticEuler::Solutions::TovStar& tov_star;
   const double euler_enthalpy_constant;
   // Note this is not the angular velocity of the star around its axis, that
   // is zero in this case.
@@ -147,6 +152,17 @@ struct TovVariables
                   gsl::not_null<Cache*> cache,
                   gr::Tags::SpatialMetric<DataType, 3> /*meta*/) const;
 
+  void operator()(gsl::not_null<tnsr::II<DataType, 3>*> inverse_spatial_metric,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const;
+
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, 3>*>
+          spatial_christoffel_second_kind_contracted,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::SpatialChristoffelSecondKindContracted<DataType, 3> /*meta*/)
+      const;
+
  private:
   template <typename Tag>
   typename Tag::type get_tov_var(Tag /*meta*/) const {
@@ -166,7 +182,8 @@ struct TovVariables
  * \see gr::Solutions::TovSolution
  * Teh
  */
-class TovStar : public elliptic::analytic_data::AnalyticSolution {
+class TovStar : public elliptic::analytic_data::Background,
+                public elliptic::analytic_data::InitialGuess {
  private:
   using RelEulerTovStar = RelativisticEuler::Solutions::TovStar;
   std::array<double, 3> star_center_{};
@@ -239,10 +256,10 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
 
   /// \cond
   explicit TovStar(CkMigrateMessage* m)
-      : elliptic::analytic_data::AnalyticSolution(m) {}
+      : elliptic::analytic_data::Background(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TovStar);
-  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone() const {
+  std::unique_ptr<elliptic::analytic_data::Background> get_clone() const {
     return std::make_unique<TovStar>(*this);
   }
   /// \endcond
@@ -268,7 +285,7 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    elliptic::analytic_data::AnalyticSolution::pup(p);
+    elliptic::analytic_data::Background::pup(p);
     p | tov_star_;
     p | euler_enthalpy_constant_;
     p | star_center_;
@@ -290,12 +307,13 @@ class TovStar : public elliptic::analytic_data::AnalyticSolution {
                                 star_center_,
                                 euler_enthalpy_constant_,
                                 orbital_angular_velocity_};
+
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   friend bool operator==(const TovStar& lhs, const TovStar& rhs) {
     return lhs.tov_star_ == rhs.tov_star_;
   }
-
 };
 
 inline bool operator!=(const TovStar& lhs, const TovStar& rhs) {

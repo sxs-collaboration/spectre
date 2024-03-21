@@ -60,6 +60,28 @@ void TovVariables<DataType, Region>::operator()(
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
+    gsl::not_null<tnsr::II<DataType, 3>*> inverse_spatial_metric,
+    gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::InverseSpatialMetric<DataType, 3> /*meta*/) const {
+  *inverse_spatial_metric =
+      get_tov_var(gr::Tags::InverseSpatialMetric<DataType, 3>{});
+}
+
+// TODO: Fix this! The TOV class should potentially implement it.
+// This works only if the spatial slice is flat
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    gsl::not_null<tnsr::i<DataType, 3>*>
+        spatial_christoffel_second_kind_contracted,
+    gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::SpatialChristoffelSecondKindContracted<DataType, 3> /*meta*/)
+    const {
+  *spatial_christoffel_second_kind_contracted =
+      make_with_value<tnsr::i<DataType, 3>>(x, 0.0);
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> shift,
     const gsl::not_null<Cache*> /* cache */,
     gr::Tags::Shift<DataType, 3, Frame::Inertial> /*meta*/) const {
@@ -107,11 +129,12 @@ void TovVariables<DataType, Region>::operator()(
   std::array<double, 3> star_velocity{
       -star_center[1] * orbital_angular_velocity,
       star_center[0] * orbital_angular_velocity, 0.0};
+  *velocity_potential = make_with_value<Scalar<DataType>>(spatial_metric, 0);
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       // The velocity of the star is taken to be a constant as a guess
       velocity_potential->get() +=
-          (spatial_metric.get(i, j)) * gsl::at(star_velocity, i) * x.get(j);
+          (spatial_metric.get(i, j) * gsl::at(star_velocity, i) * x.get(j));
     }
   }
   velocity_potential->get() *=

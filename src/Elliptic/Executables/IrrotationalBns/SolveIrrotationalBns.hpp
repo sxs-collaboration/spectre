@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
@@ -21,6 +22,7 @@
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Phase.hpp"
@@ -39,7 +41,6 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/IrrotationalBns/Factory.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
@@ -62,19 +63,21 @@ struct Metavariables {
       IrrotationalBns::Geometry::FlatCartesian>;
   using solver = elliptic::Solver<Metavariables>;
 
-  using analytic_solution_fields = typename system::primal_fields;
-  using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
-  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+  using solved_fields = typename system::primal_fields;
+  using deriv_fields = tmpl::list<::Tags::DerivTensorCompute<
+      tmpl::front<solved_fields>,
+      domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::Mesh<3>>>;
   using observe_fields = tmpl::append<
-      analytic_solution_fields, error_tags, typename solver::observe_fields,
+      solved_fields, typename system::background_fields,
+      typename solver::observe_fields, deriv_fields,
       tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                  ::Events::Tags::ObserverDetInvJacobianCompute<
                      Frame::ElementLogical, Frame::Inertial>,
                  domain::Tags::RadiallyCompressedCoordinatesCompute<
                      volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 error_compute>;
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =

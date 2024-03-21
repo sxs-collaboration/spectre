@@ -81,19 +81,16 @@ struct FirstOrderSystem
 
   using background_fields = tmpl::list<
       gr::Tags::InverseSpatialMetric<DataVector, 3>,
-      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>,
       gr::Tags::Lapse<DataVector>,
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::int_<3>,
-                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                    tmpl::integral_constant<size_t, 3>, Frame::Inertial>,
       gr::Tags::Shift<DataVector, 3>,
-      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::int_<3>,
-                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
+                    tmpl::integral_constant<size_t, 3>, Frame::Inertial>,
       Tags::RotationalShift<DataVector>,
       Tags::DerivLogLapseOverSpecificEnthalpy<DataVector>,
-      Tags::RotationalShiftStress<DataVector>,
-      Tags::SpatialRotationalKillingVector<DataVector>,
-      Tags::DerivSpatialRotationalKillingVector<DataVector>>;
+      Tags::RotationalShiftStress<DataVector>>;
   using inv_metric_tag =
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
                           gr::Tags::InverseSpatialMetric<DataVector, 3>>;
