@@ -112,16 +112,7 @@ namespace creators {
  *    testing of methods only coded on cartesian grids.
  *
  * \par Time dependence:
- * When using this domain, the metavariables struct can contain a struct named
- * `domain` that conforms to `domain::protocols::Metavariables`. If
- * `domain::enable_time_dependent_maps` is either set to `false` or not
- * specified in the metavariables, then this domain will be time-independent. If
- * `domain::enable_time_dependent_maps` is set to `true`, then this domain also
- * includes a time-dependent map, along with additional options (and a
- * corresponding constructor) for initializing the time-dependent map. These
- * options include the `InitialTime` which specifies the initial time for the
- * FunctionsOfTime controlling the map. The following time-dependent maps are
- * applied:
+ * The following time-dependent maps are applied:
  *
  * - A `CubicScale` expansion and a `Rotation` applied to all blocks from the
  *   Grid to the Inertial frame. However, if there is a size map in the block
@@ -402,11 +393,11 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   template <typename Metavariables>
-  using time_independent_options = tmpl::append<
+  using options = tmpl::append<
       tmpl::list<ObjectA, ObjectB, EnvelopeRadius, OuterRadius,
                  InitialRefinement, InitialGridPoints, UseEquiangularMap,
                  RadialDistributionEnvelope, RadialDistributionOuterShell,
-                 OpeningAngle>,
+                 OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -414,13 +405,6 @@ class BinaryCompactObject : public DomainCreator<3> {
               domain::BoundaryConditions::get_boundary_conditions_base<
                   typename Metavariables::system>>>,
           tmpl::list<>>>;
-
-  template <typename Metavariables>
-  using options = tmpl::conditional_t<
-      domain::creators::bco::enable_time_dependent_maps_v<Metavariables>,
-      tmpl::push_front<time_independent_options<Metavariables>,
-                       TimeDependentMaps>,
-      time_independent_options<Metavariables>>;
 
   static constexpr Options::String help{
       "A general domain for two compact objects. Each object is represented by "
@@ -443,15 +427,10 @@ class BinaryCompactObject : public DomainCreator<3> {
       "refinement in [polar, azimuthal, radial] direction\n"
       "  - A list, with [polar, azimuthal, radial] refinement for each block\n"
       "\n"
-      "If time-dependent maps are enabled, the domain can rotate around the "
+      "The domain can rotate around the "
       "z-axis and expand/compress radially. The two objects can each have a "
       "spherical distortion (shape map)."};
 
-  // Constructor for time-independent version of the domain
-  // (i.e., for when
-  // Metavariables::domain::enable_time_dependent_maps == false or
-  // when the metavariables do not define
-  // Metavariables::domain::enable_time_dependent_maps)
   BinaryCompactObject(
       typename ObjectA::type object_A, typename ObjectB::type object_B,
       double envelope_radius, double outer_radius,
@@ -463,26 +442,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          outer_boundary_condition = nullptr,
-      const Options::Context& context = {});
-
-  // Constructor for time-dependent version of the domain
-  // (i.e., for when
-  // Metavariables::domain::enable_time_dependent_maps == true),
-  // with an additional parameter
-  BinaryCompactObject(
-      std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
-      typename ObjectA::type object_A, typename ObjectB::type object_B,
-      double envelope_radius, double outer_radius,
-      const typename InitialRefinement::type& initial_refinement,
-      const typename InitialGridPoints::type& initial_number_of_grid_points,
-      bool use_equiangular_map = true,
-      CoordinateMaps::Distribution radial_distribution_envelope =
-          CoordinateMaps::Distribution::Projective,
-      CoordinateMaps::Distribution radial_distribution_outer_shell =
-          CoordinateMaps::Distribution::Linear,
-      double opening_angle_in_degrees = 90.0,
+      std::optional<bco::TimeDependentMapOptions<false>>
+          time_dependent_options = std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});

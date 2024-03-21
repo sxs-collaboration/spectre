@@ -17,7 +17,6 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/Structure/SegmentId.hpp"

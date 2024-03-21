@@ -34,7 +34,7 @@ template <size_t Dim, typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = ElementId<Dim>;
 
   using initial_tags =
       tmpl::list<CurvedScalarWave::Tags::BackgroundSpacetime<
@@ -45,7 +45,7 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  CurvedScalarWave::Actions::CalculateGrVars<
-                     typename Metavariables::system>>>>;
+                     typename Metavariables::system, false>>>>;
 };
 
 template <size_t Dim, typename System, typename BackgroundSpacetime>
@@ -70,17 +70,19 @@ void test(const BackgroundSpacetime& background_spacetime,
   const auto random_coords = make_with_random_values<tnsr::I<DataVector, Dim>>(
       generator, make_not_null(&dist), DataVector{num_points});
   const double time = 0.;
+  const ElementId<Dim> element_id{0};
   ActionTesting::emplace_component_and_initialize<comp>(
-      &runner, 0, {background_spacetime, random_coords, time});
+      &runner, element_id, {background_spacetime, random_coords, time});
   // invoke CalculateGrVars
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+  ActionTesting::next_action<comp>(make_not_null(&runner), element_id);
   const auto solution_at_coords = background_spacetime.variables(
       random_coords, time, typename system::spacetime_tag_list{});
   // check that each tag corresponds to analytic solution now
   tmpl::for_each<typename system::spacetime_tag_list>(
-      [&runner, &solution_at_coords](auto spacetime_tag_v) {
+      [&runner, &element_id, &solution_at_coords](auto spacetime_tag_v) {
         using spacetime_tag = tmpl::type_from<decltype(spacetime_tag_v)>;
-        CHECK(ActionTesting::get_databox_tag<comp, spacetime_tag>(runner, 0) ==
+        CHECK(ActionTesting::get_databox_tag<comp, spacetime_tag>(runner,
+                                                                  element_id) ==
               get<spacetime_tag>(solution_at_coords));
       });
 }

@@ -148,6 +148,7 @@ DomainCreator:
       ObjectBCube:    [6, 6, 7]
       Envelope:       [6, 6, 6]
       OuterShell:     [6, 6, 6]
+    TimeDependentMaps: None
 
 Amr:
   Verbosity: Verbose

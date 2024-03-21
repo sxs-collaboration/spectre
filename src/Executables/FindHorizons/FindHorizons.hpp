@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/Creators/Factory3D.hpp"
-#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/Tags.hpp"
@@ -231,10 +230,6 @@ struct Metavariables {
   using AhA = ApparentHorizon<Dim, domain::ObjectLabel::A>;
   using AhB = ApparentHorizon<Dim, domain::ObjectLabel::B>;
   static constexpr bool two_horizons = TwoHorizons;
-
-  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
-    static constexpr bool enable_time_dependent_maps = false;
-  };
 
   using const_global_cache_tags = tmpl::list<>;
 
