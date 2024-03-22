@@ -641,12 +641,47 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
    * Computes adiabatic sound speed squared
    * \f[
    * c_s^2  \equiv \frac{\partial p}{\partial e} |_{s, Y_e} =
-   * \frac{\rho}{h}\frac{\partial p}{\rho} |_{e, Y_e} +
+   * \frac{\rho}{h}\frac{\partial p}{\partial \rho} |_{e, Y_e} +
    * \frac{\partial p}{\partial e}|_{\rho, Y_e}
    * \f].
    * With \f$p, e\f$ the pressure and energy density respectively,
    * \f$s\f$ the entropy density, \f$Y_e\f$ the electron fraction
-   * and \f$\rho\f$ the rest-mass density.
+   * \f$\rho\f$ the rest-mass density, and \f$h\f$ the enthalpy density.
+   * Note that \f$e\f$ is the total energy density and not the internal energy,
+   * therefore
+   * \f[
+   * \frac{\partial p}{\partial \rho} |_{e, Y_e} \neq \chi \equiv \frac{\partial
+   * p}{\partial \rho} |_{\epsilon, Y_e}
+   * \f]
+   * as defined in the 2-d EoS above. By definition
+   * \f$ e = (1+\epsilon) \rho \f$ so holding \f$e\f$ constant
+   * \f[
+   *  0 = \frac{d e}{d \rho} = \frac{\partial e}{\partial \rho} +
+   *     \frac{\partial e}{\partial \epsilon} \frac{\partial \epsilon}{\rho}.
+   * \f]
+   * (where we have suppressed \f$ Y_e\f$ dependence)
+   * So \f$ \partial \epsilon /  \partial \rho |_{e} = (1 + \epsilon)/\rho \f$
+   * and we can expand
+   * \f[
+   * \frac{\partial p}{\partial \rho} |_{e, Y_e} = \frac{\partial e}{\partial
+   * \rho}_{\epsilon, Y_e} + \frac{(1 + \epsilon)}{\rho} \frac{\partial
+   * e}{\partial \epsilon}|_{\rho, Y_e}
+   * \f]
+   *  Finally, we can rewrite the entire sound speed using only the rest-mass
+   * density, specific internal energy, and electron fraction as variables,
+   * by using \f$ \frac{\partial e}{\partial \epsilon}|_{\rho, Y_e} = 1 \f$
+   * \f[
+   * c_s^2   =
+   * \frac{\rho}{h}\frac{\partial p}{\partial \rho} |_{\epsilon, Y_e} +
+   * \frac{1}{\rho} \frac{\partial p}{\partial \epsilon}|_{\rho, Y_e} \left(
+   * 1 - \frac{(1 + \epsilon)\rho}{h}\right)
+   * \f]
+   * Which reduces to our preferred form
+   * \f[
+   * c_s^2 =
+   * \frac{\rho}{h}(\chi + \kappa)
+   * \f]
+   *
    * Computed as a function of temperature, rest-mass density and electron
    * fraction. Note that this will break thermodynamic consistency if the
    * pressure and internal energy interpolated separately. The precise impact of
