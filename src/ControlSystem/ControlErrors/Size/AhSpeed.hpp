@@ -8,11 +8,17 @@
 
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace control_system::size::States {
 class AhSpeed : public State {
  public:
+  using options = tmpl::list<>;
+  static constexpr Options::String help{
+      "Controls the velocity of the excision surface to avoid incoming "
+      "characteristic speeds. This is state 1 in SpEC."};
   AhSpeed() = default;
   std::string name() const override { return "AhSpeed"; }
   size_t number() const override { return 1; }

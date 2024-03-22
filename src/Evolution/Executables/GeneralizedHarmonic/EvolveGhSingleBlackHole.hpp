@@ -10,6 +10,8 @@
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
+#include "ControlSystem/ControlErrors/Size/Factory.hpp"
+#include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
@@ -182,7 +184,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
                        intrp::Events::InterpolateWithoutInterpComponent<
                            3, ExcisionBoundary, interpolator_source_vars>>>>,
         tmpl::pair<DenseTrigger,
-                   control_system::control_system_triggers<control_systems>>>;
+                   control_system::control_system_triggers<control_systems>>,
+        tmpl::pair<control_system::size::State,
+                   control_system::size::States::factory_creatable_states>>;
   };
 
   using typename gh_base::const_global_cache_tags;

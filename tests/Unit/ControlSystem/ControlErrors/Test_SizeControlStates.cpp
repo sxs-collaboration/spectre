@@ -10,10 +10,12 @@
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
+#include "ControlSystem/ControlErrors/Size/Factory.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -71,12 +73,14 @@ void do_test(const TestParams& test_params,
       test_params.min_char_speed, test_params.min_comoving_char_speed,
       test_params.control_err_delta_r, test_params.average_radial_distance,
       test_params.max_allowed_radial_distance};
-  control_system::size::Info info{std::make_unique<InitialState>(),
-                                  test_params.damping_time,
-                                  test_params.original_target_char_speed,
-                                  target_drift_velocity,
-                                  original_suggested_time_scale,
-                                  original_discontinuous_change_has_occurred};
+  control_system::size::Info info{
+      TestHelpers::test_factory_creation<control_system::size::State,
+                                         InitialState>(initial_state),
+      test_params.damping_time,
+      test_params.original_target_char_speed,
+      target_drift_velocity,
+      original_suggested_time_scale,
+      original_discontinuous_change_has_occurred};
 
   // Check serialization of info
   const auto info_copy = serialize_and_deserialize(info);
