@@ -27,7 +27,6 @@ spectre_target_headers(
   AdaptiveSteppingDiagnostics.hpp
   ApproximateTime.hpp
   BoundaryHistory.hpp
-  ChangeSlabSize.hpp
   ChooseLtsStepSize.hpp
   EvolutionOrdering.hpp
   History.hpp
@@ -53,6 +52,7 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(ChangeSlabSize)
 add_subdirectory(OptionTags)
 add_subdirectory(StepChoosers)
 add_subdirectory(Tags)

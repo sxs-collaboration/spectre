@@ -13,7 +13,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -14,7 +14,7 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Time/ChangeSlabSize.hpp"
+#include "Time/ChangeSlabSize/ChangeSlabSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

@@ -214,11 +214,11 @@
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"

@@ -14,6 +14,7 @@
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 

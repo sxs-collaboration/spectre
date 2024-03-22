@@ -19,7 +19,7 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"

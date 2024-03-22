@@ -1,10 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// The event portion of slab size changing relies on a reduction, so
-// it cannot currently be tested with the mocking code.  This tests
-// the action portion.
-
 #include "Framework/TestingFramework.hpp"
 
 #include <cstdint>
@@ -19,8 +15,9 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -128,8 +125,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
         make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
     using ExpectedMessages =
-        ChangeSlabSize_detail::NumberOfExpectedMessagesInbox;
-    using NewSize = ChangeSlabSize_detail::NewSlabSizeInbox;
+        ::Tags::ChangeSlabSize::NumberOfExpectedMessagesInbox;
+    using NewSize = ::Tags::ChangeSlabSize::NewSlabSizeInbox;
     auto& inboxes = runner.inboxes<Component>().at(0);
 
     const auto check_box = [&box, &get_step](const TimeStepId& id,

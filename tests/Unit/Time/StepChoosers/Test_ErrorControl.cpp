@@ -26,7 +26,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/History.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
