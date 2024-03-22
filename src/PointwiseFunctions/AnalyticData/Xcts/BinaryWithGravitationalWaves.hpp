@@ -344,12 +344,15 @@ struct BinaryWithGravitationalWavesVariables
  *
  * This class implements background data for the XCTS equations describing
  * a binary black hole system with a realistic gravitational wave content.
- * The data is constructed from Post-Newtonian expansions for the inspiral
- * phase, in orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT
- * gauge it is possible to get the 3-metric as \f$\gamma^{PN}_{ij} =
- * \psi^{4}_{PN} \delta_{ij} + h^{TT}_{ij}\f$ where \f$h^{TT}_{ij}\f$ is the
- * radiative part and the non-radiative Post-Newtonian conformal factor is given
- * by
+ * The main goal of this implementation is to improve the extracted
+ * wave forms, for example, by minimizing junk radiation.
+ * The data is only valid for black holes without spin. Even so, there is some
+ * work done to describe such systems that could later be implemented. The data
+ * is constructed from Post-Newtonian expansions for the inspiral phase, in
+ * orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT gauge it
+ * is possible to get the 3-metric as \f$\gamma^{PN}_{ij} = \psi^{4}_{PN}
+ * \delta_{ij} + h^{TT}_{ij}\f$ where \f$h^{TT}_{ij}\f$ is the radiative part
+ * and the non-radiative Post-Newtonian conformal factor is given by
  *
  * \f{equation}{
  * \psi_{PN} = 1 + \sum_{a=1}^{2} \frac{E_a}{2 r_a} + O(\epsilon^6)
@@ -443,7 +446,7 @@ struct BinaryWithGravitationalWavesVariables
  *
  * \warning The retarded and integral terms, equations
  * \f$\eqref{eq:retarded_term}\f$ and \f$\eqref{eq:integral_term}\f$, are not
- * implemented yet. Instead these terms are set to zero.}
+ * implemented yet. Instead these terms are set to zero.
  *
  * With this the whole spatial metric is computed up to \f$4PN\f$ order and the
  * radiative term agrees well with quadrupole predictions. In \cite Tichy2002ec,
@@ -460,6 +463,9 @@ struct BinaryWithGravitationalWavesVariables
  *  \tilde{\pi}_{(3)}^{i j}=\frac{1}{16 \pi} \sum_a p_{a}^k\{-\delta_{i
  * j}(\frac{1}{r_a})_{, k}+2[\delta_{i k}(\frac{1}{r_a})_{, j}+\delta_{j
  * k}(\frac{1}{r_a})_{, i}]-\frac{1}{2} r_{a, i j k}\}. \f}
+ *
+ * \warning The class is still being worked on. The Solver was not tested yet,
+ * for now we still see a very slow convergence.
  */
 class BinaryWithGravitationalWaves
     : public elliptic::analytic_data::Background,
