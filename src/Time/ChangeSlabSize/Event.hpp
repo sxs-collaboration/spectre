@@ -16,8 +16,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
@@ -39,14 +37,15 @@ namespace ChangeSlabSize_detail {
 struct StoreNewSlabSize {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
-  static void apply(const db::DataBox<DbTags>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const int64_t slab_number,
-                    const double slab_size) {
-    Parallel::receive_data<::Tags::ChangeSlabSize::NewSlabSizeInbox>(
-        *Parallel::local(Parallel::get_parallel_component<ParallelComponent>(
-            cache)[array_index]),
-        slab_number, slab_size);
+  static void apply(db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const int64_t slab_number, const double slab_size) {
+    db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
+        [&](const gsl::not_null<
+            std::map<int64_t, std::unordered_multiset<double>>*>
+                sizes) { (*sizes)[slab_number].insert(slab_size); },
+        make_not_null(&box));
   }
 };
 }  // namespace ChangeSlabSize_detail
@@ -103,13 +102,16 @@ class ChangeSlabSize : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<::Tags::TimeStepId, ::Tags::DataBox>;
+  // Need a const version of the full box for the step choosers, but
+  // can't get a const version while mutating other tags, so request a
+  // mutable version.
+  using return_tags = tmpl::list<::Tags::DataBox>;
+  using argument_tags = tmpl::list<::Tags::TimeStepId>;
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const TimeStepId& time_step_id,
-                  const db::DataBox<DbTags>& box_for_step_choosers,
+  void operator()(const gsl::not_null<db::DataBox<DbTags>*> box,
+                  const TimeStepId& time_step_id,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
@@ -127,7 +129,7 @@ class ChangeSlabSize : public Event {
           desired_slab_size,
           step_chooser
               ->desired_step(time_step_id.step_time().slab().duration().value(),
-                             box_for_step_choosers)
+                             *box)
               .first);
       // We must synchronize if any step chooser requires it, not just
       // the limiting one, because choosers requiring synchronization
@@ -137,23 +139,28 @@ class ChangeSlabSize : public Event {
       }
     }
 
+    db::mutate<::Tags::ChangeSlabSize::NumberOfExpectedMessages>(
+        [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+          ++(*expected)[slab_to_change];
+        },
+        box);
+
     const auto& component_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     const auto& self_proxy = component_proxy[array_index];
-    // This message is sent synchronously, so it is guaranteed to
-    // arrive before the ChangeSlabSize action is called.
-    Parallel::receive_data<
-        ::Tags::ChangeSlabSize::NumberOfExpectedMessagesInbox>(
-        *Parallel::local(self_proxy), slab_to_change,
-        ::Tags::ChangeSlabSize::NumberOfExpectedMessagesInbox::NoData{});
     if (synchronization_required) {
       Parallel::contribute_to_reduction<
           ChangeSlabSize_detail::StoreNewSlabSize>(
           ReductionData(slab_to_change, desired_slab_size), self_proxy,
           component_proxy);
     } else {
-      Parallel::receive_data<::Tags::ChangeSlabSize::NewSlabSizeInbox>(
-          *Parallel::local(self_proxy), slab_to_change, desired_slab_size);
+      db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            (*sizes)[slab_to_change].insert(desired_slab_size);
+          },
+          box);
     }
   }
 

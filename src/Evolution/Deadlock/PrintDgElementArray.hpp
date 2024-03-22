@@ -15,7 +15,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/OutputInbox.hpp"
 #include "Parallel/Printf.hpp"
-#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -36,7 +35,6 @@ namespace deadlock {
  * \details This will print the contents of the following inbox or DataBox tags:
  *
  * - `evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<3>`
- * - `Tags::ChangeSlabSize::NewSlabSizeInbox`
  * - `evolution::dg::Tags::MortarNextTemporalId<3>`
  * - `evolution::dg::Tags::MortarDataHistory` (for LTS only)
  * - `evolution::dg::Tags::MortarData<3>` (for GTS only)
@@ -87,11 +85,7 @@ struct PrintElementInfo {
       const std::string mortar_inbox = Parallel::output_inbox<
           evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<3>>(inboxes,
                                                                         2_st);
-      const std::string slab_size_inbox =
-          Parallel::output_inbox<::Tags::ChangeSlabSize::NewSlabSizeInbox>(
-              inboxes, 2_st);
       ss << mortar_inbox;
-      ss << slab_size_inbox;
 
       ss << " Mortars:\n";
 

@@ -33,6 +33,7 @@
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
@@ -63,6 +64,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -268,7 +270,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             typename control_system::Actions::InitializeMeasurements<
                 control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>>>>;
+            intrp::Tags::InterpPointInfo<EvolutionMetavars>,
+            Tags::ChangeSlabSize::NumberOfExpectedMessages,
+            Tags::ChangeSlabSize::NewSlabSize>>>;
   };
 
   struct registration
