@@ -364,4 +364,21 @@ void CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>::apply(
                   get(*dt_inertial_time).size());
   get(*dt_inertial_time) = real(exp_2_beta_at_scri.data());
 }
+
+void CalculateScriPlusValue<Tags::ScriPlus<Tags::KleinGordonPsi>>::apply(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        kg_psi_scri,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_kg_psi,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r, size_t l_max,
+    size_t number_of_radial_points) {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  const SpinWeighted<ComplexDataVector, 0> dy_kg_psi_scri;
+  make_const_view(make_not_null(&dy_kg_psi_scri), get(dy_kg_psi),
+                  (number_of_radial_points - 1) * number_of_angular_points,
+                  number_of_angular_points);
+
+  get(*kg_psi_scri) = -2. * get(boundary_r) * dy_kg_psi_scri;
+}
 }  // namespace Cce
