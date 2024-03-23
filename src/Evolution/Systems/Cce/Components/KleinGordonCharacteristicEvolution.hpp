@@ -106,6 +106,7 @@ struct KleinGordonCharacteristicEvolution
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       ::Actions::MutateApply<
           CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>>,
       Actions::CalculateScriInputs,
@@ -148,6 +149,7 @@ struct KleinGordonCharacteristicEvolution
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       klein_gordon_hypersurface_computation,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       compute_scri_quantities_and_observe,
       ::Actions::RecordTimeStepperData<cce_system>,
       ::Actions::UpdateU<cce_system>,
