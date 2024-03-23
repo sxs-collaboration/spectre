@@ -133,6 +133,7 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   double dg_package_data(
       const gsl::not_null<typename Tags::TildeE<

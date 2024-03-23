@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -92,6 +93,19 @@ void neighbor_tci_decision(
 /// \endcond
 
 namespace evolution::dg {
+namespace detail {
+template <typename BoundaryCorrectionClass>
+struct get_dg_boundary_terms {
+  using type = typename BoundaryCorrectionClass::dg_boundary_terms_volume_tags;
+};
+
+template <typename Tag, typename Type = db::const_item_type<Tag, tmpl::list<>>>
+struct TemporaryReference {
+  using tag = Tag;
+  using type = const Type&;
+};
+}  // namespace detail
+
 /// Receive boundary data for global time-stepping.  Returns true if
 /// all necessary data has been received.
 template <typename Metavariables, typename DbTagsList, typename... InboxTags>
@@ -340,6 +354,10 @@ struct ApplyBoundaryCorrections {
   using variables_tag = typename system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
+  using volume_tags_for_dg_boundary_terms =
+      tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+          typename system::boundary_correction_base::creatable_classes,
+          detail::get_dg_boundary_terms<tmpl::_1>>>>;
 
   using TimeStepperType =
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>;
@@ -357,19 +375,22 @@ struct ApplyBoundaryCorrections {
   using return_tags =
       tmpl::conditional_t<DenseOutput, tmpl::list<tag_to_update>,
                           tmpl::list<tag_to_update, mortar_data_tag>>;
-  using argument_tags = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<DenseOutput, mortar_data_tag, tmpl::list<>>,
-      domain::Tags::Mesh<volume_dim>, Tags::MortarMesh<volume_dim>,
-      Tags::MortarSize<volume_dim>, ::dg::Tags::Formulation,
-      evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
-      ::Tags::TimeStepper<TimeStepperType>,
-      evolution::Tags::BoundaryCorrection<system>,
-      tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
-      tmpl::conditional_t<local_time_stepping, tmpl::list<>,
-                          domain::Tags::DetInvJacobian<Frame::ElementLogical,
-                                                       Frame::Inertial>>>>;
+  using argument_tags = tmpl::append<
+      tmpl::flatten<tmpl::list<
+          tmpl::conditional_t<DenseOutput, mortar_data_tag, tmpl::list<>>,
+          domain::Tags::Mesh<volume_dim>, Tags::MortarMesh<volume_dim>,
+          Tags::MortarSize<volume_dim>, ::dg::Tags::Formulation,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
+          ::Tags::TimeStepper<TimeStepperType>,
+          evolution::Tags::BoundaryCorrection<system>,
+          tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
+          tmpl::conditional_t<local_time_stepping, tmpl::list<>,
+                              domain::Tags::DetInvJacobian<
+                                  Frame::ElementLogical, Frame::Inertial>>>>,
+      volume_tags_for_dg_boundary_terms>;
 
   // full step
+  template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
       const gsl::not_null<MortarDataType*> mortar_data,
@@ -385,15 +406,40 @@ struct ApplyBoundaryCorrections {
       const TimeStepperType& time_stepper,
       const typename system::boundary_correction_base& boundary_correction,
       const TimeDelta& time_step,
-      const Scalar<DataVector>& gts_det_inv_jacobian = {}) {
+      const Scalar<DataVector>& gts_det_inv_jacobian,
+      const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, mortar_meshes,
                mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
                std::numeric_limits<double>::signaling_NaN(),
-               gts_det_inv_jacobian);
+               gts_det_inv_jacobian, volume_args...);
+  }
+
+  template <typename... VolumeArgs>
+  static void apply(
+      const gsl::not_null<typename tag_to_update::type*> vars_to_update,
+      const gsl::not_null<MortarDataType*> mortar_data,
+      const Mesh<volume_dim>& volume_mesh,
+      const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
+      const typename Tags::MortarSize<volume_dim>::type& mortar_sizes,
+      const ::dg::Formulation dg_formulation,
+      const DirectionMap<
+          volume_dim, std::optional<Variables<tmpl::list<
+                          evolution::dg::Tags::MagnitudeOfNormal,
+                          evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
+          face_normal_covector_and_magnitude,
+      const TimeStepperType& time_stepper,
+      const typename system::boundary_correction_base& boundary_correction,
+      const TimeDelta& time_step, const VolumeArgs&... volume_args) {
+    apply_impl(vars_to_update, mortar_data, volume_mesh, mortar_meshes,
+               mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
+               time_stepper, boundary_correction, time_step,
+               std::numeric_limits<double>::signaling_NaN(), {},
+               volume_args...);
   }
 
   // dense output (LTS only)
+  template <typename... VolumeArgs>
   static void apply(
       const gsl::not_null<typename variables_tag::type*> vars_to_update,
       const MortarDataType& mortar_data, const Mesh<volume_dim>& volume_mesh,
@@ -407,11 +453,11 @@ struct ApplyBoundaryCorrections {
           face_normal_covector_and_magnitude,
       const LtsTimeStepper& time_stepper,
       const typename system::boundary_correction_base& boundary_correction,
-      const double dense_output_time) {
+      const double dense_output_time, const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, &mortar_data, volume_mesh, mortar_meshes,
                mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, TimeDelta{},
-               dense_output_time, {});
+               dense_output_time, {}, volume_args...);
   }
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -433,6 +479,7 @@ struct ApplyBoundaryCorrections {
   }
 
  private:
+  template <typename... VolumeArgs>
   static void apply_impl(
       const gsl::not_null<typename tag_to_update::type*> vars_to_update,
       const gsl::not_null<MortarDataType*> mortar_data,
@@ -448,7 +495,12 @@ struct ApplyBoundaryCorrections {
       const TimeStepperType& time_stepper,
       const typename system::boundary_correction_base& boundary_correction,
       const TimeDelta& time_step, const double dense_output_time,
-      const Scalar<DataVector>& gts_det_inv_jacobian) {
+      const Scalar<DataVector>& gts_det_inv_jacobian,
+      const VolumeArgs&... volume_args) {
+    tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
+        detail::TemporaryReference, volume_tags_for_dg_boundary_terms>>
+        volume_args_tuple{volume_args...};
+
     // Set up helper lambda that will compute and lift the boundary corrections
     ASSERT(
         volume_mesh.quadrature() ==
@@ -481,13 +533,14 @@ struct ApplyBoundaryCorrections {
         [&dense_output_time, &dg_formulation,
          &face_normal_covector_and_magnitude, &mortar_data, &mortar_meshes,
          &mortar_sizes, &time_step, &time_stepper, using_gauss_lobatto_points,
-         &vars_to_update, &volume_det_jacobian, &volume_det_inv_jacobian,
+         &vars_to_update, &volume_args_tuple, &volume_det_jacobian,
+         &volume_det_inv_jacobian,
          &volume_mesh](auto* typed_boundary_correction) {
+          using BcType = std::decay_t<decltype(*typed_boundary_correction)>;
           // Compute internal boundary quantities on the mortar for sides of
           // the element that have neighbors, i.e. they are not an external
           // side.
-          using mortar_tags_list = typename std::decay_t<decltype(
-              *typed_boundary_correction)>::dg_package_field_tags;
+          using mortar_tags_list = typename BcType::dg_package_field_tags;
 
           // Variables for reusing allocations.  The actual values are
           // not reused.
@@ -526,8 +579,9 @@ struct ApplyBoundaryCorrections {
                  &face_mesh, &face_normal_covector_and_magnitude,
                  &local_data_on_mortar, &mortar_id, &mortar_meshes,
                  &mortar_sizes, &neighbor_data_on_mortar,
-                 using_gauss_lobatto_points, &volume_det_jacobian,
-                 &volume_det_inv_jacobian, &volume_dt_correction, &volume_mesh](
+                 using_gauss_lobatto_points, &volume_args_tuple,
+                 &volume_det_jacobian, &volume_det_inv_jacobian,
+                 &volume_dt_correction, &volume_mesh](
                     const MortarData<volume_dim>& local_mortar_data,
                     const MortarData<volume_dim>& neighbor_mortar_data)
                 -> DtVariables {
@@ -571,7 +625,8 @@ struct ApplyBoundaryCorrections {
               call_boundary_correction(
                   make_not_null(&dt_boundary_correction_on_mortar),
                   local_data_on_mortar, neighbor_data_on_mortar,
-                  *typed_boundary_correction, dg_formulation);
+                  *typed_boundary_correction, dg_formulation, volume_args_tuple,
+                  typename BcType::dg_boundary_terms_volume_tags{});
 
               const std::array<Spectral::MortarSize, volume_dim - 1>&
                   mortar_size = mortar_sizes.at(mortar_id);
@@ -739,19 +794,25 @@ struct ApplyBoundaryCorrections {
   }
 
   template <typename... BoundaryCorrectionTags, typename... Tags,
-            typename BoundaryCorrection>
+            typename BoundaryCorrection, typename... AllVolumeArgs,
+            typename... VolumeTagsForCorrection>
   static void call_boundary_correction(
       const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
           boundary_corrections_on_mortar,
       const Variables<tmpl::list<Tags...>>& local_boundary_data,
       const Variables<tmpl::list<Tags...>>& neighbor_boundary_data,
       const BoundaryCorrection& boundary_correction,
-      const ::dg::Formulation dg_formulation) {
+      const ::dg::Formulation dg_formulation,
+      const tuples::TaggedTuple<detail::TemporaryReference<AllVolumeArgs>...>&
+          volume_args_tuple,
+      tmpl::list<VolumeTagsForCorrection...> /*meta*/) {
     boundary_correction.dg_boundary_terms(
         make_not_null(
             &get<BoundaryCorrectionTags>(*boundary_corrections_on_mortar))...,
         get<Tags>(local_boundary_data)..., get<Tags>(neighbor_boundary_data)...,
-        dg_formulation);
+        dg_formulation,
+        tuples::get<detail::TemporaryReference<VolumeTagsForCorrection>>(
+            volume_args_tuple)...);
   }
 };
 

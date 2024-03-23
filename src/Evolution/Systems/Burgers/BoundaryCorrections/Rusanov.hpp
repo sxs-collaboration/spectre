@@ -80,6 +80,7 @@ class Rusanov final : public BoundaryCorrection {
       tmpl::list<Tags::U, ::Tags::NormalDotFlux<Tags::U>, AbsCharSpeed>;
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   static double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_u,

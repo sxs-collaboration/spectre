@@ -152,6 +152,10 @@ class ProductOfCorrections final : public BoundaryCorrection {
       typename DerivedGhCorrection::dg_package_data_volume_tags,
       typename DerivedValenciaCorrection::dg_package_data_volume_tags>;
 
+  using dg_boundary_terms_volume_tags = tmpl::append<
+      typename DerivedGhCorrection::dg_boundary_terms_volume_tags,
+      typename DerivedValenciaCorrection::dg_boundary_terms_volume_tags>;
+
   using derived_product_correction_impl = detail::ProductOfCorrectionsImpl<
       DerivedGhCorrection, DerivedValenciaCorrection,
       typename DerivedGhCorrection::dg_package_field_tags,

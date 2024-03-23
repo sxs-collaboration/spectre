@@ -120,6 +120,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
                  Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
   using dg_package_data_volume_tags = tmpl::list<>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_v_psi,

@@ -102,6 +102,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
                  hydro::Tags::SpecificInternalEnergy<DataVector>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::EquationOfState<false, 2>>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
