@@ -62,9 +62,8 @@ struct ResizeAndComputePrims {
                  domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>, Tags::MassDensityCons,
                  Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
-                 hydro::Tags::EquationOfStateBase>;
+                 hydro::Tags::EquationOfState<false, 2>>;
 
-  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Variables<
           tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>*>
@@ -74,7 +73,6 @@ struct ResizeAndComputePrims {
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-          equation_of_state);
+      const EquationsOfState::EquationOfState<false, 2>& equation_of_state);
 };
 }  // namespace NewtonianEuler::subcell

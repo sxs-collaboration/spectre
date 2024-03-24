@@ -53,14 +53,13 @@ enum class FlattenerAction {
 /// (this is equivalent to \f$\theta = 0\f$ in the scaling form above).
 /// In principle, a less aggressive scaling could be used, but solving for the
 /// correct \f$\theta\f$ in this case is more involved.
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 FlattenerAction flatten_solution(
     gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
     gsl::not_null<Scalar<DataVector>*> energy_density,
     const Mesh<VolumeDim>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state);
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state);
 
 }  // namespace NewtonianEuler::Limiters

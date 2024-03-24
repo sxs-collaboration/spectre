@@ -101,9 +101,8 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       tmpl::list<hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>>;
   using dg_package_data_volume_tags =
-      tmpl::list<hydro::Tags::EquationOfStateBase>;
+      tmpl::list<hydro::Tags::EquationOfState<false, 2>>;
 
-  template <size_t ThermodynamicDim>
   double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -131,8 +130,8 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*mesh_velocity*/,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-          equation_of_state) const;
+      const EquationsOfState::EquationOfState<false, 2>& equation_of_state)
+      const;
 
   void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_mass_density,

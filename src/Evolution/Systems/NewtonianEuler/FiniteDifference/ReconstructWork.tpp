@@ -27,15 +27,14 @@
 #include "Utilities/Gsl.hpp"
 
 namespace NewtonianEuler::fd {
-template <typename PrimsTags, typename TagsList, size_t Dim,
-          size_t ThermodynamicDim, typename F>
+template <typename PrimsTags, typename TagsList, size_t Dim, typename F>
 void reconstruct_prims_work(
     const gsl::not_null<std::array<Variables<TagsList>, Dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, Dim>*>
         vars_on_upper_face,
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<false, 2>& eos,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
@@ -123,23 +122,12 @@ void reconstruct_prims_work(
     auto& vars_upper_face = gsl::at(*vars_on_upper_face, i);
     auto& vars_lower_face = gsl::at(*vars_on_lower_face, i);
 
-    if constexpr (ThermodynamicDim == 2) {
-      get<SpecificInternalEnergy>(vars_upper_face) =
-          eos.specific_internal_energy_from_density_and_pressure(
-              get<MassDensity>(vars_upper_face),
-              get<Pressure>(vars_upper_face));
-      get<SpecificInternalEnergy>(vars_lower_face) =
-          eos.specific_internal_energy_from_density_and_pressure(
-              get<MassDensity>(vars_lower_face),
-              get<Pressure>(vars_lower_face));
-    } else {
-      get<SpecificInternalEnergy>(vars_upper_face) =
-          eos.specific_internal_energy_from_density(
-              get<MassDensity>(vars_upper_face));
-      get<SpecificInternalEnergy>(vars_lower_face) =
-          eos.specific_internal_energy_from_density(
-              get<MassDensity>(vars_lower_face));
-    }
+    get<SpecificInternalEnergy>(vars_upper_face) =
+        eos.specific_internal_energy_from_density_and_pressure(
+            get<MassDensity>(vars_upper_face), get<Pressure>(vars_upper_face));
+    get<SpecificInternalEnergy>(vars_lower_face) =
+        eos.specific_internal_energy_from_density_and_pressure(
+            get<MassDensity>(vars_lower_face), get<Pressure>(vars_lower_face));
 
     // Compute conserved variables on faces
     NewtonianEuler::ConservativeFromPrimitive<Dim>::apply(
@@ -157,13 +145,13 @@ void reconstruct_prims_work(
   }
 }
 
-template <typename TagsList, typename PrimsTags, size_t Dim,
-          size_t ThermodynamicDim, typename F0, typename F1>
+template <typename TagsList, typename PrimsTags, size_t Dim, typename F0,
+          typename F1>
 void reconstruct_fd_neighbor_work(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const F0& reconstruct_lower_neighbor, const F1& reconstruct_upper_neighbor,
     const Variables<PrimsTags>& subcell_volume_prims,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<false, 2>& eos,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
@@ -233,15 +221,9 @@ void reconstruct_fd_neighbor_work(
         }
       });
 
-  if constexpr (ThermodynamicDim == 2) {
-    get<SpecificInternalEnergy>(*vars_on_face) =
-        eos.specific_internal_energy_from_density_and_pressure(
-            get<MassDensity>(*vars_on_face), get<Pressure>(*vars_on_face));
-  } else {
-    get<SpecificInternalEnergy>(*vars_on_face) =
-        eos.specific_internal_energy_from_density(
-            get<MassDensity>(*vars_on_face));
-  }
+  get<SpecificInternalEnergy>(*vars_on_face) =
+      eos.specific_internal_energy_from_density_and_pressure(
+          get<MassDensity>(*vars_on_face), get<Pressure>(*vars_on_face));
   NewtonianEuler::ConservativeFromPrimitive<Dim>::apply(
       make_not_null(&get<MassDensityCons>(*vars_on_face)),
       make_not_null(&get<MomentumDensity>(*vars_on_face)),

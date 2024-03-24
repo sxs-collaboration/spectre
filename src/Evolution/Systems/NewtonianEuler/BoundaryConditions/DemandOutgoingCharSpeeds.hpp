@@ -71,7 +71,7 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>>;
-  using dg_gridless_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;
+  using dg_gridless_tags = tmpl::list<hydro::Tags::EquationOfState<false, 2>>;
 
   template <size_t ThermodynamicDim>
   static std::optional<std::string> dg_demand_outgoing_char_speeds(

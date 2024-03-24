@@ -30,6 +30,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
@@ -71,11 +72,11 @@ DirectionalIdMap<Dim, evolution::dg::subcell::GhostData> compute_ghost_data(
 }
 
 namespace detail {
-template <size_t Dim, size_t ThermodynamicDim, typename Reconstructor>
+template <size_t Dim, typename Reconstructor>
 void test_prim_reconstructor_impl(
     const size_t points_per_dimension,
     const Reconstructor& derived_reconstructor,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<false, 2>& eos) {
   // 1. Create linear prims to reconstruct
   // 2. send through reconstruction
   // 3. check prims and cons were computed correctly
@@ -179,16 +180,10 @@ void test_prim_reconstructor_impl(
         face_centered_mesh.number_of_grid_points()};
     expected_face_values.assign_subset(
         compute_solution(logical_coords_face_centered));
-    if constexpr (ThermodynamicDim == 2) {
-      get<SpecificInternalEnergy>(expected_face_values) =
-          eos.specific_internal_energy_from_density_and_pressure(
-              get<MassDensity>(expected_face_values),
-              get<Pressure>(expected_face_values));
-    } else {
-      get<SpecificInternalEnergy>(expected_face_values) =
-          eos.specific_internal_energy_from_density(
-              get<MassDensity>(expected_face_values));
-    }
+    get<SpecificInternalEnergy>(expected_face_values) =
+        eos.specific_internal_energy_from_density_and_pressure(
+            get<MassDensity>(expected_face_values),
+            get<Pressure>(expected_face_values));
     ne::ConservativeFromPrimitive<Dim>::apply(
         make_not_null(&get<MassDensityCons>(expected_face_values)),
         make_not_null(&get<MomentumDensity>(expected_face_values)),
@@ -221,6 +216,7 @@ void test_prim_reconstructor(const size_t points_per_dimension,
       EquationsOfState::IdealFluid<false>{1.4});
   detail::test_prim_reconstructor_impl<Dim>(
       points_per_dimension, derived_reconstructor,
-      EquationsOfState::PolytropicFluid<false>{1.0, 2.0});
+      EquationsOfState::Barotropic2D{
+          EquationsOfState::PolytropicFluid<false>{1.0, 2.0}});
 }
 }  // namespace TestHelpers::NewtonianEuler::fd

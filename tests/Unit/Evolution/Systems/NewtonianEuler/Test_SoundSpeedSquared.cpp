@@ -39,12 +39,12 @@ void test_in_databox(const Scalar<DataType>& mass_density,
   const auto box = db::create<
       db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
                         hydro::Tags::SpecificInternalEnergy<DataType>,
-                        hydro::Tags::EquationOfState<
-                            false, EquationOfStateType::thermodynamic_dim>>,
+                        hydro::Tags::EquationOfState<false, 2>>,
       db::AddComputeTags<
           NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>,
           NewtonianEuler::Tags::SoundSpeedCompute<DataType>>>(
-      mass_density, specific_internal_energy, equation_of_state.get_clone());
+      mass_density, specific_internal_energy,
+      equation_of_state.promote_to_2d_eos());
 
   const auto expected_sound_speed_squared = NewtonianEuler::sound_speed_squared(
       mass_density, specific_internal_energy, equation_of_state);

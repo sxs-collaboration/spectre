@@ -1,19 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <boost/preprocessor/control/if.hpp>
+#include <optional>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
-#include "Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
-#include "PointwiseFunctions/AnalyticData/NewtonianEuler/KhInstability.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define TDIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATION(r, data)                                                \
   template void                                                               \
@@ -60,11 +57,11 @@ namespace evolution::dg::Actions::detail {
       const tnsr::I<DataVector, DIM(data)>& velocity,                         \
       const Scalar<DataVector>& pressure,                                     \
       const Scalar<DataVector>& specific_internal_energy,                     \
-      const EquationsOfState::EquationOfState<false, TDIM(data)>& eos,        \
+      const EquationsOfState::EquationOfState<false, 2>& eos,                 \
       const tnsr::I<DataVector, DIM(data)>& coords, const double& time,       \
       const ::NewtonianEuler::Sources::Source<DIM(data)>& source);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef SYSTEM

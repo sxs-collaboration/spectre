@@ -73,22 +73,21 @@ class TciOnFdGrid {
  public:
   using return_tags = tmpl::list<::Tags::Variables<
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>>;
-  using argument_tags =
-      tmpl::list<::Tags::Variables<tmpl::list<MassDensityCons, MomentumDensity,
-                                              EnergyDensity>>,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
+  using argument_tags = tmpl::list<
+      ::Tags::Variables<
+          tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>,
+      hydro::Tags::EquationOfState<false, 2>, domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::DataForRdmpTci,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
-  template <size_t ThermodynamicDim>
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<
           tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>*>
           subcell_grid_prim_vars,
       const Variables<tmpl::list<MassDensityCons, MomentumDensity,
                                  EnergyDensity>>& subcell_vars,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
       const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const evolution::dg::subcell::SubcellOptions& subcell_options,

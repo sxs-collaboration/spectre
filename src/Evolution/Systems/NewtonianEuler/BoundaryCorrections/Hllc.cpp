@@ -34,7 +34,6 @@ void Hllc<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-template <size_t ThermodynamicDim>
 double Hllc<Dim>::dg_package_data(
     const gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -70,17 +69,12 @@ double Hllc<Dim>::dg_package_data(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) const {
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state)
+    const {
   {
     // Compute pressure
-    if constexpr (ThermodynamicDim == 1) {
-      *packaged_pressure =
-          equation_of_state.pressure_from_density(mass_density);
-    } else if constexpr (ThermodynamicDim == 2) {
-      *packaged_pressure = equation_of_state.pressure_from_density_and_energy(
-          mass_density, specific_internal_energy);
-    }
+    *packaged_pressure = equation_of_state.pressure_from_density_and_energy(
+        mass_density, specific_internal_energy);
 
     // Compute sound speed
     Scalar<DataVector>& sound_speed = *packaged_mass_density;
@@ -313,52 +307,5 @@ PUP::able::PUP_ID Hllc<Dim>::my_PUP_ID = 0;
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
-
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-
-#define INSTANTIATION(_, data)                                                 \
-  template double Hllc<DIM(data)>::dg_package_data<THERMODIM(data)>(           \
-      gsl::not_null<Scalar<DataVector>*> packaged_mass_density,                \
-      gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
-          packaged_momentum_density,                                           \
-      gsl::not_null<Scalar<DataVector>*> packaged_energy_density,              \
-      gsl::not_null<Scalar<DataVector>*> packaged_pressure,                    \
-      gsl::not_null<Scalar<DataVector>*>                                       \
-          packaged_normal_dot_flux_mass_density,                               \
-      gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
-          packaged_normal_dot_flux_momentum_density,                           \
-      gsl::not_null<Scalar<DataVector>*>                                       \
-          packaged_normal_dot_flux_energy_density,                             \
-      gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>          \
-          packaged_interface_unit_normal,                                      \
-      gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_velocity,         \
-      gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed, \
-      gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,  \
-                                                                               \
-      const Scalar<DataVector>& mass_density,                                  \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& momentum_density, \
-      const Scalar<DataVector>& energy_density,                                \
-                                                                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                   \
-          flux_mass_density,                                                   \
-      const tnsr::IJ<DataVector, DIM(data), Frame::Inertial>&                  \
-          flux_momentum_density,                                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                   \
-          flux_energy_density,                                                 \
-                                                                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& velocity,         \
-      const Scalar<DataVector>& specific_internal_energy,                      \
-                                                                               \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& normal_covector,  \
-      const std::optional<tnsr::I<DataVector, DIM(data), Frame::Inertial>>&    \
-          mesh_velocity,                                                       \
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,       \
-      const EquationsOfState::EquationOfState<false, THERMODIM(data)>&         \
-          equation_of_state) const;
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
-
-#undef INSTANTIATION
-#undef THERMODIM
 #undef DIM
 }  // namespace NewtonianEuler::BoundaryCorrections

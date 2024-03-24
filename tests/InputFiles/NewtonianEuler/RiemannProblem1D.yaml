@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: EvolveNewtonianEulerRiemannProblem1D
+Executable: EvolveNewtonianEuler1D
 Testing:
   Check: parse;execute
 

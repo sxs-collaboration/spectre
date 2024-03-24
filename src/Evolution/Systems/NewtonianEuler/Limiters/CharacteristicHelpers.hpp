@@ -34,13 +34,12 @@ namespace NewtonianEuler::Limiters {
  * Wraps calls to `NewtonianEuler::right_eigenvectors` and
  * `NewtonianEuler::left_eigenvectors`.
  */
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_density,
     const tnsr::I<double, VolumeDim>& mean_momentum,
     const Scalar<double>& mean_energy,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const tnsr::i<double, VolumeDim>& unit_vector,
     bool compute_char_transformation_numerically = false);
 
@@ -138,14 +137,13 @@ void conserved_fields_from_characteristic_fields(
 /// The limiter to apply is passed in via a lambda which is responsible for
 /// converting any neighbor data to the characteristic representation, and then
 /// applying the limiter to all NewtonianEuler characteristic fields.
-template <size_t VolumeDim, size_t ThermodynamicDim, typename LimiterLambda>
+template <size_t VolumeDim, typename LimiterLambda>
 bool apply_limiter_to_characteristic_fields_in_all_directions(
     const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Mesh<VolumeDim>& mesh,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state,
     const LimiterLambda& prepare_and_apply_limiter,
     const bool compute_char_transformation_numerically = false) {
   // Temp variables for calculations

@@ -15,6 +15,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryConditions.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic2D.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
@@ -29,7 +30,7 @@ namespace {
 
 struct ConvertPolytropic {
   using unpacked_container = bool;
-  using packed_container = EquationsOfState::EquationOfState<false, 1>;
+  using packed_container = EquationsOfState::EquationOfState<false, 2>;
   using packed_type = bool;
 
   static inline unpacked_container unpack(const packed_container& /*packed*/,
@@ -97,7 +98,9 @@ void test(EosType& eos) {
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
       NewtonianEuler::System<Dim>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
-      tmpl::list<ConvertPolytropic, ConvertIdeal>>(
+      tmpl::list<tmpl::conditional_t<
+          std::is_same_v<EosType, EquationsOfState::IdealFluid<false>>,
+          ConvertIdeal, ConvertPolytropic>>>(
       make_not_null(&gen),
       "Evolution.Systems.NewtonianEuler.BoundaryConditions."
       "DemandOutgoingCharSpeeds",
@@ -113,7 +116,8 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
 
-  EquationsOfState::PolytropicFluid<false> eos_polytrope{1.4, 5.0 / 3.0};
+  EquationsOfState::Barotropic2D eos_polytrope{
+      EquationsOfState::PolytropicFluid<false>{1.4, 5.0 / 3.0}};
   test<1>(eos_polytrope);
   test<2>(eos_polytrope);
   test<3>(eos_polytrope);

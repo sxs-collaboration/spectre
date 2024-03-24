@@ -20,15 +20,14 @@
 
 namespace NewtonianEuler::Limiters {
 
-template <size_t VolumeDim, size_t ThermodynamicDim>
+template <size_t VolumeDim>
 FlattenerAction flatten_solution(
     const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Mesh<VolumeDim>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) {
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state) {
   // A note on the design behind the handling of the cell-averaged fields:
   //
   // The cell averages are needed for
@@ -56,16 +55,15 @@ FlattenerAction flatten_solution(
     // logical coords, and therefore might not be conservative on curved grids)
     const double volume_of_cell =
         definite_integral(get(det_logical_to_inertial_jacobian), mesh);
-    const auto inertial_coord_mean =
-        [&mesh, &det_logical_to_inertial_jacobian,
-         &volume_of_cell](const DataVector& u) {
-          // Note that the term `det_jac * u` below results in an allocation.
-          // If this function needs to be optimized, a buffer for the product
-          // could be allocated outside the lambda, and updated in the lambda.
-          return definite_integral(get(det_logical_to_inertial_jacobian) * u,
-                                   mesh) /
-                 volume_of_cell;
-        };
+    const auto inertial_coord_mean = [&mesh, &det_logical_to_inertial_jacobian,
+                                      &volume_of_cell](const DataVector& u) {
+      // Note that the term `det_jac * u` below results in an allocation.
+      // If this function needs to be optimized, a buffer for the product
+      // could be allocated outside the lambda, and updated in the lambda.
+      return definite_integral(get(det_logical_to_inertial_jacobian) * u,
+                               mesh) /
+             volume_of_cell;
+    };
     mean_density = inertial_coord_mean(get(*mass_density_cons));
     for (size_t i = 0; i < VolumeDim; ++i) {
       gsl::at(mean_momentum, i) = inertial_coord_mean(momentum_density->get(i));
@@ -74,9 +72,7 @@ FlattenerAction flatten_solution(
 
     // sanity check the means
     ASSERT(mean_density > 0., "Invalid mass density input to flattener");
-    if constexpr (ThermodynamicDim == 2) {
-      ASSERT(mean_energy > 0., "Invalid energy density input to flattener");
-    }
+    ASSERT(mean_energy > 0., "Invalid energy density input to flattener");
   };
 
   FlattenerAction flattener_action = FlattenerAction::NoOp;
@@ -105,38 +101,35 @@ FlattenerAction flatten_solution(
   }
 
   // Check for negative pressures
-  if constexpr (ThermodynamicDim == 2) {
-    const auto specific_internal_energy = Scalar<DataVector>{
-        get(*energy_density) / get(*mass_density_cons) -
-        0.5 * get(dot_product(*momentum_density, *momentum_density)) /
-            square(get(*mass_density_cons))};
-    const auto pressure = equation_of_state.pressure_from_density_and_energy(
-        *mass_density_cons, specific_internal_energy);
+  const auto specific_internal_energy = Scalar<DataVector>{
+      get(*energy_density) / get(*mass_density_cons) -
+      0.5 * get(dot_product(*momentum_density, *momentum_density)) /
+          square(get(*mass_density_cons))};
+  const auto pressure = equation_of_state.pressure_from_density_and_energy(
+      *mass_density_cons, specific_internal_energy);
 
-    // If min(pressure) is negative, set solution to cell averages
-    const double min_pressure = min(get(pressure));
-    if (min_pressure < 0.) {
-      if (flattener_action == FlattenerAction::NoOp) {
-        // We didn't previously correct for negative densities, therefore the
-        // means have not yet been computed
-        compute_means();
-      }
-
-      get(*mass_density_cons) = mean_density;
-      for (size_t i = 0; i < VolumeDim; ++i) {
-        momentum_density->get(i) = gsl::at(mean_momentum, i);
-      }
-      get(*energy_density) = mean_energy;
-
-      flattener_action = FlattenerAction::SetSolutionToMean;
+  // If min(pressure) is negative, set solution to cell averages
+  const double min_pressure = min(get(pressure));
+  if (min_pressure < 0.) {
+    if (flattener_action == FlattenerAction::NoOp) {
+      // We didn't previously correct for negative densities, therefore the
+      // means have not yet been computed
+      compute_means();
     }
+
+    get(*mass_density_cons) = mean_density;
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      momentum_density->get(i) = gsl::at(mean_momentum, i);
+    }
+    get(*energy_density) = mean_energy;
+
+    flattener_action = FlattenerAction::SetSolutionToMean;
   }
 
   return flattener_action;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                      \
   template FlattenerAction flatten_solution(                      \
@@ -144,12 +137,11 @@ FlattenerAction flatten_solution(
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,             \
       gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&, \
       const Scalar<DataVector>&,                                  \
-      const EquationsOfState::EquationOfState<false, THERMODIM(data)>&);
+      const EquationsOfState::EquationOfState<false, 2>&);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
-#undef THERMODIM
 #undef DIM
 
 }  // namespace NewtonianEuler::Limiters

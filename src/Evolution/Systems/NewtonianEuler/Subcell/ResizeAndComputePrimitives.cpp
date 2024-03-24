@@ -18,7 +18,6 @@
 
 namespace NewtonianEuler::subcell {
 template <size_t Dim>
-template <size_t ThermodynamicDim>
 void ResizeAndComputePrims<Dim>::apply(
     const gsl::not_null<Variables<
         tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>*>
@@ -28,8 +27,7 @@ void ResizeAndComputePrims<Dim>::apply(
     const Scalar<DataVector>& mass_density_cons,
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) {
+    const EquationsOfState::EquationOfState<false, 2>& equation_of_state) {
   const size_t num_grid_points =
       (active_grid == evolution::dg::subcell::ActiveGrid::Dg ? dg_mesh
                                                              : subcell_mesh)
@@ -49,22 +47,5 @@ void ResizeAndComputePrims<Dim>::apply(
 #define INSTANTIATION(r, data) template class ResizeAndComputePrims<DIM(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
-
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                                \
-  template void ResizeAndComputePrims<DIM(data)>::apply<THERMO_DIM(data)>(    \
-      gsl::not_null<Variables<tmpl::list<MassDensity, Velocity,               \
-                                         SpecificInternalEnergy, Pressure>>*> \
-          prim_vars,                                                          \
-      evolution::dg::subcell::ActiveGrid active_grid,                         \
-      const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh,    \
-      const Scalar<DataVector>& mass_density_cons,                            \
-      const tnsr::I<DataVector, DIM(data)>& momentum_density,                 \
-      const Scalar<DataVector>& energy_density,                               \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&       \
-          equation_of_state);
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
-#undef INSTANTIATION
-#undef THERMO_DIM
 #undef DIM
 }  // namespace NewtonianEuler::subcell

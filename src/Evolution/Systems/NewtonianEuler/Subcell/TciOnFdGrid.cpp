@@ -21,14 +21,13 @@
 
 namespace NewtonianEuler::subcell {
 template <size_t Dim>
-template <size_t ThermodynamicDim>
 std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid<Dim>::apply(
     const gsl::not_null<Variables<
         tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>*>
         subcell_grid_prim_vars,
     const Variables<tmpl::list<MassDensityCons, MomentumDensity,
                                EnergyDensity>>& subcell_vars,
-    const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+    const EquationsOfState::EquationOfState<false, 2>& eos,
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
@@ -105,25 +104,5 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid<Dim>::apply(
 #define INSTANTIATION(r, data) template class TciOnFdGrid<DIM(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
-
-#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                                \
-  template std::tuple<bool, evolution::dg::subcell::RdmpTciData>              \
-  TciOnFdGrid<DIM(data)>::apply<THERMO_DIM(data)>(                            \
-      gsl::not_null<Variables<tmpl::list<MassDensity, Velocity,               \
-                                         SpecificInternalEnergy, Pressure>>*> \
-          subcell_grid_prim_vars,                                             \
-      const Variables<                                                        \
-          tmpl::list<NewtonianEuler::Tags::MassDensityCons,                   \
-                     NewtonianEuler::Tags::MomentumDensity<DIM(data)>,        \
-                     NewtonianEuler::Tags::EnergyDensity>>& subcell_vars,     \
-      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos,  \
-      const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh,    \
-      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,          \
-      const evolution::dg::subcell::SubcellOptions& subcell_options,          \
-      double persson_exponent, bool need_rdmp_data_only);
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
-#undef INSTANTIATION
-#undef THERMO_DIM
 #undef DIM
 }  // namespace NewtonianEuler::subcell

@@ -126,7 +126,7 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
@@ -134,15 +134,6 @@ struct EvolutionMetavars {
   static constexpr bool use_dg_subcell = true;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
-
-  using initial_data = InitialData;
-  static_assert(
-      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
-      "initial_data must be either an analytic_data or an analytic_solution");
-
-  using eos_base = EquationsOfState::get_eos_base<
-      typename initial_data::equation_of_state_type>;
-  using equation_of_state_type = typename std::unique_ptr<eos_base>;
 
   using system = NewtonianEuler::System<Dim>;
 
@@ -153,13 +144,12 @@ struct EvolutionMetavars {
       TimeStepperBase::local_time_stepping;
 
   using initial_data_tag = evolution::initial_data::Tags::InitialData;
-  using initial_data_list = tmpl::list<initial_data>;
+  using initial_data_list = NewtonianEuler::InitialData::initial_data_list<Dim>;
 
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
 
-  using equation_of_state_tag =
-      hydro::Tags::EquationOfState<false, eos_base::thermodynamic_dim>;
+  using equation_of_state_tag = hydro::Tags::EquationOfState<false, 2>;
 
   using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 

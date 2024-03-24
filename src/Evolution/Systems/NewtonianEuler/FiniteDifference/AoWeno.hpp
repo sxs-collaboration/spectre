@@ -101,27 +101,28 @@ class AoWeno53Prim : public Reconstructor<Dim> {
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<prims_tags>,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<Dim>,
+                 hydro::Tags::EquationOfState<false, 2>,
+                 domain::Tags::Element<Dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>>;
 
-  template <size_t ThermodynamicDim, typename TagsList>
+  template <typename TagsList>
   void reconstruct(
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_lower_face,
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
       const Variables<prims_tags>& volume_prims,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<Dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
-  template <size_t ThermodynamicDim, typename TagsList>
+  template <typename TagsList>
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<TagsList>*> vars_on_face,
       const Variables<prims_tags>& subcell_volume_prims,
-      const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
+      const EquationsOfState::EquationOfState<false, 2>& eos,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,

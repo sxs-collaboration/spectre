@@ -67,7 +67,7 @@ struct SoundSpeedSquaredCompute : hydro::Tags::SoundSpeedSquared<DataType>,
   using argument_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::EquationOfStateBase>;
+                 hydro::Tags::EquationOfState<false, 2>>;
 
   using return_type = Scalar<DataType>;
 
