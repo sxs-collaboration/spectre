@@ -192,6 +192,13 @@ struct AnalyticSolution {
   using group = Cce;
 };
 
+struct KleinGordonAnalyticSolution {
+  using type = std::unique_ptr<Solutions::KleinGordonWorldtubeData>;
+  static constexpr Options::String help{
+      "Analytic worldtube data for tests of Klein-Gordon CCE."};
+  using group = Cce;
+};
+
 struct GhInterfaceManager {
   using type = InterfaceManagers::GhLocalTimeStepping;
   static constexpr Options::String help{
