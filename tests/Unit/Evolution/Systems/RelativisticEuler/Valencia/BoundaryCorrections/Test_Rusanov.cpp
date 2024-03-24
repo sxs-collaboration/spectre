@@ -27,7 +27,7 @@
 namespace {
 struct ConvertPolytropic {
   using unpacked_container = bool;
-  using packed_container = EquationsOfState::PolytropicFluid<true>;
+  using packed_container = EquationsOfState::EquationOfState<true, 1>;
   using packed_type = bool;
 
   static inline unpacked_container unpack(const packed_container& /*packed*/,
@@ -49,7 +49,7 @@ struct ConvertPolytropic {
 
 struct ConvertIdeal {
   using unpacked_container = bool;
-  using packed_container = EquationsOfState::IdealFluid<true>;
+  using packed_container = EquationsOfState::EquationOfState<true, 2>;
   using packed_type = bool;
 
   static inline unpacked_container unpack(const packed_container& /*packed*/,
@@ -74,8 +74,9 @@ namespace helpers = TestHelpers::evolution::dg;
 template <size_t Dim, typename EosType>
 void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
           const EosType& equation_of_state) {
-  tuples::TaggedTuple<hydro::Tags::EquationOfState<EosType>> volume_data{
-      equation_of_state};
+  tuples::TaggedTuple<
+      hydro::Tags::EquationOfState<true, EosType::thermodynamic_dim>>
+      volume_data{equation_of_state.get_clone()};
   tuples::TaggedTuple<
       helpers::Tags::Range<hydro::Tags::RestMassDensity<DataVector>>,
       helpers::Tags::Range<hydro::Tags::SpecificInternalEnergy<DataVector>>,

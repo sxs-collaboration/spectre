@@ -346,7 +346,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   static constexpr size_t volume_dim = 3_st;
 
   using options =
-      tmpl::list<CentralDensity, hydro::OptionTags::EquationOfState<true, 1>,
+      tmpl::list<CentralDensity,
+                 hydro::OptionTags::InitialDataEquationOfState<true, 1>,
                  Coordinates>;
 
   static constexpr Options::String help = {

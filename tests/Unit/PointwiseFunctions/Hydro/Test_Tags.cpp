@@ -27,8 +27,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "DivergenceCleaningField");
   TestHelpers::db::test_base_tag<hydro::Tags::EquationOfStateBase>(
       "EquationOfStateBase");
-  TestHelpers::db::test_simple_tag<
-      hydro::Tags::EquationOfState<IdealFluid<true>>>("EquationOfState");
+  TestHelpers::db::test_simple_tag<hydro::Tags::EquationOfState<false, 2>>(
+      "EquationOfState");
+  TestHelpers::db::test_simple_tag<hydro::Tags::EquationOfState<true, 3>>(
+      "EquationOfState");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::EquationOfStateFromOptions<true, 1>>("EquationOfState");
   TestHelpers::db::test_simple_tag<hydro::Tags::LorentzFactor<DataVector>>(

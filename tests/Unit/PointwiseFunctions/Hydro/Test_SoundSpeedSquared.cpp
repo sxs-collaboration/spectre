@@ -30,13 +30,15 @@ void test_compute_item_in_databox(
   TestHelpers::db::test_compute_tag<
       hydro::Tags::SoundSpeedSquaredCompute<DataType>>("SoundSpeedSquared");
   const auto box = db::create<
-      db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
-                        hydro::Tags::SpecificInternalEnergy<DataType>,
-                        hydro::Tags::SpecificEnthalpy<DataType>,
-                        hydro::Tags::EquationOfState<EquationOfStateType>>,
+      db::AddSimpleTags<
+          hydro::Tags::RestMassDensity<DataType>,
+          hydro::Tags::SpecificInternalEnergy<DataType>,
+          hydro::Tags::SpecificEnthalpy<DataType>,
+          hydro::Tags::EquationOfState<EquationOfStateType::is_relativistic,
+                                       EquationOfStateType::thermodynamic_dim>>,
       db::AddComputeTags<hydro::Tags::SoundSpeedSquaredCompute<DataType>>>(
       rest_mass_density, specific_internal_energy, specific_enthalpy,
-      equation_of_state);
+      equation_of_state.get_clone());
 
   const auto expected_sound_speed_squared =
       hydro::sound_speed_squared(rest_mass_density, specific_internal_energy,

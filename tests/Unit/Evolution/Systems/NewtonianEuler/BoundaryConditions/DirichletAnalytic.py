@@ -7,7 +7,7 @@ import PointwiseFunctions.AnalyticSolutions.Hydro.SmoothFlow as hydro
 
 
 def soln_error(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
     return None
 
@@ -32,8 +32,9 @@ def _soln_wave_vector(dim):
 
 
 def soln_mass_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return hydro.rest_mass_density(
         coords,
         time,
@@ -46,8 +47,9 @@ def soln_mass_density(
 
 
 def soln_momentum_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return hydro.rest_mass_density(
         coords,
         time,
@@ -68,8 +70,9 @@ def soln_momentum_density(
 
 
 def soln_energy_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = hydro.spatial_velocity(
         coords,
         time,
@@ -100,16 +103,17 @@ def soln_energy_density(
 
 
 def soln_flux_mass_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
     return soln_momentum_density(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
 
 
 def soln_flux_momentum_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = hydro.spatial_velocity(
         coords,
         time,
@@ -134,14 +138,12 @@ def soln_flux_momentum_density(
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         soln_energy_density(
             face_mesh_velocity,
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         velocity,
         pressure,
@@ -149,8 +151,9 @@ def soln_flux_momentum_density(
 
 
 def soln_flux_energy_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = hydro.spatial_velocity(
         coords,
         time,
@@ -175,14 +178,12 @@ def soln_flux_energy_density(
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         soln_energy_density(
             face_mesh_velocity,
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         velocity,
         pressure,
@@ -190,8 +191,9 @@ def soln_flux_energy_density(
 
 
 def soln_velocity(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return hydro.spatial_velocity(
         coords,
         time,
@@ -204,8 +206,9 @@ def soln_velocity(
 
 
 def soln_specific_internal_energy(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return hydro.specific_internal_energy(
         coords,
         time,
@@ -218,7 +221,7 @@ def soln_specific_internal_energy(
 
 
 def data_error(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
     return None
 
@@ -236,8 +239,9 @@ _data_perturb_width = 0.03
 
 
 def data_mass_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     if (
         np.abs(coords[-1] - _data_strip_bimedian_height)
         < 0.5 * _data_strip_thickness
@@ -248,8 +252,9 @@ def data_mass_density(
 
 
 def data_velocity(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = np.zeros([dim])
     if (
         np.abs(coords[-1] - _data_strip_bimedian_height)
@@ -276,24 +281,26 @@ def data_velocity(
 
 
 def data_momentum_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return data_mass_density(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     ) * data_velocity(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
 
 
 def data_pressure(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
     return _data_pressure
 
 
 def data_specific_internal_energy(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return (
         1.0
         / (_data_adiabatic_index - 1.0)
@@ -302,48 +309,49 @@ def data_specific_internal_energy(
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         )
         / data_mass_density(
             face_mesh_velocity,
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         )
     )
 
 
 def data_energy_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = data_velocity(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     int_energy = data_specific_internal_energy(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     return data_mass_density(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     ) * (0.5 * np.dot(velocity, velocity) + int_energy)
 
 
 def data_flux_mass_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     return data_momentum_density(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
 
 
 def data_flux_momentum_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = data_velocity(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     pressure = data_pressure(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     return flux.momentum_density_flux_impl(
         data_momentum_density(
@@ -351,14 +359,12 @@ def data_flux_momentum_density(
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         data_energy_density(
             face_mesh_velocity,
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         velocity,
         pressure,
@@ -366,13 +372,14 @@ def data_flux_momentum_density(
 
 
 def data_flux_energy_density(
-    face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+    face_mesh_velocity, outward_directed_normal_covector, coords, time
 ):
+    dim = len(coords)
     velocity = data_velocity(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     pressure = data_pressure(
-        face_mesh_velocity, outward_directed_normal_covector, coords, time, dim
+        face_mesh_velocity, outward_directed_normal_covector, coords, time
     )
     return flux.energy_density_flux_impl(
         data_momentum_density(
@@ -380,14 +387,12 @@ def data_flux_energy_density(
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         data_energy_density(
             face_mesh_velocity,
             outward_directed_normal_covector,
             coords,
             time,
-            dim,
         ),
         velocity,
         pressure,

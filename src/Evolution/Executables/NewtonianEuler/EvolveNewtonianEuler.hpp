@@ -40,6 +40,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
@@ -151,21 +152,19 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
 
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
+  using initial_data_tag = evolution::initial_data::Tags::InitialData;
+  using initial_data_list = tmpl::list<initial_data>;
 
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
 
   using equation_of_state_tag =
-      hydro::Tags::EquationOfState<equation_of_state_type>;
+      hydro::Tags::EquationOfState<false, eos_base::thermodynamic_dim>;
 
   using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
-      volume_dim, analytic_variables_tags, use_dg_subcell>;
+      volume_dim, analytic_variables_tags, use_dg_subcell, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<
@@ -218,6 +217,8 @@ struct EvolutionMetavars {
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<NewtonianEuler::Sources::Source<Dim>,
                    NewtonianEuler::Sources::all_sources<Dim>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   NewtonianEuler::InitialData::initial_data_list<Dim>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,

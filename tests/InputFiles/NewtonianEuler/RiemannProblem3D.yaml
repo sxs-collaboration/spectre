@@ -22,6 +22,22 @@ Evolution:
 
 PhaseChangeAndTriggers:
 
+EquationOfState:
+  IdealFluid:
+    AdiabaticIndex: 1.4
+
+InitialData: &InitialData
+  RiemannProblem:
+    AdiabaticIndex: 1.4
+    InitialPosition: 0.25
+    LeftMassDensity: 1.0
+    LeftVelocity: [0.0, 0.5, -0.3]
+    LeftPressure: 1.0
+    RightMassDensity: 0.125
+    RightVelocity: [0.0, 0.2, 0.1]
+    RightPressure: 0.1
+    PressureStarTol: 1e-9
+
 DomainCreator:
   Brick:
     LowerBound: [-0.25, 0.0, 0.0]
@@ -29,9 +45,18 @@ DomainCreator:
     InitialRefinement: [4, 0, 0]
     InitialGridPoints: [2, 2, 2]
     TimeDependence: None
-    BoundaryConditionInX: DirichletAnalytic
-    BoundaryConditionInY: DirichletAnalytic
-    BoundaryConditionInZ: DirichletAnalytic
+    BoundaryConditionInX:
+      DirichletAnalytic:
+        AnalyticPrescription:
+          *InitialData
+    BoundaryConditionInY:
+      DirichletAnalytic:
+        AnalyticPrescription:
+          *InitialData
+    BoundaryConditionInZ:
+      DirichletAnalytic:
+        AnalyticPrescription:
+          *InitialData
 
 SpatialDiscretization:
   BoundaryCorrection:
@@ -63,18 +88,6 @@ SpatialDiscretization:
 EvolutionSystem:
   SourceTerm:
     NoSource:
-
-AnalyticSolution:
-  RiemannProblem:
-    AdiabaticIndex: 1.4
-    InitialPosition: 0.25
-    LeftMassDensity: 1.0
-    LeftVelocity: [0.0, 0.5, -0.3]
-    LeftPressure: 1.0
-    RightMassDensity: 0.125
-    RightVelocity: [0.0, 0.2, 0.1]
-    RightPressure: 0.1
-    PressureStarTol: 1e-9
 
 EventsAndTriggers:
   - Trigger:
