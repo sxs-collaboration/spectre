@@ -36,6 +36,8 @@ extern "C" void CkRegisterMainModule() {
            Cce::Tags::klein_gordon_worldtube_boundary_tags>>,
        &register_derived_classes_with_charm<intrp::SpanInterpolator>,
        &register_derived_classes_with_charm<Cce::Solutions::WorldtubeData>,
+       &register_derived_classes_with_charm<
+           Cce::Solutions::KleinGordonWorldtubeData>,
        &register_factory_classes_with_charm<metavariables>},
       {});
 }
