@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  KerrSchildDerivatives.cpp
   Tags.cpp
   PunctureField.cpp
   PunctureFieldOrder0.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Inboxes.hpp
+  KerrSchildDerivatives.hpp
   SingletonChare.hpp
   Tags.hpp
   PunctureField.hpp
