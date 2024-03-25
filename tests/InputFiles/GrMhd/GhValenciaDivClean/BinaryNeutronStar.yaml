@@ -148,6 +148,8 @@ SpatialDiscretization:
     ProductUpwindPenaltyAndHll:
       UpwindPenalty:
       Hll:
+        MagneticFieldMagnitudeForHydro: 1.0e-30
+        AtmosphereDensityCutoff: 1.0e-10
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto

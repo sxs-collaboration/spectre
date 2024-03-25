@@ -102,6 +102,13 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
 
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity_one_form,
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
         inv_spatial_metric,
 
@@ -116,6 +123,7 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
                           hydro::Tags::ElectronFraction<DataVector>,
                           hydro::Tags::SpecificInternalEnergy<DataVector>,
                           hydro::Tags::Pressure<DataVector>,
+                          hydro::Tags::Temperature<DataVector>,
                           hydro::Tags::SpatialVelocity<DataVector, 3>,
                           hydro::Tags::LorentzFactor<DataVector>,
                           hydro::Tags::MagneticField<DataVector, 3>,
@@ -136,6 +144,7 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
                          hydro::Tags::ElectronFraction<DataVector>,
                          hydro::Tags::SpecificInternalEnergy<DataVector>,
                          hydro::Tags::Pressure<DataVector>,
+                         hydro::Tags::Temperature<DataVector>,
                          hydro::Tags::SpatialVelocity<DataVector, 3>,
                          hydro::Tags::LorentzFactor<DataVector>,
                          hydro::Tags::MagneticField<DataVector, 3>,
@@ -154,6 +163,7 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
                          hydro::Tags::ElectronFraction<DataVector>,
                          hydro::Tags::SpecificInternalEnergy<DataVector>,
                          hydro::Tags::Pressure<DataVector>,
+                         hydro::Tags::Temperature<DataVector>,
                          hydro::Tags::SpatialVelocity<DataVector, 3>,
                          hydro::Tags::LorentzFactor<DataVector>,
                          hydro::Tags::MagneticField<DataVector, 3>,
@@ -170,6 +180,17 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
   *shift = get<gr::Tags::Shift<DataVector, 3>>(boundary_values);
   *inv_spatial_metric =
       get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_values);
+  *rest_mass_density =
+      get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values);
+  *electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataVector>>(boundary_values);
+  *temperature = get<hydro::Tags::Temperature<DataVector>>(boundary_values);
+  *spatial_velocity =
+      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values);
+  tenex::evaluate<ti::i>(
+      spatial_velocity_one_form,
+      (*spatial_velocity)(ti::J) * (get<gr::Tags::SpatialMetric<DataVector, 3>>(
+                                       boundary_values)(ti::i, ti::j)));
   // Recover the conservative variables from the primitives
   ConservativeFromPrimitive::apply(
       tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,

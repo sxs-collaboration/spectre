@@ -21,9 +21,12 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryCorrections.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
+namespace helpers = TestHelpers::evolution::dg;
+
 template <typename DerivedCorrection, typename PackagedFieldTagList,
           typename EvolvedTagList, typename FluxTagList, typename TempTagList,
           typename PrimTagList, typename VolumeTagList>
@@ -58,7 +61,7 @@ struct ComputeBoundaryCorrectionHelperImpl<
         get<FluxTags>(flux_variables)..., get<TempTags>(temp_variables)...,
         get<PrimTags>(prim_variables)..., normal_covector, normal_vector,
         mesh_velocity, normal_dot_mesh_velocity,
-        get<VolumeTags>(volume_variables)...);
+        StdHelpers::retrieve(get<VolumeTags>(volume_variables))...);
   }
 
   template <typename EvolvedVariables, typename PackagedVariables>
@@ -122,8 +125,6 @@ void test_boundary_correction_combination(
       typename derived_product_correction_type::dg_package_data_temporary_tags>;
   using primitive_variables_type = Variables<
       typename derived_product_correction_type::dg_package_data_primitive_tags>;
-  using volume_variables_type = Variables<
-      typename derived_product_correction_type::dg_package_data_volume_tags>;
 
   const size_t element_size = 10_st;
   MAKE_GENERATOR(gen);
@@ -146,12 +147,8 @@ void test_boundary_correction_combination(
   const auto temporary_variables =
       make_with_random_values<temporary_variables_type>(
           make_not_null(&gen), make_not_null(&dist), element_size);
-  volume_variables_type volume_variables{element_size};
-  if constexpr (tmpl::size<typename derived_product_correction_type::
-                               dg_package_data_volume_tags>::value > 0) {
-    fill_with_random_values(make_not_null(&volume_variables),
-                            make_not_null(&gen), make_not_null(&dist));
-  }
+  const tuples::TaggedTuple<hydro::Tags::GrmhdEquationOfState> volume_variables{
+      EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.promote_to_3d_eos()};
 
   const auto normal_covector =
       make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
@@ -255,11 +252,15 @@ void test_boundary_correction_combination(
       grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
           DerivedGhCorrection, DerivedValenciaCorrection>));
 
+  const tuples::TaggedTuple<
+      helpers::Tags::Range<gr::Tags::Lapse<DataVector>>,
+      helpers::Tags::Range<gr::Tags::Shift<DataVector, 3>>>
+      ranges{std::array{0.3, 1.0}, std::array{0.01, 0.02}};
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
       grmhd::GhValenciaDivClean::System>(
       make_not_null(&gen), derived_product_correction,
-      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
-      {});
+      Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+      volume_variables, ranges);
 }
 }  // namespace
 
@@ -285,6 +286,31 @@ SPECTRE_TEST_CASE(
       test_boundary_correction_combination<
           gh::BoundaryCorrections::UpwindPenalty<3_st>,
           grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>(
+          gh_correction, valencia_correction, product_boundary_correction,
+          formulation);
+    }
+  }
+  {
+    INFO("Product correction UpwindPenalty and Hll");
+    grmhd::ValenciaDivClean::BoundaryCorrections::Hll valencia_correction{
+        1.0e-30, 1.0e-8};
+    gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
+    TestHelpers::test_creation<std::unique_ptr<
+        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
+        "ProductUpwindPenaltyAndHll:\n"
+        "  UpwindPenalty:\n"
+        "  Hll:\n"
+        "    MagneticFieldMagnitudeForHydro: 1.0e-30\n"
+        "    AtmosphereDensityCutoff: 1.0e-8\n");
+    grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
+        gh::BoundaryCorrections::UpwindPenalty<3_st>,
+        grmhd::ValenciaDivClean::BoundaryCorrections::Hll>
+        product_boundary_correction{gh_correction, valencia_correction};
+    for (const auto formulation :
+         {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
+      test_boundary_correction_combination<
+          gh::BoundaryCorrections::UpwindPenalty<3_st>,
+          grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
           gh_correction, valencia_correction, product_boundary_correction,
           formulation);
     }

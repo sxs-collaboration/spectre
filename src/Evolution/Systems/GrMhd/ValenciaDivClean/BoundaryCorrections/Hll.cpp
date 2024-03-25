@@ -3,26 +3,42 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
 
+#include <cmath>
+#include <pup.h>
+
 #include <memory>
 #include <optional>
-#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
+#include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
+Hll::Hll(const double magnetic_field_magnitude_for_hydro,
+         const double atmosphere_density_cutoff)
+    : magnetic_field_magnitude_for_hydro_(magnetic_field_magnitude_for_hydro),
+      atmosphere_density_cutoff_(atmosphere_density_cutoff) {}
+
 Hll::Hll(CkMigrateMessage* /*unused*/) {}
 
 std::unique_ptr<BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
 
-void Hll::pup(PUP::er& p) { BoundaryCorrection::pup(p); }
+void Hll::pup(PUP::er& p) {
+  BoundaryCorrection::pup(p);
+  p | magnetic_field_magnitude_for_hydro_;
+  p | atmosphere_density_cutoff_;
+}
 
 double Hll::dg_package_data(
     const gsl::not_null<Scalar<DataVector>*> packaged_tilde_d,
@@ -61,26 +77,116 @@ double Hll::dg_package_data(
 
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
+
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& temperature,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
 
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_covector,
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+    const EquationsOfState::EquationOfState<true, 3>& equation_of_state) const {
   {
-    // Compute max abs char speed
-    Scalar<DataVector>& shift_dot_normal = *packaged_tilde_d;
+    Scalar<DataVector> shift_dot_normal = tilde_d;
     dot_product(make_not_null(&shift_dot_normal), shift, normal_covector);
+
+    // Initialize characteristic speeds to light speed
+    // (default choice)
+    get(*packaged_largest_outgoing_char_speed) =
+        get(lapse) - get(shift_dot_normal);
+    get(*packaged_largest_ingoing_char_speed) =
+        -get(lapse) - get(shift_dot_normal);
+
+    if (const bool has_b_field =
+            max(get(magnitude(tilde_b))) > magnetic_field_magnitude_for_hydro_;
+        not has_b_field and
+        (max(get(rest_mass_density)) > atmosphere_density_cutoff_)) {
+      // Since we have no magnetic field (and we have grid points not in the
+      // atmosphere), we can reduce the char speeds to the hydro speeds only.
+      // This makes the scheme less dissipative.
+      //
+      // Calculate sound speed squared
+      const size_t num_points = get(rest_mass_density).size();
+      Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                           ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                           ::Tags::TempScalar<4>, ::Tags::TempScalar<5>,
+                           ::Tags::TempScalar<6>>>
+          temp_buffer{num_points};
+      auto& v_dot_normal = get<::Tags::TempScalar<0>>(temp_buffer);
+      auto& v_squared = get<::Tags::TempScalar<1>>(temp_buffer);
+      auto& discriminant = get(get<::Tags::TempScalar<2>>(temp_buffer));
+      auto& one_minus_v2_cs2 = get<::Tags::TempScalar<3>>(temp_buffer);
+      auto& one_minus_cs2 = get<::Tags::TempScalar<4>>(temp_buffer);
+      auto& lapse_over_one_minus_v2_cs2 =
+          get<::Tags::TempScalar<5>>(temp_buffer);
+      auto& v_dot_normal_times_one_minus_cs2 =
+          get<::Tags::TempScalar<6>>(temp_buffer);
+
+      Scalar<DataVector> specific_internal_energy =
+          equation_of_state
+              .specific_internal_energy_from_density_and_temperature(
+                  rest_mass_density, temperature, electron_fraction);
+      Scalar<DataVector> pressure =
+          equation_of_state.pressure_from_density_and_energy(
+              rest_mass_density, specific_internal_energy, electron_fraction);
+      Scalar<DataVector> specific_enthalpy =
+          hydro::relativistic_specific_enthalpy(
+              rest_mass_density, specific_internal_energy, pressure);
+      Scalar<DataVector> sound_speed_squared =
+          equation_of_state.sound_speed_squared_from_density_and_temperature(
+              rest_mass_density, temperature, electron_fraction);
+      get(sound_speed_squared) = clamp(get(sound_speed_squared), 0.0, 1.0);
+
+      // Compute v_dot_normal, v^i n_i
+      dot_product(make_not_null(&v_dot_normal), spatial_velocity,
+                  normal_covector);
+
+      // Compute v^2=v^i v_i
+      dot_product(make_not_null(&v_squared), spatial_velocity,
+                  spatial_velocity_one_form);
+      get(v_squared) = clamp(get(v_squared), 0.0, 1.0 - 1.0e-8);
+
+      // Calculate characteristic speeds in inertial frame
+      //
+      // Ideally we'd use the Lorentz factor instead of 1-v^2, but I (Nils
+      // Deppe) don't have the bandwidth to change this right now.
+      get(one_minus_v2_cs2) = 1.0 - get(v_squared) * get(sound_speed_squared);
+      get(one_minus_cs2) = 1.0 - get(sound_speed_squared);
+      discriminant =
+          get(sound_speed_squared) * (1.0 - get(v_squared)) *
+          (get(one_minus_v2_cs2) -
+           get(v_dot_normal) * get(v_dot_normal) * get(one_minus_cs2));
+      discriminant = max(discriminant, 0.0);
+      discriminant = sqrt(discriminant);
+
+      get(lapse_over_one_minus_v2_cs2) = get(lapse) / get(one_minus_v2_cs2);
+      get(v_dot_normal_times_one_minus_cs2) =
+          get(v_dot_normal) * get(one_minus_cs2);
+
+      for (size_t i = 0; i < num_points; ++i) {
+        if (get(rest_mass_density)[i] > atmosphere_density_cutoff_) {
+          get(*packaged_largest_outgoing_char_speed)[i] =
+              get(lapse_over_one_minus_v2_cs2)[i] *
+                  (get(v_dot_normal_times_one_minus_cs2)[i] + discriminant[i]) -
+              get(shift_dot_normal)[i];
+          get(*packaged_largest_ingoing_char_speed)[i] =
+              get(lapse_over_one_minus_v2_cs2)[i] *
+                  (get(v_dot_normal_times_one_minus_cs2)[i] - discriminant[i]) -
+              get(shift_dot_normal)[i];
+        }
+      }
+    }
+
+    // Correct for mesh velocity
     if (normal_dot_mesh_velocity.has_value()) {
-      get(*packaged_largest_outgoing_char_speed) =
-          get(lapse) - get(shift_dot_normal) - get(*normal_dot_mesh_velocity);
-      get(*packaged_largest_ingoing_char_speed) =
-          -get(lapse) - get(shift_dot_normal) - get(*normal_dot_mesh_velocity);
-    } else {
-      get(*packaged_largest_outgoing_char_speed) =
-          get(lapse) - get(shift_dot_normal);
-      get(*packaged_largest_ingoing_char_speed) =
-          -get(lapse) - get(shift_dot_normal);
+      get(*packaged_largest_outgoing_char_speed) -=
+          get(*normal_dot_mesh_velocity);
+      get(*packaged_largest_ingoing_char_speed) -=
+          get(*normal_dot_mesh_velocity);
     }
   }
 
@@ -241,7 +347,11 @@ void Hll::dg_boundary_terms(
   }
 }
 
-bool operator==(const Hll& /*lhs*/, const Hll& /*rhs*/) { return true; }
+bool operator==(const Hll& lhs, const Hll& rhs) {
+  return lhs.magnetic_field_magnitude_for_hydro_ ==
+             rhs.magnetic_field_magnitude_for_hydro_ and
+         lhs.atmosphere_density_cutoff_ == rhs.atmosphere_density_cutoff_;
+}
 bool operator!=(const Hll& lhs, const Hll& rhs) { return not(lhs == rhs); }
 
 // NOLINTNEXTLINE

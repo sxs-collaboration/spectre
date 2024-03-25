@@ -350,6 +350,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
         typename grmhd::ValenciaDivClean::ComputeFluxes::return_tags;
     using flux_argument_tags =
         typename grmhd::ValenciaDivClean::ComputeFluxes::argument_tags;
+    using dg_package_data_temporary_tags =
+        typename BoundaryCorrection::dg_package_data_temporary_tags;
     Variables<tmpl::remove_duplicates<tmpl::append<
         typename System::primitive_variables_tag::tags_list,
         typename System::gh_system::variables_tag::tags_list, flux_tags,
@@ -360,7 +362,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                    gr::Tags::InverseSpatialMetric<DataVector, 3>,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma1,
                    ::gh::ConstraintDamping::Tags::ConstraintGamma2>,
-        prims_to_reconstruct_tags>>>
+        dg_package_data_temporary_tags, prims_to_reconstruct_tags>>>
         prims_to_reconstruct{interface_mesh.number_of_grid_points()};
     prims_to_reconstruct.assign_subset(face_prims);
     get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
@@ -502,8 +504,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
         typename BoundaryCorrection::dg_package_field_tags;
     Variables<dg_package_fields> dg_packaged_data{
         interface_mesh.number_of_grid_points()};
-    using dg_package_data_temporary_tags =
-        typename BoundaryCorrection::dg_package_data_temporary_tags;
+    using dg_package_data_primitive_tags =
+        typename BoundaryCorrection::dg_package_data_primitive_tags;
     boundary_correction.dg_package_data(
         make_not_null(&get<tmpl::at_c<dg_package_fields, 0>>(dg_packaged_data)),
         make_not_null(&get<tmpl::at_c<dg_package_fields, 1>>(dg_packaged_data)),
@@ -568,11 +570,22 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
             prims_to_reconstruct),
         get<tmpl::at_c<dg_package_data_temporary_tags, 3>>(
             prims_to_reconstruct),
+        get<tmpl::at_c<dg_package_data_temporary_tags, 4>>(
+            prims_to_reconstruct),
 
-        // prims (none)
+        // prims
+        get<tmpl::at_c<dg_package_data_primitive_tags, 0>>(
+            prims_to_reconstruct),
+        get<tmpl::at_c<dg_package_data_primitive_tags, 1>>(
+            prims_to_reconstruct),
+        get<tmpl::at_c<dg_package_data_primitive_tags, 2>>(
+            prims_to_reconstruct),
+        get<tmpl::at_c<dg_package_data_primitive_tags, 3>>(
+            prims_to_reconstruct),
 
         normal_covector, normal_vector, face_mesh_velocity,
-        normal_dot_mesh_velocity);
+        normal_dot_mesh_velocity,
+        *(soln.equation_of_state().promote_to_3d_eos()));
 
     DataVector interface_data{dg_packaged_data.size(),
                               std::numeric_limits<double>::signaling_NaN()};
