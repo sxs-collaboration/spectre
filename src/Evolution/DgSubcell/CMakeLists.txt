@@ -54,6 +54,7 @@ spectre_target_sources(
   Matrices.cpp
   Mesh.cpp
   NeighborRdmpAndVolumeData.cpp
+  NeighborTciDecision.cpp
   PerssonTci.cpp
   Projection.cpp
   RdmpTci.cpp
