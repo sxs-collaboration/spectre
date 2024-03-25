@@ -134,6 +134,12 @@ def points_on_slice(
         " has an effect if multiple files are specified."
     ),
 )
+@click.option(
+    "--title",
+    "-t",
+    help="Title for the plot.",
+    show_default="name of the variable",
+)
 @apply_stylesheet_command()
 @show_or_save_plot_command()
 def plot_slice_command(
@@ -148,6 +154,7 @@ def plot_slice_command(
     slice_up,
     num_samples,
     num_threads,
+    title,
 ):
     """Plot variables on a slice through volume data
 
@@ -210,6 +217,7 @@ def plot_slice_command(
         x, y, data, colors="white", linewidths=0.5, alpha=0.6
     )
     plt.clabel(contours)
+    plt.title(title or var_name)
     if np.isclose(slice_extent[0], slice_extent[1]):
         plt.gca().set_aspect("equal")
     plt.xlabel(x_label)
