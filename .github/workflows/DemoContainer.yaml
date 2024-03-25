@@ -7,17 +7,22 @@ on:
   workflow_dispatch:
     inputs:
       image_name:
-        description: >
-          Image name to push to DockerHub
-        required: true
+        description: Image name to push to DockerHub
         default: 'sxscollaboration/spectre'
       build_arm:
         type: boolean
-        description: >
-          Build ARM container in addition to x86_64
+        description: Build ARM container in addition to x86_64
         default: true
 
   workflow_call:
+    inputs:
+      image_name:
+        description: Image name to push to DockerHub
+        default: 'sxscollaboration/spectre'
+      build_arm:
+        type: boolean
+        description: Build ARM container in addition to x86_64
+        default: true
     secrets:
       DOCKERHUB_USERNAME:
         required: true
