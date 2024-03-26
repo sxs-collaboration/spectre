@@ -114,14 +114,6 @@ class Item<Tag, ItemType::Compute> {
     evaluated_ = true;
   }
 
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) {
-    p | evaluated_;
-    if (evaluated_) {
-      p | value_;
-    }
-  }
-
  private:
   // NOLINTNEXTLINE(spectre-mutable)
   mutable value_type value_{};
@@ -148,9 +140,6 @@ class Item<Tag, ItemType::Reference> {
   constexpr Item& operator=(Item const&) = default;
   constexpr Item& operator=(Item&&) = default;
   ~Item() = default;
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) {}
 };
 }  // namespace db::detail
 /// \endcond
