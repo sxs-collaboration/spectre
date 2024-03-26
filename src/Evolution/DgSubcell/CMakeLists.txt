@@ -25,6 +25,7 @@ spectre_target_headers(
   Mesh.hpp
   NeighborRdmpAndVolumeData.hpp
   NeighborReconstructedFaceSolution.hpp
+  NeighborReconstructedFaceSolution.tpp
   NeighborTciDecision.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp

@@ -57,9 +57,10 @@ template <size_t Dim>
 class AoWeno53 : public Reconstructor<Dim> {
  private:
   using face_vars_tags =
-      tmpl::list<Tags::U,
-                 ::Tags::Flux<Tags::U, tmpl::size_t<Dim>, Frame::Inertial>>;
-  using volume_vars_tags = tmpl::list<Tags::U>;
+      tmpl::list<ScalarAdvection::Tags::U,
+                 ::Tags::Flux<ScalarAdvection::Tags::U, tmpl::size_t<Dim>,
+                              Frame::Inertial>>;
+  using volume_vars_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
  public:
   struct GammaHi {
@@ -119,7 +120,7 @@ class AoWeno53 : public Reconstructor<Dim> {
   void reconstruct(
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_lower_face,
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
-      const Variables<tmpl::list<Tags::U>>& volume_vars,
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,
@@ -128,7 +129,7 @@ class AoWeno53 : public Reconstructor<Dim> {
   template <typename TagsList>
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<TagsList>*> vars_on_face,
-      const Variables<tmpl::list<Tags::U>>& volume_vars,
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,
