@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "Evolution/Particles/MonteCarlo/EmitPackets.tpp"
+#include "Evolution/Particles/MonteCarlo/EvolvePacketsInElement.tpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 
 namespace Particles::MonteCarlo::detail {
@@ -35,3 +36,4 @@ void draw_single_packet(
 }  // namespace Particles::MonteCarlo::detail
 
 template struct Particles::MonteCarlo::TemplatedLocalFunctions<2, 2>;
+template struct Particles::MonteCarlo::TemplatedLocalFunctions<2, 3>;
