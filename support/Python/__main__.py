@@ -7,6 +7,8 @@ import os
 import click
 import rich.logging
 import rich.traceback
+import rich_click
+import rich_click.cli
 import yaml
 
 import spectre
@@ -14,33 +16,58 @@ from spectre.support.Machines import UnknownMachineError, this_machine
 
 logger = logging.getLogger(__name__)
 
+# Let `rich_click` take over formatting from `click`
+rich_click.cli.patch()
+
+# Configure CLI formatting
+rich_click.rich_click.USE_MARKDOWN = True
+rich_click.rich_click.SHOW_ARGUMENTS = True
+rich_click.rich_click.COMMAND_GROUPS = {
+    "spectre": [
+        dict(name="Pipelines", commands=["bbh"]),
+        dict(
+            name="Scheduling",
+            commands=["resubmit", "run-next", "schedule", "status", "validate"],
+        ),
+        dict(
+            name="Visualization",
+            commands=["plot", "render-1d", "render-3d", "generate-xdmf"],
+        ),
+        dict(
+            name="Volume data",
+            commands=[
+                "interpolate-to-mesh",
+                "interpolate-to-points",
+                "transform-volume-data",
+                "extend-connectivity",
+            ],
+        ),
+        dict(
+            name="IO",
+            commands=[
+                "clean-output",
+                "combine-h5",
+                "delete-subfiles",
+                "extract-dat",
+                "extract-input",
+            ],
+        ),
+        dict(name="Profiling", commands=["simplify-traces"]),
+    ]
+}
+
 
 # Load subcommands lazily, i.e., only import the module when the subcommand is
 # invoked. This is important so the CLI responds quickly.
 class Cli(click.MultiCommand):
     def list_commands(self, ctx):
-        return [
-            "bbh",
-            "clean-output",
-            "combine-h5",
-            "delete-subfiles",
-            "extend-connectivity",
-            "extract-dat",
-            "extract-input",
-            "generate-xdmf",
-            "interpolate-to-mesh",
-            "interpolate-to-points",
-            "plot",
-            "render-1d",
-            "render-3d",
-            "resubmit",
-            "run-next",
-            "schedule",
-            "simplify-traces",
-            "status",
-            "transform-volume-data",
-            "validate",
-        ]
+        return sum(
+            map(
+                lambda group: group["commands"],
+                rich_click.rich_click.COMMAND_GROUPS["spectre"],
+            ),
+            [],
+        )
 
     def get_command(self, ctx, name):
         if name == "bbh":
@@ -138,10 +165,9 @@ class Cli(click.MultiCommand):
 
             return validate_input_file_command
 
-        available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise click.UsageError(
             f"The command '{name}' is not implemented. "
-            f"Available commands are:\n{available_commands}"
+            "See 'spectre --help' for a list of available commands."
         )
 
 

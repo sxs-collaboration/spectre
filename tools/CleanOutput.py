@@ -26,7 +26,6 @@ def clean_output(input_file, output_dir, force):
 
     The `input_file` must list its expected output files in the metadata:
 
-    \b
     ```yaml
     ExpectedOutput:
       - Reduction.h5
