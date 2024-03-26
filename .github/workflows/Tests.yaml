@@ -471,6 +471,7 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
+            TEST_TIMEOUT_FACTOR: 2
           - compiler: clang-14
             build_type: Release
             # Test compatibility with oldest supported CMake version
