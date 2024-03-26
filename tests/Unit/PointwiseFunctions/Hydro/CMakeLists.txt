@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(EquationsOfState)
+add_subdirectory(InitialData)
 
 set(LIBRARY "Test_Hydro")
 
