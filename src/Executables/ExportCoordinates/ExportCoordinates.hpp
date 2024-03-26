@@ -43,15 +43,16 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/VisitAndReturn.hpp"
+#include "Parallel/PhaseControl/Factory.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -65,6 +66,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -295,17 +297,11 @@ struct Metavariables {
                        amr::Criteria::TruncationError<
                            volume_dim, tmpl::list<::domain::Tags::Coordinates<
                                            volume_dim, Frame::Inertial>>>>>,
-        tmpl::pair<
-            PhaseChange,
-            tmpl::list<
-                PhaseControl::VisitAndReturn<
-                    Parallel::Phase::EvaluateAmrCriteria>,
-                PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
-                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>,
-                PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<Event, tmpl::list<Events::MonitorMemory<volume_dim>,
+                                     Events::Completion>>,
+        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>, tmpl::list<>>,
-        tmpl::pair<Event, tmpl::list<Events::Completion>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
         tmpl::pair<Trigger, tmpl::list<Triggers::Always, Triggers::SlabCompares,
                                        Triggers::TimeCompares>>>;
@@ -368,6 +364,7 @@ struct Metavariables {
 
   using component_list =
       tmpl::list<::amr::Component<Metavariables>, dg_element_array,
+                 mem_monitor::MemoryMonitor<Metavariables>,
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>;
 
