@@ -18,6 +18,7 @@ target_link_libraries(
   DataStructures
   DiscontinuousGalerkin
   Parallel
+  Printf
   Time
   Utilities
   )

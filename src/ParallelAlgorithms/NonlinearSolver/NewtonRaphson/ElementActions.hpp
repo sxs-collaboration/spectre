@@ -22,7 +22,7 @@
 #include "Parallel/GetSection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Tags/Section.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"

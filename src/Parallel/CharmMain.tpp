@@ -16,6 +16,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
@@ -44,6 +45,8 @@ inline void register_parallel_components() {
     return;  // LCOV_EXCL_LINE
   }
   done_registration = true;
+
+  Parallel::PrinterChare::register_with_charm();
 
   // Charm++ requires the order of registration to be the same across all
   // processors. To make sure this is satisfied regardless of any possible weird

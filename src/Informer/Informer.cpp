@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 

@@ -35,6 +35,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   ErrorHandling
+  Printf
   Utilities
   YamlCpp
   PRIVATE

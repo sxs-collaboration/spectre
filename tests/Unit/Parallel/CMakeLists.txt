@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(PhaseControl)
+add_subdirectory(Printf)
 
 set(ALGORITHM_TEST_LINK_LIBRARIES
   Actions
@@ -16,6 +17,7 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Parallel
   ParallelHelpers
   PhaseControl
+  Printf
   Serialization
   Spectral
   SystemUtilities

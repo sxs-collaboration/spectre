@@ -26,6 +26,7 @@ set(LIBS_TO_LINK
   ParallelAmr
   ParallelInterpolation
   PhaseControl
+  Printf
   Serialization
   Time
   Utilities

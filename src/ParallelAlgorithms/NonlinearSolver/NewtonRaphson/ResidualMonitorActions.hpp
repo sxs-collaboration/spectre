@@ -4,25 +4,54 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <string>
+#include <utility>
 #include <variant>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/LineSearch.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/Tags/InboxTags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Observe.hpp"
-#include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
-#include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 
 /// \cond
+namespace Convergence::Tags {
+template <typename OptionsGroup>
+struct Criteria;
+}  // namespace Convergence::Tags
+namespace LinearSolver::Tags {
+template <typename Tag>
+struct Magnitude;
+template <typename Tag>
+struct MagnitudeSquare;
+}  // namespace LinearSolver::Tags
+namespace NonlinearSolver::Tags {
+template <typename Tag>
+struct Globalization;
+template <typename OptionsGroup>
+struct MaxGlobalizationSteps;
+template <typename Tag>
+struct Residual;
+template <typename OptionsGroup>
+struct StepLength;
+template <typename OptionsGroup>
+struct SufficientDecrease;
+}  // namespace NonlinearSolver::Tags
+namespace logging::Tags {
+template <typename OptionsGroup>
+struct Verbosity;
+}  // namespace logging::Tags
 namespace tuples {
 template <typename...>
 class TaggedTuple;

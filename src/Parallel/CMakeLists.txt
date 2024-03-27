@@ -51,7 +51,6 @@ spectre_target_headers(
   Phase.hpp
   PhaseControlReductionHelpers.hpp
   PhaseDependentActionList.hpp
-  Printf.hpp
   Reduction.hpp
   ReductionDeclare.hpp
   ResourceInfo.hpp
@@ -71,6 +70,7 @@ target_link_libraries(
   Charmxx::charmxx
   ErrorHandling
   Options
+  Printf
   Serialization
   SystemUtilities
   Utilities
@@ -85,5 +85,6 @@ add_dependencies(
 add_subdirectory(Algorithms)
 add_subdirectory(MemoryMonitor)
 add_subdirectory(PhaseControl)
+add_subdirectory(Printf)
 add_subdirectory(Protocols)
 add_subdirectory(Tags)

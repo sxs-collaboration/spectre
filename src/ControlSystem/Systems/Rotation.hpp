@@ -24,6 +24,7 @@
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

@@ -4,7 +4,8 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/Printf.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/PrettyType.hpp"
 
@@ -13,6 +14,10 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
+namespace logging::Tags {
+template <typename OptionsGroup>
+struct Verbosity;
+}  // namespace logging::Tags
 /// \endcond
 
 namespace intrp::callbacks {

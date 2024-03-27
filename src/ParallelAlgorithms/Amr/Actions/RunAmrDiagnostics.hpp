@@ -5,20 +5,29 @@
 
 #include <boost/rational.hpp>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/Domain.hpp"
-#include "Domain/Tags.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
-#include "Parallel/GlobalCache.hpp"
-#include "Parallel/Printf.hpp"
-#include "Parallel/Reduction.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/Abort.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+namespace domain::Tags {
+template <size_t VolumeDim>
+struct Domain;
+}  // namespace domain::Tags
+/// \endcond
 
 namespace amr::Actions {
 

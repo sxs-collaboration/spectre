@@ -17,6 +17,7 @@ target_link_libraries(
   Cce
   GeneralRelativity
   Informer
+  Printf
   Spectral
   )
 

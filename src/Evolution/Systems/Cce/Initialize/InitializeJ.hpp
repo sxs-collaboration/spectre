@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/NodeLock.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
