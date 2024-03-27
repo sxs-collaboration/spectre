@@ -204,7 +204,8 @@ struct RunEventsAndDenseTriggers {
 
     const auto step_end =
         time_step_id.step_time() + db::get<::Tags::TimeStep>(box);
-    const evolution_less<double> before{time_step_id.time_runs_forward()};
+    const evolution_less_equal<double> before_equal{
+        time_step_id.time_runs_forward()};
 
     using postprocessor_return_tags =
         tmpl::join<tmpl::transform<Postprocessors, get_return_tags<tmpl::_1>>>;
@@ -223,7 +224,7 @@ struct RunEventsAndDenseTriggers {
 
     for (;;) {
       const double next_trigger = events_and_dense_triggers.next_trigger(box);
-      if (before(step_end.value(), next_trigger)) {
+      if (before_equal(step_end.value(), next_trigger)) {
         return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
 
@@ -244,21 +245,6 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NotReady:
           return {Parallel::AlgorithmExecution::Retry, std::nullopt};
         case TriggeringState::NeedsEvolvedVariables: {
-          bool ready = true;
-          tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
-            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
-            if (ready) {
-              if (not postprocessor::is_ready(make_not_null(&box),
-                                              make_not_null(&inboxes), cache,
-                                              array_index, component)) {
-                ready = false;
-              }
-            }
-          });
-          if (not ready) {
-            return {Parallel::AlgorithmExecution::Retry, std::nullopt};
-          }
-
           using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
           bool dense_output_succeeded = false;
           variables_restorer.save();
@@ -277,6 +263,21 @@ struct RunEventsAndDenseTriggers {
           if (not dense_output_succeeded) {
             // Need to take another time step
             return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+          }
+
+          bool ready = true;
+          tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
+            using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
+            if (ready) {
+              if (not postprocessor::is_ready(make_not_null(&box),
+                                              make_not_null(&inboxes), cache,
+                                              array_index, component)) {
+                ready = false;
+              }
+            }
+          });
+          if (not ready) {
+            return {Parallel::AlgorithmExecution::Retry, std::nullopt};
           }
 
           postprocessor_restorer.save();

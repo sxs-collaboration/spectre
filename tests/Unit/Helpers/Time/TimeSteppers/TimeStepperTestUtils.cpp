@@ -361,13 +361,13 @@ void check_dense_output(
       auto step = step_size;
       for (;;) {
         history.insert(time_id, y, y);
-        if (not before((time_id.step_time() + step).value(), time)) {
+        if (before(time, (time_id.step_time() + step).value())) {
           // Make sure the initial value is preserved.
           y = 2.0 * *history.complete_step_start().value;
           if (stepper.dense_update_u(make_not_null(&y), history, time)) {
             return y - *history.complete_step_start().value;
           }
-          REQUIRE(before(time_id.step_time().value(), time));
+          REQUIRE(not before(time, time_id.step_time().value()));
         }
         y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {
