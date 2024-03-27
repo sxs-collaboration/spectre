@@ -407,6 +407,37 @@ struct CalculateScriPlusValue<Tags::EthInertialRetardedTime> {
       size_t l_max);
 };
 
+/*!
+ * \brief Computes the leading part of the scalar field \f$\psi\f$ near
+ * \f$\mathcal I^+\f$.
+ *
+ * \details The value \f$\psi\f$ scales asymptotically as \f$r^{-1}\f$. Assuming
+ * \f$\psi^{(n)}\f$ is the \f$1/r^n\f$ part of \f$\psi\f$ evaluated at
+ * \f$\mathcal I^+\f$, so for any \f$\psi\f$,
+ *
+ * \f{align*}{
+ * \psi^{(1)} = (- 2 R \partial_y \psi)|_{y = 1},
+ * \f}
+ *
+ * where the expansion is determined by the conversion between Bondi and
+ * numerical radii \f$r = 2 R / (1 - y)\f$.
+ */
+template <>
+struct CalculateScriPlusValue<Tags::ScriPlus<Tags::KleinGordonPsi>> {
+  using return_tags = tmpl::list<Tags::ScriPlus<Tags::KleinGordonPsi>>;
+  using tensor_argument_tags =
+      tmpl::list<Tags::Dy<Tags::KleinGordonPsi>,
+                 Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
+
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> kg_psi_scri,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_kg_psi,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
+      size_t l_max, size_t number_of_radial_points);
+};
+
 /// Initialize the \f$\mathcal I^+\f$ value `Tag` for the first hypersurface.
 template <typename Tag>
 struct InitializeScriPlusValue;

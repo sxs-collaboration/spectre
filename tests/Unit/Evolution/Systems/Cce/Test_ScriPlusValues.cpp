@@ -90,6 +90,13 @@ void pypp_test_scri_plus_computation_steps() {
           CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>>>::apply,
       "ScriPlusValues", {"strain"}, {{{0.1, 1.0}}},
       DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
+
+  pypp::check_with_random_values<1>(
+      &WrapScriPlusComputation<
+          l_max, number_of_radial_points,
+          CalculateScriPlusValue<Tags::ScriPlus<Tags::KleinGordonPsi>>>::apply,
+      "ScriPlusValues", {"klein_gordon_psi"}, {{{0.1, 1.0}}},
+      DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
 }
 
 void check_inertial_retarded_time_utilities() {

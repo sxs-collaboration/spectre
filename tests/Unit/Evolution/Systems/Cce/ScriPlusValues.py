@@ -133,3 +133,7 @@ def strain(dy_bondi_j, eth_eth_retarded_time, boundary_r):
     return -2.0 * np.conj(boundary_r * dy_bondi_j) + np.conj(
         eth_eth_retarded_time
     )
+
+
+def klein_gordon_psi(dy_kg_psi, boundary_r):
+    return -2.0 * boundary_r * dy_kg_psi
