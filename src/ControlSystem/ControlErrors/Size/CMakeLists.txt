@@ -25,6 +25,7 @@ spectre_target_headers(
   DeltaR.hpp
   DeltaRDriftOutward.hpp
   Error.hpp
+  Factory.hpp
   Initial.hpp
   RegisterDerivedWithCharm.hpp
   Update.hpp

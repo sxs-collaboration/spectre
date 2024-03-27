@@ -15,6 +15,7 @@
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
+#include "ControlSystem/ControlErrors/Size/Factory.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
@@ -34,6 +35,7 @@
 #include "NumericalAlgorithms/Interpolation/ZeroCrossingPredictor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -57,6 +59,13 @@ struct Metavars {
   using observed_reduction_data_tags = tmpl::list<>;
   using component_list = tmpl::list<observers::ObserverWriter<Metavars>>;
   void pup(PUP::er& /*p*/) {}
+
+  struct factory_creation
+      : public tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<control_system::size::State,
+                   control_system::size::States::factory_creatable_states>>;
+  };
 };
 
 void test_control_error_delta_r() {
@@ -210,10 +219,11 @@ void test_size_error_one_step(
         tt::assert_conforms_to_v<size_error,
                                  control_system::protocols::ControlError>);
 
-    auto error_class = TestHelpers::test_creation<size_error>(
+    auto error_class = TestHelpers::test_creation<size_error, Metavars>(
         "MaxNumTimesForZeroCrossingPredictor: 4\n"
         "SmoothAvgTimescaleFraction: 0.25\n"
         "DeltaRDriftOutwardOptions: None\n"
+        "InitialState: Initial\n"
         "SmootherTuner:\n"
         "  InitialTimescales: 0.2\n"
         "  MinTimescale: 1.0e-4\n"
