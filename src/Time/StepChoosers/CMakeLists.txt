@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Constant.cpp
+  Random.cpp
   StepToTimes.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   Factory.hpp
   Increase.hpp
   PreventRapidIncrease.hpp
+  Random.hpp
   StepChooser.hpp
   StepToTimes.hpp
   )

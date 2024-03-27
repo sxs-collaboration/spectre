@@ -45,6 +45,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Domain
   ErrorHandling
   EventsAndTriggers
   Options
