@@ -119,14 +119,12 @@ Equilibrium3D<EquilEos>::sound_speed_squared_from_density_and_temperature_impl(
   // Cold part plus temperature dependent part, see the 3D EoS documentation for
   // expression.
   return Scalar<DataType>{
-      get(rest_mass_density) *
-          get(underlying_eos_.chi_from_density_and_energy(
-              rest_mass_density, specific_internal_energy)) /
-          enthalpy_density +
-      get(rest_mass_density) / pressure *
-          get(underlying_eos_
-                  .kappa_times_p_over_rho_squared_from_density_and_energy(
-                      rest_mass_density, specific_internal_energy))};
+      get(rest_mass_density) / enthalpy_density *
+      (get(underlying_eos_.chi_from_density_and_energy(
+           rest_mass_density, specific_internal_energy)) +
+       get(underlying_eos_
+               .kappa_times_p_over_rho_squared_from_density_and_energy(
+                   rest_mass_density, specific_internal_energy)))};
 }
 
 template class Equilibrium3D<HybridEos<PolytropicFluid<true>>>;
