@@ -1,10 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// The event portion of slab size changing relies on a reduction, so
-// it cannot currently be tested with the mocking code.  This tests
-// the action portion.
-
 #include "Framework/TestingFramework.hpp"
 
 #include <cstdint>
@@ -19,8 +15,9 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -127,10 +124,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
         },
         make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
-    using ExpectedMessages =
-        ChangeSlabSize_detail::NumberOfExpectedMessagesInbox;
-    using NewSize = ChangeSlabSize_detail::NewSlabSizeInbox;
-    auto& inboxes = runner.inboxes<Component>().at(0);
+    using ExpectedMessages = ::Tags::ChangeSlabSize::NumberOfExpectedMessages;
+    using NewSize = ::Tags::ChangeSlabSize::NewSlabSize;
 
     const auto check_box = [&box, &get_step](const TimeStepId& id,
                                              const uint64_t changes) {
@@ -151,56 +146,85 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
 
     // Simple case
     {
-      get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
+      db::mutate<ExpectedMessages>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+            ++(*expected)[3];
+          },
+          make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
-      get<NewSize>(inboxes)[3].insert(1.0);
-
-      std::string inbox_output =
-          ExpectedMessages::output_inbox(get<ExpectedMessages>(inboxes), 1_st);
-      std::string expected_inbox_output =
-          " SlabSizeNumberOfExpectedMessagesInbox:\n"
-          "  Number of messages: 3\n";
-      CHECK(inbox_output == expected_inbox_output);
-      inbox_output = NewSize::output_inbox(get<NewSize>(inboxes), 1_st);
-      expected_inbox_output =
-          " NewSlabSizeInbox:\n"
-          "  Slab number: 3, slab sizes: (1)\n";
-      CHECK(inbox_output == expected_inbox_output);
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) { (*sizes)[3].insert(1.0); },
+          make_not_null(&box));
 
       runner.next_action<Component>(0);
       resize_slab(1.0);
       check_box(TimeStepId(time_runs_forward, 3, start_time), 1);
-      CHECK(get<ExpectedMessages>(inboxes).empty());
-      CHECK(get<NewSize>(inboxes).empty());
-      get<ExpectedMessages>(inboxes).clear();
-      get<NewSize>(inboxes).clear();
+      CHECK(db::get<ExpectedMessages>(box).empty());
+      CHECK(db::get<NewSize>(box).empty());
+      db::mutate<ExpectedMessages, NewSize>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
+              const gsl::not_null<
+                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            expected->clear();
+            sizes->clear();
+          },
+          make_not_null(&box));
     }
 
     // Multiple messages at multiple times
     {
-      get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
-      get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
-      get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
+      db::mutate<ExpectedMessages>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+            (*expected)[3] += 2;
+            (*expected)[4] += 1;
+          },
+          make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
-      get<NewSize>(inboxes)[3].insert(2.0);
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) { (*sizes)[3].insert(2.0); },
+          make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
-      get<NewSize>(inboxes)[4].insert(0.5);
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) { (*sizes)[4].insert(0.5); },
+          make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
-      get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
-      get<NewSize>(inboxes)[3].insert(3.0);
+      db::mutate<ExpectedMessages>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+            ++(*expected)[4];
+          },
+          make_not_null(&box));
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) { (*sizes)[3].insert(3.0); },
+          make_not_null(&box));
       runner.next_action<Component>(0);
       resize_slab(2.0);
       check_box(TimeStepId(time_runs_forward, 3, start_time), 2);
-      CHECK(get<ExpectedMessages>(inboxes).size() == 1);
-      CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
-      CHECK(get<NewSize>(inboxes).size() == 1);
-      CHECK(get<NewSize>(inboxes).count(4) == 1);
-      get<ExpectedMessages>(inboxes).clear();
-      get<NewSize>(inboxes).clear();
+      CHECK(db::get<ExpectedMessages>(box).size() == 1);
+      CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
+      CHECK(db::get<NewSize>(box).size() == 1);
+      CHECK(db::get<NewSize>(box).count(4) == 1);
+      db::mutate<ExpectedMessages, NewSize>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
+              const gsl::not_null<
+                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            expected->clear();
+            sizes->clear();
+          },
+          make_not_null(&box));
     }
 
     // Check interior of slab
@@ -216,20 +240,37 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&box), db::get<Tags::TimeStep>(box),
           db::get<Tags::TimeStepper<TimeStepper>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
-      get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
-      get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
+      db::mutate<ExpectedMessages>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+            ++(*expected)[3];
+            ++(*expected)[4];
+          },
+          make_not_null(&box));
       runner.next_action<Component>(0);
       check_box(initial_id, 2);
-      CHECK(get<ExpectedMessages>(inboxes).size() == 2);
-      CHECK(get<ExpectedMessages>(inboxes).count(3) == 1);
-      CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
-      CHECK(get<NewSize>(inboxes).empty());
-      get<NewSize>(inboxes)[3].insert(0.1);
-      get<NewSize>(inboxes)[4].insert(0.1);
+      CHECK(db::get<ExpectedMessages>(box).size() == 2);
+      CHECK(db::get<ExpectedMessages>(box).count(3) == 1);
+      CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
+      CHECK(db::get<NewSize>(box).empty());
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            (*sizes)[3].insert(0.1);
+            (*sizes)[4].insert(0.1);
+          },
+          make_not_null(&box));
       runner.next_action<Component>(0);
       check_box(initial_id, 2);
-      get<ExpectedMessages>(inboxes).clear();
-      get<NewSize>(inboxes).clear();
+      db::mutate<ExpectedMessages, NewSize>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
+              const gsl::not_null<
+                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            expected->clear();
+            sizes->clear();
+          },
+          make_not_null(&box));
     }
 
     // Check at a substep
@@ -249,20 +290,37 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&box), db::get<Tags::TimeStep>(box),
           db::get<Tags::TimeStepper<TimeStepper>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
-      get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
-      get<ExpectedMessages>(inboxes)[4].insert(ExpectedMessages::NoData{});
+      db::mutate<ExpectedMessages>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected) {
+            ++(*expected)[3];
+            ++(*expected)[4];
+          },
+          make_not_null(&box));
       runner.next_action<Component>(0);
       check_box(initial_id, 2);
-      CHECK(get<ExpectedMessages>(inboxes).size() == 2);
-      CHECK(get<ExpectedMessages>(inboxes).count(3) == 1);
-      CHECK(get<ExpectedMessages>(inboxes).count(4) == 1);
-      CHECK(get<NewSize>(inboxes).empty());
-      get<NewSize>(inboxes)[3].insert(0.1);
-      get<NewSize>(inboxes)[4].insert(0.1);
+      CHECK(db::get<ExpectedMessages>(box).size() == 2);
+      CHECK(db::get<ExpectedMessages>(box).count(3) == 1);
+      CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
+      CHECK(db::get<NewSize>(box).empty());
+      db::mutate<NewSize>(
+          [&](const gsl::not_null<
+              std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            (*sizes)[3].insert(0.1);
+            (*sizes)[4].insert(0.1);
+          },
+          make_not_null(&box));
       runner.next_action<Component>(0);
       check_box(initial_id, 2);
-      get<ExpectedMessages>(inboxes).clear();
-      get<NewSize>(inboxes).clear();
+      db::mutate<ExpectedMessages, NewSize>(
+          [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
+              const gsl::not_null<
+                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  sizes) {
+            expected->clear();
+            sizes->clear();
+          },
+          make_not_null(&box));
     }
   }
 }

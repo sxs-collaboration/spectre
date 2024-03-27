@@ -64,6 +64,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
@@ -86,10 +87,11 @@
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -315,7 +317,10 @@ struct EvolutionMetavars {
             Tags::StepperErrorUpdated,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+            Tags::ChangeSlabSize::NumberOfExpectedMessages,
+            Tags::ChangeSlabSize::NewSlabSize>>;
   };
 
   struct registration

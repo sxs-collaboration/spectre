@@ -154,10 +154,11 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -688,7 +689,9 @@ struct EvolutionMetavars {
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             typename control_system::Actions::InitializeMeasurements<
                 control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>>>>;
+            intrp::Tags::InterpPointInfo<EvolutionMetavars>,
+            Tags::ChangeSlabSize::NumberOfExpectedMessages,
+            Tags::ChangeSlabSize::NewSlabSize>>>;
   };
 
   using component_list = tmpl::flatten<tmpl::list<

@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/ChangeSlabSize.hpp"
+#include "Time/ChangeSlabSize/ChangeSlabSize.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"

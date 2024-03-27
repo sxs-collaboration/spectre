@@ -13,7 +13,10 @@
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
+#include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
@@ -91,7 +94,10 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
             Tags::StepperErrorUpdated,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>>;
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
+        ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
+            Tags::ChangeSlabSize::NumberOfExpectedMessages,
+            Tags::ChangeSlabSize::NewSlabSize>>;
   };
 
   struct registration

@@ -18,6 +18,7 @@ spectre_target_headers(
   CopyFromCreatorOrLeaveAsIs.hpp
   DefaultInitialize.hpp
   Mesh.hpp
+  NamespaceDocs.hpp
   Tensors.hpp
   Variables.hpp
   )

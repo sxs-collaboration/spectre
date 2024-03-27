@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_AdaptiveSteppingDiagnostics.cpp
   Test_ApproximateTime.cpp
   Test_BoundaryHistory.cpp
-  Test_ChangeSlabSize.cpp
   Test_ChooseLtsStepSize.cpp
   Test_EvolutionOrdering.cpp
   Test_History.cpp
@@ -21,6 +20,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(Actions)
+add_subdirectory(ChangeSlabSize)
 add_subdirectory(StepChoosers)
 add_subdirectory(Tags)
 add_subdirectory(TimeSteppers)

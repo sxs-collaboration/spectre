@@ -11,7 +11,7 @@
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
-#include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/ChangeSlabSize/Event.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace dg::Events {
