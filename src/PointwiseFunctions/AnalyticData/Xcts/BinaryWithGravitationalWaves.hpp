@@ -163,7 +163,16 @@ struct BinaryWithGravitationalWavesVariables
         xcoord_right(local_xcoord_right),
         ymomentum_left(local_ymomentum_left),
         ymomentum_right(local_ymomentum_right),
-        attenuation_parameter(local_attenuation_parameter) {}
+        attenuation_parameter(local_attenuation_parameter) {
+    momentum_left = x;
+    momentum_left.get(0) = 0.;
+    momentum_left.get(1) = ymomentum_left;
+    momentum_left.get(2) = 0.;
+    momentum_right = x;
+    momentum_right.get(0) = 0.;
+    momentum_right.get(1) = ymomentum_right;
+    momentum_right.get(2) = 0.;
+  }
 
   const tnsr::I<DataType, 3>& x;
   const double mass_left;
@@ -175,8 +184,8 @@ struct BinaryWithGravitationalWavesVariables
   const double attenuation_parameter;
   const double separation = xcoord_right - xcoord_left;
   const std::array<double, 3> normal_lr{{-1., 0., 0.}};
-  const std::array<double, 3> momentum_left{{0., ymomentum_left, 0.}};
-  const std::array<double, 3> momentum_right{{0., ymomentum_right, 0.}};
+  tnsr::I<DataType, 3> momentum_left;
+  tnsr::I<DataType, 3> momentum_right;
 
   void operator()(gsl::not_null<Scalar<DataType>*> distance_left,
                   gsl::not_null<Cache*> cache,
@@ -489,24 +498,13 @@ class BinaryWithGravitationalWaves
         "The coordinates on the x-axis of the right black hole.";
     using type = double;
   };
-  struct YMomentumLeft {
-    static constexpr Options::String help =
-        "The y-axis-componet of the linear momentum of the left black hole.";
-    using type = double;
-  };
-  struct YMomentumRight {
-    static constexpr Options::String help =
-        "The y-axis-componet of the linear momentum of the right black hole.";
-    using type = double;
-  };
   struct AttenuationParameter {
     static constexpr Options::String help =
         "The parameter controlling the width of the attenuation function.";
     using type = double;
   };
-  using options =
-      tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight, YMomentumLeft,
-                 YMomentumRight, AttenuationParameter>;
+  using options = tmpl::list<MassLeft, MassRight, XCoordsLeft, XCoordsRight,
+                             AttenuationParameter>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
@@ -522,31 +520,24 @@ class BinaryWithGravitationalWaves
 
   BinaryWithGravitationalWaves(double mass_left, double mass_right,
                                double xcoord_left, double xcoord_right,
-                               double ymomentum_left, double ymomentum_right,
                                double attenuation_parameter,
                                const Options::Context& context = {})
       : mass_left_(mass_left),
         mass_right_(mass_right),
         xcoord_left_(xcoord_left),
         xcoord_right_(xcoord_right),
-        ymomentum_left_(ymomentum_left),
-        ymomentum_right_(ymomentum_right),
         attenuation_parameter_(attenuation_parameter) {
-    if (mass_left_ <= 0 or mass_right_ <= 0) {
+    if (mass_left_ <= 0. or mass_right_ <= 0.) {
       PARSE_ERROR(context, "'MassLeft' and 'MassRight' need to be positive.");
     }
     if (xcoord_left_ >= xcoord_right_) {
       PARSE_ERROR(context,
                   "'XCoordsLeft' must be smaller than 'XCoordsRight'.");
     }
-    if (attenuation_parameter_ <= 0) {
+    if (attenuation_parameter_ < 0.) {
       PARSE_ERROR(context, "'AttenuationParameter' must be positive.");
     }
-    if (ymomentum_left_ * ymomentum_right_ > 0) {
-      PARSE_ERROR(
-          context,
-          "'YMomentumLeft' and 'YMomentumRight' must have opposite signs.");
-    }
+    initialize();
   }
 
   explicit BinaryWithGravitationalWaves(CkMigrateMessage* m)
@@ -554,6 +545,10 @@ class BinaryWithGravitationalWaves
         elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BinaryWithGravitationalWaves);
+
+  template <typename DataType>
+  using tags = typename detail::BinaryWithGravitationalWavesVariablesCache<
+      DataType>::tags_list;
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
@@ -589,8 +584,6 @@ class BinaryWithGravitationalWaves
   double mass_right() const { return mass_right_; }
   double xcoord_left() const { return xcoord_left_; }
   double xcoord_right() const { return xcoord_right_; }
-  double ymomentum_left() const { return ymomentum_left_; }
-  double ymomentum_right() const { return ymomentum_right_; }
   double attenuation_parameter() const { return attenuation_parameter_; }
 
  private:
@@ -601,6 +594,10 @@ class BinaryWithGravitationalWaves
   double ymomentum_left_ = std::numeric_limits<double>::signaling_NaN();
   double ymomentum_right_ = std::numeric_limits<double>::signaling_NaN();
   double attenuation_parameter_ = std::numeric_limits<double>::signaling_NaN();
+
+  double total_mass;
+  double reduced_mass;
+  double reduced_mass_over_total_mass;
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -626,6 +623,8 @@ class BinaryWithGravitationalWaves
 
     return {cache.get_var(computer, RequestedTags{})...};
   }
+
+  void initialize();
 };
 
 }  // namespace Xcts::AnalyticData
