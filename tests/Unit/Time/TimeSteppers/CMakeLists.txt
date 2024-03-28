@@ -5,6 +5,7 @@ set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
   TimeSteppers/Test_AdamsBashforth.cpp
   TimeSteppers/Test_AdamsCoefficients.cpp
+  TimeSteppers/Test_AdamsLts.cpp
   TimeSteppers/Test_AdamsMoultonPc.cpp
   TimeSteppers/Test_ClassicalRungeKutta4.cpp
   TimeSteppers/Test_DormandPrince5.cpp
