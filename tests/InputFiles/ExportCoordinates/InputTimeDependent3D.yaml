@@ -98,9 +98,20 @@ EventsAndTriggers:
         Value: 0.5
     Events:
       - Completion
+  - Trigger: Always
+    Events:
+      - MonitorMemory:
+          ComponentsToMonitor: All
 
 Observers:
   VolumeFileName: "ExportTimeDependentCoordinates3DVolume"
   ReductionFileName: "ExportTimeDependentCoordinates3DReductions"
 
+# Intentionally after the completion time to avoid writing checkpoints on CI
 PhaseChangeAndTriggers:
+  - Trigger:
+      SlabCompares:
+        Comparison: EqualTo
+        Value: 2
+    PhaseChanges:
+      - VisitAndReturn(WriteCheckpoint)

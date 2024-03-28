@@ -342,9 +342,10 @@ class DataBox<tmpl::list<Tags...>> : public Access,
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
-    // We do not send subitems for both simple items and compute items since
-    // they can be reconstructed very cheaply.
-    pup_impl(p, mutable_item_creation_tags{}, immutable_item_creation_tags{});
+    // Only the mutable creation items are serialized.  Compute items are
+    // initialized to unevaluated, and mutable subitems are reinitialized
+    // cheaply.
+    pup_impl(p, mutable_item_creation_tags{});
   }
 
   template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
@@ -462,11 +463,9 @@ class DataBox<tmpl::list<Tags...>> : public Access,
                         tmpl::list<AddImmutableItemTags...> /*meta*/);
 
   // clang-tidy: no non-const references
-  template <typename... MutableItemCreationTags,
-            typename... ImmutableItemCreationTags>
+  template <typename... MutableItemCreationTags>
   void pup_impl(PUP::er& p,  // NOLINT
-                tmpl::list<MutableItemCreationTags...> /*meta*/,
-                tmpl::list<ImmutableItemCreationTags...> /*meta*/);
+                tmpl::list<MutableItemCreationTags...> /*meta*/);
 
   // Mutating items in the DataBox
   template <typename ParentTag>
@@ -689,11 +688,9 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 // Serialization of DataBox
 
 template <typename... Tags>
-template <typename... MutableItemCreationTags,
-          typename... ImmutableItemCreationTags>
+template <typename... MutableItemCreationTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
-    PUP::er& p, tmpl::list<MutableItemCreationTags...> /*meta*/,
-    tmpl::list<ImmutableItemCreationTags...> /*meta*/) {
+    PUP::er& p, tmpl::list<MutableItemCreationTags...> /*meta*/) {
   const auto pup_simple_item = [&p, this](auto current_tag) {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
@@ -704,8 +701,6 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
   };
   (void)pup_simple_item;  // Silence GCC warning about unused variable
   EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(MutableItemCreationTags{}));
-
-  EXPAND_PACK_LEFT_TO_RIGHT(get_item<ImmutableItemCreationTags>().pup(p));
 }
 
 ////////////////////////////////////////////////////////////////

@@ -2791,17 +2791,17 @@ void serialization_subitem_compute_items() {  // NOLINT
         before_counting_tag0);
 
   CHECK(db::get<CountingTag<0>>(deserialized_serialization_test_box) == 8.2);
-  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<0>::count == 2);
   CHECK(CountingFunc<1>::count == 0);
   CHECK(&db::get<CountingTag<0>>(deserialized_serialization_test_box) !=
         before_counting_tag0);
-  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<0>::count == 2);
   CHECK(CountingFunc<1>::count == 0);
   CHECK(db::get<CountingTag<1>>(deserialized_serialization_test_box) == 8.2);
-  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<0>::count == 2);
   CHECK(CountingFunc<1>::count == 1);
   CHECK(db::get<CountingTag<1>>(serialization_test_box) == 8.2);
-  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<0>::count == 2);
   CHECK(CountingFunc<1>::count == 2);
   CHECK(&db::get<CountingTag<1>>(serialization_test_box) !=
         &db::get<CountingTag<1>>(deserialized_serialization_test_box));
@@ -2826,7 +2826,7 @@ void serialization_subitem_compute_items() {  // NOLINT
         -9.0);
   CHECK(*db::get<First<2>>(deserialized_serialization_test_box) == 10);
   CHECK(*db::get<Second<2>>(deserialized_serialization_test_box) == -9.0);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 0);
   CHECK(&db::get<Parent<2>>(deserialized_serialization_test_box) !=
         before_parent2);
@@ -2846,23 +2846,23 @@ void serialization_subitem_compute_items() {  // NOLINT
         &*db::get<Second<2>>(serialization_test_box));
 
   CHECK(*(db::get<Parent<3>>(serialization_test_box).first) == 11);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 1);
   CHECK(*(db::get<Parent<3>>(serialization_test_box).second) == -18.0);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 1);
   CHECK(*db::get<First<3>>(serialization_test_box) == 11);
   CHECK(*db::get<Second<3>>(serialization_test_box) == -18.0);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 1);
   CHECK(*(db::get<Parent<3>>(deserialized_serialization_test_box).first) == 11);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 2);
   CHECK(*(db::get<Parent<3>>(deserialized_serialization_test_box).second) ==
         -18.0);
   CHECK(*db::get<First<3>>(deserialized_serialization_test_box) == 11);
   CHECK(*db::get<Second<3>>(deserialized_serialization_test_box) == -18.0);
-  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 2);
   CHECK(ParentCompute<3>::count == 2);
 
   // Check that all the Parent<3> related objects point to the right place
@@ -2888,7 +2888,7 @@ void serialization_subitem_compute_items() {  // NOLINT
         -9.0 * 6.0);
   CHECK(before_compute_tag2 !=
         &db::get<CountingTagDouble<2>>(deserialized_serialization_test_box));
-  CHECK(CountingTagDoubleCompute<2>::count == 1);
+  CHECK(CountingTagDoubleCompute<2>::count == 2);
 
   CHECK(CountingTagDoubleCompute<3>::count == 0);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == -18.0 * 6.0);
@@ -2901,34 +2901,34 @@ void serialization_subitem_compute_items() {  // NOLINT
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
   db::mutate<Second<1>>([](const gsl::not_null<double**> x) { **x = 12.; },
                         make_not_null(&serialization_test_box));
-  CHECK(ParentCompute<2>::count == 1);
-  CHECK(CountingTagDoubleCompute<2>::count == 1);
-  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
   CHECK(ParentCompute<2>::count == 2);
   CHECK(CountingTagDoubleCompute<2>::count == 2);
+  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
+  CHECK(ParentCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<2>::count == 3);
   CHECK(CountingTagDoubleCompute<3>::count == 2);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
   CHECK(CountingTagDoubleCompute<3>::count == 3);
 
   db::mutate<Second<1>>([](const gsl::not_null<double**> x) { **x = -7.; },
                         make_not_null(&deserialized_serialization_test_box));
-  CHECK(ParentCompute<2>::count == 2);
-  CHECK(CountingTagDoubleCompute<2>::count == 2);
-  CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
-        -14.0 * 6.0);
   CHECK(ParentCompute<2>::count == 3);
   CHECK(CountingTagDoubleCompute<2>::count == 3);
+  CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
+        -14.0 * 6.0);
+  CHECK(ParentCompute<2>::count == 4);
+  CHECK(CountingTagDoubleCompute<2>::count == 4);
   CHECK(CountingTagDoubleCompute<3>::count == 3);
   CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
         -28.0 * 6.0);
   CHECK(CountingTagDoubleCompute<3>::count == 4);
 
   // Check things didn't get modified in the original DataBox
-  CHECK(ParentCompute<2>::count == 3);
-  CHECK(CountingTagDoubleCompute<2>::count == 3);
+  CHECK(ParentCompute<2>::count == 4);
+  CHECK(CountingTagDoubleCompute<2>::count == 4);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
-  CHECK(ParentCompute<2>::count == 3);
-  CHECK(CountingTagDoubleCompute<2>::count == 3);
+  CHECK(ParentCompute<2>::count == 4);
+  CHECK(CountingTagDoubleCompute<2>::count == 4);
   CHECK(CountingTagDoubleCompute<3>::count == 4);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
   CHECK(CountingTagDoubleCompute<3>::count == 4);

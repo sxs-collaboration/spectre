@@ -10,12 +10,20 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 
 namespace TestHelpers {
 namespace VectorImpl {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.VectorImplTestHelper",
                   "[DataStructures][Unit]") {
+  // Test PUP size of owning and non-owning objects
+  DataVector owning{1.0, 4.0};
+  CHECK(size_of_object_in_bytes(owning) == 24);
+  DataVector non_owning{owning.data(), owning.size()};
+  REQUIRE(not non_owning.is_owning());
+  CHECK(size_of_object_in_bytes(non_owning) == 0);
+
   // testing size utility
   std::array<DataVector, 3> array_of_vectors = {
       {{{1.0, 4.0}}, {{2.0, 5.0}}, {{3.0, 6.0}}}};
