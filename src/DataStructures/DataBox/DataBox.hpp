@@ -10,11 +10,13 @@
 #include <exception>
 #include <functional>
 #include <initializer_list>
+#include <map>
 #include <ostream>
 #include <pup.h>
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/Access.hpp"
@@ -321,6 +323,9 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   template <bool PrintImmutableItems = true>
   std::string print_items() const;
 
+  /// The size in bytes of each item (excluding reference items)
+  std::map<std::string, size_t> size_of_items() const;
+
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag>
   const auto& get() const;
@@ -545,6 +550,23 @@ std::string DataBox<tmpl::list<Tags...>>::print_items() const {
     tmpl::for_each<immutable_item_creation_tags>(print_item);
   }
   return os.str();
+}
+
+template <typename... Tags>
+std::map<std::string, size_t> DataBox<tmpl::list<Tags...>>::size_of_items()
+    const {
+  std::map<std::string, size_t> result{};
+  const auto add_item_size = [this, &result](auto tag_v) {
+    (void)this;
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    if constexpr (not db::is_reference_tag_v<tag>) {
+      const auto& item = get_item<tag>();
+      result[pretty_type::get_name<tag>()] = size_of_object_in_bytes(item);
+    }
+  };
+  tmpl::for_each<mutable_item_creation_tags>(add_item_size);
+  tmpl::for_each<immutable_item_creation_tags>(add_item_size);
+  return result;
 }
 
 namespace detail {

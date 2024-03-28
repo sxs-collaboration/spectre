@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ObserveAdaptiveSteppingDiagnostics.cpp
+  ObserveDataBox.cpp
   ObserveNorms.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   Factory.hpp
   MonitorMemory.hpp
   ObserveAdaptiveSteppingDiagnostics.hpp
+  ObserveDataBox.hpp
   ObserveAtExtremum.hpp
   ObserveFields.hpp
   ObserveNorms.hpp
