@@ -53,8 +53,7 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
       Cce::Tags::EvolutionGaugeBoundaryValue<Cce::Tags::KleinGordonPi>>;
 
   using klein_gordon_scri_tags =
-      tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>,
-                 Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
+      tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
 
   using cce_step_choosers =
       tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
@@ -108,6 +107,14 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
   using klein_gordon_cce_integrand_tags =
       tmpl::list<Cce::Tags::PoleOfIntegrand<Cce::Tags::KleinGordonPi>,
                  Cce::Tags::RegularIntegrand<Cce::Tags::KleinGordonPi>>;
+
+  using scri_values_to_observe =
+      tmpl::append<cce_base::scri_values_to_observe,
+                   tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>>>;
+
+  using cce_scri_tags =
+      tmpl::append<cce_base::cce_scri_tags,
+                   tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>>>;
 
   using component_list =
       tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
