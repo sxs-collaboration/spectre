@@ -234,14 +234,8 @@ struct EvolutionMetavars {
 
   static constexpr bool use_filtering = true;
 
-  struct domain {
-    static constexpr bool enable_time_dependent_maps = true;
-  };
-
   using step_actions = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<domain::enable_time_dependent_maps,
-                          CurvedScalarWave::Actions::CalculateGrVars<system>,
-                          tmpl::list<>>,
+      CurvedScalarWave::Actions::CalculateGrVars<system, true>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       tmpl::conditional_t<
@@ -278,7 +272,7 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      CurvedScalarWave::Actions::CalculateGrVars<system>,
+      CurvedScalarWave::Actions::CalculateGrVars<system, false>,
       Initialization::Actions::AddSimpleTags<
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>,

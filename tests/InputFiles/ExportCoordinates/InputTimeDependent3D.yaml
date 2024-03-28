@@ -1,14 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-Executable: ExportTimeDependentCoordinates3D
+Executable: ExportCoordinates3D
 Testing:
   Check: parse;execute
   Timeout: 10
   Priority: High
 ExpectedOutput:
-  - ExportTimeDependentCoordinates3DVolume0.h5
-  - ExportTimeDependentCoordinates3DReductions.h5
+  - ExportCoordinates3DVolume0.h5
+  - ExportCoordinates3DReductions.h5
 
 ---
 
@@ -104,8 +104,8 @@ EventsAndTriggers:
           ComponentsToMonitor: All
 
 Observers:
-  VolumeFileName: "ExportTimeDependentCoordinates3DVolume"
-  ReductionFileName: "ExportTimeDependentCoordinates3DReductions"
+  VolumeFileName: "ExportCoordinates3DVolume"
+  ReductionFileName: "ExportCoordinates3DReductions"
 
 # Intentionally after the completion time to avoid writing checkpoints on CI
 PhaseChangeAndTriggers:

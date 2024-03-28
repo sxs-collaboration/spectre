@@ -20,7 +20,6 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Factory3D.hpp"
-#include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
@@ -325,9 +324,6 @@ struct GhValenciaDivCleanDefaults {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
-  struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
-    static constexpr bool enable_time_dependent_maps = true;
-  };
 };
 
 template <typename EvolutionMetavarsDerived, bool UseDgSubcell,
@@ -345,7 +341,6 @@ struct GhValenciaDivCleanTemplateBase<
       EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>;
   using defaults = GhValenciaDivCleanDefaults<UseDgSubcell>;
   static constexpr size_t volume_dim = defaults::volume_dim;
-  using domain = typename defaults::domain;
   using domain_frame = typename defaults::domain_frame;
   static constexpr bool use_damped_harmonic_rollon =
       defaults::use_damped_harmonic_rollon;

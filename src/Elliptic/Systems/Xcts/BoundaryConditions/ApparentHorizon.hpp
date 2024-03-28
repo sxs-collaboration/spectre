@@ -50,7 +50,7 @@ namespace Xcts::BoundaryConditions {
  * \\
  * \label{eq:ah_beta}
  * \beta_\mathrm{excess}^i &= \frac{\alpha}{\psi^2}\bar{s}^i
- * + \epsilon_{ijk}\Omega^j x^k
+ * + \epsilon_{ijk}\Omega^j x^k - \beta_\mathrm{background}^i
  * \f}
  *
  * following section 7.2 of \cite Pfeiffer2005zm, section 12.3.2 of

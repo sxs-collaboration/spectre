@@ -287,30 +287,23 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
         bco::TimeDependentMapOptions<true>::help;
   };
 
-  using time_independent_options =
+  template <typename Metavariables>
+  using options = tmpl::append<
       tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
                  IncludeInnerSphereB, IncludeOuterSphere, OuterRadius,
-                 UseEquiangularMap, InitialRefinement, InitialGridPoints>;
-
-  template <typename Metavariables>
-  using basic_options = tmpl::conditional_t<
-      domain::creators::bco::enable_time_dependent_maps_v<Metavariables>,
-      tmpl::push_front<time_independent_options, TimeDependentMaps>,
-      time_independent_options>;
-
-  template <typename Metavariables>
-  using options = tmpl::conditional_t<
-      domain::BoundaryConditions::has_boundary_conditions_base_v<
-          typename Metavariables::system>,
-      tmpl::push_back<
-          basic_options<Metavariables>,
-          InnerBoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>,
-          OuterBoundaryCondition<
-              domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>>,
-      basic_options<Metavariables>>;
+                 UseEquiangularMap, InitialRefinement, InitialGridPoints,
+                 TimeDependentMaps>,
+      tmpl::conditional_t<
+          domain::BoundaryConditions::has_boundary_conditions_base_v<
+              typename Metavariables::system>,
+          tmpl::list<
+              InnerBoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>>,
+              OuterBoundaryCondition<
+                  domain::BoundaryConditions::get_boundary_conditions_base<
+                      typename Metavariables::system>>>,
+          tmpl::list<>>>;
 
   static constexpr Options::String help{
       "The CylindricalBinaryCompactObject domain is a general domain for "
@@ -325,20 +318,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       double outer_radius, bool use_equiangular_map,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          inner_boundary_condition = nullptr,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          outer_boundary_condition = nullptr,
-      const Options::Context& context = {});
-
-  CylindricalBinaryCompactObject(
-      std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options,
-      std::array<double, 3> center_A, std::array<double, 3> center_B,
-      double radius_A, double radius_B, bool include_inner_sphere_A,
-      bool include_inner_sphere_B, bool include_outer_sphere,
-      double outer_radius, bool use_equiangular_map,
-      const typename InitialRefinement::type& initial_refinement,
-      const typename InitialGridPoints::type& initial_grid_points,
+      std::optional<bco::TimeDependentMapOptions<true>> time_dependent_options =
+          std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           inner_boundary_condition = nullptr,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

@@ -240,12 +240,8 @@ struct EvolutionMetavars {
       tmpl::at<typename factory_creation::factory_classes, Event>>;
   static constexpr bool use_filtering = true;
 
-  struct domain {
-    static constexpr bool enable_time_dependent_maps = true;
-  };
-
   using step_actions = tmpl::flatten<tmpl::list<
-      CurvedScalarWave::Actions::CalculateGrVars<system>,
+      CurvedScalarWave::Actions::CalculateGrVars<system, true>,
       CurvedScalarWave::Worldtube::Actions::SendToWorldtube,
       CurvedScalarWave::Worldtube::Actions::ReceiveWorldtubeData,
       evolution::dg::Actions::ComputeTimeDerivative<
@@ -283,7 +279,7 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<volume_dim>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      CurvedScalarWave::Actions::CalculateGrVars<system>,
+      CurvedScalarWave::Actions::CalculateGrVars<system, false>,
       Initialization::Actions::AddSimpleTags<
           CurvedScalarWave::Worldtube::Initialization::
               InitializeConstraintDampingGammas<volume_dim>,

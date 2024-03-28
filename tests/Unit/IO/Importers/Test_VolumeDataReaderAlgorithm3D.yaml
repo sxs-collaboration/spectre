@@ -28,6 +28,7 @@ SourceDomainCreator:
     UseEquiangularMap: True
     InitialRefinement: 1
     InitialGridPoints: 7
+    TimeDependentMaps: None
 
 TargetDomainCreator:
   BinaryCompactObject:
@@ -53,6 +54,7 @@ TargetDomainCreator:
     UseEquiangularMap: True
     InitialRefinement: 0
     InitialGridPoints: 3
+    TimeDependentMaps: None
 
 Importers:
   VolumeData:
