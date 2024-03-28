@@ -48,6 +48,8 @@ and patterns.
 Terms with SpECTRE-specific meanings are defined here.
 - \subpage domain_concepts "Domain Concepts" used throughout the code are
   defined here for reference.
+- \subpage visualisation_connectivity "Visualisation Connectivity" is defined
+  and explained here for reference.
 
 ### Having your Contributions Merged into SpECTRE
 - \subpage writing_good_dox "Writing good documentation" is key for long term
