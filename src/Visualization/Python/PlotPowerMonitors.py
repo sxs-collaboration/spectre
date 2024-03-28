@@ -9,6 +9,7 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.ticker import MaxNLocator
 
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
@@ -243,10 +244,13 @@ def plot_power_monitors(
             loc="right",
         )
 
-    # Draw grid lines
     for axes_row in axes:
         for ax in axes_row:
+            # Draw grid lines
             ax.grid(which="both", zorder=0)
+            # Allow only integer ticks for modes
+            if not plot_over_time:
+                ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Add x-label spanning all subplots
     ax_colspan = fig.add_subplot(111, frameon=False)
