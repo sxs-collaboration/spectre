@@ -32,3 +32,24 @@ std::string info_from_build() {
 #endif
   return os.str();
 }
+
+#ifndef __APPLE__
+/* Set up a pretty print script for GDB to print spectre types in GDB in a
+ * more readable manner.
+ *
+ *
+ * Note: The "MS" section flags are to remove duplicates.
+ */
+#define DEFINE_GDB_PY_SCRIPT(script_name) \
+  asm("\
+.pushsection \".debug_gdb_scripts\", \"MS\",@progbits,1\n\
+.byte 1 /* Python */\n\
+.asciz \"" script_name                    \
+      "\"\n\
+.popsection \n\
+");
+
+DEFINE_GDB_PY_SCRIPT("@CMAKE_SOURCE_DIR@/tools/SpectrePrettyPrinters.py")
+
+#undef DEFINE_GDB_PY_SCRIPT
+#endif // ndef __APPLE__

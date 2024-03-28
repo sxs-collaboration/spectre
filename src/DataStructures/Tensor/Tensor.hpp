@@ -455,10 +455,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   static std::string component_suffix(
       const size_t storage_index,
-      const std::array<std::string, rank()>& axis_labels =
-          make_array<rank()>(std::string(""))) {
+      const std::array<std::string, rank()>& axis_labels) {
     return component_suffix(get_tensor_index(storage_index), axis_labels);
   }
+
+  static std::string component_suffix(size_t storage_index);
   /// @}
 
   /// Copy tensor data into an `std::vector<X>` along with the
@@ -487,6 +488,18 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 // ================================================================
 // Template Definitions - Variadic templates must be in header
 // ================================================================
+
+template <typename X, typename Symm, template <typename...> class IndexList,
+          typename... Indices>
+// Implementation note: we explicitly prevent inlining and mark the function
+// as used so that GDB's pretty printing facilities have access to this
+// function.
+__attribute__((noinline)) __attribute__((used)) std::string
+Tensor<X, Symm, IndexList<Indices...>>::component_suffix(
+    const size_t storage_index) {
+  return component_suffix(get_tensor_index(storage_index),
+                          make_array<rank()>(std::string("")));
+}
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
