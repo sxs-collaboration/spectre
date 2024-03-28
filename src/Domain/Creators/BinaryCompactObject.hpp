@@ -543,6 +543,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   double length_inner_cube_{};
   double length_outer_cube_{};
   size_t number_of_blocks_{};
+  size_t first_outer_shell_block_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
   std::vector<std::string> block_names_{};
