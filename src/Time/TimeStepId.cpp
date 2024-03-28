@@ -122,9 +122,16 @@ bool operator<(const TimeStepId& a, const TimeStepId& b) {
     return evolution_less<Time>{a.time_runs_forward()}(a.step_time(),
                                                        b.step_time());
   }
-  ASSERT(a.substep() == 0 or b.substep() == 0 or a.step_size() == b.step_size(),
-         "Meaning of ordering for LTS substeps is unclear.");
-  return a.substep() < b.substep();
+  if (a.substep() != b.substep()) {
+    return a.substep() < b.substep();
+  }
+  if (a.substep() == 0) {
+    // Objects are equal.
+    return false;
+  }
+  // Arbitrary, but need a total ordering of TimeStepId to use it as a
+  // std::map key.
+  return a.step_size() < b.step_size();
 }
 bool operator<=(const TimeStepId& a, const TimeStepId& b) { return not(b < a); }
 bool operator>(const TimeStepId& a, const TimeStepId& b) { return b < a; }
