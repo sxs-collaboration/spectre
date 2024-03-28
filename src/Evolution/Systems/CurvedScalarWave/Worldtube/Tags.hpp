@@ -25,6 +25,7 @@
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -66,34 +67,40 @@ struct Charge {
 };
 
 /*!
- * \brief Options for the scalar self-force
+ * \brief Options for the scalar self-force. Select `None` for a purely geodesic
+ * evolution
  */
 struct SelfForceOptions {
-  static constexpr Options::String help = {"Options for the scalar self-force"};
+  static constexpr Options::String help = {
+      "Options for the scalar self-force. Select `None` for a purely geodesic "
+      "evolution"};
   using group = Worldtube;
-};
+  using type = Options::Auto<SelfForceOptions, Options::AutoLabel::None>;
 
-/*!
- * \brief The mass of the scalar particle in units of the black hole mass M.
- */
-struct Mass {
-  using type = double;
-  static constexpr Options::String help{
-      "The mass of the scalar particlein units of the black hole mass M."};
-  static double lower_bound() { return 0.; }
-  using group = SelfForceOptions;
-};
+  struct Mass {
+    using type = double;
+    static constexpr Options::String help{
+        "The mass of the scalar particle in units of the black hole mass M."};
+    static double lower_bound() { return 0.; }
+  };
 
-/*!
- * \brief Whether to apply the acceleration due to the scalar self-force to the
- * particle
- */
-struct ApplySelfForce {
-  using type = bool;
-  static constexpr Options::String help{
-      "Whether to apply the acceleration due to the scalar self-force to the "
-      "particle"};
-  using group = SelfForceOptions;
+  struct Iterations {
+    using type = size_t;
+    static constexpr Options::String help{
+        "The number of iterations used to compute the particle acceleration. "
+        "Must be at least 1 as 0 iterations corresponds to the geodesic "
+        "acceleration."};
+    static size_t lower_bound() { return 1; }
+  };
+  void pup(PUP::er& p) {
+    p | mass;
+    p | iterations;
+  }
+
+  using options = tmpl::list<Mass, Iterations>;
+
+  double mass{};
+  size_t iterations{};
 };
 
 /*!
@@ -246,26 +253,41 @@ struct Charge : db::SimpleTag {
 };
 
 /*!
- * \brief The mass of the particle.
+ * \brief The mass of the scalar charge. Only has a value if the scalar self
+ * force is applied.
  */
 struct Mass : db::SimpleTag {
-  using type = double;
-  using option_tags = tmpl::list<OptionTags::Mass>;
+  using type = std::optional<double>;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double mass) { return mass; };
+  static std::optional<double> create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value()
+               ? std::make_optional(self_force_options->mass)
+               : std::nullopt;
+  }
 };
 
 /*!
- * \brief Whether to apply the acceleration due to the scalar self-force to the
- * particle
+ * \brief The maximum number of iterations that will be applied to the
+ * acceleration of the particle.
  */
-struct ApplySelfForce : db::SimpleTag {
-  using type = bool;
-  using option_tags = tmpl::list<OptionTags::ApplySelfForce>;
+struct MaxIterations : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
   static constexpr bool pass_metavariables = false;
-  static bool create_from_options(const bool apply_self_force) {
-    return apply_self_force;
-  };
+  static size_t create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value() ? self_force_options->iterations : 0;
+  }
+};
+
+/*!
+ * \brief The current number of iterations that has been applied to the
+ * acceleration of the particle.
+ */
+struct CurrentIteration : db::SimpleTag {
+  using type = size_t;
 };
 
 /*!

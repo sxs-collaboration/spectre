@@ -24,15 +24,16 @@ void UpdateAcceleration::apply(
     const tnsr::I<double, Dim, Frame::Inertial>& geodesic_acc,
     const Scalar<double>& dt_psi_monopole,
     const tnsr::i<double, Dim, Frame::Inertial>& psi_dipole,
-    const double charge, const double mass, const bool apply_self_force) {
+    const double charge, const std::optional<double> mass,
+    const size_t max_iterations) {
   tnsr::I<double, Dim> self_force_acc(0.);
   const auto& particle_velocity = pos_vel.at(1);
-  if (apply_self_force) {
+  if (max_iterations > 0) {
     const auto& inverse_metric =
         get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(background);
     const auto& dilation_factor = get<Tags::TimeDilationFactor>(background);
     self_force_acceleration(make_not_null(&self_force_acc), dt_psi_monopole,
-                            psi_dipole, particle_velocity, charge, mass,
+                            psi_dipole, particle_velocity, charge, mass.value(),
                             inverse_metric, dilation_factor);
   }
   for (size_t i = 0; i < Dim; ++i) {
