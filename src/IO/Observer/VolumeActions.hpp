@@ -140,6 +140,7 @@ struct ContributeVolumeData {
                     array_index),
                 subfile_name, std::move((*volume_data)[observation_id]));
             volume_data->erase(observation_id);
+            contributed_volume_data_ids->erase(observation_id);
           }
         },
         make_not_null(&box),
