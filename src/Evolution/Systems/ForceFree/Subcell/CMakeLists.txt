@@ -7,6 +7,7 @@ spectre_target_sources(
   PRIVATE
   ComputeFluxes.hpp
   GhostData.cpp
+  NeighborPackagedData.cpp
   SetInitialRdmpData.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp

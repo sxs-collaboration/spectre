@@ -53,7 +53,7 @@ namespace ScalarAdvection::fd {
 template <size_t Dim>
 class MonotonisedCentral : public Reconstructor<Dim> {
  private:
-  using volume_vars_tags = tmpl::list<Tags::U>;
+  using volume_vars_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
  public:
   using options = tmpl::list<>;
@@ -88,7 +88,7 @@ class MonotonisedCentral : public Reconstructor<Dim> {
   void reconstruct(
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_lower_face,
       gsl::not_null<std::array<Variables<TagsList>, Dim>*> vars_on_upper_face,
-      const Variables<tmpl::list<Tags::U>>& volume_vars,
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,
@@ -97,7 +97,7 @@ class MonotonisedCentral : public Reconstructor<Dim> {
   template <typename TagsList>
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<TagsList>*> vars_on_face,
-      const Variables<tmpl::list<Tags::U>>& volume_vars,
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>&
           ghost_data,

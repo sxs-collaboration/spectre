@@ -62,6 +62,10 @@ struct Var2 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame::Inertial>;
 };
 
+struct VolumeTag : db::SimpleTag {
+  using type = int;
+};
+
 template <size_t Dim>
 struct BoundaryTerms;
 
@@ -110,6 +114,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
       tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
                    variables_tags>,
       MaxAbsCharSpeed>;
+  using dg_boundary_terms_volume_tags = tmpl::list<VolumeTag>;
 
   void dg_boundary_terms(
       const gsl::not_null<Scalar<DataVector>*> boundary_correction_var1,
@@ -127,7 +132,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
       const Scalar<DataVector>& exterior_var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& exterior_var2,
       const Scalar<DataVector>& exterior_max_abs_char_speed,
-      const dg::Formulation dg_formulation) const {
+      const dg::Formulation dg_formulation, const int& volume_tag) const {
     // extra minus sign on exterior normal dot flux because normal faces
     // opposite direction
     get(*boundary_correction_var1) =
@@ -150,6 +155,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
                   get(exterior_max_abs_char_speed)) *
               (exterior_var2.get(i) - interior_var2.get(i));
     }
+    CHECK(volume_tag == 10);
   }
 };
 
@@ -397,8 +403,8 @@ struct component {
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
   using simple_tags = tmpl::list<
-      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      Tags::ConcreteTimeStepper<LtsTimeStepper>,
+      VolumeTag, ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
+      ::Tags::TimeStep, Tags::ConcreteTimeStepper<LtsTimeStepper>,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       typename Metavariables::system::variables_tag,
@@ -583,7 +589,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   ActionTesting::emplace_component_and_initialize<comp>(
       &runner, self_id,
-      {time_step_id, local_next_time_step_id, time_step,
+      {10, time_step_id, local_next_time_step_id, time_step,
        std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
        dt_evolved_vars, evolved_vars, mesh, element, inertial_coords, inv_jac,
        quadrature, typename domain::Tags::NeighborMesh<Dim>::type{}});
@@ -824,7 +830,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         get<Var2<Dim>>(neighbor_data_on_mortar),
         get<typename BoundaryTerms<Dim>::MaxAbsCharSpeed>(
             neighbor_data_on_mortar),
-        dg_formulation);
+        dg_formulation, 10);
 
     // Project the boundary terms from the mortar to the face
     const std::array<Spectral::MortarSize, Dim - 1>& mortar_size =

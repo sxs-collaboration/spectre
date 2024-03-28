@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   GhostData.cpp
+  NeighborPackagedData.cpp
   SetInitialRdmpData.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp

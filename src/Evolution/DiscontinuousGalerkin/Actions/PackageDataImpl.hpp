@@ -66,7 +66,7 @@ double dg_package_data(
 template <typename System, typename BoundaryCorrection,
           typename... PackagedFieldTags, typename... ProjectedFieldTags,
           typename... ProjectedFieldTagsForCorrection, size_t Dim,
-          typename DbTagsList, typename... VolumeTags>
+          typename... VolumeTags>
 double dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
         packaged_data,
@@ -75,7 +75,7 @@ double dg_package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
-    const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
+    const db::Access& box, tmpl::list<VolumeTags...> /*meta*/,
     tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) {
   return dg_package_data<System>(
       packaged_data, boundary_correction, projected_fields,

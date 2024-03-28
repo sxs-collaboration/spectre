@@ -52,6 +52,10 @@ class ProductOfCorrections final : public BoundaryCorrection {
       typename DerivedGhCorrection::dg_package_data_volume_tags,
       typename DerivedScalarCorrection::dg_package_data_volume_tags>;
 
+  using dg_boundary_terms_volume_tags = tmpl::append<
+      typename DerivedGhCorrection::dg_boundary_terms_volume_tags,
+      typename DerivedScalarCorrection::dg_boundary_terms_volume_tags>;
+
   static std::string name() {
     return "Product" + pretty_type::name<DerivedGhCorrection>() + "GH" + "And" +
            pretty_type::name<DerivedScalarCorrection>() + "Scalar";

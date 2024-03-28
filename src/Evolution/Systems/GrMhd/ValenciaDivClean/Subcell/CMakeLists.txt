@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FixConservativesAndComputePrims.cpp
+  NeighborPackagedData.cpp
   PrimitiveGhostData.cpp
   PrimsAfterRollback.cpp
   ResizeAndComputePrimitives.cpp

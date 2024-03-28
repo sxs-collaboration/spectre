@@ -25,6 +25,7 @@ spectre_target_headers(
   Mesh.hpp
   NeighborRdmpAndVolumeData.hpp
   NeighborReconstructedFaceSolution.hpp
+  NeighborReconstructedFaceSolution.tpp
   NeighborTciDecision.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
@@ -53,6 +54,7 @@ spectre_target_sources(
   Matrices.cpp
   Mesh.cpp
   NeighborRdmpAndVolumeData.cpp
+  NeighborTciDecision.cpp
   PerssonTci.cpp
   Projection.cpp
   RdmpTci.cpp

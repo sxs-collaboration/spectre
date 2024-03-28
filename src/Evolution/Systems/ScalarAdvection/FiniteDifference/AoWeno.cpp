@@ -78,7 +78,7 @@ void AoWeno53<Dim>::reconstruct(
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, Dim>*>
         vars_on_upper_face,
-    const Variables<tmpl::list<Tags::U>>& volume_vars,
+    const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh) const {
@@ -98,7 +98,7 @@ template <size_t Dim>
 template <typename TagsList>
 void AoWeno53<Dim>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
-    const Variables<tmpl::list<Tags::U>>& volume_vars,
+    const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,
     const Element<Dim>& element,
     const DirectionalIdMap<Dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<Dim>& subcell_mesh,
@@ -144,10 +144,11 @@ bool operator!=(const AoWeno53<Dim>& lhs, const AoWeno53<Dim>& rhs) {
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define TAGS_LIST(data)                                                       \
-  tmpl::list<Tags::U,                                                         \
-             ::Tags::Flux<Tags::U, tmpl::size_t<DIM(data)>, Frame::Inertial>, \
-             Tags::VelocityField<DIM(data)>>
+#define TAGS_LIST(data)                                                      \
+  tmpl::list<ScalarAdvection::Tags::U,                                       \
+             ::Tags::Flux<ScalarAdvection::Tags::U, tmpl::size_t<DIM(data)>, \
+                          Frame::Inertial>,                                  \
+             ScalarAdvection::Tags::VelocityField<DIM(data)>>
 
 #define INSTANTIATION(r, data)                                         \
   template class AoWeno53<DIM(data)>;                                  \
@@ -165,14 +166,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
           vars_on_lower_face,                                               \
       gsl::not_null<std::array<Variables<TAGS_LIST(data)>, DIM(data)>*>     \
           vars_on_upper_face,                                               \
-      const Variables<tmpl::list<Tags::U>>& volume_vars,                    \
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,   \
       const Element<DIM(data)>& element,                                    \
       const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>& \
           ghost_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh) const;                           \
   template void AoWeno53<DIM(data)>::reconstruct_fd_neighbor(               \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,              \
-      const Variables<tmpl::list<Tags::U>>& volume_vars,                    \
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& volume_vars,   \
       const Element<DIM(data)>& element,                                    \
       const DirectionalIdMap<DIM(data), evolution::dg::subcell::GhostData>& \
           ghost_data,                                                       \

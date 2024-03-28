@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -17,6 +18,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
+#include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.tpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -49,11 +51,9 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   struct SubcellOptions {
     struct DgComputeSubcellNeighborPackagedData {
-      template <typename DbTagsList>
       static NeighborReconstructionMap<Dim> apply(
-          const db::DataBox<DbTagsList>& box,
-          const std::vector<DirectionalId<volume_dim>>&
-              mortars_to_reconstruct_to) {
+          const db::Access& box, const std::vector<DirectionalId<volume_dim>>&
+                                     mortars_to_reconstruct_to) {
         const GhostDataMap<Dim>& ghost_data = db::get<
             evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(box);
 
