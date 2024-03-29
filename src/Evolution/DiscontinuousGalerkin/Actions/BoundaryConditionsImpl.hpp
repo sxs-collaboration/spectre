@@ -74,6 +74,7 @@ template <typename System, size_t Dim, typename DbTagsList,
           typename BoundaryCorrection, typename BoundaryCondition,
           typename... EvolvedVariablesTags, typename... PackageDataVolumeTags,
           typename... BoundaryConditionVolumeTags, typename... PackageFieldTags,
+          typename... BoundaryTermsVolumeTags,
           typename... BoundaryCorrectionPackagedDataInputTags>
 void apply_boundary_condition_on_face(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
@@ -109,6 +110,7 @@ void apply_boundary_condition_on_face(
     [[maybe_unused]] const Scalar<DataVector>& volume_det_inv_jacobian,
     tmpl::list<PackageDataVolumeTags...> /*meta*/,
     tmpl::list<PackageFieldTags...> /*meta*/,
+    tmpl::list<BoundaryTermsVolumeTags...> /*meta*/,
     tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
     tmpl::list<BoundaryConditionVolumeTags...> /*meta*/) {
   using variables_tag = typename System::variables_tag;
@@ -574,7 +576,8 @@ void apply_boundary_condition_on_face(
         make_not_null(&get<::Tags::dt<EvolvedVariablesTags>>(
             boundary_corrections_on_face))...,
         get<PackageFieldTags>(internal_packaged_data)...,
-        get<PackageFieldTags>(external_packaged_data)..., dg_formulation);
+        get<PackageFieldTags>(external_packaged_data)..., dg_formulation,
+        get<BoundaryTermsVolumeTags>(*box)...);
 
     // Lift the boundary correction
     const auto& magnitude_of_interior_face_normal =
@@ -742,6 +745,7 @@ void apply_boundary_conditions_on_all_external_faces(
                                                        Frame::Inertial>>(*box),
                 typename BoundaryCorrection::dg_package_data_volume_tags{},
                 typename BoundaryCorrection::dg_package_field_tags{},
+                typename BoundaryCorrection::dg_boundary_terms_volume_tags{},
                 tmpl::append<
                     typename variables_tag::tags_list, fluxes_tags,
                     typename BoundaryCorrection::dg_package_data_temporary_tags,
