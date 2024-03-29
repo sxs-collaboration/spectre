@@ -31,16 +31,16 @@ Background: &background
     XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]
     ObjectLeft: &kerr_left
       KerrSchild:
-        Mass: {{ MassLeft }}
-        Spin:
+        Mass: &mass_left {{ MassLeft }}
+        Spin: &spin_left
           - {{ DimensionlessSpinLeft_x }}
           - {{ DimensionlessSpinLeft_y }}
           - {{ DimensionlessSpinLeft_z }}
         Center: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
-        Mass: {{ MassRight }}
-        Spin:
+        Mass: &mass_right {{ MassRight }}
+        Spin: &spin_right
           - {{ DimensionlessSpinRight_x }}
           - {{ DimensionlessSpinRight_y }}
           - {{ DimensionlessSpinRight_z }}
@@ -109,7 +109,24 @@ DomainCreator:
       ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
       OuterShell:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
-    TimeDependentMaps: None
+    TimeDependentMaps:
+      InitialTime: 0.
+      ExpansionMap: None
+      RotationMap: None
+      ShapeMapA:
+        LMax: 20
+        InitialValues:
+          Mass: *mass_right
+          Spin: *spin_right
+        SizeInitialValues: [0, 0, 0]
+        TransitionEndsAtCube: False
+      ShapeMapB:
+        LMax: 20
+        InitialValues:
+          Mass: *mass_left
+          Spin: *spin_left
+        SizeInitialValues: [0, 0, 0]
+        TransitionEndsAtCube: False
 
 Amr:
   Verbosity: Verbose
@@ -188,7 +205,7 @@ RadiallyCompressedCoordinates:
   Compression: *outer_shell_distribution
 
 EventsAndTriggers:
-  - Trigger: HasConverged
+  - Trigger: Always
     Events:
       - ObserveFields:
           SubfileName: VolumeData
