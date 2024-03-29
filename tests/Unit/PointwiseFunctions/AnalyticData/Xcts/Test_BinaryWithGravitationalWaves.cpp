@@ -40,7 +40,7 @@
 namespace Xcts::AnalyticData {
 namespace {
 
-using test_tags = tmpl::list<
+using test_tags_exact = tmpl::list<
     detail::Tags::DistanceLeft<DataVector>,
     detail::Tags::DistanceRight<DataVector>,
     ::Tags::deriv<detail::Tags::OneOverDistanceLeft<DataVector>,
@@ -58,13 +58,12 @@ using test_tags = tmpl::list<
                       tmpl::size_t<3>, Frame::Inertial>,
         tmpl::size_t<3>, Frame::Inertial>,
     detail::Tags::NormalLeft<DataVector>, detail::Tags::NormalRight<DataVector>,
-    detail::Tags::RadiativeTerm<DataVector>,
     detail::Tags::NearZoneTerm<DataVector>,
     detail::Tags::PresentTerm<DataVector>,
     detail::Tags::PostNewtonianConjugateMomentum3<DataVector>,
     detail::Tags::PostNewtonianExtrinsicCurvature<DataVector>,
-    Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
-    gr::Tags::TraceExtrinsicCurvature<DataVector>,
+    detail::Tags::RootFinderBracketTimeLower<DataVector>,
+    detail::Tags::RootFinderBracketTimeUpper<DataVector>,
     Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                             Frame::Inertial>,
@@ -73,10 +72,27 @@ using test_tags = tmpl::list<
     gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
     gr::Tags::Conformal<gr::Tags::MomentumDensity<DataVector, 3>, 0>>;
 
-struct BinaryWithGravitationalWavesProxy {
-  tuples::tagged_tuple_from_typelist<test_tags> test_variables(
+using test_tags_numeric = tmpl::list<
+    detail::Tags::RetardedTimeLeft<DataVector>,
+    detail::Tags::RetardedTimeRight<DataVector>,
+    detail::Tags::PastTerm<DataVector>,
+    detail::Tags::RadiativeTerm<DataVector>,
+    Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
+    gr::Tags::TraceExtrinsicCurvature<DataVector>>;
+
+struct BinaryWithGravitationalWavesProxyExact {
+  tuples::tagged_tuple_from_typelist<test_tags_exact> test_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return binary.variables(x, test_tags{});
+    return binary.variables(x, test_tags_exact{});
+  }
+
+  const BinaryWithGravitationalWaves& binary;
+};
+
+struct BinaryWithGravitationalWavesProxyNumeric {
+  tuples::tagged_tuple_from_typelist<test_tags_numeric> test_variables(
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
+    return binary.variables(x, test_tags_numeric{});
   }
 
   const BinaryWithGravitationalWaves& binary;
@@ -213,9 +229,9 @@ void test_data(const double mass_left, const double mass_right,
                                  deriv_one_over_distance_left, approx);
   }
   {
-    const BinaryWithGravitationalWavesProxy proxy{binary};
+    const BinaryWithGravitationalWavesProxyExact proxy{binary};
     pypp::check_with_random_values<1>(
-        &BinaryWithGravitationalWavesProxy::test_variables, proxy,
+        &BinaryWithGravitationalWavesProxyExact::test_variables, proxy,
         "BinaryWithGravitationalWaves",
         {"distance_left",
          "distance_right",
@@ -225,13 +241,12 @@ void test_data(const double mass_left, const double mass_right,
          "deriv_3_distance_right",
          "normal_left",
          "normal_right",
-         "radiative_term",
          "near_zone_term",
          "present_term",
          "pn_conjugate_momentum3",
          "pn_extrinsic_curvature",
-         "conformal_metric",
-         "extrinsic_curvature_trace",
+         "root_finder_bracket_time_lower",
+         "root_finder_bracket_time_upper",
          "shift_background",
          "longitudinal_shift_background",
          "conformal_factor_minus_one",
@@ -240,6 +255,21 @@ void test_data(const double mass_left, const double mass_right,
          "momentum_density"},
         {{{-10. + xcoord_left, xcoord_right + 10.}}}, std::make_tuple(),
         DataVector(5));
+  }
+  {
+    const BinaryWithGravitationalWavesProxyNumeric proxy{binary};
+    pypp::check_with_random_values<1>(
+        &BinaryWithGravitationalWavesProxyNumeric::test_variables, proxy,
+        "BinaryWithGravitationalWaves",
+        {
+         "retarded_time_left",
+         "retarded_time_right",
+         "past_term",
+         "radiative_term",
+         "conformal_metric",
+         "extrinsic_curvature_trace"},
+        {{{-10. + xcoord_left, xcoord_right + 10.}}}, std::make_tuple(),
+        DataVector(5), 1e-4);
   }
 }
 

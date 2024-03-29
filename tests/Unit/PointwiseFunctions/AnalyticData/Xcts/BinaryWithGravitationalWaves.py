@@ -1,7 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import os
+
 import numpy as np
+import pandas as pd
+from scipy.interpolate import CubicHermiteSpline
+from scipy.optimize import toms748
 
 xcoords = [-4.5, 10.2]
 mass_left = 1.1
@@ -31,6 +36,88 @@ momentum1 = np.array([0.0, np.sqrt(p_circular_squared), 0.0])
 momentum2 = np.array([0.0, -np.sqrt(p_circular_squared), 0.0])
 delta = np.identity(3)
 normal = np.array([-1.0, 0.0, 0.0])
+# Try to find the file in any directory (maybe there is a better way to do this)
+file_name = "EvolutionBinaryWithGravitationalWaves.dat"
+for root, dirs, files in os.walk(os.getcwd() + "/../"):
+    if file_name in files:
+        path = os.path.join(root, file_name)
+data_evolve = pd.read_csv(path, skiprows=3, sep=" ", index_col=False)
+interpolate_position_right = np.array(
+    [
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["x_right"],
+            data_evolve["p_right_x"] / mass_right,
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["y_right"],
+            data_evolve["p_right_y"] / mass_right,
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["z_right"],
+            data_evolve["p_right_z"] / mass_right,
+        ),
+    ]
+)
+interpolate_position_left = np.array(
+    [
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["x_left"],
+            data_evolve["p_left_x"] / mass_left,
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["y_left"],
+            data_evolve["p_left_y"] / mass_left,
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["z_left"],
+            data_evolve["p_left_z"] / mass_left,
+        ),
+    ]
+)
+interpolate_momentum_right = np.array(
+    [
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_right_x"],
+            data_evolve["p_right_dt_x"],
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_right_y"],
+            data_evolve["p_right_dt_y"],
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_right_z"],
+            data_evolve["p_right_dt_z"],
+        ),
+    ]
+)
+interpolate_momentum_left = np.array(
+    [
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_left_x"],
+            data_evolve["p_left_dt_x"],
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_left_y"],
+            data_evolve["p_left_dt_y"],
+        ),
+        CubicHermiteSpline(
+            data_evolve["t"],
+            data_evolve["p_left_z"],
+            data_evolve["p_left_dt_z"],
+        ),
+    ]
+)
 
 
 def distance_left(x):
@@ -97,6 +184,58 @@ def normal_left(x):
 
 def normal_right(x):
     return (x - np.array([xcoords[1], 0.0, 0.0])) / distance_right(x)
+
+
+def retarded_time_left(x):
+    def f_left(t):
+        distance_left_t = np.sqrt(
+            (interpolate_position_left[0](t) - x[0])
+            * (interpolate_position_left[0](t) - x[0])
+            + (interpolate_position_left[1](t) - x[1])
+            * (interpolate_position_left[1](t) - x[1])
+            + (interpolate_position_left[2](t) - x[2])
+            * (interpolate_position_left[2](t) - x[2])
+        )
+        return t + distance_left_t
+
+    root = toms748(
+        f_left,
+        root_finder_bracket_time_lower(x),
+        root_finder_bracket_time_upper(x),
+    )
+    return root
+
+
+def retarded_time_right(x):
+    def f_right(t):
+        distance_right_t = np.sqrt(
+            (interpolate_position_right[0](t) - x[0])
+            * (interpolate_position_right[0](t) - x[0])
+            + (interpolate_position_right[1](t) - x[1])
+            * (interpolate_position_right[1](t) - x[1])
+            + (interpolate_position_right[2](t) - x[2])
+            * (interpolate_position_right[2](t) - x[2])
+        )
+        return t + distance_right_t
+
+    root = toms748(
+        f_right,
+        root_finder_bracket_time_lower(x),
+        root_finder_bracket_time_upper(x),
+    )
+    return root
+
+
+def root_finder_bracket_time_lower(x):
+    time = data_evolve["t"]
+    time_lower = time.min()
+    return time_lower
+
+
+def root_finder_bracket_time_upper(x):
+    time = data_evolve["t"]
+    time_upper = time.max()
+    return time_upper
 
 
 def near_zone_term(x):
@@ -334,10 +473,252 @@ def present_term(x):
     return present_term_aux
 
 
+def past_term(x):
+    position_left_past_left = np.array(
+        [
+            interpolate_position_left[0](retarded_time_left(x)),
+            interpolate_position_left[1](retarded_time_left(x)),
+            interpolate_position_left[2](retarded_time_left(x)),
+        ]
+    )
+    position_left_past_right = np.array(
+        [
+            interpolate_position_left[0](retarded_time_right(x)),
+            interpolate_position_left[1](retarded_time_right(x)),
+            interpolate_position_left[2](retarded_time_right(x)),
+        ]
+    )
+    position_right_past_right = np.array(
+        [
+            interpolate_position_right[0](retarded_time_right(x)),
+            interpolate_position_right[1](retarded_time_right(x)),
+            interpolate_position_right[2](retarded_time_right(x)),
+        ]
+    )
+    position_right_past_left = np.array(
+        [
+            interpolate_position_right[0](retarded_time_left(x)),
+            interpolate_position_right[1](retarded_time_left(x)),
+            interpolate_position_right[2](retarded_time_left(x)),
+        ]
+    )
+    separation_past_left = np.sqrt(
+        (position_left_past_left[0] - position_right_past_left[0])
+        * (position_left_past_left[0] - position_right_past_left[0])
+        + (position_left_past_left[1] - position_right_past_left[1])
+        * (position_left_past_left[1] - position_right_past_left[1])
+        + (position_left_past_left[2] - position_right_past_left[2])
+        * (position_left_past_left[2] - position_right_past_left[2])
+    )
+    separation_past_right = np.sqrt(
+        (position_left_past_right[0] - position_right_past_right[0])
+        * (position_left_past_right[0] - position_right_past_right[0])
+        + (position_left_past_right[1] - position_right_past_right[1])
+        * (position_left_past_right[1] - position_right_past_right[1])
+        + (position_left_past_right[2] - position_right_past_right[2])
+        * (position_left_past_right[2] - position_right_past_right[2])
+    )
+    momentum_left_past_left = np.array(
+        [
+            interpolate_momentum_left[0](retarded_time_left(x)),
+            interpolate_momentum_left[1](retarded_time_left(x)),
+            interpolate_momentum_left[2](retarded_time_left(x)),
+        ]
+    )
+    momentum_right_past_right = np.array(
+        [
+            interpolate_momentum_right[0](retarded_time_right(x)),
+            interpolate_momentum_right[1](retarded_time_right(x)),
+            interpolate_momentum_right[2](retarded_time_right(x)),
+        ]
+    )
+    distance_left_past_left = np.sqrt(
+        (x[0] - position_left_past_left[0])
+        * (x[0] - position_left_past_left[0])
+        + (x[1] - position_left_past_left[1])
+        * (x[1] - position_left_past_left[1])
+        + (x[2] - position_left_past_left[2])
+        * (x[2] - position_left_past_left[2])
+    )
+    distance_right_past_right = np.sqrt(
+        (x[0] - position_right_past_right[0])
+        * (x[0] - position_right_past_right[0])
+        + (x[1] - position_right_past_right[1])
+        * (x[1] - position_right_past_right[1])
+        + (x[2] - position_right_past_right[2])
+        * (x[2] - position_right_past_right[2])
+    )
+    normal_left_past_left = (
+        np.array(
+            [
+                x[0] - position_left_past_left[0],
+                x[1] - position_left_past_left[1],
+                x[2] - position_left_past_left[2],
+            ]
+        )
+        / distance_left_past_left
+    )
+    normal_right_past_right = (
+        np.array(
+            [
+                x[0] - position_right_past_right[0],
+                x[1] - position_right_past_right[1],
+                x[2] - position_right_past_right[2],
+            ]
+        )
+        / distance_right_past_right
+    )
+    normal_past_left = (
+        np.array(
+            [
+                position_left_past_left[0] - position_right_past_left[0],
+                position_left_past_left[1] - position_right_past_left[1],
+                position_left_past_left[2] - position_right_past_left[2],
+            ]
+        )
+        / separation_past_left
+    )
+    normal_past_right = (
+        np.array(
+            [
+                position_left_past_right[0] - position_right_past_right[0],
+                position_left_past_right[1] - position_right_past_right[1],
+                position_left_past_right[2] - position_right_past_right[2],
+            ]
+        )
+        / separation_past_right
+    )
+    u1_tr1 = np.array([0.0, 0.0, 0.0])
+    u1_tr2 = np.array([0.0, 0.0, 0.0])
+    u2_tr1 = np.array([0.0, 0.0, 0.0])
+    u2_tr2 = np.array([0.0, 0.0, 0.0])
+    for i in range(3):
+        u1_tr1[i] = momentum_left_past_left[i] / np.sqrt(mass_left)
+        u1_tr2[i] = momentum_right_past_right[i] / np.sqrt(mass_right)
+        u2_tr1[i] = (
+            np.sqrt(mass_left * mass_right / (2.0 * separation_past_left))
+            * normal_past_left[i]
+        )
+        u2_tr2[i] = (
+            np.sqrt(mass_left * mass_right / (2.0 * separation_past_right))
+            * normal_past_right[i]
+        )
+    past_term_aux = np.zeros((3, 3))
+    for i in range(3):
+        for j in range(3):
+            past_term_aux[i, j] += (
+                -1
+                / (distance_left_past_left)
+                * (
+                    (
+                        -2 * np.dot(u1_tr1, u1_tr1)
+                        + 2
+                        * np.dot(u1_tr1, normal_left_past_left)
+                        * np.dot(u1_tr1, normal_left_past_left)
+                    )
+                    * delta[i][j]
+                    + 4 * u1_tr1[i] * u1_tr1[j]
+                    + (
+                        2 * np.dot(u1_tr1, u1_tr1)
+                        + 2
+                        * np.dot(u1_tr1, normal_left_past_left)
+                        * np.dot(u1_tr1, normal_left_past_left)
+                    )
+                    * normal_left_past_left[i]
+                    * normal_left_past_left[j]
+                    - 4
+                    * np.dot(u1_tr1, normal_left_past_left)
+                    * (
+                        normal_left_past_left[i] * u1_tr1[j]
+                        + normal_left_past_left[j] * u1_tr1[i]
+                    )
+                )
+                - 1
+                / (distance_right_past_right)
+                * (
+                    (
+                        -2 * np.dot(u1_tr2, u1_tr2)
+                        + 2
+                        * np.dot(u1_tr2, normal_right_past_right)
+                        * np.dot(u1_tr2, normal_right_past_right)
+                    )
+                    * delta[i][j]
+                    + 4 * u1_tr2[i] * u1_tr2[j]
+                    + (
+                        2 * np.dot(u1_tr2, u1_tr2)
+                        + 2
+                        * np.dot(u1_tr2, normal_right_past_right)
+                        * np.dot(u1_tr2, normal_right_past_right)
+                    )
+                    * normal_right_past_right[i]
+                    * normal_right_past_right[j]
+                    - 4
+                    * np.dot(u1_tr2, normal_right_past_right)
+                    * (
+                        normal_right_past_right[i] * u1_tr2[j]
+                        + normal_right_past_right[j] * u1_tr2[i]
+                    )
+                )
+                - 1
+                / (distance_left_past_left)
+                * (
+                    (
+                        -2 * np.dot(u2_tr1, u2_tr1)
+                        + 2
+                        * np.dot(u2_tr1, normal_left_past_left)
+                        * np.dot(u2_tr1, normal_left_past_left)
+                    )
+                    * delta[i][j]
+                    + 4 * u2_tr1[i] * u2_tr1[j]
+                    + (
+                        2 * np.dot(u2_tr1, u2_tr1)
+                        + 2
+                        * np.dot(u2_tr1, normal_left_past_left)
+                        * np.dot(u2_tr1, normal_left_past_left)
+                    )
+                    * normal_left_past_left[i]
+                    * normal_left_past_left[j]
+                    - 4
+                    * np.dot(u2_tr1, normal_left_past_left)
+                    * (
+                        normal_left_past_left[i] * u2_tr1[j]
+                        + normal_left_past_left[j] * u2_tr1[i]
+                    )
+                )
+                - 1
+                / (distance_right_past_right)
+                * (
+                    (
+                        -2 * np.dot(u2_tr2, u2_tr2)
+                        + 2
+                        * np.dot(u2_tr2, normal_right_past_right)
+                        * np.dot(u2_tr2, normal_right_past_right)
+                    )
+                    * delta[i][j]
+                    + 4 * u2_tr2[i] * u2_tr2[j]
+                    + (
+                        2 * np.dot(u2_tr2, u2_tr2)
+                        + 2
+                        * np.dot(u2_tr2, normal_right_past_right)
+                        * np.dot(u2_tr2, normal_right_past_right)
+                    )
+                    * normal_right_past_right[i]
+                    * normal_right_past_right[j]
+                    - 4
+                    * np.dot(u2_tr2, normal_right_past_right)
+                    * (
+                        normal_right_past_right[i] * u2_tr2[j]
+                        + normal_right_past_right[j] * u2_tr2[i]
+                    )
+                )
+            )
+    return past_term_aux
+
+
 def radiative_term(x):
     return (
-        np.zeros((3, 3)) + near_zone_term(x) + present_term(x)
-    )  # + past_term(x) + integral_term(x)
+        np.zeros((3, 3)) + near_zone_term(x) + present_term(x) + past_term(x)
+    )  # + integral_term(x)
 
 
 def pn_conjugate_momentum3(x):
