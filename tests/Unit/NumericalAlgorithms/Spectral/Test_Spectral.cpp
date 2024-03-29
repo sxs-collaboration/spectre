@@ -544,6 +544,19 @@ void test_double_instantiation() {
       mesh1d, std::vector<double>{interpolation_target});
   CHECK_ITERABLE_APPROX(double_matrix, vector_matrix);
 }
+
+void test_fd_interpolation_fails() {
+  CHECK_THROWS_WITH(
+      ([]() {
+        const Mesh<1> fd_mesh{5, Spectral::Basis::FiniteDifference,
+                              Spectral::Quadrature::CellCentered};
+        const double interpolation_target = 0.2;
+        const auto matrix =
+            Spectral::interpolation_matrix(fd_mesh, interpolation_target);
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot do barycentric interpolation with Basis::FiniteDifference"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
@@ -556,4 +569,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
   test_spectral_quantities_for_mesh();
   test_gauss_points_boundary_interpolation_and_lifting();
   test_double_instantiation();
+  test_fd_interpolation_fails();
 }
