@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "Domain/Creators/SphereTimeDependentMaps.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
@@ -68,6 +69,15 @@ struct ShapeMapOptions {
         "zero."};
   };
 
+  struct InitialValues {
+    using type =
+        Options::Auto<std::variant<sphere::KerrSchildFromBoyerLindquist>,
+                      sphere::Spherical>;
+    static constexpr Options::String help = {
+        "Initial Ylm coefficients for the shape map. Specify 'Spherical' for "
+        "all coefficients to be initialized to zero."};
+  };
+
   struct SizeInitialValues {
     using type = std::array<double, 3>;
     static constexpr Options::String help = {
@@ -82,13 +92,15 @@ struct ShapeMapOptions {
         "be 0 at the outer radius of the inner sphere around the object"};
   };
 
-  using common_options = tmpl::list<LMax, SizeInitialValues>;
+  using common_options = tmpl::list<LMax, InitialValues, SizeInitialValues>;
 
   using options = tmpl::conditional_t<
       IsCylindrical, common_options,
       tmpl::push_back<common_options, TransitionEndsAtCube>>;
 
   size_t l_max{};
+  std::optional<std::variant<sphere::KerrSchildFromBoyerLindquist>>
+      initial_values{};
   std::array<double, 3> initial_size_values{};
   bool transition_ends_at_cube{false};
 };
@@ -394,6 +406,7 @@ struct TimeDependentMapOptions {
   std::optional<RotationMapOptions> rotation_options_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B_{};
+  std::array<std::optional<double>, 2> inner_radii_{};
 
   // Maps
   std::optional<Expansion> expansion_map_{};

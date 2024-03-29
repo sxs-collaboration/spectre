@@ -665,8 +665,10 @@ Domain<3> create_serialized_domain() {
       TimeDepOps::ExpansionMapOptions{
           {{1.0, -4.6148457646200002e-05}}, -1.0e-6, 50.},
       TimeDepOps::RotationMapOptions{{0.0, 0.0, 1.5264577062000000e-02}},
-      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{8, {0., 0., 0.}},
-      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{8, {0., 0., 0.}}};
+      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::A>{
+          8, std::nullopt, {0., 0., 0.}},
+      TimeDepOps::ShapeMapOptions<domain::ObjectLabel::B>{
+          8, std::nullopt, {0., 0., 0.}}};
 
   const std::optional<std::array<double, 2>> inner_outer_radii_A =
       std::array{object_A.inner_radius, object_A.outer_radius};

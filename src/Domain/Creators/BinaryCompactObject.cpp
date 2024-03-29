@@ -564,12 +564,14 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // Inside the excision sphere we add the grid to inertial map from the outer
     // shell. This allows the center of the excisions/horizons to be mapped
     // properly to the inertial frame.
-    if (is_excised_a_) {
+    if (is_excised_a_ and
+        grid_to_inertial_block_maps[number_of_blocks_ - 1] != nullptr) {
       domain.inject_time_dependent_map_for_excision_sphere(
           "ExcisionSphereA",
           grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone());
     }
-    if (is_excised_b_) {
+    if (is_excised_b_ and
+        grid_to_inertial_block_maps[number_of_blocks_ - 1] != nullptr) {
       domain.inject_time_dependent_map_for_excision_sphere(
           "ExcisionSphereB",
           grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone());
@@ -620,7 +622,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
             time_dependent_options_
                 ->distorted_to_inertial_map<domain::ObjectLabel::B>(
                     block_for_distorted_frame);
-      } else {
+      } else if (grid_to_inertial_block_maps[number_of_blocks_ - 1] !=
+                 nullptr) {
         // No distorted frame
         grid_to_inertial_block_maps[block] =
             grid_to_inertial_block_maps[number_of_blocks_ - 1]->get_clone();
@@ -628,6 +631,9 @@ Domain<3> BinaryCompactObject::create_domain() const {
     }
     // Finally, inject the time dependent maps into the corresponding blocks
     for (size_t block = 0; block < number_of_blocks_; ++block) {
+      if (grid_to_inertial_block_maps[block] == nullptr) {
+        continue;
+      }
       domain.inject_time_dependent_map_for_block(
           block, std::move(grid_to_inertial_block_maps[block]),
           std::move(grid_to_distorted_block_maps[block]),
