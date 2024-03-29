@@ -100,7 +100,7 @@ directory and compile the executables that we will use in this tutorial:
 
 ```sh
 cd /work/spectre/build
-make -j2 ExportTimeDependentCoordinates3D EvolveScalarAdvection2D all-pybindings
+make -j2 ExportCoordinates3D EvolveScalarAdvection2D all-pybindings
 ```
 
 This will compile the code on two cores. If you'd like to use more cores, use
@@ -115,9 +115,9 @@ command line right away:
 spectre --help
 ```
 
-## Running ExportTimeDependentCoordinates3D
+## Running ExportCoordinates3D
 
-First we will run the `ExportTimeDependentCoordinates3D` executable to visualize
+First we will run the `ExportCoordinates3D` executable to visualize
 the coordinates of a binary black hole domain.
 Make a directory where you will run everything:
 
@@ -138,8 +138,8 @@ This will run it on one core. If you'd like to use more cores, add the `-j N`
 option where `N` is the number of cores. After this finishes you should
 see two `H5` files in your run directory:
 
-1. ExportTimeDependentCoordinates3DVolume0
-2. ExportTimeDependentCoordinates3DReductions
+1. ExportCoordinates3DVolume0
+2. ExportCoordinates3DReductions
 
 The `Volume` file is where we store data from every element in our domain, like
 the coordinates or the metric. The `Reductions` file is for more global
@@ -168,7 +168,7 @@ directory where you have the `H5` files, run
 ```
 spectre generate-xdmf \
   --subfile-name element_data --output BBH_Coords \
-  ExportTimeDependentCoordinates3DVolume*h5
+  ExportCoordinates3DVolume*h5
 ```
 
 We output volume data per node so we append the

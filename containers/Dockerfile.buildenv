@@ -427,7 +427,7 @@ ENV PATH "/opt/paraview/bin:$PATH"
 # Build the executables used in the tutorial
 RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
         cd spectre/build \
-        && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
+        && make ${PARALLEL_MAKE_ARG} ExportCoordinates3D \
         && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
     ; fi
 

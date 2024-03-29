@@ -27,7 +27,6 @@ set(LIBRARY_SOURCES
   Test_InterfaceLogicalCoordinates.cpp
   Test_JacobianDiagnostic.cpp
   Test_MinimumGridSpacing.cpp
-  Test_Protocols.cpp
   Test_RadiallyCompressedCoordinates.cpp
   Test_SizeOfElement.cpp
   Test_StrahlkorperTransformations.cpp

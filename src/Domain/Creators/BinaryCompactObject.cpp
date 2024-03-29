@@ -64,6 +64,7 @@ BinaryCompactObject::BinaryCompactObject(
     const CoordinateMaps::Distribution radial_distribution_envelope,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
+    std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
@@ -75,6 +76,7 @@ BinaryCompactObject::BinaryCompactObject(
       radial_distribution_envelope_(radial_distribution_envelope),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
+      time_dependent_options_(std::move(time_dependent_options)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
   // Get useful information about the type of grid used around each compact
   // object
@@ -283,29 +285,8 @@ BinaryCompactObject::BinaryCompactObject(
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
-}
 
-BinaryCompactObject::BinaryCompactObject(
-    std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
-    typename ObjectA::type object_A, typename ObjectB::type object_B,
-    double envelope_radius, double outer_radius,
-    const typename InitialRefinement::type& initial_refinement,
-    const typename InitialGridPoints::type& initial_number_of_grid_points,
-    const bool use_equiangular_map,
-    const CoordinateMaps::Distribution radial_distribution_envelope,
-    const CoordinateMaps::Distribution radial_distribution_outer_shell,
-    const double opening_angle_in_degrees,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        outer_boundary_condition,
-    const Options::Context& context)
-    : BinaryCompactObject(
-          std::move(object_A), std::move(object_B), envelope_radius,
-          outer_radius, initial_refinement, initial_number_of_grid_points,
-          use_equiangular_map, radial_distribution_envelope,
-          radial_distribution_outer_shell, opening_angle_in_degrees,
-          std::move(outer_boundary_condition), context) {
-  time_dependent_options_ = std::move(time_dependent_options);
-
+  // Build time-dependent maps
   std::optional<std::array<double, 3>> radii_A{};
   std::optional<std::array<double, 3>> radii_B{};
 

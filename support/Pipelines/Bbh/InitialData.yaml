@@ -106,6 +106,7 @@ DomainCreator:
       ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
       OuterShell:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
+    TimeDependentMaps: None
 
 Amr:
   Verbosity: Verbose

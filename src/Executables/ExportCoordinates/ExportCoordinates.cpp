@@ -13,7 +13,7 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
-using metavariables = Metavariables<DIM, TIME_DEPENDENT>;
+using metavariables = Metavariables<DIM>;
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();
