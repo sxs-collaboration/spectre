@@ -755,6 +755,19 @@ else
     cd ../
     rm -rf gdbm-1.23 gdbm-1.23.tar.gz
 
+    # Build sqlite which is needed by Jupyter.
+    wget https://sqlite.org/2024/sqlite-autoconf-3450100.tar.gz
+    tar xf sqlite-autoconf-3450100.tar.gz
+    cd ./sqlite-autoconf-3450100
+    # Build sqlite shared, but have Emacs link against the system install.
+    # The system install doesn't have the headers, just the library.
+    # ./configure --disable-shared --enable-static --with-pic --prefix=${LOCATION}
+    ./configure --with-pic --prefix=${LOCATION}
+    make -j${PARALLEL_MAKE_ARG}
+    make install
+    cd ../
+    rm -rf ./sqlite-autoconf*
+
     # Build cpython (python itself).
     #
     # Other dependencies like gdbm, dbm, uuid, and tcl+tk (for tkinter) could be
@@ -2672,6 +2685,7 @@ _build_paraview() {
               -D VTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON \
               -D PARAVIEW_BUILD_SHARED_LIBS=ON -D BUILD_TESTING=OFF \
               -D VTK_SMP_IMPLEMENTATION_TYPE=OpenMP \
+              -D PARAVIEW_USE_MPI=ON \
               -D PARAVIEW_ENABLE_XDMF2=ON -D PARAVIEW_ENABLE_XDMF3=ON \
               -D OSMESA_INCLUDE_DIR=${COMMON_LOCATION}/include \
               -D OSMESA_LIBRARY=${COMMON_LOCATION}/lib64/libOSMesa.so \
@@ -2709,6 +2723,7 @@ depends_on("boost/${_BOOST_VERSION}")
 depends_on("llvm/${_LLVM_VERSION}")
 depends_on("impi/${_IMPI_VERSION}")
 depends_on("hdf5/${_HDF5_VERSION}")
+depends_on("python/${_PYTHON_VERSION}")
 
 prepend_path("PATH", pathJoin(apps_path, "/bin"))
 prepend_path("CPATH", pathJoin(apps_path, "/include"))
