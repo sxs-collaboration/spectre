@@ -26,6 +26,20 @@ namespace Cce {
 /// Analytic solutions for CCE worldtube data and corresponding waveform News
 namespace Solutions {
 
+/// The collection of cache tags for `WorldtubeData`
+using cce_analytic_solutions_cache_tags = tmpl::list<
+    Tags::CauchyCartesianCoords, Tags::Dr<Tags::CauchyCartesianCoords>,
+    gr::Tags::SpacetimeMetric<DataVector, 3>, gh::Tags::Pi<DataVector, 3>,
+    gh::Tags::Phi<DataVector, 3>, gr::Tags::SpatialMetric<DataVector, 3>,
+    gr::Tags::Shift<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+    ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
+    ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
+    ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
+    ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+    Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>,
+    Tags::Dr<gr::Tags::Shift<DataVector, 3>>,
+    Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>;
+
 /// \cond
 class BouncingBlackHole;
 class GaugeWave;
@@ -34,6 +48,36 @@ class RobinsonTrautman;
 class RotatingSchwarzschild;
 class TeukolskyWave;
 /// \endcond
+
+/*!
+ * \brief Base class for `WorldtubeData` and `KleinGordonWorldtubeData`
+ *
+ * \details The tuple `IntermediateCacheTuple` is required by both
+ * `WorldtubeData` and `KleinGordonWorldtubeData`. This base class constructs it
+ * utilizing the supplied `CacheTagList`.
+ */
+template <typename CacheTagList>
+struct WorldtubeDataBase {
+ protected:
+  template <typename Tag>
+  struct IntermediateCache {
+    typename Tag::type data;
+    size_t l_max = 0;
+    double time = -std::numeric_limits<double>::infinity();
+  };
+
+  template <typename Tag>
+  struct IntermediateCacheTag {
+    using type = IntermediateCache<Tag>;
+  };
+
+  using IntermediateCacheTuple =
+      tuples::tagged_tuple_from_typelist<tmpl::transform<
+          CacheTagList, tmpl::bind<IntermediateCacheTag, tmpl::_1>>>;
+
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable IntermediateCacheTuple intermediate_cache_;
+};
 
 /*!
  * \brief Abstract base class for analytic worldtube data for verifying the CCE
@@ -70,7 +114,9 @@ class TeukolskyWave;
  * intermediate steps to avoid repeating potentially expensive tensor
  * calculations.
  */
-struct WorldtubeData : public PUP::able {
+struct WorldtubeData
+    : public PUP::able,
+      public WorldtubeDataBase<cce_analytic_solutions_cache_tags> {
   using creatable_classes =
       tmpl::list<BouncingBlackHole, GaugeWave, LinearizedBondiSachs,
                  RobinsonTrautman, RotatingSchwarzschild, TeukolskyWave>;
@@ -240,38 +286,6 @@ struct WorldtubeData : public PUP::able {
       size_t output_l_max, double time,
       tmpl::type_<Tags::News> /*meta*/) const = 0;
 
-  template <typename Tag>
-  struct IntermediateCache {
-    typename Tag::type data;
-    size_t l_max = 0;
-    double time = -std::numeric_limits<double>::infinity();
-  };
-
-  template <typename Tag>
-  struct IntermediateCacheTag {
-    using type = IntermediateCache<Tag>;
-  };
-
-  using IntermediateCacheTuple =
-      tuples::tagged_tuple_from_typelist<tmpl::transform<
-          tmpl::list<Tags::CauchyCartesianCoords,
-                     Tags::Dr<Tags::CauchyCartesianCoords>,
-                     gr::Tags::SpacetimeMetric<DataVector, 3>,
-                     gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
-                     gr::Tags::SpatialMetric<DataVector, 3>,
-                     gr::Tags::Shift<DataVector, 3>,
-                     gr::Tags::Lapse<DataVector>,
-                     ::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>,
-                     ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
-                     ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
-                     ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-                     Tags::Dr<gr::Tags::SpatialMetric<DataVector, 3>>,
-                     Tags::Dr<gr::Tags::Shift<DataVector, 3>>,
-                     Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>,
-          tmpl::bind<IntermediateCacheTag, tmpl::_1>>>;
-
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable IntermediateCacheTuple intermediate_cache_;
   double extraction_radius_ = std::numeric_limits<double>::quiet_NaN();
 };
 }  // namespace Solutions
