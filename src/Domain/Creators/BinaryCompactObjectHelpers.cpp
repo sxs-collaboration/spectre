@@ -164,10 +164,10 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
             std::get<sphere::KerrSchildFromBoyerLindquist>(
                 shape_options.initial_values.value());
         const DataVector radial_distortion =
-            1.0 - get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-                      inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
-                      mass_and_spin.spin)) /
-                      inner_radius;
+            inner_radius -
+            get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+                inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
+                mass_and_spin.spin));
         shape_func = ylm.phys_to_spec(radial_distortion);
         // Transform from SPHEREPACK to actual Ylm for size func
         if (size_func[0] != 0.0) {
