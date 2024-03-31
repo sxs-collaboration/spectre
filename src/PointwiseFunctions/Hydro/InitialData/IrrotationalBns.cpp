@@ -9,10 +9,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/SetNumberOfGridPoints.hpp"
 
 namespace hydro::initial_data {
 template <typename DataType>
@@ -81,36 +80,6 @@ tnsr::iJ<DataType, 3> derivative_rotational_shift_over_lapse(
 }
 
 template <typename DataType>
-void divergence_rotational_shift_stress(
-    const gsl::not_null<tnsr::i<DataType, 3>*> result,
-    const tnsr::I<DataType, 3>& rotational_shift,
-    const tnsr::iJ<DataType, 3>& derivative_rotational_shift_over_lapse,
-    const Scalar<DataType>& lapse,
-    const tnsr::ii<DataType, 3>& spatial_metric) {
-  // This has symmetry properties that should be used
-  ::tenex::evaluate<ti::k>(
-      result, rotational_shift(ti::J) *
-                      derivative_rotational_shift_over_lapse(ti::j, ti::I) *
-                      spatial_metric(ti::i, ti::k) / lapse() +
-                  rotational_shift(ti::I) * spatial_metric(ti::i, ti::k) *
-                      derivative_rotational_shift_over_lapse(ti::j, ti::J) /
-                      lapse());
-}
-
-template <typename DataType>
-tnsr::i<DataType, 3> divergence_rotational_shift_stress(
-    const tnsr::I<DataType, 3>& rotational_shift,
-    const tnsr::iJ<DataType, 3>& derivative_rotational_shift_over_lapse,
-    const Scalar<DataType>& lapse,
-    const tnsr::ii<DataType, 3>& spatial_metric) {
-  tnsr::i<DataType, 3> buffer{};
-  divergence_rotational_shift_stress(make_not_null(&buffer), rotational_shift,
-                                     derivative_rotational_shift_over_lapse,
-                                     lapse, spatial_metric);
-  return buffer;
-}
-
-template <typename DataType>
 void enthalpy_density_squared(
     const gsl::not_null<Scalar<DataType>*> result,
     const tnsr::I<DataType, 3>& rotational_shift, const Scalar<DataType>& lapse,
@@ -147,11 +116,12 @@ void spatial_rotational_killing_vector(
     const Scalar<DataType>& local_angular_velocity_around_z,
     const Scalar<DataType>& sqrt_det_spatial_metric) {
   // Cross product involves volume element in arbitrary coordinates
-  result->get(0) = -get(sqrt_det_spatial_metric) * get<1>(x) *
-                   get(local_angular_velocity_around_z);
-  result->get(1) = get(sqrt_det_spatial_metric) * get<0>(x) *
-                   get(local_angular_velocity_around_z);
-  result->get(2) = make_with_value<DataType>(sqrt_det_spatial_metric, 0.0);
+  set_number_of_grid_points(result, sqrt_det_spatial_metric);
+  get<0>(*result) = -get(sqrt_det_spatial_metric) * get<1>(x) *
+                    get(local_angular_velocity_around_z);
+  get<1>(*result) = get(sqrt_det_spatial_metric) * get<0>(x) *
+                    get(local_angular_velocity_around_z);
+  get<2>(*result) = 0.0;
 }
 
 template <typename DataType>
@@ -172,7 +142,8 @@ void derivative_spatial_rotational_killing_vector(
     const tnsr::I<DataType, 3>& x,
     const Scalar<DataType>& /*local_angular_velocity_around_z*/,
     const Scalar<DataType>& /*sqrt_det_spatial_metric*/) {
-  *result = make_with_value<tnsr::iJ<DataType, 3>>(get<0>(x), 0.0);
+  set_number_of_grid_points(result, x);
+  tenex::update<ti::i, ti::J>(result, 0.0 * result->(ti::i, ti::J));
 }
 
 template <typename DataType>

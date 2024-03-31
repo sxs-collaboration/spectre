@@ -7,14 +7,8 @@ def rotational_shift(shift, spatial_rotational_killing_vector):
     return shift + spatial_rotational_killing_vector
 
 
-def rotational_shift_stress(rotational_shift, lapse, spatial_metric):
-    return (
-        np.outer(
-            rotational_shift,
-            np.einsum("ij, i", spatial_metric, rotational_shift),
-        )
-        / lapse**2
-    )
+def rotational_shift_stress(rotational_shift, lapse):
+    return np.outer(rotational_shift, rotational_shift) / lapse**2
 
 
 def derivative_rotational_shift_over_lapse(
@@ -27,21 +21,6 @@ def derivative_rotational_shift_over_lapse(
     return (
         deriv_of_shift + deriv_of_spatial_rotational_killing_vector
     ) / lapse - np.outer(deriv_of_lapse / lapse**2, rotational_shift)
-
-
-def divergence_rotational_shift_stress(
-    rotational_shift, deriv_rotational_shift_over_lapse, lapse, spatial_metric
-):
-    return np.einsum(
-        "ij, i",
-        spatial_metric,
-        np.einsum(
-            "i, ij", rotational_shift / lapse, deriv_rotational_shift_over_lapse
-        )
-        + np.einsum("ii", deriv_rotational_shift_over_lapse)
-        * rotational_shift
-        / lapse,
-    )
 
 
 def enthalpy_density_squared(
