@@ -94,14 +94,14 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     return {+2, rdmp_tci_data};
   }
 
-  Scalar<DataVector> dg_pressure{};
-  assign_data(make_not_null(&dg_pressure), num_dg_pts);
-  evolution::dg::subcell::fd::reconstruct(
-      make_not_null(&get(dg_pressure)), get(subcell_pressure), dg_mesh,
-      subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
-
   if (not in_atmosphere) {
+    Scalar<DataVector> dg_pressure{};
+    assign_data(make_not_null(&dg_pressure), num_dg_pts);
+    evolution::dg::subcell::fd::reconstruct(
+        make_not_null(&get(dg_pressure)), get(subcell_pressure), dg_mesh,
+        subcell_mesh.extents(),
+        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
+
     if (evolution::dg::subcell::persson_tci(
             dg_tilde_d, dg_mesh, persson_exponent,
             subcell_options.persson_num_highest_modes())) {
