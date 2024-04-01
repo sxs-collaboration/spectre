@@ -8,6 +8,7 @@
 #include <optional>
 #include <type_traits>
 
+#include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -207,7 +208,8 @@ struct TimeDerivative {
           evolution::dg::subcell::compute_boundary_terms(
               make_not_null(&gsl::at(fd_boundary_corrections, dim)),
               dynamic_cast<const derived_correction&>(boundary_correction),
-              upper_packaged_data, lower_packaged_data);
+              upper_packaged_data, lower_packaged_data, db::as_access(*box),
+              typename derived_correction::dg_boundary_terms_volume_tags{});
         }
       }
     });

@@ -164,6 +164,8 @@ struct BoundaryTerms final
       tmpl::conditional_t<HasPrims, tmpl::list<Tags::PrimVar1>, tmpl::list<>>;
   using dg_package_data_volume_tags = tmpl::conditional_t<
       HasPrims, tmpl::list<Tags::BoundaryCorrectionVolumeTag>, tmpl::list<>>;
+  using dg_boundary_terms_volume_tags = tmpl::conditional_t<
+      HasPrims, tmpl::list<Tags::BoundaryCorrectionVolumeTag>, tmpl::list<>>;
 
   // Conservative system, flat background
   double dg_package_data(
@@ -701,6 +703,29 @@ struct BoundaryTerms final
         DataVector(num_pts,
                    2.0 * (offset_boundary_condition + 2.0 + 2 * Dim) -
                        sign_of_normal_ / normalization_factor * mesh_velocity));
+  }
+
+  void dg_boundary_terms(
+      const gsl::not_null<Scalar<DataVector>*> boundary_correction_var1,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          boundary_correction_var2,
+      const Scalar<DataVector>& int_normal_dot_flux_var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& int_normal_dot_flux_var2,
+      const Scalar<DataVector>& int_var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& int_var2,
+      const Scalar<DataVector>& int_max_abs_char_speed,
+      const Scalar<DataVector>& ext_normal_dot_flux_var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& ext_normal_dot_flux_var2,
+      const Scalar<DataVector>& ext_var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& ext_var2,
+      const Scalar<DataVector>& ext_max_abs_char_speed,
+      const dg::Formulation formulation, const double& volume_number) const {
+    CHECK(volume_number == 3.5);
+    dg_boundary_terms(boundary_correction_var1, boundary_correction_var2,
+                      int_normal_dot_flux_var1, int_normal_dot_flux_var2,
+                      int_var1, int_var2, int_max_abs_char_speed,
+                      ext_normal_dot_flux_var1, ext_normal_dot_flux_var2,
+                      ext_var1, ext_var2, ext_max_abs_char_speed, formulation);
   }
 
  private:

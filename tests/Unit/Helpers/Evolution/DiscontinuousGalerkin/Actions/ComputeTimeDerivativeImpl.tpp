@@ -546,6 +546,8 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       tmpl::conditional_t<HasPrims, tmpl::list<PrimVar1>, tmpl::list<>>;
   using dg_package_data_volume_tags =
       tmpl::conditional_t<HasPrims, tmpl::list<Tags::TimeStepId>, tmpl::list<>>;
+  using dg_boundary_terms_volume_tags =
+      tmpl::conditional_t<HasPrims, tmpl::list<Tags::TimeStepId>, tmpl::list<>>;
   /// [bt_ta]
 
   // Conservative system

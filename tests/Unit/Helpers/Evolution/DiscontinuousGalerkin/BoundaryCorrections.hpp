@@ -74,7 +74,8 @@ using get_system_primitive_vars = typename get_system_primitive_vars_impl<
 
 template <typename BoundaryCorrection, typename... PackageTags,
           typename... FaceTags, typename... VolumeTags,
-          typename... FaceTagsToForward, size_t Dim>
+          typename... FaceTagsToForward, typename... VolumeTagsToForward,
+          size_t Dim>
 double call_dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
     const BoundaryCorrection& correction,
@@ -83,7 +84,8 @@ double call_dg_package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
-    tmpl::list<FaceTagsToForward...> /*meta*/) {
+    tmpl::list<FaceTagsToForward...> /*meta*/,
+    tmpl::list<VolumeTagsToForward...> /*meta*/) {
   std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
   if (mesh_velocity.has_value()) {
     normal_dot_mesh_velocity =
@@ -93,13 +95,14 @@ double call_dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
       get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
       mesh_velocity, normal_dot_mesh_velocity,
-      StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
+      StdHelpers::retrieve(get<VolumeTagsToForward>(volume_data))...);
   return max_speed;
 }
 
 template <typename BoundaryCorrection, typename... PackageTags,
           typename... FaceTags, typename... VolumeTags,
-          typename... FaceTagsToForward, size_t Dim>
+          typename... FaceTagsToForward, typename... VolumeTagsToForward,
+          size_t Dim>
 double call_dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
     const BoundaryCorrection& correction,
@@ -109,7 +112,8 @@ double call_dg_package_data(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& unit_normal_vector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
-    tmpl::list<FaceTagsToForward...> /*meta*/) {
+    tmpl::list<FaceTagsToForward...> /*meta*/,
+    tmpl::list<VolumeTagsToForward...> /*meta*/) {
   std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
   if (mesh_velocity.has_value()) {
     normal_dot_mesh_velocity =
@@ -119,23 +123,27 @@ double call_dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
       get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
       unit_normal_vector, mesh_velocity, normal_dot_mesh_velocity,
-      StdHelpers::retrieve(get<VolumeTags>(volume_data))...);
+      StdHelpers::retrieve(tuples::get<VolumeTagsToForward>(volume_data))...);
   return max_speed;
 }
 
 template <typename BoundaryCorrection, typename... BoundaryCorrectionTags,
-          typename... PackageTags>
+          typename... PackageTags, typename... VolumeTags,
+          typename... VolumeTagsToForward>
 void call_dg_boundary_terms(
     const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
         boundary_corrections,
     const BoundaryCorrection& correction,
+    const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const Variables<tmpl::list<PackageTags...>>& interior_package_data,
     const Variables<tmpl::list<PackageTags...>>& exterior_package_data,
-    const ::dg::Formulation dg_formulation) {
+    const ::dg::Formulation dg_formulation,
+    tmpl::list<VolumeTagsToForward...> /*meta*/) {
   correction.dg_boundary_terms(
       make_not_null(&get<BoundaryCorrectionTags>(*boundary_corrections))...,
       get<PackageTags>(interior_package_data)...,
-      get<PackageTags>(exterior_package_data)..., dg_formulation);
+      get<PackageTags>(exterior_package_data)..., dg_formulation,
+      StdHelpers::retrieve(get<VolumeTagsToForward>(volume_data))...);
 }
 
 template <typename System, typename BoundaryCorrection, size_t FaceDim,
@@ -168,6 +176,10 @@ void test_boundary_correction_conservation_impl(
 
   using dg_package_field_tags =
       typename BoundaryCorrection::dg_package_field_tags;
+  using dg_package_volume_tags =
+      typename BoundaryCorrection::dg_package_data_volume_tags;
+  using dg_boundary_terms_volume_tags =
+      typename BoundaryCorrection::dg_boundary_terms_volume_tags;
   using package_temporary_tags =
       typename BoundaryCorrection::dg_package_data_temporary_tags;
   using package_primitive_tags = detail::get_correction_primitive_vars<
@@ -333,30 +345,33 @@ void test_boundary_correction_conservation_impl(
   }
 
   if constexpr (curved_background) {
-    call_dg_package_data(
-        make_not_null(&interior_package_data), correction,
-        interior_fields_on_face, volume_data, interior_unit_normal_covector,
-        interior_unit_normal_vector, mesh_velocity, face_tags{});
-    call_dg_package_data(
-        make_not_null(&exterior_package_data), correction,
-        exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
-        exterior_unit_normal_vector, mesh_velocity, face_tags{});
+    call_dg_package_data(make_not_null(&interior_package_data), correction,
+                         interior_fields_on_face, volume_data,
+                         interior_unit_normal_covector,
+                         interior_unit_normal_vector, mesh_velocity,
+                         face_tags{}, dg_package_volume_tags{});
+    call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                         exterior_fields_on_face, volume_data,
+                         exterior_unit_normal_covector,
+                         exterior_unit_normal_vector, mesh_velocity,
+                         face_tags{}, dg_package_volume_tags{});
   } else {
     call_dg_package_data(make_not_null(&interior_package_data), correction,
                          interior_fields_on_face, volume_data,
                          interior_unit_normal_covector, mesh_velocity,
-                         face_tags{});
+                         face_tags{}, dg_package_volume_tags{});
     call_dg_package_data(make_not_null(&exterior_package_data), correction,
                          exterior_fields_on_face, volume_data,
                          exterior_unit_normal_covector, mesh_velocity,
-                         face_tags{});
+                         face_tags{}, dg_package_volume_tags{});
   }
 
   Variables<dt_variables_tags> boundary_corrections{
       face_mesh.number_of_grid_points()};
   call_dg_boundary_terms(make_not_null(&boundary_corrections), correction,
-                         interior_package_data, exterior_package_data,
-                         dg_formulation);
+                         volume_data, interior_package_data,
+                         exterior_package_data, dg_formulation,
+                         dg_boundary_terms_volume_tags{});
 
   if (dg_formulation == ::dg::Formulation::StrongInertial) {
     // The strong form should be (WeakForm - (n_i F^i)_{interior}).
@@ -364,31 +379,33 @@ void test_boundary_correction_conservation_impl(
     // that the strong form satisfies the above definition.
 
     if constexpr (curved_background) {
-      call_dg_package_data(
-          make_not_null(&interior_package_data), correction,
-          interior_fields_on_face, volume_data, interior_unit_normal_covector,
-          interior_unit_normal_vector, mesh_velocity, face_tags{});
-      call_dg_package_data(
-          make_not_null(&exterior_package_data), correction,
-          exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
-          exterior_unit_normal_vector, mesh_velocity, face_tags{});
+      call_dg_package_data(make_not_null(&interior_package_data), correction,
+                           interior_fields_on_face, volume_data,
+                           interior_unit_normal_covector,
+                           interior_unit_normal_vector, mesh_velocity,
+                           face_tags{}, dg_package_volume_tags{});
+      call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                           exterior_fields_on_face, volume_data,
+                           exterior_unit_normal_covector,
+                           exterior_unit_normal_vector, mesh_velocity,
+                           face_tags{}, dg_package_volume_tags{});
     } else {
       call_dg_package_data(make_not_null(&interior_package_data), correction,
                            interior_fields_on_face, volume_data,
                            interior_unit_normal_covector, mesh_velocity,
-                           face_tags{});
+                           face_tags{}, dg_package_volume_tags{});
       call_dg_package_data(make_not_null(&exterior_package_data), correction,
                            exterior_fields_on_face, volume_data,
                            exterior_unit_normal_covector, mesh_velocity,
-                           face_tags{});
+                           face_tags{}, dg_package_volume_tags{});
     }
 
     Variables<dt_variables_tags> expected_boundary_corrections{
         face_mesh.number_of_grid_points()};
-    call_dg_boundary_terms(make_not_null(&expected_boundary_corrections),
-                           correction, interior_package_data,
-                           exterior_package_data,
-                           ::dg::Formulation::WeakInertial);
+    call_dg_boundary_terms(
+        make_not_null(&expected_boundary_corrections), correction, volume_data,
+        interior_package_data, exterior_package_data,
+        ::dg::Formulation::WeakInertial, dg_boundary_terms_volume_tags{});
 
     tmpl::for_each<flux_variables>([&interior_package_data,
                                     &expected_boundary_corrections](
@@ -430,19 +447,20 @@ void test_boundary_correction_conservation_impl(
         call_dg_package_data(
             make_not_null(&interior_package_data_opposite_signs), correction,
             interior_fields_on_face, volume_data, exterior_unit_normal_covector,
-            exterior_unit_normal_vector, mesh_velocity, face_tags{});
+            exterior_unit_normal_vector, mesh_velocity, face_tags{},
+            dg_package_volume_tags{});
       } else {
         call_dg_package_data(
             make_not_null(&interior_package_data_opposite_signs), correction,
             interior_fields_on_face, volume_data, exterior_unit_normal_covector,
-            mesh_velocity, face_tags{});
+            mesh_velocity, face_tags{}, dg_package_volume_tags{});
       }
       Variables<dt_variables_tags> zero_boundary_correction{
           face_mesh.number_of_grid_points()};
-      call_dg_boundary_terms(make_not_null(&zero_boundary_correction),
-                             correction, interior_package_data,
-                             interior_package_data_opposite_signs,
-                             ::dg::Formulation::StrongInertial);
+      call_dg_boundary_terms(
+          make_not_null(&zero_boundary_correction), correction, volume_data,
+          interior_package_data, interior_package_data_opposite_signs,
+          ::dg::Formulation::StrongInertial, dg_boundary_terms_volume_tags{});
       Variables<dt_variables_tags> expected_zero_boundary_correction{
           face_mesh.number_of_grid_points(), 0.0};
       tmpl::for_each<dt_variables_tags>([&custom_approx,
@@ -465,8 +483,9 @@ void test_boundary_correction_conservation_impl(
     Variables<dt_variables_tags> reverse_side_boundary_corrections{
         face_mesh.number_of_grid_points()};
     call_dg_boundary_terms(make_not_null(&reverse_side_boundary_corrections),
-                           correction, exterior_package_data,
-                           interior_package_data, dg_formulation);
+                           correction, volume_data, exterior_package_data,
+                           interior_package_data, dg_formulation,
+                           dg_boundary_terms_volume_tags{});
     // Check that the flux leaving one element equals the flux entering its
     // neighbor, i.e., F*(interior, exterior) == -F*(exterior, interior)
     reverse_side_boundary_corrections *= -1.0;
@@ -545,6 +564,10 @@ void test_with_python(
       detail::has_inverse_spatial_metric_tag_v<System>;
   using dg_package_field_tags =
       typename BoundaryCorrection::dg_package_field_tags;
+  using dg_package_volume_tags =
+      typename BoundaryCorrection::dg_package_data_volume_tags;
+  using dg_boundary_terms_volume_tags =
+      typename BoundaryCorrection::dg_boundary_terms_volume_tags;
 
   using face_tags = tmpl::list<FaceTags...>;
   using face_tags_with_curved_background = tmpl::conditional_t<
@@ -627,11 +650,12 @@ void test_with_python(
     call_dg_package_data(make_not_null(&package_data), correction,
                          fields_on_face, volume_data, unit_normal_covector,
                          unit_normal_vector, mesh_velocity,
-                         tmpl::list<FaceTags...>{});
+                         tmpl::list<FaceTags...>{}, dg_package_volume_tags{});
   } else {
     call_dg_package_data(make_not_null(&package_data), correction,
                          fields_on_face, volume_data, unit_normal_covector,
-                         mesh_velocity, tmpl::list<FaceTags...>{});
+                         mesh_velocity, tmpl::list<FaceTags...>{},
+                         dg_package_volume_tags{});
   }
 
   // Call python implementation of dg_package_data
@@ -750,15 +774,16 @@ void test_with_python(
 
   Variables<dg_package_field_tags> exterior_package_data{used_for_size.size()};
   if constexpr (curved_background) {
-    call_dg_package_data(
-        make_not_null(&exterior_package_data), correction,
-        exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
-        exterior_unit_normal_vector, mesh_velocity, face_tags{});
+    call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                         exterior_fields_on_face, volume_data,
+                         exterior_unit_normal_covector,
+                         exterior_unit_normal_vector, mesh_velocity,
+                         face_tags{}, dg_package_volume_tags{});
   } else {
     call_dg_package_data(make_not_null(&exterior_package_data), correction,
                          exterior_fields_on_face, volume_data,
                          exterior_unit_normal_covector, mesh_velocity,
-                         face_tags{});
+                         face_tags{}, dg_package_volume_tags{});
   }
 
   // We don't need to prefix the VariablesTags with anything because we are not
@@ -769,8 +794,9 @@ void test_with_python(
 
   // Call C++ implementation of dg_boundary_terms
   call_dg_boundary_terms(make_not_null(&boundary_corrections), correction,
-                         interior_package_data, exterior_package_data,
-                         dg_formulation);
+                         volume_data, interior_package_data,
+                         exterior_package_data, dg_formulation,
+                         dg_boundary_terms_volume_tags{});
 
   // Call python implementation of dg_boundary_terms
   try {
