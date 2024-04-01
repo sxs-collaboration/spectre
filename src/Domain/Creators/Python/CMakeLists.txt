@@ -23,7 +23,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Brick.hpp
+  Rectilinear.hpp
   Cylinder.hpp
   DomainCreator.hpp
   Interval.hpp

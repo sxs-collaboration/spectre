@@ -9,7 +9,7 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Composition.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/ElementToBlockLogicalMap.hpp"

@@ -13,9 +13,9 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"

@@ -9,8 +9,8 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"

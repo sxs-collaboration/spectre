@@ -12,7 +12,7 @@
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"

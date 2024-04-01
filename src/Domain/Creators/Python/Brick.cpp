@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/Python/Brick.hpp"
+#include "Domain/Creators/Python/Rectilinear.hpp"
 
 #include <array>
 #include <cstddef>
@@ -9,8 +9,8 @@
 #include <pybind11/stl.h>
 #include <string>
 
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 
 namespace py = pybind11;
 

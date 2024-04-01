@@ -3,11 +3,11 @@
 
 #include <pybind11/pybind11.h>
 
-#include "Domain/Creators/Python/Brick.hpp"
 #include "Domain/Creators/Python/Cylinder.hpp"
 #include "Domain/Creators/Python/DomainCreator.hpp"
 #include "Domain/Creators/Python/Interval.hpp"
 #include "Domain/Creators/Python/Rectangle.hpp"
+#include "Domain/Creators/Python/Rectilinear.hpp"
 #include "Domain/Creators/Python/Sphere.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"

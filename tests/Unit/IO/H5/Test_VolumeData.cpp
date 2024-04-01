@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
