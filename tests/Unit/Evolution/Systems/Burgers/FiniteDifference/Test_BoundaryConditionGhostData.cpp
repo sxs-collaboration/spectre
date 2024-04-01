@@ -20,7 +20,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
@@ -90,8 +90,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   const std::array<size_t, 1> number_of_grid_points_in_x{num_dg_pts};
   const auto interval = domain::creators::Interval(
       lower_x, upper_x, refinement_level_x, number_of_grid_points_in_x,
-      std::make_unique<BoundaryConditionType>(boundary_condition),
-      std::make_unique<BoundaryConditionType>(boundary_condition));
+      {{{{boundary_condition.get_clone(), boundary_condition.get_clone()}}}});
   auto domain = interval.create_domain();
   auto boundary_conditions = interval.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(

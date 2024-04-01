@@ -34,12 +34,11 @@ DomainCreator:
   Brick:
     LowerBound: [-6.0, -6.0, -6.0]
     UpperBound: [6.0, 6.0, 6.0]
+    Distribution: [Linear, Linear, Linear]
     InitialRefinement: [2, 2, 0]
     InitialGridPoints: [3, 3, 3]
     TimeDependence: None
-    BoundaryConditionInX: Periodic
-    BoundaryConditionInY: Periodic
-    BoundaryConditionInZ: Periodic
+    BoundaryConditions: [Periodic, Periodic, Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

@@ -32,6 +32,7 @@ DomainCreator:
   Brick:
     LowerBound: [-0.5, -0.5, -0.5]
     UpperBound: [0.5, 0.5, 0.5]
+    Distribution: [Linear, Linear, Linear]
     IsPeriodicIn: [false, false, false]
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [3, 3, 3]

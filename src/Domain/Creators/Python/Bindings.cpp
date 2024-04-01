@@ -5,8 +5,6 @@
 
 #include "Domain/Creators/Python/Cylinder.hpp"
 #include "Domain/Creators/Python/DomainCreator.hpp"
-#include "Domain/Creators/Python/Interval.hpp"
-#include "Domain/Creators/Python/Rectangle.hpp"
 #include "Domain/Creators/Python/Rectilinear.hpp"
 #include "Domain/Creators/Python/Sphere.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -26,10 +24,8 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   // Order is important: The base class `DomainCreator` needs to have its
   // bindings set up before the derived classes
   py_bindings::bind_domain_creator(m);
-  py_bindings::bind_brick(m);
+  py_bindings::bind_rectilinear(m);
   py_bindings::bind_cylinder(m);
-  py_bindings::bind_interval(m);
-  py_bindings::bind_rectangle(m);
   py_bindings::bind_sphere(m);
 }
 

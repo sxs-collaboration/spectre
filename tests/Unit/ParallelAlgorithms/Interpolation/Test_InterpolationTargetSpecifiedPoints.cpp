@@ -11,8 +11,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"

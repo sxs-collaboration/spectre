@@ -49,37 +49,37 @@ void test_compute_horizon_volume_quantities() {
 
   // Create a brick offset from the origin, so a KerrSchild solution
   // doesn't have a singularity or horizon in the domain.
-  std::unique_ptr<DomainCreator<3>> domain_creator;
+  domain::creators::Brick domain_creator;
   if constexpr (IsTimeDependent::value) {
-    domain_creator = std::make_unique<domain::creators::Brick>(
+    domain_creator = domain::creators::Brick(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
                               number_of_grid_points},
-        std::array<bool, 3>{false, false, false},
+        std::array<bool, 3>{false, false, false}, {},
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
             0.0, std::array<double, 3>{0.01, 0.02, 0.03}));
   } else {
-    domain_creator = std::make_unique<domain::creators::Brick>(
+    domain_creator = domain::creators::Brick(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
                               number_of_grid_points},
         std::array<bool, 3>{false, false, false});
   }
-  const auto domain = domain_creator->create_domain();
+  const auto domain = domain_creator.create_domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
 
   const auto element_ids = initial_element_ids(
       domain.blocks()[0].id(),
-      domain_creator->initial_refinement_levels()[domain.blocks()[0].id()]);
+      domain_creator.initial_refinement_levels()[domain.blocks()[0].id()]);
   ASSERT(element_ids.size() == 1, "Expected a Domain with only one element");
 
   // Set up target coordinates, and jacobians.
   // We always compute our source quantities in the inertial frame.
   // But we want our destination quantities in the target frame.
-  const Mesh mesh{domain_creator->initial_extents()[element_ids[0].block_id()],
+  const Mesh mesh{domain_creator.initial_extents()[element_ids[0].block_id()],
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   tnsr::I<DataVector, 3, TargetFrame> target_frame_coords{};
@@ -104,7 +104,7 @@ void test_compute_horizon_volume_quantities() {
         domain.blocks()[0].moving_mesh_grid_to_inertial_map().inv_jacobian(
             map_logical_to_grid(logical_coordinates(mesh)),
             temporal_id.step_time().value(),
-            domain_creator->functions_of_time());
+            domain_creator.functions_of_time());
     inv_jacobian_logical_to_inertial =
         InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>(
             mesh.number_of_grid_points(), 0.0);
@@ -122,7 +122,7 @@ void test_compute_horizon_volume_quantities() {
           domain.blocks()[0].moving_mesh_grid_to_inertial_map().jacobian(
               map_logical_to_grid(logical_coordinates(mesh)),
               temporal_id.step_time().value(),
-              domain_creator->functions_of_time());
+              domain_creator.functions_of_time());
       inv_jacobian_logical_to_target = inv_jacobian_logical_to_grid;
       target_frame_coords = map_logical_to_grid(logical_coordinates(mesh));
     } else {
@@ -140,7 +140,7 @@ void test_compute_horizon_volume_quantities() {
           domain.blocks()[0].moving_mesh_grid_to_inertial_map()(
               map_logical_to_grid(logical_coordinates(mesh)),
               temporal_id.step_time().value(),
-              domain_creator->functions_of_time());
+              domain_creator.functions_of_time());
     }
   } else {
     // time-independent.
@@ -231,7 +231,7 @@ void test_compute_horizon_volume_quantities() {
             .moving_mesh_grid_to_inertial_map()
             .coords_frame_velocity_jacobians(
                 target_frame_coords, temporal_id.step_time().value(),
-                domain_creator->functions_of_time());
+                domain_creator.functions_of_time());
     const auto& inv_jacobian_grid_to_inertial =
         std::get<1>(coords_frame_velocity_jacobians);
     const auto& jacobian_grid_to_inertial =

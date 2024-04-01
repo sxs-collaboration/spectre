@@ -65,17 +65,14 @@ DomainCreator:
   Interval:
     LowerBound: [0.0]
     UpperBound: [6.283185307179586]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     InitialRefinement: [2]
     InitialGridPoints: [7]
     TimeDependence:
       UniformTranslation:
         InitialTime: *InitialTime
         Velocity: [0.5]
-    BoundaryConditions:
-      LowerBoundary: Periodic
-      UpperBoundary: Periodic
+    BoundaryConditions: [Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

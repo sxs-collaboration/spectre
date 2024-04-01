@@ -49,7 +49,7 @@ void test_compute_excision_boundary_volume_quantities() {
 
   // Create a brick offset from the origin, so a KerrSchild solution
   // doesn't have a singularity or excision_boundary in the domain.
-  std::unique_ptr<DomainCreator<3>> domain_creator;
+  domain::creators::Brick domain_creator;
   if constexpr (is_time_dependent) {
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dep{};
@@ -63,35 +63,35 @@ void test_compute_excision_boundary_volume_quantities() {
           domain::creators::time_dependence::UniformTranslation<3>>(
           0.0, std::array<double, 3>{0.01, 0.02, 0.03});
     }
-    domain_creator = std::make_unique<domain::creators::Brick>(
+    domain_creator = domain::creators::Brick(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
                               number_of_grid_points},
-        std::array<bool, 3>{false, false, false}, std::move(time_dep));
+        std::array<bool, 3>{false, false, false}, {}, std::move(time_dep));
   } else {
-    domain_creator = std::make_unique<domain::creators::Brick>(
+    domain_creator = domain::creators::Brick(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
         std::array<size_t, 3>{number_of_grid_points, number_of_grid_points,
                               number_of_grid_points},
         std::array<bool, 3>{false, false, false});
   }
-  const auto domain = domain_creator->create_domain();
+  const auto domain = domain_creator.create_domain();
   ASSERT(domain.blocks().size() == 1, "Expected a Domain with one block");
   const Block<3>& block = domain.blocks()[0];
-  const auto functions_of_time = domain_creator->functions_of_time();
+  const auto functions_of_time = domain_creator.functions_of_time();
   const double time = temporal_id.step_time().value();
   (void)time;  // For the time independent case
 
   const auto element_ids = initial_element_ids(
-      block.id(), domain_creator->initial_refinement_levels()[block.id()]);
+      block.id(), domain_creator.initial_refinement_levels()[block.id()]);
   ASSERT(element_ids.size() == 1, "Expected a Domain with only one element");
 
   // Set up target coordinates, and jacobians.
   // We always compute our source quantities in the inertial frame.
   // But we want our destination quantities in the target frame.
-  const Mesh mesh{domain_creator->initial_extents()[element_ids[0].block_id()],
+  const Mesh mesh{domain_creator.initial_extents()[element_ids[0].block_id()],
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);

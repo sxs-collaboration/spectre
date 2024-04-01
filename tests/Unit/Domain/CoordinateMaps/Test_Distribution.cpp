@@ -27,6 +27,35 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Distribution", "[Domain][Unit]") {
         Distribution::Inverse);
   CHECK(TestHelpers::test_creation<Distribution>("Projective") ==
         Distribution::Projective);
+
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Linear") == DistributionAndSingularityPosition{});
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Linear") ==
+        DistributionAndSingularityPosition{Distribution::Linear, std::nullopt});
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Equiangular") ==
+        DistributionAndSingularityPosition{Distribution::Equiangular});
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<DistributionAndSingularityPosition>(
+          "Logarithmic"),
+      Catch::Matchers::ContainsSubstring(
+          "The distribution 'Logarithmic' requires a singularity position."));
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Logarithmic:\n"
+            "  SingularityPosition: 1.5") ==
+        DistributionAndSingularityPosition{Distribution::Logarithmic, 1.5});
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<DistributionAndSingularityPosition>("Inverse"),
+      Catch::Matchers::ContainsSubstring(
+          "The distribution 'Inverse' requires a singularity position."));
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Inverse:\n"
+            "  SingularityPosition: 2.3") ==
+        DistributionAndSingularityPosition{Distribution::Inverse, 2.3});
+  CHECK(TestHelpers::test_creation<DistributionAndSingularityPosition>(
+            "Projective") ==
+        DistributionAndSingularityPosition{Distribution::Projective});
 }
 
 }  // namespace domain::CoordinateMaps

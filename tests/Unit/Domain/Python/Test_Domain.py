@@ -22,11 +22,11 @@ from spectre.Informer import unit_test_src_path
 class TestDomain(unittest.TestCase):
     def test_serialize_and_deserialize(self):
         domain = Interval(
-            lower_x=[0.0],
-            upper_x=[1.0],
-            initial_refinement_level_x=[1],
-            initial_number_of_grid_points_in_x=[4],
-            is_periodic_in_x=[False],
+            lower_bounds=[0.0],
+            upper_bounds=[1.0],
+            initial_refinement_levels=[1],
+            initial_num_points=[4],
+            is_periodic=[False],
         ).create_domain()
         self.assertEqual(
             deserialize_domain[1](serialize_domain(domain)), domain

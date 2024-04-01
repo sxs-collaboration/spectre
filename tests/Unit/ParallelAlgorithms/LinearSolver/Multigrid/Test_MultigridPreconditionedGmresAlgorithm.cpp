@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"

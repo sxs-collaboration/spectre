@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "IO/Exporter/Exporter.hpp"

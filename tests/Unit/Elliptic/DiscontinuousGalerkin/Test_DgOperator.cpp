@@ -13,8 +13,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
@@ -583,12 +581,6 @@ void test_dg_operator(
 
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
-  // Needed for Brick
-  using VariantType = std::variant<
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
-      domain::creators::Brick::LowerUpperBoundaryCondition<
-          domain::BoundaryConditions::BoundaryCondition>>;
-
   domain::creators::register_derived_with_charm();
   // This is what the tests below check:
   //
@@ -626,14 +618,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5}},
           {{2}},
           {{4}},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Neumann)};
+          {{{{std::make_unique<
+                  elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                  analytic_solution.get_clone(),
+                  elliptic::BoundaryConditionType::Dirichlet),
+              std::make_unique<
+                  elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                  analytic_solution.get_clone(),
+                  elliptic::BoundaryConditionType::Neumann)}}}}};
       const ElementId<1> left_id{0, {{{2, 0}}}};
       const ElementId<1> midleft_id{0, {{{2, 1}}}};
       const ElementId<1> midright_id{0, {{{2, 2}}}};
@@ -710,14 +702,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5}},
           {{1}},
           {{12}},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Neumann)};
+          {{{{std::make_unique<
+                  elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                  analytic_solution.get_clone(),
+                  elliptic::BoundaryConditionType::Dirichlet),
+              std::make_unique<
+                  elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                  analytic_solution.get_clone(),
+                  elliptic::BoundaryConditionType::Neumann)}}}}};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI);
       Approx analytic_solution_operator_approx =
@@ -741,6 +733,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
     {
       INFO("Regression tests");
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       // Domain decomposition:
       // ^ eta
       // +-+-+> xi
@@ -753,11 +749,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1.}},
           {{1, 1}},
           {{3, 2}},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          nullptr};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       const ElementId<2> northwest_id{0, {{{1, 0}, {1, 1}}}};
       const ElementId<2> southwest_id{0, {{{1, 0}, {1, 0}}}};
       const ElementId<2> northeast_id{0, {{{1, 1}, {1, 1}}}};
@@ -815,16 +808,17 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
     {
       INFO("Higher-resolution analytic-solution tests");
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::Rectangle domain_creator{
           {{-0.5, 0.}},
           {{1.5, 1.}},
           {{1, 1}},
           {{12, 12}},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet),
-          nullptr};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-8).scale(M_PI);
       Approx analytic_solution_operator_approx =
@@ -849,24 +843,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         {{M_PI, M_PI, M_PI}}};
     {
       INFO("Regression tests");
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::Brick domain_creator{
           {{-0.5, 0., -1.}},
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{2, 3, 4}},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          nullptr};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       const ElementId<3> self_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
       const ElementId<3> neighbor_id_xi{0, {{{1, 1}, {1, 0}, {1, 0}}}};
       const ElementId<3> neighbor_id_eta{0, {{{1, 0}, {1, 1}, {1, 0}}}};
@@ -947,24 +935,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
     {
       INFO("Higher-resolution analytic-solution tests");
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::Brick domain_creator{
           {{-0.5, 0., -1.}},
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{12, 12, 12}},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)},
-          nullptr};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-4).scale(M_PI);
       Approx analytic_solution_operator_approx =

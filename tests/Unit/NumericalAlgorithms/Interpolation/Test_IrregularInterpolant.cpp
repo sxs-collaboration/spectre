@@ -24,8 +24,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"

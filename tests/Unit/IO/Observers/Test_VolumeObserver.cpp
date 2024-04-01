@@ -180,6 +180,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
       {{1, 0, 1}},
       {{3, 4, 5}},
       {{false, false, false}},
+      {},
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3, 0>>(
           1., std::array<double, 3>{{2., 3., 4.}})};

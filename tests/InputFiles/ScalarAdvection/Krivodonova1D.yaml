@@ -26,14 +26,11 @@ DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     InitialRefinement: [2]
     InitialGridPoints: [5]
     TimeDependence: None
-    BoundaryConditions:
-      LowerBoundary: Periodic
-      UpperBoundary: Periodic
+    BoundaryConditions: [Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

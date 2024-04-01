@@ -46,13 +46,17 @@ DomainCreator:
   Rectangle:
     LowerBound: [-1.570796326794896, 0.]
     UpperBound: [3.141592653589793, 1.570796326794896]
+    Distribution: [Linear, Linear]
     InitialRefinement: [1, 0]
     InitialGridPoints: [4, 3]
     TimeDependence: None
-    BoundaryCondition:
-      AnalyticSolution:
-        Solution: *solution
-        Field: Dirichlet
+    BoundaryConditions:
+      - AnalyticSolution:
+          Solution: *solution
+          Field: Dirichlet
+      - AnalyticSolution:
+          Solution: *solution
+          Field: Dirichlet
 
 Discretization:
   DiscontinuousGalerkin:

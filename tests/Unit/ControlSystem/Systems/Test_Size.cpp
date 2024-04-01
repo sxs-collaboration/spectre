@@ -101,24 +101,26 @@ void test_size_process_measurement() {
   domain::FunctionsOfTime::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::creators::register_derived_with_charm();
-  std::unique_ptr<DomainCreator<3>> creator =
-      std::make_unique<domain::creators::Brick>(
-          std::array{-10.0, -10.0, -10.0}, std::array{10.0, 10.0, 10.0},
-          std::array{0_st, 0_st, 0_st}, std::array{8_st, 8_st, 8_st},
-          std::array{false, false, false},
-          std::make_unique<
-              domain::creators::time_dependence::UniformTranslation<3>>(
-              0.0, std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0}));
+  const domain::creators::Brick creator{
+      std::array{-10.0, -10.0, -10.0},
+      std::array{10.0, 10.0, 10.0},
+      std::array{0_st, 0_st, 0_st},
+      std::array{8_st, 8_st, 8_st},
+      std::array{false, false, false},
+      {},
+      std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3>>(
+          0.0, std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0})};
 
   using component = MockComponent<Metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
   MockRuntimeSystem runner{
-      {creator->create_domain(), ::Verbosity::Silent, 4, false,
+      {creator.create_domain(), ::Verbosity::Silent, 4, false,
        std::unordered_map<std::string, bool>{},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}},
        tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}},
        std::unordered_map<std::string, std::string>{}},
-      {creator->functions_of_time(),
+      {creator.functions_of_time(),
        control_system::Tags::MeasurementTimescales::type{}}};
 
   ActionTesting::emplace_singleton_component<component>(make_not_null(&runner),
