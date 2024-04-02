@@ -16,3 +16,6 @@ Learn how to use a debugger such as gdb.
   case you also try setting a breakpoint on the constructor of the exception
   type, `break std::out_of_range::out_of_range`)
 
+- SpECTRE has pretty printing facilities for various custom types. In order to
+  enable these you must add
+  `add-auto-load-safe-path /path/to/spectre/` to your `~/.gdbinit` file.

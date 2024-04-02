@@ -85,7 +85,8 @@ if [ ${#python_files[@]} -ne 0 ]; then
         if [ $? -ne 0 ]; then
             found_error=1
             printf "Found unsorted Python imports.\n"
-            printf "Please run 'isort .' in the repository.\n"
+            printf "Please run '@Python_EXECUTABLE@ -m isort .' in the "
+            printf "repository.\n"
         fi
     else
         printf "Could not find 'isort' Python formatter. Install with:\n"
