@@ -126,6 +126,8 @@ struct Correction final : public CorrectionBase {
   using dg_package_data_temporary_tags = tmpl::list<>;
   using dg_package_data_volume_tags =
       tmpl::list<Tags::VolumeDouble<VolumeDoubleType>>;
+  using dg_boundary_terms_volume_tags =
+      tmpl::list<Tags::VolumeDouble<VolumeDoubleType>>;
 
   Correction() = default;
   Correction(const Correction&) = default;
@@ -233,7 +235,8 @@ struct Correction final : public CorrectionBase {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& var2_ext,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_var2_ext,
       const Scalar<DataVector>& abs_char_speed_ext,
-      const dg::Formulation dg_formulation) const {
+      const dg::Formulation dg_formulation,
+      const VolumeDoubleType volume_double_in) const {
     // The below code is a Rusanov solver.
     if (dg_formulation == dg::Formulation::WeakInertial) {
       get(*boundary_correction_var1) =
@@ -261,6 +264,11 @@ struct Correction final : public CorrectionBase {
             0.5 * max(get(abs_char_speed_int), get(abs_char_speed_ext)) *
                 (var2_ext.get(i) - var2_int.get(i));
       }
+    }
+    if constexpr (std::is_same_v<double, VolumeDoubleType>) {
+      CHECK(volume_double_in == 2.3);
+    } else {
+      CHECK(volume_double_in.value == 2.3);
     }
   }
 };

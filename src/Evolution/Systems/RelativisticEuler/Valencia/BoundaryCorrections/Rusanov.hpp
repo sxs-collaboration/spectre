@@ -100,6 +100,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
                  hydro::Tags::SpatialVelocity<DataVector, Dim>>;
   using dg_package_data_volume_tags =
       tmpl::list<hydro::Tags::EquationOfStateBase>;
+  using dg_boundary_terms_volume_tags = tmpl::list<>;
 
   template <size_t ThermodynamicDim>
   double dg_package_data(

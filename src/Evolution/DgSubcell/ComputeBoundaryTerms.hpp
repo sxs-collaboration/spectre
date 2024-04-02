@@ -5,6 +5,7 @@
 
 #include <ostream>
 
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -13,13 +14,14 @@
 
 namespace evolution::dg::subcell {
 template <typename... CorrectionTags, typename BoundaryCorrection,
-          typename... PackageFieldTags>
+          typename... PackageFieldTags, typename... BoundaryTermsVolumeTags>
 void compute_boundary_terms(
     const gsl::not_null<Variables<tmpl::list<CorrectionTags...>>*>
         boundary_corrections_on_face,
     const BoundaryCorrection& boundary_correction,
     const Variables<tmpl::list<PackageFieldTags...>>& upper_packaged_data,
-    const Variables<tmpl::list<PackageFieldTags...>>& lower_packaged_data) {
+    const Variables<tmpl::list<PackageFieldTags...>>& lower_packaged_data,
+    const db::Access& box, tmpl::list<BoundaryTermsVolumeTags...> /*meta*/) {
   ASSERT(
       upper_packaged_data.number_of_grid_points() ==
           lower_packaged_data.number_of_grid_points(),
@@ -38,6 +40,7 @@ void compute_boundary_terms(
       get<PackageFieldTags>(upper_packaged_data)...,
       get<PackageFieldTags>(lower_packaged_data)...,
       // FD schemes are basically weak form FV scheme
-      ::dg::Formulation::WeakInertial);
+      ::dg::Formulation::WeakInertial,
+      db::get<BoundaryTermsVolumeTags>(box)...);
 }
 }  // namespace evolution::dg::subcell

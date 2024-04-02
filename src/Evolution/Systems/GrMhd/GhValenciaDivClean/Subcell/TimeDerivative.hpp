@@ -8,6 +8,7 @@
 #include <optional>
 #include <type_traits>
 
+#include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -779,7 +780,8 @@ struct TimeDerivative {
             evolution::dg::subcell::compute_boundary_terms(
                 make_not_null(&gsl::at(boundary_corrections, i)),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                upper_packaged_data, lower_packaged_data);
+                upper_packaged_data, lower_packaged_data, db::as_access(*box),
+                typename DerivedCorrection::dg_boundary_terms_volume_tags{});
             // We need to multiply by the normal vector normalization
             gsl::at(boundary_corrections, i) *= get(normalization);
             // Also multiply by determinant of Jacobian, following Eq.(34)
