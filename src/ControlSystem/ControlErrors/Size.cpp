@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "ControlSystem/Averager.hpp"
+#include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -41,6 +44,7 @@ template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 Size<DerivOrder, Horizon>::Size(
     const int max_times, const double smooth_avg_timescale_frac,
     TimescaleTuner<true> smoother_tuner,
+    std::unique_ptr<size::State> initial_state,
     std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options)
     : smoother_tuner_(std::move(smoother_tuner)),
       delta_r_drift_outward_options_(delta_r_drift_outward_options) {
@@ -50,7 +54,7 @@ Size<DerivOrder, Horizon>::Size(
   const auto max_times_size_t = static_cast<size_t>(max_times);
   horizon_coef_averager_ =
       Averager<DerivOrder>{smooth_avg_timescale_frac, true};
-  info_.state = std::make_unique<size::States::Initial>();
+  info_.state = std::move(initial_state);
   char_speed_predictor_ = intrp::ZeroCrossingPredictor{3, max_times_size_t};
   comoving_char_speed_predictor_ =
       intrp::ZeroCrossingPredictor{3, max_times_size_t};

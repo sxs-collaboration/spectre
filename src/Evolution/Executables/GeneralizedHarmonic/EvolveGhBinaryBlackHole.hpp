@@ -10,6 +10,8 @@
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Actions/PrintCurrentMeasurement.hpp"
 #include "ControlSystem/Component.hpp"
+#include "ControlSystem/ControlErrors/Size/Factory.hpp"
+#include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
@@ -470,6 +472,8 @@ struct EvolutionMetavars {
                 control_system::metafunctions::control_system_events<
                     control_systems>,
                 Events::time_events<system>>>>,
+        tmpl::pair<control_system::size::State,
+                   control_system::size::States::factory_creatable_states>,
         tmpl::pair<
             gh::BoundaryConditions::BoundaryCondition<volume_dim>,
             tmpl::list<
