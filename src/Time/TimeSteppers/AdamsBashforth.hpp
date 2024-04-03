@@ -304,13 +304,6 @@ class AdamsBashforth : public LtsTimeStepper {
       const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
       const double time) const;
 
-  template <typename T, typename TimeType>
-  void boundary_impl(gsl::not_null<T*> result,
-                     const ConstBoundaryHistoryTimes& local_times,
-                     const ConstBoundaryHistoryTimes& remote_times,
-                     const BoundaryHistoryEvaluator<T>& coupling,
-                     const TimeType& end_time) const;
-
   TIME_STEPPER_DECLARE_OVERLOADS
   LTS_TIME_STEPPER_DECLARE_OVERLOADS
 
