@@ -109,6 +109,8 @@ class AdamsMoultonPc : public TimeStepper {
 
   double stable_step() const override;
 
+  bool monotonic() const override;
+
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
 

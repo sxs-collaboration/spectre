@@ -368,6 +368,7 @@ void check_dense_output(
             return y - *history.complete_step_start().value;
           }
           REQUIRE(not before(time, time_id.step_time().value()));
+          CHECK(not stepper.monotonic());
         }
         y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {

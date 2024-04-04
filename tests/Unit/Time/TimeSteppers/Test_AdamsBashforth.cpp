@@ -35,6 +35,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
     CAPTURE(order);
     const TimeSteppers::AdamsBashforth stepper(order);
     TimeStepperTestUtils::check_multistep_properties(stepper);
+    CHECK(stepper.monotonic());
     for (size_t start_points = 0; start_points < order; ++start_points) {
       CAPTURE(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);

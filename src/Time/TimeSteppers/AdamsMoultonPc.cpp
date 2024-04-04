@@ -126,6 +126,8 @@ double AdamsMoultonPc::stable_step() const {
   }
 }
 
+bool AdamsMoultonPc::monotonic() const { return false; }
+
 TimeStepId AdamsMoultonPc::next_time_id(const TimeStepId& current_id,
                                         const TimeDelta& time_step) const {
   switch (current_id.substep()) {

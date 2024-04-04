@@ -96,10 +96,9 @@ struct LimitTimeStep {
     }
 
     const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
-    if (time_stepper.number_of_substeps() == 1) {
-      // If there are no substeps, there is no reason to limit the
-      // step size so substeps can be evaluated.  Single-substep FSAL
-      // methods could be problematic, but we don't have any of those.
+    if (time_stepper.monotonic()) {
+      // Monotonic steppers order operations in the same manner at the
+      // control system, so they cannot introduce deadlocks.
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 

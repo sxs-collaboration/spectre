@@ -173,6 +173,21 @@ class TimeStepper : public PUP::able {
   /// stably as a multiple of the step for Euler's method.
   virtual double stable_step() const = 0;
 
+  /// Whether computational and temporal orderings of operations
+  /// match.
+  ///
+  /// If this method returns true, then, for two time-stepper
+  /// operations occurring at different simulation times, the
+  /// temporally earlier operation will be performed first.  These
+  /// operations include RHS evaluation, dense output, and neighbor
+  /// communication.  In particular, dense output never requires
+  /// performing a RHS evaluation later than the output time, so
+  /// control systems measurements cannot cause deadlocks.
+  ///
+  /// \warning This guarantee only holds if the time steps themselves
+  /// are monotonic, which can be violated during initialization.
+  virtual bool monotonic() const = 0;
+
   /// The TimeStepId after the current substep
   virtual TimeStepId next_time_id(const TimeStepId& current_id,
                                   const TimeDelta& time_step) const = 0;

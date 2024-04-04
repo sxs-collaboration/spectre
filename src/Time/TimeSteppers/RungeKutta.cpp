@@ -25,6 +25,8 @@ uint64_t RungeKutta::number_of_substeps_for_error() const {
 
 size_t RungeKutta::number_of_past_steps() const { return 0; }
 
+bool RungeKutta::monotonic() const { return false; }
+
 namespace {
 TimeStepId next_time_id_from_substeps(
     const TimeStepId& current_id, const TimeDelta& time_step,
