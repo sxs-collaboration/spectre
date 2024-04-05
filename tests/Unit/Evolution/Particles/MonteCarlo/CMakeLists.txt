@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_InterpolateOpacities.cpp
   Test_InverseJacobianInertialToFluid.cpp
   Test_NeutrinoInteractionTable.cpp
+  Test_OpticallyThickSphere.cpp
   Test_Packet.cpp
   Test_Scattering.cpp
   Test_TakeTimeStep.cpp
