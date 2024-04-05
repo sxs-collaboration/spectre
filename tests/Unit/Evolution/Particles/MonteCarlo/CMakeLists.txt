@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_EvolvePackets.cpp
   Test_InterpolateOpacities.cpp
   Test_InverseJacobianInertialToFluid.cpp
+  Test_NeutrinoInteractionTable.cpp
   Test_Packet.cpp
   Test_Scattering.cpp
   )
@@ -24,7 +25,9 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralRelativityHelpers
+  H5
   Hydro
   HydroHelpers
+  Informer
   MonteCarlo
   )

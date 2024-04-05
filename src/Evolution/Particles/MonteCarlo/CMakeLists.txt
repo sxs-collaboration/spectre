@@ -12,6 +12,7 @@ spectre_target_sources(
   CouplingTermsForPropagation.cpp
   EvolvePackets.cpp
   InverseJacobianInertialToFluidCompute.cpp
+  NeutrinoInteractionTable.cpp
   TemplatedLocalFunctions.cpp
   Packet.cpp
   Scattering.cpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   EvolvePackets.hpp
   EvolvePacketsInElement.tpp
   InverseJacobianInertialToFluidCompute.hpp
+  NeutrinoInteractionTable.hpp
   Packet.hpp
   Scattering.hpp
   TemplatedLocalFunctions.hpp
@@ -40,6 +42,7 @@ target_link_libraries(
   Domain
   ErrorHandling
   GeneralRelativity
+  H5
   Hydro
   Options
   Utilities
