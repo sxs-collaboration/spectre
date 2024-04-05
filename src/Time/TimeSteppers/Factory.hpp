@@ -21,7 +21,9 @@
 namespace TimeSteppers {
 /// Typelist of available TimeSteppers
 using time_steppers =
-    tmpl::list<TimeSteppers::AdamsBashforth, TimeSteppers::AdamsMoultonPc,
+    tmpl::list<TimeSteppers::AdamsBashforth,
+               TimeSteppers::AdamsMoultonPc<false>,
+               TimeSteppers::AdamsMoultonPc<true>,
                TimeSteppers::ClassicalRungeKutta4, TimeSteppers::DormandPrince5,
                TimeSteppers::Heun2, TimeSteppers::Rk3HesthavenSsp,
                TimeSteppers::Rk3Kennedy, TimeSteppers::Rk3Owren,

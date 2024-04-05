@@ -341,7 +341,8 @@ void check_convergence_order(const TimeStepper& stepper,
 
 void check_dense_output(
     const TimeStepper& stepper, const size_t history_integration_order,
-    const std::pair<int32_t, int32_t>& convergence_step_range) {
+    const std::pair<int32_t, int32_t>& convergence_step_range,
+    const int32_t stride, const bool check_backward_continuity) {
   const auto get_dense = [&stepper, &history_integration_order](
                              const TimeDelta& step_size, const double time) {
     const auto impl = [&stepper, &history_integration_order, &step_size,
@@ -412,8 +413,11 @@ void check_dense_output(
       CHECK(get_dense(time_step, 0.0) == local_approx(1.));
       CHECK(get_dense(time_step, std::numeric_limits<double>::epsilon() *
                                      time_step.value()) == local_approx(1.));
-      CHECK(get_dense(time_step, (1. - std::numeric_limits<double>::epsilon()) *
+      if (check_backward_continuity) {
+        CHECK(
+            get_dense(time_step, (1. - std::numeric_limits<double>::epsilon()) *
                                      time.value()) == local_approx(y));
+      }
       CHECK(get_dense(time_step, time.value()) == local_approx(y));
     }
   }
@@ -425,7 +429,7 @@ void check_dense_output(
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
     };
-    CHECK(convergence_rate(convergence_step_range, 1, error) ==
+    CHECK(convergence_rate(convergence_step_range, stride, error) ==
           approx(history_integration_order).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
@@ -433,7 +437,7 @@ void check_dense_output(
       return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
                  exp(-0.25 * M_PI));
     };
-    CHECK(convergence_rate(convergence_step_range, 1, error_backwards) ==
+    CHECK(convergence_rate(convergence_step_range, stride, error_backwards) ==
           approx(history_integration_order).margin(0.4));
   }
 }

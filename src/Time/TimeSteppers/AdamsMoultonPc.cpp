@@ -16,6 +16,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {
@@ -23,11 +24,11 @@ namespace TimeSteppers {
 // Don't include AdamsCoefficients.hpp in the header just to get one
 // constant.
 static_assert(adams_coefficients::maximum_order ==
-              AdamsMoultonPc::maximum_order);
+              AdamsMoultonPc<false>::maximum_order);
 
 namespace {
 template <typename T>
-void clean_history(const MutableUntypedHistory<T>& history) {
+void clean_history_nonmonotonic(const MutableUntypedHistory<T>& history) {
   ASSERT(history.integration_order() > 1, "Cannot run below second order.");
   const auto required_points = history.integration_order() - 1;
   ASSERT(history.size() >= required_points,
@@ -44,6 +45,44 @@ void clean_history(const MutableUntypedHistory<T>& history) {
     }
   } else {
     history.discard_value(history.substeps().back().time_step_id);
+  }
+}
+
+template <typename T>
+void clean_history_monotonic(const MutableUntypedHistory<T>& history) {
+  ASSERT(history.integration_order() > 1, "Cannot run below second order.");
+  // Unlike in nonmonotonic mode, monotonic cleaning happens after the
+  // update.  This behavior is reasonable because it is normally kept
+  // for dense output, which has already happened.
+  //
+  // It is also a bit of a hack, since it is necessary to trick the
+  // dense output code into using the correct starting values.  During
+  // dense output, the variables are initialized with
+  // History::complete_step_start(), but monotonic dense output
+  // doesn't require a complete step, so this is wrong.  Clearing the
+  // substeps tricks that code into considering the current step to be
+  // complete.
+  //
+  // Unfortunately, this also breaks self-start, which sometimes jumps
+  // out of the middle of the algorithm to avoid triggering the
+  // clean-up code to elongate the history.  This is dealt with by
+  // cleaning one fewer entries during self-start.
+  if (not history.at_step_start()) {
+    const auto required_points =
+        ::SelfStart::is_self_starting(history.back().time_step_id)
+            ? history.integration_order() - 1
+            : history.integration_order() - 2;
+    ASSERT(history.size() >= required_points,
+           "Insufficient data to take an order-" << history.integration_order()
+           << " step.  Have " << history.size() << " times, need "
+           << required_points);
+    history.clear_substeps();
+    while (history.size() > required_points) {
+      history.pop_front();
+    }
+    if (not history.empty()) {
+      history.discard_value(history.back().time_step_id);
+    }
   }
 }
 
@@ -88,24 +127,39 @@ void update_u_common(const gsl::not_null<T*> u,
 }
 }  // namespace
 
-AdamsMoultonPc::AdamsMoultonPc(const size_t order) : order_(order) {
+template <bool Monotonic>
+AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const size_t order) : order_(order) {
   ASSERT(order >= minimum_order and order <= maximum_order,
          "Invalid order: " << order);
 }
 
-size_t AdamsMoultonPc::order() const { return order_; }
+template <bool Monotonic>
+size_t AdamsMoultonPc<Monotonic>::order() const {
+  return order_;
+}
 
-size_t AdamsMoultonPc::error_estimate_order() const { return order_ - 1; }
+template <bool Monotonic>
+size_t AdamsMoultonPc<Monotonic>::error_estimate_order() const {
+  return order_ - 1;
+}
 
-uint64_t AdamsMoultonPc::number_of_substeps() const { return 2; }
+template <bool Monotonic>
+uint64_t AdamsMoultonPc<Monotonic>::number_of_substeps() const {
+  return 2;
+}
 
-uint64_t AdamsMoultonPc::number_of_substeps_for_error() const {
+template <bool Monotonic>
+uint64_t AdamsMoultonPc<Monotonic>::number_of_substeps_for_error() const {
   return number_of_substeps();
 }
 
-size_t AdamsMoultonPc::number_of_past_steps() const { return order_ - 2; }
+template <bool Monotonic>
+size_t AdamsMoultonPc<Monotonic>::number_of_past_steps() const {
+  return order_ - 2;
+}
 
-double AdamsMoultonPc::stable_step() const {
+template <bool Monotonic>
+double AdamsMoultonPc<Monotonic>::stable_step() const {
   switch (order_) {
     case 2:
       return 1.0;
@@ -126,10 +180,14 @@ double AdamsMoultonPc::stable_step() const {
   }
 }
 
-bool AdamsMoultonPc::monotonic() const { return false; }
+template <bool Monotonic>
+bool AdamsMoultonPc<Monotonic>::monotonic() const {
+  return Monotonic;
+}
 
-TimeStepId AdamsMoultonPc::next_time_id(const TimeStepId& current_id,
-                                        const TimeDelta& time_step) const {
+template <bool Monotonic>
+TimeStepId AdamsMoultonPc<Monotonic>::next_time_id(
+    const TimeStepId& current_id, const TimeDelta& time_step) const {
   switch (current_id.substep()) {
     case 0:
       return current_id.next_substep(time_step, 1.0);
@@ -140,62 +198,87 @@ TimeStepId AdamsMoultonPc::next_time_id(const TimeStepId& current_id,
   }
 }
 
-TimeStepId AdamsMoultonPc::next_time_id_for_error(
+template <bool Monotonic>
+TimeStepId AdamsMoultonPc<Monotonic>::next_time_id_for_error(
     const TimeStepId& current_id, const TimeDelta& time_step) const {
   return next_time_id(current_id, time_step);
 }
 
-void AdamsMoultonPc::pup(PUP::er& p) {
+template <bool Monotonic>
+void AdamsMoultonPc<Monotonic>::pup(PUP::er& p) {
   TimeStepper::pup(p);
   p | order_;
 }
 
+template <bool Monotonic>
 template <typename T>
-void AdamsMoultonPc::update_u_impl(const gsl::not_null<T*> u,
-                                   const MutableUntypedHistory<T>& history,
-                                   const TimeDelta& time_step) const {
-  clean_history(history);
+void AdamsMoultonPc<Monotonic>::update_u_impl(
+    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
+    const TimeDelta& time_step) const {
+  if constexpr (not Monotonic) {
+    clean_history_nonmonotonic(history);
+  }
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not history.at_step_start());
+  if constexpr (Monotonic) {
+    clean_history_monotonic(history);
+  }
 }
 
+template <bool Monotonic>
 template <typename T>
-bool AdamsMoultonPc::update_u_impl(const gsl::not_null<T*> u,
-                                   const gsl::not_null<T*> u_error,
-                                   const MutableUntypedHistory<T>& history,
-                                   const TimeDelta& time_step) const {
-  clean_history(history);
+bool AdamsMoultonPc<Monotonic>::update_u_impl(
+    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
+    const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
+  if constexpr (not Monotonic) {
+    clean_history_nonmonotonic(history);
+  }
   const bool predictor = history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not predictor);
   if (predictor) {
+    // No monotonic cleaning necessary on predictor phase.
     return false;
   }
   *u_error = *history.back().value;
   update_u_common(u_error, history, next_time, history.integration_order() - 1,
                   true);
   *u_error = *u - *u_error;
-  return true;
-}
-
-template <typename T>
-bool AdamsMoultonPc::dense_update_u_impl(const gsl::not_null<T*> u,
-                                         const ConstUntypedHistory<T>& history,
-                                         const double time) const {
-  if (history.at_step_start()) {
-    return false;
+  if constexpr (Monotonic) {
+    clean_history_monotonic(history);
   }
-  update_u_common(u, history, ApproximateTime{time},
-                  history.integration_order(), true);
   return true;
 }
 
+template <bool Monotonic>
 template <typename T>
-bool AdamsMoultonPc::can_change_step_size_impl(
+bool AdamsMoultonPc<Monotonic>::dense_update_u_impl(
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const double time) const {
+  if constexpr (Monotonic) {
+    if (not history.at_step_start()) {
+      return false;
+    }
+    update_u_common(u, history, ApproximateTime{time},
+                    history.integration_order(), false);
+    return true;
+  } else {
+    if (history.at_step_start()) {
+      return false;
+    }
+    update_u_common(u, history, ApproximateTime{time},
+                    history.integration_order(), true);
+    return true;
+  }
+}
+
+template <bool Monotonic>
+template <typename T>
+bool AdamsMoultonPc<Monotonic>::can_change_step_size_impl(
     const TimeStepId& time_id, const ConstUntypedHistory<T>& history) const {
   // We need to prevent the next step from occurring at the same time
   // as one already in the history.  The self-start code ensures this
@@ -214,15 +297,34 @@ bool AdamsMoultonPc::can_change_step_size_impl(
          });
 }
 
-bool operator==(const AdamsMoultonPc& lhs, const AdamsMoultonPc& rhs) {
+template <bool Monotonic>
+bool operator==(const AdamsMoultonPc<Monotonic>& lhs,
+                const AdamsMoultonPc<Monotonic>& rhs) {
   return lhs.order() == rhs.order();
 }
 
-bool operator!=(const AdamsMoultonPc& lhs, const AdamsMoultonPc& rhs) {
+template <bool Monotonic>
+bool operator!=(const AdamsMoultonPc<Monotonic>& lhs,
+                const AdamsMoultonPc<Monotonic>& rhs) {
   return not(lhs == rhs);
 }
 
-TIME_STEPPER_DEFINE_OVERLOADS(AdamsMoultonPc)
-}  // namespace TimeSteppers
+TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(AdamsMoultonPc<Monotonic>,
+                                        bool Monotonic)
 
-PUP::able::PUP_ID TimeSteppers::AdamsMoultonPc::my_PUP_ID = 0;  // NOLINT
+template <bool Monotonic>
+PUP::able::PUP_ID AdamsMoultonPc<Monotonic>::my_PUP_ID = 0;  // NOLINT
+
+#define MONOTONIC(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                            \
+  template class AdamsMoultonPc<MONOTONIC(data)>;                       \
+  template bool operator==(const AdamsMoultonPc<MONOTONIC(data)>& lhs,  \
+                           const AdamsMoultonPc<MONOTONIC(data)>& rhs); \
+  template bool operator!=(const AdamsMoultonPc<MONOTONIC(data)>& lhs,  \
+                           const AdamsMoultonPc<MONOTONIC(data)>& rhs);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (false, true))
+#undef INSTANTIATE
+#undef MONOTONIC
+}  // namespace TimeSteppers

@@ -57,7 +57,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
     for(size_t history_order = 1; history_order <= order; ++history_order){
       CAPTURE(history_order);
       TimeStepperTestUtils::check_dense_output(stepper, history_order,
-                                               {10, 30});
+                                               {10, 30}, 1, true);
     }
 
     CHECK(stepper.order() == order);

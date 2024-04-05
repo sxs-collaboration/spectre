@@ -27,6 +27,7 @@ namespace TimeSteppers {}
 /// \cond
 #define TIME_STEPPER_WRAPPED_TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TIME_STEPPER_DERIVED_CLASS(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data) BOOST_PP_TUPLE_ELEM(2, data)
 /// \endcond
 
 /// \ingroup TimeSteppersGroup
@@ -242,6 +243,7 @@ class TimeStepper : public PUP::able {
           data)>& history) const override;
 
 #define TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                        \
+  TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \
   void TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
@@ -249,6 +251,7 @@ class TimeStepper : public PUP::able {
       const TimeDelta& time_step) const {                                  \
     return update_u_impl(u, history, time_step);                           \
   }                                                                        \
+  TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \
   bool TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,       \
@@ -257,6 +260,7 @@ class TimeStepper : public PUP::able {
       const TimeDelta& time_step) const {                                  \
     return update_u_impl(u, u_error, history, time_step);                  \
   }                                                                        \
+  TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \
   bool TIME_STEPPER_DERIVED_CLASS(data)::dense_update_u_forward(           \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
@@ -264,6 +268,7 @@ class TimeStepper : public PUP::able {
       const double time) const {                                           \
     return dense_update_u_impl(u, history, time);                          \
   }                                                                        \
+  TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \
   bool TIME_STEPPER_DERIVED_CLASS(data)::can_change_step_size_forward(     \
       const TimeStepId& time_id,                                           \
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
@@ -284,6 +289,12 @@ class TimeStepper : public PUP::able {
 /// Macro defining overloaded detail methods in classes derived from
 /// TimeStepper.  Must be placed in the cpp file for the derived
 /// class.
+/// @{
 #define TIME_STEPPER_DEFINE_OVERLOADS(derived_class)          \
   GENERATE_INSTANTIATIONS(TIME_STEPPER_DEFINE_OVERLOADS_IMPL, \
-                          (MATH_WRAPPER_TYPES), (derived_class))
+                          (MATH_WRAPPER_TYPES), (derived_class), ())
+#define TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(derived_class, template_args) \
+  GENERATE_INSTANTIATIONS(TIME_STEPPER_DEFINE_OVERLOADS_IMPL,                 \
+                          (MATH_WRAPPER_TYPES), (derived_class),              \
+                          (template <template_args>))
+/// @}

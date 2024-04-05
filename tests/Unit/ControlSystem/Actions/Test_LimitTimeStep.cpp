@@ -195,7 +195,7 @@ void test(const std::string& test_label, const double initial_time,
 SPECTRE_TEST_CASE("Unit.ControlSystem.Actions.LimitTimeStep",
                   "[Unit][ControlSystem]") {
   register_classes_with_charm<
-      TimeSteppers::AdamsBashforth, TimeSteppers::AdamsMoultonPc,
+      TimeSteppers::AdamsBashforth, TimeSteppers::AdamsMoultonPc<false>,
       TimeSteppers::Rk3HesthavenSsp,
       domain::FunctionsOfTime::PiecewisePolynomial<0>>();
   const double infinity = std::numeric_limits<double>::infinity();
@@ -317,7 +317,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Actions.LimitTimeStep",
        {{0.0, infinity}, {infinity, nan}},
        {{0.0, arbitrary}, {infinity, nan}},
        {{0.0, arbitrary}, {infinity, nan}},
-       std::make_unique<TimeSteppers::AdamsMoultonPc>(4), history);
+       std::make_unique<TimeSteppers::AdamsMoultonPc<false>>(4), history);
   CHECK_THROWS_WITH(
       test("Step can't change but is not OK", 1.0, 5.0, 0.0,
            {{0.0, 1.0}, {5.0, nan}},
@@ -325,7 +325,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Actions.LimitTimeStep",
            {{0.0, infinity}, {infinity, nan}},
            {{0.0, arbitrary}, {infinity, nan}},
            {{0.0, arbitrary}, {infinity, nan}},
-           std::make_unique<TimeSteppers::AdamsMoultonPc>(4), history),
+           std::make_unique<TimeSteppers::AdamsMoultonPc<false>>(4), history),
       Catch::Matchers::ContainsSubstring(
           "Step must be decreased to avoid control-system deadlock, but "
           "time-stepper requires a fixed step size."));
