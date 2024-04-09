@@ -20,11 +20,12 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Literals.hpp"
 
-// [[Timeout, 10]]
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
+namespace {
+template <bool Monotonic>
+void test_am() {
   for (size_t order = 2; order < 9; ++order) {
     CAPTURE(order);
-    const TimeSteppers::AdamsMoultonPc stepper(order);
+    const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(order);
     CHECK(stepper.order() == order);
     CHECK(stepper.error_estimate_order() == order - 1);
     CHECK(stepper.number_of_past_steps() == order - 2);
@@ -56,8 +57,17 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
     TimeStepperTestUtils::check_convergence_order(stepper, {10, 30});
     for (size_t history_order = 2; history_order <= order; ++history_order) {
       CAPTURE(history_order);
+      std::pair<int32_t, int32_t> convergence_step_range{10, 30};
+      int32_t stride = 1;
+      if (Monotonic) {
+        // Monotonic dense output is much noisier.
+        convergence_step_range.second =
+            110 - 10 * static_cast<int32_t>(history_order);
+        stride = 3 - static_cast<int32_t>(history_order) / 3;
+      }
       TimeStepperTestUtils::check_dense_output(stepper, history_order,
-                                               {10, 30});
+                                               convergence_step_range, stride,
+                                               not Monotonic);
     }
   }
 
@@ -67,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   const Time end = slab.end();
   const auto can_change = [](const bool time_runs_forward, const Time& first,
                              const Time& second, const Time& now) {
-    const TimeSteppers::AdamsMoultonPc stepper(2);
+    const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(2);
     TimeSteppers::History<double> history(2);
     history.insert(TimeStepId(time_runs_forward, 0, first), 0., 0.);
     history.insert(TimeStepId(time_runs_forward, 2, second), 0., 0.);
@@ -95,7 +105,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   {
     const auto time_step = slab.duration() / 2;
     const TimeStepId step_id(true, 1, slab.start() + time_step);
-    const TimeSteppers::AdamsMoultonPc stepper(2);
+    const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(2);
     TimeSteppers::History<double> history(2);
     history.insert(TimeStepId(true, 1, slab.start()), 0., 0.);
     history.insert(step_id, 0., 0.);
@@ -104,32 +114,33 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   }
 
   {
-    TimeSteppers::AdamsMoultonPc am4(4);
-    TimeSteppers::AdamsMoultonPc am2(2);
+    TimeSteppers::AdamsMoultonPc<Monotonic> am4(4);
+    TimeSteppers::AdamsMoultonPc<Monotonic> am2(2);
     CHECK(am4 == am4);
     CHECK_FALSE(am4 != am4);
     CHECK(am4 != am2);
     CHECK_FALSE(am4 == am2);
 
     test_serialization(am4);
-    test_serialization_via_base<TimeStepper, TimeSteppers::AdamsMoultonPc>(
-        4_st);
+    test_serialization_via_base<TimeStepper,
+                                TimeSteppers::AdamsMoultonPc<Monotonic>>(4_st);
   }
 
   {
-    const auto created =
-        TestHelpers::test_factory_creation<TimeStepper,
-                                           TimeSteppers::AdamsMoultonPc>(
-            "AdamsMoultonPc:\n"
-            "  Order: 3");
+    const std::string name =
+        Monotonic ? "AdamsMoultonPcMonotonic" : "AdamsMoultonPc";
+    const auto created = TestHelpers::test_factory_creation<
+        TimeStepper, TimeSteppers::AdamsMoultonPc<Monotonic>>(name +
+                                                              ":\n"
+                                                              "  Order: 3");
     CHECK(created->order() == 3);
   }
 
   {
     const auto check_order = [](const size_t order, const double phase) {
       CAPTURE(order);
-      TimeStepperTestUtils::stability_test(TimeSteppers::AdamsMoultonPc(order),
-                                           phase);
+      TimeStepperTestUtils::stability_test(
+          TimeSteppers::AdamsMoultonPc<Monotonic>(order), phase);
     };
 
     check_order(2, M_PI);
@@ -141,3 +152,15 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
     check_order(8, 2.364);
   }
 }
+
+// [[Timeout, 10]]
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
+  test_am<false>();
+}
+
+// [[Timeout, 10]]
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPcMonotonic",
+                  "[Unit][Time]") {
+  test_am<true>();
+}
+}  // namespace

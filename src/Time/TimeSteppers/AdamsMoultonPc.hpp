@@ -36,6 +36,12 @@ namespace TimeSteppers {
  * An \f$N\$th order Adams-Moulton predictor-corrector method using an
  * \$(N - 1)\$th order Adams-Bashforth predictor.
  *
+ * If \p Monotonic is true, dense output is performed using the
+ * predictor stage, otherwise the corrector is used.  The corrector
+ * results are more accurate (but still formally the same order), but
+ * require a RHS evaluation at the end of the step before dense output
+ * can be performed.
+ *
  * The stable step size factors for different orders are (to
  * approximately 4-5 digits):
  *
@@ -74,8 +80,13 @@ namespace TimeSteppers {
  *  </tr>
  * </table>
  */
+template <bool Monotonic>
 class AdamsMoultonPc : public TimeStepper {
  public:
+  static std::string name() {
+    return Monotonic ? "AdamsMoultonPcMonotonic" : "AdamsMoultonPc";
+  }
+
   static constexpr size_t minimum_order = 2;
   static constexpr size_t maximum_order = 8;
 
@@ -86,8 +97,11 @@ class AdamsMoultonPc : public TimeStepper {
     static type upper_bound() { return maximum_order; }
   };
   using options = tmpl::list<Order>;
-  static constexpr Options::String help = {
-      "An Adams-Moulton predictor-corrector time-stepper."};
+  static constexpr Options::String help =
+      Monotonic
+          ? "An Adams-Moulton predictor-corrector time-stepper with monotonic "
+            "dense output."
+          : "An Adams-Moulton predictor-corrector time-stepper.";
 
   AdamsMoultonPc() = default;
   explicit AdamsMoultonPc(size_t order);
@@ -108,6 +122,8 @@ class AdamsMoultonPc : public TimeStepper {
   size_t number_of_past_steps() const override;
 
   double stable_step() const override;
+
+  bool monotonic() const override;
 
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
@@ -146,6 +162,10 @@ class AdamsMoultonPc : public TimeStepper {
   size_t order_{};
 };
 
-bool operator==(const AdamsMoultonPc& lhs, const AdamsMoultonPc& rhs);
-bool operator!=(const AdamsMoultonPc& lhs, const AdamsMoultonPc& rhs);
+template <bool Monotonic>
+bool operator==(const AdamsMoultonPc<Monotonic>& lhs,
+                const AdamsMoultonPc<Monotonic>& rhs);
+template <bool Monotonic>
+bool operator!=(const AdamsMoultonPc<Monotonic>& lhs,
+                const AdamsMoultonPc<Monotonic>& rhs);
 }  // namespace TimeSteppers

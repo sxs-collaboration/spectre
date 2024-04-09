@@ -23,6 +23,8 @@ double Rk3HesthavenSsp::stable_step() const {
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
 }
 
+bool Rk3HesthavenSsp::monotonic() const { return false; }
+
 uint64_t Rk3HesthavenSsp::number_of_substeps() const { return 3; }
 
 uint64_t Rk3HesthavenSsp::number_of_substeps_for_error() const { return 3; }

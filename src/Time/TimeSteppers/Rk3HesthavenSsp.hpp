@@ -59,6 +59,8 @@ class Rk3HesthavenSsp : public TimeStepper {
 
   double stable_step() const override;
 
+  bool monotonic() const override;
+
   uint64_t number_of_substeps() const override;
 
   uint64_t number_of_substeps_for_error() const override;
