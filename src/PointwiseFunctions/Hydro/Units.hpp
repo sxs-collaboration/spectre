@@ -5,6 +5,8 @@
 
 #include <cmath>
 
+#include "Utilities/ConstantExpressions.hpp"
+
 namespace hydro {
 /*!
  * \brief Functions, constants, and classes for converting between different
@@ -67,6 +69,8 @@ constexpr double pressure_unit =
 constexpr double atomic_mass_unit = 1.66053906660e-24;
 /// The neutron mass, given in grams, uncertainty at 5.7 x 10^-10 level
 constexpr double neutron_mass = 1.67492749804e-24;
+/// The proton mass, given in grams. Uncertainty at 2e-8 level
+constexpr double proton_mass = 1.672621898e-24;
 /// The electron-volt (eV) given in ergs, which is known exactly in SI/cgs
 constexpr double electron_volt = 1.602176634e-12;
 
@@ -144,6 +148,10 @@ constexpr double neutron_mass =
     (1.0e6 * cgs::electron_volt / square(cgs::speed_of_light));
 constexpr double atomic_mass_unit =
     cgs::atomic_mass_unit /
+    (1.0e6 * cgs::electron_volt / square(cgs::speed_of_light));
+/// The proton mass in MeV, uncertainty at 5.8eV.
+constexpr double proton_mass =
+    cgs::proton_mass /
     (1.0e6 * cgs::electron_volt / square(cgs::speed_of_light));
 
 /// The saturation number density of baryons in nuclear matter, in
