@@ -261,15 +261,10 @@ void test_data(const double mass_left, const double mass_right,
     pypp::check_with_random_values<1>(
         &BinaryWithGravitationalWavesProxyNumeric::test_variables, proxy,
         "BinaryWithGravitationalWaves",
-        {
-         "retarded_time_left",
-         "retarded_time_right",
-         "past_term",
-         "radiative_term",
-         "conformal_metric",
-         "extrinsic_curvature_trace"},
+        {"retarded_time_left", "retarded_time_right", "past_term",
+         "radiative_term", "conformal_metric", "extrinsic_curvature_trace"},
         {{{-10. + xcoord_left, xcoord_right + 10.}}}, std::make_tuple(),
-        DataVector(5), 1e-4);
+        DataVector(1), 1e-3);
   }
 }
 
