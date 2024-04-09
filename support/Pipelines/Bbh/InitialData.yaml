@@ -2,6 +2,9 @@
 # See LICENSE.txt for details.
 
 Executable: SolveXcts
+ExpectedOutput:
+  - BbhReductions.h5
+  - BbhVolume*.h5
 {% if evolve %}
 Next:
   Run: spectre.Pipelines.Bbh.Inspiral:start_inspiral

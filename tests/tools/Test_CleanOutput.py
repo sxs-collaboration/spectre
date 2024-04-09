@@ -27,7 +27,7 @@ class TestCleanOutput(unittest.TestCase):
         os.makedirs(self.test_dir, exist_ok=True)
         with open(self.input_file_path, "w") as open_file:
             yaml.safe_dump_all(
-                [{"ExpectedOutput": ["Reduction.h5", "Volume0.h5"]}, {}],
+                [{"ExpectedOutput": ["Reduction.h5", "Volume*.h5"]}, {}],
                 open_file,
             )
 
@@ -48,7 +48,7 @@ class TestCleanOutput(unittest.TestCase):
         )
         with open(self.reduction_file_path, "w"):
             pass
-        with self.assertRaisesRegex(MissingExpectedOutputError, "Volume0.h5"):
+        with self.assertRaisesRegex(MissingExpectedOutputError, "Volume\*.h5"):
             clean_output(
                 input_file=self.input_file_path,
                 output_dir=self.test_dir,
