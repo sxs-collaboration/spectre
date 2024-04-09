@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CellVolume.cpp
   EvolvePackets.cpp
   InverseJacobianInertialToFluidCompute.cpp
   TemplatedLocalFunctions.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CellVolume.hpp
   EmitPackets.tpp
   EvolvePackets.hpp
   EvolvePacketsInElement.tpp
