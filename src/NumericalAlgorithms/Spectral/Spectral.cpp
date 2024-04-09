@@ -623,6 +623,11 @@ PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
 
 template <Basis BasisType, Quadrature QuadratureType, typename T>
 Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
+  if constexpr (BasisType == Spectral::Basis::FiniteDifference) {
+    ERROR(
+        "Cannot do barycentric interpolation with Basis::FiniteDifference.  "
+        "Use an IrregularInterpolant");
+  }
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
   constexpr size_t min_num_points =
