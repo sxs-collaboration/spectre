@@ -3,17 +3,32 @@
 
 #pragma once
 
+#include <array>
+#include <optional>
+#include <random>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/Gsl.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
+class DataVector;
+
 namespace Frame {
 struct Fluid;
 }  // namespace Frame
+
+namespace gsl {
+  template <typename T>
+  class not_null;
+}  // namespace gsl
+
+template<size_t Dim>
+class Mesh;
+
+namespace Particles::MonteCarlo {
+template<size_t EnergyBins,size_t NeutrinoSpecies>
+class NeutrinoInteractionTable;
+} // namespace Particles::MonteCarlo
 /// \endcond
 
 /// Items related to the evolution of particles
@@ -24,11 +39,10 @@ struct Packet;
 
 namespace detail {
 
-void draw_single_packet(
-    gsl::not_null<double*> time,
-    gsl::not_null<std::array<double, 3>*> coord,
-    gsl::not_null<std::array<double, 3>*> momentum,
-    gsl::not_null<std::mt19937*> random_number_generator);
+void draw_single_packet(gsl::not_null<double*> time,
+                        gsl::not_null<std::array<double, 3>*> coord,
+                        gsl::not_null<std::array<double, 3>*> momentum,
+                        gsl::not_null<std::mt19937*> random_number_generator);
 }  // namespace detail
 
 
@@ -36,6 +50,45 @@ void draw_single_packet(
 /// and/or NeutrinoSpecies
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 struct TemplatedLocalFunctions {
+  /*!
+   * \brief Function to take a single Monte Carlo time step on a
+   * finite difference element.
+   */
+  void take_time_step_on_element(
+      gsl::not_null<std::vector<Packet>*> packets,
+      gsl::not_null<std::mt19937*> random_number_generator,
+      gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
+          single_packet_energy,
+
+      double start_time, double target_end_time,
+      const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
+          interaction_table,
+      const Scalar<DataVector>& electron_fraction,
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& temperature,
+      const Scalar<DataVector>& lorentz_factor,
+      const tnsr::i<DataVector, 3, Frame::Inertial>&
+          lower_spatial_four_velocity,
+      const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
+      const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
+      const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& determinant_spatial_metric, const Mesh<3>& mesh,
+      const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+      const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
+          mesh_velocity,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                            Frame::Inertial>&
+          inverse_jacobian_logical_to_inertial,
+      const Scalar<DataVector>& det_jacobian_logical_to_inertial,
+      const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+          inertial_to_fluid_jacobian,
+      const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
+          inertial_to_fluid_inverse_jacobian);
+
   /*!
    * \brief Function emitting Monte Carlo packets
    *

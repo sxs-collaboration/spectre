@@ -3,11 +3,16 @@
 
 #pragma once
 
+#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+
 #include <cmath>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
-#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
+#include "Utilities/Gsl.hpp"
 
 using hydro::units::nuclear::proton_mass;
 
