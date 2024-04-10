@@ -44,4 +44,10 @@ if (_RESULT EQUAL 0)
     PARAVIEW_PYTHON_VERSION "${PARAVIEW_PYTHON_VERSION}")
   string(REPLACE "pythonpath entry: " ""
     PARAVIEW_PYTHONPATH "${PARAVIEW_PYTHONPATH}")
+else()
+  # If for whatever reason pvpython call didn't work, try another search
+  get_filename_component(PVPYTHON_BINDIR ${PVPYTHON_EXEC} DIRECTORY)
+  get_filename_component(PVPYTHON_BASEDIR ${PVPYTHON_BINDIR} DIRECTORY)
+  find_path(PARAVIEW_PYTHONPATH "simple.py" ${PVPYTHON_BASEDIR})
+  get_filename_component(PARAVIEW_PYTHONPATH ${PARAVIEW_PYTHONPATH} DIRECTORY)
 endif()
