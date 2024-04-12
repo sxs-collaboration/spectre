@@ -880,25 +880,25 @@ template <typename DataType>
 void BinaryWithGravitationalWavesVariables<
     DataType>::interpolate_past_history() {
   // Now interpolate the past history
-  using boost::math::interpolators::cubic_hermite;
+  using boost::math::interpolators::cardinal_cubic_hermite;
 
   for (size_t i = 0; i < 3; ++i) {
-    interpolation_position_left.at(i) = cubic_hermite(
-        static_cast<std::vector<double>>(past_time),
+    interpolation_position_left.at(i) = cardinal_cubic_hermite(
         static_cast<std::vector<double>>(past_position_left.at(i)),
-        static_cast<std::vector<double>>(past_dt_position_left.at(i)));
-    interpolation_position_right.at(i) = cubic_hermite(
-        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_dt_position_left.at(i)),
+        past_time.front(), std::abs(past_time[0] - past_time[1]));
+    interpolation_position_right.at(i) = cardinal_cubic_hermite(
         static_cast<std::vector<double>>(past_position_right.at(i)),
-        static_cast<std::vector<double>>(past_dt_position_right.at(i)));
-    interpolation_momentum_left.at(i) = cubic_hermite(
-        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_dt_position_right.at(i)),
+        past_time.front(), std::abs(past_time[0] - past_time[1]));
+    interpolation_momentum_left.at(i) = cardinal_cubic_hermite(
         static_cast<std::vector<double>>(past_momentum_left.at(i)),
-        static_cast<std::vector<double>>(past_dt_momentum_left.at(i)));
-    interpolation_momentum_right.at(i) = cubic_hermite(
-        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_dt_momentum_left.at(i)),
+        past_time.front(), std::abs(past_time[0] - past_time[1]));
+    interpolation_momentum_right.at(i) = cardinal_cubic_hermite(
         static_cast<std::vector<double>>(past_momentum_right.at(i)),
-        static_cast<std::vector<double>>(past_dt_momentum_right.at(i)));
+        static_cast<std::vector<double>>(past_dt_momentum_right.at(i)),
+        past_time.front(), std::abs(past_time[0] - past_time[1]));
   }
 }
 
