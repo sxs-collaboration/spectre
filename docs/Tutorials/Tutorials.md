@@ -20,3 +20,4 @@ See LICENSE.txt for details.
   checkpointing and restarting
 - \subpage tutorial_events_and_triggers - How to specify code to run in an input
   file
+- \subpage tutorial_imex - How to add IMEX support to an evolution system

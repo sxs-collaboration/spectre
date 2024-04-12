@@ -15,8 +15,10 @@ namespace imex::protocols {
 /// conforming to protocols::ImplicitSector, each of which describes
 /// an implicit solve to be performed during time steps.
 ///
-/// For efficiency, the tensors in each sector are required to be
-/// adjacent in the system's variables.
+/// For efficiency, the tags in the `tensors` type alias of each
+/// sector are required to be adjacent in the system's variables.
+///
+/// \snippet DoImplicitStepSector.hpp ImexSystem
 struct ImexSystem {
   template <typename ConformingType>
   struct test {

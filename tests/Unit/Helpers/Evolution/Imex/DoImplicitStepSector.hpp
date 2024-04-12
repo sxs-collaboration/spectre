@@ -25,6 +25,7 @@
 // DoImplicitStepInstantiate.cpp).
 namespace do_implicit_step_helpers {
 template <typename Var>
+// [simple_sector]
 struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using tensors = tmpl::list<Var>;
 
@@ -61,6 +62,7 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
 
   using solve_attempts = tmpl::list<SolveAttempt>;
 };
+// [simple_sector]
 
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -70,10 +72,15 @@ struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+// [ImexSystem]
 struct System : tt::ConformsTo<imex::protocols::ImexSystem> {
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2>>;
+
+  // Explicit evolution stuff here...
+
   using implicit_sectors = tmpl::list<Sector<Var1>, Sector<Var2>>;
 };
+// [ImexSystem]
 
 struct NonautonomousSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using tensors = tmpl::list<Var1>;
