@@ -287,8 +287,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2024-03-19
-doi: 10.5281/zenodo.10841324
+date-released: 2024-04-12
+doi: 10.5281/zenodo.10967177
 keywords:
 - Software
 - Astrophysics
@@ -1006,4 +1006,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2024.03.19
+version: 2024.04.12
