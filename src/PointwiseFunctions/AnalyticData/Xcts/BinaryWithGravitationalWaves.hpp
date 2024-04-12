@@ -415,6 +415,7 @@ struct BinaryWithGravitationalWavesVariables
                                     const std::array<double, 3>& b) const;
   Scalar<DataType> this_dot_product(const std::array<double, 3>& a,
                                     const tnsr::I<DataType, 3>& b) const;
+  double max_time_interpolator = std::numeric_limits<double>::signaling_NaN();
   void interpolate_past_history();
   DataType find_retarded_time_left(gsl::not_null<Cache*> cache) const;
   DataType find_retarded_time_right(gsl::not_null<Cache*> cache) const;

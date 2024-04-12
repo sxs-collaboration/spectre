@@ -580,7 +580,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> rootfinder_bracket_time_upper,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::RootFinderBracketTimeUpper<DataType> /*meta*/) const {
-  get(*rootfinder_bracket_time_upper) = past_time.back();
+  get(*rootfinder_bracket_time_upper) = max_time_interpolator;
 
 }  // namespace detail
 
@@ -901,6 +901,17 @@ void BinaryWithGravitationalWavesVariables<
         static_cast<std::vector<double>>(past_dt_momentum_right.at(i)),
         past_time.front(), std::abs(past_time[0] - past_time[1]));
   }
+  // Get the domain of the interpolation to not trigger domain error on 0
+  // (zero). The maximum time varies by machine roundoff. The interpolation is
+  // done again because above is casted as std::function which does not have
+  // access to the domain.
+  max_time_interpolator =
+      cardinal_cubic_hermite(
+          static_cast<std::vector<double>>(past_position_left.at(2)),
+          static_cast<std::vector<double>>(past_dt_position_left.at(2)),
+          past_time.front(), std::abs(past_time[0] - past_time[1]))
+          .domain()
+          .second;
 }
 
 template <typename DataType>
