@@ -21,6 +21,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
@@ -32,10 +33,12 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -757,6 +760,91 @@ void test_parse_errors() {
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }
+
+void test_kerr_horizon_conforming() {
+  INFO(
+      "Check that inner radius is deformed to constant Boyer-Lindquist radius");
+  const double mass_A = 0.8;
+  const double mass_B = 1.2;
+  const std::array<double, 3> spin_A{{0.0, 0.0, 0.9}};
+  const std::array<double, 3> spin_B{{0.0, 0.2, 0.4}};
+  const double r_plus_A = mass_A * (1. + sqrt(1. - dot(spin_A, spin_A)));
+  const double r_plus_B = mass_B * (1. + sqrt(1. - dot(spin_B, spin_B)));
+  const double inner_radius_A = r_plus_A;
+  const double inner_radius_B = 0.89 * r_plus_B;
+  const double x_pos_A = 8;
+  const double x_pos_B = -8;
+  domain::creators::BinaryCompactObject domain_creator{
+      Object{inner_radius_A, 4., x_pos_A, true, true},
+      Object{inner_radius_B, 4., x_pos_B, true, true},
+      40.,
+      200.,
+      0_st,
+      6_st,
+      true,
+      Distribution::Projective,
+      Distribution::Inverse,
+      120.,
+      domain::creators::bco::TimeDependentMapOptions<false>{
+          0.,
+          std::nullopt,
+          std::nullopt,
+          {{32_st,
+            domain::creators::sphere::KerrSchildFromBoyerLindquist{mass_A,
+                                                                   spin_A},
+            {{0., 0., 0.}}}},
+          {{32_st,
+            domain::creators::sphere::KerrSchildFromBoyerLindquist{mass_B,
+                                                                   spin_B},
+            {{0., 0., 0.}}}}}};
+  const auto domain = domain_creator.create_domain();
+  const auto functions_of_time = domain_creator.functions_of_time();
+  // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
+  const size_t num_points = 10;
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist_phi{0., 2. * M_PI};
+  std::uniform_real_distribution<double> dist_theta{0., M_PI};
+  const std::array<DataVector, 2> theta_phi{
+      {make_with_random_values<DataVector>(
+           make_not_null(&gen), make_not_null(&dist_theta), num_points),
+       make_with_random_values<DataVector>(
+           make_not_null(&gen), make_not_null(&dist_phi), num_points)}};
+  const auto radius_A =
+      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+          inner_radius_A, theta_phi, mass_A, spin_A));
+  const auto radius_B =
+      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+          inner_radius_B, theta_phi, mass_B, spin_B));
+  tnsr::I<DataVector, 3> x_A{};
+  tnsr::I<DataVector, 3> x_B{};
+  get<0>(x_A) =
+      x_pos_A + radius_A * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
+  get<1>(x_A) = radius_A * sin(get<0>(theta_phi)) * sin(get<1>(theta_phi));
+  get<2>(x_A) = radius_A * cos(get<0>(theta_phi));
+  get<0>(x_B) =
+      x_pos_B + radius_B * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
+  get<1>(x_B) = radius_B * sin(get<0>(theta_phi)) * sin(get<1>(theta_phi));
+  get<2>(x_B) = radius_B * cos(get<0>(theta_phi));
+  // Map the coordinates through the domain. They should lie at the lower zeta
+  // boundary of their block.
+  const auto x_logical_A =
+      block_logical_coordinates(domain, x_A, 0., functions_of_time);
+  const auto x_logical_B =
+      block_logical_coordinates(domain, x_B, 0., functions_of_time);
+  for (size_t i = 0; i < num_points; ++i) {
+    {
+      CAPTURE(x_logical_A[i]);
+      REQUIRE(x_logical_A[i].has_value());
+      CHECK(get<2>(x_logical_A[i]->data) == approx(-1.));
+    }
+    {
+      CAPTURE(x_logical_B[i]);
+      REQUIRE(x_logical_B[i].has_value());
+      CHECK(get<2>(x_logical_B[i]->data) == approx(-1.));
+    }
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 30]]
@@ -771,4 +859,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
   }
   test_binary_factory();
   test_parse_errors();
+  test_kerr_horizon_conforming();
 }
