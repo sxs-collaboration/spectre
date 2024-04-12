@@ -883,6 +883,7 @@ void BinaryWithGravitationalWavesVariables<
   using boost::math::interpolators::cardinal_cubic_hermite;
 
   for (size_t i = 0; i < 3; ++i) {
+    // static_cast being used because boost requires non-const arrays
     interpolation_position_left.at(i) = cardinal_cubic_hermite(
         static_cast<std::vector<double>>(past_position_left.at(i)),
         static_cast<std::vector<double>>(past_dt_position_left.at(i)),
