@@ -12,15 +12,21 @@ if (PVPYTHON_EXEC)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_STRIP_TRAILING_WHITESPACE)
   string(REPLACE "\n" ";" _OUTPUT "${_OUTPUT}")
-  list(LENGTH _OUTPUT _OUTPUT_LENGTH)
-  if (_OUTPUT_LENGTH EQUAL 1)
-    # '--print' is not supported, just get the version
-    list(GET _OUTPUT 0 PARAVIEW_VERSION)
-  elseif(_OUTPUT_LENGTH EQUAL 2)
-    # '--print' is supported, get the version and environment variables
-    list(GET _OUTPUT 0 PARAVIEW_PYTHON_ENV_VARS)
-    list(GET _OUTPUT 1 PARAVIEW_VERSION)
-  endif()
+  foreach(_ENTRY ${_OUTPUT})
+    # Extract the ParaView version from the output
+    string(FIND "${_ENTRY}" "paraview version " _FOUND)
+    if(NOT ${_FOUND} EQUAL -1)
+      set(PARAVIEW_VERSION ${_ENTRY})
+    endif()
+
+    # On some machines ParaView needs specific environment variables set, e.g.
+    # on CaltechHPC we need to set LD_LIBRARY_PATH. If other env variables
+    # need to be set, then we need to possibly update this.
+    string(FIND "${_ENTRY}" "LD_LIBRARY_PATH=" _FOUND)
+    if(NOT ${_FOUND} EQUAL -1)
+      set(PARAVIEW_PYTHON_ENV_VARS ${_ENTRY})
+    endif()
+  endforeach()
   string(REPLACE "paraview version " "" PARAVIEW_VERSION "${PARAVIEW_VERSION}")
 endif()
 
@@ -44,4 +50,10 @@ if (_RESULT EQUAL 0)
     PARAVIEW_PYTHON_VERSION "${PARAVIEW_PYTHON_VERSION}")
   string(REPLACE "pythonpath entry: " ""
     PARAVIEW_PYTHONPATH "${PARAVIEW_PYTHONPATH}")
+else()
+  # If for whatever reason pvpython call didn't work, try another search
+  get_filename_component(PVPYTHON_BINDIR ${PVPYTHON_EXEC} DIRECTORY)
+  get_filename_component(PVPYTHON_BASEDIR ${PVPYTHON_BINDIR} DIRECTORY)
+  find_path(PARAVIEW_PYTHONPATH "simple.py" ${PVPYTHON_BASEDIR})
+  get_filename_component(PARAVIEW_PYTHONPATH ${PARAVIEW_PYTHONPATH} DIRECTORY)
 endif()

@@ -7,7 +7,7 @@ if (NOT ENABLE_PARAVIEW)
   return()
 endif()
 
-find_package(ParaView)
+find_package(ParaView REQUIRED)
 
 # Help `find_python_module` find ParaView
 if (PARAVIEW_PYTHONPATH)
