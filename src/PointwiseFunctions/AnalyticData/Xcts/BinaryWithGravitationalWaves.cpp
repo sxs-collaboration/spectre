@@ -883,22 +883,22 @@ void BinaryWithGravitationalWavesVariables<
   using boost::math::interpolators::cubic_hermite;
 
   for (size_t i = 0; i < 3; ++i) {
-    interpolation_position_left.at(i) = cubic_hermite<std::vector<double>>(
-        std::vector<double>(past_time),
-        std::vector<double>(past_position_left.at(i)),
-        std::vector<double>(past_dt_position_left.at(i)));
-    interpolation_position_right.at(i) = cubic_hermite<std::vector<double>>(
-        std::vector<double>(past_time),
-        std::vector<double>(past_position_right.at(i)),
-        std::vector<double>(past_dt_position_right.at(i)));
-    interpolation_momentum_left.at(i) = cubic_hermite<std::vector<double>>(
-        std::vector<double>(past_time),
-        std::vector<double>(past_momentum_left.at(i)),
-        std::vector<double>(past_dt_momentum_left.at(i)));
-    interpolation_momentum_right.at(i) = cubic_hermite<std::vector<double>>(
-        std::vector<double>(past_time),
-        std::vector<double>(past_momentum_right.at(i)),
-        std::vector<double>(past_dt_momentum_right.at(i)));
+    interpolation_position_left.at(i) = cubic_hermite(
+        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_position_left.at(i)),
+        static_cast<std::vector<double>>(past_dt_position_left.at(i)));
+    interpolation_position_right.at(i) = cubic_hermite(
+        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_position_right.at(i)),
+        static_cast<std::vector<double>>(past_dt_position_right.at(i)));
+    interpolation_momentum_left.at(i) = cubic_hermite(
+        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_momentum_left.at(i)),
+        static_cast<std::vector<double>>(past_dt_momentum_left.at(i)));
+    interpolation_momentum_right.at(i) = cubic_hermite(
+        static_cast<std::vector<double>>(past_time),
+        static_cast<std::vector<double>>(past_momentum_right.at(i)),
+        static_cast<std::vector<double>>(past_dt_momentum_right.at(i)));
   }
 }
 
@@ -1126,7 +1126,7 @@ void BinaryWithGravitationalWaves::initialize() {
 
 void BinaryWithGravitationalWaves::hamiltonian_system(
     const BinaryWithGravitationalWaves::state_type& x,
-    BinaryWithGravitationalWaves::state_type& dpdt) {
+    BinaryWithGravitationalWaves::state_type& dpdt) const {
   // H = H_Newt + H_1PN + H_2PN + H_3PN
 
   double pdotp = x[3] * x[3] + x[4] * x[4] + x[5] * x[5];
@@ -1135,76 +1135,78 @@ void BinaryWithGravitationalWaves::hamiltonian_system(
 
   double dH_dp0_Newt = x[3];
   double dH_dp0_1 =
-      0.5 * x[3] * pdotp * (-1 + 3 * reduced_mass_over_total_mass) -
+      0.5 * x[3] * pdotp * (-1. + 3. * reduced_mass_over_total_mass) -
       (x[0] * (x[4] * x[1] + x[5] * x[2]) * reduced_mass_over_total_mass +
-       x[3] * (x[1] * x[1] + x[2] * x[2]) * (3 + reduced_mass_over_total_mass) +
-       x[3] * x[0] * x[0] * (3 + 2 * reduced_mass_over_total_mass)) /
+       x[3] * (x[1] * x[1] + x[2] * x[2]) *
+           (3. + reduced_mass_over_total_mass) +
+       x[3] * x[0] * x[0] * (3. + 2. * reduced_mass_over_total_mass)) /
           std::sqrt(qdotq * qdotq * qdotq);
   double dH_dp0_2 =
       0.125 *
-      (3 * x[3] * pdotp * pdotp *
-           (1 - 5 * reduced_mass_over_total_mass +
-            5 * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
-       (8 * (3 * x[0] * qdotp * reduced_mass_over_total_mass +
-             x[3] * qdotq * (5 + 8 * reduced_mass_over_total_mass))) /
+      (3. * x[3] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
+            5. * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
+       (8. * (3. * x[0] * qdotp * reduced_mass_over_total_mass +
+              x[3] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
            (qdotq * qdotq) +
-       (1 / std::sqrt(qdotq)) *
-           (-(12 * x[0] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-              reduced_mass_over_total_mass) /
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[0] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
                 (qdotq * qdotq) -
-            (4 * pdotp * x[0] * qdotp * reduced_mass_over_total_mass *
+            (4. * pdotp * x[0] * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            (4 * x[3] * qdotp * qdotp * reduced_mass_over_total_mass *
+            (4. * x[3] * qdotp * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            4 * x[3] * pdotp *
-                (-5 + 20 * reduced_mass_over_total_mass +
-                 3 * reduced_mass_over_total_mass *
+            4. * x[3] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
                      reduced_mass_over_total_mass)));
   double dH_dp0_3 =
       0.0625 *
-      (5 * x[3] * pdotp * pdotp * pdotp *
-           (-1 + 7 * (-1 + reduced_mass_over_total_mass) *
-                     (-1 + reduced_mass_over_total_mass) *
-                     reduced_mass_over_total_mass) +
-       1.0 / (3 * qdotq * qdotq * qdotq) * 2 *
-           (3 * pdotp * x[0] * qdotp * qdotq * reduced_mass_over_total_mass *
+      (5. * x[3] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2 *
+           (3. * pdotp * x[0] * qdotp * qdotq * reduced_mass_over_total_mass *
                 (17 + 30 * reduced_mass_over_total_mass) +
-            3 * x[3] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+            3. * x[3] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
                 (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[0] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+            8. * x[0] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
                 (5 + 43 * reduced_mass_over_total_mass) +
-            6 * x[3] * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) -
-       (3 * x[0] * qdotp * reduced_mass_over_total_mass *
-            (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+            6. * x[3] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[0] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
         x[3] * qdotq *
-            (600 + reduced_mass_over_total_mass *
-                       (1340 - 3 * M_PI * M_PI +
-                        552 * reduced_mass_over_total_mass))) /
-           (6 * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
-       2 / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
            (pdotp * pdotp * x[0] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-            2 * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+            2. * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            6 * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
+            6. * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
                 (-1 + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
-                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            15 * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
+            15. * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
-            3 * x[3] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 + reduced_mass_over_total_mass *
-                         (-42 + reduced_mass_over_total_mass *
-                                    (53 + 5 * reduced_mass_over_total_mass)))));
+            3. * x[3] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
 
   double dH_dp1_Newt = x[4];
   double dH_dp1_1 =
@@ -1215,412 +1217,421 @@ void BinaryWithGravitationalWaves::hamiltonian_system(
           std::sqrt(qdotq * qdotq * qdotq);
   double dH_dp1_2 =
       0.125 *
-      (3 * x[4] * pdotp * pdotp *
-           (1 - 5 * reduced_mass_over_total_mass +
-            5 * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
-       (8 * (3 * x[1] * qdotp * reduced_mass_over_total_mass +
-             x[4] * qdotq * (5 + 8 * reduced_mass_over_total_mass))) /
+      (3. * x[4] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
+            5. * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
+       (8. * (3. * x[1] * qdotp * reduced_mass_over_total_mass +
+              x[4] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
            (qdotq * qdotq) +
-       (1 / std::sqrt(qdotq)) *
-           (-(12 * x[1] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-              reduced_mass_over_total_mass) /
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[1] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
                 (qdotq * qdotq) -
-            (4 * pdotp * x[1] * qdotp * reduced_mass_over_total_mass *
+            (4. * pdotp * x[1] * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            (8 * x[4] * qdotp * qdotp * reduced_mass_over_total_mass *
+            (8. * x[4] * qdotp * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            4 * x[4] * pdotp *
-                (-5 + 20 * reduced_mass_over_total_mass +
-                 3 * reduced_mass_over_total_mass *
+            4. * x[4] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
                      reduced_mass_over_total_mass)));
   double dH_dp1_3 =
       0.0625 *
-      (5 * x[4] * pdotp * pdotp * pdotp *
-           (-1 + 7 * (-1 + reduced_mass_over_total_mass) *
-                     (-1 + reduced_mass_over_total_mass) *
-                     reduced_mass_over_total_mass) +
-       1.0 / (3 * qdotq * qdotq * qdotq) * 2 *
-           (3 * pdotp * x[1] * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            3 * x[4] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[1] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-                (5 + 43 * reduced_mass_over_total_mass) +
-            6 * x[4] * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) -
-       (3 * x[1] * qdotp * reduced_mass_over_total_mass *
-            (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+      (5. * x[4] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2 *
+           (3. * pdotp * x[1] * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            3. * x[4] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[1] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            6. * x[4] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[1] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
         x[4] * qdotq *
-            (600 + reduced_mass_over_total_mass *
-                       (1340 - 3 * M_PI * M_PI +
-                        552 * reduced_mass_over_total_mass))) /
-           (6 * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
-       2 / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
            (pdotp * pdotp * x[1] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-            2 * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+            2. * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            6 * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            6. * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            3. * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            15 * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
+            15. * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
-            3 * x[4] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 + reduced_mass_over_total_mass *
-                         (-42 + reduced_mass_over_total_mass *
-                                    (53 + 5 * reduced_mass_over_total_mass)))));
+            3. * x[4] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
 
   double dH_dp2_Newt = x[5];
   double dH_dp2_1 =
       0.5 * x[5] * pdotp * (-1 + 3 * reduced_mass_over_total_mass) -
       (x[2] * (x[4] * x[1] + x[3] * x[0]) * reduced_mass_over_total_mass +
-       x[5] * (x[0] * x[0] + x[1] * x[1]) * (3 + reduced_mass_over_total_mass) +
-       x[5] * x[2] * x[2] * (3 + 2 * reduced_mass_over_total_mass)) /
+       x[5] * (x[0] * x[0] + x[1] * x[1]) *
+           (3. + reduced_mass_over_total_mass) +
+       x[5] * x[2] * x[2] * (3. + 2. * reduced_mass_over_total_mass)) /
           std::sqrt(qdotq * qdotq * qdotq);
   double dH_dp2_2 =
       0.125 *
-      (3 * x[5] * pdotp * pdotp *
-           (1 - 5 * reduced_mass_over_total_mass +
+      (3. * x[5] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
             5 * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
-       (8 * (3 * x[2] * qdotp * reduced_mass_over_total_mass +
-             x[5] * qdotq * (5 + 8 * reduced_mass_over_total_mass))) /
+       (8. * (3. * x[2] * qdotp * reduced_mass_over_total_mass +
+              x[5] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
            (qdotq * qdotq) +
-       (1 / std::sqrt(qdotq)) *
-           (-(12 * x[2] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-              reduced_mass_over_total_mass) /
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[2] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
                 (qdotq * qdotq) -
-            (4 * pdotp * x[2] * qdotp * reduced_mass_over_total_mass *
+            (4. * pdotp * x[2] * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            (8 * x[5] * qdotp * qdotp * reduced_mass_over_total_mass *
+            (8. * x[5] * qdotp * qdotp * reduced_mass_over_total_mass *
              reduced_mass_over_total_mass) /
                 qdotq -
-            4 * x[5] * pdotp *
-                (-5 + 20 * reduced_mass_over_total_mass +
-                 3 * reduced_mass_over_total_mass *
+            4. * x[5] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
                      reduced_mass_over_total_mass)));
   double dH_dp2_3 =
       0.0625 *
-      (5 * x[5] * pdotp * pdotp * pdotp *
-           (-1 + 7 * (-1 + reduced_mass_over_total_mass) *
-                     (-1 + reduced_mass_over_total_mass) *
-                     reduced_mass_over_total_mass) +
-       1.0 / (3 * qdotq * qdotq * qdotq) * 2 *
-           (3 * pdotp * x[2] * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            3 * x[5] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[2] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-                (5 + 43 * reduced_mass_over_total_mass) +
-            6 * x[5] * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) -
-       (3 * x[2] * qdotp * reduced_mass_over_total_mass *
-            (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+      (5. * x[5] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2. *
+           (3. * pdotp * x[2] * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            3. * x[5] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[2] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            6. * x[5] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[2] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
         x[5] * qdotq *
-            (600 + reduced_mass_over_total_mass *
-                       (1340 - 3 * M_PI * M_PI +
-                        552 * reduced_mass_over_total_mass))) /
-           (6 * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
-       2 / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
            (pdotp * pdotp * x[2] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-            2 * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+            2. * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            6 * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            6. * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            3. * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            15 * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
+            15. * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
-            3 * x[5] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 + reduced_mass_over_total_mass *
-                         (-42 + reduced_mass_over_total_mass *
-                                    (53 + 5 * reduced_mass_over_total_mass)))));
+            3. * x[5] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
 
   double dH_dq0_Newt = x[0] / std::sqrt(qdotq * qdotq * qdotq);
   double dH_dq0_1 =
-      (-2 * x[0] * std::sqrt(qdotq) +
-       3 * x[0] * qdotp * qdotp * reduced_mass_over_total_mass -
-       2 * x[3] * qdotp * qdotq * reduced_mass_over_total_mass +
-       pdotp * x[0] * qdotq * (3 + reduced_mass_over_total_mass)) /
-      (2 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+      (-2. * x[0] * std::sqrt(qdotq) +
+       3. * x[0] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[3] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[0] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq0_2 =
-      (-48 * x[0] * qdotp * qdotp * std::sqrt(qdotq) *
+      (-48. * x[0] * qdotp * qdotp * std::sqrt(qdotq) *
            reduced_mass_over_total_mass +
-       24 * x[3] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+       24. * x[3] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
            reduced_mass_over_total_mass +
-       15 * x[0] * qdotp * qdotp * qdotp * qdotp *
+       15. * x[0] * qdotp * qdotp * qdotp * qdotp *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-       6 * pdotp * x[0] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass -
-       12 * x[3] * qdotp * qdotp * qdotp * qdotq *
+       6. * pdotp * x[0] * qdotp * qdotp * qdotq *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-       4 * x[3] * pdotp * qdotp * qdotq * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass +
-       6 * x[0] * qdotq * (1 + 3 * reduced_mass_over_total_mass) -
-       8 * pdotp * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
-           (5 + 8 * reduced_mass_over_total_mass) +
+       12. * x[3] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[3] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[0] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
        pdotp * pdotp * x[0] * qdotq * qdotq *
-           (-5 + reduced_mass_over_total_mass *
-                     (20 + 3 * reduced_mass_over_total_mass))) /
-      (8 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq0_3 =
-      (3 / 2 * qdotp * qdotq *
+      (3. / 2. * qdotp * qdotq *
            (x[0] * (x[1] * x[4] + x[2] * x[5]) -
             x[3] * (x[1] * x[1] + x[2] * x[2])) *
            reduced_mass_over_total_mass *
-           (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
-       2 * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
-           (-12 + (-872 + 63 * M_PI * M_PI) * reduced_mass_over_total_mass) -
-       6 * qdotp * reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12. + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
            (pdotp * pdotp * x[0] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) -
-            6 * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) +
-            6 * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (-1 + reduced_mass_over_total_mass) -
-            15 * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass +
-            15 * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
+            15. * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
                 reduced_mass_over_total_mass +
             x[3] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (-2 + 3 * reduced_mass_over_total_mass)) -
-       2 * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
-           (3 * pdotp * x[0] * qdotp * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) -
-            3 * x[3] * pdotp * qdotq * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[0] * qdotp * qdotp * qdotp *
-                (5 + 43 * reduced_mass_over_total_mass) -
-            8 * x[3] * qdotp * qdotp * qdotq *
-                (5 + 43 * reduced_mass_over_total_mass)) -
-       2 * x[0] * std::sqrt(qdotq) *
-           (3 * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            4 * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-                (5 + 43 * reduced_mass_over_total_mass) +
-            3 * pdotp * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) +
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[0] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[3] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[0] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[3] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[0] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
        0.75 * x[0] * qdotq *
-           (3 * qdotp * qdotp * reduced_mass_over_total_mass *
-                (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
             pdotp * qdotq *
-                (600 + reduced_mass_over_total_mass *
-                           (1340 - 3 * M_PI * M_PI +
-                            552 * reduced_mass_over_total_mass))) -
-       3 * x[0] *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[0] *
            (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            5 * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
             pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 +
+                (7. +
                  reduced_mass_over_total_mass *
-                     (-42 + reduced_mass_over_total_mass *
-                                (53 + 5 * reduced_mass_over_total_mass))))) /
-      (48 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
-                      qdotq * qdotq));
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
 
   double dH_dq1_Newt = x[1] / std::sqrt(qdotq * qdotq * qdotq);
   double dH_dq1_1 =
-      (-2 * x[1] * std::sqrt(qdotq) +
-       3 * x[1] * qdotp * qdotp * reduced_mass_over_total_mass -
-       2 * x[4] * qdotp * qdotq * reduced_mass_over_total_mass +
-       pdotp * x[1] * qdotq * (3 + reduced_mass_over_total_mass)) /
-      (2 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+      (-2. * x[1] * std::sqrt(qdotq) +
+       3. * x[1] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[4] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[1] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq1_2 =
-      (-48 * x[1] * qdotp * qdotp * std::sqrt(qdotq) *
+      (-48. * x[1] * qdotp * qdotp * std::sqrt(qdotq) *
            reduced_mass_over_total_mass +
-       24 * x[4] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+       24. * x[4] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
            reduced_mass_over_total_mass +
-       15 * x[1] * qdotp * qdotp * qdotp * qdotp *
+       15. * x[1] * qdotp * qdotp * qdotp * qdotp *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-       6 * pdotp * x[1] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass -
-       12 * x[4] * qdotp * qdotp * qdotp * qdotq *
+       6. * pdotp * x[1] * qdotp * qdotp * qdotq *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-       4 * x[4] * pdotp * qdotp * qdotq * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass +
-       6 * x[1] * qdotq * (1 + 3 * reduced_mass_over_total_mass) -
-       8 * pdotp * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
-           (5 + 8 * reduced_mass_over_total_mass) +
+       12. * x[4] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[4] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[1] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
        pdotp * pdotp * x[1] * qdotq * qdotq *
-           (-5 + reduced_mass_over_total_mass *
-                     (20 + 3 * reduced_mass_over_total_mass))) /
-      (8 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq1_3 =
-      (3 / 2 * qdotp * qdotq *
+      (3. / 2. * qdotp * qdotq *
            (x[1] * (x[0] * x[3] + x[2] * x[5]) -
             x[4] * (x[0] * x[0] + x[2] * x[2])) *
            reduced_mass_over_total_mass *
-           (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
-       2 * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
-           (-12 + (-872 + 63 * M_PI * M_PI) * reduced_mass_over_total_mass) -
-       6 * qdotp * reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12 + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
            (pdotp * pdotp * x[1] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) -
-            6 * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) +
-            6 * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (-1 + reduced_mass_over_total_mass) -
-            15 * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass +
-            15 * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
+            15. * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
                 reduced_mass_over_total_mass +
             x[4] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (-2 + 3 * reduced_mass_over_total_mass)) -
-       2 * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
-           (3 * pdotp * x[1] * qdotp * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) -
-            3 * x[4] * pdotp * qdotq * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[1] * qdotp * qdotp * qdotp *
-                (5 + 43 * reduced_mass_over_total_mass) -
-            8 * x[4] * qdotp * qdotp * qdotq *
-                (5 + 43 * reduced_mass_over_total_mass)) -
-       2 * x[1] * std::sqrt(qdotq) *
-           (3 * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            4 * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-                (5 + 43 * reduced_mass_over_total_mass) +
-            3 * pdotp * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) +
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[1] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[4] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[1] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[4] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[1] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
        0.75 * x[1] * qdotq *
-           (3 * qdotp * qdotp * reduced_mass_over_total_mass *
-                (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
             pdotp * qdotq *
-                (600 + reduced_mass_over_total_mass *
-                           (1340 - 3 * M_PI * M_PI +
-                            552 * reduced_mass_over_total_mass))) -
-       3 * x[1] *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[1] *
            (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            5 * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
             pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 +
+                (7. +
                  reduced_mass_over_total_mass *
-                     (-42 + reduced_mass_over_total_mass *
-                                (53 + 5 * reduced_mass_over_total_mass))))) /
-      (48 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
-                      qdotq * qdotq));
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
 
   double dH_dq2_Newt = x[2] / std::sqrt(qdotq * qdotq * qdotq);
   double dH_dq2_1 =
-      (-2 * x[2] * std::sqrt(qdotq) +
-       3 * x[2] * qdotp * qdotp * reduced_mass_over_total_mass -
-       2 * x[5] * qdotp * qdotq * reduced_mass_over_total_mass +
-       pdotp * x[2] * qdotq * (3 + reduced_mass_over_total_mass)) /
-      (2 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+      (-2. * x[2] * std::sqrt(qdotq) +
+       3. * x[2] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[5] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[2] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq2_2 =
-      (-48 * x[2] * qdotp * qdotp * std::sqrt(qdotq) *
+      (-48. * x[2] * qdotp * qdotp * std::sqrt(qdotq) *
            reduced_mass_over_total_mass +
-       24 * x[5] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+       24. * x[5] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
            reduced_mass_over_total_mass +
-       15 * x[2] * qdotp * qdotp * qdotp * qdotp *
+       15. * x[2] * qdotp * qdotp * qdotp * qdotp *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass +
-       6 * pdotp * x[2] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass -
-       12 * x[5] * qdotp * qdotp * qdotp * qdotq *
+       6. * pdotp * x[2] * qdotp * qdotp * qdotq *
            reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-       4 * x[5] * pdotp * qdotp * qdotq * qdotq * reduced_mass_over_total_mass *
-           reduced_mass_over_total_mass +
-       6 * x[2] * qdotq * (1 + 3 * reduced_mass_over_total_mass) -
-       8 * pdotp * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
-           (5 + 8 * reduced_mass_over_total_mass) +
+       12. * x[5] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[5] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[2] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
        pdotp * pdotp * x[2] * qdotq * qdotq *
-           (-5 + reduced_mass_over_total_mass *
-                     (20 + 3 * reduced_mass_over_total_mass))) /
-      (8 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
   double dH_dq2_3 =
-      (3 / 2 * qdotp * qdotq *
+      (3. / 2. * qdotp * qdotq *
            (x[2] * (x[0] * x[3] + x[1] * x[3]) -
             x[5] * (x[0] * x[0] + x[1] * x[1])) *
            reduced_mass_over_total_mass *
-           (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
-       2 * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
-           (-12 + (-872 + 63 * M_PI * M_PI) * reduced_mass_over_total_mass) -
-       6 * qdotp * reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12. + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
            (pdotp * pdotp * x[2] * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) -
-            6 * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) +
-            6 * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (-1 + reduced_mass_over_total_mass) -
-            15 * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass +
-            15 * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
+            15. * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
                 reduced_mass_over_total_mass +
             x[5] * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (-2 + 3 * reduced_mass_over_total_mass)) -
-       2 * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
-           (3 * pdotp * x[2] * qdotp * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) -
-            3 * x[5] * pdotp * qdotq * qdotq *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            8 * x[2] * qdotp * qdotp * qdotp *
-                (5 + 43 * reduced_mass_over_total_mass) -
-            8 * x[5] * qdotp * qdotp * qdotq *
-                (5 + 43 * reduced_mass_over_total_mass)) -
-       2 * x[2] * std::sqrt(qdotq) *
-           (3 * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
-                (17 + 30 * reduced_mass_over_total_mass) +
-            4 * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
-                (5 + 43 * reduced_mass_over_total_mass) +
-            3 * pdotp * pdotp * qdotq * qdotq *
-                (-27 + reduced_mass_over_total_mass *
-                           (136 + 109 * reduced_mass_over_total_mass))) +
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[2] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[5] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[2] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[5] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[2] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
        0.75 * x[2] * qdotq *
-           (3 * qdotp * qdotp * reduced_mass_over_total_mass *
-                (340 + 3 * M_PI * M_PI + 112 * reduced_mass_over_total_mass) +
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
             pdotp * qdotq *
-                (600 + reduced_mass_over_total_mass *
-                           (1340 - 3 * M_PI * M_PI +
-                            552 * reduced_mass_over_total_mass))) -
-       3 * x[2] *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[2] *
            (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
-                (2 - 3 * reduced_mass_over_total_mass) *
+                (2. - 3. * reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            3 * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
-                (-1 + reduced_mass_over_total_mass) *
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass -
-            5 * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
                 reduced_mass_over_total_mass * reduced_mass_over_total_mass *
                 reduced_mass_over_total_mass -
             pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
-                (7 +
+                (7. +
                  reduced_mass_over_total_mass *
-                     (-42 + reduced_mass_over_total_mass *
-                                (53 + 5 * reduced_mass_over_total_mass))))) /
-      (48 * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
-                      qdotq * qdotq));
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
 
   double L = total_mass * reduced_mass *
              sqrt((x[1] * x[5] - x[2] * x[4]) * (x[1] * x[5] - x[2] * x[4]) +
@@ -1631,52 +1642,56 @@ void BinaryWithGravitationalWaves::hamiltonian_system(
   double vw = std::cbrt(total_mass * w);
   double gamma_Euler = 0.57721566490153286060651209008240243104215933593992;
 
-  double f2 = -(1247 / 336) - (35 / 12) * reduced_mass_over_total_mass;
+  double f2 = -(1247. / 336.) - (35. / 12.) * reduced_mass_over_total_mass;
   double f3 = 4 * M_PI;
   double f4 =
-      -(44711 / 9072) + (9271 / 504) * reduced_mass_over_total_mass +
-      (65 / 18) * reduced_mass_over_total_mass * reduced_mass_over_total_mass;
-  double f5 = -(8191 / 672 + 583 / 24 * reduced_mass_over_total_mass) * M_PI;
-  double f6 = (6643739519 / 69854400) + (16 / 3) * M_PI * M_PI -
-              (1712 / 105) * gamma_Euler +
-              (-134543 / 7776 + (41 / 48) * M_PI * M_PI) *
+      -(44711. / 9072.) + (9271. / 504.) * reduced_mass_over_total_mass +
+      (65. / 18.) * reduced_mass_over_total_mass * reduced_mass_over_total_mass;
+  double f5 =
+      -(8191. / 672. + 583. / 24. * reduced_mass_over_total_mass) * M_PI;
+  double f6 = (6643739519. / 69854400.) + (16. / 3.) * M_PI * M_PI -
+              (1712. / 105.) * gamma_Euler +
+              (-134543. / 7776. + (41. / 48.) * M_PI * M_PI) *
                   reduced_mass_over_total_mass -
-              (94403 / 3024) * reduced_mass_over_total_mass *
+              (94403. / 3024.) * reduced_mass_over_total_mass *
                   reduced_mass_over_total_mass -
-              (775 / 324) * reduced_mass_over_total_mass *
+              (775. / 324.) * reduced_mass_over_total_mass *
                   reduced_mass_over_total_mass * reduced_mass_over_total_mass;
-  double fl6 = -1712 / 105;
-  double f7 = (-16285 / 504 + 214745 / 1728 * reduced_mass_over_total_mass +
-               193385 / 3024 * reduced_mass_over_total_mass *
+  double fl6 = -1712. / 105.;
+  double f7 = (-16285. / 504. + 214745. / 1728. * reduced_mass_over_total_mass +
+               193385. / 3024. * reduced_mass_over_total_mass *
                    reduced_mass_over_total_mass) *
               M_PI;
 
   double dE_dt =
-      -(32 / 5) * reduced_mass_over_total_mass * reduced_mass_over_total_mass *
-      vw * vw * vw * vw * vw * vw * vw * vw * vw * vw *
-      (1 + f2 * vw * vw + f3 * vw * vw * vw + f4 * vw * vw * vw * vw +
+      -(32. / 5.) * reduced_mass_over_total_mass *
+      reduced_mass_over_total_mass * vw * vw * vw * vw * vw * vw * vw * vw *
+      vw * vw *
+      (1. + f2 * vw * vw + f3 * vw * vw * vw + f4 * vw * vw * vw * vw +
        f5 * vw * vw * vw * vw * vw + f6 * vw * vw * vw * vw * vw * vw +
-       fl6 * vw * vw * vw * vw * vw * vw * std::log(4 * vw) +
+       fl6 * vw * vw * vw * vw * vw * vw * std::log(4. * vw) +
        f7 * vw * vw * vw * vw * vw * vw * vw);
 
-  std::array<double, 3> F;
-  F[0] = 1 / (w * L) * dE_dt * x[3];
-  F[1] = 1 / (w * L) * dE_dt * x[4];
-  F[2] = 1 / (w * L) * dE_dt * x[5];
+  std::array<double, 3> F{1. / (w * L) * dE_dt * x[3],
+                          1. / (w * L) * dE_dt * x[4],
+                          1. / (w * L) * dE_dt * x[5]};
 
-  dpdt[0] = (1 / total_mass) *
+  dpdt[0] = (1. / total_mass) *
             (dH_dp0_Newt + dH_dp0_1 + dH_dp0_2 + dH_dp0_3);  // dX0/dt = dH/dP0
-  dpdt[1] = (1 / total_mass) *
+  dpdt[1] = (1. / total_mass) *
             (dH_dp1_Newt + dH_dp1_1 + dH_dp1_2 + dH_dp1_3);  // dX1/dt = dH/dP1
-  dpdt[2] = (1 / total_mass) *
+  dpdt[2] = (1. / total_mass) *
             (dH_dp2_Newt + dH_dp2_1 + dH_dp2_2 + dH_dp2_3);  // dX2/dt = dH/dP2
 
-  dpdt[3] = -(1 / total_mass) * (dH_dq0_Newt + dH_dq0_1 + dH_dq0_2 + dH_dq0_3) +
-            F[0];  // dP0/dt = -dH/dX0 + F0
-  dpdt[4] = -(1 / total_mass) * (dH_dq1_Newt + dH_dq1_1 + dH_dq1_2 + dH_dq1_3) +
-            F[1];  // dP1/dt = -dH/dX1 + F1
-  dpdt[5] = -(1 / total_mass) * (dH_dq2_Newt + dH_dq2_1 + dH_dq2_2 + dH_dq2_3) +
-            F[2];  // dP2/dt = -dH/dX2 + F2
+  dpdt[3] =
+      -(1. / total_mass) * (dH_dq0_Newt + dH_dq0_1 + dH_dq0_2 + dH_dq0_3) +
+      F[0];  // dP0/dt = -dH/dX0 + F0
+  dpdt[4] =
+      -(1. / total_mass) * (dH_dq1_Newt + dH_dq1_1 + dH_dq1_2 + dH_dq1_3) +
+      F[1];  // dP1/dt = -dH/dX1 + F1
+  dpdt[5] =
+      -(1. / total_mass) * (dH_dq2_Newt + dH_dq2_1 + dH_dq2_2 + dH_dq2_3) +
+      F[2];  // dP2/dt = -dH/dX2 + F2
 }
 
 void BinaryWithGravitationalWaves::observer_vector(
