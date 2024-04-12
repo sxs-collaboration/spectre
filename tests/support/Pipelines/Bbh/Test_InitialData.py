@@ -63,6 +63,8 @@ class TestInitialData(unittest.TestCase):
             [params[f"HorizonRotationLeft_{xyz}"] for xyz in "xyz"],
             [-0.337933017966707, -0.422416272458383, -0.49689952695006],
         )
+        self.assertAlmostEqual(params["FalloffWidthRight"], 6.479672589667676)
+        self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # COM is zero

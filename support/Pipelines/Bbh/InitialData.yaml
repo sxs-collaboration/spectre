@@ -48,7 +48,9 @@ Background: &background
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
     LinearVelocity: [0., 0., 0.]
-    FalloffWidths: [4.8, 4.8]
+    FalloffWidths:
+      - {{ FalloffWidthLeft }}
+      - {{ FalloffWidthRight }}
 
 InitialGuess: *background
 

@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 ID_INPUT_FILE_TEMPLATE = Path(__file__).parent / "InitialData.yaml"
 
 
+def L1_distance(m1, m2, separation):
+    """Distance of the L1 Lagrangian point from m1, in Newtonian gravity"""
+    return separation * (0.5 - 0.227 * np.log10(m2 / m1))
+
+
 def id_parameters(
     mass_ratio: float,
     dimensionless_spin_a: Sequence[float],
@@ -49,6 +54,7 @@ def id_parameters(
     M_B = 1.0 / (1.0 + mass_ratio)
     x_A = separation / (1.0 + mass_ratio)
     x_B = x_A - separation
+    # Spins
     chi_A = np.asarray(dimensionless_spin_a)
     r_plus_A = M_A * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
     Omega_A = -0.5 * chi_A / r_plus_A
@@ -57,6 +63,11 @@ def id_parameters(
     r_plus_B = M_B * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = -0.5 * chi_B / r_plus_B
     Omega_B[2] += orbital_angular_velocity
+    # Falloff widths of superposition
+    L1_dist_A = L1_distance(M_A, M_B, separation)
+    L1_dist_B = separation - L1_dist_A
+    falloff_width_A = 3.0 / 5.0 * L1_dist_A
+    falloff_width_B = 3.0 / 5.0 * L1_dist_B
     return {
         "MassRight": M_A,
         "MassLeft": M_B,
@@ -78,6 +89,8 @@ def id_parameters(
         "HorizonRotationLeft_x": Omega_B[0],
         "HorizonRotationLeft_y": Omega_B[1],
         "HorizonRotationLeft_z": Omega_B[2],
+        "FalloffWidthRight": falloff_width_A,
+        "FalloffWidthLeft": falloff_width_B,
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
