@@ -1719,22 +1719,23 @@ void BinaryWithGravitationalWaves::integrate_hamiltonian_system() {
       initial_state_momentum.at(1),
       initial_state_momentum.at(2)};  // initial conditions
 
-  // Bind the hamiltonian_system function to this object
-  auto hamiltonian_system_bound =
-      std::bind(&BinaryWithGravitationalWaves::hamiltonian_system, this,
-                std::placeholders::_1, std::placeholders::_2);
+  auto hamiltonian_system_lambda = [this](auto&& PH1, auto&& PH2,
+                                          const double /*t*/) {
+    hamiltonian_system(std::forward<decltype(PH1)>(PH1),
+                       std::forward<decltype(PH2)>(PH2));
+  };
 
-  // Bind the observer function to this object
-  auto observer_bound =
-      std::bind(&BinaryWithGravitationalWaves::observer_vector, this,
-                std::placeholders::_1, std::placeholders::_2);
+  auto observer = [this](auto&& PH1, auto&& PH2) {
+    observer_vector(std::forward<decltype(PH1)>(PH1),
+                    std::forward<decltype(PH2)>(PH2));
+  };
 
   // Integrate the Hamiltonian system
   boost::numeric::odeint::integrate_const(
       boost::numeric::odeint::runge_kutta4<
           BinaryWithGravitationalWaves::state_type>(),
-      hamiltonian_system_bound, ini, initial_time, final_time, -time_step,
-      observer_bound);
+      hamiltonian_system_lambda, ini, initial_time, final_time, -time_step,
+      observer);
 }
 
 void BinaryWithGravitationalWaves::write_evolution_to_file() const {
