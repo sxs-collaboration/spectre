@@ -4,14 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
-#include <initializer_list>
 
-#include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
@@ -25,10 +21,8 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
-#include "Utilities/MakeWithValue.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
@@ -153,193 +147,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Backwards",
 }
 
 namespace {
-// Non-copyable double to verify that the boundary code is not making
-// internal copies.
-class NCd {
- public:
-  NCd() = default;
-  explicit NCd(double x) : x_(x) {}
-  NCd(const NCd&) = delete;
-  NCd(NCd&&) = default;
-  NCd& operator=(const NCd&) = delete;
-  NCd& operator=(NCd&&) = default;
-  ~NCd() = default;
-
-  const double& operator()() const { return x_; }
-  double& operator()() { return x_; }
-
- private:
-  double x_;
-};
-
-auto make_math_wrapper(const gsl::not_null<NCd*> x) {
-  return ::make_math_wrapper(&(*x)());
-}
-
-auto make_math_wrapper(const NCd& x) { return ::make_math_wrapper(x()); }
-
-// Random numbers
-constexpr double c10 = 0.949716728952811;
-constexpr double c11 = 0.190663110072823;
-constexpr double c20 = 0.932407227651314;
-constexpr double c21 = 0.805454101952822;
-constexpr double c22 = 0.825876851406978;
-
-// Test coupling for integrating using two drivers (multiplied together)
-NCd quartic_coupling(const NCd& local, const NCd& remote) {
-  return NCd(local() * remote());
-}
-
-// Test functions for integrating a quartic using the above coupling.
-// The derivative of quartic_answer is the product of the other two.
-double quartic_side1(double x) { return c10 + x * c11; }
-double quartic_side2(double x) { return c20 + x * (c21 + x * c22); }
-double quartic_answer(double x) {
-  return x * (c10 * c20
-              + x * ((c10 * c21 + c11 * c20) / 2
-                     + x * ((c10 * c22 + c11 * c21) / 3
-                            + x * (c11 * c22 / 4))));
-}
-
-void do_lts_test(const std::array<TimeDelta, 2>& dt) {
-  // For general time steppers the boundary stepper cannot be run
-  // without simultaneously running the volume stepper.  For
-  // Adams-Bashforth methods, however, the volume contribution is zero
-  // if all the derivative contributions are from the boundary, so we
-  // can leave it out.
-
-  const bool forward_in_time = dt[0].is_positive();
-  const auto simulation_less = [forward_in_time](const Time& a, const Time& b) {
-    return forward_in_time ? a < b : b < a;
-  };
-
-  const auto make_time_id = [forward_in_time](const Time& t) {
-    return TimeStepId(forward_in_time, 0, t);
-  };
-
-  const Slab slab = dt[0].slab();
-  Time t = forward_in_time ? slab.start() : slab.end();
-
-  const size_t order = 4;
-  TimeSteppers::AdamsBashforth ab4(order);
-
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{};
-  {
-    const Slab init_slab = slab.advance_towards(-dt[0]);
-
-    for (int32_t step = 1; step <= 3; ++step) {
-      {
-        const Time now = t - step * dt[0].with_slab(init_slab);
-        history.local().insert_initial(make_time_id(now), order,
-                                       NCd(quartic_side1(now.value())));
-      }
-      {
-        const Time now = t - step * dt[1].with_slab(init_slab);
-        history.remote().insert_initial(make_time_id(now), order,
-                                        NCd(quartic_side2(now.value())));
-      }
-    }
-  }
-
-  NCd y(quartic_answer(t.value()));
-  Time next_check = t + dt[0];
-  std::array<Time, 2> next{{t, t}};
-  for (;;) {
-    const auto side = static_cast<size_t>(
-        std::min_element(next.cbegin(), next.cend(), simulation_less)
-        - next.cbegin());
-
-    if (side == 0) {
-      history.local().insert(make_time_id(t), order,
-                             NCd(quartic_side1(t.value())));
-    } else {
-      history.remote().insert(make_time_id(t), order,
-                              NCd(quartic_side2(t.value())));
-    }
-
-    gsl::at(next, side) += gsl::at(dt, side);
-
-    t = *std::min_element(next.cbegin(), next.cend(), simulation_less);
-
-    ASSERT(not simulation_less(next_check, t), "Screwed up arithmetic");
-    if (t == next_check) {
-      ab4.add_boundary_delta(&y, history, dt[0], quartic_coupling);
-      ab4.clean_boundary_history(make_not_null(&history));
-      CHECK(y() == approx(quartic_answer(t.value())));
-      if (t.is_at_slab_boundary()) {
-        break;
-      }
-      next_check += dt[0];
-    }
-  }
-}
-
-void check_lts_vts() {
-  const Slab slab(0., 1.);
-
-  const auto make_time_id = [](const Time& t) {
-    return TimeStepId(true, 0, t);
-  };
-
-  Time t = slab.start();
-
-  const size_t order = 4;
-  TimeSteppers::AdamsBashforth ab4(order);
-
-  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{};
-  {
-    const Slab init_slab = slab.retreat();
-    const TimeDelta init_dt = init_slab.duration() / 4;
-
-    // clang-tidy misfeature: warns about boost internals here
-    for (int32_t step = 1; step <= 3; ++step) {  // NOLINT
-      // clang-tidy misfeature: warns about boost internals here
-      const Time now = t - step * init_dt;  // NOLINT
-      history.local().insert_initial(make_time_id(now), order,
-                                     NCd(quartic_side1(now.value())));
-      history.remote().insert_initial(make_time_id(now), order,
-                                      NCd(quartic_side2(now.value())));
-    }
-  }
-
-  std::array<std::deque<TimeDelta>, 2> dt{{
-      {slab.duration() / 2, slab.duration() / 4, slab.duration() / 4},
-      {slab.duration() / 6, slab.duration() / 6, slab.duration() * 2 / 9,
-            slab.duration() * 4 / 9}}};
-
-  NCd y(quartic_answer(t.value()));
-  Time next_check = t + dt[0][0];
-  std::array<Time, 2> next{{t, t}};
-  for (;;) {
-    const auto side = static_cast<size_t>(
-        std::min_element(next.cbegin(), next.cend()) - next.cbegin());
-
-    if (side == 0) {
-      history.local().insert(make_time_id(next[0]), order,
-                             NCd(quartic_side1(next[0].value())));
-    } else {
-      history.remote().insert(make_time_id(next[1]), order,
-                              NCd(quartic_side2(next[1].value())));
-    }
-
-    const TimeDelta this_dt = gsl::at(dt, side).front();
-    gsl::at(dt, side).pop_front();
-
-    gsl::at(next, side) += this_dt;
-
-    if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
-      ab4.add_boundary_delta(&y, history, next_check - t, quartic_coupling);
-      ab4.clean_boundary_history(make_not_null(&history));
-      CHECK(y() == approx(quartic_answer(next_check.value())));
-      if (next_check.is_at_slab_boundary()) {
-        break;
-      }
-      t = next_check;
-      next_check += dt[0].front();
-    }
-  }
-}
-
 void test_neighbor_data_required() {
   // Test is order-independent
   const TimeSteppers::AdamsBashforth stepper(4);
@@ -360,52 +167,24 @@ void test_neighbor_data_required() {
 }
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
                   "[Unit][Time]") {
   test_neighbor_data_required();
 
-  // No local stepping
   for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
+    CAPTURE(order);
     const TimeSteppers::AdamsBashforth stepper(order);
-    for (size_t start_points = 0; start_points < order; ++start_points) {
-      INFO(start_points);
-      const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
-      TimeStepperTestUtils::lts::test_equal_rate(stepper, start_points + 1,
-                                                 start_points, epsilon, true);
-      TimeStepperTestUtils::lts::test_equal_rate(stepper, start_points + 1,
-                                                 start_points, epsilon, false);
+    TimeStepperTestUtils::lts::test_equal_rate(stepper);
+    TimeStepperTestUtils::lts::test_uncoupled(stepper, 1e-12);
+    TimeStepperTestUtils::lts::test_conservation(stepper);
+    // Only test convergence for low-order methods, since it's hard to
+    // find parameters where the high-order ones are in the convergent
+    // limit but not roundoff-dominated.
+    if (order < 5) {
+      TimeStepperTestUtils::lts::test_convergence(stepper, {20, 100}, 20);
+      TimeStepperTestUtils::lts::test_dense_convergence(stepper, {40, 200}, 40);
     }
-  }
-
-  // Local stepping with constant step sizes
-  const Slab slab(0., 1.);
-  for (const auto& full : {slab.duration(), -slab.duration()}) {
-    do_lts_test({{full / 4, full / 4}});
-    do_lts_test({{full / 4, full / 8}});
-    do_lts_test({{full / 8, full / 4}});
-    do_lts_test({{full / 16, full / 4}});
-    do_lts_test({{full / 4, full / 16}});
-    do_lts_test({{full / 32, full / 4}});
-    do_lts_test({{full / 4, full / 32}});
-
-    // Non-nesting cases
-    do_lts_test({{full / 4, full / 6}});
-    do_lts_test({{full / 6, full / 4}});
-    do_lts_test({{full / 5, full / 7}});
-    do_lts_test({{full / 7, full / 5}});
-    do_lts_test({{full / 5, full / 13}});
-    do_lts_test({{full / 13, full / 5}});
-  }
-
-  // Local stepping with varying time steps
-  check_lts_vts();
-
-  // Dense output
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    TimeStepperTestUtils::lts::test_dense_output(
-        TimeSteppers::AdamsBashforth(order));
   }
 }
 
