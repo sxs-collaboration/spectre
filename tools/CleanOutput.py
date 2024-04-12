@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import glob
 import logging
 import os
 import shutil
@@ -24,13 +25,14 @@ def clean_output(input_file, output_dir, force):
     Deletes output files specified in the `input_file` from the `output_dir`,
     raising an error if the expected output files were not found.
 
-    The `input_file` must list its expected output files in the metadata:
+    The `input_file` must list its expected output files in the metadata.
+    They may contain glob patterns:
 
     \b
     ```yaml
     ExpectedOutput:
       - Reduction.h5
-      - Volume0.h5
+      - Volume*.h5
     ```
     """
     with open(input_file, "r") as open_input_file:
@@ -52,14 +54,17 @@ def clean_output(input_file, output_dir, force):
 
     missing_files = []
     for expected_output_file in expected_output:
-        expected_output_file = os.path.join(output_dir, expected_output_file)
+        found_output_files = glob.glob(
+            os.path.join(output_dir, expected_output_file)
+        )
         logging.debug(f"Attempting to remove file {expected_output_file}...")
-        if os.path.exists(expected_output_file):
-            if os.path.isfile(expected_output_file):
-                os.remove(expected_output_file)
-            else:
-                shutil.rmtree(expected_output_file)
-            logging.info(f"Removed file {expected_output_file}.")
+        if len(found_output_files) > 0:
+            for expected_output_file in found_output_files:
+                if os.path.isfile(expected_output_file):
+                    os.remove(expected_output_file)
+                else:
+                    shutil.rmtree(expected_output_file)
+                logging.info(f"Removed file {expected_output_file}.")
         elif not force:
             missing_files.append(expected_output_file)
             logging.error(

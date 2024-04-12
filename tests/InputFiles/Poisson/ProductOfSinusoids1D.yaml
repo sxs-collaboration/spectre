@@ -8,12 +8,7 @@ Testing:
 ExpectedOutput:
   - PoissonProductOfSinusoids1DReductions.h5
   - PoissonProductOfSinusoids1DVolume0.h5
-  - SubdomainMatrix_[B0,(L1I0)].txt
-  - SubdomainMatrix_[B0,(L1I1)].txt
-  - SubdomainMatrix_[B0,(L2I0)].txt
-  - SubdomainMatrix_[B0,(L2I1)].txt
-  - SubdomainMatrix_[B0,(L2I2)].txt
-  - SubdomainMatrix_[B0,(L2I3)].txt
+  - SubdomainMatrix*.txt
 OutputFileChecks:
   - Label: Discretization error
     Subfile: ErrorNorms.dat
