@@ -17,6 +17,7 @@ on:
   workflow_call:
     inputs:
       image_name:
+        type: string
         description: Image name to push to DockerHub
         default: 'sxscollaboration/spectre'
       build_arm:
