@@ -149,7 +149,11 @@ struct ContributeReductionData {
                   observations_registered.end(),
               "Couldn't find registration key "
                   << observation_id.observation_key()
-                  << " in the registered observers.");
+                  << " in the registered observers. Known IDs are "
+                  << keys_of(observations_registered)
+                  << "\nIt could be that you are using a nodegroup DG "
+                     "collection but the observation code for the event hasn't "
+                     "been updated to work with the nodegroup yet.");
 
           auto& contributed_array_ids =
               (*reduction_observers_contributed)[observation_id];
