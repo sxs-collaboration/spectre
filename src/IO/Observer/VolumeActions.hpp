@@ -179,7 +179,7 @@ struct ContributeVolumeDataToWriter {
                         received_volume_data) {
     apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        received_volume_data);
+        std::move(received_volume_data));
   }
 
   template <typename ParallelComponent, typename DbTagsList,
@@ -195,7 +195,7 @@ struct ContributeVolumeDataToWriter {
           received_volume_data) {
     apply_impl<Tags::TensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        received_volume_data);
+        std::move(received_volume_data));
   }
 
  private:
@@ -208,7 +208,7 @@ struct ContributeVolumeDataToWriter {
                          const observers::ObservationId& observation_id,
                          Parallel::ArrayComponentId observer_group_id,
                          const std::string& subfile_name,
-                         const VolumeDataAtObsId& received_volume_data) {
+                         VolumeDataAtObsId received_volume_data) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
     // DataBox does not allow any functions calls, both get and mutate, during
