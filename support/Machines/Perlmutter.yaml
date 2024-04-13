@@ -1,0 +1,13 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Perlmutter
+  Description: |
+    DOE supercomputer at Lawrence Berkely National Laboratory
+    More information:
+    https://docs.nersc.gov/systems/perlmutter/
+  DefaultTasksPerNode: 8
+  DefaultProcsPerTasks: 32
+  DefaultQueue: "regular"
+  DefaultTimeLimit: "1-00:00:00"
