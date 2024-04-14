@@ -10,6 +10,12 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Parallel::Actions {
+struct SetTerminateOnElement;
+}  // namespace Parallel::Actions
+/// \endcond
+
 namespace Events {
 /// \ingroup EventsAndTriggersGroup
 /// Sets the termination flag for the code to exit.
@@ -36,9 +42,16 @@ class Completion : public Event {
                   const ArrayIndex& array_index,
                   const Component* const /*meta*/,
                   const ObservationValue& /*observation_value*/) const {
-    auto al_gore = Parallel::local(
-        Parallel::get_parallel_component<Component>(cache)[array_index]);
-    al_gore->set_terminate(true);
+    if constexpr (Parallel::is_nodegroup_v<Component>) {
+      Parallel::local_synchronous_action<
+          Parallel::Actions::SetTerminateOnElement>(
+          Parallel::get_parallel_component<Component>(cache),
+          make_not_null(&cache), array_index);
+    } else {
+      auto al_gore = Parallel::local(
+          Parallel::get_parallel_component<Component>(cache)[array_index]);
+      al_gore->set_terminate(true);
+    }
   }
 
   using is_ready_argument_tags = tmpl::list<>;
