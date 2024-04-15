@@ -291,6 +291,7 @@ long_lines() {
               'eos.*' \
               'external/Licenses/.*License.txt' \
               'RotatingStarId.dat$' \
+              'RotatingStarId_Hybrid.dat$' \
               'tools/CheckFiles.sh$' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
@@ -450,6 +451,7 @@ license() {
               'external/*' \
               'eos.*' \
               'RotatingStarId.dat$' \
+              'RotatingStarId_Hybrid.dat$' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"

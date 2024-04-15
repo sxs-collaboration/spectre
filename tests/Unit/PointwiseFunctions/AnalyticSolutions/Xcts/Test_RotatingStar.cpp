@@ -18,6 +18,8 @@ namespace Xcts::Solutions {
 // [[Timeout, 20]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Xcts.RotatingStar",
                   "[PointwiseFunctions][Unit]") {
+  register_derived_classes_with_charm<
+      EquationsOfState::EquationOfState<true, 1>>();
   using RotatingStar = WrappedGrMhd<RelativisticEuler::Solutions::RotatingStar>;
   const std::string rotns_filename = unit_test_src_path() +
                                      "/PointwiseFunctions/AnalyticSolutions/"
