@@ -114,9 +114,8 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
         << time_step_id.substep_time() << ".");
   }
 
-  const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);
-  const auto new_step =
-      choose_lts_step_size(next_time_id.step_time(), desired_step);
+  const auto new_step = choose_lts_step_size(
+      time_step_id.step_time() + current_step, desired_step);
   db::mutate<Tags::Next<Tags::TimeStep>>(
       [&new_step](const gsl::not_null<TimeDelta*> next_step) {
         *next_step = new_step;
