@@ -4,8 +4,10 @@
 set(LIBRARY "Test_MonteCarlo")
 
 set(LIBRARY_SOURCES
-  Test_InverseJacobianInertialToFluid.cpp
   Test_EmitPackets.cpp
+  Test_EvolvePackets.cpp
+  Test_InterpolateOpacities.cpp
+  Test_InverseJacobianInertialToFluid.cpp
   Test_Packet.cpp
   Test_Scattering.cpp
   )
