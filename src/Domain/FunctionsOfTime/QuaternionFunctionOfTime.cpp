@@ -16,6 +16,7 @@
 #include <deque>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -32,6 +33,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupBoost.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
@@ -92,7 +94,7 @@ double QuaternionFunctionOfTime<MaxDeriv>::expiration_after(
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 4;
+  size_t version = 5;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -105,6 +107,11 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
 
   p | stored_quaternions_and_times_;
   p | angle_f_of_t_;
+
+  // Just use empty map when unpacking version 4
+  if (version >= 5) {
+    p | update_backlog_;
+  }
 }
 
 namespace {
@@ -191,16 +198,38 @@ void QuaternionFunctionOfTime<MaxDeriv>::update(
   angle_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
                        next_expiration_time);
 
-  const auto old_interval = stored_quaternions_and_times_(time_of_update);
-  boost::math::quaternion<double> quaternion_to_integrate = old_interval.data;
+  // If the stored PP didn't update, then don't compute the new quaternion, just
+  // store the times.
+  const double angle_expiration_time = angle_f_of_t_.time_bounds()[1];
+  if (angle_expiration_time < next_expiration_time) {
+    update_backlog_[time_of_update] = next_expiration_time;
+    return;
+  }
 
-  solve_quaternion_ode(make_not_null(&quaternion_to_integrate),
-                       old_interval.update, old_interval.expiration);
+  // We add this time to the backlog even though it doesn't need to be added
+  // just to make the loop easier. It'll be removed
+  update_backlog_[time_of_update] = next_expiration_time;
 
-  normalize_quaternion(make_not_null(&quaternion_to_integrate));
+  while (not update_backlog_.empty() and
+         update_backlog_.begin()->second <= angle_expiration_time) {
+    auto entry = update_backlog_.begin();
+    const double stored_time_of_update = entry->first;
+    const double stored_expiration_time = entry->second;
 
-  stored_quaternions_and_times_.insert(time_of_update, quaternion_to_integrate,
-                                       next_expiration_time);
+    const auto old_interval =
+        stored_quaternions_and_times_(stored_time_of_update);
+    boost::math::quaternion<double> quaternion_to_integrate = old_interval.data;
+
+    solve_quaternion_ode(make_not_null(&quaternion_to_integrate),
+                         old_interval.update, old_interval.expiration);
+
+    normalize_quaternion(make_not_null(&quaternion_to_integrate));
+
+    stored_quaternions_and_times_.insert(
+        stored_time_of_update, quaternion_to_integrate, stored_expiration_time);
+
+    update_backlog_.erase(entry);
+  }
 }
 
 template <size_t MaxDeriv>
@@ -348,6 +377,8 @@ std::ostream& operator<<(
   for (const auto& entry : iters) {
     os << "t=" << entry->update << ": " << entry->data << "\n";
   }
+  using ::operator<<;
+  os << "backlog=" << quaternion_f_of_t.update_backlog_ << "\n";
   os << "Angle:\n";
   os << quaternion_f_of_t.angle_f_of_t_;
   return os;

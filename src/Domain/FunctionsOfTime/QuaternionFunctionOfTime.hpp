@@ -6,6 +6,7 @@
 #include <array>
 #include <boost/math/quaternion.hpp>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -158,6 +159,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   FunctionOfTimeHelpers::ThreadsafeList<boost::math::quaternion<double>>
       stored_quaternions_and_times_{};
   domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_{};
+  std::map<double, double> update_backlog_{};
 
   void unpack_old_version(PUP::er& p, size_t version);
 

@@ -10,6 +10,7 @@
 #include <deque>
 #include <iterator>
 #include <limits>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -24,6 +25,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
@@ -124,23 +126,53 @@ void PiecewisePolynomial<MaxDeriv>::update(const double time_of_update,
   // value of deriv_info_at_update_times_.expiration_time() can change
   // during this function, but it is obtained atomically so at worst
   // you get a nonsense error message.
-  if (time_of_update != deriv_info_at_update_times_.expiration_time()) {
+  if (time_of_update < deriv_info_at_update_times_.expiration_time()) {
     ERROR("Attempted to update at time "
-          << time_of_update << " instead of the expiration time "
+          << time_of_update << " which is earlier than the expiration time "
           << deriv_info_at_update_times_.expiration_time());
   }
 
-  auto func = func_and_derivs(time_of_update);
+  // It is possible for updates to come out of order because of the
+  // asynchronous nature of our algorithm. Therefore, if we receive an update
+  // at a time later than the expiration time, we store that update and will
+  // apply it later.
+  if (time_of_update != deriv_info_at_update_times_.expiration_time()) {
+    update_backlog_[time_of_update] =
+        std::make_pair(std::move(updated_max_deriv), next_expiration_time);
 
-  if (updated_max_deriv.size() != func.back().size()) {
-    ERROR("the number of components trying to be updated ("
-          << updated_max_deriv.size()
-          << ") does not match the number of components (" << func.back().size()
-          << ") in the PiecewisePolynomial.");
+    return;
   }
 
-  func[MaxDeriv] = std::move(updated_max_deriv);
-  store_entry(time_of_update, std::move(func), next_expiration_time);
+  // NOLINTNEXTLINE(performance-unnecessary-value-param) false positive
+  const auto update_func = [this](const double time, DataVector updated_deriv,
+                                  const double expiration_time) {
+    auto func = func_and_derivs(time);
+
+    if (updated_deriv.size() != func.back().size()) {
+      ERROR("the number of components trying to be updated ("
+            << updated_deriv.size()
+            << ") does not match the number of components ("
+            << func.back().size() << ") in the PiecewisePolynomial.");
+    }
+
+    func[MaxDeriv] = std::move(updated_deriv);
+    store_entry(time, std::move(func), expiration_time);
+  };
+
+  update_func(time_of_update, std::move(updated_max_deriv),
+              next_expiration_time);
+
+  // Go through the backlog and see if we have anything to update
+  while (not update_backlog_.empty() and
+         update_backlog_.begin()->first == time_bounds()[1]) {
+    auto entry = update_backlog_.begin();
+    const double new_update_time = entry->first;
+    DataVector& new_updated_deriv = entry->second.first;
+    const double new_expiration_time = entry->second.second;
+    update_func(new_update_time, std::move(new_updated_deriv),
+                new_expiration_time);
+    update_backlog_.erase(entry);
+  }
 }
 
 template <size_t MaxDeriv>
@@ -158,7 +190,7 @@ double PiecewisePolynomial<MaxDeriv>::expiration_after(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 3;
+  size_t version = 4;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -170,6 +202,11 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   }
 
   p | deriv_info_at_update_times_;
+
+  // Just use empty map when unpacking version 3
+  if (version >= 4) {
+    p | update_backlog_;
+  }
 }
 
 namespace {
@@ -259,6 +296,8 @@ std::ostream& operator<<(
   const auto updates_end =
       piecewise_polynomial.deriv_info_at_update_times_.end();
   if (updates_begin == updates_end) {
+    using ::operator<<;
+    os << "backlog=" << piecewise_polynomial.update_backlog_;
     return os;
   }
   // We want to write the entries in order, but the iterator goes the
@@ -280,11 +319,10 @@ std::ostream& operator<<(
     for (size_t i = 0; i < MaxDeriv; ++i) {
       os << gsl::at(iters[entry]->data, i) << " ";
     }
-    os << iters[entry]->data[MaxDeriv];
-    if (entry != iters.size() - 1) {
-      os << "\n";
-    }
+    os << iters[entry]->data[MaxDeriv] << "\n";
   }
+  using ::operator<<;
+  os << "backlog=" << piecewise_polynomial.update_backlog_;
   return os;
 }
 
