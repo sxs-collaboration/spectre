@@ -196,6 +196,32 @@ void test_construct_from_options() {
         Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
 }
 
+void test_strahlkorper_from_other_strahlkorper() {
+  const Strahlkorper<Frame::Inertial> inertial_strahlkorper{
+      4_st, 1.2, std::array{1.0, 2.0, 3.0}};
+  Strahlkorper<Frame::Grid> grid_strahlkorper{inertial_strahlkorper};
+
+  const auto check_equal = [](const auto& s1, const auto& s2) {
+    CHECK(s1.coefficients() == s2.coefficients());
+    CHECK(s1.l_max() == s2.l_max());
+    CHECK(s1.m_max() == s2.m_max());
+    CHECK(s1.expansion_center() == s2.expansion_center());
+  };
+
+  check_equal(inertial_strahlkorper, grid_strahlkorper);
+
+  grid_strahlkorper = Strahlkorper<Frame::Grid>{
+      inertial_strahlkorper.coefficients(), inertial_strahlkorper};
+
+  check_equal(inertial_strahlkorper, grid_strahlkorper);
+
+  grid_strahlkorper =
+      Strahlkorper<Frame::Grid>{8_st, 8_st, inertial_strahlkorper};
+
+  check_equal(Strahlkorper<Frame::Grid>(8_st, 1.2, std::array{1.0, 2.0, 3.0}),
+              grid_strahlkorper);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper",
@@ -225,11 +251,10 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper",
         return Strahlkorper<Frame::Inertial>(std::move(sk));
       });
   test_construct_from_options();
-}
-
-SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper.Serialization",
-                  "[ApparentHorizonFinder][Unit]") {
-  Strahlkorper<Frame::Inertial> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
-  test_serialization(s);
+  test_strahlkorper_from_other_strahlkorper();
+  {
+    Strahlkorper<Frame::Inertial> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
+    test_serialization(s);
+  }
 }
 }  // namespace ylm

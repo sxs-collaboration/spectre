@@ -1152,24 +1152,25 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.RadialDistance",
   // Check cases where one has more resolution than the other
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist), strahlkorper_a,
-      ylm::Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
-                        strahlkorper_b));
+      ylm::Strahlkorper<Frame::Inertial>(strahlkorper_b.l_max() - 1,
+                                         strahlkorper_b.m_max() - 1,
+                                         strahlkorper_b));
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
-  gr::surfaces::radial_distance(
-      make_not_null(&radial_dist),
-      ylm::Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
-                        strahlkorper_b),
-      strahlkorper_a);
+  gr::surfaces::radial_distance(make_not_null(&radial_dist),
+                                ylm::Strahlkorper<Frame::Inertial>(
+                                    strahlkorper_b.l_max() - 1,
+                                    strahlkorper_b.m_max() - 1, strahlkorper_b),
+                                strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist), strahlkorper_a,
-      ylm::Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
-                        strahlkorper_b));
+      ylm::Strahlkorper<Frame::Inertial>(
+          strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1, strahlkorper_b));
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
   gr::surfaces::radial_distance(
       make_not_null(&radial_dist),
-      ylm::Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
-                        strahlkorper_b),
+      ylm::Strahlkorper<Frame::Inertial>(
+          strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1, strahlkorper_b),
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
 
