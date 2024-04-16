@@ -164,12 +164,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> radiative_term,
     const gsl::not_null<Cache*> cache,
     detail::Tags::RadiativeTerm<DataType> /*meta*/) const {
-  get<0, 0>(*radiative_term) = 0.;
-  get<0, 1>(*radiative_term) = 0.;
-  get<0, 2>(*radiative_term) = 0.;
-  get<1, 1>(*radiative_term) = 0.;
-  get<1, 2>(*radiative_term) = 0.;
-  get<2, 2>(*radiative_term) = 0.;
+  std::fill(radiative_term->begin(), radiative_term->end(), 0.);
   add_near_zone_term_to_radiative(radiative_term, cache);
   add_present_term_to_radiative(radiative_term, cache);
   add_past_term_to_radiative(radiative_term, cache);
@@ -189,34 +184,29 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       cache->get_var(*this, detail::Tags::NormalLeft<DataType>{});
   const auto& normal_right =
       cache->get_var(*this, detail::Tags::NormalRight<DataType>{});
-  const auto s = distance_left + distance_right + separation;
-  get<0, 0>(*near_zone_term) = 0.;
-  get<0, 1>(*near_zone_term) = 0.;
-  get<0, 2>(*near_zone_term) = 0.;
-  get<1, 1>(*near_zone_term) = 0.;
-  get<1, 2>(*near_zone_term) = 0.;
-  get<2, 2>(*near_zone_term) = 0.;
+  const DataType s = distance_left + distance_right + separation;
+  std::fill(near_zone_term->begin(), near_zone_term->end(), 0.);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       near_zone_term->get(i, j) +=
           0.25 / (mass_left * distance_left) *
-              (2. * momentum_left.get(i) * momentum_left.get(j) +
-               (3. * get(dot_product(normal_left, momentum_left)) *
-                    get(dot_product(normal_left, momentum_left)) -
-                5. * get(dot_product(momentum_left, momentum_left))) *
+              (2. * momentum_left.at(i) * momentum_left.at(j) +
+               (3. * get(this_dot_product(normal_left, momentum_left)) *
+                    get(this_dot_product(normal_left, momentum_left)) -
+                5. * dot(momentum_left, momentum_left)) *
                    normal_left.get(i) * normal_left.get(j) +
-               6. * get(dot_product(normal_left, momentum_left)) *
-                   (normal_left.get(i) * momentum_left.get(j) +
-                    normal_left.get(j) * momentum_left.get(i))) +
+               6. * get(this_dot_product(normal_left, momentum_left)) *
+                   (normal_left.get(i) * momentum_left.at(j) +
+                    normal_left.get(j) * momentum_left.at(i))) +
           0.25 / (mass_right * distance_right) *
-              (2. * momentum_right.get(i) * momentum_right.get(j) +
-               (3. * get(dot_product(normal_right, momentum_right)) *
-                    get(dot_product(normal_right, momentum_right)) -
-                5. * get(dot_product(momentum_right, momentum_right))) *
+              (2. * momentum_right.at(i) * momentum_right.at(j) +
+               (3. * get(this_dot_product(normal_right, momentum_right)) *
+                    get(this_dot_product(normal_right, momentum_right)) -
+                5. * dot(momentum_right, momentum_right)) *
                    normal_right.get(i) * normal_right.get(j) +
-               6. * get(dot_product(normal_right, momentum_right)) *
-                   (normal_right.get(i) * momentum_right.get(j) +
-                    normal_right.get(j) * momentum_right.get(i))) +
+               6. * get(this_dot_product(normal_right, momentum_right)) *
+                   (normal_right.get(i) * momentum_right.at(j) +
+                    normal_right.get(j) * momentum_right.at(i))) +
           0.125 * (mass_left * mass_right) *
               (-32. / s * (1. / separation + 1. / s) * normal_lr.at(i) *
                    normal_lr.at(j) +
@@ -251,13 +241,13 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     }
     near_zone_term->get(i, i) +=
         0.25 / (mass_left * distance_left) *
-            (get(dot_product(momentum_left, momentum_left)) -
-             5. * get(dot_product(normal_left, momentum_left)) *
-                 get(dot_product(normal_left, momentum_left))) +
+            (dot(momentum_left, momentum_left) -
+             5. * get(this_dot_product(normal_left, momentum_left)) *
+                 get(this_dot_product(normal_left, momentum_left))) +
         0.25 / (mass_right * distance_right) *
-            (get(dot_product(momentum_right, momentum_right)) -
-             5. * get(dot_product(normal_right, momentum_right)) *
-                 get(dot_product(normal_right, momentum_right))) +
+            (dot(momentum_right, momentum_right) -
+             5. * get(this_dot_product(normal_right, momentum_right)) *
+                 get(this_dot_product(normal_right, momentum_right))) +
         0.125 * (mass_left * mass_right) *
             (5. * distance_left / cube(separation) *
                  (distance_left / distance_right - 1.) -
@@ -289,17 +279,12 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
   tnsr::I<DataType, 3> u1_2(x);
   tnsr::I<DataType, 3> u2(x);
   for (size_t i = 0; i < 3; ++i) {
-    u1_1.get(i) = momentum_left.get(i) / sqrt(mass_left);
-    u1_2.get(i) = momentum_right.get(i) / sqrt(mass_right);
+    u1_1.get(i) = momentum_left.at(i) / sqrt(mass_left);
+    u1_2.get(i) = momentum_right.at(i) / sqrt(mass_right);
     u2.get(i) =
         sqrt(mass_left * mass_right / (2. * separation)) * normal_lr.at(i);
   }
-  get<0, 0>(*present_term) = 0.;
-  get<0, 1>(*present_term) = 0.;
-  get<0, 2>(*present_term) = 0.;
-  get<1, 1>(*present_term) = 0.;
-  get<1, 2>(*present_term) = 0.;
-  get<2, 2>(*present_term) = 0.;
+  std::fill(present_term->begin(), present_term->end(), 0.);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       present_term->get(i, j) +=
@@ -360,12 +345,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> past_term,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::PastTerm<DataType> /*meta*/) const {
-  get<0, 0>(*past_term) = 0.;
-  get<0, 1>(*past_term) = 0.;
-  get<0, 2>(*past_term) = 0.;
-  get<1, 1>(*past_term) = 0.;
-  get<1, 2>(*past_term) = 0.;
-  get<2, 2>(*past_term) = 0.;
+  std::fill(past_term->begin(), past_term->end(), 0.);
 }
 
 template <typename DataType>
@@ -373,12 +353,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> integral_term,
     const gsl::not_null<Cache*> /*cache*/,
     detail::Tags::IntegralTerm<DataType> /*meta*/) const {
-  get<0, 0>(*integral_term) = 0.;
-  get<0, 1>(*integral_term) = 0.;
-  get<0, 2>(*integral_term) = 0.;
-  get<1, 1>(*integral_term) = 0.;
-  get<1, 2>(*integral_term) = 0.;
-  get<2, 2>(*integral_term) = 0.;
+  std::fill(integral_term->begin(), integral_term->end(), 0.);
 }
 
 template <typename DataType>
@@ -413,12 +388,12 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       pn_conjugate_momentum3->get(i, j) = 0.;
       for (size_t k = 0; k < 3; ++k) {
         pn_conjugate_momentum3->get(i, j) +=
-            momentum_left.get(k) *
+            momentum_left.at(k) *
                 (2 * (delta.at(i).at(k) * deriv_one_over_distance_left.get(j) +
                       delta.at(j).at(k) * deriv_one_over_distance_left.get(i)) -
                  delta.at(i).at(j) * deriv_one_over_distance_left.get(k) -
                  0.5 * deriv_3_distance_left.get(i, j, k)) +
-            momentum_right.get(k) *
+            momentum_right.at(k) *
                 (2 * (delta.at(i).at(k) * deriv_one_over_distance_right.get(j) +
                       delta.at(j).at(k) *
                           deriv_one_over_distance_right.get(i)) -
@@ -440,17 +415,15 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       get(cache->get_var(*this, detail::Tags::DistanceLeft<DataType>{}));
   const auto& distance_right =
       get(cache->get_var(*this, detail::Tags::DistanceRight<DataType>{}));
-  const auto E_left =
-      mass_left +
-      get(dot_product(momentum_left, momentum_left)) / (2. * mass_left) -
+  const double E_left = mass_left +
+                        dot(momentum_left, momentum_left) / (2. * mass_left) -
+                        mass_left * mass_right / (2. * separation);
+  const double E_right =
+      mass_right + dot(momentum_right, momentum_right) / (2. * mass_right) -
       mass_left * mass_right / (2. * separation);
-  const auto E_right =
-      mass_right +
-      get(dot_product(momentum_right, momentum_right)) / (2. * mass_right) -
-      mass_left * mass_right / (2. * separation);
-  const auto pn_comformal_factor =
+  const DataType pn_comformal_factor =
       1. + E_left / (2. * distance_left) + E_right / (2. * distance_right);
-  const auto one_over_pn_comformal_factor_to_ten =
+  const DataType one_over_pn_comformal_factor_to_ten =
       1. / pow(pn_comformal_factor, 10);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
@@ -469,15 +442,13 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
       get(cache->get_var(*this, detail::Tags::DistanceLeft<DataType>{}));
   const auto& distance_right =
       get(cache->get_var(*this, detail::Tags::DistanceRight<DataType>{}));
-  const auto E_left =
-      mass_left +
-      get(dot_product(momentum_left, momentum_left)) / (2. * mass_left) -
+  const double E_left = mass_left +
+                        dot(momentum_left, momentum_left) / (2. * mass_left) -
+                        mass_left * mass_right / (2. * separation);
+  const double E_right =
+      mass_right + dot(momentum_right, momentum_right) / (2. * mass_right) -
       mass_left * mass_right / (2. * separation);
-  const auto E_right =
-      mass_right +
-      get(dot_product(momentum_right, momentum_right)) / (2. * mass_right) -
-      mass_left * mass_right / (2. * separation);
-  const auto pn_conformal_factor =
+  const DataType pn_conformal_factor =
       1. + E_left / (2. * distance_left) + E_right / (2. * distance_right);
   get<0, 0>(*conformal_metric) = pow(pn_conformal_factor, 4);
   get<1, 1>(*conformal_metric) = pow(pn_conformal_factor, 4);
@@ -491,10 +462,23 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
 template <typename DataType>
 void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
-  std::fill(deriv_conformal_metric->begin(), deriv_conformal_metric->end(), 0.);
+  ASSERT(mesh.has_value() and inv_jacobian.has_value(),
+         "Need a mesh and a Jacobian for numeric differentiation.");
+  if constexpr (std::is_same_v<DataType, DataVector>) {
+    const auto& conformal_metric = cache->get_var(
+        *this, Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>{});
+    partial_derivative(deriv_conformal_metric, conformal_metric, mesh->get(),
+                       inv_jacobian->get());
+  } else {
+    (void)deriv_conformal_metric;
+    (void)cache;
+    ERROR(
+        "Numeric differentiation only works with DataVectors because it needs "
+        "a grid.");
+  }
 }
 
 template <typename DataType>
@@ -657,7 +641,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::
       get(cache->get_var(*this, detail::Tags::DistanceRight<DataType>{}));
   const auto& radiative_term =
       cache->get_var(*this, detail::Tags::RadiativeTerm<DataType>{});
-  const auto Fat =
+  const DataType Fat =
       1. / ((1. + attenuation_parameter * attenuation_parameter * mass_left *
                       mass_left / (distance_left * distance_left)) *
             (1. + attenuation_parameter * attenuation_parameter * mass_right *
@@ -723,6 +707,22 @@ void BinaryWithGravitationalWavesVariables<DataType>::
       radiative_term->get(i, j) += integral_term.get(i, j);
     }
   }
+}
+
+template <typename DataType>
+Scalar<DataType>
+BinaryWithGravitationalWavesVariables<DataType>::this_dot_product(
+    const tnsr::I<DataType, 3>& a, const std::array<double, 3>& b) const {
+  Scalar<DataType> result{get_size(get<0>(a))};
+  get(result) = a.get(0) * b.at(0) + a.get(1) * b.at(1) + a.get(2) * b.at(2);
+  return result;
+}
+
+template <typename DataType>
+Scalar<DataType>
+BinaryWithGravitationalWavesVariables<DataType>::this_dot_product(
+    const std::array<double, 3>& a, const tnsr::I<DataType, 3>& b) const {
+  return this_dot_product(b, a);
 }
 
 template class BinaryWithGravitationalWavesVariables<DataVector>;
