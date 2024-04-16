@@ -272,18 +272,37 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         };
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(tmpl::type_<Tensors>{}));
 
-    // Send data to volume observer
+    const Parallel::ArrayComponentId array_component_id{
+        std::add_pointer_t<ParallelComponent>{nullptr},
+        Parallel::ArrayIndex<ElementId<VolumeDim>>{element_id}};
+    ElementVolumeData element_volume_data{element_id, std::move(components),
+                                          interpolation_mesh.value_or(mesh)};
+    observers::ObservationId observation_id{observation_value.value,
+                                            subfile_path + ".vol"};
+
     auto& local_observer = *Parallel::local_branch(
-        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-            cache));
-    Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer,
-        observers::ObservationId(observation_value.value,
-                                 subfile_path + ".vol"),
-        subfile_path,
-        Parallel::make_array_component_id<ParallelComponent>(element_id),
-        ElementVolumeData{element_id, std::move(components),
-                          interpolation_mesh.value_or(mesh)});
+        Parallel::get_parallel_component<
+            tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
+                                observers::ObserverWriter<Metavariables>,
+                                observers::Observer<Metavariables>>>(cache));
+
+    if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+      // Send data to reduction observer writer (nodegroup)
+      std::unordered_map<Parallel::ArrayComponentId,
+                         std::vector<ElementVolumeData>>
+          data_to_send{};
+      data_to_send[array_component_id] =
+          std::vector{std::move(element_volume_data)};
+      Parallel::threaded_action<
+          observers::ThreadedActions::ContributeVolumeDataToWriter>(
+          local_observer, std::move(observation_id), array_component_id,
+          subfile_path, std::move(data_to_send));
+    } else {
+      // Send data to volume observer
+      Parallel::simple_action<observers::Actions::ContributeVolumeData>(
+          local_observer, std::move(observation_id), subfile_path,
+          array_component_id, std::move(element_volume_data));
+    }
   }
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
@@ -299,8 +318,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       return std::nullopt;
     }
     return {{observers::TypeOfObservation::Volume,
-             observers::ObservationKey(
-                 subfile_path_ + section_observation_key.value() + ".vol")}};
+             observers::ObservationKey{
+                 subfile_path_ + section_observation_key.value() + ".vol"}}};
   }
 
   using is_ready_argument_tags = tmpl::list<>;

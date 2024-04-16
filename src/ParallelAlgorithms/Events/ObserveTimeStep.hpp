@@ -180,17 +180,25 @@ class ObserveTimeStep : public Event {
     const double step_size = abs(time_step.value());
     const double wall_time = sys::wall_time();
 
-    auto& local_observer = *Parallel::local_branch(
-        Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-            cache));
     auto formatter =
         output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
                      : std::nullopt;
-    Parallel::simple_action<observers::Actions::ContributeReductionData>(
+
+    auto& local_observer = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
+                                observers::ObserverWriter<Metavariables>,
+                                observers::Observer<Metavariables>>>(cache));
+    Parallel::simple_action<tmpl::conditional_t<
+        Parallel::is_nodegroup_v<ParallelComponent>,
+        observers::ThreadedActions::CollectReductionDataOnNode,
+        observers::Actions::ContributeReductionData>>(
         local_observer,
         observers::ObservationId(observation_value.value,
                                  subfile_path_ + ".dat"),
-        Parallel::make_array_component_id<ParallelComponent>(array_index),
+        Parallel::ArrayComponentId{
+            std::add_pointer_t<ParallelComponent>{nullptr},
+            Parallel::ArrayIndex<ArrayIndex>(array_index)},
         subfile_path_,
         std::vector<std::string>{observation_value.name, "NumberOfPoints",
                                  "Slab size", "Minimum time step",
@@ -206,7 +214,7 @@ class ObserveTimeStep : public Event {
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
   get_observation_type_and_key_for_registration() const {
     return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey(subfile_path_ + ".dat")};
+            observers::ObservationKey{subfile_path_ + ".dat"}};
   }
 
   using is_ready_argument_tags = tmpl::list<>;

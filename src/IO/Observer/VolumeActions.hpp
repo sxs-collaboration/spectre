@@ -34,6 +34,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -178,7 +179,7 @@ struct ContributeVolumeDataToWriter {
                         received_volume_data) {
     apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        received_volume_data);
+        std::move(received_volume_data));
   }
 
   template <typename ParallelComponent, typename DbTagsList,
@@ -194,7 +195,7 @@ struct ContributeVolumeDataToWriter {
           received_volume_data) {
     apply_impl<Tags::TensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        received_volume_data);
+        std::move(received_volume_data));
   }
 
  private:
@@ -207,7 +208,7 @@ struct ContributeVolumeDataToWriter {
                          const observers::ObservationId& observation_id,
                          Parallel::ArrayComponentId observer_group_id,
                          const std::string& subfile_name,
-                         const VolumeDataAtObsId& received_volume_data) {
+                         VolumeDataAtObsId received_volume_data) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
     // DataBox does not allow any functions calls, both get and mutate, during
@@ -246,13 +247,22 @@ struct ContributeVolumeDataToWriter {
                   std::unordered_set<Parallel::ArrayComponentId>>&
                   observations_registered) {
             const ObservationKey& key{observation_id.observation_key()};
-            const auto& registered_group_ids = observations_registered.at(key);
-            if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
-                         registered_group_ids.end())) {
-              ERROR("The observer group id "
-                    << observer_group_id
-                    << " was not registered for the observation id "
-                    << observation_id);
+            if (const auto& registered_group_ids =
+                    observations_registered.find(key);
+                LIKELY(registered_group_ids != observations_registered.end())) {
+              if (UNLIKELY(
+                      registered_group_ids->second.find(observer_group_id) ==
+                      registered_group_ids->second.end())) {
+                ERROR("The observer group id "
+                      << observer_group_id
+                      << " was not registered for the observation id "
+                      << observation_id);
+              }
+            } else {
+              ERROR("key "
+                      << key
+                      << " not in the registered group ids. Known keys are "
+                      << keys_of(observations_registered));
             }
 
             all_volume_data = &*volume_data_ptr;

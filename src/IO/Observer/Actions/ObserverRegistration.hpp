@@ -302,7 +302,7 @@ struct DeregisterReductionContributorWithObserverWriter {
                   << " with observation key: " << observation_key);
           }
           contributors_for_key.erase(id_of_caller);
-          if (UNLIKELY(contributors_for_key.size() == 0)) {
+          if (UNLIKELY(contributors_for_key.empty())) {
             Parallel::simple_action<
                 Actions::DeregisterReductionNodeWithWritingNode>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
