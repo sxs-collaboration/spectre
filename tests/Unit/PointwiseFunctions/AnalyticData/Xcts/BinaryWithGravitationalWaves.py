@@ -8,7 +8,6 @@ mass_left = 1.1
 mass_right = 0.9
 atenuation_parameter = 0.99
 outer_radius = 21.0
-write_evolution_option = False
 separation = xcoords[1] - xcoords[0]
 total_mass = mass_left + mass_right
 reduced_mass = mass_left * mass_right / total_mass

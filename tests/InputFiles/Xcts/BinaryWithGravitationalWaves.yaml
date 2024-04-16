@@ -29,11 +29,13 @@ Background: &background
 
 InitialGuess: *background
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: 0.4
-      OuterRadius: 2.
+      OuterRadius: 2.0
       XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
@@ -48,7 +50,7 @@ DomainCreator:
       UseLogarithmicMap: True
     ObjectB:
       InnerRadius: 0.4
-      OuterRadius: 0.5
+      OuterRadius: 2.0
       XCoord: *x_left
       Interior:
         ExciseWithBoundaryCondition:
@@ -62,42 +64,42 @@ DomainCreator:
             NegativeExpansion: *bh_left
       UseLogarithmicMap: True
     Envelope:
-      Radius: &outer_shell_inner_radius 14.
+      Radius: &outer_shell_inner_radius 20.
       RadialDistribution: Linear
     OuterShell:
-      Radius: &outer_radius 20.
+      Radius: &outer_radius 30.
       RadialDistribution: &outer_shell_distribution Linear
-      OpeningAngle: 90.0
+      OpeningAngle: 120.0
       BoundaryCondition: Flatness
     UseEquiangularMap: True
     # This h-refinement is set up so spherical wedges have equal angular size.
     # Once the domain supports equatorial compression (or similar) this
     # h-refinement will simplify considerably.
-    InitialRefinement:
-      ObjectAShell:               [1, 1, 1]
-      ObjectBShell:               [1, 1, 1]
-      ObjectACube:                [1, 1, 1]
-      ObjectBCube:                [1, 1, 1]
-      EnvelopeUpperZLeft:         [1, 1, 1]
-      EnvelopeLowerZLeft:         [1, 1, 1]
-      EnvelopeUpperYLeft:         [1, 1, 1]
-      EnvelopeLowerYLeft:         [1, 1, 1]
-      EnvelopeLowerX:             [1, 1, 1]
-      EnvelopeUpperZRight:        [1, 1, 1]
-      EnvelopeLowerZRight:        [1, 1, 1]
-      EnvelopeUpperYRight:        [1, 1, 1]
-      EnvelopeLowerYRight:        [1, 1, 1]
-      EnvelopeUpperX:             [1, 1, 1]
-      OuterShellUpperZLeft:       [0, 1, 0]
-      OuterShellLowerZLeft:       [0, 1, 0]
-      OuterShellUpperYLeft:       [0, 1, 0]
-      OuterShellLowerYLeft:       [0, 1, 0]
-      OuterShellLowerX:           [1, 1, 0]
-      OuterShellUpperZRight:      [0, 1, 0]
-      OuterShellLowerZRight:      [0, 1, 0]
-      OuterShellUpperYRight:      [0, 1, 0]
-      OuterShellLowerYRight:      [0, 1, 0]
-      OuterShellUpperX:           [1, 1, 0]
+    InitialRefinement: 0
+    #  ObjectAShell:               [1, 1, 1]
+    #  ObjectBShell:               [1, 1, 1]
+    #  ObjectACube:                [1, 1, 1]
+    #  ObjectBCube:                [1, 1, 1]
+    #  EnvelopeUpperZLeft:         [1, 1, 1]
+    #  EnvelopeLowerZLeft:         [1, 1, 1]
+    #  EnvelopeUpperYLeft:         [1, 1, 1]
+    #  EnvelopeLowerYLeft:         [1, 1, 1]
+    #  EnvelopeLowerX:             [1, 1, 1]
+    #  EnvelopeUpperZRight:        [1, 1, 1]
+    #  EnvelopeLowerZRight:        [1, 1, 1]
+    #  EnvelopeUpperYRight:        [1, 1, 1]
+    #  EnvelopeLowerYRight:        [1, 1, 1]
+    #  EnvelopeUpperX:             [1, 1, 1]
+    #  OuterShellUpperZLeft:       [0, 1, 0]
+    #  OuterShellLowerZLeft:       [0, 1, 0]
+    #  OuterShellUpperYLeft:       [0, 1, 0]
+    #  OuterShellLowerYLeft:       [0, 1, 0]
+    #  OuterShellLowerX:           [1, 1, 0]
+    #  OuterShellUpperZRight:      [0, 1, 0]
+    #  OuterShellLowerZRight:      [0, 1, 0]
+    #  OuterShellUpperYRight:      [0, 1, 0]
+    #  OuterShellLowerYRight:      [0, 1, 0]
+    #  OuterShellUpperX:           [1, 1, 0]
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
@@ -107,10 +109,23 @@ DomainCreator:
       ObjectBCube:    [6, 6, 7]
       Envelope:       [6, 6, 6]
       OuterShell:     [6, 6, 6]
+    TimeDependentMaps: None
+
+Amr:
+  Verbosity: Verbose
+  Criteria: []
+  Policies:
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+  Iterations: 1
+
+PhaseChangeAndTriggers: []
 
 Discretization:
   DiscontinuousGalerkin:
-    PenaltyParameter: 1.
+    PenaltyParameter: 3.5
     Massive: True
     Quadrature: GaussLobatto
     Formulation: WeakInertial
@@ -126,7 +141,7 @@ NonlinearSolver:
       RelativeResidual: 1.e-10
       AbsoluteResidual: 1.e-11
     SufficientDecrease: 1.e-4
-    MaxGlobalizationSteps: 40
+    MaxGlobalizationSteps: 10
     DampingFactor: 1.
     Verbosity: Verbose
 
