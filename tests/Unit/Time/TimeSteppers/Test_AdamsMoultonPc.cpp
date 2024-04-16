@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
+#include <vector>
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -18,7 +20,9 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Rational.hpp"
 
 namespace {
 template <bool Monotonic>
@@ -139,14 +143,264 @@ void test_am() {
   }
 }
 
-// [[Timeout, 10]]
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
-  test_am<false>();
+template <bool Monotonic>
+void test_neighbor_data_required(const bool time_runs_forward) {
+  // Test is order-independent
+  const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(4);
+  const Slab slab(0.0, 1.0);
+  const auto long_step = (time_runs_forward ? 1 : -1) * slab.duration() / 2;
+  const auto short_step = long_step / 2;
+
+  const TimeStepId start(time_runs_forward, 1,
+                         time_runs_forward ? slab.start() : slab.end());
+  const TimeStepId long_sub = start.next_substep(long_step, 1.0);
+  const TimeStepId short_sub1 = start.next_substep(short_step, 1.0);
+  const TimeStepId middle(time_runs_forward, 1, start.step_time() + short_step);
+  const TimeStepId short_sub2 = middle.next_substep(short_step, 1.0);
+  const TimeStepId end(time_runs_forward, 1, start.step_time() + long_step);
+
+  const double middle_time = middle.step_time().value();
+
+  if constexpr (Monotonic) {
+    CHECK(not stepper.neighbor_data_required(start, start));
+
+    CHECK(stepper.neighbor_data_required(long_sub, start));
+    CHECK(not stepper.neighbor_data_required(long_sub, long_sub));
+    CHECK(stepper.neighbor_data_required(long_sub, short_sub1));
+    CHECK(stepper.neighbor_data_required(long_sub, middle));
+    CHECK(not stepper.neighbor_data_required(long_sub, short_sub2));
+
+    CHECK(stepper.neighbor_data_required(short_sub1, start));
+    CHECK(not stepper.neighbor_data_required(short_sub1, long_sub));
+    CHECK(not stepper.neighbor_data_required(short_sub1, short_sub1));
+    CHECK(not stepper.neighbor_data_required(short_sub1, middle));
+
+    CHECK(stepper.neighbor_data_required(middle, start));
+    CHECK(not stepper.neighbor_data_required(middle, long_sub));
+    CHECK(stepper.neighbor_data_required(middle, short_sub1));
+    CHECK(not stepper.neighbor_data_required(middle, middle));
+
+    CHECK(stepper.neighbor_data_required(middle_time, start));
+    CHECK(not stepper.neighbor_data_required(middle_time, long_sub));
+    CHECK(stepper.neighbor_data_required(middle_time, short_sub1));
+    CHECK(stepper.neighbor_data_required(middle_time, middle));
+    CHECK(not stepper.neighbor_data_required(middle_time, short_sub2));
+
+    CHECK(stepper.neighbor_data_required(short_sub2, start));
+    CHECK(not stepper.neighbor_data_required(short_sub2, long_sub));
+    CHECK(stepper.neighbor_data_required(short_sub2, short_sub1));
+    CHECK(stepper.neighbor_data_required(short_sub2, middle));
+    CHECK(not stepper.neighbor_data_required(short_sub2, short_sub2));
+
+    CHECK(stepper.neighbor_data_required(end, start));
+    CHECK(stepper.neighbor_data_required(end, long_sub));
+    CHECK(stepper.neighbor_data_required(end, short_sub1));
+    CHECK(stepper.neighbor_data_required(end, middle));
+    CHECK(stepper.neighbor_data_required(end, short_sub2));
+    CHECK(not stepper.neighbor_data_required(end, end));
+  } else {
+    CHECK(not stepper.neighbor_data_required(start, start));
+
+    CHECK(stepper.neighbor_data_required(long_sub, start));
+    CHECK(not stepper.neighbor_data_required(long_sub, long_sub));
+    CHECK(not stepper.neighbor_data_required(long_sub, short_sub1));
+    CHECK(not stepper.neighbor_data_required(long_sub, middle));
+    CHECK(not stepper.neighbor_data_required(long_sub, short_sub2));
+
+    CHECK(stepper.neighbor_data_required(short_sub1, start));
+    CHECK(not stepper.neighbor_data_required(short_sub1, long_sub));
+    CHECK(not stepper.neighbor_data_required(short_sub1, short_sub1));
+    CHECK(not stepper.neighbor_data_required(short_sub1, middle));
+
+    CHECK(stepper.neighbor_data_required(middle, start));
+    CHECK(stepper.neighbor_data_required(middle, long_sub));
+    CHECK(stepper.neighbor_data_required(middle, short_sub1));
+    CHECK(not stepper.neighbor_data_required(middle, middle));
+
+    CHECK(stepper.neighbor_data_required(middle_time, start));
+    CHECK(stepper.neighbor_data_required(middle_time, long_sub));
+    CHECK(stepper.neighbor_data_required(middle_time, short_sub1));
+    CHECK(not stepper.neighbor_data_required(middle_time, middle));
+
+    CHECK(stepper.neighbor_data_required(short_sub2, start));
+    CHECK(stepper.neighbor_data_required(short_sub2, long_sub));
+    CHECK(stepper.neighbor_data_required(short_sub2, short_sub1));
+    CHECK(stepper.neighbor_data_required(short_sub2, middle));
+    CHECK(not stepper.neighbor_data_required(short_sub2, short_sub2));
+
+    CHECK(stepper.neighbor_data_required(end, start));
+    CHECK(stepper.neighbor_data_required(end, long_sub));
+    CHECK(stepper.neighbor_data_required(end, short_sub1));
+    CHECK(stepper.neighbor_data_required(end, middle));
+    CHECK(stepper.neighbor_data_required(end, short_sub2));
+    CHECK(not stepper.neighbor_data_required(end, end));
+  }
 }
 
-// [[Timeout, 10]]
+template <bool Monotonic>
+void test_boundary() {
+  test_neighbor_data_required<Monotonic>(true);
+  test_neighbor_data_required<Monotonic>(false);
+
+  for (size_t order = 2; order < 9; ++order) {
+    CAPTURE(order);
+    const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(order);
+    TimeStepperTestUtils::lts::test_equal_rate(stepper);
+    TimeStepperTestUtils::lts::test_uncoupled(stepper, 1e-12);
+    TimeStepperTestUtils::lts::test_conservation(stepper);
+    // Only test convergence for low-order methods, since it's hard to
+    // find parameters where the high-order ones are in the convergent
+    // limit but not roundoff-dominated.
+    if (order < 5) {
+      TimeStepperTestUtils::lts::test_convergence(stepper, {20, 100}, 20);
+      TimeStepperTestUtils::lts::test_dense_convergence(stepper, {50, 170}, 15);
+    }
+  }
+}
+
+TimeStepId make_id(const Rational& time_fraction, const uint64_t substep,
+                   const Rational& step_fraction = 0) {
+  ASSERT(substep == 0 or step_fraction != 0, "Need step size for a substep.");
+  const Slab slab(0.0, 1.0);
+  const TimeStepId step_id(true, 0, Time(slab, time_fraction));
+  if (substep == 0) {
+    return step_id;
+  } else {
+    return step_id.next_substep(TimeDelta(slab, step_fraction), 1.0);
+  }
+}
+
+using Counts = std::vector<std::pair<Rational, size_t>>;
+
+Counts substep_counts(const TimeSteppers::ConstBoundaryHistoryTimes& times) {
+  std::vector<std::pair<Rational, size_t>> counts{};
+  counts.reserve(times.size());
+  for (const auto& step : times) {
+    counts.emplace_back(step.step_time().fraction(),
+                        times.number_of_substeps(step));
+  }
+  return counts;
+}
+
+void test_non_monotonic_boundary_cleaning() {
+  const TimeSteppers::AdamsMoultonPc<false> am3(3);
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
+
+  // Equal rate
+  history.local().insert(make_id({0, 8}, 0), 3, 0.0);
+  history.local().insert(make_id({1, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({0, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({1, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{0, 8}, 1}, {{1, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{0, 8}, 1}, {{1, 8}, 1}});
+  history.local().insert(make_id({1, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({1, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{1, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}});
+
+  // Local finer
+  history.local().insert(make_id({2, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({2, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{1, 8}, 1}, {{2, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 1}});
+  history.local().insert(make_id({2, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({2, 8}, 1, {2, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{2, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 2}});
+  history.local().insert(make_id({3, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{2, 8}, 1}, {{3, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 2}});
+  history.local().insert(make_id({3, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{3, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{2, 8}, 1}});
+
+  // Local coarser
+  history.local().insert(make_id({4, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({4, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{3, 8}, 1}, {{4, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{2, 8}, 1}, {{4, 8}, 1}});
+  history.local().insert(make_id({4, 8}, 1, {2, 8}), 3, 0.0);
+  history.remote().insert(make_id({4, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({5, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({5, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{4, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{5, 8}, 1}});
+}
+
+void test_monotonic_boundary_cleaning() {
+  const TimeSteppers::AdamsMoultonPc<true> am3(3);
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
+
+  // Equal rate
+  history.local().insert(make_id({0, 8}, 0), 3, 0.0);
+  history.local().insert(make_id({1, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({0, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({1, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{0, 8}, 1}, {{1, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{0, 8}, 1}, {{1, 8}, 1}});
+  history.local().insert(make_id({1, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({1, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{1, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}});
+
+  // Local finer
+  history.local().insert(make_id({2, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({2, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{1, 8}, 1}, {{2, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 1}});
+  history.local().insert(make_id({2, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({2, 8}, 1, {2, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{1, 8}, 1}, {{2, 8}, 2}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 2}});
+  history.local().insert(make_id({3, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) ==
+        Counts{{{1, 8}, 1}, {{2, 8}, 2}, {{3, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{1, 8}, 1}, {{2, 8}, 2}});
+  history.local().insert(make_id({3, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{3, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{2, 8}, 1}});
+
+  // Local coarser
+  history.local().insert(make_id({4, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({4, 8}, 0), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{3, 8}, 1}, {{4, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{2, 8}, 1}, {{4, 8}, 1}});
+  history.local().insert(make_id({4, 8}, 1, {2, 8}), 3, 0.0);
+  history.remote().insert(make_id({4, 8}, 1, {1, 8}), 3, 0.0);
+  history.remote().insert(make_id({5, 8}, 0), 3, 0.0);
+  history.remote().insert(make_id({5, 8}, 1, {1, 8}), 3, 0.0);
+  am3.clean_boundary_history(make_not_null(&history));
+  CHECK(substep_counts(history.local()) == Counts{{{4, 8}, 1}});
+  CHECK(substep_counts(history.remote()) == Counts{{{5, 8}, 1}});
+}
+
+// [[Timeout, 30]]
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
+  test_am<false>();
+  test_boundary<false>();
+  test_non_monotonic_boundary_cleaning();
+}
+
+// [[Timeout, 30]]
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPcMonotonic",
                   "[Unit][Time]") {
   test_am<true>();
+  test_boundary<true>();
+  test_monotonic_boundary_cleaning();
 }
 }  // namespace

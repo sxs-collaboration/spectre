@@ -5,8 +5,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <pup.h>
+#include <string>
 
 #include "Options/String.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -19,7 +22,11 @@ class er;
 }  // namespace PUP
 namespace TimeSteppers {
 template <typename T>
+class BoundaryHistoryEvaluator;
+class ConstBoundaryHistoryTimes;
+template <typename T>
 class ConstUntypedHistory;
+class MutableBoundaryHistoryTimes;
 template <typename T>
 class MutableUntypedHistory;
 }  // namespace TimeSteppers
@@ -81,7 +88,7 @@ namespace TimeSteppers {
  * </table>
  */
 template <bool Monotonic>
-class AdamsMoultonPc : public TimeStepper {
+class AdamsMoultonPc : public LtsTimeStepper {
  public:
   static std::string name() {
     return Monotonic ? "AdamsMoultonPcMonotonic" : "AdamsMoultonPc";
@@ -131,6 +138,14 @@ class AdamsMoultonPc : public TimeStepper {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
+  bool neighbor_data_required(
+      const TimeStepId& next_substep_id,
+      const TimeStepId& neighbor_data_id) const override;
+
+  bool neighbor_data_required(
+      double dense_output_time,
+      const TimeStepId& neighbor_data_id) const override;
+
   WRAPPED_PUPable_decl_template(AdamsMoultonPc);  // NOLINT
 
   explicit AdamsMoultonPc(CkMigrateMessage* /*unused*/) {}
@@ -159,7 +174,29 @@ class AdamsMoultonPc : public TimeStepper {
   bool can_change_step_size_impl(const TimeStepId& time_id,
                                  const ConstUntypedHistory<T>& history) const;
 
+  template <typename T>
+  void add_boundary_delta_impl(
+      gsl::not_null<T*> result,
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
+      const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
+      const TimeDelta& time_step) const;
+
+  void clean_boundary_history_impl(
+      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times)
+      const override;
+
+  template <typename T>
+  void boundary_dense_output_impl(
+      gsl::not_null<T*> result,
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
+      const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
+      double time) const;
+
   TIME_STEPPER_DECLARE_OVERLOADS
+  LTS_TIME_STEPPER_DECLARE_OVERLOADS
 
   size_t order_{};
 };
