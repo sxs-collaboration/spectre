@@ -622,7 +622,8 @@ standard_checks+=(enable_if)
 # Check for noexcept
 noexcept() {
     whitelist "$1" \
-              'src/Parallel/StaticSpscQueue.hpp' && \
+              'src/Parallel/StaticSpscQueue.hpp' \
+              "src/Parallel/NodeLock..pp$" && \
         is_c++ "$1" && \
         staged_grep -q 'noexcept ' "$1"
 }
