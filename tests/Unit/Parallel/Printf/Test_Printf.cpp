@@ -4,10 +4,13 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <fstream>
 #include <ostream>
+#include <sstream>
 #include <vector>
 
 #include "Parallel/Printf/Printf.hpp"
+#include "Utilities/FileSystem.hpp"
 
 namespace {
 struct TestStream {
@@ -37,6 +40,27 @@ std::ostream& operator<<(std::ostream& os, const TestEnum& t) {
   }
 }
 
+void test_fprintf() {
+  const std::string test_file = "Test_Printf_fprintf.out";
+  file_system::rm(test_file, true);
+  Parallel::fprintf(test_file, "%s %s\n", "string", TestEnum::Value1);
+  // In normal operation this would not be guaranteed to appear after
+  // the previous output, but the tests run without creating a real
+  // PrinterChare so everything is synchronous.
+  Parallel::fprintf(test_file, "appended text\n");
+  {
+    std::ifstream file_stream(test_file);
+    std::ostringstream ss{};
+    file_stream >> ss.rdbuf();
+    CHECK(ss.str() == "string Value 1\nappended text\n");
+  }
+  file_system::rm(test_file, true);
+  file_system::create_directory(test_file);
+  CHECK_THROWS_WITH(
+      Parallel::fprintf(test_file, "%s %s\n", "string", TestEnum::Value1),
+      Catch::Matchers::ContainsSubstring("Could not open '" + test_file + "'"));
+  file_system::rm(test_file, true);
+}
 }  // namespace
 
 // [output_test_example]
@@ -59,5 +83,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
                    c_string0, c_string1, c_string2, TestEnum::Value2);
   // clang-tidy doesn't want delete on anything without gsl::owner<>.
   delete[] c_string1; // NOLINT
+
+  test_fprintf();
 }
 // [output_test_example]

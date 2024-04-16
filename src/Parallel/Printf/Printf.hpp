@@ -83,6 +83,8 @@ inline const typename std::string::value_type* get_printable_type(
 }
 
 void send_message(bool error, const std::vector<char>& message);
+void send_message_to_file(const std::string& file,
+                          const std::vector<char>& message);
 
 template <typename... Ts>
 inline std::vector<char> allocate_message(const char* const format, Ts&&... t) {
@@ -99,13 +101,12 @@ inline std::vector<char> allocate_message(const char* const format, Ts&&... t) {
 }
 
 template <typename... Args>
-inline void print_message(const bool error, const std::string& format,
-                          Args&&... args) {
+inline std::vector<char> format_message(const std::string& format,
+                                        Args&&... args) {
   const ScopedFpeState disable_fpes(false);
-  send_message(error,
-               allocate_message(format.c_str(),
-                                get_printable_type(stream_object_to_string(
-                                    std::forward<Args>(args)))...));
+  return allocate_message(
+      format.c_str(),
+      get_printable_type(stream_object_to_string(std::forward<Args>(args)))...);
 }
 }  // namespace detail
 
@@ -122,7 +123,8 @@ inline void print_message(const bool error, const std::string& format,
  */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
-  detail::print_message(false, format, std::forward<Args>(args)...);
+  detail::send_message(
+      false, detail::format_message(format, std::forward<Args>(args)...));
 }
 
 /*!
@@ -133,7 +135,21 @@ inline void printf(const std::string& format, Args&&... args) {
  */
 template <typename... Args>
 inline void printf_error(const std::string& format, Args&&... args) {
-  detail::print_message(true, format, std::forward<Args>(args)...);
+  detail::send_message(
+      true, detail::format_message(format, std::forward<Args>(args)...));
+}
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Print an atomic message to a file with C printf usage.
+ *
+ * See Parallel::printf for details.
+ */
+template <typename... Args>
+inline void fprintf(const std::string& file, const std::string& format,
+                    Args&&... args) {
+  detail::send_message_to_file(
+      file, detail::format_message(format, std::forward<Args>(args)...));
 }
 
 /// Chare outputting all Parallel::printf results.
@@ -144,6 +160,10 @@ class PrinterChare : public CBase_PrinterChare {
 
   /// Prints a message to stdout or stderr.
   static void print(bool error, const std::vector<char>& message);
+
+  /// Prints a message to a file.
+  static void print_to_file(const std::string& file,
+                            const std::vector<char>& message);
 
   static void register_with_charm();
 

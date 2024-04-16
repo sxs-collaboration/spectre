@@ -3,9 +3,14 @@
 
 #include "Parallel/Printf/Printf.hpp"
 
+#include <cerrno>
 #include <cstdio>
+#include <memory>
+#include <string>
 #include <vector>
 
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Strerror.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace {
@@ -24,6 +29,37 @@ void do_print(const bool error, const std::vector<char>& message) {
   // NOLINTNEXTLINE(cert-err33-c,cppcoreguidelines-pro-type-vararg)
   fprintf(stream, "%s", message.data());
 }
+
+void do_print_to_file(const std::string& file,
+                      const std::vector<char>& message) {
+  struct DeleteFile {
+    void operator()(FILE* p) const {
+      const auto success = std::fclose(p);
+      if (success < 0) {
+        const auto errno_save = errno;
+        ERROR_NO_TRACE("Could not close stream: "
+                       << strerror_threadsafe(errno_save) << "\n");
+      }
+    }
+  };
+  const std::unique_ptr<FILE, DeleteFile> stream(std::fopen(file.c_str(), "a"));
+  if (stream == nullptr) {
+    const auto errno_save = errno;
+    ERROR_NO_TRACE("Could not open '" << file << "' for writing: "
+                                      << strerror_threadsafe(errno_save)
+                                      << "\n");
+  }
+  // cppcoreguidelines-pro-type-vararg: I cannot change the signature
+  // of fprintf.
+
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+  const auto success = fprintf(stream.get(), "%s", message.data());
+  if (success < 0) {
+    const auto errno_save = errno;
+    ERROR_NO_TRACE("Could not write '"
+                   << file << "': " << strerror_threadsafe(errno_save) << "\n");
+  }
+}
 }  // namespace
 
 namespace Parallel {
@@ -35,10 +71,28 @@ void send_message(const bool error, const std::vector<char>& message) {
     do_print(error, message);
   }
 }
+
+void send_message_to_file(const std::string& file,
+                          const std::vector<char>& message) {
+  // Unlike in send_message, we always print through the printer
+  // chare, even on node 0.  The thread-safety of the stdio functions
+  // is on a per-stream basis, and all threads share the same stdout
+  // and stderr, but not the stream for any random file we open.
+  if (printer_chare_is_set) {
+    printer_chare[0].print_to_file(file, message);
+  } else {
+    do_print_to_file(file, message);
+  }
+}
 }  // namespace detail
 
 void PrinterChare::print(const bool error, const std::vector<char>& message) {
   do_print(error, message);
+}
+
+void PrinterChare::print_to_file(const std::string& file,
+                                 const std::vector<char>& message) {
+  do_print_to_file(file, message);
 }
 
 void PrinterChare::register_with_charm() {

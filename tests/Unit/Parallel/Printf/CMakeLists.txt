@@ -13,4 +13,5 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Printf
+  Utilities
   )

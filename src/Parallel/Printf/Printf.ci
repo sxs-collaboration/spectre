@@ -3,6 +3,7 @@
 
 module Printf {
 
+  include "string";
   include "vector";
 
   namespace Parallel {
@@ -10,6 +11,7 @@ module Printf {
     entry PrinterChare();
 
     entry void print(bool error, const std::vector<char>&);
+    entry void print_to_file(const std::string& file, const std::vector<char>&);
   }
 
   readonly CProxy_PrinterChare printer_chare;
