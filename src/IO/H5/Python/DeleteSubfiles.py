@@ -27,7 +27,10 @@ HDF5_REPACK_EXECUTABLE = "@HDF5_REPACK_EXECUTABLE@"
     "subfiles",
     required=True,
     multiple=True,
-    help="Subfile to delete",
+    help=(
+        "Subfile to delete. Can be specified multiple times to delete many"
+        " subfiles at once."
+    ),
 )
 @click.option(
     "--repack/--no-repack",

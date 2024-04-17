@@ -955,7 +955,7 @@ def scheduler_options(f):
     multiple=True,
     callback=_parse_params,
     help=(
-        "Forward additional parameters to input file "
+        "Forward an additional parameter to the input file "
         "and submit script templates. "
         "Can be specified multiple times. "
         "Each entry must be a 'key=value' pair, where the key is "

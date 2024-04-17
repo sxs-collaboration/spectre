@@ -664,12 +664,12 @@ def parse_kernels(kernels, exec_files, map_input_names):
     "kernels",
     multiple=True,
     help=(
-        "Python function(s) to apply to the volume data. "
+        "Python function to apply to the volume data. "
         "Specify as 'path.to.module.function_name', where the "
         "module must be available to import. "
         "Alternatively, specify just 'function_name' if the "
         "function is defined in one of the '--exec' / '-e' "
-        "files."
+        "files. Can be specified multiple times."
     ),
 )
 @click.option(
@@ -679,9 +679,9 @@ def parse_kernels(kernels, exec_files, map_input_names):
     type=click.File("r"),
     multiple=True,
     help=(
-        "Python file(s) to execute before loading kernels. "
-        "Load kernels from these files with the '--kernel' / '-k' "
-        "option."
+        "Python file to execute before loading kernels. "
+        "Load kernels from this file with the '--kernel' / '-k' "
+        "option. Can be specified multiple times."
     ),
 )
 @click.option(
@@ -691,10 +691,10 @@ def parse_kernels(kernels, exec_files, map_input_names):
     multiple=True,
     callback=parse_input_names,
     help=(
-        "Map of function argument names to dataset names "
-        "in the volume data file. Specify key-value pairs "
-        "like 'spatial_metric=SpatialMetric'. If unspecified, "
-        "the argument name is transformed to CamelCase."
+        "Map of function argument name to dataset name in the volume data file."
+        " Specify key-value pair like 'spatial_metric=SpatialMetric'. Can be"
+        " specified multiple times. If unspecified, the argument name is"
+        " transformed to CamelCase."
     ),
 )
 @click.option(

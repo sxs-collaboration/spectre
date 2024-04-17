@@ -66,13 +66,18 @@ def parse_functions(ctx, param, all_values):
     help="Print out the available quantities and exit.",
 )
 @click.option(
-    "--functions",
+    "--function",
     "-y",
+    "functions",
     multiple=True,
     callback=parse_functions,
     help=(
-        "The quantities to plot. If unspecified, list all available "
-        "quantities and exit."
+        "The quantity to plot. Can be specified multiple times to plot several"
+        " quantities on a single figure. If unspecified, list all available"
+        " quantities and exit. Labels of quantities can be specified as"
+        " key-value pairs such as 'Error(Psi)=$L_2(\\psi)$'. Remember to wrap"
+        " the key-value pair in quotes on the command line to avoid issues with"
+        " special characters or spaces."
     ),
 )
 @click.option(
