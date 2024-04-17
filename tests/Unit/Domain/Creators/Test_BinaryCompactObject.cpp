@@ -27,6 +27,7 @@
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -790,13 +791,13 @@ void test_kerr_horizon_conforming() {
           std::nullopt,
           std::nullopt,
           {{32_st,
-            domain::creators::sphere::KerrSchildFromBoyerLindquist{mass_A,
-                                                                   spin_A},
-            {{0., 0., 0.}}}},
+            domain::creators::time_dependent_options::
+                KerrSchildFromBoyerLindquist{mass_A, spin_A},
+            std::nullopt}},
           {{32_st,
-            domain::creators::sphere::KerrSchildFromBoyerLindquist{mass_B,
-                                                                   spin_B},
-            {{0., 0., 0.}}}}}};
+            domain::creators::time_dependent_options::
+                KerrSchildFromBoyerLindquist{mass_B, spin_B},
+            std::nullopt}}}};
   const auto domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius

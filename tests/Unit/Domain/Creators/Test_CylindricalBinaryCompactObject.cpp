@@ -404,13 +404,13 @@ TimeDepOptions construct_time_dependent_options() {
       TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::A>{
           8_st,
           std::nullopt,
-          {initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
-           initial_size_A_coefs[1][0]}},
+          {{initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
+            initial_size_A_coefs[1][0]}}},
       TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::B>{
           8_st,
           std::nullopt,
-          {initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-           initial_size_B_coefs[1][0]}}};
+          {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
+            initial_size_B_coefs[1][0]}}}};
 }
 
 void test_parse_errors() {

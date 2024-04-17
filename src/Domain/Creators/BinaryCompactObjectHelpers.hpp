@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/Creators/SphereTimeDependentMaps.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -52,58 +53,6 @@ namespace domain::creators::bco {
 std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
 create_grid_anchors(const std::array<double, 3>& center_a,
                     const std::array<double, 3>& center_b);
-
-template <bool IsCylindrical, domain::ObjectLabel Object>
-struct ShapeMapOptions {
-  using type = Options::Auto<ShapeMapOptions, Options::AutoLabel::None>;
-  static std::string name() { return "ShapeMap" + get_output(Object); }
-  static constexpr Options::String help = {
-      "Options for a time-dependent distortion (shape) map about the "
-      "specified object. Specify 'None' to not use this map."};
-
-  struct LMax {
-    using type = size_t;
-    static constexpr Options::String help = {
-        "LMax used for the number of spherical harmonic coefficients of the "
-        "distortion map. Currently, all coefficients are initialized to "
-        "zero."};
-  };
-
-  struct InitialValues {
-    using type =
-        Options::Auto<std::variant<sphere::KerrSchildFromBoyerLindquist>,
-                      sphere::Spherical>;
-    static constexpr Options::String help = {
-        "Initial Ylm coefficients for the shape map. Specify 'Spherical' for "
-        "all coefficients to be initialized to zero."};
-  };
-
-  struct SizeInitialValues {
-    using type = std::array<double, 3>;
-    static constexpr Options::String help = {
-        "Initial value and two derivatives of the size map."};
-  };
-
-  struct TransitionEndsAtCube {
-    using type = bool;
-    static constexpr Options::String help = {
-        "If 'true', the shape map transition function will be 0 at the cubical "
-        "boundary around the object. If 'false' the transition function will "
-        "be 0 at the outer radius of the inner sphere around the object"};
-  };
-
-  using common_options = tmpl::list<LMax, InitialValues, SizeInitialValues>;
-
-  using options = tmpl::conditional_t<
-      IsCylindrical, common_options,
-      tmpl::push_back<common_options, TransitionEndsAtCube>>;
-
-  size_t l_max{};
-  std::optional<std::variant<sphere::KerrSchildFromBoyerLindquist>>
-      initial_values{};
-  std::array<double, 3> initial_size_values{};
-  bool transition_ends_at_cube{false};
-};
 
 namespace detail {
 // Convenience type alias
@@ -267,7 +216,8 @@ struct TimeDependentMapOptions {
   // goes away.
   template <domain::ObjectLabel Object>
   using ShapeMapOptions =
-      domain::creators::bco::ShapeMapOptions<IsCylindrical, Object>;
+      domain::creators::time_dependent_options::ShapeMapOptions<
+          not IsCylindrical, Object>;
 
   using options =
       tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
