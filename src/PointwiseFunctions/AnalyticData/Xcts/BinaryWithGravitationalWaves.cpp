@@ -947,6 +947,8 @@ BinaryWithGravitationalWavesVariables<DataType>::find_retarded_time_right(
       1e-8, 1e-10);
 }
 
+template <typename DataType>
+Scalar<DataType>
 BinaryWithGravitationalWavesVariables<DataType>::get_past_distance_left(
     const DataType time) const {
   tnsr::I<DataType, 3> v = x;

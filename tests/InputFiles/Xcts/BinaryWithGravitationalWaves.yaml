@@ -26,7 +26,7 @@ Background: &background
     XCoordsLeft: &x_left -8.
     XCoordsRight: &x_right 8.
     AttenuationParameter: 1.
-    OuterRadius: &outer_radius 40.
+    OuterRadius: &outer_radius 50.
     WriteEvolutionOption: True
 
 InitialGuess: *background
@@ -66,7 +66,7 @@ DomainCreator:
             NegativeExpansion: *bh_left
       UseLogarithmicMap: True
     Envelope:
-      Radius: &outer_shell_inner_radius 20.
+      Radius: &outer_shell_inner_radius 40.
       RadialDistribution: Linear
     OuterShell:
       Radius: *outer_radius

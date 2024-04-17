@@ -729,10 +729,6 @@ class BinaryWithGravitationalWaves
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
   bool write_evolution_option_ = true;
 
-  double total_mass = 0.;
-  double reduced_mass = 0.;
-  double reduced_mass_over_total_mass = 0.;
-
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
