@@ -30,4 +30,29 @@ template <typename Frame>
 std::vector<ylm::Strahlkorper<Frame>> read_surface_ylm(
     const std::string& file_name, const std::string& surface_subfile_name,
     size_t requested_number_of_times_from_end);
+
+/*!
+ * \brief Similar to `ylm::read_surface_ylm`, this reads in spherical harmonic
+ * data for a surface and constructs a `ylm::Strahlkorper`. However, this
+ * function only does it at a specific time and returns a single
+ * `ylm::Strahlkorper`.
+ *
+ * \note If two times are found within \p epsilon of the \p time, then an error
+ * will occur. Similarly, if no \p time is found within the \p epsilon, then an
+ * error will occur as well.
+ *
+ * \param file_name name of the H5 file containing the surface's spherical
+ * harmonic data
+ * \param surface_subfile_name name of the subfile (with no leading slash nor
+ * the `.dat` extension) within `file_name` that contains the surface's
+ * spherical harmonic data to read in
+ * \param time Time to read the coefficients at.
+ * \param relative_epsilon How much error is allowed when looking for a specific
+ * time. This is useful so users don't have to know the specific time to machine
+ * precision.
+ */
+template <typename Frame>
+ylm::Strahlkorper<Frame> read_surface_ylm_single_time(
+    const std::string& file_name, const std::string& surface_subfile_name,
+    double time, double relative_epsilon);
 }  // namespace ylm
