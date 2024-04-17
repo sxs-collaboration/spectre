@@ -17,7 +17,8 @@ template <>
 void Flatness<Xcts::Equations::Hamiltonian>::apply(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
     const gsl::not_null<Scalar<DataVector>*>
-    /*n_dot_conformal_factor_gradient*/) {
+    /*n_dot_conformal_factor_gradient*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor*/) {
   get(*conformal_factor_minus_one) = 0.;
 }
 
@@ -29,7 +30,9 @@ void Flatness<Xcts::Equations::HamiltonianAndLapse>::apply(
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_conformal_factor_gradient*/,
     const gsl::not_null<Scalar<DataVector>*>
-    /*n_dot_lapse_times_conformal_factor_gradient*/) {
+    /*n_dot_lapse_times_conformal_factor_gradient*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor*/,
+    const tnsr::i<DataVector, 3>& /*deriv_lapse_times_conformal_factor*/) {
   get(*conformal_factor_minus_one) = 0.;
   get(*lapse_times_conformal_factor_minus_one) = 0.;
 }
@@ -45,7 +48,10 @@ void Flatness<Xcts::Equations::HamiltonianLapseAndShift>::apply(
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_lapse_times_conformal_factor_gradient*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*>
-    /*n_dot_longitudinal_shift_excess*/) {
+    /*n_dot_longitudinal_shift_excess*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor*/,
+    const tnsr::i<DataVector, 3>& /*deriv_lapse_times_conformal_factor*/,
+    const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess*/) {
   get(*conformal_factor_minus_one) = 0.;
   get(*lapse_times_conformal_factor_minus_one) = 0.;
   std::fill(shift_excess->begin(), shift_excess->end(), 0.);
@@ -55,7 +61,8 @@ template <>
 void Flatness<Xcts::Equations::Hamiltonian>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
     const gsl::not_null<Scalar<DataVector>*>
-    /*n_dot_conformal_factor_gradient_correction*/) {
+    /*n_dot_conformal_factor_gradient_correction*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor_correction*/) {
   get(*conformal_factor_correction) = 0.;
 }
 
@@ -67,7 +74,10 @@ void Flatness<Xcts::Equations::HamiltonianAndLapse>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_conformal_factor_gradient_correction*/,
     const gsl::not_null<Scalar<DataVector>*>
-    /*n_dot_lapse_times_conformal_factor_gradient_correction*/) {
+    /*n_dot_lapse_times_conformal_factor_gradient_correction*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor_correction*/,
+    const tnsr::i<DataVector,
+                  3>& /*deriv_lapse_times_conformal_factor_correction*/) {
   get(*conformal_factor_correction) = 0.;
   get(*lapse_times_conformal_factor_correction) = 0.;
 }
@@ -83,7 +93,11 @@ void Flatness<Xcts::Equations::HamiltonianLapseAndShift>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*>
     /*n_dot_lapse_times_conformal_factor_gradient_correction*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*>
-    /*n_dot_longitudinal_shift_excess_correction*/) {
+    /*n_dot_longitudinal_shift_excess_correction*/,
+    const tnsr::i<DataVector, 3>& /*deriv_conformal_factor_correction*/,
+    const tnsr::i<DataVector,
+                  3>& /*deriv_lapse_times_conformal_factor_correction*/,
+    const tnsr::iJ<DataVector, 3>& /*deriv_shift_excess_correction*/) {
   get(*conformal_factor_correction) = 0.;
   get(*lapse_times_conformal_factor_correction) = 0.;
   std::fill(shift_excess_correction->begin(), shift_excess_correction->end(),

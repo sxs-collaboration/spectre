@@ -30,7 +30,8 @@ Robin<Dim>::Robin(const double dirichlet_weight, const double neumann_weight,
 template <size_t Dim>
 void Robin<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> field,
-    const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const {
+    const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient,
+    const tnsr::i<DataVector, Dim>& /*deriv_field*/) const {
   if (neumann_weight_ == 0.) {
     ASSERT(
         not equal_within_roundoff(dirichlet_weight_, 0.),
@@ -49,8 +50,8 @@ void Robin<Dim>::apply(
 template <size_t Dim>
 void Robin<Dim>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> field_correction,
-    const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction)
-    const {
+    const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction,
+    const tnsr::i<DataVector, Dim>& /*deriv_field_correction*/) const {
   if (neumann_weight_ == 0.) {
     get(*field_correction) = 0.;
   } else {

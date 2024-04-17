@@ -59,6 +59,7 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
 
   static void apply(gsl::not_null<Scalar<DataVector>*> field,
                     gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient,
+                    const tnsr::i<DataVector, 3>& field_gradient,
                     const tnsr::I<DataVector, 3>& x);
 
   using argument_tags_linearized =
@@ -68,6 +69,7 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> field_correction,
       gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction,
+      const tnsr::i<DataVector, 3>& field_gradient,
       const tnsr::I<DataVector, 3>& x);
 };
 

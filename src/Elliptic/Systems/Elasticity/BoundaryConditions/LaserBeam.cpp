@@ -15,6 +15,7 @@ namespace Elasticity::BoundaryConditions {
 void LaserBeam::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
+    const tnsr::iJ<DataVector, 3>& /*deriv_displacement*/,
     const tnsr::I<DataVector, 3>& x,
     const tnsr::i<DataVector, 3>& face_normal) const {
   const auto n_dot_x = get<0>(face_normal) * get<0>(x) +
@@ -31,7 +32,8 @@ void LaserBeam::apply(
 
 void LaserBeam::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
-    const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress) {
+    const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
+    const tnsr::iJ<DataVector, 3>& /*deriv_displacement*/) {
   get<0>(*n_dot_minus_stress) = 0.;
   get<1>(*n_dot_minus_stress) = 0.;
   get<2>(*n_dot_minus_stress) = 0.;

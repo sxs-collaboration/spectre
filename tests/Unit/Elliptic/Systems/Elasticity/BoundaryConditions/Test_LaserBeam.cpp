@@ -50,11 +50,13 @@ void apply_boundary_condition(
       domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>>>(
       DirectionMap<3, tnsr::I<DataVector, 3>>{{direction, x}},
       DirectionMap<3, tnsr::i<DataVector, 3>>{{direction, face_normal}});
-  tnsr::I<DataVector, 3> displacement{x.begin()->size(),
-                                      std::numeric_limits<double>::max()};
+  tnsr::I<DataVector, 3> displacement{
+      x.begin()->size(), std::numeric_limits<double>::signaling_NaN()};
+  tnsr::iJ<DataVector, 3> deriv_displacement{
+      x.begin()->size(), std::numeric_limits<double>::signaling_NaN()};
   elliptic::apply_boundary_condition<Linearized, void, tmpl::list<LaserBeam>>(
       laser_beam, box, direction, make_not_null(&displacement),
-      n_dot_minus_stress);
+      n_dot_minus_stress, deriv_displacement);
 }
 }  // namespace
 
@@ -128,12 +130,15 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
     // catch issues with computing the coordinate distance
     get<2>(x) += 2.;
     // Compare to the boundary conditions
-    tnsr::I<DataVector, 3> displacement{used_for_size.size(),
-                                        std::numeric_limits<double>::max()};
+    tnsr::I<DataVector, 3> displacement{
+        used_for_size.size(), std::numeric_limits<double>::signaling_NaN()};
     tnsr::I<DataVector, 3> n_dot_minus_stress{
-        used_for_size.size(), std::numeric_limits<double>::max()};
+        used_for_size.size(), std::numeric_limits<double>::signaling_NaN()};
+    const tnsr::iJ<DataVector, 3> deriv_displacement{
+        used_for_size.size(), std::numeric_limits<double>::signaling_NaN()};
     laser_beam.apply(make_not_null(&displacement),
-                     make_not_null(&n_dot_minus_stress), x, face_normal);
+                     make_not_null(&n_dot_minus_stress), deriv_displacement, x,
+                     face_normal);
     for (size_t d = 0; d < 3; ++d) {
       CAPTURE(d);
       CHECK_ITERABLE_APPROX(n_dot_minus_stress.get(d),

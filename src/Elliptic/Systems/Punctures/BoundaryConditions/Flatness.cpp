@@ -13,6 +13,7 @@ namespace Punctures::BoundaryConditions {
 void Flatness::apply(
     const gsl::not_null<Scalar<DataVector>*> field,
     const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient,
+    const tnsr::i<DataVector, 3>& /*field_gradient*/,
     const tnsr::I<DataVector, 3>& x) {
   get(*n_dot_field_gradient) = -get(*field) / get(magnitude(x));
 }
@@ -20,6 +21,7 @@ void Flatness::apply(
 void Flatness::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> field_correction,
     const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction,
+    const tnsr::i<DataVector, 3>& /*field_gradient*/,
     const tnsr::I<DataVector, 3>& x) {
   get(*n_dot_field_gradient_correction) =
       -get(*field_correction) / get(magnitude(x));

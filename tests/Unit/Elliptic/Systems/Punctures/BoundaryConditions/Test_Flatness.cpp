@@ -37,10 +37,12 @@ void apply_boundary_condition(
       domain::Tags::Faces<3, domain::Tags::Coordinates<3, Frame::Inertial>>>>(
       DirectionMap<3, tnsr::I<DataVector, 3>>{
           {Direction<3>::upper_xi(), std::move(x)}});
+  const tnsr::i<DataVector, 3> field_gradient{
+      field.begin()->size(), std::numeric_limits<double>::signaling_NaN()};
   // grad(u) will be set by the boundary condition
   elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Flatness>>(
       boundary_condition, box, Direction<3>::upper_xi(), make_not_null(&field),
-      n_dot_field_gradient);
+      n_dot_field_gradient, field_gradient);
 }
 }  // namespace
 
