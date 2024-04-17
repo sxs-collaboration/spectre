@@ -135,9 +135,7 @@ Worldtube:
   ExcisionSphere: ExcisionSphereA
   ExpansionOrder: 1
   Charge: 0.5
-  SelfForceOptions:
-    ApplySelfForce: false
-    Mass: 0.5
+  SelfForceOptions: None
   ObserveCoefficientsTrigger:
     Slabs:
       EvenlySpaced:

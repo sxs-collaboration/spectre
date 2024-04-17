@@ -21,7 +21,7 @@ namespace CurvedScalarWave::Worldtube {
 
 /*!
  * \brief Computes the final acceleration of the particle at this time step.
- * \details If `apply_self_force` is `false`, the acceleration will simply be
+ * \details If `max_iterations` is 0, the acceleration will simply be
  * geodesic, see `gr::geodesic_acceleration`.  Otherwise, the acceleration due
  * to the scalar self-force is additionally applied to it, see
  * `self_force_acceleration`. This mutator is run on the worldtube
@@ -39,7 +39,7 @@ struct UpdateAcceleration {
       Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
                            Frame::Inertial>,
       Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>,
-      Tags::Charge, Tags::Mass, Tags::ApplySelfForce>;
+      Tags::Charge, Tags::Mass, Tags::MaxIterations>;
   static void apply(
       gsl::not_null<
           Variables<tmpl::list<::Tags::dt<Tags::EvolvedPosition<Dim>>,
@@ -52,7 +52,7 @@ struct UpdateAcceleration {
       const tnsr::I<double, Dim, Frame::Inertial>& geodesic_acc,
       const Scalar<double>& dt_psi_monopole,
       const tnsr::i<double, Dim, Frame::Inertial>& psi_dipole, double charge,
-      double mass, bool apply_self_force);
+      std::optional<double> mass, size_t max_iterations);
 };
 
 }  // namespace CurvedScalarWave::Worldtube

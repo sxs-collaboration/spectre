@@ -56,16 +56,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.UpdateAcceleration",
       make_with_random_values<Scalar<double>>(make_not_null(&gen), dist, 1);
   const auto psi_dipole = make_with_random_values<tnsr::i<double, Dim>>(
       make_not_null(&gen), dist, 1);
-  const bool apply_self_force = false;
+  const size_t max_iterations = 0;
   auto box = db::create<db::AddSimpleTags<
       dt_variables_tag, Tags::ParticlePositionVelocity<Dim>,
       Tags::BackgroundQuantities<Dim>, Tags::GeodesicAcceleration<Dim>,
       Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
                            Frame::Inertial>,
       Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>,
-      Tags::Charge, Tags::Mass, Tags::ApplySelfForce>>(
+      Tags::Charge, Tags::Mass, Tags::MaxIterations>>(
       std::move(dt_evolved_vars), pos_vel, background_quantities, geodesic_acc,
-      dt_psi_monopole, psi_dipole, 1., 1., apply_self_force);
+      dt_psi_monopole, psi_dipole, 1., std::make_optional(1.), max_iterations);
 
   db::mutate_apply<UpdateAcceleration>(make_not_null(&box));
   const auto& dt_vars = db::get<dt_variables_tag>(box);
@@ -76,9 +76,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.UpdateAcceleration",
           geodesic_acc.get(i));
   }
 
-  db::mutate<Tags::ApplySelfForce>(
-      [](const gsl::not_null<bool*> apply_self_force_arg) {
-        *apply_self_force_arg = true;
+  db::mutate<Tags::MaxIterations>(
+      [](const gsl::not_null<size_t*> max_iterations_arg) {
+        *max_iterations_arg = 1;
       },
       make_not_null(&box));
 
