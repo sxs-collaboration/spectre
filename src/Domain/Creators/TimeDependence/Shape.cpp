@@ -178,8 +178,8 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
       std::array<DataVector, 4>{
           // Size holds the *actual* \lambda_00 spherical harmonic coefficient,
           // but shape holds Spherepack coefficients so we must convert between
-          // the two. Need to multiply lambda_00 by sqrt(2/pi)
-          {{M_SQRT1_2 * M_2_SQRTPI * radial_distortion_coefs[0]},
+          // the two. Need to multiply lambda_00 by sqrt(pi/2)
+          {{sqrt(0.5 * M_PI) * radial_distortion_coefs[0]},
            zeros_size,
            zeros_size,
            zeros_size}},

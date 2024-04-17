@@ -134,18 +134,20 @@ void test(const bool include_expansion, const bool include_rotation,
   const size_t l_max_A = 8;
   if (include_shape_a) {
     shape_map_a_options =
-        IsCylindrical
-            ? ShapeMapAOptions<IsCylindrical>{l_max_A, size_A_values}
-            : ShapeMapAOptions<IsCylindrical>{l_max_A, size_A_values, true};
+        IsCylindrical ? ShapeMapAOptions<IsCylindrical>{l_max_A, std::nullopt,
+                                                        size_A_values}
+                      : ShapeMapAOptions<IsCylindrical>{l_max_A, std::nullopt,
+                                                        size_A_values, true};
   }
 
   const std::array<double, 3> size_B_values{-0.001, -0.02, -0.3};
   const size_t l_max_B = 10;
   if (include_shape_b) {
     shape_map_b_options =
-        IsCylindrical
-            ? ShapeMapBOptions<IsCylindrical>{l_max_B, size_B_values}
-            : ShapeMapBOptions<IsCylindrical>{l_max_B, size_B_values, false};
+        IsCylindrical ? ShapeMapBOptions<IsCylindrical>{l_max_B, std::nullopt,
+                                                        size_B_values}
+                      : ShapeMapBOptions<IsCylindrical>{l_max_B, std::nullopt,
+                                                        size_B_values, false};
   }
 
   const double initial_time = 1.5;
@@ -236,85 +238,6 @@ void test(const bool include_expansion, const bool include_rotation,
       std::array<DataVector, 3>{shape_B_zeros, shape_B_zeros, shape_B_zeros},
       expiration_times.at(
           gsl::at(TimeDependentMapOptions<IsCylindrical>::shape_names, 1))};
-
-  const auto functions_of_time =
-      time_dep_options.create_functions_of_time(expiration_times);
-
-  if (include_expansion) {
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<IsCylindrical>::expansion_name) == 1);
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<
-                  IsCylindrical>::expansion_outer_boundary_name) == 1);
-    CHECK(dynamic_cast<ExpFoT&>(
-              *functions_of_time
-                   .at(TimeDependentMapOptions<IsCylindrical>::expansion_name)
-                   .get()) == expansion);
-    CHECK(dynamic_cast<ExpBdryFoT&>(
-              *functions_of_time
-                   .at(TimeDependentMapOptions<
-                       IsCylindrical>::expansion_outer_boundary_name)
-                   .get()) == expansion_outer_boundary);
-  } else {
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<IsCylindrical>::expansion_name) == 0);
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<
-                  IsCylindrical>::expansion_outer_boundary_name) == 0);
-  }
-  if (include_rotation) {
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<IsCylindrical>::rotation_name) == 1);
-    CHECK(dynamic_cast<RotFoT&>(
-              *functions_of_time
-                   .at(TimeDependentMapOptions<IsCylindrical>::rotation_name)
-                   .get()) == rotation);
-  } else {
-    CHECK(functions_of_time.count(
-              TimeDependentMapOptions<IsCylindrical>::rotation_name) == 0);
-  }
-  if (include_shape_a) {
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::size_names, 0)) == 1);
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::shape_names, 0)) == 1);
-    CHECK(dynamic_cast<SizeFoT&>(
-              *functions_of_time
-                   .at(gsl::at(
-                       TimeDependentMapOptions<IsCylindrical>::size_names, 0))
-                   .get()) == size_A);
-    CHECK(dynamic_cast<ShapeFoT&>(
-              *functions_of_time
-                   .at(gsl::at(
-                       TimeDependentMapOptions<IsCylindrical>::shape_names, 0))
-                   .get()) == shape_A);
-  } else {
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::size_names, 0)) == 0);
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::shape_names, 0)) == 0);
-  }
-  if (include_shape_b) {
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::size_names, 1)) == 1);
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::shape_names, 1)) == 1);
-    CHECK(dynamic_cast<SizeFoT&>(
-              *functions_of_time
-                   .at(gsl::at(
-                       TimeDependentMapOptions<IsCylindrical>::size_names, 1))
-                   .get()) == size_B);
-    CHECK(dynamic_cast<ShapeFoT&>(
-              *functions_of_time
-                   .at(gsl::at(
-                       TimeDependentMapOptions<IsCylindrical>::shape_names, 1))
-                   .get()) == shape_B);
-  } else {
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::size_names, 1)) == 0);
-    CHECK(functions_of_time.count(gsl::at(
-              TimeDependentMapOptions<IsCylindrical>::shape_names, 1)) == 0);
-  }
 
   const std::array<std::array<double, 3>, 2> centers{
       std::array{5.0, 0.01, 0.02}, std::array{-5.0, -0.01, -0.02}};
@@ -413,22 +336,16 @@ void test(const bool include_expansion, const bool include_rotation,
 
     if ((not include_rotation) and (not include_expansion) and
         (not is_excised(excise_A))) {
-      CHECK_THROWS_WITH(
-          time_dep_options
-              .template grid_to_inertial_map<domain::ObjectLabel::A>(excise_A),
-          Catch::Matchers::ContainsSubstring(
-              "Requesting grid to inertial map without a distorted frame and "
-              "without a Rotation or Expansion map for object"));
+      CHECK(time_dep_options
+                .template grid_to_inertial_map<domain::ObjectLabel::A>(
+                    excise_A) == nullptr);
       continue;
     }
     if ((not include_rotation) and (not include_expansion) and
         (not is_excised(excise_B))) {
-      CHECK_THROWS_WITH(
-          time_dep_options
-              .template grid_to_inertial_map<domain::ObjectLabel::B>(excise_B),
-          Catch::Matchers::ContainsSubstring(
-              "Requesting grid to inertial map without a distorted frame and "
-              "without a Rotation or Expansion map for object"));
+      CHECK(time_dep_options
+                .template grid_to_inertial_map<domain::ObjectLabel::B>(
+                    excise_B) == nullptr);
       continue;
     }
 
@@ -482,6 +399,87 @@ void test(const bool include_expansion, const bool include_rotation,
     check_map(distorted_to_inertial_map_B, not excise_B,
               (not include_rotation) and (not include_expansion) and
                   is_excised(excise_B));
+
+    // Test functions of time
+    const auto functions_of_time =
+        time_dep_options.create_functions_of_time(expiration_times);
+    if (include_expansion) {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::expansion_name) == 1);
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<
+                    IsCylindrical>::expansion_outer_boundary_name) == 1);
+      CHECK(dynamic_cast<ExpFoT&>(
+                *functions_of_time
+                     .at(TimeDependentMapOptions<IsCylindrical>::expansion_name)
+                     .get()) == expansion);
+      CHECK(dynamic_cast<ExpBdryFoT&>(
+                *functions_of_time
+                     .at(TimeDependentMapOptions<
+                         IsCylindrical>::expansion_outer_boundary_name)
+                     .get()) == expansion_outer_boundary);
+    } else {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::expansion_name) == 0);
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<
+                    IsCylindrical>::expansion_outer_boundary_name) == 0);
+    }
+    if (include_rotation) {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::rotation_name) == 1);
+      CHECK(dynamic_cast<RotFoT&>(
+                *functions_of_time
+                     .at(TimeDependentMapOptions<IsCylindrical>::rotation_name)
+                     .get()) == rotation);
+    } else {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::rotation_name) == 0);
+    }
+    if (include_shape_a) {
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::size_names, 0)) == 1);
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::shape_names, 0)) == 1);
+      CHECK(dynamic_cast<SizeFoT&>(
+                *functions_of_time
+                     .at(gsl::at(
+                         TimeDependentMapOptions<IsCylindrical>::size_names, 0))
+                     .get()) == size_A);
+      CHECK(
+          dynamic_cast<ShapeFoT&>(
+              *functions_of_time
+                   .at(gsl::at(
+                       TimeDependentMapOptions<IsCylindrical>::shape_names, 0))
+                   .get()) == shape_A);
+    } else {
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::size_names, 0)) == 0);
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::shape_names, 0)) == 0);
+    }
+    if (include_shape_b) {
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::size_names, 1)) == 1);
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::shape_names, 1)) == 1);
+      CHECK(dynamic_cast<SizeFoT&>(
+                *functions_of_time
+                     .at(gsl::at(
+                         TimeDependentMapOptions<IsCylindrical>::size_names, 1))
+                     .get()) == size_B);
+      CHECK(
+          dynamic_cast<ShapeFoT&>(
+              *functions_of_time
+                   .at(gsl::at(
+                       TimeDependentMapOptions<IsCylindrical>::shape_names, 1))
+                   .get()) == shape_B);
+    } else {
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::size_names, 1)) == 0);
+      CHECK(functions_of_time.count(gsl::at(
+                TimeDependentMapOptions<IsCylindrical>::shape_names, 1)) == 0);
+    }
   }
 }
 

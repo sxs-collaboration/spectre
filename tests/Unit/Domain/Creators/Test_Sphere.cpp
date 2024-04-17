@@ -18,6 +18,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
@@ -44,9 +45,11 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -255,9 +258,9 @@ void test_sphere_construction(
   const auto block_names = sphere.block_names();
   const size_t num_blocks = blocks.size();
   const size_t num_blocks_per_shell =
-      which_wedges == ShellWedges::All
-          ? 6
-          : which_wedges == ShellWedges::FourOnEquator ? 4 : 1;
+      which_wedges == ShellWedges::All             ? 6
+      : which_wedges == ShellWedges::FourOnEquator ? 4
+                                                   : 1;
   CAPTURE(num_blocks);
   CAPTURE(num_blocks_per_shell);
   const auto all_boundary_conditions = sphere.external_boundary_conditions();
@@ -743,6 +746,70 @@ void test_sphere() {
   }
 }
 
+void test_kerr_horizon_conforming(const bool use_time_dependence) {
+  INFO(
+      "Check that inner radius is deformed to constant Boyer-Lindquist radius");
+  const double mass = 0.8;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.9}};
+  const double r_plus = mass * (1. + sqrt(1. - dot(spin, spin)));
+  const double inner_radius = r_plus;
+  domain::creators::Sphere::TimeDepOptionType time_dependent_options{};
+  if (use_time_dependence) {
+    time_dependent_options = std::make_unique<
+        domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
+        0., 32_st, mass, spin, std::array<double, 3>{{0., 0., 0.}},
+        inner_radius, 4.);
+  } else {
+    time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
+        0.,
+        {32_st,
+         domain::creators::sphere::KerrSchildFromBoyerLindquist{mass, spin}},
+        std::nullopt,
+        std::nullopt,
+        std::nullopt};
+  }
+  domain::creators::Sphere domain_creator{
+      inner_radius,
+      10.,
+      domain::creators::Sphere::Excision{},
+      0_st,
+      6_st,
+      true,
+      {},
+      {4.},
+      domain::CoordinateMaps::Distribution::Linear,
+      ShellWedges::All,
+      std::move(time_dependent_options)};
+  const auto domain = domain_creator.create_domain();
+  const auto functions_of_time = domain_creator.functions_of_time();
+  // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
+  const size_t num_points = 10;
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist_phi{0., 2. * M_PI};
+  std::uniform_real_distribution<double> dist_theta{0., M_PI};
+  const std::array<DataVector, 2> theta_phi{
+      {make_with_random_values<DataVector>(
+           make_not_null(&gen), make_not_null(&dist_theta), num_points),
+       make_with_random_values<DataVector>(
+           make_not_null(&gen), make_not_null(&dist_phi), num_points)}};
+  const auto radius =
+      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+          inner_radius, theta_phi, mass, spin));
+  tnsr::I<DataVector, 3> x{};
+  get<0>(x) = radius * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
+  get<1>(x) = radius * sin(get<0>(theta_phi)) * sin(get<1>(theta_phi));
+  get<2>(x) = radius * cos(get<0>(theta_phi));
+  // Map the coordinates through the domain. They should lie at the lower zeta
+  // boundary of their block.
+  const auto x_logical =
+      block_logical_coordinates(domain, x, 0., functions_of_time);
+  for (size_t i = 0; i < num_points; ++i) {
+    CAPTURE(x_logical[i]);
+    REQUIRE(x_logical[i].has_value());
+    CHECK(get<2>(x_logical[i]->data) == approx(-1.));
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -750,5 +817,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere", "[Domain][Unit]") {
   domain::creators::time_dependence::register_derived_with_charm();
   test_parse_errors();
   test_sphere();
+  test_kerr_horizon_conforming(true);
+  test_kerr_horizon_conforming(false);
 }
 }  // namespace domain

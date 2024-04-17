@@ -247,9 +247,11 @@ std::string create_option_string(
                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
                             "    ShapeMapA:\n"
                             "      LMax: 8\n"
+                            "      InitialValues: Spherical\n"
                             "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
                             "    ShapeMapB:\n"
                             "      LMax: 8\n"
+                            "      InitialValues: Spherical\n"
                             "      SizeInitialValues: [1.2, 0.0, 0.0]\n"
                           : "  TimeDependentMaps: None\n"};
 
@@ -401,10 +403,12 @@ TimeDepOptions construct_time_dependent_options() {
                                           initial_angular_velocity[2]}},
       TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::A>{
           8_st,
+          std::nullopt,
           {initial_size_A_coefs[0][0], initial_size_A_coefs[1][0],
            initial_size_A_coefs[1][0]}},
       TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::B>{
           8_st,
+          std::nullopt,
           {initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
            initial_size_B_coefs[1][0]}}};
 }

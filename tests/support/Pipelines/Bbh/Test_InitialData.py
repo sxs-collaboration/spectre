@@ -41,8 +41,10 @@ class TestInitialData(unittest.TestCase):
         self.assertEqual(params["MassLeft"], 0.4)
         self.assertEqual(params["XRight"], 8.0)
         self.assertEqual(params["XLeft"], -12.0)
-        self.assertAlmostEqual(params["ExcisionRadiusRight"], 1.068)
-        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.712)
+        self.assertAlmostEqual(
+            params["ExcisionRadiusRight"], 1.0292112276594705
+        )
+        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5267316022299328)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(
@@ -61,6 +63,8 @@ class TestInitialData(unittest.TestCase):
             [params[f"HorizonRotationLeft_{xyz}"] for xyz in "xyz"],
             [-0.337933017966707, -0.422416272458383, -0.49689952695006],
         )
+        self.assertAlmostEqual(params["FalloffWidthRight"], 6.479672589667676)
+        self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # COM is zero

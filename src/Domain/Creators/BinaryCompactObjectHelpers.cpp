@@ -22,6 +22,7 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Options/ParseError.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -145,34 +146,75 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
   }
 
   // Size and Shape FunctionOfTime for objects A and B
-  for (size_t i = 0; i < shape_names.size(); i++) {
-    if (i == 0 ? shape_options_A_.has_value() : shape_options_B_.has_value()) {
-      const auto make_initial_size_values = [](const auto& lambda_options) {
-        return std::array<DataVector, 4>{
-            {{gsl::at(lambda_options.value().initial_size_values, 0)},
-             {gsl::at(lambda_options.value().initial_size_values, 1)},
-             {gsl::at(lambda_options.value().initial_size_values, 2)},
-             {0.0}}};
-      };
-
-      const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
-                                          : shape_options_B_.value().l_max;
-      const std::array<DataVector, 4> initial_size_values =
-          i == 0 ? make_initial_size_values(shape_options_A_)
-                 : make_initial_size_values(shape_options_B_);
-      const DataVector shape_zeros{
-          ylm::Spherepack::spectral_size(initial_l_max, initial_l_max), 0.0};
-
-      result[gsl::at(shape_names, i)] =
-          std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-              initial_time_,
-              std::array<DataVector, 3>{shape_zeros, shape_zeros, shape_zeros},
-              expiration_times.at(gsl::at(shape_names, i)));
-      result[gsl::at(size_names, i)] =
-          std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-              initial_time_, initial_size_values,
-              expiration_times.at(gsl::at(size_names, i)));
+  const auto build_shape_and_size_fot = [&result, &expiration_times, this](
+                                            const auto& shape_options,
+                                            const double inner_radius,
+                                            const std::string& shape_name,
+                                            const std::string& size_name) {
+    const DataVector shape_zeros{ylm::Spherepack::spectral_size(
+                                     shape_options.l_max, shape_options.l_max),
+                                 0.0};
+    DataVector shape_func{};
+    DataVector size_func{1, shape_options.initial_size_values[0]};
+    if (shape_options.initial_values.has_value()) {
+      if (std::holds_alternative<sphere::KerrSchildFromBoyerLindquist>(
+              shape_options.initial_values.value())) {
+        const ylm::Spherepack ylm{shape_options.l_max, shape_options.l_max};
+        const auto& mass_and_spin =
+            std::get<sphere::KerrSchildFromBoyerLindquist>(
+                shape_options.initial_values.value());
+        const DataVector radial_distortion =
+            inner_radius -
+            get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+                inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
+                mass_and_spin.spin));
+        shape_func = ylm.phys_to_spec(radial_distortion);
+        // Transform from SPHEREPACK to actual Ylm for size func
+        if (size_func[0] != 0.0) {
+          ERROR(
+              "Initial value for size map must be zero, because it is "
+              "overridden by the initial shape map values.");
+        }
+        size_func[0] = shape_func[0] * sqrt(0.5 * M_PI);
+        // Set l=0 for shape map to 0 because size is going to be used
+        shape_func[0] = 0.0;
+      }
+    } else {
+      shape_func = shape_zeros;
     }
+
+    result[shape_name] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_,
+            std::array<DataVector, 3>{std::move(shape_func), shape_zeros,
+                                      shape_zeros},
+            expiration_times.at(shape_name));
+    result[size_name] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time_,
+            std::array<DataVector, 4>{{std::move(size_func),
+                                       {shape_options.initial_size_values[1]},
+                                       {shape_options.initial_size_values[2]},
+                                       {0.0}}},
+            expiration_times.at(size_name));
+  };
+  if (shape_options_A_.has_value()) {
+    if (not inner_radii_[0].has_value()) {
+      ERROR(
+          "A shape map was specified for object A, but no inner radius is "
+          "available. The object must be enclosed by a sphere.");
+    }
+    build_shape_and_size_fot(shape_options_A_.value(), *inner_radii_[0],
+                             shape_names[0], size_names[0]);
+  }
+  if (shape_options_B_.has_value()) {
+    if (not inner_radii_[1].has_value()) {
+      ERROR(
+          "A shape map was specified for object B, but no inner radius is "
+          "available. The object must be enclosed by a sphere.");
+    }
+    build_shape_and_size_fot(shape_options_B_.value(), *inner_radii_[1],
+                             shape_names[1], size_names[1]);
   }
 
   return result;
@@ -206,6 +248,8 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
             << ", but no time dependent map options were specified "
                "for that object.");
       }
+      // Store the inner radii for creating functions of time
+      gsl::at(inner_radii_, i) = radii[0];
 
       const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
                                           : shape_options_B_.value().l_max;
@@ -420,13 +464,7 @@ TimeDependentMapOptions<IsCylindrical>::grid_to_inertial_map(
     } else if (rotation_map_.has_value()) {
       return std::make_unique<detail::gi_map<Rotation>>(rotation_map_.value());
     } else {
-      ERROR(
-          "Requesting grid to inertial map without a distorted frame and "
-          "without a Rotation or Expansion map for object "
-          << Object
-          << ". This means there are no time dependent maps. If you don't want "
-             "time dependent maps, specify 'None' for TimeDependentMapOptions. "
-             "Otherwise specify at least one time dependent map.");
+      return nullptr;
     }
   }
 }

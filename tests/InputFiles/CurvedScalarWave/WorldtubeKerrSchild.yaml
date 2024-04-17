@@ -75,10 +75,12 @@ DomainCreator:
         InitialAngularVelocity: [0., 0., 0.08944271909999159]
       ShapeMapA:
         LMax: 8
+        InitialValues: Spherical
         SizeInitialValues: [0., 0., 0.]
         TransitionEndsAtCube: false
       ShapeMapB:
         LMax: 8
+        InitialValues: Spherical
         SizeInitialValues: [0., 0., 0.]
         TransitionEndsAtCube: false
 
