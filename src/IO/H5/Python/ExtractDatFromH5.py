@@ -69,8 +69,9 @@ def extract_dat_files(
     """Extract dat files from an H5 file
 
     Extract all Dat files inside a SpECTRE HDF5 file. The resulting files will
-    be put into the 'OUT_DIR'. The directory structure will be identical to the
-    group structure inside the HDF5 file.
+    be put into the 'OUT_DIR' if specified, or printed to standard output. The
+    directory structure will be identical to the group structure inside the
+    HDF5 file.
     """
     if list:
         import rich.columns
