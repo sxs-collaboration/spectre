@@ -115,6 +115,13 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
             + (" Can be specified multiple times." if multiple_vars else ""),
         )
         @click.option(
+            "--list-observations",
+            "--list-times",
+            "list_times",
+            is_flag=True,
+            help="Print all available observation times and exit.",
+        )
+        @click.option(
             "--step",
             callback=parse_step,
             help=(
@@ -140,6 +147,7 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
             subfile_name,
             list_vars,
             vars_patterns,
+            list_times,
             step,
             time,
             **kwargs,
@@ -166,6 +174,17 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
             if not subfile_name.startswith("/"):
                 subfile_name = "/" + subfile_name
 
+            # Print available observations/times and exit
+            if list_times:
+                import rich.columns
+
+                all_obs_ids, all_obs_times = list_observations(
+                    open_volfiles(h5_files, subfile_name)
+                )
+                rich.print(
+                    rich.columns.Columns(f"{time:g}" for time in all_obs_times)
+                )
+                return
             # Select observation
             if step is None and time is None:
                 if obs_id_required:
