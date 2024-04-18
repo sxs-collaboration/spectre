@@ -1,17 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Framework/TestingFramework.hpp"
-
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <optional>
 #include <random>
 
+#include "Framework/TestingFramework.hpp"
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Particles/MonteCarlo/CouplingTermsForPropagation.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
@@ -109,7 +110,8 @@ void test_diffusion() {
 
   MAKE_GENERATOR(generator);
   const double time_step = 0.5;
-  const double scattering_opacity = 50;
+  const double scattering_opacity = 50.0;
+  const double absorption_opacity = 1.e-60;
 
   const size_t dv_size = 1;
   DataVector zero_dv(dv_size);
@@ -167,6 +169,13 @@ void test_diffusion() {
   inverse_jacobian_logical_to_inertial.get(1, 1) = 1.0;
   inverse_jacobian_logical_to_inertial.get(2, 2) = 1.0;
 
+  Scalar<DataVector> coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  Scalar<DataVector> coupling_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
+
   DataVector prefactor_diffusion_time_vector = zero_dv;
   DataVector prefactor_diffusion_four_velocity = zero_dv;
   DataVector prefactor_diffusion_time_step = zero_dv;
@@ -175,7 +184,7 @@ void test_diffusion() {
       &prefactor_diffusion_time_step, lorentz_factor,
       lower_spatial_four_velocity, lapse, shift, spatial_metric);
 
-  for(size_t i = 0; i < prefactor_diffusion_time_vector.size(); i++){
+  for (size_t i = 0; i < prefactor_diffusion_time_vector.size(); i++) {
     CHECK(std::isnan(prefactor_diffusion_time_vector[i]));
     CHECK(std::isnan(prefactor_diffusion_four_velocity[i]));
   }
@@ -187,13 +196,14 @@ void test_diffusion() {
                                          1.0, 0.0, 0.0);
     double neutrino_energy = 1.0;
     Particles::MonteCarlo::diffuse_packet(
-        &packet, &generator, &neutrino_energy, time_step, diffusion_params,
-        scattering_opacity, lorentz_factor, lower_spatial_four_velocity, lapse,
-        shift, d_lapse, d_shift, d_inv_spatial_metric, spatial_metric,
-        inv_spatial_metric, mesh_velocity, inverse_jacobian_logical_to_inertial,
-        jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid,
-        prefactor_diffusion_time_step, prefactor_diffusion_four_velocity,
-        prefactor_diffusion_time_vector);
+        &packet, &generator, &neutrino_energy, &coupling_tilde_tau,
+        &coupling_tilde_s, &coupling_rho_ye, time_step, diffusion_params,
+        absorption_opacity, scattering_opacity, lorentz_factor,
+        lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
+        d_inv_spatial_metric, spatial_metric, inv_spatial_metric, mesh_velocity,
+        inverse_jacobian_logical_to_inertial, jacobian_inertial_to_fluid,
+        inverse_jacobian_inertial_to_fluid, prefactor_diffusion_time_step,
+        prefactor_diffusion_four_velocity, prefactor_diffusion_time_vector);
 
     if (mesh_velocity.has_value()) {
       for (size_t d = 0; d < 3; d++) {
@@ -212,6 +222,17 @@ void test_diffusion() {
                          neutrino_energy / rad;
     Parallel::printf("%.5f %.5f %.5f %.5f 0\n", rad, cth, phi, pitch);
   }
+
+  Parallel::printf("Coupling: %.5e %.5e %.5e %.5e %.5e\n",
+                   get(coupling_tilde_tau)[0], coupling_tilde_s.get(0)[0],
+                   coupling_tilde_s.get(1)[0], coupling_tilde_s.get(2)[0],
+                   get(coupling_rho_ye)[0]);
+  // Reset coupling terms
+  get(coupling_tilde_tau)[0] = 0.0;
+  for (size_t d = 0; d < 3; d++) {
+    coupling_tilde_s.get(d)[0] = 0.0;
+  }
+  get(coupling_rho_ye)[0] = 0.0;
 
   Parallel::printf("Full scattering:\n");
   std::uniform_real_distribution<double> rng_uniform_zero_to_one(0.0, 1.0);
@@ -236,6 +257,16 @@ void test_diffusion() {
           &packet, dt_scattering, lapse, shift, d_lapse, d_shift,
           d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
           inverse_jacobian_logical_to_inertial);
+      const std::array<double, 3> lower_spatial_four_velocity_packet = {
+          lower_spatial_four_velocity.get(0)[0],
+          lower_spatial_four_velocity.get(1)[0],
+          lower_spatial_four_velocity.get(2)[0]};
+      Particles::MonteCarlo::AddCouplingTermsForPropagation
+        (&coupling_tilde_tau, &coupling_tilde_s,
+         &coupling_rho_ye, packet, dt_scattering,
+         absorption_opacity, 0.0, neutrino_energy,
+         get(lapse)[0], get(lorentz_factor)[0],
+         lower_spatial_four_velocity_packet);
     }
 
     if (mesh_velocity.has_value()) {
@@ -255,6 +286,10 @@ void test_diffusion() {
                          neutrino_energy / rad;
     Parallel::printf("%.5f %.5f %.5f %.5f 1\n", rad, cth, phi, pitch);
   }
+  Parallel::printf("Coupling: %.5e %.5e %.5e %.5e %.5e\n",
+                   get(coupling_tilde_tau)[0], coupling_tilde_s.get(0)[0],
+                   coupling_tilde_s.get(1)[0], coupling_tilde_s.get(2)[0],
+                   get(coupling_rho_ye)[0]);
 }
 
 }  // namespace

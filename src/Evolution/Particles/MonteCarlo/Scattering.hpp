@@ -79,9 +79,14 @@ std::array<double, 4> scatter_packet(
 void diffuse_packet(
     gsl::not_null<Packet*> packet,
     gsl::not_null<std::mt19937*> random_number_generator,
-    gsl::not_null<double*> neutrino_energy, double time_step,
-    const DiffusionMonteCarloParameters& diffusion_params,
-    double scattering_opacity, const Scalar<DataVector>& lorentz_factor,
+    gsl::not_null<double*> neutrino_energy,
+    gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+      coupling_tilde_s,
+    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    double time_step, const DiffusionMonteCarloParameters& diffusion_params,
+    double absorption_opacity, double scattering_opacity,
+    const Scalar<DataVector>& lorentz_factor,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,

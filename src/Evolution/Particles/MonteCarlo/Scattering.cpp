@@ -4,10 +4,14 @@
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "Evolution/Particles/MonteCarlo/CouplingTermsForPropagation.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+
+using hydro::units::nuclear::proton_mass;
 
 namespace Particles::MonteCarlo {
 
@@ -187,9 +191,15 @@ std::array<double, 4> scatter_packet(
 void diffuse_packet(
     const gsl::not_null<Packet*> packet,
     const gsl::not_null<std::mt19937*> random_number_generator,
-    const gsl::not_null<double*> neutrino_energy, const double time_step,
+    const gsl::not_null<double*> neutrino_energy,
+    const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+    coupling_tilde_s,
+    const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    const double time_step,
     const DiffusionMonteCarloParameters& diffusion_params,
-    const double scattering_opacity, const Scalar<DataVector>& lorentz_factor,
+    const double absorption_opacity, const double scattering_opacity,
+    const Scalar<DataVector>& lorentz_factor,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
@@ -314,6 +324,24 @@ void diffuse_packet(
       }
     }
   }
+  // Coupling with the fluid for a packet comoving with the fluid
+  // Energy coupling
+  const double energy_coupling = (1.0 - dr_over_dt_free) * time_step *
+    get(lapse)[idx] * absorption_opacity * packet->number_of_neutrinos *
+    (*neutrino_energy);
+  coupling_tilde_tau->get()[idx] += energy_coupling;
+  // Momentum coupling term
+  for (size_t d = 0; d < 3; d++) {
+    coupling_tilde_s->get(d)[idx] += energy_coupling /
+      get(lorentz_factor)[idx] *
+      lower_spatial_four_velocity.get(d)[idx];
+  }
+  // Lepton number coupling term
+  if (packet->species < 2) {
+    coupling_rho_ye->get()[idx] +=
+      (packet->species == 0 ? 1.0 : -1.0) * proton_mass *
+      energy_coupling / (*neutrino_energy) / get(lorentz_factor)[idx];
+  }
 
   // Scatter in fluid frame. Output array contains (cos_theta, sin_theta,
   // cos_phi, sin_phi) for direction of momentum in fluid frame spherical
@@ -338,6 +366,19 @@ void diffuse_packet(
   (*neutrino_energy) = compute_fluid_frame_energy(*packet, lorentz_factor,
                                                   lower_spatial_four_velocity,
                                                   lapse, inv_spatial_metric);
+  // Add coupling term for free propagation
+  const double& lapse_packet = get(lapse)[idx];
+  const double& lorentz_factor_packet = get(lorentz_factor)[idx];
+  const std::array<double, 3> lower_spatial_four_velocity_packet = {
+    lower_spatial_four_velocity.get(0)[idx],
+    lower_spatial_four_velocity.get(1)[idx],
+    lower_spatial_four_velocity.get(2)[idx]};
+  AddCouplingTermsForPropagation(
+    coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, *packet,
+    dt_free, absorption_opacity, 0.0, (*neutrino_energy),
+    lapse_packet, lorentz_factor_packet,
+    lower_spatial_four_velocity_packet);
+
 
   // Get final momentum in fluid frame then transform to inertial frame
   const size_t b_pts = diffusion_params.BvsRhoForScattering.size();

@@ -3,51 +3,13 @@
 
 #pragma once
 
+#include "Evolution/Particles/MonteCarlo/CouplingTermsForPropagation.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
-#include "PointwiseFunctions/Hydro/Units.hpp"
-
-using hydro::units::nuclear::proton_mass;
 
 namespace Particles::MonteCarlo {
-
-void AddCouplingTermsForPropagation(
-    const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
-    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        coupling_tilde_s,
-    const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-    const Packet& packet, const double dt, const double absorption_opacity,
-    const double scattering_opacity, const double fluid_frame_energy,
-    const double lapse, const double lorentz_factor,
-    const std::array<double, 3>& lower_spatial_four_velocity_packet) {
-  const size_t& idx = packet.index_of_closest_grid_point;
-  // Energy coupling term.
-  coupling_tilde_tau->get()[idx] +=
-      dt * absorption_opacity * packet.number_of_neutrinos *
-          fluid_frame_energy * lapse +
-      dt * scattering_opacity * packet.number_of_neutrinos *
-          fluid_frame_energy *
-          (lapse -
-           fluid_frame_energy * lorentz_factor / packet.momentum_upper_t);
-  // Momentum coupling term
-  for (size_t d = 0; d < 3; d++) {
-    coupling_tilde_s->get(d)[idx] +=
-        dt / packet.momentum_upper_t * packet.number_of_neutrinos *
-        fluid_frame_energy *
-        (packet.momentum.get(d) * (absorption_opacity + scattering_opacity) -
-         scattering_opacity * fluid_frame_energy *
-             gsl::at(lower_spatial_four_velocity_packet, d));
-  }
-  // Lepton number coupling term
-  if (packet.species < 2) {
-    coupling_rho_ye->get()[idx] +=
-        (packet.species == 0 ? 1.0 : -1.0) * proton_mass * dt /
-        packet.momentum_upper_t * absorption_opacity * fluid_frame_energy *
-        packet.number_of_neutrinos;
-  }
-}
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
@@ -284,11 +246,13 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         // to be accurate (see Foucart 2018, 10.1093/mnras/sty108)
         if (scattering_optical_depth > 3.0) {
           diffuse_packet(
-              &packet, random_number_generator, &fluid_frame_energy, dt_min,
-              diffusion_params, scattering_opacity, lorentz_factor,
-              lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-              d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-              mesh_velocity, inverse_jacobian_logical_to_inertial,
+              &packet, random_number_generator, &fluid_frame_energy,
+              coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, dt_min,
+              diffusion_params, absorption_opacity, scattering_opacity,
+              lorentz_factor, lower_spatial_four_velocity, lapse, shift,
+              d_lapse, d_shift, d_inv_spatial_metric, spatial_metric,
+              inv_spatial_metric, mesh_velocity,
+              inverse_jacobian_logical_to_inertial,
               inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian,
               prefactor_diffusion_time_step, prefactor_diffusion_four_velocity,
               prefactor_diffusion_time_vector);

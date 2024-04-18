@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   CellVolume.cpp
+  CouplingTermsForPropagation.cpp
   EvolvePackets.cpp
   InverseJacobianInertialToFluidCompute.cpp
   TemplatedLocalFunctions.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   CellVolume.hpp
+  CouplingTermsForPropagation.hpp
   EmitPackets.tpp
   EvolvePackets.hpp
   EvolvePacketsInElement.tpp
