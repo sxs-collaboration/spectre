@@ -252,6 +252,15 @@ void cartesian_coords(const gsl::not_null<tnsr::I<DataVector, 3, Fr>*> coords,
 }
 
 template <typename Fr>
+tnsr::I<DataVector, 3, Fr> cartesian_coords(
+    const Strahlkorper<Fr>& strahlkorper) {
+  const auto radius = ylm::radius(strahlkorper);
+  const auto theta_phi = ylm::theta_phi(strahlkorper);
+  const auto r_hat = ylm::rhat(theta_phi);
+  return cartesian_coords(strahlkorper, radius, r_hat);
+}
+
+template <typename Fr>
 tnsr::i<DataVector, 3, Fr> cartesian_derivs_of_scalar(
     const Scalar<DataVector>& scalar, const Strahlkorper<Fr>& strahlkorper,
     const Scalar<DataVector>& radius_of_strahlkorper,
@@ -545,6 +554,8 @@ void time_deriv_of_strahlkorper(
       const Strahlkorper<FRAME(data)>& strahlkorper,                          \
       const Scalar<DataVector>& radius,                                       \
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                      \
+  template tnsr::I<DataVector, 3, FRAME(data)> ylm::cartesian_coords(         \
+      const Strahlkorper<FRAME(data)>& strahlkorper);                         \
   template tnsr::i<DataVector, 3, FRAME(data)>                                \
   ylm::cartesian_derivs_of_scalar(                                            \
       const Scalar<DataVector>& scalar,                                       \

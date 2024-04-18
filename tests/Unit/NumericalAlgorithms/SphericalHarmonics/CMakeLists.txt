@@ -27,4 +27,5 @@ target_link_libraries(
   Utilities
   )
 
-  add_subdirectory(IO)
+add_subdirectory(IO)
+add_subdirectory(Python)

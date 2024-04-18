@@ -273,6 +273,8 @@ void test_cartesian_coords() {
                         ylm::cartesian_coords<Frame::Inertial>(
                             strahlkorper, ylm::radius(strahlkorper),
                             ylm::rhat(ylm::theta_phi(strahlkorper))));
+  CHECK_ITERABLE_APPROX(expected_cartesian_coords,
+                        ylm::cartesian_coords<Frame::Inertial>(strahlkorper));
 }
 
 void test_normals() {
