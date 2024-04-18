@@ -79,10 +79,27 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
             py::return_value_policy::reference, py::arg("path"),
             py::arg("legend"), py::arg("version"))
         .def(
+            "try_insert_dat",
+            [](H5File& f, const std::string& path,
+               const std::vector<std::string>& legend,
+               const uint32_t version) -> h5::Dat& {
+              return f.template try_insert<h5::Dat>(path, legend, version);
+            },
+            py::return_value_policy::reference, py::arg("path"),
+            py::arg("legend"), py::arg("version"))
+        .def(
             "insert_vol",
             [](H5File& f, const std::string& path,
                const uint32_t version) -> h5::VolumeData& {
               return f.template insert<h5::VolumeData>(path, version);
+            },
+            py::return_value_policy::reference, py::arg("path"),
+            py::arg("version"))
+        .def(
+            "try_insert_vol",
+            [](H5File& f, const std::string& path,
+               const uint32_t version) -> h5::VolumeData& {
+              return f.template try_insert<h5::VolumeData>(path, version);
             },
             py::return_value_policy::reference, py::arg("path"),
             py::arg("version"));
