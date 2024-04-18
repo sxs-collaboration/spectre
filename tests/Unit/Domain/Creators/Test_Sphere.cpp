@@ -33,6 +33,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -142,6 +143,7 @@ std::string option_string(
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"
+                              "      SizeInitialValues: Auto\n"
                               "    RotationMap: None\n"
                               "    ExpansionMap: None\n"
                               "    TranslationMap:\n"
@@ -762,8 +764,8 @@ void test_kerr_horizon_conforming(const bool use_time_dependence) {
   } else {
     time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
         0.,
-        {32_st,
-         domain::creators::sphere::KerrSchildFromBoyerLindquist{mass, spin}},
+        {{32_st, domain::creators::time_dependent_options::
+                     KerrSchildFromBoyerLindquist{mass, spin}}},
         std::nullopt,
         std::nullopt,
         std::nullopt};
