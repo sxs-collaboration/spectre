@@ -38,4 +38,7 @@ target_link_libraries(
   DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
+  H5
+  SphericalHarmonics
+  SphericalHarmonicsIO
   )

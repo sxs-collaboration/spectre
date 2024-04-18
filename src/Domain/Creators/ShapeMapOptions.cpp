@@ -12,6 +12,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -47,6 +49,45 @@ initial_shape_and_size_funcs(
       size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI);
       // Set l=0 for shape map to 0 because size is going to be used
       shape_funcs[0][0] = 0.0;
+    } else if (std::holds_alternative<YlmsFromFile>(
+                   shape_options.initial_values.value())) {
+      const auto& files =
+          std::get<YlmsFromFile>(shape_options.initial_values.value());
+      const std::string& h5_filename = files.h5_filename;
+      const std::vector<std::string>& subfile_names = files.subfile_names;
+      const double match_time = files.match_time;
+      const double match_time_epsilon =
+          files.match_time_epsilon.value_or(1e-12);
+      const bool set_l1_coefs_to_zero = files.set_l1_coefs_to_zero;
+      const size_t l_max = shape_options.l_max;
+      ylm::SpherepackIterator iter{l_max, l_max};
+
+      for (size_t i = 0; i < subfile_names.size(); i++) {
+        // Frame doesn't matter here
+        const ylm::Strahlkorper<Frame::Distorted> file_strahlkorper =
+            ylm::read_surface_ylm_single_time<Frame::Distorted>(
+                h5_filename, gsl::at(subfile_names, i), match_time,
+                match_time_epsilon);
+        const ylm::Strahlkorper<Frame::Distorted> this_strahlkorper{
+            shape_options.l_max, 1.0, std::array{0.0, 0.0, 0.0}};
+
+        // The coefficients in the shape map are stored as the negative
+        // coefficients of the strahlkorper, so we need to multiply by -1 here.
+        gsl::at(shape_funcs, i) =
+            -1.0 * file_strahlkorper.ylm_spherepack().prolong_or_restrict(
+                       file_strahlkorper.coefficients(),
+                       this_strahlkorper.ylm_spherepack());
+        // Transform from SPHEREPACK to actual Ylm for size func
+        gsl::at(size_funcs, i)[0] =
+            gsl::at(shape_funcs, i)[0] * sqrt(0.5 * M_PI);
+        // Set l=0 for shape map to 0 because size is going to be used
+        gsl::at(shape_funcs, i)[0] = 0.0;
+        if (set_l1_coefs_to_zero) {
+          for (int m = -1; m <= 1; m++) {
+            gsl::at(shape_funcs, i)[iter.set(1_st, m)()] = 0.0;
+          }
+        }
+      }
     }
   }
 
