@@ -126,6 +126,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
   check_with_python(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(vars),
                     "inv_spatial_metric", conformal_factor,
                     inv_conformal_metric);
+  check_with_python(
+      get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(vars),
+      "spatial_christoffel_second_kind", conformal_factor,
+      get<::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars),
+      conformal_metric, inv_conformal_metric,
+      conformal_christoffel_second_kind);
   check_with_python(get<gr::Tags::Lapse<DataVector>>(vars), "lapse",
                     conformal_factor, lapse_times_conformal_factor);
   check_with_python(get<gr::Tags::Shift<DataVector, 3>>(vars), "shift",

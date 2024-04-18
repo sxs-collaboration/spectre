@@ -53,6 +53,7 @@ using SpacetimeQuantities = CachedTempBuffer<
     gr::Tags::SpatialMetric<DataVector, 3>,
     gr::Tags::InverseSpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
     gr::Tags::Shift<DataVector, 3>, gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+    gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
     // Constraints
     gr::Tags::HamiltonianConstraint<DataVector>,
     gr::Tags::MomentumConstraint<DataVector, 3>>;
@@ -80,6 +81,10 @@ struct SpacetimeQuantitiesComputer {
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::Ijj<DataVector, 3>*> spatial_christoffel_second_kind,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataVector>*>
           conformal_laplacian_of_conformal_factor,
