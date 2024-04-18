@@ -5,12 +5,15 @@
 
 #include <array>
 #include <cstddef>
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 
 namespace py = pybind11;
@@ -57,5 +60,25 @@ void bind_strahlkorper(pybind11::module& m) {  // NOLINT
       .def(py::self == py::self)
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self != py::self);
+  m.def(
+      "ylm_legend_and_data",
+      [](const ylm::Strahlkorper<Frame::Inertial>& strahlkorper,
+         const double time, const size_t max_l)
+          -> std::pair<std::vector<std::string>, std::vector<double>> {
+        std::vector<std::string> legend{};
+        std::vector<double> data{};
+        ylm::fill_ylm_legend_and_data(make_not_null(&legend),
+                                      make_not_null(&data), strahlkorper, time,
+                                      max_l);
+        return std::make_pair(legend, data);
+      },
+      py::arg("strahlkorper"), py::arg("time"), py::arg("max_l"));
+  m.def("read_surface_ylm", &ylm::read_surface_ylm<Frame::Inertial>,
+        py::arg("file_name"), py::arg("surface_subfile_name"),
+        py::arg("requested_number_of_times_from_end"));
+  m.def("read_surface_ylm_single_time",
+        &ylm::read_surface_ylm_single_time<Frame::Inertial>,
+        py::arg("file_name"), py::arg("surface_subfile_name"), py::arg("time"),
+        py::arg("relative_epsilon"));
 }
 }  // namespace ylm::py_bindings

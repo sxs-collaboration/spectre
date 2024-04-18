@@ -27,6 +27,7 @@ spectre_python_link_libraries(
   PRIVATE
   DataStructures
   SphericalHarmonics
+  SphericalHarmonicsIO
   pybind11::module
 )
 
