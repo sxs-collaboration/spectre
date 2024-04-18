@@ -3,6 +3,7 @@
 
 import click
 
+from .FindHorizon import find_horizon_command
 from .InitialData import generate_id_command
 from .Inspiral import start_inspiral_command
 from .Ringdown import start_ringdown_command
@@ -15,6 +16,7 @@ def bbh_pipeline():
 
 
 bbh_pipeline.add_command(generate_id_command)
+bbh_pipeline.add_command(find_horizon_command)
 bbh_pipeline.add_command(start_inspiral_command)
 bbh_pipeline.add_command(start_ringdown_command)
 
