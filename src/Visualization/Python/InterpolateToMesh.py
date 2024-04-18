@@ -226,11 +226,12 @@ def interpolate_to_mesh(
 @click.option(
     "--tensor-component",
     "-t",
+    "tensor_components",
     multiple=True,
     help=(
-        "The names of the tensors that are to be interpolated. "
-        "Accepts regular expression. "
-        "If none are specified, all tensors are interpolated."
+        "The name of the tensor to be interpolated. Accepts regular"
+        " expression. Can be specified multiple times to interpolate several"
+        " tensors at once. If none are specified, all tensors are interpolated."
     ),
 )
 @click.option(
@@ -296,7 +297,7 @@ def interpolate_to_mesh_command(
     target_extents,
     target_basis,
     target_quadrature,
-    tensor_component,
+    tensor_components,
     start_time,
     stop_time,
     stride,
@@ -332,7 +333,7 @@ def interpolate_to_mesh_command(
                 target_file_path=target_file_path,
                 source_volume_data=source_subfile_name,
                 target_volume_data=target_subfile_name,
-                components_to_interpolate=tensor_component,
+                components_to_interpolate=tensor_components,
                 obs_start=start_time,
                 obs_end=stop_time,
                 obs_stride=stride,
