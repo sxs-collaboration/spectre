@@ -7,8 +7,47 @@
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
+
+using hydro::units::nuclear::proton_mass;
 
 namespace Particles::MonteCarlo {
+
+void AddCouplingTermsForPropagation(
+    const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        coupling_tilde_s,
+    const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    const Packet& packet, const double dt, const double absorption_opacity,
+    const double scattering_opacity, const double fluid_frame_energy,
+    const double lapse, const double lorentz_factor,
+    const std::array<double, 3>& lower_spatial_four_velocity_packet) {
+  const size_t& idx = packet.index_of_closest_grid_point;
+  // Energy coupling term.
+  coupling_tilde_tau->get()[idx] +=
+      dt * absorption_opacity * packet.number_of_neutrinos *
+          fluid_frame_energy * lapse +
+      dt * scattering_opacity * packet.number_of_neutrinos *
+          fluid_frame_energy *
+          (lapse -
+           fluid_frame_energy * lorentz_factor / packet.momentum_upper_t);
+  // Momentum coupling term
+  for (size_t d = 0; d < 3; d++) {
+    coupling_tilde_s->get(d)[idx] +=
+        dt / packet.momentum_upper_t * packet.number_of_neutrinos *
+        fluid_frame_energy *
+        (packet.momentum.get(d) * (absorption_opacity + scattering_opacity) -
+         scattering_opacity * fluid_frame_energy *
+             gsl::at(lower_spatial_four_velocity_packet, d));
+  }
+  // Lepton number coupling term
+  if (packet.species < 2) {
+    coupling_rho_ye->get()[idx] +=
+        (packet.species == 0 ? 1.0 : -1.0) * proton_mass * dt /
+        packet.momentum_upper_t * absorption_opacity * fluid_frame_energy *
+        packet.number_of_neutrinos;
+  }
+}
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
@@ -77,6 +116,10 @@ template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     const gsl::not_null<std::vector<Packet>*> packets,
     const gsl::not_null<std::mt19937*> random_number_generator,
+    const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        coupling_tilde_s,
+    const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
     const double final_time, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
@@ -153,6 +196,12 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     // when reaching the end of the desired step.
     while (dt_end_step > 0.05 * (final_time - initial_time)) {
       const size_t& idx = packet.index_of_closest_grid_point;
+      const double& lapse_packet = get(lapse)[idx];
+      const double& lorentz_factor_packet = get(lorentz_factor)[idx];
+      const std::array<double, 3> lower_spatial_four_velocity_packet = {
+          lower_spatial_four_velocity.get(0)[idx],
+          lower_spatial_four_velocity.get(1)[idx],
+          lower_spatial_four_velocity.get(2)[idx]};
       // Get fluid frame energy of neutrinos in packet, then retrieve
       // opacities
       packet.renormalize_momentum(inv_spatial_metric, lapse);
@@ -188,8 +237,19 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
               : 10.0 * dt_end_step;
       dt_min = std::min(dt_scattering, dt_min);
 
+      // Propagation to the next event, whatever it is
+      evolve_single_packet_on_geodesic(&packet, dt_min, lapse, shift, d_lapse,
+                                       d_shift, d_inv_spatial_metric,
+                                       inv_spatial_metric, mesh_velocity,
+                                       inverse_jacobian_logical_to_inertial);
+      AddCouplingTermsForPropagation(
+          coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet, dt_min,
+          absorption_opacity, scattering_opacity, fluid_frame_energy,
+          lapse_packet, lorentz_factor_packet,
+          lower_spatial_four_velocity_packet);
+
       // If absorption is the first event, we just delete
-      // the packet (no need to propagate)
+      // the packet.
       //
       // To remove this packet we swap the current and last packet,
       // then pop the last packet from the end of the vector of packets.
@@ -204,11 +264,6 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         p--;
         break;
       }
-      // Propagation to the next event, whatever it is
-      evolve_single_packet_on_geodesic(&packet, dt_min, lapse, shift, d_lapse,
-                                       d_shift, d_inv_spatial_metric,
-                                       inv_spatial_metric, mesh_velocity,
-                                       inverse_jacobian_logical_to_inertial);
       // If the next event was a scatter, perform that scatter and
       // continue evolution
       if (dt_min == dt_scattering) {
@@ -256,6 +311,11 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                 &packet, dt_min, lapse, shift, d_lapse, d_shift,
                 d_inv_spatial_metric, inv_spatial_metric, mesh_velocity,
                 inverse_jacobian_logical_to_inertial);
+            AddCouplingTermsForPropagation(
+                coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet,
+                dt_min, absorption_opacity, scattering_opacity,
+                fluid_frame_energy, lapse_packet, lorentz_factor_packet,
+                lower_spatial_four_velocity_packet);
             dt_end_step -= dt_min;
             dt_absorption -= dt_min;
             dt_cell_check -= dt_min;

@@ -10,6 +10,9 @@
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
+
+using hydro::units::nuclear::proton_mass;
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
                   "[Unit][Evolution]") {
@@ -99,10 +102,27 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
       std::array<DataVector, 2>{{zero_dv, zero_dv}},
       std::array<DataVector, 2>{{zero_dv, zero_dv}}};
 
+  // Set non-zero value that should never lead
+  // to interaction, to get non-zero interaction terms
+  // (the choices made for the minimum value of the
+  //  random number setting the time to next interaction
+  //  guarantees that for such low opacities, interactions
+  //  will not happen).
+  gsl::at(gsl::at(absorption_opacity,1),0) = 1.e-60;
+  gsl::at(gsl::at(scattering_opacity,1),0) = 1.e-59;
+
+  Scalar<DataVector> coupling_tilde_tau
+    = make_with_value< Scalar<DataVector> >(zero_dv, 0.0);
+  Scalar<DataVector> coupling_rho_ye
+    = make_with_value< Scalar<DataVector> >(zero_dv, 0.0);
+  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s
+    = make_with_value< tnsr::i<DataVector, 3, Frame::Inertial> >(zero_dv, 0.0);
+
   std::vector<Particles::MonteCarlo::Packet> packets{packet};
   Particles::MonteCarlo::TemplatedLocalFunctions<2, 2> MonteCarloStruct;
   MonteCarloStruct.evolve_packets(
-      &packets, &generator, 1.5, mesh, mesh_coordinates, absorption_opacity,
+      &packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
+      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, absorption_opacity,
       scattering_opacity, energy_at_bin_center, lorentz_factor,
       lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
       d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
@@ -117,4 +137,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   CHECK(packets[0].momentum.get(2) == 0.0);
   CHECK(packets[0].time == 1.5);
   CHECK(packets[0].index_of_closest_grid_point == 1);
+  // Check coupling terms against analytical expectations
+  CHECK(fabs(get(coupling_tilde_tau)[0] - 1.5e-60) < 1.5e-75);
+  CHECK(fabs(coupling_tilde_s.get(0)[0] - 1.65e-59) < 1.65e-74);
+  CHECK(coupling_tilde_s.get(1)[0] == 0.0);
+  CHECK(coupling_tilde_s.get(2)[0] == 0.0);
+  CHECK(fabs(get(coupling_rho_ye)[0] + proton_mass*1.5e-60) < 1.e-72);
 }
