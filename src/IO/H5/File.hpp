@@ -209,7 +209,7 @@ class H5File {
 
   template <typename ObjectType>
   std::tuple<bool, detail::OpenGroup, std::string> check_if_object_exists(
-      const std::string& path) const;
+      std::string path) const;
 
   std::string file_name_;
   // NOLINTNEXTLINE(spectre-mutable)
@@ -392,7 +392,16 @@ const ObjectType& H5File<Access_t>::convert_to_derived(
 template <AccessType Access_t>
 template <typename ObjectType>
 std::tuple<bool, detail::OpenGroup, std::string>
-H5File<Access_t>::check_if_object_exists(const std::string& path) const {
+H5File<Access_t>::check_if_object_exists(std::string path) const {
+  // Normalize path to have a leading slash and the correct extension
+  if (path.front() != '/') {
+    path = '/' + path;
+  }
+  const size_t extension_length = ObjectType::extension().size();
+  if (path.size() > extension_length and
+      path.substr(path.size() - extension_length) == ObjectType::extension()) {
+    path = path.substr(0, path.size() - extension_length);
+  }
   std::string name_only = "/";
   if (path != "/") {
     name_only = file_system::get_file_name(path);

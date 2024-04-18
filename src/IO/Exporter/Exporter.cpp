@@ -151,7 +151,7 @@ template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    std::string subfile_name,
+    const std::string& subfile_name,
     const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
@@ -171,15 +171,6 @@ std::vector<std::vector<double>> interpolate_to_points(
                  volume_files_or_glob);
   if (filenames.empty()) {
     ERROR_NO_TRACE("No volume files found. Specify at least one volume file.");
-  }
-
-  // Normalize subfile name
-  if (subfile_name.size() > 4 &&
-      subfile_name.substr(subfile_name.size() - 4) == ".vol") {
-    subfile_name = subfile_name.substr(0, subfile_name.size() - 4);
-  }
-  if (subfile_name.front() != '/') {
-    subfile_name = '/' + subfile_name;
   }
 
   // Retrieve info from the first volume file
@@ -278,7 +269,7 @@ std::vector<std::vector<double>> interpolate_to_points(
   template std::vector<std::vector<double>> interpolate_to_points<DIM(data)>( \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
-      std::string subfile_name,                                               \
+      const std::string& subfile_name,                                        \
       const std::variant<ObservationId, ObservationStep>& observation,        \
       const std::vector<std::string>& tensor_components,                      \
       const std::array<std::vector<double>, DIM(data)>& target_points,        \

@@ -78,11 +78,6 @@ def combine_h5_vol_command(h5files, subfile_name, output, check_src):
         rich.print(rich.columns.Columns(spectre_file.all_vol_files()))
         return
 
-    if not subfile_name.startswith("/"):
-        subfile_name = "/" + subfile_name
-    if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name[:-4]
-
     if not output.endswith(".h5"):
         output += ".h5"
 

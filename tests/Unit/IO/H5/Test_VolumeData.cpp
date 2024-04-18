@@ -264,9 +264,10 @@ void test() {
     my_file.close_current_object();
   }
   // Open the read volume file and check that the observation id and values are
-  // correct.
+  // correct. No leading slash should also find the subfile, and a ".vol"
+  // extension as well.
   const auto& volume_file =
-      my_file.get<h5::VolumeData>("/element_data", version_number);
+      my_file.get<h5::VolumeData>("element_data.vol", version_number);
   CHECK(volume_file.subfile_path() == "/element_data");
   const auto read_observation_ids = volume_file.list_observation_ids();
   // The observation IDs should be sorted by their observation value

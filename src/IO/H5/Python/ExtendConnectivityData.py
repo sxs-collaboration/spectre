@@ -40,11 +40,6 @@ def extend_connectivity_data_command(filename, subfile_name):
     files, the combine-h5 executable must be run first. The extend-connectivity
     command can then be run on the newly generated HDF5 file.
     """
-    # Ensure that the format of the subfile is correct
-    if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name[:-4]
-    if subfile_name[0] != "/":
-        subfile_name = "/" + subfile_name
     # Read the h5 file and extract the volume file from it
     h5_file = spectre_h5.H5File(filename, "r+")
     vol_file = h5_file.get_vol(subfile_name)
