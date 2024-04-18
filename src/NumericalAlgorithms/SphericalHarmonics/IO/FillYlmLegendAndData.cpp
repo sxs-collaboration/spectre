@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 
 #include <array>
 #include <cstddef>
@@ -19,7 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 
-namespace intrp::callbacks::detail {
+namespace ylm {
 template <typename Frame>
 void fill_ylm_legend_and_data(
     const gsl::not_null<std::vector<std::string>*> legend,
@@ -75,12 +75,12 @@ void fill_ylm_legend_and_data(
     }
   }
 }
-}  // namespace intrp::callbacks::detail
+}  // namespace ylm
 
 #define FRAMETYPE(instantiation_data) BOOST_PP_TUPLE_ELEM(0, instantiation_data)
 
 #define INSTANTIATE(_, instantiation_data)                                  \
-  template void intrp::callbacks::detail::fill_ylm_legend_and_data(         \
+  template void ylm::fill_ylm_legend_and_data(                              \
       gsl::not_null<std::vector<std::string>*> legend,                      \
       gsl::not_null<std::vector<double>*> data,                             \
       const ylm::Strahlkorper<FRAMETYPE(instantiation_data)>& strahlkorper, \

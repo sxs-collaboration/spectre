@@ -17,6 +17,7 @@
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
@@ -34,22 +35,6 @@
 
 namespace intrp {
 namespace callbacks {
-namespace detail {
-// Fills the legend and row of spherical harmonic data to write to disk
-//
-// The number of coefficients to write is based on `max_l`, the maximum value
-// that the input `strahlkorper` could possibly have. When
-// `strahlkorper.l_max() < max_l`, coefficients with \f$l\f$ higher than
-// `strahlkorper.l_max()` will simply be zero. Assuming the same `max_l` is
-// always used for a given surface, we will always write the same number of
-// columns for each row, as `max_l` sets the number of columns to write
-template <typename Frame>
-void fill_ylm_legend_and_data(gsl::not_null<std::vector<std::string>*> legend,
-                              gsl::not_null<std::vector<double>*> data,
-                              const ylm::Strahlkorper<Frame>& strahlkorper,
-                              double time, size_t max_l);
-}  // namespace detail
-
 /// \brief post_interpolation_callback that outputs 2D "volume" data on a
 /// surface and the surface's spherical harmonic data
 ///
@@ -173,9 +158,9 @@ struct ObserveSurfaceData
     // coefficients regardless of the current value of l_max and (b) write a
     // constant number of columns for each row of data regardless of the current
     // l_max.
-    detail::fill_ylm_legend_and_data(make_not_null(&ylm_legend),
-                                     make_not_null(&ylm_data), strahlkorper,
-                                     time, strahlkorper.l_max());
+    ylm::fill_ylm_legend_and_data(make_not_null(&ylm_legend),
+                                  make_not_null(&ylm_data), strahlkorper, time,
+                                  strahlkorper.l_max());
 
     const std::string ylm_subfile_name{std::string{"/"} + surface_name +
                                        "_Ylm"};

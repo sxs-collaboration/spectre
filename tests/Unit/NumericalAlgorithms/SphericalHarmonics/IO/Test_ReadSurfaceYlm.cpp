@@ -17,6 +17,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
@@ -64,7 +65,7 @@ void write_test_strahlkorpers(
   std::vector<std::vector<double>> data(NumTimes);
   for (size_t i = 0; i < NumTimes; i++) {
     legend.resize(0);  // clear and reuse for next row of data
-    intrp::callbacks::detail::fill_ylm_legend_and_data(
+    ylm::fill_ylm_legend_and_data(
         make_not_null(&legend), make_not_null(&(data[i])),
         gsl::at(strahlkorpers, i), gsl::at(times, i), max_l);
   }

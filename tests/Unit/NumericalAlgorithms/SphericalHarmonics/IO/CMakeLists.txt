@@ -4,6 +4,7 @@
 set(LIBRARY "Test_SphericalHarmonicsIO")
 
 set(LIBRARY_SOURCES
+  Test_FillYlmLegendAndData.cpp
   Test_ReadSurfaceYlm.cpp
   )
 
