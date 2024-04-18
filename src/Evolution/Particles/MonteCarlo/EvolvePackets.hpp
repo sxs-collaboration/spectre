@@ -12,7 +12,7 @@
 
 namespace Frame {
 struct Fluid;
-} // namespace Frame
+}  // namespace Frame
 
 /// Items related to the evolution of particles
 /// Items related to Monte-Carlo radiation transport
