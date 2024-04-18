@@ -49,6 +49,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   ErrorHandling
+  Printf
   SystemUtilities
   )
 

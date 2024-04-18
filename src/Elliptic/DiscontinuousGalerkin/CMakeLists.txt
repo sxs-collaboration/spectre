@@ -34,6 +34,7 @@ target_link_libraries(
   FunctionsOfTime
   LinearOperators
   ParallelAmr
+  Printf
   Spectral
   Utilities
   INTERFACE

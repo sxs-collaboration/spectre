@@ -28,6 +28,6 @@ target_link_libraries(
   Charmxx::main
   ErrorHandling
   Informer
-  Parallel
+  Printf
   SystemUtilities
   )

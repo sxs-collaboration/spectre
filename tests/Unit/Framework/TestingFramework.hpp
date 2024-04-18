@@ -251,7 +251,7 @@ struct check_iterable_approx<M, Requires<blaze::IsColumnMajorMatrix_v<M> and
  * case nothing but the output is checked.
  *
  * \example
- * \snippet Test_Parallel.cpp output_test_example
+ * \snippet Test_Printf.cpp output_test_example
  */
 #define OUTPUT_TEST() \
   do {                \

@@ -14,7 +14,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/OutputInbox.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"

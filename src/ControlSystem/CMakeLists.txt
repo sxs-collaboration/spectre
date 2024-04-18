@@ -56,6 +56,7 @@ target_link_libraries(
   Interpolation
   Logging
   Parallel
+  Printf
   Serialization
   Time
   Utilities

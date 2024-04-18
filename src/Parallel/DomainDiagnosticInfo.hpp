@@ -10,7 +10,6 @@
 
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
-#include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"

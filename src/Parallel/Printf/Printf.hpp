@@ -6,17 +6,27 @@
 
 #pragma once
 
-#include <charm++.h>
+#include <cstddef>
+#include <cstdio>
 #include <iomanip>
 #include <limits>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
+
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
+#include "Parallel/Printf/Printf.decl.h"
 
 namespace Parallel {
 namespace detail {
@@ -72,19 +82,31 @@ inline const typename std::string::value_type* get_printable_type(
   return t.c_str();
 }
 
-template <typename Printer, typename... Ts>
-inline void print_helper(Printer&& printer, const std::string& format,
-                         Ts&&... t) {
+void send_message(bool error, const std::vector<char>& message);
+void send_message_to_file(const std::string& file,
+                          const std::vector<char>& message);
+
+template <typename... Ts>
+inline std::vector<char> allocate_message(const char* const format, Ts&&... t) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-  printer(format.c_str(), get_printable_type(std::forward<Ts>(t))...);
+  const auto length = static_cast<size_t>(snprintf(nullptr, 0, format, t...));
+  std::vector<char> message(length + 1);  // +1 for the null byte
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+  snprintf(message.data(), message.size(), format, t...);
+#pragma GCC diagnostic pop
+  return message;
 }
 
-template <typename Printer, typename... Args>
-inline void call_printer(Printer&& printer, const std::string& format,
-                         Args&&... args) {
+template <typename... Args>
+inline std::vector<char> format_message(const std::string& format,
+                                        Args&&... args) {
   const ScopedFpeState disable_fpes(false);
-  print_helper(printer, format,
-               stream_object_to_string(std::forward<Args>(args))...);
+  return allocate_message(
+      format.c_str(),
+      get_printable_type(stream_object_to_string(std::forward<Args>(args)))...);
 }
 }  // namespace detail
 
@@ -101,13 +123,8 @@ inline void call_printer(Printer&& printer, const std::string& format,
  */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#pragma GCC diagnostic ignored "-Wformat-security"
-  detail::call_printer(
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-      [](auto... a) { CkPrintf(a...); }, format, std::forward<Args>(args)...);
-#pragma GCC diagnostic pop
+  detail::send_message(
+      false, detail::format_message(format, std::forward<Args>(args)...));
 }
 
 /*!
@@ -118,12 +135,44 @@ inline void printf(const std::string& format, Args&&... args) {
  */
 template <typename... Args>
 inline void printf_error(const std::string& format, Args&&... args) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#pragma GCC diagnostic ignored "-Wformat-security"
-  detail::call_printer(
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-      [](auto... a) { CkError(a...); }, format, std::forward<Args>(args)...);
-#pragma GCC diagnostic pop
+  detail::send_message(
+      true, detail::format_message(format, std::forward<Args>(args)...));
 }
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Print an atomic message to a file with C printf usage.
+ *
+ * See Parallel::printf for details.
+ */
+template <typename... Args>
+inline void fprintf(const std::string& file, const std::string& format,
+                    Args&&... args) {
+  detail::send_message_to_file(
+      file, detail::format_message(format, std::forward<Args>(args)...));
+}
+
+/// Chare outputting all Parallel::printf results.
+class PrinterChare : public CBase_PrinterChare {
+ public:
+  PrinterChare() = default;
+  explicit PrinterChare(CkMigrateMessage* /*msg*/) {}
+
+  /// Prints a message to stdout or stderr.
+  static void print(bool error, const std::vector<char>& message);
+
+  /// Prints a message to a file.
+  static void print_to_file(const std::string& file,
+                            const std::vector<char>& message);
+
+  static void register_with_charm();
+
+  void pup(PUP::er& /*p*/) override {}
+};
+
+// Charm readonly variables set in Main.
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+extern CProxy_PrinterChare printer_chare;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+extern bool printer_chare_is_set;
 }  // namespace Parallel

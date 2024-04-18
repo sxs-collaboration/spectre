@@ -24,6 +24,7 @@ target_link_libraries(
   EventsAndTriggers
   LinearOperators
   ParallelAmr
+  Printf
   Serialization
   Utilities
   )

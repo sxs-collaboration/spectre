@@ -16,6 +16,6 @@ target_link_libraries(
   Boost::program_options
   DataStructures
   Hydro
-  Parallel
+  Printf
   Utilities
   )

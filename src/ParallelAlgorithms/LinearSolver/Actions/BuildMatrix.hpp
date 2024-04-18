@@ -28,7 +28,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GetSection.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"

@@ -29,6 +29,7 @@ target_link_libraries(
   Logging
   Observer
   Parallel
+  Printf
   Utilities
   )
 

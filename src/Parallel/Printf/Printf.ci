@@ -1,0 +1,20 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module Printf {
+
+  include "string";
+  include "vector";
+
+  namespace Parallel {
+  array [1D] PrinterChare {
+    entry PrinterChare();
+
+    entry void print(bool error, const std::vector<char>&);
+    entry void print_to_file(const std::string& file, const std::vector<char>&);
+  }
+
+  readonly CProxy_PrinterChare printer_chare;
+  readonly bool printer_chare_is_set;
+  }  // namespace Parallel
+}

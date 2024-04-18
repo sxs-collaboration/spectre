@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_Exceptions.cpp
   Test_FloatingPointExceptions.cpp
   Test_SegfaultHandler.cpp
+  Test_Strerror.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}"

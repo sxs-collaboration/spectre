@@ -46,6 +46,7 @@ target_link_libraries(
   Parallel
   ParallelAmr
   ParallelLinearSolver
+  Printf
   Spectral
   )
 

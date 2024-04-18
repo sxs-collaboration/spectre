@@ -14,6 +14,8 @@ spectre_target_sources(
   FloatingPointExceptions.cpp
   FormatStacktrace.cpp
   SegfaultHandler.cpp
+  Strerror.cpp
+  StrerrorWrapper.c
   )
 
 spectre_target_headers(
@@ -31,6 +33,8 @@ spectre_target_headers(
   FormatStacktrace.hpp
   SegfaultHandler.hpp
   StaticAssert.hpp
+  Strerror.hpp
+  StrerrorWrapper.h
   )
 
 target_link_libraries(
@@ -40,6 +44,12 @@ target_link_libraries(
   Charmxx::charmxx
   PUBLIC
   SystemUtilities
+  )
+
+set_source_files_properties(
+  StrerrorWrapper.c
+  PROPERTIES
+  SKIP_PRECOMPILE_HEADERS ON
   )
 
 # Try to use libbacktrace for boost::stacktrace so it displays line numbers.

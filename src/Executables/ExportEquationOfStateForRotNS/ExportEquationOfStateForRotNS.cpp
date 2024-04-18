@@ -14,7 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "Parallel/Printf.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
