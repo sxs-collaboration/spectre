@@ -1770,7 +1770,7 @@ void BinaryWithGravitationalWaves::integrate_hamiltonian_system() {
 void BinaryWithGravitationalWaves::write_evolution_to_file() const {
   if (write_evolution_option()) {
     std::ofstream file;
-    file.open("PastHistoryEvolution.txt");
+    file.open("PastHistoryEvolution.csv");
     file << "time, position_left_x, position_left_y, position_left_z, "
             "momentum_left_x, momentum_left_y, momentum_left_z, "
             "position_right_x, position_right_y, position_right_z, "
