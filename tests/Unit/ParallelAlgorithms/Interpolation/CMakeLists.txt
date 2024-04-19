@@ -56,5 +56,6 @@ target_link_libraries(
   RelativisticEulerSolutions
   Spectral
   SphericalHarmonics
+  SphericalHarmonicsIO
   Utilities
   )

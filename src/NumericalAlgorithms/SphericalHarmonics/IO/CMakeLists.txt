@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  FillYlmLegendAndData.cpp
   ReadSurfaceYlm.cpp
   )
 
@@ -15,6 +16,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  FillYlmLegendAndData.hpp
   ReadSurfaceYlm.hpp
   )
 
@@ -24,7 +26,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   H5
-  Utilities
   PUBLIC
   SphericalHarmonics
+  Utilities
   )

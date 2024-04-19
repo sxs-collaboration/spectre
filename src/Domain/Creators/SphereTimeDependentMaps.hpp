@@ -169,8 +169,7 @@ struct TimeDependentMapOptions {
     using options = tmpl::list<InitialValues, DecayTimescaleRotation>;
 
     std::array<std::array<double, 4>, 3> initial_values{};
-    double decay_timescale{
-        std::numeric_limits<double>::signaling_NaN()};
+    double decay_timescale{std::numeric_limits<double>::signaling_NaN()};
   };
 
   struct ExpansionMapOptions {

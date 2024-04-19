@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -153,6 +155,51 @@ Strahlkorper<Frame> read_surface_ylm_row(const Matrix& ylm_data,
 }  // namespace
 
 template <typename Frame>
+ylm::Strahlkorper<Frame> read_surface_ylm_single_time(
+    const std::string& file_name, const std::string& surface_subfile_name,
+    const double time, const double relative_epsilon) {
+  h5::H5File<h5::AccessType::ReadOnly> file{file_name};
+  const std::string ylm_subfile_name{std::string{"/"} + surface_subfile_name};
+  const auto& ylm_file = file.get<h5::Dat>(ylm_subfile_name);
+  const auto& ylm_legend = ylm_file.get_legend();
+  check_legend<Frame>(ylm_legend);
+
+  std::vector<size_t> columns(ylm_legend.size());
+  std::iota(std::begin(columns), std::end(columns), 0);
+
+  const auto& dimensions = ylm_file.get_dimensions();
+  const auto num_rows = static_cast<size_t>(dimensions[0]);
+  const Matrix times =
+      ylm_file.get_data_subset(std::vector<size_t>{0_st}, 0, num_rows);
+
+  std::optional<size_t> row_number{};
+  for (size_t i = 0; i < num_rows; i++) {
+    if (equal_within_roundoff(time, times(i, 0), relative_epsilon, time)) {
+      if (row_number.has_value()) {
+        ERROR("Found more than one time in the subfile "
+              << surface_subfile_name << " of the H5 file " << file_name
+              << " that is within a relative_epsilon of " << relative_epsilon
+              << " of the time requested " << time);
+      }
+
+      row_number = i;
+    }
+  }
+
+  if (not row_number.has_value()) {
+    ERROR("Could not find time " << time << " in subfile "
+                                 << surface_subfile_name << " of H5 file "
+                                 << file_name << ". Available times are:\n"
+                                 << times);
+  }
+
+  const Matrix data = ylm_file.get_data_subset(columns, row_number.value());
+
+  // Zero for row number because this matrix only has one row
+  return read_surface_ylm_row<Frame>(data, 0);
+}
+
+template <typename Frame>
 std::vector<Strahlkorper<Frame>> read_surface_ylm(
     const std::string& file_name, const std::string& surface_subfile_name,
     const size_t requested_number_of_times_from_end) {
@@ -200,11 +247,15 @@ std::vector<Strahlkorper<Frame>> read_surface_ylm(
 
 #define FRAMETYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                       \
-  template std::vector<ylm::Strahlkorper<FRAMETYPE(data)>>         \
-  ylm::read_surface_ylm<>(const std::string& file_name,            \
-                          const std::string& surface_subfile_name, \
-                          size_t requested_number_of_times_from_end);
+#define INSTANTIATE(_, data)                                                   \
+  template std::vector<ylm::Strahlkorper<FRAMETYPE(data)>>                     \
+  ylm::read_surface_ylm<>(const std::string& file_name,                        \
+                          const std::string& surface_subfile_name,             \
+                          size_t requested_number_of_times_from_end);          \
+  template ylm::Strahlkorper<FRAMETYPE(data)>                                  \
+  ylm::read_surface_ylm_single_time<>(const std::string& file_name,            \
+                                      const std::string& surface_subfile_name, \
+                                      double time, double relative_epsilon);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Inertial, Frame::Distorted))

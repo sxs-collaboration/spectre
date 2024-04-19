@@ -17,6 +17,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
@@ -64,7 +65,7 @@ void write_test_strahlkorpers(
   std::vector<std::vector<double>> data(NumTimes);
   for (size_t i = 0; i < NumTimes; i++) {
     legend.resize(0);  // clear and reuse for next row of data
-    intrp::callbacks::detail::fill_ylm_legend_and_data(
+    ylm::fill_ylm_legend_and_data(
         make_not_null(&legend), make_not_null(&(data[i])),
         gsl::at(strahlkorpers, i), gsl::at(times, i), max_l);
   }
@@ -292,6 +293,53 @@ void test_errors() {
     file_system::rm(filename, true);
   }
 }
+
+void test_single_time(const std::string& test_filename) {
+  INFO("Test Single Time");
+
+  using frame = Frame::Inertial;
+  const std::string subfile_name = "SurfaceA_SingleTime_Ylm";
+  const std::array<double, 3> expansion_center{{-0.5, -0.1, 0.3}};
+  const size_t max_l = 3;
+
+  constexpr size_t number_of_times = 3;
+  const std::array<double, number_of_times> written_times{{0.0, 0.1, 0.2}};
+  const std::array<size_t, number_of_times> l_maxes{{3, 3, 3}};
+
+  const auto expected_strahlkorpers =
+      generate_test_strahlkorpers<frame>(expansion_center, l_maxes);
+  write_test_strahlkorpers(expected_strahlkorpers, test_filename, subfile_name,
+                           written_times, max_l);
+
+  {
+    const ylm::Strahlkorper<frame> read_in_strahlkorper =
+        ylm::read_surface_ylm_single_time<frame>(test_filename, subfile_name,
+                                                 0.1, 1e-12);
+
+    CHECK(expected_strahlkorpers[1] == read_in_strahlkorper);
+  }
+
+  {
+    const ylm::Strahlkorper<frame> read_in_strahlkorper =
+        ylm::read_surface_ylm_single_time<frame>(test_filename, subfile_name,
+                                                 0.2, 1e-2);
+
+    CHECK(expected_strahlkorpers[2] == read_in_strahlkorper);
+  }
+
+  CHECK_THROWS_WITH(
+      ylm::read_surface_ylm_single_time<frame>(test_filename, subfile_name, 0.3,
+                                               1e-12),
+      Catch::Matchers::ContainsSubstring("Could not find time") and
+          Catch::Matchers::ContainsSubstring("Available times are:"));
+
+  CHECK_THROWS_WITH(ylm::read_surface_ylm_single_time<frame>(
+                        test_filename, subfile_name, 0.2, 1.0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Found more than one time in the subfile") and
+                        Catch::Matchers::ContainsSubstring(
+                            "that is within a relative_epsilon of"));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.ReadSurfaceYlm",
@@ -355,6 +403,8 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.ReadSurfaceYlm",
     check_read_ylm_data<frame_b>(test_filename, subfile_name_b, 1,
                                  strahlkorpers_b);
   }
+
+  test_single_time(test_filename);
 
   // Delete the temporary file created for this test
   file_system::rm(test_filename, true);

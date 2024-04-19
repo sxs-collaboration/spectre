@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
@@ -258,9 +259,9 @@ void check_ylm_data_with_greater_max_l() {
   std::vector<std::string> ylm_written_legend;
   std::vector<double> ylm_written_data;
 
-  intrp::callbacks::detail::fill_ylm_legend_and_data(
-      make_not_null(&ylm_written_legend), make_not_null(&ylm_written_data),
-      strahlkorper, time, max_l);
+  ylm::fill_ylm_legend_and_data(make_not_null(&ylm_written_legend),
+                                make_not_null(&ylm_written_data), strahlkorper,
+                                time, max_l);
 
   CHECK(ylm_written_legend.size() == expected_num_columns);
   CHECK(ylm_written_data.size() == expected_num_columns);
