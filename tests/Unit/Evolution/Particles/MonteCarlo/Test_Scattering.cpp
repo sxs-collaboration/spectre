@@ -3,12 +3,28 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <optional>
+#include <random>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/Printf/Printf.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+
+namespace Frame {
+struct ElementLogical;
+struct Fluid;
+struct Inertial;
+}  // namespace Frame
 
 namespace {
 
@@ -88,7 +104,7 @@ void test_diffusion_params() {
              0.999121) < epsilon_integral);
 }
 
-  /*void test_diffusion() {
+void test_diffusion() {
   const Particles::MonteCarlo::DiffusionMonteCarloParameters diffusion_params;
 
   MAKE_GENERATOR(generator);
@@ -239,7 +255,7 @@ void test_diffusion_params() {
                          neutrino_energy / rad;
     Parallel::printf("%.5f %.5f %.5f %.5f 1\n", rad, cth, phi, pitch);
   }
-  }*/
+}
 
 }  // namespace
 
@@ -249,7 +265,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloScattering",
   test_diffusion_params();
   // Not turned on by defaults... too long for automated tests,
   // but useful framework to test diffusion regime.
-  /*if(false) {
+  // NOLINTNEXTLINE(readability-simplify-boolean-expr)
+  if ((false)) {
     test_diffusion();
-    }*/
+  }
 }
