@@ -456,5 +456,11 @@ struct SelfStartGhInterfaceManager : db::SimpleTag {
     return Cce::InterfaceManagers::GhLockstep();
   }
 };
+
+/// A worldtube constraint of Klein-Gordon Cce monitored during evolution
+struct KleinGordonWorldtubeConstraint : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+  static std::string name() { return "KGConstraint"; }
+};
 }  // namespace Tags
 }  // namespace Cce
