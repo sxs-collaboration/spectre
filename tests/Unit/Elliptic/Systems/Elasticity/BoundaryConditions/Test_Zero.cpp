@@ -62,37 +62,43 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
   const auto box = db::create<db::AddSimpleTags<>>();
   {
     INFO("Dirichlet");
-    tnsr::I<DataVector, 2> displacement{3_st,
-                                        std::numeric_limits<double>::max()};
+    tnsr::I<DataVector, 2> displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
-        3_st, std::numeric_limits<double>::max()};
+        3_st, std::numeric_limits<double>::signaling_NaN()};
+    tnsr::iJ<DataVector, 2> deriv_displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     elliptic::apply_boundary_condition<false, void, tmpl::list<Fixed>>(
         fixed, box, Direction<2>::lower_xi(), make_not_null(&displacement),
-        make_not_null(&n_dot_minus_stress));
+        make_not_null(&n_dot_minus_stress), deriv_displacement);
     CHECK_ITERABLE_APPROX(get<0>(displacement), SINGLE_ARG(DataVector{3, 0.}));
     CHECK_ITERABLE_APPROX(get<1>(displacement), SINGLE_ARG(DataVector{3, 0.}));
   }
   {
     INFO("Linearized Dirichlet");
-    tnsr::I<DataVector, 2> displacement{3_st,
-                                        std::numeric_limits<double>::max()};
+    tnsr::I<DataVector, 2> displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
-        3_st, std::numeric_limits<double>::max()};
+        3_st, std::numeric_limits<double>::signaling_NaN()};
+    tnsr::iJ<DataVector, 2> deriv_displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     elliptic::apply_boundary_condition<true, void, tmpl::list<Fixed>>(
         fixed, box, Direction<2>::lower_xi(), make_not_null(&displacement),
-        make_not_null(&n_dot_minus_stress));
+        make_not_null(&n_dot_minus_stress), deriv_displacement);
     CHECK_ITERABLE_APPROX(get<0>(displacement), SINGLE_ARG(DataVector{3, 0.}));
     CHECK_ITERABLE_APPROX(get<1>(displacement), SINGLE_ARG(DataVector{3, 0.}));
   }
   {
     INFO("Neumann");
-    tnsr::I<DataVector, 2> displacement{3_st,
-                                        std::numeric_limits<double>::max()};
+    tnsr::I<DataVector, 2> displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
-        3_st, std::numeric_limits<double>::max()};
+        3_st, std::numeric_limits<double>::signaling_NaN()};
+    tnsr::iJ<DataVector, 2> deriv_displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     elliptic::apply_boundary_condition<false, void, tmpl::list<Free>>(
         free, box, Direction<2>::lower_xi(), make_not_null(&displacement),
-        make_not_null(&n_dot_minus_stress));
+        make_not_null(&n_dot_minus_stress), deriv_displacement);
     CHECK_ITERABLE_APPROX(get<0>(n_dot_minus_stress),
                           SINGLE_ARG(DataVector{3, 0.}));
     CHECK_ITERABLE_APPROX(get<1>(n_dot_minus_stress),
@@ -100,13 +106,15 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
   }
   {
     INFO("Linearized Neumann");
-    tnsr::I<DataVector, 2> displacement{3_st,
-                                        std::numeric_limits<double>::max()};
+    tnsr::I<DataVector, 2> displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
-        3_st, std::numeric_limits<double>::max()};
+        3_st, std::numeric_limits<double>::signaling_NaN()};
+    tnsr::iJ<DataVector, 2> deriv_displacement{
+        3_st, std::numeric_limits<double>::signaling_NaN()};
     elliptic::apply_boundary_condition<true, void, tmpl::list<Free>>(
         free, box, Direction<2>::lower_xi(), make_not_null(&displacement),
-        make_not_null(&n_dot_minus_stress));
+        make_not_null(&n_dot_minus_stress), deriv_displacement);
     CHECK_ITERABLE_APPROX(get<0>(n_dot_minus_stress),
                           SINGLE_ARG(DataVector{3, 0.}));
     CHECK_ITERABLE_APPROX(get<1>(n_dot_minus_stress),

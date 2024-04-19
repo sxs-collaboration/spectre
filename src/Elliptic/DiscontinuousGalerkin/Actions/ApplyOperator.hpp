@@ -181,7 +181,7 @@ struct PrepareAndSendMortarData<
             element_id.block_id());
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction, const auto... fields_and_fluxes) {
+            const Direction<Dim>& direction, auto&&... fields_and_fluxes) {
           ASSERT(
               boundary_conditions.contains(direction),
               "No boundary condition is available in block "
@@ -198,7 +198,8 @@ struct PrepareAndSendMortarData<
               dynamic_cast<const BoundaryConditionsBase&>(
                   *boundary_conditions.at(direction));
           elliptic::apply_boundary_condition<Linearized>(
-              boundary_condition, box, direction, fields_and_fluxes...);
+              boundary_condition, box, direction,
+              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
         };
 
     // Can't `db::get` the arguments for the boundary conditions within
@@ -564,7 +565,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
             element_id.block_id());
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction, const auto... fields_and_fluxes) {
+            const Direction<Dim>& direction, auto&&... fields_and_fluxes) {
           ASSERT(
               boundary_conditions.contains(direction),
               "No boundary condition is available in block "
@@ -581,7 +582,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
               dynamic_cast<const BoundaryConditionsBase&>(
                   *boundary_conditions.at(direction));
           elliptic::apply_boundary_condition<false>(
-              boundary_condition, box, direction, fields_and_fluxes...);
+              boundary_condition, box, direction,
+              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
         };
 
     // Can't `db::get` the arguments for the boundary conditions within

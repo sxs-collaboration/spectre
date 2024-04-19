@@ -455,11 +455,21 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // the boundary conditions is taken from the "interior" side of the
         // boundary, i.e. with a normal vector that points _out_ of the
         // computational domain.
+        Variables<tmpl::list<DerivTags...>> deriv_vars_on_boundary{};
+        if (AllDataIsZero or local_data_is_zero) {
+          deriv_vars_on_boundary.initialize(face_num_points, 0.);
+        } else {
+          deriv_vars_on_boundary.initialize(face_num_points);
+          ::dg::project_contiguous_data_to_boundary(
+              make_not_null(&deriv_vars_on_boundary), *deriv_vars, mesh,
+              direction);
+        }
         apply_boundary_condition(
             direction,
             make_not_null(&get<PrimalMortarVars>(boundary_data.field_data))...,
             make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarVars>>(
-                boundary_data.field_data))...);
+                boundary_data.field_data))...,
+            get<DerivTags>(deriv_vars_on_boundary)...);
 
         // Invert the sign of the fluxes to account for the inverted normal on
         // exterior faces. Also multiply by 2 and add the interior fluxes to

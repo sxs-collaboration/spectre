@@ -68,7 +68,7 @@ void apply_boundary_condition(
     const elliptic::BoundaryConditions::BoundaryCondition<Dim>&
         boundary_condition,
     const db::DataBox<DbTagsList>& box, const MapKeys& map_keys_to_direction,
-    const gsl::not_null<FieldsAndFluxes*>... fields_and_fluxes) {
+    FieldsAndFluxes&&... fields_and_fluxes) {
   using boundary_condition_classes =
       typename detail::GetBoundaryConditionClasses<
           elliptic::BoundaryConditions::BoundaryCondition<Dim>,
@@ -99,9 +99,13 @@ void apply_boundary_condition(
                                  volume_tags_transformed>(
             [&derived, &fields_and_fluxes...](const auto&... args) {
               if constexpr (Linearized) {
-                derived->apply_linearized(fields_and_fluxes..., args...);
+                derived->apply_linearized(
+                    std::forward<FieldsAndFluxes>(fields_and_fluxes)...,
+                    args...);
               } else {
-                derived->apply(fields_and_fluxes..., args...);
+                derived->apply(
+                    std::forward<FieldsAndFluxes>(fields_and_fluxes)...,
+                    args...);
               }
             },
             box, map_keys_to_direction);

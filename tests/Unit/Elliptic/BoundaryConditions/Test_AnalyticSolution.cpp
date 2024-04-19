@@ -156,6 +156,8 @@ void test_analytic_solution() {
                          ::Tags::NormalDotFlux<ScalarFieldTag<1>>,
                          ::Tags::NormalDotFlux<ScalarFieldTag<2>>>>
         vars{face_num_points, std::numeric_limits<double>::max()};
+    const tnsr::i<DataVector, Dim> deriv_scalar{
+        face_num_points, std::numeric_limits<double>::signaling_NaN()};
     // Inhomogeneous boundary conditions
     elliptic::apply_boundary_condition<
         false, void, tmpl::list<AnalyticSolution<System<Dim>>>>(
@@ -163,7 +165,8 @@ void test_analytic_solution() {
         make_not_null(&get<ScalarFieldTag<1>>(vars)),
         make_not_null(&get<ScalarFieldTag<2>>(vars)),
         make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<1>>>(vars)),
-        make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<2>>>(vars)));
+        make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<2>>>(vars)),
+        deriv_scalar, deriv_scalar);
     // Imposed Dirichlet conditions on field 1
     const auto expected_dirichlet_field = []() -> DataVector {
       if constexpr (Dim == 1) {
@@ -204,7 +207,8 @@ void test_analytic_solution() {
         make_not_null(&get<ScalarFieldTag<1>>(vars)),
         make_not_null(&get<ScalarFieldTag<2>>(vars)),
         make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<1>>>(vars)),
-        make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<2>>>(vars)));
+        make_not_null(&get<::Tags::NormalDotFlux<ScalarFieldTag<2>>>(vars)),
+        deriv_scalar, deriv_scalar);
     // Imposed Dirichlet conditions on field 1
     CHECK_ITERABLE_APPROX(get(get<ScalarFieldTag<1>>(vars)),
                           SINGLE_ARG(DataVector{face_num_points, 0.}));

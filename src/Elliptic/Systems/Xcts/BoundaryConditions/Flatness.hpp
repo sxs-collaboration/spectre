@@ -84,14 +84,17 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
-      gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient);
+      gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor);
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
       gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor_minus_one,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_lapse_times_conformal_factor_gradient);
+          n_dot_lapse_times_conformal_factor_gradient,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor,
+      const tnsr::i<DataVector, 3>& deriv_lapse_times_conformal_factor);
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_minus_one,
@@ -100,7 +103,10 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
           n_dot_lapse_times_conformal_factor_gradient,
-      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_longitudinal_shift_excess);
+      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_longitudinal_shift_excess,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor,
+      const tnsr::i<DataVector, 3>& deriv_lapse_times_conformal_factor,
+      const tnsr::iJ<DataVector, 3>& deriv_shift_excess);
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
@@ -108,7 +114,8 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_conformal_factor_gradient_correction);
+          n_dot_conformal_factor_gradient_correction,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor_correction);
 
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
@@ -117,7 +124,10 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
       gsl::not_null<Scalar<DataVector>*>
           n_dot_conformal_factor_gradient_correction,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_lapse_times_conformal_factor_gradient_correction);
+          n_dot_lapse_times_conformal_factor_gradient_correction,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor_correction,
+      const tnsr::i<DataVector, 3>&
+          deriv_lapse_times_conformal_factor_correction);
 
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
@@ -129,7 +139,11 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
       gsl::not_null<Scalar<DataVector>*>
           n_dot_lapse_times_conformal_factor_gradient_correction,
       gsl::not_null<tnsr::I<DataVector, 3>*>
-          n_dot_longitudinal_shift_excess_correction);
+          n_dot_longitudinal_shift_excess_correction,
+      const tnsr::i<DataVector, 3>& deriv_conformal_factor_correction,
+      const tnsr::i<DataVector, 3>&
+          deriv_lapse_times_conformal_factor_correction,
+      const tnsr::iJ<DataVector, 3>& deriv_shift_excess_correction);
 };
 
 template <Xcts::Equations EnabledEquations>

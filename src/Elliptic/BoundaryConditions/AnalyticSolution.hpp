@@ -134,6 +134,9 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   template <typename Metavariables>
   void apply(const gsl::not_null<typename FieldTags::type*>... fields,
              const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes,
+             const TensorMetafunctions::prepend_spatial_index<
+                 typename FieldTags::type, Dim, UpLo::Lo,
+                 Frame::Inertial>&... /*deriv_fields*/,
              const Metavariables& /*meta*/,
              const tnsr::I<DataVector, Dim>& face_inertial_coords,
              const tnsr::i<DataVector, Dim>& face_normal) const {
@@ -184,7 +187,10 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 
   void apply_linearized(
       const gsl::not_null<typename FieldTags::type*>... fields,
-      const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes) const {
+      const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes,
+      const TensorMetafunctions::prepend_spatial_index<
+          typename FieldTags::type, Dim, UpLo::Lo,
+          Frame::Inertial>&... /*deriv_fields*/) const {
     const auto impose_boundary_condition = [this](auto field_tag_v,
                                                   const auto field,
                                                   const auto n_dot_flux) {

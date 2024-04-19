@@ -34,16 +34,21 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
       num_points, std::numeric_limits<double>::signaling_NaN()};
   Scalar<DataVector> n_dot_conformal_factor_gradient{
       num_points, std::numeric_limits<double>::signaling_NaN()};
+  tnsr::i<DataVector, 3> conformal_factor_gradient{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
   if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
     elliptic::apply_boundary_condition<Linearized, void,
                                        tmpl::list<Flatness<EnabledEquations>>>(
         boundary_condition, box, Direction<3>::lower_xi(),
         make_not_null(&conformal_factor_minus_one),
-        make_not_null(&n_dot_conformal_factor_gradient));
+        make_not_null(&n_dot_conformal_factor_gradient),
+        conformal_factor_gradient);
   } else {
     Scalar<DataVector> lapse_times_conformal_factor_minus_one{
         num_points, std::numeric_limits<double>::signaling_NaN()};
     Scalar<DataVector> n_dot_lapse_times_conformal_factor_gradient{
+        num_points, std::numeric_limits<double>::signaling_NaN()};
+    tnsr::i<DataVector, 3> lapse_times_conformal_factor_gradient{
         num_points, std::numeric_limits<double>::signaling_NaN()};
     if constexpr (EnabledEquations == Xcts::Equations::HamiltonianAndLapse) {
       elliptic::apply_boundary_condition<
@@ -52,11 +57,14 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
           make_not_null(&conformal_factor_minus_one),
           make_not_null(&lapse_times_conformal_factor_minus_one),
           make_not_null(&n_dot_conformal_factor_gradient),
-          make_not_null(&n_dot_lapse_times_conformal_factor_gradient));
+          make_not_null(&n_dot_lapse_times_conformal_factor_gradient),
+          conformal_factor_gradient, lapse_times_conformal_factor_gradient);
     } else {
       tnsr::I<DataVector, 3> shift_excess{
           num_points, std::numeric_limits<double>::signaling_NaN()};
       tnsr::I<DataVector, 3> n_dot_longitudinal_shift_excess{
+          num_points, std::numeric_limits<double>::signaling_NaN()};
+      tnsr::iJ<DataVector, 3> deriv_shift_excess{
           num_points, std::numeric_limits<double>::signaling_NaN()};
       elliptic::apply_boundary_condition<
           Linearized, void, tmpl::list<Flatness<EnabledEquations>>>(
@@ -66,7 +74,9 @@ void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
           make_not_null(&shift_excess),
           make_not_null(&n_dot_conformal_factor_gradient),
           make_not_null(&n_dot_lapse_times_conformal_factor_gradient),
-          make_not_null(&n_dot_longitudinal_shift_excess));
+          make_not_null(&n_dot_longitudinal_shift_excess),
+          conformal_factor_gradient, lapse_times_conformal_factor_gradient,
+          deriv_shift_excess);
       CHECK(get<0>(shift_excess) == DataVector(num_points, 0.));
       CHECK(get<1>(shift_excess) == DataVector(num_points, 0.));
       CHECK(get<2>(shift_excess) == DataVector(num_points, 0.));

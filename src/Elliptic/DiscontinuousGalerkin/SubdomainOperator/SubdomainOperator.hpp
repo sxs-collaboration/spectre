@@ -289,7 +289,7 @@ struct SubdomainOperator
          &override_boundary_conditions](const ElementId<Dim>& local_element_id,
                                         const Direction<Dim>& local_direction,
                                         auto is_overlap, const auto& map_keys,
-                                        const auto... fields_and_fluxes) {
+                                        auto&&... fields_and_fluxes) {
           constexpr bool is_overlap_v =
               std::decay_t<decltype(is_overlap)>::value;
           // Get boundary conditions from domain, or use overridden boundary
@@ -336,8 +336,9 @@ struct SubdomainOperator
           elliptic::apply_boundary_condition<
               linearized,
               tmpl::conditional_t<is_overlap_v, make_overlap_tag, void>,
-              BoundaryConditionClasses>(boundary_condition, box, map_keys,
-                                        fields_and_fluxes...);
+              BoundaryConditionClasses>(
+              boundary_condition, box, map_keys,
+              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
         };
 
     // Check if the subdomain data is sparse, i.e. if some elements have zero
@@ -393,10 +394,11 @@ struct SubdomainOperator
     const auto apply_boundary_condition_center =
         [&apply_boundary_condition, &local_central_element = central_element](
             const Direction<Dim>& local_direction,
-            const auto... fields_and_fluxes) {
-          apply_boundary_condition(local_central_element.id(), local_direction,
-                                   std::false_type{}, local_direction,
-                                   fields_and_fluxes...);
+            auto&&... fields_and_fluxes) {
+          apply_boundary_condition(
+              local_central_element.id(), local_direction, std::false_type{},
+              local_direction,
+              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
         };
     db::apply<prepare_args_tags>(
         [this, &operand](const auto&... args) {
@@ -467,11 +469,12 @@ struct SubdomainOperator
         const auto apply_boundary_condition_neighbor =
             [&apply_boundary_condition, &local_neighbor_id = neighbor_id,
              &overlap_id](const Direction<Dim>& local_direction,
-                          const auto... fields_and_fluxes) {
+                          auto&&... fields_and_fluxes) {
               apply_boundary_condition(
                   local_neighbor_id, local_direction, std::true_type{},
                   std::forward_as_tuple(overlap_id, local_direction),
-                  fields_and_fluxes...);
+                  std::forward<decltype(fields_and_fluxes)>(
+                      fields_and_fluxes)...);
             };
 
         const auto fluxes_args_on_overlap =

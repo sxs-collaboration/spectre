@@ -102,6 +102,7 @@ class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
 
   void apply(gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
              gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
+             const tnsr::iJ<DataVector, 3>& deriv_displacement,
              const tnsr::I<DataVector, 3>& x,
              const tnsr::i<DataVector, 3>& face_normal) const;
 
@@ -110,7 +111,8 @@ class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
 
   static void apply_linearized(
       gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress);
+      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
+      const tnsr::iJ<DataVector, 3>& deriv_displacement);
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | beam_width_; }

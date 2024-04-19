@@ -90,14 +90,16 @@ class Robin : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
   using volume_tags = tmpl::list<>;
 
   void apply(gsl::not_null<Scalar<DataVector>*> field,
-             gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const;
+             gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient,
+             const tnsr::i<DataVector, Dim>& deriv_field) const;
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
 
   void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> field_correction,
-      gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction) const;
+      gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction,
+      const tnsr::i<DataVector, Dim>& deriv_field_correction) const;
 
   void pup(PUP::er& p) override;
 

@@ -28,7 +28,8 @@ std::string Zero<Dim, BoundaryConditionType>::name() {
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 void Zero<Dim, BoundaryConditionType>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress,
+    const tnsr::iJ<DataVector, Dim>& /*deriv_displacement*/) {
   if constexpr (BoundaryConditionType ==
                 elliptic::BoundaryConditionType::Dirichlet) {
     (void)n_dot_minus_stress;
@@ -46,8 +47,9 @@ void Zero<Dim, BoundaryConditionType>::apply(
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 void Zero<Dim, BoundaryConditionType>::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
-  apply(displacement, n_dot_minus_stress);
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress,
+    const tnsr::iJ<DataVector, Dim>& deriv_displacement) {
+  apply(displacement, n_dot_minus_stress, deriv_displacement);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

@@ -68,12 +68,11 @@ namespace BoundaryConditions {
  *   1. The dynamic fields as not-null pointers.
  *   2. The normal-dot-fluxes corresponding to the dynamic fields as not-null
  *      pointers. These have the same types as the dynamic fields.
- *   3. The types held by the argument tags.
+ *   3. The field derivatives as const-refs.
+ *   4. The types held by the argument tags.
  *
- *   For first-order systems that involve auxiliary variables, only the
- *   non-auxiliary ("primal") variables are included in the lists above. For
- *   example, boundary conditions for a first-order Poisson system might have an
- *   `apply` function signature that looks like this:
+ *   For example, boundary conditions for a first-order Poisson system might
+ *   have an `apply` function signature that looks like this:
  *
  *   \snippet Elliptic/BoundaryConditions/Test_BoundaryCondition.cpp example_poisson_fields
  *

@@ -90,10 +90,10 @@ DomainCreator:
       Radius: &outer_shell_inner_radius 60.
       RadialDistribution: Projective
     OuterShell:
-      Radius: &outer_radius 1e9
+      Radius: &outer_radius 1e5
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 120.0
-      BoundaryCondition: Flatness
+      BoundaryCondition: Robin
     UseEquiangularMap: True
     InitialRefinement:
       ObjectAShell:     [{{ L }}, {{ L }}, {{ L }}]
@@ -207,7 +207,7 @@ RadiallyCompressedCoordinates:
   Compression: *outer_shell_distribution
 
 EventsAndTriggers:
-  - Trigger: Always
+  - Trigger: HasConverged
     Events:
       - ObserveFields:
           SubfileName: VolumeData

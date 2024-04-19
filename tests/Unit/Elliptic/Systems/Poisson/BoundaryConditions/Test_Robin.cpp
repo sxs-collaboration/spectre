@@ -29,14 +29,17 @@ template <bool Linearized>
 void apply_dirichlet_boundary_condition(
     const gsl::not_null<Scalar<DataVector>*> field,
     const double dirichlet_weight, const double constant,
-    const Scalar<DataVector>& /*used_for_size*/) {
+    const Scalar<DataVector>& used_for_size) {
   const Robin<1> boundary_condition{dirichlet_weight, 0., constant};
   const auto box = db::create<db::AddSimpleTags<>>();
   auto n_dot_field_gradient = make_with_value<Scalar<DataVector>>(
       *field, std::numeric_limits<double>::signaling_NaN());
+  const tnsr::i<DataVector, 1> field_gradient{
+      used_for_size.begin()->size(),
+      std::numeric_limits<double>::signaling_NaN()};
   elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Robin<1>>>(
       boundary_condition, box, Direction<1>::lower_xi(), field,
-      make_not_null(&n_dot_field_gradient));
+      make_not_null(&n_dot_field_gradient), field_gradient);
 }
 template <bool Linearized>
 void apply_neumann_boundary_condition(
@@ -45,9 +48,11 @@ void apply_neumann_boundary_condition(
     const double neumann_weight, const double constant) {
   const Robin<1> boundary_condition{dirichlet_weight, neumann_weight, constant};
   const auto box = db::create<db::AddSimpleTags<>>();
+  const tnsr::i<DataVector, 1> field_gradient{
+      field.begin()->size(), std::numeric_limits<double>::signaling_NaN()};
   elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Robin<1>>>(
       boundary_condition, box, Direction<1>::lower_xi(), make_not_null(&field),
-      n_dot_field_gradient);
+      n_dot_field_gradient, field_gradient);
 }
 }  // namespace
 

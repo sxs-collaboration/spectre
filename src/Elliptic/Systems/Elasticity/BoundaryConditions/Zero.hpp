@@ -86,16 +86,17 @@ class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
   using argument_tags = tmpl::list<>;
   using volume_tags = tmpl::list<>;
 
-  static void apply(
-      gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
+                    gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress,
+                    const tnsr::iJ<DataVector, Dim>& deriv_displacement);
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
 
   static void apply_linearized(
       gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
+      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress,
+      const tnsr::iJ<DataVector, Dim>& deriv_displacement);
 };
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>

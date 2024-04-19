@@ -132,13 +132,21 @@ void apply_boundary_condition_impl(
           typename ApparentHorizon<ConformalGeometry>::volume_tags>>>(
       DirectionMap<3, std::decay_t<decltype(args)>>{
           {direction, std::move(args)}}...);
+  const size_t num_points = conformal_factor.begin()->size();
+  tnsr::i<DataVector, 3> deriv_conformal_factor{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
+  tnsr::i<DataVector, 3> deriv_lapse_times_conformal_factor{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
+  tnsr::iJ<DataVector, 3> deriv_shift_excess{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
   elliptic::apply_boundary_condition<
       Linearized, void, tmpl::list<ApparentHorizon<ConformalGeometry>>>(
       boundary_condition, box, direction, make_not_null(&conformal_factor),
       make_not_null(&lapse_times_conformal_factor), shift_excess,
       n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient,
-      make_not_null(&n_dot_longitudinal_shift_excess));
+      make_not_null(&n_dot_longitudinal_shift_excess), deriv_conformal_factor,
+      deriv_lapse_times_conformal_factor, deriv_shift_excess);
 }
 
 void apply_boundary_condition(
@@ -508,6 +516,12 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       n_dot_surface_fluxes_expected{num_points};
   normal_dot_flux(make_not_null(&n_dot_surface_fluxes_expected), face_normal,
                   surface_fluxes_expected);
+  tnsr::i<DataVector, 3> deriv_conformal_factor{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
+  tnsr::i<DataVector, 3> deriv_lapse_times_conformal_factor{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
+  tnsr::iJ<DataVector, 3> deriv_shift_excess{
+      num_points, std::numeric_limits<double>::signaling_NaN()};
   // Apply the boundary conditions, passing garbage for the data that the
   // boundary conditions are expected to fill
   auto surface_vars = surface_vars_expected;
@@ -537,7 +551,9 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       make_not_null(&get<::Tags::NormalDotFlux<
                         Tags::ShiftExcess<DataVector, 3, Frame::Inertial>>>(
           n_dot_surface_fluxes)),
-      face_normal, deriv_unnormalized_face_normal, face_normal_magnitude, x,
+      deriv_conformal_factor, deriv_lapse_times_conformal_factor,
+      deriv_shift_excess, face_normal, deriv_unnormalized_face_normal,
+      face_normal_magnitude, x,
       get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(background_fields),
       get<Tags::ShiftBackground<DataVector, 3, Frame::Inertial>>(
           background_fields),

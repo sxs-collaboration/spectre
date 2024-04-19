@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   ApparentHorizon.cpp
   Flatness.cpp
+  Robin.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   ApparentHorizon.hpp
   Factory.hpp
   Flatness.hpp
+  Robin.hpp
   )
 
 target_link_libraries(
