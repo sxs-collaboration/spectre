@@ -13,6 +13,7 @@ spectre_python_add_module(
   Plot.py
   PlotAlongLine.py
   PlotDatFile.py
+  PlotEllipticConvergence.py
   PlotMemoryMonitors.py
   PlotPowerMonitors.py
   PlotSizeControl.py

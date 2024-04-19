@@ -9,6 +9,7 @@ class PlotCommands(click.MultiCommand):
         return [
             "along-line",
             "dat",
+            "elliptic-convergence",
             "memory-monitors",
             "power-monitors",
             "size-control",
@@ -26,6 +27,12 @@ class PlotCommands(click.MultiCommand):
             from spectre.Visualization.PlotDatFile import plot_dat_command
 
             return plot_dat_command
+        elif name == "elliptic-convergence":
+            from spectre.Visualization.PlotEllipticConvergence import (
+                plot_elliptic_convergence_command,
+            )
+
+            return plot_elliptic_convergence_command
         elif name == "memory-monitors":
             from spectre.Visualization.PlotMemoryMonitors import (
                 plot_memory_monitors_command,
