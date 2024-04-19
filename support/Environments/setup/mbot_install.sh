@@ -792,8 +792,11 @@ else
     # Update pip to latest version
     pip install -U pip
     # Install meson, mako, numpy, and h5py to use our compiled HDF5.
-    pip3 install meson mako numpy cmake-language-server
-    HDF5_DIR=${LOCATION} pip3 install --no-binary=h5py --no-cache-dir h5py
+    python -m pip install meson mako numpy cmake-language-server
+    HDF5_DIR=${LOCATION} python -m pip install \
+            --no-binary=h5py --no-cache-dir h5py
+    python -m pip install jupyter-server ipykernel notebook jupyterlab \
+           matplotlib
 
     chmod -R 555 ${LOCATION}
 fi
