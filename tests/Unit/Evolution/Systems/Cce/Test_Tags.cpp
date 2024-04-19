@@ -84,6 +84,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
       "InterpolationManager(SomeTag)");
   TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPsi>("KGPsi");
   TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPi>("KGPi");
+  TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonWorldtubeConstraint>(
+      "KGConstraint");
 
   TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::BondiJ>>("H");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
