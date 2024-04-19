@@ -63,6 +63,7 @@ struct KleinGordonCharacteristicEvolution
 
   using klein_gordon_hypersurface_computation = tmpl::list<
       ::Actions::MutateApply<GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>,
+      ::Actions::MutateApply<ComputeKGWorldtubeConstraint>,
       Actions::CalculateIntegrandInputsForTag<Tags::KleinGordonPi>,
       tmpl::transform<
           integrand_terms_to_compute_for_bondi_variable<Tags::KleinGordonPi>,

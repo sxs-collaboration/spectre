@@ -38,7 +38,8 @@ using swsh_volume_tags_to_generate =
                    Spectral::Swsh::Tags::Eth>>;
 
 using swsh_boundary_tags_to_generate =
-    tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
+    tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPsi>,
+               Tags::BoundaryValue<Tags::KleinGordonPi>, Tags::BondiUAtScri>;
 
 using swsh_volume_tags_to_compute =
     tmpl::list<Tags::KleinGordonSource<Tags::BondiBeta>,
@@ -62,7 +63,8 @@ using swsh_volume_tags_to_compute =
                Tags::RegularIntegrand<Tags::KleinGordonPi>>;
 
 using swsh_boundary_tags_to_compute =
-    tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>>;
+    tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::KleinGordonPi>,
+               Tags::KleinGordonWorldtubeConstraint>;
 
 using swsh_transform_tags_to_compute = tmpl::list<
     Spectral::Swsh::Tags::SwshTransform<Spectral::Swsh::Tags::Derivative<
@@ -113,7 +115,8 @@ struct mock_kg_characteristic_evolution {
                   integrand_terms_to_compute_for_bondi_variable<
                       Tags::KleinGordonPi>,
                   tmpl::bind<::Actions::MutateApply,
-                             tmpl::bind<ComputeBondiIntegrand, tmpl::_1>>>>>>;
+                             tmpl::bind<ComputeBondiIntegrand, tmpl::_1>>>,
+              ::Actions::MutateApply<ComputeKGWorldtubeConstraint>>>>;
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
@@ -129,9 +132,9 @@ struct metavariables {
 // `CalculateIntegrandInputsForTag<Tags::KleinGordonPi>`, the mutators
 // `ComputeKleinGordonSource`,
 // `GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>`,
-// `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>`, and
-// `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`. The test
-// involves
+// `ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::KleinGordonPi>>`,
+// `ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::KleinGordonPi>>`, and
+// `ComputeKGWorldtubeConstraint`. The test involves
 // (a) Fills a bunch of variables with random numbers (filtered so that there is
 // no aliasing in highest modes).
 // (b) Puts those variables in two places: the MockRuntimeSystem runner and a
@@ -239,7 +242,7 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
 
   runner.set_phase(Parallel::Phase::Evolve);
 
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 10; i++) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
 
@@ -349,6 +352,20 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
         auto expected_result = db::get<tag>(expected_box);
         CHECK(computed_result == expected_result);
       });
+
+  // tests for `ComputeKGWorldtubeConstraint`
+  {
+    db::mutate_apply<ComputeKGWorldtubeConstraint>(
+        make_not_null(&expected_box));
+    auto computed_result =
+        ActionTesting::get_databox_tag<component,
+                                       Tags::KleinGordonWorldtubeConstraint>(
+            runner, 0);
+
+    auto expected_result =
+        db::get<Tags::KleinGordonWorldtubeConstraint>(expected_box);
+    CHECK(computed_result == expected_result);
+  }
 }
 }  // namespace
 
