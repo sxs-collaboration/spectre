@@ -10,8 +10,6 @@
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
 #include "Framework/TestHelpers.hpp"
 
-#include "Parallel/Printf.hpp"
-
 namespace {
 
 void test_single_scatter() {
