@@ -112,6 +112,9 @@ struct metavariables : CharacteristicExtractDefaults<false> {
       tmpl::list<Cce::Tags::PoleOfIntegrand<Cce::Tags::KleinGordonPi>,
                  Cce::Tags::RegularIntegrand<Cce::Tags::KleinGordonPi>>;
 
+  using klein_gordon_constraint_tags =
+      tmpl::list<Cce::Tags::KleinGordonWorldtubeConstraint>;
+
   using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -262,6 +265,13 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
   CHECK(kg_integrand_tags.number_of_grid_points() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
             number_of_radial_points);
+
+  const auto& kg_constraint_tags = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<typename metavariables::klein_gordon_constraint_tags>>(
+      runner, 0);
+  CHECK(kg_constraint_tags.number_of_grid_points() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
