@@ -6,10 +6,12 @@
 #include <array>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/Creators/SphereTimeDependentMaps.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -27,21 +29,28 @@ struct Inertial;
 
 namespace domain::creators::sphere {
 namespace {
-std::string create_option_string(const bool use_non_zero_shape) {
+// nullopt implies no shape map at all
+std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
   return "InitialTime: 1.5\n"
-         "ShapeMap:\n"
-         "  LMax: 8\n" +
-         (use_non_zero_shape ? "  InitialValues:\n"
-                               "    Mass: 1.0\n"
-                               "    Spin: [0.0, 0.0, 0.0]\n"s
-                             : "  InitialValues: Spherical\n"s) +
+         "ShapeMap:" +
+         (use_non_zero_shape.has_value()
+              ? "\n"
+                "  LMax: 8\n"
+                "  SizeInitialValues: Auto\n"
+                "  InitialValues:" +
+                    (use_non_zero_shape.value() ? "\n"
+                                                  "    Mass: 1.0\n"
+                                                  "    Spin: [0.0, 0.0, 0.0]\n"s
+                                                : " Spherical\n"s)
+              : " None\n") +
          "RotationMap: None\n"
          "ExpansionMap: None\n"
          "TranslationMap:\n"
          "  InitialValues: [[0.1, -3.2, 1.1], [-0.3, 0.5, -0.7],"
          " [0.1, -0.4, 0.02]]\n"s;
 }
-void test(const bool use_non_zero_shape) {
+// nullopt implies no shape map at all
+void test(const std::optional<bool> use_non_zero_shape) {
   CAPTURE(use_non_zero_shape);
   const double initial_time = 1.5;
   const size_t l_max = 8;
@@ -49,8 +58,14 @@ void test(const bool use_non_zero_shape) {
   auto time_dep_options = TestHelpers::test_creation<TimeDependentMapOptions>(
       create_option_string(use_non_zero_shape));
 
+  CHECK(time_dep_options.using_distorted_frame() ==
+        use_non_zero_shape.has_value());
+
   std::unordered_map<std::string, double> expiration_times{
-      {TimeDependentMapOptions::shape_name, 15.5},
+      {TimeDependentMapOptions::shape_name,
+       use_non_zero_shape.has_value()
+           ? 15.5
+           : std::numeric_limits<double>::infinity()},
       {TimeDependentMapOptions::size_name,
        std::numeric_limits<double>::infinity()},
       {TimeDependentMapOptions::translation_name,
@@ -99,18 +114,22 @@ void test(const bool use_non_zero_shape) {
   const auto functions_of_time =
       time_dep_options.create_functions_of_time(inner_radius, expiration_times);
 
-  CHECK(dynamic_cast<PP3&>(
+  if (use_non_zero_shape.has_value()) {
+    CHECK(
+        dynamic_cast<PP3&>(
             *functions_of_time.at(TimeDependentMapOptions::size_name).get()) ==
         size);
-  // This will always be zero based on our options above. Just easier to check
-  // that way
-  CHECK(dynamic_cast<PP2&>(
+    // This will always be zero based on our options above. Just easier to check
+    // that way
+    CHECK(
+        dynamic_cast<PP2&>(
             *functions_of_time.at(TimeDependentMapOptions::shape_name).get()) ==
         shape_all_zero);
 
-  CHECK(dynamic_cast<PP2&>(
-            *functions_of_time.at(TimeDependentMapOptions::translation_name)
-                 .get()) == translation_non_zero);
+    CHECK(dynamic_cast<PP2&>(
+              *functions_of_time.at(TimeDependentMapOptions::translation_name)
+                   .get()) == translation_non_zero);
+  }
 
   for (const bool include_distorted : make_array(true, false)) {
     for (const bool use_rigid : make_array(true, false)) {
@@ -118,6 +137,20 @@ void test(const bool use_non_zero_shape) {
           center, std::pair<double, double>{inner_radius, outer_radius},
           std::pair<double, double>{transition_inner_radius,
                                     transition_outer_radius});
+
+      if ((not use_non_zero_shape.has_value()) and include_distorted) {
+        CHECK_THROWS_WITH(
+            time_dep_options.grid_to_distorted_map(include_distorted),
+            Catch::Matchers::ContainsSubstring(
+                "Requesting grid to distorted map with distorted frame but "
+                "shape map options were not specified."));
+        CHECK_THROWS_WITH(
+            time_dep_options.grid_to_inertial_map(include_distorted, use_rigid),
+            Catch::Matchers::ContainsSubstring(
+                "Requesting grid to inertial map with distorted frame but "
+                "shape map options were not specified."));
+        continue;
+      }
 
       const auto grid_to_distorted_map =
           time_dep_options.grid_to_distorted_map(include_distorted);
@@ -153,25 +186,12 @@ void test(const bool use_non_zero_shape) {
     }
   }
 }
-
-void test_shape_initial_values() {
-  KerrSchildFromBoyerLindquist shape_params{1.4, {0.1, 0.2, -0.3}};
-
-  auto option_shape_params =
-      TestHelpers::test_creation<KerrSchildFromBoyerLindquist>(
-          "Mass: 1.4\n"
-          "Spin: [0.1, 0.2, -0.3]");
-
-  CHECK(shape_params.mass == option_shape_params.mass);
-  CHECK(shape_params.spin == option_shape_params.spin);
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.SphereTimeDependentMaps",
                   "[Domain][Unit]") {
-  test_shape_initial_values();
-
-  test(true);
-  test(false);
+  test({true});
+  test({false});
+  test(std::nullopt);
 }
 }  // namespace domain::creators::sphere

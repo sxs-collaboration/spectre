@@ -390,9 +390,11 @@ Domain<3> Sphere::create_domain() const {
       // First shell gets the distorted maps.
       // Last shell gets the transition region for the rotation, expansion and
       // translation maps
+      const bool include_distorted_frame =
+          hard_coded_options.using_distorted_frame();
       for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
         const bool include_distorted_map_in_first_shell =
-            block_id < num_blocks_per_shell_;
+            include_distorted_frame and block_id < num_blocks_per_shell_;
         // False if block_id is in the last shell
         const bool use_rigid =
             block_id + num_blocks_per_shell_ + (fill_interior_ ? 1 : 0) <

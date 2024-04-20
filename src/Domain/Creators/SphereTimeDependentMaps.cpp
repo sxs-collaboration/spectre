@@ -17,6 +17,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -30,15 +31,15 @@
 namespace domain::creators::sphere {
 
 TimeDependentMapOptions::TimeDependentMapOptions(
-    const double initial_time, const ShapeMapOptions& shape_map_options,
+    const double initial_time, std::optional<ShapeMapOptions> shape_map_options,
     std::optional<RotationMapOptions> rotation_map_options,
     std::optional<ExpansionMapOptions> expansion_map_options,
     std::optional<TranslationMapOptions> translation_map_options)
     : initial_time_(initial_time),
-      shape_map_options_(shape_map_options),
-      rotation_map_options_(rotation_map_options),
-      expansion_map_options_(expansion_map_options),
-      translation_map_options_(translation_map_options) {}
+      shape_map_options_(std::move(shape_map_options)),
+      rotation_map_options_(std::move(rotation_map_options)),
+      expansion_map_options_(std::move(expansion_map_options)),
+      translation_map_options_(std::move(translation_map_options)) {}
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -63,55 +64,23 @@ TimeDependentMapOptions::create_functions_of_time(
     expiration_times[name] = expr_time;
   }
 
-  DataVector shape_zeros{
-      ylm::Spherepack::spectral_size(shape_map_options_.l_max,
-                                     shape_map_options_.l_max),
-      0.0};
-  DataVector shape_func{};
-  DataVector size_func{1, 0.0};
+  if (shape_map_options_.has_value()) {
+    auto [shape_funcs, size_funcs] =
+        time_dependent_options::initial_shape_and_size_funcs(
+            shape_map_options_.value(), inner_radius);
 
-  if (shape_map_options_.initial_values.has_value()) {
-    if (std::holds_alternative<KerrSchildFromBoyerLindquist>(
-            shape_map_options_.initial_values.value())) {
-      const ylm::Spherepack ylm{shape_map_options_.l_max,
-                                shape_map_options_.l_max};
-      const auto& mass_and_spin = std::get<KerrSchildFromBoyerLindquist>(
-          shape_map_options_.initial_values.value());
-      const DataVector radial_distortion =
-          inner_radius -
-          get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-              inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
-              mass_and_spin.spin));
-      shape_func = ylm.phys_to_spec(radial_distortion);
-      // Transform from SPHEREPACK to actual Ylm for size func
-      size_func[0] = shape_func[0] * sqrt(0.5 * M_PI);
-      // Set l=0 for shape map to 0 because size is going to be used
-      shape_func[0] = 0.0;
-    }
-  } else {
-    shape_func = shape_zeros;
-    size_func[0] = 0.0;
+    // ShapeMap FunctionOfTime
+    result[shape_name] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_, std::move(shape_funcs),
+            expiration_times.at(shape_name));
+
+    // Size FunctionOfTime (used in ShapeMap)
+    result[size_name] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time_, std::move(size_funcs),
+            expiration_times.at(size_name));
   }
-
-  // ShapeMap FunctionOfTime
-  result[shape_name] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time_,
-          std::array<DataVector, 3>{
-              {std::move(shape_func), shape_zeros, shape_zeros}},
-          expiration_times.at(shape_name));
-
-  DataVector size_deriv{1, 0.0};
-  DataVector size_2nd_deriv{1, 0.0};
-
-  // Size FunctionOfTime (used in ShapeMap)
-  result[size_name] = std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-      initial_time_,
-      std::array<DataVector, 4>{{std::move(size_func),
-                                 std::move(size_deriv),
-                                 std::move(size_2nd_deriv),
-                                 {0.0}}},
-      expiration_times.at(size_name));
 
   // ExpansionMap FunctionOfTime
   if (expansion_map_options_.has_value()) {
@@ -194,18 +163,20 @@ void TimeDependentMapOptions::build_maps(
     const std::array<double, 3>& center,
     std::pair<double, double> inner_shell_radii,
     std::pair<double, double> outer_shell_radii) {
-  std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                      ShapeMapTransitionFunction>
-      transition_func =
-          std::make_unique<domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                               SphereTransition>(inner_shell_radii.first,
-                                                 inner_shell_radii.second);
-  shape_map_ = ShapeMap{center,
-                        shape_map_options_.l_max,
-                        shape_map_options_.l_max,
-                        std::move(transition_func),
-                        shape_name,
-                        size_name};
+  if (shape_map_options_.has_value()) {
+    std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                        ShapeMapTransitionFunction>
+        transition_func =
+            std::make_unique<domain::CoordinateMaps::
+                                 ShapeMapTransitionFunctions::SphereTransition>(
+                inner_shell_radii.first, inner_shell_radii.second);
+    shape_map_ = ShapeMap{center,
+                          shape_map_options_->l_max,
+                          shape_map_options_->l_max,
+                          std::move(transition_func),
+                          shape_name,
+                          size_name};
+  }
 
   inner_rot_scale_trans_map_ = RotScaleTransMap{
       expansion_map_options_.has_value()
@@ -259,7 +230,12 @@ TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>
 TimeDependentMapOptions::grid_to_distorted_map(
     const bool include_distorted_map) const {
   if (include_distorted_map) {
-    return std::make_unique<GridToDistortedComposition>(shape_map_);
+    if (not shape_map_.has_value()) {
+      ERROR(
+          "Requesting grid to distorted map with distorted frame but shape map "
+          "options were not specified.");
+    }
+    return std::make_unique<GridToDistortedComposition>(shape_map_.value());
   } else {
     return nullptr;
   }
@@ -269,13 +245,24 @@ TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>
 TimeDependentMapOptions::grid_to_inertial_map(const bool include_distorted_map,
                                               const bool use_rigid) const {
   if (include_distorted_map) {
+    if (not shape_map_.has_value()) {
+      ERROR(
+          "Requesting grid to inertial map with distorted frame but shape map "
+          "options were not specified.");
+    }
     return std::make_unique<GridToInertialComposition>(
-        shape_map_, inner_rot_scale_trans_map_);
+        shape_map_.value(), inner_rot_scale_trans_map_);
   } else if (use_rigid) {
     return std::make_unique<GridToInertialSimple>(inner_rot_scale_trans_map_);
   } else {
     return std::make_unique<GridToInertialSimple>(
         transition_rot_scale_trans_map_);
   }
+}
+
+bool TimeDependentMapOptions::using_distorted_frame() const {
+  // We use shape map options and not the shape map just in case this is called
+  // before `build_maps` is called.
+  return shape_map_options_.has_value();
 }
 }  // namespace domain::creators::sphere

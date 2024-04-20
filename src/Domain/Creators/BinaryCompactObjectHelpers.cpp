@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/Wedge.hpp"
+#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -27,6 +28,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain::creators::bco {
 std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
@@ -146,58 +148,24 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
   }
 
   // Size and Shape FunctionOfTime for objects A and B
-  const auto build_shape_and_size_fot = [&result, &expiration_times, this](
-                                            const auto& shape_options,
-                                            const double inner_radius,
-                                            const std::string& shape_name,
-                                            const std::string& size_name) {
-    const DataVector shape_zeros{ylm::Spherepack::spectral_size(
-                                     shape_options.l_max, shape_options.l_max),
-                                 0.0};
-    DataVector shape_func{};
-    DataVector size_func{1, shape_options.initial_size_values[0]};
-    if (shape_options.initial_values.has_value()) {
-      if (std::holds_alternative<sphere::KerrSchildFromBoyerLindquist>(
-              shape_options.initial_values.value())) {
-        const ylm::Spherepack ylm{shape_options.l_max, shape_options.l_max};
-        const auto& mass_and_spin =
-            std::get<sphere::KerrSchildFromBoyerLindquist>(
-                shape_options.initial_values.value());
-        const DataVector radial_distortion =
-            inner_radius -
-            get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-                inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
-                mass_and_spin.spin));
-        shape_func = ylm.phys_to_spec(radial_distortion);
-        // Transform from SPHEREPACK to actual Ylm for size func
-        if (size_func[0] != 0.0) {
-          ERROR(
-              "Initial value for size map must be zero, because it is "
-              "overridden by the initial shape map values.");
-        }
-        size_func[0] = shape_func[0] * sqrt(0.5 * M_PI);
-        // Set l=0 for shape map to 0 because size is going to be used
-        shape_func[0] = 0.0;
-      }
-    } else {
-      shape_func = shape_zeros;
-    }
+  const auto build_shape_and_size_fot =
+      [&result, &expiration_times, this](
+          const auto& shape_options, const double inner_radius,
+          const std::string& shape_name, const std::string& size_name) {
+        auto [shape_funcs, size_funcs] =
+            time_dependent_options::initial_shape_and_size_funcs(shape_options,
+                                                                 inner_radius);
 
-    result[shape_name] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{std::move(shape_func), shape_zeros,
-                                      shape_zeros},
-            expiration_times.at(shape_name));
-    result[size_name] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-            initial_time_,
-            std::array<DataVector, 4>{{std::move(size_func),
-                                       {shape_options.initial_size_values[1]},
-                                       {shape_options.initial_size_values[2]},
-                                       {0.0}}},
-            expiration_times.at(size_name));
-  };
+        result[shape_name] =
+            std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+                initial_time_, std::move(shape_funcs),
+                expiration_times.at(shape_name));
+        result[size_name] =
+            std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+                initial_time_, std::move(size_funcs),
+                expiration_times.at(size_name));
+      };
+
   if (shape_options_A_.has_value()) {
     if (not inner_radii_[0].has_value()) {
       ERROR(
