@@ -456,23 +456,33 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
           tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
                               observers::ObserverWriter<Metavariables>,
                               observers::Observer<Metavariables>>>(cache));
-  Parallel::simple_action<tmpl::conditional_t<
-      Parallel::is_nodegroup_v<ParallelComponent>,
-      observers::ThreadedActions::CollectReductionDataOnNode,
-      observers::Actions::ContributeReductionData>>(
-      local_observer,
-      observers::ObservationId{observation_value.value,
-                               subfile_path_with_suffix + ".dat"},
-      Parallel::ArrayComponentId{
-          std::add_pointer_t<ParallelComponent>{nullptr},
-          Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
-      subfile_path_with_suffix, std::move(legend),
-      ReductionData{observation_value.value, number_of_points, local_volume,
-                    std::move(norm_values_and_names["Max"].first),
-                    std::move(norm_values_and_names["Min"].first),
-                    std::move(norm_values_and_names["L2Norm"].first),
-                    std::move(norm_values_and_names["L2IntegralNorm"].first),
-                    std::move(norm_values_and_names["VolumeIntegral"].first)});
+  observers::ObservationId observation_id{observation_value.value,
+                                          subfile_path_with_suffix + ".dat"};
+  Parallel::ArrayComponentId array_component_id{
+      std::add_pointer_t<ParallelComponent>{nullptr},
+      Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)};
+  ReductionData reduction_data{
+      observation_value.value,
+      number_of_points,
+      local_volume,
+      std::move(norm_values_and_names["Max"].first),
+      std::move(norm_values_and_names["Min"].first),
+      std::move(norm_values_and_names["L2Norm"].first),
+      std::move(norm_values_and_names["L2IntegralNorm"].first),
+      std::move(norm_values_and_names["VolumeIntegral"].first)};
+
+  if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+    Parallel::threaded_action<
+        observers::ThreadedActions::CollectReductionDataOnNode>(
+        local_observer, std::move(observation_id),
+        std::move(array_component_id), subfile_path_with_suffix,
+        std::move(legend), std::move(reduction_data));
+  } else {
+    Parallel::simple_action<observers::Actions::ContributeReductionData>(
+        local_observer, std::move(observation_id),
+        std::move(array_component_id), subfile_path_with_suffix,
+        std::move(legend), std::move(reduction_data));
+  }
 }
 
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
