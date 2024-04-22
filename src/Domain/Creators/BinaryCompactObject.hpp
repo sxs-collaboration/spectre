@@ -114,10 +114,10 @@ namespace creators {
  * \par Time dependence:
  * The following time-dependent maps are applied:
  *
- * - A `CubicScale` expansion and a `Rotation` applied to all blocks from the
- *   Grid to the Inertial frame. However, if there is a size map in the block
- *   (defined below), then the expansion and rotation maps go from the Distorted
- *   to the Inertial frame.
+ * - A piecewise `Expansion`, a `Rotation` and a piecewise `Translation` is
+ * applied to all blocks from the Grid to the Inertial frame. However, if there
+ * is a shape map in the block (defined below), then the expansion, rotation,
+ * and translation maps go from the Distorted to the Inertial frame.
  * - If an object is excised, then the corresponding shell has a
  *   `Shape` map. The shape map goes from the Grid to the Distorted frame.
  *
@@ -504,6 +504,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   double length_inner_cube_{};
   double length_outer_cube_{};
   size_t number_of_blocks_{};
+  size_t first_outer_shell_block_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
   std::vector<std::string> block_names_{};

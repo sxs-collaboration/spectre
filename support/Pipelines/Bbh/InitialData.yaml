@@ -115,6 +115,7 @@ DomainCreator:
       InitialTime: 0.
       ExpansionMap: None
       RotationMap: None
+      TranslationMap: None
       ShapeMapA:
         LMax: 20
         InitialValues:

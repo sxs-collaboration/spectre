@@ -66,6 +66,8 @@ DomainCreator:
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:
         InitialAngularVelocity: [0.0, 0.0, 0.00826225]
+      TranslationMap:
+        InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
       ShapeMapA: None
       ShapeMapB: None
 

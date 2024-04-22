@@ -245,6 +245,7 @@ std::string create_option_string(
                             "    ExpansionMap: None\n"
                             "    RotationMap:\n"
                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+                            "    TranslationMap: None\n"
                             "    ShapeMapA:\n"
                             "      LMax: 8\n"
                             "      InitialValues: Spherical\n"
@@ -397,10 +398,12 @@ TimeDepOptions construct_time_dependent_options() {
 
   // No expansion map options because of above option string
   return TimeDepOptions{
-      expected_time, std::nullopt,
+      expected_time,
+      std::nullopt,
       TimeDepOptions::RotationMapOptions{{initial_angular_velocity[0],
                                           initial_angular_velocity[1],
                                           initial_angular_velocity[2]}},
+      std::nullopt,
       TimeDepOptions::ShapeMapOptions<domain::ObjectLabel::A>{
           8_st,
           std::nullopt,
@@ -475,7 +478,7 @@ void test_parse_errors() {
           TimeDepOptions{
               0.0, std::nullopt,
               TimeDepOptions::RotationMapOptions{std::array{0.0, 0.0, 0.0}},
-              std::nullopt, std::nullopt},
+              std::nullopt, std::nullopt, std::nullopt},
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -578,6 +581,7 @@ void test_cylindrical_bbh() {
     if (with_time_dependence) {
       include_inner_sphere_A = true;
       include_inner_sphere_B = true;
+      include_outer_sphere = true;
     } else {
       // With no time dependence, can't have control systems
       with_control_systems = false;
