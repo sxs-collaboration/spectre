@@ -297,7 +297,7 @@ NUM_NODES=1
             schedule_command,
             [
                 str(self.input_file_template),
-                "-e",
+                "-E",
                 str(self.executable),
                 "-o",
                 str(self.test_dir / "Run"),
@@ -312,7 +312,7 @@ NUM_NODES=1
             schedule_command,
             [
                 str(self.input_file_template),
-                "-e",
+                "-E",
                 str(self.executable),
                 "-O",
                 str(self.test_dir / "Segments"),
