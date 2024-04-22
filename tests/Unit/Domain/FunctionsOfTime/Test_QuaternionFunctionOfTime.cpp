@@ -31,7 +31,72 @@ void test_serialization_versioning() {
 
   TestHelpers::serialization::test_versioning<QuatFoT>(
       "Domain/FunctionsOfTime/QuaternionFunctionOfTime.serializations",
-      "version 4", func);
+      "version 5", func);
+}
+
+void test_out_of_order_update() {
+  using QuatFoT = domain::FunctionsOfTime::QuaternionFunctionOfTime<2>;
+  register_classes_with_charm<QuatFoT>();
+  const DataVector quat_dv{1.0, 0.0, 0.0, 0.0};
+  const DataVector zero_dv{3, 0.0};
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> func(
+      std::make_unique<QuatFoT>(
+          0.0, std::array<DataVector, 1>{quat_dv},
+          std::array<DataVector, 3>{zero_dv, zero_dv, zero_dv}, 0.5));
+
+  func->update(2.5, zero_dv, 3.0);
+  func->update(1.5, zero_dv, 2.0);
+
+  CHECK_THROWS_WITH(
+      func->func(0.7),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 5"));
+  CHECK_THROWS_WITH(
+      func->func(1.3),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time 1.30") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 5"));
+  CHECK_THROWS_WITH(
+      func->func(1.9),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 5"));
+
+  func->update(0.5, zero_dv, 1.0);
+
+  // This one should pass now
+  CHECK(func->func(0.7) == std::array{quat_dv});
+  CHECK_THROWS_WITH(
+      func->func(1.3),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time 1.30") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 1.0"));
+  CHECK_THROWS_WITH(
+      func->func(1.9),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 1.0"));
+
+  func->update(2.0, zero_dv, 2.5);
+
+  CHECK_THROWS_WITH(
+      func->func(1.3),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time 1.30") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 1.0"));
+  CHECK_THROWS_WITH(
+      func->func(1.9),
+      Catch::Matchers::ContainsSubstring("Attempt to evaluate at time") and
+          Catch::Matchers::ContainsSubstring(
+              ", which is after the expiration time 1.0"));
+
+  func->update(1.0, zero_dv, 1.5);
+
+  CHECK(func->func(1.3) == std::array{quat_dv});
+  CHECK(func->func(1.9) == std::array{quat_dv});
+  CHECK(func->func(2.2) == std::array{quat_dv});
+  CHECK(func->func(2.8) == std::array{quat_dv});
 }
 }  // namespace
 
@@ -58,12 +123,16 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
 
     CHECK(get_output(domain::FunctionsOfTime::QuaternionFunctionOfTime<2>{}) ==
           "Quaternion:\n"
-          "Angle:\n");
+          "backlog=()\n"
+          "Angle:\n"
+          "backlog=()");
     const std::string expected_output =
         "Quaternion:\n"
         "t=-0.1: (1,0,0,0)\n"
+        "backlog=()\n"
         "Angle:\n"
-        "t=-0.1: (0,0,-0.3) (0,0,0.145) (0,0,0)";
+        "t=-0.1: (0,0,-0.3) (0,0,0.145) (0,0,0)\n"
+        "backlog=()";
 
     const std::string output = get_output(qfot);
     CHECK(output == expected_output);
@@ -405,4 +474,5 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
   }
 
   test_serialization_versioning();
+  test_out_of_order_update();
 }

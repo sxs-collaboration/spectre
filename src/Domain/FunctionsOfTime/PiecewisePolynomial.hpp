@@ -5,9 +5,11 @@
 
 #include <array>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <pup.h>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -108,6 +110,7 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   FunctionOfTimeHelpers::ThreadsafeList<std::array<DataVector, MaxDeriv + 1>>
       deriv_info_at_update_times_;
+  std::map<double, std::pair<DataVector, double>> update_backlog_{};
 };
 
 template <size_t MaxDeriv>
