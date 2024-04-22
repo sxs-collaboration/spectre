@@ -12,8 +12,9 @@
 
 namespace EquationsOfState {
 template <bool IsRelativistic>
-IdealFluid<IsRelativistic>::IdealFluid(const double adiabatic_index)
-    : adiabatic_index_(adiabatic_index) {}
+IdealFluid<IsRelativistic>::IdealFluid(const double adiabatic_index,
+                                       const double min_temperature)
+    : adiabatic_index_(adiabatic_index), min_temperature_(min_temperature) {}
 
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      IdealFluid<IsRelativistic>, double, 2)
@@ -44,7 +45,8 @@ bool IdealFluid<IsRelativistic>::is_equal(
 template <bool IsRelativistic>
 bool IdealFluid<IsRelativistic>::operator==(
     const IdealFluid<IsRelativistic>& rhs) const {
-  return adiabatic_index_ == rhs.adiabatic_index_;
+  return (adiabatic_index_ == rhs.adiabatic_index_) and
+         (min_temperature_ == rhs.min_temperature_);
 }
 
 template <bool IsRelativistic>
@@ -61,6 +63,7 @@ template <bool IsRelativistic>
 void IdealFluid<IsRelativistic>::pup(PUP::er& p) {
   EquationOfState<IsRelativistic, 2>::pup(p);
   p | adiabatic_index_;
+  p | min_temperature_;
 }
 
 template <bool IsRelativistic>
