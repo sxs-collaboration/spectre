@@ -321,7 +321,9 @@ void test_dat_read() {
     error_file.append(std::vector<double>{0.33, 0.66, 0.77, 0.90});
   }
   h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
-  const auto& error_file = my_file.get<h5::Dat>("/L2_errors");
+  // No leading slash should also find the subfile, and a ".dat" extension as
+  // well
+  const auto& error_file = my_file.get<h5::Dat>("L2_errors.dat");
   CHECK(error_file.subfile_path() == "/L2_errors");
 
   // Check version info is correctly retrieved from Dat file

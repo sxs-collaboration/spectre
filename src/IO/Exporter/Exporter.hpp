@@ -58,7 +58,7 @@ template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    std::string subfile_name,
+    const std::string& subfile_name,
     const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,

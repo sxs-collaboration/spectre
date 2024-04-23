@@ -800,11 +800,6 @@ def transform_volume_data_command(
             rich.print(rich.columns.Columns())
             return
 
-    if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name[:-4]
-    if not subfile_name.startswith("/"):
-        subfile_name = "/" + subfile_name
-
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
 
     # Load kernels

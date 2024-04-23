@@ -168,12 +168,6 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
                     rich.print(rich.columns.Columns(available_subfiles))
                     return
 
-            # Normalize subfile name
-            if subfile_name.endswith(".vol"):
-                subfile_name = subfile_name[:-4]
-            if not subfile_name.startswith("/"):
-                subfile_name = "/" + subfile_name
-
             # Print available observations/times and exit
             if list_times:
                 import rich.columns

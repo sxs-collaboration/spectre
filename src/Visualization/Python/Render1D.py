@@ -310,11 +310,6 @@ def render_1d_command(
         rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
         return
 
-    if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name[:-4]
-    if not subfile_name.startswith("/"):
-        subfile_name = "/" + subfile_name
-
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
     dim = volfiles[0].get_dimension()
     assert (
