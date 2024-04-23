@@ -68,6 +68,9 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "      InitialAngularVelocity: [0.0, 0.0," +
       angular_velocity_stream.str() +
       "]\n"
+      "    TranslationMap:\n"
+      "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.], [0.0, 0.0, "
+      "0.0]]\n"
       "    ShapeMapA:\n"
       "      LMax: 8\n"
       "      InitialValues: Spherical\n"
