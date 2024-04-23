@@ -21,21 +21,15 @@
 namespace TimeSteppers {
 /// Typelist of available TimeSteppers
 using time_steppers =
-    tmpl::list<TimeSteppers::AdamsBashforth,
-               TimeSteppers::AdamsMoultonPc<false>,
-               TimeSteppers::AdamsMoultonPc<true>,
-               TimeSteppers::ClassicalRungeKutta4, TimeSteppers::DormandPrince5,
-               TimeSteppers::Heun2, TimeSteppers::Rk3HesthavenSsp,
-               TimeSteppers::Rk3Kennedy, TimeSteppers::Rk3Owren,
-               TimeSteppers::Rk3Pareschi, TimeSteppers::Rk4Kennedy,
-               TimeSteppers::Rk4Owren, TimeSteppers::Rk5Owren,
-               TimeSteppers::Rk5Tsitouras>;
+    tmpl::list<AdamsBashforth, AdamsMoultonPc<false>, AdamsMoultonPc<true>,
+               ClassicalRungeKutta4, DormandPrince5, Heun2, Rk3HesthavenSsp,
+               Rk3Kennedy, Rk3Owren, Rk3Pareschi, Rk4Kennedy, Rk4Owren,
+               Rk5Owren, Rk5Tsitouras>;
 
 /// Typelist of available LtsTimeSteppers
-using lts_time_steppers = tmpl::list<TimeSteppers::AdamsBashforth>;
+using lts_time_steppers = tmpl::list<AdamsBashforth>;
 
 /// Typelist of available ImexTimeSteppers
 using imex_time_steppers =
-    tmpl::list<TimeSteppers::Heun2, TimeSteppers::Rk3Kennedy,
-               TimeSteppers::Rk3Pareschi, TimeSteppers::Rk4Kennedy>;
+    tmpl::list<Heun2, Rk3Kennedy, Rk3Pareschi, Rk4Kennedy>;
 }  // namespace TimeSteppers
