@@ -3,21 +3,25 @@
 
 #pragma once
 
+#include <array>
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for the previous value of the stepper error measure.
+/// \brief Tag for the stepper error measures.
 template <typename Tag>
-struct PreviousStepperError : db::PrefixTag, db::SimpleTag {
+struct StepperErrors : db::PrefixTag, db::SimpleTag {
   static std::string name() {
-    return "PreviousStepperError(" + db::tag_name<Tag>() + ")";
+    return "StepperErrors(" + db::tag_name<Tag>() + ")";
   }
-  using type = typename Tag::type;
+  using type =
+      std::array<std::optional<StepperErrorEstimate<typename Tag::type>>, 2>;
   using tag = Tag;
 };
 }  // namespace Tags

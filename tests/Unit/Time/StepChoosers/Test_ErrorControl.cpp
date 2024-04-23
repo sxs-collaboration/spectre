@@ -35,14 +35,9 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/PreviousStepperError.hpp"
 #include "Time/Tags/StepChoosers.hpp"
-#include "Time/Tags/StepperError.hpp"
-#include "Time/Tags/StepperErrorUpdated.hpp"
-#include "Time/Tags/TimeStepper.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforth.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -101,9 +96,10 @@ template <typename EvolvedTags>
 std::pair<double, bool> get_suggestion(
     const LtsErrorControl& error_control,
     const Variables<EvolvedTags>& step_values,
-    const Variables<EvolvedTags>& error,
-    const Variables<EvolvedTags>& previous_error, const double previous_step,
-    const size_t stepper_order) {
+    const std::optional<StepperErrorEstimate<Variables<EvolvedTags>>>& error,
+    const std::optional<StepperErrorEstimate<Variables<EvolvedTags>>>&
+        previous_error,
+    const double previous_step, const size_t stepper_order) {
   TimeSteppers::History<Variables<EvolvedTags>> history{stepper_order};
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, step_values,
                  0.1 * step_values);
@@ -111,38 +107,18 @@ std::pair<double, bool> get_suggestion(
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
                         Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
-                        Tags::StepperError<EvolvedVariablesTag>,
-                        Tags::PreviousStepperError<EvolvedVariablesTag>,
-                        Tags::StepperErrorUpdated,
-                        Tags::ConcreteTimeStepper<TimeStepper>>,
-      time_stepper_ref_tags<TimeStepper>>(
-      Metavariables<true>{}, history, error, previous_error, false,
-      std::unique_ptr<TimeStepper>{
-          std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
+                        Tags::StepperErrors<EvolvedVariablesTag>>>(
+      Metavariables<true>{}, history, std::array{previous_error, error});
 
-  const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
   const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
       error_control_base = std::make_unique<LtsErrorControl>(error_control);
 
-  // check that when the error is not declared updated, the step is accepted and
-  // the step is infinity.
-  CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control(history, error, previous_error, false, time_stepper,
-                      previous_step));
-  CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control_base->desired_step(previous_step, box));
-
-  db::mutate<Tags::StepperErrorUpdated>(
-      [](const gsl::not_null<bool*> stepper_updated) {
-        *stepper_updated = true;
-      },
-      make_not_null(&box));
-  const std::pair<double, bool> result = error_control(
-      history, error, previous_error, true, time_stepper, previous_step);
+  const std::pair<double, bool> result =
+      error_control(history, std::array{previous_error, error}, previous_step);
   CHECK(error_control_base->desired_step(previous_step, box) == result);
   CHECK(serialize_and_deserialize(error_control)(
-            history, error, previous_error, true, time_stepper,
-            previous_step) == result);
+            history, std::array{previous_error, error}, previous_step) ==
+        result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(previous_step, box) == result);
   return result;
@@ -159,99 +135,138 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                           make_not_null(&generator), make_not_null(&step_dist));
   const DataVector flattened_step_values{step_values.data(), 15};
   std::uniform_real_distribution<> error_dist{1.0e-4, 2.0e-4};
-  Variables<tmpl::list<EvolvedVar1, EvolvedVar2>> step_errors{5};
-  fill_with_random_values(make_not_null(&step_errors),
+  Variables<tmpl::list<EvolvedVar1, EvolvedVar2>> step_error_data{5};
+  fill_with_random_values(make_not_null(&step_error_data),
                           make_not_null(&generator),
                           make_not_null(&error_dist));
-  const DataVector flattened_step_errors{step_errors.data(), 15};
+  const DataVector flattened_step_errors{step_error_data.data(), 15};
   const std::vector<size_t> stepper_orders{2_st, 5_st};
-  for (size_t stepper_order : stepper_orders) {
-    CAPTURE(stepper_order);
-    {
-      INFO("Test error control step fixed by absolute tolerance");
-      const LtsErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
-      const auto first_result = get_suggestion(
-          error_control, step_values, step_errors, {}, 1.0, stepper_order);
-      // manually calculated in the special case in question: only absolute
-      // errors constrained
-      const double expected_linf_error = max(flattened_step_errors) / 5.0e-4;
-      CHECK(approx(first_result.first) ==
-            0.95 / pow(expected_linf_error, 1.0 / stepper_order));
-      CHECK(first_result.second);
-      const auto second_result = get_suggestion(
-          error_control, step_values, decltype(step_errors){1.2 * step_errors},
-          step_errors, first_result.first, stepper_order);
-      CHECK(approx(second_result.first) ==
-            0.95 * first_result.first /
-                (pow(expected_linf_error, 0.3 / stepper_order) *
-                 pow(1.2, 0.7 / stepper_order)));
-      CHECK(second_result.first);
-      // Check that the suggested step size is smaller if the error in
-      // increasing faster.
-      const auto adjusted_second_result = get_suggestion(
-          error_control, step_values, decltype(step_errors){1.2 * step_errors},
-          decltype(step_errors){0.5 * step_errors}, first_result.first,
-          stepper_order);
-      CHECK(adjusted_second_result.first < second_result.first);
-    }
-    {
-      INFO("Test error control step fixed by relative tolerance");
-      const LtsErrorControl error_control{0.0, 3.0e-4, 2.0, 0.5, 0.95};
-      const auto first_result = get_suggestion(
-          error_control, step_values, step_errors, {}, 1.0, stepper_order);
-      // manually calculated in the special case in question: only relative
-      // errors constrained
-      const double expected_linf_error =
-          max(flattened_step_errors /
-              (flattened_step_values + flattened_step_errors)) /
-          3.0e-4;
-      CHECK(approx(first_result.first) ==
-            0.95 / pow(expected_linf_error, 1.0 / stepper_order));
-      CHECK(first_result.second);
-      const auto second_result = get_suggestion(
-          error_control, step_values, decltype(step_errors){1.2 * step_errors},
-          step_errors, first_result.first, stepper_order);
-      const double new_expected_linf_error =
-          max(1.2 * flattened_step_errors /
-              (flattened_step_values + 1.2 * flattened_step_errors)) /
-          3.0e-4;
-      CHECK(approx(second_result.first) ==
-            0.95 * first_result.first *
-                pow(pow(new_expected_linf_error, 1.0 / stepper_order), -0.7) *
-                pow(pow(expected_linf_error, 1.0 / stepper_order), 0.4));
-      CHECK(second_result.first);
-    }
-    {
-      INFO("Test error control step failure");
-      const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
-      const auto first_result = get_suggestion(
-          error_control, step_values, step_errors, {}, 1.0, stepper_order);
-      // manually calculated in the special case in question: only absolute
-      // errors constrained
-      const double expected_linf_error =
-          max(flattened_step_errors /
-              (flattened_step_values + flattened_step_errors + 1.0)) /
-          4.0e-5;
-      CHECK(
-          approx(first_result.first) ==
-          std::max(0.95 / pow(expected_linf_error, 1.0 / stepper_order), 0.5));
-      CHECK_FALSE(first_result.second);
-    }
-    {
-      INFO("Test error control clamped minimum");
-      const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
-      const auto first_result = get_suggestion(
-          error_control, step_values, step_errors, {}, 1.0, stepper_order);
-      // manually calculated in the special case in question: only absolute
-      // errors constrained
-      CHECK(first_result.first == 0.9);
-    }
-    {
-      INFO("Test error control clamped minimum");
-      const LtsErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
-      const auto first_result = get_suggestion(
-          error_control, step_values, step_errors, {}, 1.0, stepper_order);
-      CHECK(first_result == std::make_pair(2.0, true));
+  for (const bool time_runs_forward : {true, false}) {
+    for (size_t stepper_order : stepper_orders) {
+      CAPTURE(stepper_order);
+      const auto step_errors = [&](const double error_time,
+                                   const double error_multiplier = 1.0,
+                                   const double step_size = 1.0) {
+        const auto error_slab = time_runs_forward
+                                    ? Slab(error_time, error_time + step_size)
+                                    : Slab(error_time - step_size, error_time);
+        return StepperErrorEstimate<decltype(step_error_data)>{
+            time_runs_forward ? error_slab.start() : error_slab.end(),
+            (time_runs_forward ? 1 : -1) * error_slab.duration(),
+            stepper_order - 1, step_error_data * error_multiplier};
+      };
+
+      {
+        INFO("No data available");
+        const LtsErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
+        const auto result = get_suggestion(error_control, step_values, {}, {},
+                                           1.0, stepper_order);
+        CHECK(result.first == std::numeric_limits<double>::infinity());
+        CHECK(result.second);
+      }
+      {
+        INFO("Test error control step fixed by absolute tolerance");
+        const LtsErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
+        const auto first_result =
+            get_suggestion(error_control, step_values, {step_errors(0.0)}, {},
+                           1.0, stepper_order);
+        // manually calculated in the special case in question: only absolute
+        // errors constrained
+        const double expected_linf_error = max(flattened_step_errors) / 5.0e-4;
+        CHECK(approx(first_result.first) ==
+              0.95 / pow(expected_linf_error, 1.0 / stepper_order));
+        CHECK(first_result.second);
+        const auto second_result = get_suggestion(
+            error_control, step_values,
+            {step_errors(0.0, 1.2, first_result.first)}, {step_errors(-1.0)},
+            first_result.first, stepper_order);
+        CHECK(approx(second_result.first) ==
+              0.95 * first_result.first /
+                  (pow(expected_linf_error, 0.3 / stepper_order) *
+                   pow(1.2, 0.7 / stepper_order)));
+        CHECK(second_result.first);
+        // Check that the suggested step size is smaller if the error in
+        // increasing faster.
+        const auto adjusted_second_result = get_suggestion(
+            error_control, step_values,
+            {step_errors(0.0, 1.2, first_result.first)},
+            {step_errors(-1.0, 0.5)}, first_result.first, stepper_order);
+        CHECK(adjusted_second_result.first < second_result.first);
+      }
+      {
+        INFO("Test error control step fixed by relative tolerance");
+        const LtsErrorControl error_control{0.0, 3.0e-4, 2.0, 0.5, 0.95};
+        const auto first_result =
+            get_suggestion(error_control, step_values, {step_errors(0.0)}, {},
+                           1.0, stepper_order);
+        // manually calculated in the special case in question: only relative
+        // errors constrained
+        const double expected_linf_error =
+            max(flattened_step_errors /
+                (flattened_step_values + flattened_step_errors)) /
+            3.0e-4;
+        CHECK(approx(first_result.first) ==
+              0.95 / pow(expected_linf_error, 1.0 / stepper_order));
+        CHECK(first_result.second);
+        const auto second_result = get_suggestion(
+            error_control, step_values,
+            {step_errors(0.0, 1.2, first_result.first)}, {step_errors(-1.0)},
+            first_result.first, stepper_order);
+        const double new_expected_linf_error =
+            max(1.2 * flattened_step_errors /
+                (flattened_step_values + 1.2 * flattened_step_errors)) /
+            3.0e-4;
+        CHECK(approx(second_result.first) ==
+              0.95 * first_result.first *
+                  pow(pow(new_expected_linf_error, 1.0 / stepper_order), -0.7) *
+                  pow(pow(expected_linf_error, 1.0 / stepper_order), 0.4));
+        CHECK(second_result.first);
+      }
+      {
+        INFO("Test error control step failure");
+        const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
+        const auto result_start =
+            get_suggestion(error_control, step_values, {step_errors(0.0)}, {},
+                           1.0, stepper_order);
+        const auto result_end =
+            get_suggestion(error_control, step_values, {step_errors(-1.0)}, {},
+                           1.0, stepper_order);
+        const auto result_end2 =
+            get_suggestion(error_control, step_values, {step_errors(-1.0)}, {},
+                           result_end.first, stepper_order);
+        // manually calculated in the special case in question: only absolute
+        // errors constrained
+        const double expected_linf_error =
+            max(flattened_step_errors /
+                (flattened_step_values + flattened_step_errors + 1.0)) /
+            4.0e-5;
+        CHECK(approx(result_start.first) ==
+              std::max(0.95 / pow(expected_linf_error, 1.0 / stepper_order),
+                       0.5));
+        CHECK(result_end.first == result_start.first);
+        CHECK(result_end2.first == result_start.first);
+        CHECK_FALSE(result_start.second);
+        CHECK_FALSE(result_end.second);
+        CHECK(result_end2.second);
+      }
+      {
+        INFO("Test error control clamped minimum");
+        const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
+        const auto first_result =
+            get_suggestion(error_control, step_values, {step_errors(0.0)}, {},
+                           1.0, stepper_order);
+        // manually calculated in the special case in question: only absolute
+        // errors constrained
+        CHECK(first_result.first == 0.9);
+      }
+      {
+        INFO("Test error control clamped minimum");
+        const LtsErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
+        const auto first_result =
+            get_suggestion(error_control, step_values, {step_errors(0.0)}, {},
+                           1.0, stepper_order);
+        CHECK(first_result == std::make_pair(2.0, true));
+      }
     }
   }
   // test option creation

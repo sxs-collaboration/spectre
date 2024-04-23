@@ -23,10 +23,8 @@
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/PreviousStepperError.hpp"
-#include "Time/Tags/StepperError.hpp"
-#include "Time/Tags/StepperErrorUpdated.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/Tags/StepperErrors.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
@@ -37,8 +35,6 @@ namespace Tags {
 template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute;
 struct StepChoosers;
-template <typename StepperInterface>
-struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
@@ -114,10 +110,6 @@ template <typename StepChooserUse, typename EvolvedVariableTag,
 class ErrorControl : public StepChooser<StepChooserUse>,
                      public ErrorControl_detail::IsAnErrorControl {
  public:
-  using evolved_variable_type = typename EvolvedVariableTag::type;
-  using error_variable_type =
-      typename ::Tags::StepperError<EvolvedVariableTag>::type;
-
   /// \cond
   ErrorControl() = default;
   explicit ErrorControl(CkMigrateMessage* /*unused*/) {}
@@ -182,56 +174,56 @@ class ErrorControl : public StepChooser<StepChooserUse>,
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
 
-  using simple_tags =
-      tmpl::list<::Tags::StepperError<EvolvedVariableTag>,
-                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
-                 ::Tags::StepperErrorUpdated>;
+  using simple_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
   using compute_tags = tmpl::list<Tags::IsUsingTimeSteppingErrorControlCompute<
       std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
 
   using argument_tags =
       tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
-                 ::Tags::StepperError<EvolvedVariableTag>,
-                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
-                 ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<TimeStepper>>;
+                 ::Tags::StepperErrors<EvolvedVariableTag>>;
 
   std::pair<double, bool> operator()(
-      const TimeSteppers::History<evolved_variable_type>& history,
-      const error_variable_type& error,
-      const error_variable_type& previous_error,
-      const bool& stepper_error_updated, const TimeStepper& stepper,
+      const TimeSteppers::History<typename EvolvedVariableTag::type>& history,
+      const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
       const double previous_step) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
-    if (not stepper_error_updated) {
+    if (not errors[1].has_value()) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const double l_inf_error = error_calc_impl(history.latest_value(), error);
+    const double l_inf_error =
+        error_calc_impl(history.latest_value(), errors[1]->error);
     double new_step;
-    if (previous_error.number_of_grid_points() !=
-        history.latest_value().number_of_grid_points()) {
-      new_step = previous_step *
-                 std::clamp(safety_factor_ *
-                                pow(1.0 / std::max(l_inf_error, 1e-14),
-                                    1.0 / (stepper.error_estimate_order() + 1)),
-                            min_factor_, max_factor_);
+    if (not errors[0].has_value()) {
+      new_step =
+          errors[1]->step_size.value() *
+          std::clamp(safety_factor_ * pow(1.0 / std::max(l_inf_error, 1e-14),
+                                          1.0 / (errors[1]->order + 1)),
+                     min_factor_, max_factor_);
     } else {
       const double previous_l_inf_error =
-          error_calc_impl(history.latest_value(), previous_error);
+          error_calc_impl(history.latest_value(), errors[0]->error);
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
-      const double alpha_factor = 0.7 / (stepper.error_estimate_order() + 1);
-      const double beta_factor = 0.4 / (stepper.error_estimate_order() + 1);
+      ASSERT(errors[0]->order == errors[1]->order,
+             "Error estimates are different orders.  Need to figure our what "
+             "to do in this case.");
+      const double alpha_factor = 0.7 / (errors[1]->order + 1);
+      const double beta_factor = 0.4 / (errors[0]->order + 1);
       new_step =
-          previous_step *
+          errors[1]->step_size.value() *
           std::clamp(
               safety_factor_ *
                   pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
                   pow(std::max(previous_l_inf_error, 1e-14), beta_factor),
               min_factor_, max_factor_);
     }
-    return std::make_pair(new_step, l_inf_error <= 1.0);
+    // If the error is out-of-date we can still reject a step, but it
+    // won't improve the reported error, so make sure to only do it
+    // if we actually request a smaller step.
+    return std::make_pair(abs(new_step),
+                          abs(new_step) >= previous_step or l_inf_error <= 1.0);
   }
 
   bool uses_local_data() const override { return true; }

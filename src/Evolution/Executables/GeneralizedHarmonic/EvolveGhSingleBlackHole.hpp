@@ -68,6 +68,7 @@
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -265,9 +266,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,
-            Tags::StepperError<typename system::variables_tag>,
-            Tags::PreviousStepperError<typename system::variables_tag>,
-            Tags::StepperErrorUpdated,
+            Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
             SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,

@@ -32,6 +32,7 @@ spectre_target_headers(
   History.hpp
   SelfStart.hpp
   Slab.hpp
+  StepperErrorEstimate.hpp
   TakeStep.hpp
   Time.hpp
   TimeSequence.hpp

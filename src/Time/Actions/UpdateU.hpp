@@ -14,16 +14,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/PreviousStepperError.hpp"
-#include "Time/Tags/StepperError.hpp"
+#include "Time/Tags/StepperErrors.hpp"
+#include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
-
-// IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 
 /// \cond
 namespace Parallel {
@@ -32,7 +30,6 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct IsUsingTimeSteppingErrorControl;
-struct StepperErrorUpdated;
 struct TimeStep;
 template <typename StepperInterface>
 struct TimeStepper;
@@ -50,25 +47,39 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
         db::get<Tags::IsUsingTimeSteppingErrorControl>(*box);
   }
   if (is_using_error_control) {
-    using error_tag = ::Tags::StepperError<VariablesTag>;
-    using previous_error_tag = ::Tags::PreviousStepperError<VariablesTag>;
+    using error_tag = ::Tags::StepperErrors<VariablesTag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
-      db::mutate<Tags::StepperErrorUpdated, VariablesTag, error_tag,
-                 previous_error_tag, history_tag>(
-          [](const gsl::not_null<bool*> stepper_error_updated,
-             const gsl::not_null<typename VariablesTag::type*> vars,
-             const gsl::not_null<typename error_tag::type*> error,
-             const gsl::not_null<typename previous_error_tag::type*>
-                 previous_error,
+      db::mutate<VariablesTag, error_tag, history_tag>(
+          [](const gsl::not_null<typename VariablesTag::type*> vars,
+             const gsl::not_null<typename error_tag::type*> errors,
              const gsl::not_null<typename history_tag::type*> history,
              const ::TimeDelta& time_step, const TimeStepper& time_stepper) {
             using std::swap;
-            set_number_of_grid_points(previous_error, *vars);
-            swap(*error, *previous_error);
-            *stepper_error_updated = time_stepper.update_u(
-                vars, make_not_null(&*error), history, time_step);
-            if (not *stepper_error_updated) {
-              swap(*error, *previous_error);
+            bool new_entry = false;
+            const auto current_step_time =
+                history->back().time_step_id.step_time();
+            if (not errors->back().has_value() or
+                errors->back()->step_time != current_step_time) {
+              swap((*errors)[0], (*errors)[1]);
+              if (not errors->back().has_value()) {
+                new_entry = true;
+                errors->back().emplace();
+                set_number_of_grid_points(make_not_null(&errors->back()->error),
+                                          *vars);
+              }
+            }
+            const bool stepper_error_updated = time_stepper.update_u(
+                vars, make_not_null(&errors->back()->error), history,
+                time_step);
+            if (stepper_error_updated) {
+              errors->back()->step_time = current_step_time;
+              errors->back()->step_size = time_step;
+              errors->back()->order = time_stepper.error_estimate_order();
+            } else if (new_entry) {
+              errors->back().reset();
+              swap((*errors)[0], (*errors)[1]);
+            } else if (errors->back()->step_time != current_step_time) {
+              swap((*errors)[0], (*errors)[1]);
             }
           },
           box, db::get<Tags::TimeStep>(*box),
@@ -76,7 +87,7 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
     } else {
       ERROR(
           "Cannot update the stepper error measure -- "
-          "`::Tags::StepperError<VariablesTag>` is not present in the box.");
+          "`::Tags::StepperErrors<VariablesTag>` is not present in the box.");
     }
   } else {
     db::mutate<VariablesTag, history_tag>(
