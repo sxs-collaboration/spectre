@@ -73,6 +73,39 @@ void SpacetimeQuantitiesComputer::operator()(
 }
 
 void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::Ijj<DataVector, 3>*>
+        spatial_christoffel_second_kind,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::SpatialChristoffelSecondKind<DataVector, 3> /*meta*/) const {
+  // Eq. (3.7) in Baumgarte/Shapiro
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
+  const auto& deriv_conformal_factor =
+      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  *spatial_christoffel_second_kind = conformal_christoffel_second_kind;
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k <= j; ++k) {
+        if (i == j) {
+          spatial_christoffel_second_kind->get(i, j, k) +=
+              2. * deriv_conformal_factor.get(k) / get(conformal_factor);
+        }
+        if (i == k) {
+          spatial_christoffel_second_kind->get(i, j, k) +=
+              2. * deriv_conformal_factor.get(j) / get(conformal_factor);
+        }
+        for (size_t l = 0; l < 3; ++l) {
+          spatial_christoffel_second_kind->get(i, j, k) -=
+              2. * conformal_metric.get(j, k) * inv_conformal_metric.get(i, l) *
+              deriv_conformal_factor.get(l) / get(conformal_factor);
+        }
+      }
+    }
+  }
+}
+
+void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*>
         conformal_laplacian_of_conformal_factor,
     const gsl::not_null<Cache*> cache,

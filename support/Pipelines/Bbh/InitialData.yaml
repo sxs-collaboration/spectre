@@ -218,6 +218,8 @@ EventsAndTriggers:
             - Shift
             - ShiftExcess
             - SpatialMetric
+            - InverseSpatialMetric
+            - SpatialChristoffelSecondKind
             - ExtrinsicCurvature
             - RadiallyCompressedCoordinates
           InterpolateToMesh: None

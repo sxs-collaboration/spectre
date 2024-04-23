@@ -13,6 +13,29 @@ def inv_spatial_metric(conformal_factor, inv_conformal_metric):
     return conformal_factor ** (-4) * inv_conformal_metric
 
 
+def spatial_christoffel_second_kind(
+    conformal_factor,
+    deriv_conformal_factor,
+    conformal_metric,
+    inv_conformal_metric,
+    conformal_christoffel_second_kind,
+):
+    # Eq. (3.7) in Baumgarte/Shapiro
+    krond = np.eye(3)
+    return conformal_christoffel_second_kind + 2.0 * (
+        np.einsum("ij,k->ijk", krond, deriv_conformal_factor / conformal_factor)
+        + np.einsum(
+            "ik,j->ijk", krond, deriv_conformal_factor / conformal_factor
+        )
+        - np.einsum(
+            "jk,il,l->ijk",
+            conformal_metric,
+            inv_conformal_metric,
+            deriv_conformal_factor / conformal_factor,
+        )
+    )
+
+
 def lapse(conformal_factor, lapse_times_conformal_factor):
     return lapse_times_conformal_factor / conformal_factor
 
