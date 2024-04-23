@@ -69,6 +69,7 @@ target_link_libraries(
   Informer
   PUBLIC
   Charmxx::charmxx
+  DomainStructure
   ErrorHandling
   Options
   Printf
