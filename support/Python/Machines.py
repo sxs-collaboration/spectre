@@ -4,7 +4,8 @@
 
 Machines are defined as YAML files in 'support/Machines/'. To add support for a
 new machine, add a YAML file that defines a `Machine:` key with the attributes
-listed in the `Machine` class below.
+listed in the `Machine` class below. Also add a submit script with the same
+name to 'support/SubmitScripts/'.
 
 To select a machine, specify the `MACHINE` option when configuring the CMake
 build.
@@ -12,6 +13,7 @@ build.
 
 import os
 from dataclasses import dataclass
+from typing import List
 
 # functools.cache was added in Py 3.9. Fall back to 'lru_cache' in earlier
 # versions, which is pretty much the same but slightly slower.
@@ -29,12 +31,9 @@ import yaml
 class Machine(yaml.YAMLObject):
     """A machine we know how to run on, such as a particular supercomputer.
 
-    Many configuration options for job submission are hardcoded in the submit
-    script for the machine (such as the total number of available cores per
-    node). Here we provide parameters that we want to adjust when scheduling
-    jobs, but that have sensible defaults based on our experience running on the
-    machine. Parameters are set to 'None' when they have no sensible default for
-    the machine.
+    Many configuration options for job submission are set in the submit script
+    for the machine (in 'support/SubmitScripts/'). Here we provide additional
+    metadata about the machine.
 
     Attributes:
       Name: A short name for the machine. Must match the YAML file name.
@@ -50,6 +49,12 @@ class Machine(yaml.YAMLObject):
         you can see the available queues with `sinfo`.
       DefaultTimeLimit: Default wall time limit for submitted jobs. For
         acceptable formats, see: https://slurm.schedmd.com/sbatch.html#OPT_time
+      LaunchCommandSingleNode: Command to launch an executable on a single
+        compute node, e.g. ["mpirun", "-n", "1"]. This is used to run
+        executables on interactive compute nodes. This is _not_ the full command
+        to launch an executable in scheduled jobs, which can be found in the
+        submit script instead. This is also not used on non-compute (login)
+        nodes.
     """
 
     yaml_tag = "!Machine"
@@ -60,6 +65,22 @@ class Machine(yaml.YAMLObject):
     DefaultProcsPerNode: int
     DefaultQueue: str
     DefaultTimeLimit: str
+    LaunchCommandSingleNode: List[str]
+
+    def on_compute_node(self) -> bool:
+        """Determines whether or not we are running on a compute node."""
+        return os.environ.get("SLURM_JOB_ID") is not None
+
+    @property
+    def launch_command(self) -> List[str]:
+        """The command to launch an executable on the machine.
+
+        Prepend this list to the command you want to run.
+        """
+        if self.on_compute_node():
+            return self.LaunchCommandSingleNode
+        else:
+            return []
 
 
 # Parse YAML machine files as Machine objects
@@ -74,19 +95,27 @@ class UnknownMachineError(Exception):
 
 @cache
 def this_machine(
-    machinefile_path=os.path.join(os.path.dirname(__file__), "Machine.yaml")
+    machinefile_path=os.path.join(os.path.dirname(__file__), "Machine.yaml"),
+    raise_exception=True,
 ) -> Machine:
     """Determine the machine we are running on.
 
-    Raises `UnknownMachineError` if no machine was selected. Specify the
-    `MACHINE` option in the CMake build configuration to select a machine, or
-    pass the `machinefile_path` argument to this function.
+    Specify the 'MACHINE' option in the CMake build configuration to select a
+    machine, or pass the 'machinefile_path' argument to this function.
 
     Arguments:
       machinefile_path: Path to a YAML file that describes the current machine.
         Defaults to the machine selected in the CMake build configuration.
+      raise_exception: If 'True' (default), raises an 'UnknownMachineError' if
+        no machine was selected. Otherwise, returns 'None' if no machine was
+        selected.
+
+    Returns: A 'Machine' object that describes the current machine, or 'None' if
+      no machine was selected and 'raise_exception' is 'False'.
     """
     if not os.path.exists(machinefile_path):
+        if not raise_exception:
+            return None
         raise UnknownMachineError(
             "No machine was selected. Specify the 'MACHINE' option when "
             "configuring the build with CMake. If you are running on a new "

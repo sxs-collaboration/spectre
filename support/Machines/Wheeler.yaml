@@ -11,3 +11,4 @@ Machine:
   DefaultProcsPerNode: 23
   DefaultQueue: "productionQ"
   DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: []

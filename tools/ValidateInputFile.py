@@ -12,6 +12,8 @@ import rich
 import rich.syntax
 import yaml
 
+from spectre.support.Machines import this_machine
+
 logger = logging.getLogger(__name__)
 
 
@@ -91,8 +93,10 @@ def validate_input_file(
             executable = next(yaml.safe_load_all(open_input_file))["Executable"]
 
     # Use the executable to validate the input file
+    machine = this_machine(raise_exception=False)
     process = subprocess.run(
-        [executable, "--input-file", input_file_path, "--check-options"],
+        (machine.launch_command if machine else [])
+        + [executable, "--input-file", input_file_path, "--check-options"],
         capture_output=True,
         text=True,
         cwd=work_dir,
