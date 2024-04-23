@@ -8,6 +8,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DgElementArrayMemberBase.hpp
+  SetTerminateOnElement.hpp
 )
 
 spectre_target_sources(
