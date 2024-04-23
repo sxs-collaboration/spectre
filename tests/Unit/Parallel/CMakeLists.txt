@@ -175,6 +175,7 @@ set(LIBRARY_SOURCES
   Test_TypeTraits.cpp
   )
 
+add_subdirectory(ArrayCollection)
 add_subdirectory(Tags)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}" WITH_CHARM)
