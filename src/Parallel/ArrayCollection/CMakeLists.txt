@@ -9,6 +9,7 @@ spectre_target_headers(
   HEADERS
   DgElementArrayMemberBase.hpp
   IsDgElementArrayMember.hpp
+  IsDgElementCollection.hpp
   SetTerminateOnElement.hpp
 )
 
