@@ -103,17 +103,6 @@ void test_am() {
   CHECK_FALSE(can_change(false, end, mid, end));
 
   {
-    const auto time_step = slab.duration() / 2;
-    const TimeStepId step_id(true, 1, slab.start() + time_step);
-    const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(2);
-    TimeSteppers::History<double> history(2);
-    history.insert(TimeStepId(true, 1, slab.start()), 0., 0.);
-    history.insert(step_id, 0., 0.);
-    CHECK_FALSE(stepper.can_change_step_size(
-        step_id.next_substep(time_step, 1.0), history));
-  }
-
-  {
     TimeSteppers::AdamsMoultonPc<Monotonic> am4(4);
     TimeSteppers::AdamsMoultonPc<Monotonic> am2(2);
     CHECK(am4 == am4);

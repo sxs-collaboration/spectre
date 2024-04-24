@@ -86,9 +86,6 @@ void check_substep_properties(const TimeStepper& stepper) {
   CHECK(stepper.can_change_step_size(id, history));
   history.insert(id, 0.0, 0.0);
   id = stepper.next_time_id(id, slab.duration() / 2);
-  if (id.substep() != 0) {
-    CHECK(not stepper.can_change_step_size(id, history));
-  }
 }
 
 void integrate_test(const TimeStepper& stepper, const size_t order,

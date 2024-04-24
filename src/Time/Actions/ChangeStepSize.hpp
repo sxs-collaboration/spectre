@@ -16,6 +16,7 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -59,6 +60,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
 
   const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
+  ASSERT(time_step_id.substep() == 0, "Can't change step size on a substep.");
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
   tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
@@ -171,6 +173,9 @@ struct ChangeStepSize {
         "an action that is not UpdateU, consider using the take_step function "
         "to handle both stepping and step-choosing instead of the "
         "ChangeStepSize action.");
+    if (db::get<Tags::TimeStepId>(box).substep() != 0) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
     const bool step_successful =
         change_step_size<StepChoosersToUse>(make_not_null(&box));
     // We should update

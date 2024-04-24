@@ -202,7 +202,7 @@ class TimeStepper : public PUP::able {
       const TimeStepId& current_id, const TimeDelta& time_step) const = 0;
 
   /// Whether a change in the step size is allowed before taking
-  /// a step.
+  /// a step.  Step sizes can never be changed on a substep.
   ///
   /// Derived classes must implement this as a function with signature
   ///

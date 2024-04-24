@@ -193,9 +193,9 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
 template <typename T>
 bool RungeKutta::can_change_step_size_impl(
-    const TimeStepId& time_id,
+    const TimeStepId& /*time_id*/,
     const ConstUntypedHistory<T>& /*history*/) const {
-  return time_id.substep() == 0;
+  return true;
 }
 
 TIME_STEPPER_DEFINE_OVERLOADS(RungeKutta)
