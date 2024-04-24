@@ -9,7 +9,7 @@
 #include "DataStructures/Tags.hpp"
 #include "Evolution/Systems/Cce/Equations.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {

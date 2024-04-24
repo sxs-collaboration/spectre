@@ -10,7 +10,7 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Math.hpp"
 

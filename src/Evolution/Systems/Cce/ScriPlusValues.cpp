@@ -7,9 +7,9 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
-#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 
 namespace Cce {
 

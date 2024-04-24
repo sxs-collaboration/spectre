@@ -16,7 +16,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
 
 namespace Cce {

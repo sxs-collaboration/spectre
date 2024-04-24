@@ -121,8 +121,7 @@ template <int Spin>
 void filter_swsh_boundary_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t filter_min_l, size_t filter_max_l,
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        transform_buffer);
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> transform_buffer);
 
 template <int Spin>
 void filter_swsh_boundary_quantity(

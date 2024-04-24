@@ -19,12 +19,12 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -249,8 +249,7 @@ void test_interpolate_to_collocation() {
       make_not_null(&coefficient_distribution), number_of_radial_points, l_max);
 
   const SpinWeighted<ComplexDataVector, Spin> collocation_data =
-      inverse_swsh_transform(l_max, number_of_radial_points,
-                                             expected_modes);
+      inverse_swsh_transform(l_max, number_of_radial_points, expected_modes);
   const size_t target_l_max = sdist(gen);
 
   SpinWeighted<ComplexDataVector, Spin> resampled_collocation{

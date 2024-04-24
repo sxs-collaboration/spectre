@@ -1,16 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
 
 #include "DataStructures/ComplexDataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/ComplexDiagonalModalOperator.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
 #include "DataStructures/TempBuffer.hpp"
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"

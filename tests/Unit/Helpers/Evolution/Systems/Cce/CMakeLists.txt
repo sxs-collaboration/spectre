@@ -28,5 +28,6 @@ target_link_libraries(
   Framework
   H5
   Spectral
+  SpinWeightedSphericalHarmonics
   Utilities
   )

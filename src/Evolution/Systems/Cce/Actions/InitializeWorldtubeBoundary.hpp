@@ -19,7 +19,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"

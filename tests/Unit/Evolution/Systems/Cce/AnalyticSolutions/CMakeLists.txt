@@ -18,9 +18,10 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Cce
+  CceAnalyticSolutionsHelpers
   DataStructures
   GeneralizedHarmonic
   GeneralRelativity
   Utilities
-  CceAnalyticSolutionsHelpers
+  SpinWeightedSphericalHarmonics
   )

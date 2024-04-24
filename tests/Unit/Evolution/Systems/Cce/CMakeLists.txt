@@ -41,8 +41,9 @@ target_link_libraries(
   Cce
   CceHelpers
   DataStructures
+  GeneralRelativitySolutions
   Observer
   Options
   Spectral
-  GeneralRelativitySolutions
+  SpinWeightedSphericalHarmonics
   )

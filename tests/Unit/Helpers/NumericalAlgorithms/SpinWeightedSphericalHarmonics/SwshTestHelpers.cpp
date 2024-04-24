@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
 
 #include <boost/math/special_functions/binomial.hpp>
 #include <cmath>
 #include <complex>
 
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"  // IWYU pragma: keep
 
 namespace Spectral {
 namespace Swsh {

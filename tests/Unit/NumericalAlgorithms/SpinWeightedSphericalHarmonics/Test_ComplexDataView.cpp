@@ -12,7 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
@@ -29,7 +29,8 @@ void test_basic_view_functionality(const ComplexDataView<Representation>& view,
   // clang-tidy: This class uses manual memory management deliberately,
   // so silence complaints about pointer math and casts.
   // The reinterpret casts are intentional. See
-  // NumericalAlgorithms/Spectral/ComplexDataView.cpp for an explanation
+  // NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.cpp
+  // for an explanation
   if (Representation == ComplexRepresentation::Interleaved) {
     CHECK(view.real_data() ==
           reinterpret_cast<double*>(source_vec_data + offset));  // NOLINT
@@ -181,7 +182,7 @@ void test_view() {
   // clang-tidy and gcc ignore for allowing the intentional self-assignment
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
-  vector_view = vector_view; // NOLINT
+  vector_view = vector_view;  // NOLINT
 #pragma GCC diagnostic pop
 #if defined(__clang__) && __clang_major__ > 6
 #pragma GCC diagnostic pop
@@ -197,54 +198,54 @@ void test_view() {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
                   "[Unit][NumericalAlgorithms]") {
-    {
-        INFO("Test Interleaved view");
-        test_view<ComplexRepresentation::Interleaved>();
-    }
-    {
-        INFO("Test RealsThenImags view");
-        test_view<ComplexRepresentation::RealsThenImags>();
-    }
+  {
+    INFO("Test Interleaved view");
+    test_view<ComplexRepresentation::Interleaved>();
+  }
+  {
+    INFO("Test RealsThenImags view");
+    test_view<ComplexRepresentation::RealsThenImags>();
+  }
 
 #ifdef SPECTRE_DEBUG
-    // spot-test two assignment asserts - they all call the same size-checking
-    // function, so this should be sufficiently robust.
-    CHECK_THROWS_WITH(
-        ([]() {
-          MAKE_GENERATOR(gen);
-          UniformCustomDistribution<size_t> sdist{5, 50};
-          const size_t overall_size = sdist(gen);
-          const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
-          const size_t offset = sdist(gen) % (overall_size - view_size + 1);
+  // spot-test two assignment asserts - they all call the same size-checking
+  // function, so this should be sufficiently robust.
+  CHECK_THROWS_WITH(
+      ([]() {
+        MAKE_GENERATOR(gen);
+        UniformCustomDistribution<size_t> sdist{5, 50};
+        const size_t overall_size = sdist(gen);
+        const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
+        const size_t offset = sdist(gen) % (overall_size - view_size + 1);
 
-          ComplexDataVector source_vec{overall_size};
-          ComplexDataView<ComplexRepresentation::Interleaved> vector_view_1{
-              make_not_null(&source_vec), view_size, offset};
-          ComplexDataView<ComplexRepresentation::Interleaved> vector_view_2{
-              make_not_null(&source_vec), view_size + 1, offset};
+        ComplexDataVector source_vec{overall_size};
+        ComplexDataView<ComplexRepresentation::Interleaved> vector_view_1{
+            make_not_null(&source_vec), view_size, offset};
+        ComplexDataView<ComplexRepresentation::Interleaved> vector_view_2{
+            make_not_null(&source_vec), view_size + 1, offset};
 
-          // this line should fail the size assert
-          vector_view_1 = vector_view_2;
-        }()),
-        Catch::Matchers::ContainsSubstring(
-            "Assignment must be to the same size"));
-    CHECK_THROWS_WITH(
-        ([]() {
-          MAKE_GENERATOR(gen);
-          UniformCustomDistribution<size_t> sdist{5, 50};
-          const size_t overall_size = sdist(gen);
-          const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
-          const size_t offset = sdist(gen) % (overall_size - view_size + 1);
+        // this line should fail the size assert
+        vector_view_1 = vector_view_2;
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Assignment must be to the same size"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        MAKE_GENERATOR(gen);
+        UniformCustomDistribution<size_t> sdist{5, 50};
+        const size_t overall_size = sdist(gen);
+        const size_t view_size = sdist(gen) % (overall_size - 1) + 1;
+        const size_t offset = sdist(gen) % (overall_size - view_size + 1);
 
-          ComplexDataVector source_vec{overall_size};
-          ComplexDataView<ComplexRepresentation::RealsThenImags> vector_view_1{
-              make_not_null(&source_vec), view_size, offset};
+        ComplexDataVector source_vec{overall_size};
+        ComplexDataView<ComplexRepresentation::RealsThenImags> vector_view_1{
+            make_not_null(&source_vec), view_size, offset};
 
-          // this line should fail the size assert
-          vector_view_1.assign_real(real(source_vec));
-        }()),
-        Catch::Matchers::ContainsSubstring(
-            "Assignment must be to the same size"));
+        // this line should fail the size assert
+        vector_view_1.assign_real(real(source_vec));
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Assignment must be to the same size"));
 #endif
 }
 

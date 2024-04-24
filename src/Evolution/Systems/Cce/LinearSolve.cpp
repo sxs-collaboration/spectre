@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"

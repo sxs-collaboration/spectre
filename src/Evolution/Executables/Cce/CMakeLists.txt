@@ -2,17 +2,18 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
-  Charmxx::main
   Cce
-  Time
-  Interpolation
+  Charmxx::main
   Informer
-  Spectral
+  Interpolation
   LinearOperators
   Observer
   Options
   Parallel
   Serialization
+  Spectral
+  SpinWeightedSphericalHarmonics
+  Time
   Utilities
   )
 
