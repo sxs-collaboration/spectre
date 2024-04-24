@@ -101,7 +101,7 @@ DomainCreator:
       ObjectACube:      [{{ L }}, {{ L }}, {{ L }}]
       ObjectBCube:      [{{ L }}, {{ L }}, {{ L }}]
       Envelope:         [{{ L }}, {{ L }}, {{ L + 1 }}]
-      OuterShell:       [{{ L }}, {{ L }}, {{ L + 2 }}]
+      OuterShell:       [{{ L }}, {{ L }}, {{ L }}]
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
@@ -145,7 +145,7 @@ PhaseChangeAndTriggers: []
 
 Discretization:
   DiscontinuousGalerkin:
-    PenaltyParameter: 1.
+    PenaltyParameter: 1.5
     Massive: True
     Quadrature: GaussLobatto
     Formulation: WeakInertial
