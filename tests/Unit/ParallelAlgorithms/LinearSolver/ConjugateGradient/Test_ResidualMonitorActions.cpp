@@ -116,8 +116,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<observer_writer>(
       &runner, 0,
       {observers::ObservationId{}, std::string{}, std::vector<std::string>{},
-       std::tuple<size_t, double>{
-           0, std::numeric_limits<double>::signaling_NaN()}});
+       std::tuple<size_t, double, double>{
+           0, std::numeric_limits<double>::signaling_NaN(),
+           std::numeric_limits<double>::signaling_NaN()}});
 
   // DataBox shortcuts
   const auto get_residual_monitor_tag =
@@ -155,10 +156,10 @@ SPECTRE_TEST_CASE(
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
-          std::vector<std::string>{"Iteration", "Residual"});
+          std::vector<std::string>{"Iteration", "Walltime", "Residual"});
     CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           0);
-    CHECK(get<1>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
+    CHECK(get<2>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           approx(2.));
   }
 
@@ -223,10 +224,10 @@ SPECTRE_TEST_CASE(
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
-          std::vector<std::string>{"Iteration", "Residual"});
+          std::vector<std::string>{"Iteration", "Walltime", "Residual"});
     CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           1);
-    CHECK(get<1>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
+    CHECK(get<2>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           approx(2.));
   }
 

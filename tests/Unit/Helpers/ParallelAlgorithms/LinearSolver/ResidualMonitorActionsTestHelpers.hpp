@@ -37,7 +37,7 @@ struct CheckReductionNamesTag : db::SimpleTag {
 };
 
 struct CheckReductionDataTag : db::SimpleTag {
-  using type = std::tuple<size_t, double>;
+  using type = std::tuple<size_t, double, double>;
 };
 
 using observer_writer_tags =

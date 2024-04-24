@@ -28,22 +28,22 @@ class TestPlotEllipticConvergence(unittest.TestCase):
         with spectre_h5.H5File(self.h5_filename, "w") as h5_file:
             linear_residuals = h5_file.insert_dat(
                 "/GmresResiduals",
-                legend=["Iteration", "Residual"],
+                legend=["Iteration", "Walltime", "Residual"],
                 version=0,
             )
-            linear_residuals.append([0, 1.0])
-            linear_residuals.append([1, 0.5])
-            linear_residuals.append([0, 0.6])
-            linear_residuals.append([1, 0.4])
-            linear_residuals.append([2, 0.2])
+            linear_residuals.append([0, 0.1, 1.0])
+            linear_residuals.append([1, 0.2, 0.5])
+            linear_residuals.append([0, 0.3, 0.6])
+            linear_residuals.append([1, 0.5, 0.4])
+            linear_residuals.append([2, 0.8, 0.2])
             h5_file.close_current_object()
             nonlinear_residuals = h5_file.insert_dat(
                 "/NewtonRaphsonResiduals",
-                legend=["Iteration", "Residual"],
+                legend=["Iteration", "Walltime", "Residual"],
                 version=0,
             )
-            nonlinear_residuals.append([0, 1.0])
-            nonlinear_residuals.append([1, 0.5])
+            nonlinear_residuals.append([0, 0.1, 1.0])
+            nonlinear_residuals.append([1, 0.3, 0.5])
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)

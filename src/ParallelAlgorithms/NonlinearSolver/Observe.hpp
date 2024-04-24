@@ -36,10 +36,11 @@ void contribute_to_reduction_observer(
       // node
       reduction_writer[0],
       std::string{"/" + pretty_type::name<OptionsGroup>() + "Residuals"},
-      std::vector<std::string>{"Iteration", "GlobalizationStep", "Residual",
-                               "StepLength"},
-      std::make_tuple(iteration_id, globalization_iteration_id,
-                      residual_magnitude, step_length));
+      std::vector<std::string>{"Iteration", "Walltime", "GlobalizationStep",
+                               "Residual", "StepLength"},
+      std::make_tuple(iteration_id, sys::wall_time(),
+                      globalization_iteration_id, residual_magnitude,
+                      step_length));
 }
 
 }  // namespace NonlinearSolver::observe_detail
