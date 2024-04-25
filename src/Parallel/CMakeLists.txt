@@ -69,6 +69,7 @@ target_link_libraries(
   Informer
   PUBLIC
   Charmxx::charmxx
+  DomainStructure
   ErrorHandling
   Options
   Printf
@@ -84,6 +85,7 @@ add_dependencies(
   )
 
 add_subdirectory(Algorithms)
+add_subdirectory(ArrayCollection)
 add_subdirectory(MemoryMonitor)
 add_subdirectory(PhaseControl)
 add_subdirectory(Printf)

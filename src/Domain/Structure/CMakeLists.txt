@@ -58,7 +58,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
-  Parallel
   PUBLIC
   DataStructures
   ErrorHandling

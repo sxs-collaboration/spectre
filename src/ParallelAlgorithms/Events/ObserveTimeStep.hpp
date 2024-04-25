@@ -153,8 +153,8 @@ class ObserveTimeStep : public Event {
       "evolutions.";
 
   ObserveTimeStep() = default;
-  explicit ObserveTimeStep(const std::string& subfile_name,
-                           const bool output_time, const bool observe_per_core);
+  ObserveTimeStep(const std::string& subfile_name, bool output_time,
+                  bool observe_per_core);
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -189,25 +189,42 @@ class ObserveTimeStep : public Event {
             tmpl::conditional_t<Parallel::is_nodegroup_v<ParallelComponent>,
                                 observers::ObserverWriter<Metavariables>,
                                 observers::Observer<Metavariables>>>(cache));
-    Parallel::simple_action<tmpl::conditional_t<
-        Parallel::is_nodegroup_v<ParallelComponent>,
-        observers::ThreadedActions::CollectReductionDataOnNode,
-        observers::Actions::ContributeReductionData>>(
-        local_observer,
-        observers::ObservationId(observation_value.value,
-                                 subfile_path_ + ".dat"),
-        Parallel::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ArrayIndex>(array_index)},
-        subfile_path_,
-        std::vector<std::string>{observation_value.name, "NumberOfPoints",
-                                 "Slab size", "Minimum time step",
-                                 "Maximum time step", "Effective time step",
-                                 "Minimum Walltime", "Maximum Walltime"},
-        ReductionData{observation_value.value, number_of_grid_points, slab_size,
-                      step_size, step_size, number_of_grid_points / step_size,
-                      wall_time, wall_time},
-        std::move(formatter), observe_per_core_);
+
+    observers::ObservationId observation_id{observation_value.value,
+                                            subfile_path_ + ".dat"};
+    Parallel::ArrayComponentId array_component_id{
+        std::add_pointer_t<ParallelComponent>{nullptr},
+        Parallel::ArrayIndex<ArrayIndex>(array_index)};
+    std::vector<std::string> legend{
+        observation_value.name, "NumberOfPoints",    "Slab size",
+        "Minimum time step",    "Maximum time step", "Effective time step",
+        "Minimum Walltime",     "Maximum Walltime"};
+    ReductionData reduction_data{observation_value.value,
+                                 number_of_grid_points,
+                                 slab_size,
+                                 step_size,
+                                 step_size,
+                                 number_of_grid_points / step_size,
+                                 wall_time,
+                                 wall_time};
+
+    if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+      const std::optional<int> observe_with_core_id =
+          observe_per_core_
+              ? std::make_optional(Parallel::my_node<int>(local_observer))
+              : std::nullopt;
+      Parallel::threaded_action<
+          observers::ThreadedActions::CollectReductionDataOnNode>(
+          local_observer, std::move(observation_id),
+          std::move(array_component_id), subfile_path_, std::move(legend),
+          std::move(reduction_data), std::move(formatter),
+          observe_with_core_id);
+    } else {
+      Parallel::simple_action<observers::Actions::ContributeReductionData>(
+          local_observer, std::move(observation_id),
+          std::move(array_component_id), subfile_path_, std::move(legend),
+          std::move(reduction_data), std::move(formatter), observe_per_core_);
+    }
   }
 
   using observation_registration_tags = tmpl::list<>;
