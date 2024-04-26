@@ -32,6 +32,7 @@ spectre_run_cmake() {
           -D CMAKE_BUILD_TYPE=Release \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
+          -D ENABLE_PARAVIEW=ON \
           -D MACHINE=Mbot \
           -D USE_XSIMD=yes \
           "$@" \
