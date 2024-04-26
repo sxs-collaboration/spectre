@@ -54,6 +54,17 @@ else()
   # If for whatever reason pvpython call didn't work, try another search
   get_filename_component(PVPYTHON_BINDIR ${PVPYTHON_EXEC} DIRECTORY)
   get_filename_component(PVPYTHON_BASEDIR ${PVPYTHON_BINDIR} DIRECTORY)
-  find_path(PARAVIEW_PYTHONPATH "simple.py" ${PVPYTHON_BASEDIR})
+  file(GLOB_RECURSE
+    PARAVIEW_PYTHONPATH
+    ${PVPYTHON_BASEDIR}
+    "${PVPYTHON_BASEDIR}/lib*/python*/site-packages/paraview/simple.py"
+  )
+  find_file(PARAVIEW_PYTHONPATH
+    NAMES "simple.py"
+    PATHS "${PVPYTHON_BASEDIR}"
+    PATH_SUFFIXES "/.*"
+    REQUIRED)
+  # go back up to the site-packages
+  get_filename_component(PARAVIEW_PYTHONPATH ${PARAVIEW_PYTHONPATH} DIRECTORY)
   get_filename_component(PARAVIEW_PYTHONPATH ${PARAVIEW_PYTHONPATH} DIRECTORY)
 endif()
