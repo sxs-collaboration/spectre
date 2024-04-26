@@ -12,6 +12,7 @@
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Structure/BlockId.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
@@ -40,12 +41,6 @@ element_logical_coordinates(
 }
 
 namespace {
-// Define this alias so we don't need to keep typing this monster.
-template <size_t Dim>
-using block_logical_coord_holder =
-    std::optional<IdPair<domain::BlockId,
-                         tnsr::I<double, Dim, typename ::Frame::BlockLogical>>>;
-
 // The segments bounds are binary fractions (i.e. the numerator is an
 // integer and the denominator is a power of 2) so these floating point
 // comparisons should be safe from roundoff problems
@@ -66,7 +61,7 @@ template <size_t Dim>
 std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
 element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
-    const std::vector<block_logical_coord_holder<Dim>>& block_coord_holders) {
+    const std::vector<BlockLogicalCoords<Dim>>& block_coord_holders) {
   // Temporarily put results here in data structures that allow
   // push_back, because we don't know the sizes of the output
   // DataVectors ahead of time.
@@ -151,8 +146,7 @@ element_logical_coordinates(
                               ElementLogicalCoordHolder<DIM(data)>>           \
   element_logical_coordinates(                                                \
       const std::vector<ElementId<DIM(data)>>& element_ids,                   \
-      const std::vector<block_logical_coord_holder<DIM(data)>>&               \
-          block_coord_holders);
+      const std::vector<BlockLogicalCoords<DIM(data)>>& block_coord_holders);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

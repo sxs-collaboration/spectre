@@ -42,11 +42,8 @@ void bind_element_logical_coordinates_impl(py::module& m) {  // NOLINT
                     &ElementLogicalCoordHolder<Dim>::element_logical_coords)
       .def_readonly("offsets", &ElementLogicalCoordHolder<Dim>::offsets);
   m.def("element_logical_coordinates",
-        py::overload_cast<
-            const std::vector<ElementId<Dim>>&,
-            const std::vector<std::optional<
-                IdPair<domain::BlockId,
-                       tnsr::I<double, Dim, typename Frame::BlockLogical>>>>&>(
+        py::overload_cast<const std::vector<ElementId<Dim>>&,
+                          const std::vector<BlockLogicalCoords<Dim>>&>(
             &element_logical_coordinates<Dim>),
         py::arg("element_ids"), py::arg("block_coord_holders"));
 }

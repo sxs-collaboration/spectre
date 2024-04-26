@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/IdPair.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -614,10 +613,7 @@ template <typename InterpolationTargetTag, typename DbTags, size_t VolumeDim,
 void set_up_interpolation(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const TemporalId& temporal_id,
-    const std::vector<std::optional<
-        IdPair<domain::BlockId,
-               tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&
-        block_logical_coords) {
+    const std::vector<BlockLogicalCoords<VolumeDim>>& block_logical_coords) {
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(

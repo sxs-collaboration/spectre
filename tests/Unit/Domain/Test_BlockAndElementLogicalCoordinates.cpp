@@ -716,9 +716,7 @@ void test_element_ids_are_uniquely_determined() {
   const size_t n_zeta_segments = two_to_the(zeta_level);
   const size_t n_pts = (2 * n_xi_segments + 1) * (2 * n_eta_segments + 1) *
                        (2 * n_zeta_segments + 1);
-  std::vector<std::optional<IdPair<
-      domain::BlockId, tnsr::I<double, 3, typename Frame::BlockLogical>>>>
-      block_logical_points{n_pts, std::nullopt};
+  std::vector<BlockLogicalCoords<3>> block_logical_points{n_pts, std::nullopt};
   const double xi_stride = 1.0 / n_xi_segments;
   const double eta_stride = 1.0 / n_eta_segments;
   const double zeta_stride = 1.0 / n_zeta_segments;

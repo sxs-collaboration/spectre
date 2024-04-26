@@ -13,6 +13,7 @@
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 
@@ -41,10 +42,7 @@ struct Info {
   /// `block_coord_holders` even after all `Element`s have sent their
   /// data (this is because this `Info` lives only on a single core,
   /// and this core will have access only to the local `Element`s).
-  std::vector<std::optional<
-      IdPair<domain::BlockId,
-             tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>
-      block_coord_holders;
+  std::vector<BlockLogicalCoords<VolumeDim>> block_coord_holders;
   /// If a target needs to send points in a specific order, it should also send
   /// along which iteration the `block_coord_holders` are for. That way they can
   /// be properly ordered in the Interpolator.

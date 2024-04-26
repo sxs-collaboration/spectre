@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -103,10 +104,7 @@ struct MockReceivePoints {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
           temporal_id,
-      std::vector<std::optional<
-          IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename Frame::BlockLogical>>>>&&
-          block_coord_holders,
+      std::vector<BlockLogicalCoords<VolumeDim>>&& block_coord_holders,
       const size_t iteration = 0_st) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         [&temporal_id, &block_coord_holders, &iteration](

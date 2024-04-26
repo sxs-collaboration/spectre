@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
@@ -78,9 +79,7 @@ struct InterpolationTargetVarsFromElement {
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
-      const std::vector<std::optional<
-          IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
-                                          typename ::Frame::BlockLogical>>>>&
+      const std::vector<BlockLogicalCoords<Metavariables::volume_dim>>&
           block_logical_coords,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& temporal_id,

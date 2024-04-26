@@ -11,26 +11,17 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace {
-// Define this alias so we don't need to keep typing this monster.
-template <size_t Dim>
-using block_logical_coord_holder =
-    std::optional<IdPair<domain::BlockId,
-                         tnsr::I<double, Dim, typename ::Frame::BlockLogical>>>;
-using functions_of_time_type = std::unordered_map<
-    std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-}  // namespace
-
 template <size_t Dim, typename Frame>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Frame>& input_point, const Block<Dim>& block,
-    const double time, const functions_of_time_type& functions_of_time) {
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
   std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>> logical_point{};
   if (block.is_time_dependent()) {
     if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
@@ -143,11 +134,11 @@ block_logical_coordinates_single_point(
 }
 
 template <size_t Dim, typename Frame>
-std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
+std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
-    const double time, const functions_of_time_type& functions_of_time) {
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
   const size_t num_pts = get<0>(x).size();
-  std::vector<block_logical_coord_holder<Dim>> block_coord_holders(num_pts);
+  std::vector<BlockLogicalCoords<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
     tnsr::I<double, Dim, Frame> x_frame(0.0);
     for (size_t d = 0; d < Dim; ++d) {
@@ -183,12 +174,12 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
   block_logical_coordinates_single_point(                                      \
       const tnsr::I<double, DIM(data), FRAME(data)>& input_point,              \
       const Block<DIM(data)>& block, const double time,                        \
-      const functions_of_time_type& functions_of_time);                        \
-  template std::vector<block_logical_coord_holder<DIM(data)>>                  \
+      const domain::FunctionsOfTimeMap& functions_of_time);                    \
+  template std::vector<BlockLogicalCoords<DIM(data)>>                          \
   block_logical_coordinates(                                                   \
       const Domain<DIM(data)>& domain,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& x, const double time, \
-      const functions_of_time_type& functions_of_time);
+      const domain::FunctionsOfTimeMap& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (::Frame::Grid, ::Frame::Distorted, ::Frame::Inertial))

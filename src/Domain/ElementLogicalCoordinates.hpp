@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 
 /// \cond
 namespace domain {
@@ -128,7 +129,5 @@ struct ElementLogicalCoordHolder {
 template <size_t Dim>
 auto element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
-    const std::vector<std::optional<IdPair<
-        domain::BlockId, tnsr::I<double, Dim, typename Frame::BlockLogical>>>>&
-        block_coord_holders)
+    const std::vector<BlockLogicalCoords<Dim>>& block_coord_holders)
     -> std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>;

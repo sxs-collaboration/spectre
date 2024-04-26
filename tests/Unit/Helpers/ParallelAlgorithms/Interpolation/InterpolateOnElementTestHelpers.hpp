@@ -126,9 +126,7 @@ struct MockInterpolationTargetVarsFromElement {
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
-      const std::vector<std::optional<
-          IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
-                                          typename ::Frame::BlockLogical>>>>&
+      const std::vector<BlockLogicalCoords<Metavariables::volume_dim>>&
           block_logical_coords,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& /*temporal_id*/) {

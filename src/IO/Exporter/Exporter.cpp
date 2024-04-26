@@ -39,9 +39,7 @@ void interpolate_to_points(
     const gsl::not_null<std::vector<bool>*> filled_data,
     const std::string& filename, const std::string& subfile_name,
     const size_t obs_id, const std::vector<std::string>& tensor_components,
-    const std::vector<std::optional<
-        IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>>>&
-        block_logical_coords) {
+    const std::vector<BlockLogicalCoords<Dim>>& block_logical_coords) {
   std::vector<std::string> grid_names;
   std::vector<std::vector<size_t>> all_extents;
   std::vector<std::vector<Spectral::Basis>> all_bases;
