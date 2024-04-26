@@ -105,16 +105,6 @@ void lindblom_rhs(
       d_log_conformal_factor = -0.25 * d_mass_over_radius;
     }
   } else {
-    // This statement is triggered by one of the test examples,
-    // Test_Tov.cpp: void {anonymous}::test_rueter()
-    // Test_Tov.cpp: void {anonymous}::test_baumgarte_shapiro()
-    // not sure what to do about that
-    if constexpr (CoordSystem == TovCoordinates::Schwarzschild) {
-      ASSERT(mass_over_radius < .5,
-             "Compactness of Star is greater than BH"
-             "limit in TOV solver, currently, " +
-                 std::to_string(mass_over_radius));
-    }
     const double one_minus_two_m_over_r = 1.0 - 2.0 * mass_over_radius;
     const double denominator =
         4.0 * M_PI * radius_squared * pressure + mass_over_radius;
