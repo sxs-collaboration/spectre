@@ -12,6 +12,7 @@ spectre_target_headers(
   IsDgElementCollection.hpp
   ReceiveDataForElement.hpp
   SetTerminateOnElement.hpp
+  SpawnInitializeElementsInCollection.hpp
   StartPhaseOnNodegroup.hpp
 )
 
