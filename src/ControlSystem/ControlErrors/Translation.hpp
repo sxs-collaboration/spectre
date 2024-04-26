@@ -41,12 +41,12 @@ namespace ControlErrors {
  * domain::CoordinateMaps::TimeDependent::Translation Translation \endlink
  * coordinate map
  *
- * \details Computes the error in how much the system has translated by using
- * Eq. (42) from \cite Ossokine2013zga. The equation is
- *
- * \f[ \left(0, \delta\vec{T}\right) = a\mathbf{q}\left(\mathbf{x}_A -
- * \mathbf{c}_A - \mathbf{\delta q}\wedge\mathbf{c}_A - \frac{\delta
- * a}{a}\mathbf{c}_A \right)\mathbf{q}^*
+ * \details Computes the error in how much the system has translated by using a
+ * modified version of Eq. (42) from \cite Ossokine2013zga. The equation is
+ * \f[ \left(0, \delta\vec{T}\right) = a\mathbf{q}\left(\frac{1}{2}(\mathbf{x}_A
+ * + \mathbf{x}_B - \frac{1}{2}(\mathbf{c}_A + \mathbf{c}_B)) - \mathbf{\delta
+ * q}\wedge\frac{1}{2}(\mathbf{c}_A + \mathbf{c}_B) - \frac{\delta
+ * a}{a}\frac{1}{2}(\mathbf{c}_A + \mathbf{c}_B) \right)\mathbf{q}^*
  * \f]
  *
  * where object A is located on the positive x-axis in the grid frame, bold face
@@ -84,7 +84,7 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... TupleTags>
-  DataVector operator()(const ::TimescaleTuner<true>& tuner,
+  DataVector operator()(const ::TimescaleTuner<true>& /*unused*/,
                         const Parallel::GlobalCache<Metavariables>& cache,
                         const double time,
                         const std::string& /*function_of_time_name*/,
@@ -100,6 +100,8 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
 
     using center_A =
         control_system::QueueTags::Center<::domain::ObjectLabel::A>;
+    using center_B =
+        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
 
     const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A_tnsr =
         Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::A>>(
@@ -109,30 +111,52 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
                                          grid_position_of_A_tnsr[2]}};
     const DataVector& current_position_of_A = get<center_A>(measurements);
 
-    const DataVector rotation_error =
-        rotation_control_error_(tuner, cache, time, "Rotation", measurements);
-    // Use A because it's on the positive x-axis, however, B would work as well.
-    // Just so long as we are consistent.
-    const DataVector rotation_error_cross_grid_pos_A =
-        cross(rotation_error, grid_position_of_A);
+    const tnsr::I<double, 3, Frame::Grid>& grid_position_of_B_tnsr =
+        Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::B>>(
+            cache);
+    const DataVector grid_position_of_B{{grid_position_of_B_tnsr[0],
+                                         grid_position_of_B_tnsr[1],
+                                         grid_position_of_B_tnsr[2]}};
+    const DataVector& current_position_of_B = get<center_B>(measurements);
 
-    const double expansion_error = expansion_control_error_(
-        tuner, cache, time, "Expansion", measurements)[0];
+    const DataVector grid_position_average =
+        0.5 * (grid_position_of_A + grid_position_of_B);
+    const DataVector current_position_average =
+        0.5 * (current_position_of_A + current_position_of_B);
 
-    // From eq. 42 in 1304.3067
-    const quat middle_expression = datavector_to_quaternion(
-        current_position_of_A -
-        (1.0 + expansion_error / expansion_factor) * grid_position_of_A -
-        rotation_error_cross_grid_pos_A);
+    const DataVector grid_separation = grid_position_of_A - grid_position_of_B;
+    const DataVector current_separation =
+        current_position_of_A - current_position_of_B;
+
+    // These quantities come from the translation control implementation in SpEC
+    double current_separation_dot_grid_separation =
+        dot(current_separation, grid_separation);
+    double current_separation_dot_grid_average =
+        dot(current_separation, grid_position_average);
+    double grid_separation_dot_grid_average =
+        dot(grid_separation, grid_position_average);
+    double grid_separation_dot_grid_separation =
+        dot(grid_separation, grid_separation);
+
+    // From eq. 42 in 1304.3067 where the grid and current position are swapped
+    // from only object A to the average grid and current positions of both
+    // objects.
+    DataVector translation_control =
+        expansion_factor *
+        (grid_separation_dot_grid_separation * current_position_average -
+         current_separation_dot_grid_separation * grid_position_average -
+         grid_separation_dot_grid_average * current_separation +
+         current_separation_dot_grid_average * grid_separation) /
+        grid_separation_dot_grid_separation;
+    const quat middle_expression =
+        datavector_to_quaternion(translation_control);
 
     // Because we are converting from a quaternion to a DataVector, there will
     // be four components in the DataVector. However, translation control only
     // requires three (the latter three to be exact, because the first component
     // should be 0. We ASSERT this also.)
-    const DataVector result_with_four_components =
-        expansion_factor *
-        quaternion_to_datavector(quaternion * middle_expression *
-                                 conj(quaternion));
+    const DataVector result_with_four_components = quaternion_to_datavector(
+        quaternion * middle_expression * conj(quaternion));
     ASSERT(equal_within_roundoff(result_with_four_components[0], 0.0),
            "Error in computing translation control error. First component of "
            "resulting quaternion should be 0.0, but is " +
@@ -141,10 +165,6 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
     return {result_with_four_components[1], result_with_four_components[2],
             result_with_four_components[3]};
   }
-
- private:
-  Rotation rotation_control_error_{};
-  Expansion expansion_control_error_{};
 };
 }  // namespace ControlErrors
 }  // namespace control_system
