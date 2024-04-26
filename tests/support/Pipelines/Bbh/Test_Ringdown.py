@@ -85,7 +85,7 @@ class TestInitialData(unittest.TestCase):
                     "-O",
                     str(self.test_dir / "Ringdown"),
                     "--no-submit",
-                    "-e",
+                    "-E",
                     str(self.bin_dir / "EvolveGhSingleBlackHole"),
                 ]
             )

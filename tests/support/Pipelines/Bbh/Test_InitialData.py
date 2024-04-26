@@ -96,7 +96,7 @@ class TestInitialData(unittest.TestCase):
             "1",
             "--polynomial-order",
             "5",
-            "-e",
+            "-E",
             str(self.bin_dir / "SolveXcts"),
         ]
         # Not using `CliRunner.invoke()` because it runs in an isolated

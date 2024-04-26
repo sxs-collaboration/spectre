@@ -50,13 +50,13 @@ class TestValidateInputFile(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(
             validate_input_file_command,
-            [str(self.valid_input_file_path), "-e", str(self.executable)],
+            [str(self.valid_input_file_path), "-E", str(self.executable)],
         )
         self.assertEqual(result.exit_code, 0)
         with self.assertRaisesRegex(InvalidInputFileError, "LowerBound"):
             result = runner.invoke(
                 validate_input_file_command,
-                [str(self.invalid_input_file_path), "-e", str(self.executable)],
+                [str(self.invalid_input_file_path), "-E", str(self.executable)],
                 catch_exceptions=False,
             )
             self.assertEqual(result.exit_code, 1)

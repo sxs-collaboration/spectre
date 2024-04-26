@@ -158,7 +158,7 @@ def validate_input_file(
 )
 @click.option(
     "--executable",
-    "-e",
+    "-E",
     help=(
         "Name or path of the executable. "
         "If unspecified, the 'Executable:' in the input file "
