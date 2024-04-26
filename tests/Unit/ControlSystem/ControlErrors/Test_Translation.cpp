@@ -110,7 +110,29 @@ void test_translation_control_error() {
   const DataVector pos_A{{2.0, 3.0, 6.0}};
   const DataVector pos_B{{-3.0, -4.0, 5.0}};
   const DataVector grid_A{{initial_separation / 2.0, 0.0, 0.0}};
+  const DataVector grid_B{{-initial_separation / 2.0, 0.0, 0.0}};
   QueueTuple fake_measurement_tuple{pos_A, pos_B};
+
+  const DataVector grid_position_average = 0.5 * (grid_A + grid_B);
+  const DataVector current_position_average = 0.5 * (pos_A + pos_B);
+
+  const DataVector grid_separation = grid_A - grid_B;
+  const DataVector current_separation = pos_A - pos_B;
+
+  double current_separation_dot_grid_separation = 0.0;
+  double current_separation_dot_grid_average = 0.0;
+  double grid_separation_dot_grid_average = 0.0;
+  double grid_separation_dot_grid_separation = 0.0;
+  for (size_t i = 0; i < 3; i++) {
+    current_separation_dot_grid_separation +=
+        current_separation[i] * grid_separation[i];
+    current_separation_dot_grid_average +=
+        current_separation[i] * grid_position_average[i];
+    grid_separation_dot_grid_average +=
+        grid_separation[i] * grid_position_average[i];
+    grid_separation_dot_grid_separation +=
+        grid_separation[i] * grid_separation[i];
+  }
 
   using ControlError = translation_system::control_error;
 
@@ -120,23 +142,18 @@ void test_translation_control_error() {
       ControlError{}(::TimescaleTuner<true>{}, cache, check_time,
                      translation_name, fake_measurement_tuple);
 
-  // Calculated errors from other basic control systems
-  const DataVector rotation_control_error =
-      DataVector{{0.0, -15.0, 105.0}} / 75.0;
-  const double expansion_control_error =
-      (pos_A[0] - pos_B[0]) / initial_separation - 1.0;
-
-  const DataVector rot_control_err_cross_grid =
-      cross(rotation_control_error, grid_A);
-
   // The quaternion should be the unit quaternion (1,0,0,0) which means the
   // quaternion multiplication in the translation control error is the identity
   // so we avoid actually doing quaternion multiplication. Also the expansion
   // factor should be 1.0 so we don't have to multiply/divide by that where we
   // normally would have
-  const DataVector expected_control_error = pos_A - grid_A -
-                                            rot_control_err_cross_grid -
-                                            expansion_control_error * grid_A;
+  const DataVector expected_control_error =
+      (grid_separation_dot_grid_separation * current_position_average -
+       current_separation_dot_grid_separation * grid_position_average -
+       grid_separation_dot_grid_average * current_separation +
+       current_separation_dot_grid_average * grid_separation) /
+      grid_separation_dot_grid_separation;
+  ;
 
   Approx custom_approx = Approx::custom().epsilon(1.0e-14).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(control_error, expected_control_error,
