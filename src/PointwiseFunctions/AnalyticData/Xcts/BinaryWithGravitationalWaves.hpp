@@ -155,7 +155,7 @@ struct BinaryWithGravitationalWavesVariables
       const double local_xcoord_right, const double local_ymomentum_left,
       const double local_ymomentum_right,
       const double local_attenuation_parameter)
-      : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
+      : Base(local_mesh, local_inv_jacobian),
         mesh(std::move(local_mesh)),
         inv_jacobian(std::move(local_inv_jacobian)),
         x(local_x),
