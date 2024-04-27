@@ -63,8 +63,7 @@ void correct_weyl_scalars_for_inertial_time(
 /*!
  * \ingroup ActionsGroup
  * \brief Checks the interpolation managers and if they are ready, performs the
- * interpolation and sends the data to file via
- * `observers::ThreadedActions::WriteSimpleData`.
+ * interpolation and sends the data to file.
  *
  * \details This uses the `ScriPlusInterpolationManager` to perform the
  * interpolations of all requested scri quantities (determined by
@@ -100,13 +99,17 @@ void correct_weyl_scalars_for_inertial_time(
  * =& \Psi_4^{(1)}.
  * \f}
  *
+ * \note If \p WriteSynchronously is true, then a local synchronous action will
+ * be used to write the News value rather than a threaded action.
+ *
  * \ref DataBoxGroup changes:
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies: `InterpolagionManager<ComplexDataVector, Tag>` for each `Tag` in
  * `Metavariables::scri_values_to_observe`
  */
-template <typename ObserverWriterComponent, typename BoundaryComponent>
+template <typename ObserverWriterComponent, typename BoundaryComponent,
+          bool WriteSynchronously = true>
 struct ScriObserveInterpolated {
   using const_global_cache_tags = tmpl::flatten<
       tmpl::list<Tags::ObservationLMax,
@@ -253,10 +256,17 @@ struct ScriObserveInterpolated {
     }
     auto observer_proxy =
         Parallel::get_parallel_component<ObserverWriterComponent>(cache)[0];
-    Parallel::threaded_action<
-        observers::ThreadedActions::WriteReductionDataRow>(
-        observer_proxy, "/Cce/" + detail::ScriOutput<Tag>::name(), legend,
-        std::make_tuple(*data_to_write_buffer));
+    if constexpr (WriteSynchronously) {
+      Parallel::local_synchronous_action<
+          observers::ThreadedActions::WriteReductionDataRow>(
+          observer_proxy, cache, "/Cce/" + detail::ScriOutput<Tag>::name(),
+          legend, std::make_tuple(*data_to_write_buffer));
+    } else {
+      Parallel::threaded_action<
+          observers::ThreadedActions::WriteReductionDataRow>(
+          observer_proxy, "/Cce/" + detail::ScriOutput<Tag>::name(), legend,
+          std::make_tuple(*data_to_write_buffer));
+    }
   }
 };
 }  // namespace Actions
