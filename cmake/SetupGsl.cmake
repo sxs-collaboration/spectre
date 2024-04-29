@@ -1,7 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(GSL_STATIC
+  "Link static versions of GNU Scientific Library" OFF)
+
+if(${GSL_STATIC})
+  set(_BACKUP_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif(${GSL_STATIC})
 find_package(GSL REQUIRED)
+if(${GSL_STATIC})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${_BACKUP_CMAKE_FIND_LIBRARY_SUFFIXES})
+endif(${GSL_STATIC})
 
 message(STATUS "GSL libs: ${GSL_LIBRARIES}")
 message(STATUS "GSL incl: ${GSL_INCLUDE_DIR}")
