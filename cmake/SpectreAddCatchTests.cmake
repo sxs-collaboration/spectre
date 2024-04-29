@@ -42,11 +42,11 @@ add_custom_target(unit-tests)
 spectre_define_test_timeout_factor_option(UNIT "unit")
 
 # Environment variables for test
-set(_TEST_ENV_VARS "")
+set(_CATCH_TEST_ENV_VARS "")
 # - Disable ASAN's leak sanitizer because Charm++ has false positives
-list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
+list(APPEND _CATCH_TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
-list(APPEND _TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+list(APPEND _CATCH_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
 
 # Main function - the only one designed to be called from outside this module.
 function(spectre_add_catch_tests TEST_TARGET)
@@ -225,7 +225,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         TIMEOUT ${TIMEOUT}
         PASS_REGULAR_EXPRESSION "${OUTPUT_REGEX}"
         LABELS "${TAGS}"
-        ENVIRONMENT "${_TEST_ENV_VARS}")
+        ENVIRONMENT "${_CATCH_TEST_ENV_VARS}")
       set(FAILURE_TESTS "\"~${CTEST_NAME}\";${FAILURE_TESTS}")
     else ()
       set_tests_properties(
@@ -233,7 +233,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         FAIL_REGULAR_EXPRESSION "No tests ran"
         TIMEOUT ${TIMEOUT}
         LABELS "${TAGS}"
-        ENVIRONMENT "${_TEST_ENV_VARS}")
+        ENVIRONMENT "${_CATCH_TEST_ENV_VARS}")
     endif ()
   endforeach ()
   set_property(GLOBAL PROPERTY SPECTRE_FAILURE_TESTS ${FAILURE_TESTS})

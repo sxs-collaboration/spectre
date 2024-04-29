@@ -317,11 +317,11 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
 
   spectre_test_timeout(TIMEOUT PYTHON 2)
 
-  set(_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+  set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
   if(BUILD_PYTHON_BINDINGS AND
       "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
     list(APPEND
-      _TEST_ENV_VARS
+      _PY_TEST_ENV_VARS
       "LD_PRELOAD=${JEMALLOC_LIBRARIES}"
       )
   endif()
@@ -334,7 +334,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     FAIL_REGULAR_EXPRESSION "Ran 0 test"
     TIMEOUT ${TIMEOUT}
     LABELS "${TAGS};Python"
-    ENVIRONMENT "${_TEST_ENV_VARS}"
+    ENVIRONMENT "${_PY_TEST_ENV_VARS}"
     )
   # check if this is a unit test, and if so add it to the dependencies
   foreach(LABEL ${TAGS})
