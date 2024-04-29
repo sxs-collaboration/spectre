@@ -176,17 +176,16 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
 
   // -1 indicates no expected restriction
   check_case(-1, {0});
-  check_case(-1, {{2, 5}});
-  check_case(-1, {0, {2, 5}});
-  check_case(-1, {{1, 5}, {2, 5}, {3, 5}});
-  check_case(-1, {{4, 5}, {5, 5}, {6, 5}});
-  check_case(-1, {{4, 5}, {5, 5}, {7, 5}});
-  check_case({1, 5}, {{4, 5}, {5, 5}, {11, 10}});
-  check_case({2, 5}, {{3, 5}, {5, 5}, {6, 5}});
-  check_case(-1, {{1, 5}, {2, 5}, {3, 5}, {4, 5}});
-  check_case({2, 5}, {{0, 5}, {2, 5}, {3, 5}, {4, 5}});
-  check_case({1, 5}, {{1, 5}, {2, 5}, {4, 5}, {5, 5}});
-  check_case({1, 20}, {{1, 5}, {1, 4}, {3, 5}, {4, 5}});
+  check_case(-1, {{5, 8}});
+  check_case(-1, {0, {5, 8}});
+  check_case(-1, {{4, 8}, {5, 8}, {6, 8}});
+  check_case(-1, {{7, 8}, {8, 8}, {9, 8}});
+  check_case(-1, {{7, 8}, {8, 8}, {10, 8}});
+  check_case({1, 8}, {{7, 8}, {8, 8}, {17, 16}});
+  check_case({2, 8}, {{6, 8}, {8, 8}, {9, 8}});
+  check_case(-1, {{4, 8}, {5, 8}, {6, 8}, {7, 8}});
+  check_case({2, 8}, {{3, 8}, {5, 8}, {6, 8}, {7, 8}});
+  check_case({1, 8}, {{4, 8}, {5, 8}, {7, 8}, {8, 8}});
 
   // Cause roundoff errors
   check_case(-1, {{1, 3}, {2, 3}, {3, 3}});
