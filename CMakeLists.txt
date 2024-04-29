@@ -125,16 +125,17 @@ include(AddSpectreExecutable)
 include(CheckBrokenArray0)
 
 # Blaze depends on both Blas and Lapack, since LIBXSMM is a Blas
-# alternative we set it up early too.
+# alternative we set it up early too. Finally, Blaze uses the GSL
+# blas headers, so we need to set that up before Blaze as well.
 include(SetupBlas)
 include(SetupLapack)
 include(SetupLIBXSMM)
+include(SetupGsl)
 
 include(SetupBlaze)
 include(SetupBrigand)
 include(SetupFuka)
 include(SetupGoogleBenchmark)
-include(SetupGsl)
 include(SetupHdf5)
 include(SetupAllocator)
 include(SetupPapi)
