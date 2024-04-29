@@ -34,7 +34,7 @@ struct IgnoreFailedApparentHorizon {
                     const FastFlow::Status failure_reason) {
     const auto& verbosity =
         db::get<logging::Tags::Verbosity<InterpolationTargetTag>>(box);
-    if (verbosity > ::Verbosity::Quiet) {
+    if (verbosity >= ::Verbosity::Quiet) {
       Parallel::printf("Remark: Horizon finder %s failed, reason = %s\n",
                        pretty_type::name<InterpolationTargetTag>(),
                        failure_reason);
