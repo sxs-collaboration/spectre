@@ -5,8 +5,8 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"

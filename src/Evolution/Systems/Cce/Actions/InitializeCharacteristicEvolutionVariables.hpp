@@ -13,7 +13,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
-#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"

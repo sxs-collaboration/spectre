@@ -18,10 +18,10 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/VectorAlgebra.hpp"
 
@@ -153,8 +153,8 @@ void test_radial_filtering() {
                                         Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto}))};
 
-  filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max,
-                              alpha, half_power);
+  filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max, alpha,
+                              half_power);
 
   CHECK_ITERABLE_APPROX(to_filter.data(), expected_post_filter.data());
 }

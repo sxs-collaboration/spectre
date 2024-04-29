@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"

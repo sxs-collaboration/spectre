@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"       // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 

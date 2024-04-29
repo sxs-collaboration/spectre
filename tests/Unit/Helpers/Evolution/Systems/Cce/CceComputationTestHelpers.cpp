@@ -12,7 +12,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {

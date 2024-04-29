@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"

@@ -30,7 +30,7 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralRelativitySolutions
-  Spectral
+  SpinWeightedSphericalHarmonics
   Utilities
   WaveEquationSolutions
   )

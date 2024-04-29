@@ -8,10 +8,10 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Literals.hpp"
 
 namespace Spectral::Swsh {
@@ -88,14 +88,14 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
   const auto deserialized_interpolator =
       serialize_and_deserialize(interpolator);
   for (int l = 0; l <= static_cast<int>(l_max); ++l) {
-    for(int m = -l; m <= l; ++m) {
+    for (int m = -l; m <= l; ++m) {
       auto sYlm =
           SpinWeightedSphericalHarmonic{spin, static_cast<size_t>(l), m};
       if (l == std::max(abs(m), abs(spin))) {
         SpinWeighted<ComplexDataVector, spin> harmonic_test;
         interpolator.direct_evaluation_swsh_at_l_min(
             make_not_null(&harmonic_test), m);
-        for(size_t i = 0; i < number_of_target_points; ++i) {
+        for (size_t i = 0; i < number_of_target_points; ++i) {
           CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                 harmonic_test.data()[i]);
         }
@@ -110,20 +110,20 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
             make_not_null(&harmonic_test_l_min_plus_one), harmonic_test_l_min,
             m);
 
-        for(size_t i = 0; i < number_of_target_points; ++i) {
+        for (size_t i = 0; i < number_of_target_points; ++i) {
           CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                 harmonic_test_l_min_plus_one.data()[i]);
         }
       }
       if (l == std::max(abs(m), abs(spin)) and abs(m) > abs(spin)) {
-        if(m > 0) {
+        if (m > 0) {
           SpinWeighted<ComplexDataVector, spin> harmonic_test;
           interpolator.direct_evaluation_swsh_at_l_min(
               make_not_null(&harmonic_test), m - 1);
           interpolator.evaluate_swsh_m_recurrence_at_l_min(
               make_not_null(&harmonic_test), m);
-          INFO("checking l=" << l <<" m=" << m);
-          for(size_t i = 0; i < number_of_target_points; ++i) {
+          INFO("checking l=" << l << " m=" << m);
+          for (size_t i = 0; i < number_of_target_points; ++i) {
             CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                   harmonic_test.data()[i]);
           }
@@ -134,7 +134,7 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
           deserialized_interpolator.evaluate_swsh_m_recurrence_at_l_min(
               make_not_null(&harmonic_test), m);
           INFO("checking l=" << l << " m=" << m);
-          for(size_t i = 0; i < number_of_target_points; ++i) {
+          for (size_t i = 0; i < number_of_target_points; ++i) {
             CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                   harmonic_test.data()[i]);
           }
@@ -145,8 +145,8 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
               make_not_null(&harmonic_test), m + 1);
           interpolator.evaluate_swsh_m_recurrence_at_l_min(
               make_not_null(&harmonic_test), m);
-          INFO("checking l=" << l <<" m=" << m);
-          for(size_t i = 0; i < number_of_target_points; ++i) {
+          INFO("checking l=" << l << " m=" << m);
+          for (size_t i = 0; i < number_of_target_points; ++i) {
             CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                   harmonic_test.data()[i]);
           }
@@ -156,20 +156,20 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
               make_not_null(&harmonic_test), m + 1);
           deserialized_interpolator.evaluate_swsh_m_recurrence_at_l_min(
               make_not_null(&harmonic_test), m);
-          INFO("checking l=" << l <<" m=" << m);
-          for(size_t i = 0; i < number_of_target_points; ++i) {
+          INFO("checking l=" << l << " m=" << m);
+          for (size_t i = 0; i < number_of_target_points; ++i) {
             CHECK_ITERABLE_APPROX(sYlm.evaluate(target_theta[i], target_phi[i]),
                                   harmonic_test.data()[i]);
           }
         }
       }
-      for(size_t i = 0; i < number_of_target_points; ++i) {
+      for (size_t i = 0; i < number_of_target_points; ++i) {
         // gcc warns about the casts in ways that are impossible to satisfy
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
         expected.data()[i] +=
-            goldberg_modes.data()[
-                square(static_cast<size_t>(l)) + static_cast<size_t>(l + m)] *
+            goldberg_modes.data()[square(static_cast<size_t>(l)) +
+                                  static_cast<size_t>(l + m)] *
             TestHelpers::spin_weighted_spherical_harmonic(
                 spin, l, m, target_theta[i], target_phi[i]);
         another_expected.data()[i] +=
@@ -182,17 +182,17 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
 
   Approx factorial_approx =
       Approx::custom()
-      .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
-      .scale(1.0);
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
+          .scale(1.0);
   // direct test Clenshaw sums
-  for(int m = -static_cast<int>(l_max); m <= static_cast<int>(l_max); ++m) {
+  for (int m = -static_cast<int>(l_max); m <= static_cast<int>(l_max); ++m) {
     SpinWeighted<ComplexDataVector, spin> expected_clenshaw_sum{
         number_of_target_points, 0.0};
     for (int l = std::max(abs(m), abs(spin)); l <= static_cast<int>(l_max);
          ++l) {
       auto sYlm =
           SpinWeightedSphericalHarmonic{spin, static_cast<size_t>(l), m};
-      for(size_t i = 0; i < number_of_target_points; ++i) {
+      for (size_t i = 0; i < number_of_target_points; ++i) {
         expected_clenshaw_sum.data()[i] +=
             goldberg_modes.data()[square(static_cast<size_t>(l)) +
                                   static_cast<size_t>(l + m)] *
@@ -218,7 +218,7 @@ void test_interpolation(const gsl::not_null<Generator*> generator) {
             swsh_transform(l_max, 1, generated_collocation), l_max),
         m);
     INFO("checking clenshaw sum for m=" << m);
-    for(size_t i = 0; i < number_of_target_points; ++i) {
+    for (size_t i = 0; i < number_of_target_points; ++i) {
       CHECK_ITERABLE_CUSTOM_APPROX(clenshaw.data()[i],
                                    expected_clenshaw_sum.data()[i],
                                    factorial_approx);
@@ -241,7 +241,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
                   "[Unit][NumericalAlgorithms]") {
   MAKE_GENERATOR(generator);
   // test a few points on each run of the test, these are cheap.
-  for(size_t i = 0; i < 10; ++i) {
+  for (size_t i = 0; i < 10; ++i) {
     test_basis_function(make_not_null(&generator));
   }
 
@@ -250,17 +250,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
   test_interpolation<2>(make_not_null(&generator));
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      ([]() {
-        SwshInterpolator interp{};
-        SpinWeighted<ComplexDataVector, 1> interp_source{
-            number_of_swsh_collocation_points(5_st)};
-        SpinWeighted<ComplexDataVector, 1> interp_target{
-            number_of_swsh_collocation_points(5_st)};
-        interp.interpolate(make_not_null(&interp_target), interp_source);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Attempting to perform interpolation"));
+  CHECK_THROWS_WITH(([]() {
+                      SwshInterpolator interp{};
+                      SpinWeighted<ComplexDataVector, 1> interp_source{
+                          number_of_swsh_collocation_points(5_st)};
+                      SpinWeighted<ComplexDataVector, 1> interp_target{
+                          number_of_swsh_collocation_points(5_st)};
+                      interp.interpolate(make_not_null(&interp_target),
+                                         interp_source);
+                    }()),
+                    Catch::Matchers::ContainsSubstring(
+                        "Attempting to perform interpolation"));
   CHECK_THROWS_WITH(([]() {
                       SwshInterpolator interp{};
                       SpinWeighted<ComplexDataVector, 1> interp_target{

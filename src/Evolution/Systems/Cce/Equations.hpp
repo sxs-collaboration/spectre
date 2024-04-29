@@ -10,7 +10,7 @@
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

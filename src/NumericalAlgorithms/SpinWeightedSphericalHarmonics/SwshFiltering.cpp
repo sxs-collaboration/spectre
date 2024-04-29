@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
@@ -13,9 +13,9 @@
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -136,8 +136,7 @@ void filter_swsh_boundary_quantity(
 template <int Spin>
 void filter_swsh_boundary_quantity(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
-    const size_t l_max, const size_t filter_min_l,
-    const size_t filter_max_l) {
+    const size_t l_max, const size_t filter_min_l, const size_t filter_max_l) {
   const size_t number_of_radial_grid_points =
       to_filter->data().size() / number_of_swsh_collocation_points(l_max);
   auto transform_buffer = SpinWeighted<ComplexModalVector, Spin>{
@@ -183,19 +182,18 @@ void filter_swsh_boundary_quantity(
       const size_t exponential_half_power,                                   \
       const gsl::not_null<ComplexDataVector*> buffer,                        \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
-          transform_buffer);                                        \
+          transform_buffer);                                                 \
   template void filter_swsh_volume_quantity(                                 \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           to_filter,                                                         \
       const size_t l_max, const size_t filter_max_l,                         \
-      const double exponential_alpha,                                        \
-      const size_t exponential_half_power);                         \
+      const double exponential_alpha, const size_t exponential_half_power);  \
   template void filter_swsh_volume_quantity(                                 \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           to_filter,                                                         \
       const size_t l_max, const size_t filter_min_l,                         \
       const size_t filter_max_l, const double exponential_alpha,             \
-      const size_t exponential_half_power);                         \
+      const size_t exponential_half_power);                                  \
   template void filter_swsh_boundary_quantity(                               \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           to_filter,                                                         \
@@ -208,11 +206,11 @@ void filter_swsh_boundary_quantity(
       const size_t l_max, const size_t filter_min_l,                         \
       const size_t filter_max_l,                                             \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
-          transform_buffer);                                        \
+          transform_buffer);                                                 \
   template void filter_swsh_boundary_quantity(                               \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           to_filter,                                                         \
-      const size_t l_max, const size_t filter_max_l);               \
+      const size_t l_max, const size_t filter_max_l);                        \
   template void filter_swsh_boundary_quantity(                               \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           to_filter,                                                         \

@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   Basis.cpp
   Chebyshev.cpp
-  ComplexDataView.cpp
   Filtering.cpp
   FiniteDifference.cpp
   Legendre.cpp
@@ -19,13 +18,6 @@ spectre_target_sources(
   Projection.cpp
   Quadrature.cpp
   Spectral.cpp
-  SwshCoefficients.cpp
-  SwshCollocation.cpp
-  SwshDerivatives.cpp
-  SwshFiltering.cpp
-  SwshInterpolation.cpp
-  SwshTags.cpp
-  SwshTransform.cpp
   )
 
 spectre_target_headers(
@@ -34,21 +26,12 @@ spectre_target_headers(
   HEADERS
   Basis.hpp
   Clenshaw.hpp
-  ComplexDataView.hpp
   Filtering.hpp
   LogicalCoordinates.hpp
   Mesh.hpp
   Projection.hpp
   Quadrature.hpp
   Spectral.hpp
-  SwshCoefficients.hpp
-  SwshCollocation.hpp
-  SwshDerivatives.hpp
-  SwshFiltering.hpp
-  SwshInterpolation.hpp
-  SwshSettings.hpp
-  SwshTags.hpp
-  SwshTransform.hpp
   )
 
 target_link_libraries(
@@ -56,11 +39,9 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
-  Libsharp
   Options
   PRIVATE
   BLAS::BLAS
-  Boost::boost
   LAPACK::LAPACK
   RootFinding
   )

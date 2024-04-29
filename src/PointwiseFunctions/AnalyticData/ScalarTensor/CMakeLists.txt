@@ -29,4 +29,5 @@ target_link_libraries(
   InitialDataUtilities
   Options
   Serialization
+  SpinWeightedSphericalHarmonics
   )

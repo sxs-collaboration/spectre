@@ -74,6 +74,7 @@ target_link_libraries(
   Printf
   Serialization
   Spectral
+  SpinWeightedSphericalHarmonics
   Utilities
   INTERFACE
   SystemUtilities

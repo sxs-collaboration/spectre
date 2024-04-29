@@ -14,10 +14,10 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

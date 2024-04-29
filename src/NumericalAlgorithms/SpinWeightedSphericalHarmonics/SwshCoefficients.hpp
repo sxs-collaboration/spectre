@@ -9,8 +9,8 @@
 
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshSettings.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshSettings.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"

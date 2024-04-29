@@ -11,7 +11,7 @@
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/System.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/Increase.hpp"

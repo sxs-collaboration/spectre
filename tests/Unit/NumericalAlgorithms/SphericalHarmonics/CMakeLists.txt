@@ -21,9 +21,9 @@ target_link_libraries(
   PRIVATE
   DataStructures
   RootFinding
-  Spectral
   SphericalHarmonics
   SphericalHarmonicsHelpers
+  SpinWeightedSphericalHarmonics
   Utilities
   )
 

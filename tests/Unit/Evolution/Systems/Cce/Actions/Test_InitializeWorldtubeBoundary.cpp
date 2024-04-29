@@ -26,7 +26,7 @@
 #include "Helpers/Evolution/Systems/Cce/Actions/WorldtubeBoundaryMocking.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"

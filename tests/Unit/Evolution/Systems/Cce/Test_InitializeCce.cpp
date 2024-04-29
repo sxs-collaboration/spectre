@@ -24,9 +24,9 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
 

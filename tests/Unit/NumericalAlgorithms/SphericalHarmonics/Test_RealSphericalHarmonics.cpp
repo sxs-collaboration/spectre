@@ -8,8 +8,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/RealSphericalHarmonics.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 
 namespace ylm {
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.RealSphericalHarmonics",

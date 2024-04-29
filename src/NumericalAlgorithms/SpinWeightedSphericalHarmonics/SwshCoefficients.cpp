@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details
 
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 
 #include <array>
 #include <cmath>
@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "DataStructures/SpinWeighted.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -187,7 +187,7 @@ void goldberg_to_libsharp_modes(
     const size_t l_max) {
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
-  for(size_t i = 0; i < number_of_radial_grid_points; ++i) {
+  for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
     for (const auto mode : cached_coefficients_metadata(l_max)) {
       goldberg_modes_to_libsharp_modes_single_pair(
           mode, libsharp_modes, i,
@@ -206,8 +206,8 @@ SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
   SpinWeighted<ComplexModalVector, Spin> result{
-      size_of_libsharp_coefficient_vector(l_max)
-      * number_of_radial_grid_points};
+      size_of_libsharp_coefficient_vector(l_max) *
+      number_of_radial_grid_points};
   goldberg_to_libsharp_modes(make_not_null(&result), goldberg_modes, l_max);
   return result;
 }

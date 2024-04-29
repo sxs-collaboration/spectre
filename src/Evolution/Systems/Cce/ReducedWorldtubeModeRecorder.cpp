@@ -8,7 +8,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace Cce {

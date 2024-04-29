@@ -10,8 +10,8 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
-#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Spectral::Swsh {

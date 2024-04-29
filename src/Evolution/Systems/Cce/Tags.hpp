@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
-#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 
 namespace Cce {
 

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "SpectralHelpers")
+set(LIBRARY "SpinWeightedSphericalHarmonicsHelpers")
 
 set(LIBRARY_SOURCES
   SwshTestHelpers.cpp
@@ -15,6 +15,7 @@ target_link_libraries(
   DataStructures
   Libsharp
   Spectral
+  SpinWeightedSphericalHarmonics
   Utilities
 
   PRIVATE

@@ -7,8 +7,8 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
