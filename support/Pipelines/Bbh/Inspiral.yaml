@@ -155,42 +155,28 @@ EvolutionSystem:
         SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0/sqrt(34.54)
         Amplitudes: [1.0, 0.0, 1.0]         # From SpEC run: damped harmonic
         Exponents: [2, 2, 2]                # From SpEC run
-    DampingFunctionGamma0:
+    DampingFunctionGamma0: &ConstraintDampingTripleGaussian
       TimeDependentTripleGaussian:
-        Constant: 0.001             # 0.001 / (m_A + m_B)
+        Constant: {{ Gamma0Constant }}
         Gaussian1:
-          Amplitude: 8.0             # 4.0 / m_A
-          Width: 3.5                 # 7.0 * m_A
-          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
+          Amplitude: {{ Gamma0LeftAmplitude }}
+          Width: {{ Gamma0LeftWidth }}
+          Center: [*XCoordA, 0.0, 0.0]
         Gaussian2:
-          Amplitude: 8.0             # 4.0 / m_B
-          Width: 3.5                 # 7.0 * m_B
-          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
+          Amplitude: {{ Gamma0RightAmplitude }}
+          Width:  {{ Gamma0RightWidth }}
+          Center: [*XCoordB, 0.0, 0.0]
         Gaussian3:
-          Amplitude: 0.075            # 0.075 / (m_A + m_B)
-          Width: 38.415              # 2.5 * (x_B - x_A)
+          Amplitude: {{ Gamma0OriginAmplitude }}
+          Width: {{ Gamma0OriginWidth }}
           Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -0.999
         Amplitude: 0.999
-        Width: 153.66                # 10.0 * (x_B - x_A)
+        Width: {{ Gamma1Width }}
         Center: [0.0, 0.0, 0.0]
-    DampingFunctionGamma2:
-      TimeDependentTripleGaussian:
-        Constant: 0.001              # 0.001 / (m_A + m_B)
-        Gaussian1:
-          Amplitude: 8.0             # 4.0 / m_A
-          Width: 3.5                 # 7.0 * m_A
-          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
-        Gaussian2:
-          Amplitude: 8.0             # 4.0 / m_B
-          Width: 3.5                 # 7.0 * m_B
-          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
-        Gaussian3:
-          Amplitude: 0.075            # 0.075 / (m_A + m_B)
-          Width: 38.415              # 2.5 * (x_B - x_A)
-          Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2: *ConstraintDampingTripleGaussian
 
 # Half power was determined to filter only the last term up to N = 19
 # since we support up to 20 gridpoints.

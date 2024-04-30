@@ -57,6 +57,24 @@ def _control_system_params(
     }
 
 
+def _constraint_damping_params(
+    mass_left: float,
+    mass_right: float,
+    initial_separation: float,
+) -> dict:
+    total_mass = mass_left + mass_right
+    return {
+        "Gamma0Constant": 0.001 / total_mass,
+        "Gamma0LeftAmplitude": 4.0 / mass_left,
+        "Gamma0LeftWidth": 7.0 * mass_left,
+        "Gamma0RightAmplitude": 4.0 / mass_right,
+        "Gamma0RightWidth": 7.0 * mass_right,
+        "Gamma0OriginAmplitude": 0.075 / total_mass,
+        "Gamma0OriginWidth": 2.5 * initial_separation,
+        "Gamma1Width": 10.0 * initial_separation,
+    }
+
+
 def inspiral_parameters(
     id_input_file: dict,
     id_run_dir: Union[str, Path],
@@ -79,6 +97,10 @@ def inspiral_parameters(
 
     # ID parameters
     horizons_filename = Path(id_run_dir) / "Horizons.h5"
+    initial_separation = (
+        id_domain_creator["ObjectA"]["XCoord"]
+        - id_domain_creator["ObjectB"]["XCoord"]
+    )
     with spectre_h5.H5File(
         str(horizons_filename.resolve()), "r"
     ) as horizons_file:
@@ -118,6 +140,15 @@ def inspiral_parameters(
         "L": refinement_level,
         "P": polynomial_order,
     }
+
+    # Constraint damping parameters
+    params.update(
+        _constraint_damping_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            initial_separation=initial_separation,
+        )
+    )
 
     # Control system
     params.update(
@@ -175,6 +206,7 @@ def inspiral_parameters_spec(
     mass_right = id_params["ID_MA"]
     spin_magnitude_left = id_params["ID_chiBMagnitude"]
     spin_magnitude_right = id_params["ID_chiAMagnitude"]
+    initial_separation = id_params["ID_d"]
 
     params = {
         # Initial data files
@@ -192,6 +224,15 @@ def inspiral_parameters_spec(
         "L": refinement_level,
         "P": polynomial_order,
     }
+
+    # Constraint damping parameters
+    params.update(
+        _constraint_damping_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            initial_separation=initial_separation,
+        )
+    )
 
     # Control system
     params.update(

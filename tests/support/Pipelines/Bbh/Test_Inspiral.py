@@ -87,6 +87,15 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["IncreaseThreshold"], 2.5e-5)
         self.assertEqual(params["SizeAMaxTimescale"], 20)
         self.assertEqual(params["SizeBMaxTimescale"], 20)
+        # Constraint damping
+        self.assertEqual(params["Gamma0Constant"], 5e-4)
+        self.assertEqual(params["Gamma0LeftAmplitude"], 4.0)
+        self.assertEqual(params["Gamma0LeftWidth"], 7.0)
+        self.assertEqual(params["Gamma0RightAmplitude"], 4.0)
+        self.assertEqual(params["Gamma0RightWidth"], 7.0)
+        self.assertEqual(params["Gamma0OriginAmplitude"], 3.75e-2)
+        self.assertEqual(params["Gamma0OriginWidth"], 50.0)
+        self.assertEqual(params["Gamma1Width"], 200.0)
 
     def test_cli(self):
         common_args = [
