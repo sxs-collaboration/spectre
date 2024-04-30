@@ -53,7 +53,7 @@ Cce:
         Order: 3
     StepChoosers:
       - Constant: 0.2
-      - Increase:
+      - LimitIncrease:
           Factor: 2
 
   LMax: 8

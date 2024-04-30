@@ -82,7 +82,7 @@ EventsAndTriggers:
       - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
-            - Increase:
+            - LimitIncrease:
                 Factor: 1.1
             - StepToTimes:
                 Times:

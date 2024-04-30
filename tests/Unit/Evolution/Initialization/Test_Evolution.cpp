@@ -30,7 +30,7 @@
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -52,7 +52,7 @@ struct TestMetavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>>>>;
+        tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>>>;
   };
   using component_list = tmpl::list<>;
   using const_global_cache_tags =

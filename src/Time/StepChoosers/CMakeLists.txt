@@ -19,7 +19,7 @@ spectre_target_headers(
   ElementSizeCfl.hpp
   ErrorControl.hpp
   Factory.hpp
-  Increase.hpp
+  LimitIncrease.hpp
   PreventRapidIncrease.hpp
   Random.hpp
   StepChooser.hpp

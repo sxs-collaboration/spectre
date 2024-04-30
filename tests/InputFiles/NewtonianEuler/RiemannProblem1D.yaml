@@ -124,7 +124,7 @@ EventsAndTriggers:
       - ChangeSlabSize:
           DelayChange: 0
           StepChoosers:
-            - Increase:
+            - LimitIncrease:
                 Factor: 2.0
             - PreventRapidIncrease
 

@@ -12,7 +12,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -26,16 +26,18 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<StepChoosers::Increase<StepChooserUse::Slab>>>>;
+        tmpl::pair<
+            StepChooser<StepChooserUse::LtsStep>,
+            tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>>,
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::Slab>>>>;
   };
   using component_list = tmpl::list<>;
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.StepChoosers.LimitIncrease", "[Unit][Time]") {
   register_factory_classes_with_charm<Metavariables>();
 
   auto box = db::create<
@@ -44,12 +46,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   const auto check = [&box](auto use, const double step,
                             const double expected_size) {
     using Use = tmpl::type_from<decltype(use)>;
-    const StepChoosers::Increase<Use> increase{5.};
+    const StepChoosers::LimitIncrease<Use> increase{5.};
     const std::unique_ptr<StepChooser<Use>> increase_base =
-        std::make_unique<StepChoosers::Increase<Use>>(increase);
+        std::make_unique<StepChoosers::LimitIncrease<Use>>(increase);
 
-    const std::pair<TimeStepRequest, bool> expected{
-        {.size_goal = expected_size}, true};
+    const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
+                                                    true};
     CHECK(increase(step) == expected);
     CHECK(serialize_and_deserialize(increase)(step) == expected);
     CHECK(increase_base->desired_step(step, box) == expected);
@@ -67,12 +69,13 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
 
   TestHelpers::test_creation<
       std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>, Metavariables>(
-      "Increase:\n"
+      "LimitIncrease:\n"
       "  Factor: 5.0");
   TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
                              Metavariables>(
-      "Increase:\n"
+      "LimitIncrease:\n"
       "  Factor: 5.0");
 
-  CHECK(not StepChoosers::Increase<StepChooserUse::Slab>{}.uses_local_data());
+  CHECK(not StepChoosers::LimitIncrease<StepChooserUse::Slab>{}
+                .uses_local_data());
 }

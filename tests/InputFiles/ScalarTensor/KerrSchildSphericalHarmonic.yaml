@@ -33,7 +33,7 @@ Evolution:
   InitialSlabSize: 0.001
   StepChoosers:
     - Constant: 0.01
-    - Increase:
+    - LimitIncrease:
         Factor: 2
     - Cfl:
         SafetyFactor: 0.2

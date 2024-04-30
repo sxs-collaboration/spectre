@@ -9,7 +9,7 @@
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ElementSizeCfl.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
 #include "Utilities/TMPL.hpp"
@@ -30,7 +30,7 @@ using common_step_choosers = tmpl::push_back<
             StepChoosers::Cfl<Use, Frame::Inertial, System>,
             StepChoosers::ElementSizeCfl<Use, System::volume_dim, System>>,
         tmpl::list<>>,
-    StepChoosers::Constant<Use>, StepChoosers::Increase<Use>>;
+    StepChoosers::Constant<Use>, StepChoosers::LimitIncrease<Use>>;
 template <typename Use, typename System>
 using step_choosers_for_step_only =
     tmpl::list<StepChoosers::PreventRapidIncrease<Use>,

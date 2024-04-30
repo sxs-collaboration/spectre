@@ -30,7 +30,7 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -75,7 +75,7 @@ template <bool WithErrorControl, bool WithAltErrorControl = false>
 struct Metavariables {
   template <typename Use>
   using step_choosers_without_error_control =
-      tmpl::list<StepChoosers::Increase<Use>, StepChoosers::Constant<Use>>;
+      tmpl::list<StepChoosers::LimitIncrease<Use>, StepChoosers::Constant<Use>>;
   template <typename Use>
   using step_choosers = tmpl::append<
       step_choosers_without_error_control<Use>,
@@ -275,7 +275,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-4\n"
                   "    MaxFactor: 2.1\n"
                   "    MinFactor: 0.5\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -291,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
           *choosers =
               TestHelpers::test_creation<typename Tags::StepChoosers::type,
                                          Metavariables<true, true>>(
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -332,7 +332,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-4\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -360,7 +360,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-8\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -388,7 +388,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-8\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -423,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
-              "          - Increase:\n"
+              "          - LimitIncrease:\n"
               "              Factor: 2\n"
               "          - ErrorControl:\n"
               "              SafetyFactor: 0.95\n"
@@ -453,7 +453,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
-              "          - Increase:\n"
+              "          - LimitIncrease:\n"
               "              Factor: 2\n"
               "          - Constant: 0.5");
         },

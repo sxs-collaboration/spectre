@@ -20,7 +20,7 @@ Evolution:
   InitialTimeStep: 0.0002
   InitialSlabSize: 0.25
   StepChoosers:
-    - Increase:
+    - LimitIncrease:
         Factor: 2
     - ElementSizeCfl:
         SafetyFactor: 0.5

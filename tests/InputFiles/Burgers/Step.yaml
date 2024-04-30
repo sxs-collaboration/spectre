@@ -89,7 +89,7 @@ EventsAndTriggers:
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.5
-            - Increase:
+            - LimitIncrease:
                 Factor: 2.0
 
 EventsAndDenseTriggers:

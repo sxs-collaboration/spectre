@@ -15,32 +15,33 @@
 #include "Utilities/TMPL.hpp"
 
 namespace StepChoosers {
-/// Suggests increasing the step size by a constant ratio.
+/// Limits step increase to a constant ratio.
 template <typename StepChooserUse>
-class Increase : public StepChooser<StepChooserUse> {
+class LimitIncrease : public StepChooser<StepChooserUse> {
  public:
   /// \cond
-  Increase() = default;
-  explicit Increase(CkMigrateMessage* /*unused*/) {}
+  LimitIncrease() = default;
+  explicit LimitIncrease(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(Increase);  // NOLINT
+  WRAPPED_PUPable_decl_template(LimitIncrease);  // NOLINT
   /// \endcond
 
   struct Factor {
     using type = double;
-    static constexpr Options::String help{"Factor to increase by"};
+    static constexpr Options::String help{"Factor to allow increase by"};
     static type lower_bound() { return 1.0; }
   };
 
-  static constexpr Options::String help{"Suggests a constant factor increase."};
+  static constexpr Options::String help{
+      "Limits step increase to a constant ratio."};
   using options = tmpl::list<Factor>;
 
-  explicit Increase(const double factor) : factor_(factor) {}
+  explicit LimitIncrease(const double factor) : factor_(factor) {}
 
   using argument_tags = tmpl::list<>;
 
   std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
-    return {{.size_goal = last_step * factor_}, true};
+    return {{.size = last_step * factor_}, true};
   }
 
   bool uses_local_data() const override { return false; }
@@ -55,6 +56,6 @@ class Increase : public StepChooser<StepChooserUse> {
 
 /// \cond
 template <typename StepChooserUse>
-PUP::able::PUP_ID Increase<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID LimitIncrease<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers
