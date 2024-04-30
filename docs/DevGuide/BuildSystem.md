@@ -290,6 +290,8 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Set to a path to a SpEC installation (the SpEC repository root) to link in
     SpEC libraries. In particular, the SpEC::Exporter library is linked in and
     enables loading SpEC data into SpECTRE. See \ref installation for details.
+- SPECTRE_Fortran_STATIC_LIBS (default: `OFF`)
+  - Use static version of `libgfortran` and `libquadmath`.
 - SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY
   - Minimum priority of input file tests to run. Possible values are: `low` (not
     usually run on CI), `normal` (run at least once on CI), `high` (run always
