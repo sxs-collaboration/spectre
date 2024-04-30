@@ -27,7 +27,6 @@ Evolution:
       Order: 3
   # StepChoosers are needed only for local time stepping
   # StepChoosers:
-  #   - Constant: 0.05
   #   - LimitIncrease:
   #       Factor: 2
   #   - Cfl:
@@ -157,7 +156,7 @@ EventsAndTriggers:
           # testing.
           DelayChange: 0
           StepChoosers:
-            - Constant: 0.05
+            - Maximum: 0.05
             - LimitIncrease:
                 Factor: 2
             - Cfl:

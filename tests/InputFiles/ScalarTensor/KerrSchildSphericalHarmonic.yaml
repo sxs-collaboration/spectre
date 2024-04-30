@@ -32,7 +32,6 @@ Evolution:
       Order: 3
   InitialSlabSize: 0.001
   StepChoosers:
-    - Constant: 0.01
     - LimitIncrease:
         Factor: 2
     - Cfl:

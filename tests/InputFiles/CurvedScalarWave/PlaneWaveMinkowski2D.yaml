@@ -36,7 +36,6 @@ Evolution:
     AdamsBashforth:
       Order: 3
   StepChoosers:
-    - Constant: 0.05
     - LimitIncrease:
         Factor: 2
     - Cfl:
