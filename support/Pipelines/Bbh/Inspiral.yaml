@@ -393,100 +393,108 @@ ControlSystems:
   Verbosity: Silent
   Expansion:
     IsActive: true
-    Averager:
-      AverageTimescaleFraction: 0.25
+    Averager: &KinematicAverager
+      AverageTimescaleFraction: &AvgTimescaleFrac 0.25
       Average0thDeriv: false
-    Controller:
+    Controller: &KinematicController
       # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
       UpdateFraction: 0.3
-    TimescaleTuner:
-      InitialTimescales: [0.2]
-      MinTimescale: 1.0e-2
-      MaxTimescale: 10.0
-      IncreaseThreshold: 2.5e-4
-      DecreaseThreshold: 1.0e-3
-      IncreaseFactor: 1.01
-      DecreaseFactor: 0.98
+    TimescaleTuner: &KinematicTuner
+      InitialTimescales: {{ KinematicTimescale }}
+      MinTimescale: &MinTimescale 1.0e-2
+      MaxTimescale: &MaxTimescale {{ MaxDampingTimescale }}
+      IncreaseThreshold: &IncreaseThreshold {{ IncreaseThreshold }}
+      DecreaseThreshold: &DecreaseThreshold {{ DecreaseThreshold }}
+      IncreaseFactor: &IncreaseFactor 1.01
+      DecreaseFactor: &DecreaseFactor 0.98
     ControlError:
   Rotation:
     IsActive: true
-    Averager:
-      AverageTimescaleFraction: 0.25
-      Average0thDeriv: false
-    Controller:
-      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
-      UpdateFraction: 0.3
-    TimescaleTuner:
-      InitialTimescales: [0.2, 0.2, 0.2]
-      MinTimescale: 1.0e-2
-      MaxTimescale: 10.0
-      IncreaseThreshold: 2.5e-4
-      DecreaseThreshold: 1.0e-3
-      IncreaseFactor: 1.01
-      DecreaseFactor: 0.98
+    Averager: *KinematicAverager
+    Controller: *KinematicController
+    TimescaleTuner: *KinematicTuner
     ControlError:
   Translation:
     IsActive: false
-    Averager:
-      AverageTimescaleFraction: 0.25
-      Average0thDeriv: false
-    Controller:
-      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
-      UpdateFraction: 0.3
-    TimescaleTuner:
-      InitialTimescales: [0.2, 0.2, 0.2]
-      MinTimescale: 1.0e-2
-      MaxTimescale: 20.0
-      IncreaseThreshold: 2.5e-4
-      DecreaseThreshold: 1.0e-3
-      IncreaseFactor: 1.01
-      DecreaseFactor: 0.98
+    Averager: *KinematicAverager
+    Controller: *KinematicController
+    TimescaleTuner: *KinematicTuner
     ControlError:
-  ShapeA: &ShapeControl
+  ShapeA:
     IsActive: true
-    Averager:
-      AverageTimescaleFraction: 0.25
-      Average0thDeriv: false
-    Controller:
-      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
-      UpdateFraction: 0.3
-    TimescaleTuner:
-      InitialTimescales: 2.0
-      MinTimescale: 1.0e-2
-      MaxTimescale: 10.0
-      IncreaseThreshold: 2.5e-4
-      DecreaseThreshold: 1.0e-3
-      IncreaseFactor: 1.01
-      DecreaseFactor: 0.98
-    ControlError:
-  ShapeB: *ShapeControl
-  SizeA: &SizeControl
-    IsActive: true
-    Averager:
-      AverageTimescaleFraction: 0.25
+    Averager: &SizeShapeAverager
+      AverageTimescaleFraction: *AvgTimescaleFrac
       Average0thDeriv: true
-    Controller:
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: {{ ShapeATimescale }}
+      MinTimescale: *MinTimescale
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
+  ShapeB:
+    IsActive: true
+    Averager: *SizeShapeAverager
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: {{ ShapeBTimescale }}
+      MinTimescale: *MinTimescale
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
+  SizeA:
+    IsActive: true
+    Averager: *SizeShapeAverager
+    Controller: &SizeController
       UpdateFraction: 0.2
     TimescaleTuner:
-      InitialTimescales: 0.02
-      MinTimescale: 1.0e-4
-      MaxTimescale: 20.0
-      IncreaseThreshold: 2.5e-4
-      IncreaseFactor: 1.01
+      InitialTimescales: &SizeATimescale {{ SizeATimescale }}
+      MinTimescale: &SizeMinTimescale 1.0e-4
+      MaxTimescale: {{ SizeAMaxTimescale }}
+      IncreaseThreshold: &SizeIncreaseThreshold {{ SizeIncreaseThreshold }}
+      IncreaseFactor: *IncreaseFactor
     ControlError:
       MaxNumTimesForZeroCrossingPredictor: 4
       SmoothAvgTimescaleFraction: 0.25
       DeltaRDriftOutwardOptions: None
       InitialState: Initial
       SmootherTuner:
-        InitialTimescales: [0.2]
-        MinTimescale: 1.0e-4
-        MaxTimescale: 20.0
-        IncreaseThreshold: 2.5e-4
-        DecreaseThreshold: 1.0e-3
-        IncreaseFactor: 1.01
-        DecreaseFactor: 0.9
-  SizeB: *SizeControl
+        InitialTimescales: *SizeATimescale
+        MinTimescale: *MinTimescale
+        MaxTimescale: *MaxTimescale
+        IncreaseThreshold: *IncreaseThreshold
+        DecreaseThreshold: *DecreaseThreshold
+        IncreaseFactor: *IncreaseFactor
+        DecreaseFactor: *DecreaseFactor
+  SizeB:
+    IsActive: true
+    Averager: *SizeShapeAverager
+    Controller: *SizeController
+    TimescaleTuner:
+      InitialTimescales: &SizeBTimescale {{ SizeBTimescale }}
+      MinTimescale: *SizeMinTimescale
+      MaxTimescale: {{ SizeBMaxTimescale }}
+      IncreaseThreshold: *SizeIncreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      DeltaRDriftOutwardOptions: None
+      InitialState: Initial
+      SmootherTuner:
+        InitialTimescales: *SizeBTimescale
+        MinTimescale: *MinTimescale
+        MaxTimescale: *MaxTimescale
+        IncreaseThreshold: *IncreaseThreshold
+        DecreaseThreshold: *DecreaseThreshold
+        IncreaseFactor: *IncreaseFactor
+        DecreaseFactor: *DecreaseFactor
 
 ResourceInfo:
   AvoidGlobalProc0: false

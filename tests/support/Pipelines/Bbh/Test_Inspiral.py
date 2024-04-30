@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
+import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import (
@@ -40,6 +41,15 @@ class TestInspiral(unittest.TestCase):
             executable=str(self.bin_dir / "SolveXcts"),
         )
         self.id_dir = self.test_dir / "ID"
+        self.horizons_filename = self.id_dir / "Horizons.h5"
+        with spectre_h5.H5File(
+            str(self.horizons_filename.resolve()), "a"
+        ) as horizons_file:
+            legend = ["Time", "ChristodoulouMass", "DimensionlessSpinMagnitude"]
+            for subfile_name in ["AhA", "AhB"]:
+                horizons_file.close_current_object()
+                dat_file = horizons_file.try_insert_dat(subfile_name, legend, 0)
+                dat_file.append([[0.0, 1.0, 0.3]])
 
     def tearDown(self):
         shutil.rmtree(self.test_dir, ignore_errors=True)
@@ -57,14 +67,26 @@ class TestInspiral(unittest.TestCase):
             params["IdFileGlob"],
             str((self.id_dir).resolve() / "BbhVolume*.h5"),
         )
-        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.068)
-        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.712)
+        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.08936)
+        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.72624)
         self.assertEqual(params["XCoordA"], 8.0)
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
+        # Control system
+        self.assertEqual(params["MaxDampingTimescale"], 20.0)
+        self.assertEqual(params["KinematicTimescale"], 0.4)
+        self.assertAlmostEqual(params["SizeATimescale"], 0.04)
+        self.assertAlmostEqual(params["SizeBTimescale"], 0.04)
+        self.assertAlmostEqual(params["ShapeATimescale"], 2.0)
+        self.assertAlmostEqual(params["ShapeBTimescale"], 2.0)
+        self.assertEqual(params["SizeIncreaseThreshold"], 1e-3)
+        self.assertEqual(params["DecreaseThreshold"], 1e-4)
+        self.assertEqual(params["IncreaseThreshold"], 2.5e-5)
+        self.assertEqual(params["SizeAMaxTimescale"], 20)
+        self.assertEqual(params["SizeBMaxTimescale"], 20)
 
     def test_cli(self):
         common_args = [
