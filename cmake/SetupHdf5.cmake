@@ -24,10 +24,28 @@ if(NOT TARGET hdf5::hdf5)
   endif()
 endif()
 
+if(NOT TARGET HDF5::HDF5)
+  add_library(HDF5::HDF5 INTERFACE IMPORTED)
+  set_target_properties(
+    HDF5::HDF5
+    PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${HDF5_C_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${HDF5_C_LIBRARIES}"
+    )
+  if(DEFINED HDF5_C_DEFINITIONS)
+    set_target_properties(
+      HDF5::HDF5
+      PROPERTIES
+      INTERFACE_COMPILE_FLAGS "${HDF5_C_DEFINITIONS}"
+      )
+  endif()
+endif()
+
 if(HDF5_IS_PARALLEL)
   find_package(MPI COMPONENTS C)
   if(MPI_FOUND)
     target_link_libraries(hdf5::hdf5 INTERFACE MPI::MPI_C)
+    target_link_libraries(HDF5::HDF5 INTERFACE MPI::MPI_C)
   else()
     message(WARNING "HDF5 is built with MPI support, but MPI was not found. "
       "You may encounter build issues with HDF5, such as missing headers.")
@@ -38,7 +56,7 @@ endif()
 # are listed here:
 # https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md
 include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_LIBRARIES hdf5::hdf5)
+set(CMAKE_REQUIRED_LIBRARIES HDF5::HDF5)
 check_cxx_source_compiles(
   "#include <hdf5.h>\n\
 int main() {\n\
@@ -63,7 +81,7 @@ else()
 endif()
 
 include(CheckCXXSourceRuns)
-set(CMAKE_REQUIRED_LIBRARIES hdf5::hdf5)
+set(CMAKE_REQUIRED_LIBRARIES HDF5::HDF5)
 # Logic from src/Utilities/ErrorHandling/FloatingPointExceptions.cpp
 check_cxx_source_runs(
   [=[
