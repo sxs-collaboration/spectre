@@ -1,0 +1,2 @@
+opyright (C) 2006-2013 Max-Planck-Society
+https://github.com/Libsharp/libsharp
