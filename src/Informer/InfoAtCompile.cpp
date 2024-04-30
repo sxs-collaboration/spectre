@@ -33,6 +33,16 @@ std::string info_from_build() {
   return os.str();
 }
 
+std::string copyright_and_license_info() {
+  return std::string{R"(
+@SPECTRE_LICENSE_CXX_STRING@
+)"} + std::string{R"(
+@SPECTRE_3PL_CXX_STRING0@
+)"} + std::string{R"(
+@SPECTRE_3PL_CXX_STRING1@
+)"};
+}
+
 #ifndef __APPLE__
 /* Set up a pretty print script for GDB to print spectre types in GDB in a
  * more readable manner.
