@@ -184,7 +184,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               0.95 * first_result.first /
                   (pow(expected_linf_error, 0.3 / stepper_order) *
                    pow(1.2, 0.7 / stepper_order)));
-        CHECK(second_result.first);
+        CHECK(second_result.second);
         // Check that the suggested step size is smaller if the error in
         // increasing faster.
         const auto adjusted_second_result = get_suggestion(
@@ -220,7 +220,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               0.95 * first_result.first *
                   pow(pow(new_expected_linf_error, 1.0 / stepper_order), -0.7) *
                   pow(pow(expected_linf_error, 1.0 / stepper_order), 0.4));
-        CHECK(second_result.first);
+        CHECK(second_result.second);
       }
       {
         INFO("Test error control step failure");
