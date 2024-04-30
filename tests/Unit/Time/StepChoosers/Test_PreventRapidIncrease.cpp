@@ -24,6 +24,7 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -55,12 +56,13 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
   CAPTURE(expected_frac);
 
   const Slab slab(0.25, 1.5);
-  const double expected = expected_frac == -1
-                              ? std::numeric_limits<double>::infinity()
-                              : (expected_frac * slab.duration()).value();
-
   for (const auto& direction : {1, -1}) {
     CAPTURE(direction);
+
+    const double expected_size =
+        expected_frac == -1
+            ? direction * std::numeric_limits<double>::infinity()
+            : (direction * expected_frac * slab.duration()).value();
 
     const auto make_time_id = [&direction, &slab, &times](const size_t i) {
       Frac frac = -direction * times[i];
@@ -100,28 +102,27 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       gts_history.insert_initial(make_gts_time_id(i), 0.0, 0.0);
     }
 
-    const auto check = [&expected](auto use, const auto& box,
-                                   const Time& current_time) {
+    const auto check = [&direction, &expected_size](auto use, const auto& box,
+                                                    const Time& current_time) {
       using Use = tmpl::type_from<decltype(use)>;
       const auto& history = db::get<history_tag>(box);
       const double current_step =
           history.size() > 0
-              ? abs(current_time - history.back().time_step_id.step_time())
-                    .value()
-              : std::numeric_limits<double>::infinity();
+              ? (current_time - history.back().time_step_id.step_time()).value()
+              : direction * std::numeric_limits<double>::infinity();
 
       const StepChoosers::PreventRapidIncrease<Use> relax{};
       const std::unique_ptr<StepChooser<Use>> relax_base =
           std::make_unique<StepChoosers::PreventRapidIncrease<Use>>(relax);
 
-      CHECK(relax(history, current_step) == std::make_pair(expected, true));
+      const std::pair<TimeStepRequest, bool> expected{
+          {.size_goal = expected_size}, true};
+      CHECK(relax(history, current_step) == expected);
       CHECK(serialize_and_deserialize(relax)(history, current_step) ==
-            std::make_pair(expected, true));
-      CHECK(relax_base->desired_step(current_step, box) ==
-            std::make_pair(expected, true));
+            expected);
+      CHECK(relax_base->desired_step(current_step, box) == expected);
       CHECK(serialize_and_deserialize(relax_base)
-                ->desired_step(current_step, box) ==
-            std::make_pair(expected, true));
+                ->desired_step(current_step, box) == expected);
     };
 
     {
@@ -166,7 +167,9 @@ void check_substep_methods() {
                  0.0, 0.0);
   const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
   CHECK(relax(history, 3.14) ==
-        std::make_pair(std::numeric_limits<double>::infinity(), true));
+        std::pair(TimeStepRequest{.size_goal =
+                                      std::numeric_limits<double>::infinity()},
+                  true));
 }
 }  // namespace
 

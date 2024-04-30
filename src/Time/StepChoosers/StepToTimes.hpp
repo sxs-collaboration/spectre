@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <pup.h>
@@ -13,6 +14,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -54,8 +56,8 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
 
   using argument_tags = tmpl::list<::Tags::TimeStepId>;
 
-  std::pair<double, bool> operator()(const TimeStepId& time_step_id,
-                                     const double last_step_magnitude) const {
+  std::pair<TimeStepRequest, bool> operator()(const TimeStepId& time_step_id,
+                                              const double last_step) const {
     const double now = time_step_id.substep_time();
     // Trying to step to a given time might not get us exactly there
     // because of rounding errors.  Avoid taking an extra tiny step if
@@ -65,7 +67,9 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
     const auto goal_times = times_->times_near(now);
     if (not goal_times[1]) {
       // No times requested.
-      return std::make_pair(std::numeric_limits<double>::infinity(), true);
+      return {{.size_goal = std::copysign(
+                   std::numeric_limits<double>::infinity(), last_step)},
+              true};
     }
 
     double distance_to_next_goal = std::numeric_limits<double>::signaling_NaN();
@@ -74,7 +78,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
           *goal_times[1] > now + sloppiness ? goal_times[1] : goal_times[2];
       if (not next_time) {
         // We've passed all the times.  No restriction.
-        return std::make_pair(std::numeric_limits<double>::infinity(), true);
+        return {{.size_goal = std::numeric_limits<double>::infinity()}, true};
       }
       distance_to_next_goal = *next_time - now;
     } else {
@@ -82,26 +86,30 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
           *goal_times[1] < now - sloppiness ? goal_times[1] : goal_times[0];
       if (not next_time) {
         // We've passed all the times.  No restriction.
-        return std::make_pair(std::numeric_limits<double>::infinity(), true);
+        return {{.size_goal = -std::numeric_limits<double>::infinity()}, true};
       }
       distance_to_next_goal = now - *next_time;
     }
 
-    if (distance_to_next_goal < 2.0 / 3.0 * last_step_magnitude) {
+    if (distance_to_next_goal < 2.0 / 3.0 * abs(last_step)) {
       // Our goal is well within range of the expected allowed step
       // size.
-      return std::make_pair(distance_to_next_goal, true);
+      return {{.size_goal = std::copysign(distance_to_next_goal, last_step)},
+              true};
     } else {
       // We can't reach our goal in one step, or at least might not be
       // able to if the step adjusts a relatively small amount for
       // other reasons.  Prevent the step from bringing us too close
       // to the goal so that the step following this one will not be
       // too small.
-      return std::make_pair(2.0 / 3.0 * distance_to_next_goal, true);
+      return {{.size_goal =
+                   std::copysign(2.0 / 3.0 * distance_to_next_goal, last_step)},
+              true};
     }
   }
 
   bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | times_; }

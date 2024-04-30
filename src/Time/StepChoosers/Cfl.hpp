@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <pup.h>
@@ -11,7 +12,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Options/String.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -63,19 +65,21 @@ class Cfl : public StepChooser<StepChooserUse> {
       domain::Tags::MinimumGridSpacingCompute<System::volume_dim, Frame>,
       typename System::compute_largest_characteristic_speed>;
 
-  std::pair<double, bool> operator()(
-      const double minimum_grid_spacing,
-      const TimeStepper& time_stepper,
-      const double speed, const double last_step_magnitude) const {
+  std::pair<TimeStepRequest, bool> operator()(const double minimum_grid_spacing,
+                                              const TimeStepper& time_stepper,
+                                              const double speed,
+                                              const double last_step) const {
     const double time_stepper_stability_factor = time_stepper.stable_step();
     const double step_size = safety_factor_ * time_stepper_stability_factor *
                              minimum_grid_spacing /
                              (speed * System::volume_dim);
     // Reject the step if the CFL condition is violated.
-    return std::make_pair(step_size, last_step_magnitude <= step_size);
+    return {{.size_goal = std::copysign(step_size, last_step)},
+            abs(last_step) <= step_size};
   }
 
   bool uses_local_data() const override { return true; }
+  bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | safety_factor_; }

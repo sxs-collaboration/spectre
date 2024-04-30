@@ -31,6 +31,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepper.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -109,18 +110,20 @@ std::pair<double, bool> get_suggestion(
   const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const std::pair<double, bool> result =
+  const auto result =
       element_size_cfl(time_stepper, element_size, speed, current_step);
+  REQUIRE(result.first.size_goal.has_value());
+  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
   CHECK_FALSE(result.second);
-  const auto accepted_step_result =
-      element_size_cfl(time_stepper, element_size, speed, result.first * 0.7);
+  const auto accepted_step_result = element_size_cfl(
+      time_stepper, element_size, speed, *result.first.size_goal * 0.7);
   CHECK(accepted_step_result.second);
   CHECK(element_size_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(element_size_cfl)(
             time_stepper, element_size, speed, current_step) == result);
   CHECK(serialize_and_deserialize(element_size_base)
             ->desired_step(current_step, box) == result);
-  return result;
+  return {*result.first.size_goal, result.second};
 }
 }  // namespace
 

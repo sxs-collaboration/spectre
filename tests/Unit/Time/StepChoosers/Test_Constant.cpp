@@ -13,6 +13,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -43,13 +44,12 @@ void test_use() {
       std::make_unique<StepChoosers::Constant<Use>>(constant);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  CHECK(constant(current_step) == std::make_pair(5.4, true));
-  CHECK(serialize_and_deserialize(constant)(current_step) ==
-        std::make_pair(5.4, true));
-  CHECK(constant_base->desired_step(current_step, box) ==
-        std::make_pair(5.4, true));
+  const std::pair<TimeStepRequest, bool> expected{{.size_goal = 5.4}, true};
+  CHECK(constant(current_step) == expected);
+  CHECK(serialize_and_deserialize(constant)(current_step) == expected);
+  CHECK(constant_base->desired_step(current_step, box) == expected);
   CHECK(serialize_and_deserialize(constant_base)
-            ->desired_step(current_step, box) == std::make_pair(5.4, true));
+            ->desired_step(current_step, box) == expected);
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(
       "Constant: 5.4");

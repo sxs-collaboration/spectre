@@ -21,6 +21,7 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -44,13 +45,14 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   register_factory_classes_with_charm<Metavariables>();
 
   const auto requested = [](const double now, std::vector<double> times,
-                            const double step) {
-    double result = -1.0;
-    const auto impl = [&result, &step](const TimeStepId& now_id,
-                                       const std::vector<double>& impl_times) {
+                            const double last_step_magnitude) {
+    std::optional<double> result{};
+    const auto impl = [&result](const TimeStepId& now_id,
+                                const std::vector<double>& impl_times,
+                                const double last_step) {
       CAPTURE(now_id);
       CAPTURE(impl_times);
-      CAPTURE(step);
+      CAPTURE(last_step);
 
       using Specified = TimeSequences::Specified<double>;
       const StepChoosers::StepToTimes step_to_times(
@@ -63,23 +65,28 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
           Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
           Metavariables{}, now_id);
 
-      const auto answer = step_to_times(now_id, step);
-      if (result == -1.0) {
-        result = answer.first;
+      const auto answer = step_to_times(now_id, last_step);
+      REQUIRE(answer.first.size_goal.has_value());
+      CHECK(answer.first ==
+            TimeStepRequest{.size_goal = answer.first.size_goal});
+      if (not result.has_value()) {
+        result.emplace(*answer.first.size_goal);
       } else {
-        CHECK(result == answer.first);
+        CHECK(*result == *answer.first.size_goal);
       }
-      CHECK(step_to_times_base->desired_step(step, box) ==
-            std::make_pair(result, true));
-      CHECK(serialize_and_deserialize(step_to_times)(now_id, step) ==
-            std::make_pair(result, true));
+      CHECK(step_to_times_base->desired_step(last_step, box) == answer);
+      CHECK(serialize_and_deserialize(step_to_times)(now_id, last_step) ==
+            answer);
       CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_step(step, box) == std::make_pair(result, true));
+                ->desired_step(last_step, box) == answer);
     };
-    impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
+    impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times,
+         last_step_magnitude);
     alg::for_each(times, [](double& x) { return x = -x; });
-    impl(TimeStepId(false, 0, Slab(-now, -now + 1.0).start()), times);
-    return result;
+    *result = -*result;
+    impl(TimeStepId(false, 0, Slab(-now, -now + 1.0).start()), times,
+         -last_step_magnitude);
+    return -*result;
   };
 
   static constexpr double infinity = std::numeric_limits<double>::infinity();

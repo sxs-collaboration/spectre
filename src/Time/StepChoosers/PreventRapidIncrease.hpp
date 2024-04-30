@@ -11,6 +11,7 @@
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -39,16 +40,18 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
 
   template <typename History>
-  std::pair<double, bool> operator()(const History& history,
-                                     const double last_step_magnitude) const {
+  std::pair<TimeStepRequest, bool> operator()(const History& history,
+                                              const double last_step) const {
     if (history.size() < 2) {
-      return std::make_pair(std::numeric_limits<double>::infinity(), true);
+      return {{.size_goal = std::copysign(
+                   std::numeric_limits<double>::infinity(), last_step)},
+              true};
     }
 
     const double sloppiness =
         slab_rounding_error(history.front().time_step_id.step_time());
     std::optional<Time> previous_time{};
-    double newer_step = last_step_magnitude;
+    double newer_step = abs(last_step);
     for (auto record = history.rbegin(); record != history.rend(); ++record) {
       const Time time = record->time_step_id.step_time();
       if (previous_time.has_value()) {
@@ -56,7 +59,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
         // Potential roundoff error comes from the inability to make
         // slabs exactly the same length.
         if (this_step < newer_step - sloppiness) {
-          return std::make_pair(last_step_magnitude, true);
+          return {{.size_goal = last_step}, true};
         }
         newer_step = this_step;
       }
@@ -64,10 +67,13 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
     }
     // Request that the step size be at most infinity.  This imposes
     // no restriction on the chosen step.
-    return std::make_pair(std::numeric_limits<double>::infinity(), true);
+    return {{.size_goal = std::copysign(std::numeric_limits<double>::infinity(),
+                                        last_step)},
+            true};
   }
 
   bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 };
 
 /// \cond

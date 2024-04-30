@@ -14,6 +14,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,19 +42,19 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
   const auto check = [&box](auto use, const double step,
-                            const double expected) {
+                            const double expected_size) {
     using Use = tmpl::type_from<decltype(use)>;
     const StepChoosers::Increase<Use> increase{5.};
     const std::unique_ptr<StepChooser<Use>> increase_base =
         std::make_unique<StepChoosers::Increase<Use>>(increase);
 
-    CHECK(increase(step) == std::make_pair(expected, true));
-    CHECK(serialize_and_deserialize(increase)(step) ==
-          std::make_pair(expected, true));
-    CHECK(increase_base->desired_step(step, box) ==
-          std::make_pair(expected, true));
+    const std::pair<TimeStepRequest, bool> expected{
+        {.size_goal = expected_size}, true};
+    CHECK(increase(step) == expected);
+    CHECK(serialize_and_deserialize(increase)(step) == expected);
+    CHECK(increase_base->desired_step(step, box) == expected);
     CHECK(serialize_and_deserialize(increase_base)->desired_step(step, box) ==
-          std::make_pair(expected, true));
+          expected);
   };
   check(tmpl::type_<StepChooserUse::LtsStep>{}, 0.25, 1.25);
   check(tmpl::type_<StepChooserUse::Slab>{}, 0.25, 1.25);

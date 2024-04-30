@@ -9,7 +9,8 @@
 #include <utility>
 
 #include "Options/String.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -38,11 +39,12 @@ class Increase : public StepChooser<StepChooserUse> {
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<double, bool> operator()(const double last_step_magnitude) const {
-    return std::make_pair(last_step_magnitude * factor_, true);
+  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
+    return {{.size_goal = last_step * factor_}, true};
   }
 
   bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | factor_; }

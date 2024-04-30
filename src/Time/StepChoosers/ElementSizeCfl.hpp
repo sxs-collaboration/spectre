@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <pup.h>
@@ -12,6 +13,7 @@
 #include "Domain/SizeOfElement.hpp"
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,10 +72,10 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
       tmpl::list<domain::Tags::SizeOfElementCompute<Dim>,
                  typename System::compute_largest_characteristic_speed>;
 
-  std::pair<double, bool> operator()(
+  std::pair<TimeStepRequest, bool> operator()(
       const TimeStepper& time_stepper,
       const std::array<double, Dim>& element_size, const double speed,
-      const double last_step_magnitude) const {
+      const double last_step) const {
     double min_size_of_element = std::numeric_limits<double>::infinity();
     for (auto face_to_face_dimension : element_size) {
       if (face_to_face_dimension < min_size_of_element) {
@@ -84,10 +86,12 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
     const double step_size = safety_factor_ * time_stepper_stability_factor *
                              min_size_of_element / (speed * Dim);
     // Reject the step if the CFL condition is violated.
-    return std::make_pair(step_size, last_step_magnitude <= step_size);
+    return {{.size_goal = std::copysign(step_size, last_step)},
+            abs(last_step) <= step_size};
   }
 
   bool uses_local_data() const override { return true; }
+  bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | safety_factor_; }
