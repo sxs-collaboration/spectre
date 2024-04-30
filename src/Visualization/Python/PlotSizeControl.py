@@ -108,11 +108,15 @@ def plot_size_control_command(
     axes = list(axes)
     # Damping times are sort of the odd ones out. Put it with control error but
     # on a different y-axis
-    top1 = axes[0].plot(times, data["ControlError"], label="Control Error")
+    top1 = axes[0].plot(
+        times, np.abs(data["ControlError"]), label="Control Error"
+    )
     axes.append(axes[0].twinx())
     top2 = axes[-1].plot(
         times, data["DampingTime"], color="C1", label="Damping time"
     )
+    axes[0].set_yscale("log")
+    axes[-1].set_yscale("log")
     # Support an older version of control system output that didn't have the
     # smoother timescale
     if "SmootherTimescale" in data.columns:
@@ -181,6 +185,7 @@ def plot_size_control_command(
     if title:
         plt.title(title)
     for i in range(len(axes) - 1):
+        axes[i].grid()
         if i == 0:
             axes[i].legend(
                 top_lines,
