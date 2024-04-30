@@ -159,6 +159,16 @@ void cartesian_coords(const gsl::not_null<tnsr::I<DataVector, 3, Fr>*> coords,
                       const Strahlkorper<Fr>& strahlkorper,
                       const Scalar<DataVector>& radius,
                       const tnsr::i<DataVector, 3, Fr>& r_hat);
+
+/*!
+ * This overload computes `radius`, `theta_phi`, and `r_hat` internally.
+ * Use the other overloads if you already have these quantities.
+ *
+ * \param strahlkorper The Strahlkorper surface.
+ */
+template <typename Fr>
+tnsr::I<DataVector, 3, Fr> cartesian_coords(
+    const Strahlkorper<Fr>& strahlkorper);
 /// @}
 
 /// @{

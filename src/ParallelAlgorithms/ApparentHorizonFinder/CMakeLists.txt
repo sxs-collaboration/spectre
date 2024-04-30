@@ -50,4 +50,5 @@ target_link_libraries(
   ParallelInterpolation
   )
 
-  add_subdirectory(Callbacks)
+add_subdirectory(Callbacks)
+add_subdirectory(Python)

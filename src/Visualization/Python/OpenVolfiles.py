@@ -65,7 +65,9 @@ def parse_points(ctx, param, values):
     return np.array(points)
 
 
-def open_volfiles_command(obs_id_required=False, multiple_vars=False):
+def open_volfiles_command(
+    obs_id_required=False, vars_required=True, multiple_vars=False
+):
     """CLI options for accessing volume data files
 
     Use this decorator to add options for accessing volume data to a CLI
@@ -208,7 +210,7 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
                     obs_id or volfile.list_observation_ids()[0]
                 )
                 break
-            if list_vars or not vars_patterns:
+            if list_vars or (vars_required and not vars_patterns):
                 import rich.columns
 
                 rich.print(rich.columns.Columns(all_vars))
@@ -216,7 +218,7 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
             # Expand globs in vars
             vars = []
             if not multiple_vars:
-                vars_patterns = [vars_patterns]
+                vars_patterns = [vars_patterns] if vars_patterns else []
             for var_pattern in vars_patterns:
                 matched_vars = fnmatch.filter(all_vars, var_pattern)
                 if not matched_vars:
@@ -236,7 +238,9 @@ def open_volfiles_command(obs_id_required=False, multiple_vars=False):
                 obs_id=obs_id,
                 obs_time=obs_time,
                 **(
-                    dict(vars=vars) if multiple_vars else dict(var_name=vars[0])
+                    dict(vars=vars)
+                    if multiple_vars
+                    else dict(var_name=vars[0] if vars else None)
                 ),
                 **kwargs,
             )
