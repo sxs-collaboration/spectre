@@ -206,7 +206,7 @@ std::vector<std::vector<double>> interpolate_to_points(
   // Get domain, time, functions of time
   const auto domain =
       deserialize<Domain<Dim>>(first_volfile.get_domain(obs_id)->data());
-  const auto [time, functions_of_time] = [&first_volfile, &obs_id, &domain]() {
+  const auto time_and_fot = [&first_volfile, &obs_id, &domain]() {
     if (domain.is_time_dependent()) {
       return std::make_pair(
           first_volfile.get_observation_value(obs_id),
@@ -216,11 +216,11 @@ std::vector<std::vector<double>> interpolate_to_points(
       return std::make_pair(0., domain::FunctionsOfTimeMap{});
     }
   }();
+  const double time = time_and_fot.first;
+  const auto& functions_of_time = time_and_fot.second;
   first_h5file.close();
 
-  // Look up block logical coordinates for all target points by mapping them
-  // through the domain
-  tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{};
+  // Check target points have the same number of points in each dimension
   const size_t num_target_points = target_points[0].size();
   for (size_t d = 0; d < Dim; ++d) {
     const auto& target_coord = gsl::at(target_points, d);
@@ -229,12 +229,31 @@ std::vector<std::vector<double>> interpolate_to_points(
                      << num_target_points << " points, but coordinate " << d
                      << " has " << target_coord.size() << " points.");
     }
-    inertial_coords.get(d).set_data_ref(
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        const_cast<double*>(target_coord.data()), num_target_points);
   }
-  const auto block_logical_coords = block_logical_coordinates(
-      domain, inertial_coords, time, functions_of_time);
+
+  // Look up block logical coordinates for all target points by mapping them
+  // through the domain. This is the most expensive part of the function, so we
+  // parallelize the loop.
+  std::vector<BlockLogicalCoords<Dim>> block_logical_coords(num_target_points);
+#pragma omp parallel num_threads(resolved_num_threads)
+  {
+    tnsr::I<double, Dim, Frame::Inertial> target_point{};
+#pragma omp for
+    for (size_t s = 0; s < num_target_points; ++s) {
+      for (size_t d = 0; d < Dim; ++d) {
+        target_point.get(d) = gsl::at(target_points, d)[s];
+      }
+      for (const auto& block : domain.blocks()) {
+        auto x_logical = block_logical_coordinates_single_point(
+            target_point, block, time, functions_of_time);
+        if (x_logical.has_value()) {
+          block_logical_coords[s] = {domain::BlockId(block.id()),
+                                     std::move(x_logical.value())};
+          break;
+        }
+      }  // for blocks
+    }    // omp for target points
+  }      // omp parallel
 
   // Allocate memory for result
   std::vector<std::vector<double>> result{};

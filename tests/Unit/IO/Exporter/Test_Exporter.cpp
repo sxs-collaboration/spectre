@@ -7,6 +7,9 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#ifdef _OPENMP
+#include <omp.h>
+#endif  // _OPENMP
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/Rectangle.hpp"
@@ -22,6 +25,10 @@
 namespace spectre::Exporter {
 
 SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
+#ifdef _OPENMP
+  // Disable OpenMP multithreading since multiple unit tests may run in parallel
+  omp_set_num_threads(1);
+#endif
   {
     INFO("Bundled volume data files");
     const auto interpolated_data = interpolate_to_points<3>(
