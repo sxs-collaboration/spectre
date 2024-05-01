@@ -662,16 +662,32 @@ struct WriteReductionData {
  *   values must match the length of the `legend`.
  */
 struct WriteReductionDataRow {
+  /// \brief The apply call for the threaded action
   template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex, typename... Ts,
-            typename DataBox = db::DataBox<DbTagsList>>
+            typename Metavariables, typename ArrayIndex, typename... Ts>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const std::string& subfile_name,
-                    std::vector<std::string>&& legend,
+                    std::vector<std::string> legend,
                     std::tuple<Ts...>&& reduction_data) {
+    apply<ParallelComponent>(box, node_lock, cache, subfile_name,
+                             std::move(legend), std::move(reduction_data));
+  }
+
+  // The local synchronous action
+  using return_type = void;
+
+  /// \brief The apply call for the local synchronous action
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename... Ts>
+  static return_type apply(
+      db::DataBox<DbTagList>& box,
+      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const std::string& subfile_name, std::vector<std::string> legend,
+      std::tuple<Ts...>&& reduction_data) {
     auto& reduction_file_lock =
         db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
     const std::lock_guard hold_lock(reduction_file_lock);
