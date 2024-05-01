@@ -21,6 +21,7 @@ from spectre.support.DirectoryStructure import (
     list_checkpoints,
     list_segments,
 )
+from spectre.support.Machines import this_machine
 from spectre.support.RunNext import run_next
 from spectre.tools.ValidateInputFile import validate_input_file
 from spectre.Visualization.ReadInputFile import find_phase_change
@@ -569,7 +570,8 @@ def schedule(
         logger.info(
             f"Run '{executable.name}' in '{run_dir}' on {provision_info}."
         )
-        run_command = [
+        machine = this_machine(raise_exception=False)
+        run_command = (machine.launch_command if machine else []) + [
             str(executable),
             "--input-file",
             str(input_file_path.resolve()),
