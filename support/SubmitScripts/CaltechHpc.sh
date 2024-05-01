@@ -3,9 +3,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# CaltechHPC is a supercomputer at Caltech using the skylake intel nodes.
+# Supercomputer at Caltech.
 # More information:
 # https://www.hpc.caltech.edu/documentation
+
+# This submit script currently requests cascadelake nodes (with 56 cores per
+# node). We can adjust it to request other types of nodes later.
 
 {% block head %}
 {{ super() -}}
@@ -14,5 +17,7 @@
 #SBATCH --cpus-per-task 28
 #SBATCH -p {{ queue | default("expansion") }}
 #SBATCH -t {{ time_limit | default("1-00:00:00") }}
-#SBATCH --reservation sxs
+{% if reservation is defined %}
+#SBATCH --reservation={{ reservation }}
+{% endif %}
 {% endblock %}

@@ -77,35 +77,32 @@ get multiple MPI ranks on your node and the run will hang.
 
 ## CaltechHPC at Caltech
 
+Cluster documentation: https://www.hpc.caltech.edu
+
 Follow the general instructions, using `caltech_hpc` for `SYSTEM_TO_RUN_ON`,
 except you don't need to install any dependencies, so you can skip step 5 and
-step 6. There are also two different types of compute nodes on CaltechHPC:
+step 6.
 
-1. Skylake Intel nodes
-2. Icelake Intel nodes
+There are multiple types of compute nodes on CaltechHPC, which are listed on
+https://www.hpc.caltech.edu/resources. We compile SpECTRE to be compatible with
+all of them.
 
-Each type of compute node has it's own environment file, so be sure to choose
-the one you want. When you go to build, you will need to get an interactive node
-(login nodes limit the amount of memory accessible to individual users, to below
-the amount necessary to build SpECTRE).
+When you go to build, you will need to get an interactive node (login nodes
+limit the amount of memory accessible to individual users, to below the amount
+necessary to build SpECTRE). Slurm commands are listed on
+https://www.hpc.caltech.edu/documentation/slurm-commands. For example to ensure
+you get an entire node to build on, use the following command:
 
-To ensure you get an entire node to build on, use the following commands.
-
-1. For Skylake Intel nodes
 ```
-srun --partition=expansion -t 02:00:00 -N 1 -c 56 -D . --pty /bin/bash
-```
-2. For Icelake Intel nodes
-```
-srun --partition=expansion --constraint=icelake -t 02:00:00 \
-    -N 1 -c 64 -D . --pty /bin/bash
+srun [--reservation=sxs] [--constraint=skylake/cascadelake/icelake] \
+  -t 02:00:00 -N 1 --exclusive -D . --pty /bin/bash
 ```
 
-If you are part of the SXS collaboration, you can add `-A sxs` to bill the SXS
-allocation. Also, if you are part of the collaboration, you can use our
-reserved nodes by specifying `--reservation=sxs`. However, our reserved nodes
-are Skylake nodes only, so adding the reservation flag won't work for the
-Icelake nodes.
+If you are part of the SXS collaboration, you can use our reserved nodes by
+specifying `--reservation=sxs`. Our reserved nodes are currently cascadelake
+nodes with 56 cores each. If you want to use another type of node you can
+specify a `--constraint`. However, note that the reservation flag won't work for
+nodes other than cascadelake.
 
 Be sure to re-source the correct environment files once you get the interactive
 node shell.
