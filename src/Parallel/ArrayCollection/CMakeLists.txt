@@ -10,7 +10,10 @@ spectre_target_headers(
   DgElementArrayMemberBase.hpp
   IsDgElementArrayMember.hpp
   IsDgElementCollection.hpp
+  ReceiveDataForElement.hpp
   SetTerminateOnElement.hpp
+  SpawnInitializeElementsInCollection.hpp
+  StartPhaseOnNodegroup.hpp
 )
 
 spectre_target_sources(
