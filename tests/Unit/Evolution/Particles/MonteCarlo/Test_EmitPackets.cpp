@@ -9,11 +9,15 @@
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
+
+using hydro::units::nuclear::proton_mass;
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
                   "[Unit][Evolution]") {
   using Particles::MonteCarlo::Packet;
 
+  const double epsilon_approx = 1.e-13;
   // Vector of MC packets
   std::vector<Packet> all_packets = {};
 
@@ -68,13 +72,27 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
   inverse_jacobian.get(2, 2) = W_boost;
   inverse_jacobian.get(3, 3) = 1.0;
 
+  tnsr::i<DataVector, 3, Frame::Inertial> lower_spatial_four_velocity =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
+  lower_spatial_four_velocity.get(1) = W_boost * v_boost;
+  Scalar<DataVector> lorentz_factor =
+      make_with_value<Scalar<DataVector>>(zero_dv, W_boost);
+
+  Scalar<DataVector> coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  Scalar<DataVector> coupling_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
+
   // Run emission code
-  Particles::MonteCarlo::TemplatedLocalFunctions<2,2> MonteCarloStruct;
+  Particles::MonteCarlo::TemplatedLocalFunctions<2, 2> MonteCarloStruct;
 
   MonteCarloStruct.emit_packets(
-      &all_packets, &generator, time, time_step, mesh,
-      emission_in_cells, single_packet_energy, energy_at_bin_center, jacobian,
-      inverse_jacobian);
+      &all_packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
+      &coupling_rho_ye, time, time_step, mesh, emission_in_cells,
+      single_packet_energy, energy_at_bin_center, lorentz_factor,
+      lower_spatial_four_velocity, jacobian, inverse_jacobian);
 
   // Check some things
   const size_t n_packets = all_packets.size();
@@ -88,4 +106,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
           1.e-14);
   }
   CHECK(gsl::at(energy_at_bin_center, 0) == 2.0);
+
+  Scalar<DataVector> expected_coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(zero_dv, -8.0);
+  Scalar<DataVector> expected_coupling_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv, -1.4 * proton_mass);
+  tnsr::i<DataVector, 3, Frame::Inertial> expected_coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
+  expected_coupling_tilde_s.get(1) = -4.0 * sqrt(3.0);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      coupling_tilde_tau, expected_coupling_tilde_tau,
+      Approx::custom().epsilon(epsilon_approx).scale(1.0));
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      coupling_rho_ye, expected_coupling_rho_ye,
+      Approx::custom().epsilon(epsilon_approx).scale(1.0));
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      coupling_tilde_s, expected_coupling_tilde_s,
+      Approx::custom().epsilon(epsilon_approx).scale(1.0));
 }

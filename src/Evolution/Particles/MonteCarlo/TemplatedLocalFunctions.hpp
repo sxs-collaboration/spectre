@@ -24,10 +24,11 @@ struct Packet;
 
 namespace detail {
 
-void draw_single_packet(gsl::not_null<double*> time,
-                        gsl::not_null<std::array<double, 3>*> coord,
-                        gsl::not_null<std::array<double, 3>*> momentum,
-                        gsl::not_null<std::mt19937*> random_number_generator);
+void draw_single_packet(
+    gsl::not_null<double*> time,
+    gsl::not_null<std::array<double, 3>*> coord,
+    gsl::not_null<std::array<double, 3>*> momentum,
+    gsl::not_null<std::mt19937*> random_number_generator);
 }  // namespace detail
 
 /// Structure containing Monte-Carlo function templated on EnergyBins
@@ -66,12 +67,18 @@ struct TemplatedLocalFunctions {
   void emit_packets(
       gsl::not_null<std::vector<Packet>*> packets,
       gsl::not_null<std::mt19937*> random_number_generator,
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
+      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
       const double& time_start_step, const double& time_step,
       const Mesh<3>& mesh,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           emission_in_cell,
       const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
       const std::array<double, EnergyBins>& energy_at_bin_center,
+      const Scalar<DataVector>& lorentz_factor,
+      const tnsr::i<DataVector, 3, Frame::Inertial>&
+          lower_spatial_four_velocity,
       const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
           inertial_to_fluid_jacobian,
       const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&

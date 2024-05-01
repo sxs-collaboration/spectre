@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
-
 #include <cmath>
 
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
+
+using hydro::units::nuclear::proton_mass;
 
 namespace Particles::MonteCarlo {
 
@@ -15,12 +17,17 @@ template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
     const gsl::not_null<std::vector<Packet>*> packets,
     const gsl::not_null<std::mt19937*> random_number_generator,
-    const double& time_start_step, const double& time_step,
-    const Mesh<3>& mesh,
+    const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        coupling_tilde_s,
+    const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    const double& time_start_step, const double& time_step, const Mesh<3>& mesh,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         emission_in_cell,
     const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
     const std::array<double, EnergyBins>& energy_at_bin_center,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
     const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
         inertial_to_fluid_jacobian,
     const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
@@ -37,9 +44,10 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
       gsl::at(gsl::at(number_of_packets_to_create_per_cell, s), g)
           .resize(grid_size);
       for (size_t i = 0; i < grid_size; i++) {
+        const double& emission_this_cell =
+            gsl::at(gsl::at(emission_in_cell, s), g)[i];
         const double packets_to_create_double =
-            gsl::at(gsl::at(emission_in_cell, s), g)[i] /
-            gsl::at(single_packet_energy, s)[i];
+            emission_this_cell / gsl::at(single_packet_energy, s)[i];
         size_t packets_to_create_int = floor(packets_to_create_double);
         if (rng_uniform_zero_to_one(*random_number_generator) <
             packets_to_create_double -
@@ -49,6 +57,21 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
         gsl::at(gsl::at(number_of_packets_to_create_per_cell, s), g)[i] =
             packets_to_create_int;
         number_of_packets_to_create_total += packets_to_create_int;
+
+        // Coupling to hydro variables. These will need to be divided by the
+        // appropriate coordinate volume when the coupling is performed, as here
+        // we consider total emission numbers, rather than emission densities.
+        coupling_tilde_tau->get()[i] -=
+            emission_this_cell * get(lorentz_factor)[i];
+        for (int d = 0; d < 3; d++) {
+          coupling_tilde_s->get(d)[i] -=
+              emission_this_cell * lower_spatial_four_velocity.get(d)[i];
+        }
+        if (NeutrinoSpecies >= 2 && s < 2) {
+          coupling_rho_ye->get()[i] -=
+              (s == 0 ? 1.0 : -1.0) * emission_this_cell /
+              gsl::at(energy_at_bin_center, g) * proton_mass;
+        }
       }
     }
   }
