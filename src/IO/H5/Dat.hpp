@@ -121,8 +121,6 @@ class Dat : public h5::Object {
   const std::string& subfile_path() const override { return path_; }
 
  private:
-  void append_impl(hsize_t number_of_rows, const std::vector<double>& data);
-
   /// \cond HIDDEN_SYMBOLS
   detail::OpenGroup group_;
   std::string name_;
