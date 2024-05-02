@@ -31,6 +31,29 @@ void draw_single_packet(
     gsl::not_null<std::mt19937*> random_number_generator);
 }  // namespace detail
 
+
+/// \brief Contribution to the neutrino-matter coupling
+/// terms from evolving a packet by time dt, given
+/// absorption and scattering opacities absorption_opacity,
+/// scattering_opacity.
+///
+/// \details We consider total momentum exchances, not
+/// densities; thus when coupling to the evolution of the
+/// energy/momentum density, division by the spatial volume is
+/// necessary. We calculate the source terms of Eqs (62-64) of
+/// \cite Foucart:2021mcb, with integrals calculated as in
+/// Eqs (6-10) of that manuscript (except that we do not
+/// divide by the coordinate volume V).
+void AddCouplingTermsForPropagation(
+    gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        coupling_tilde_s,
+    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    const Packet& packet, double dt, double absorption_opacity,
+    double scattering_opacity, double fluid_frame_energy,
+    double lapse, double lorentz_factor,
+    const std::array<double, 3>& lower_spatial_four_velocity_packet);
+
 /// Structure containing Monte-Carlo function templated on EnergyBins
 /// and/or NeutrinoSpecies
 template <size_t EnergyBins, size_t NeutrinoSpecies>
@@ -101,6 +124,10 @@ struct TemplatedLocalFunctions {
   void evolve_packets(
       gsl::not_null<std::vector<Packet>*> packets,
       gsl::not_null<std::mt19937*> random_number_generator,
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        coupling_tilde_s,
+      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
       double final_time, const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
