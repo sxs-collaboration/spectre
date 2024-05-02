@@ -4,6 +4,7 @@
 set(LIBRARY "Test_H5")
 
 set(LIBRARY_SOURCES
+  Test_Cce.cpp
   Test_CheckH5PropertiesMatch.cpp
   Test_Dat.cpp
   Test_EosTable.cpp

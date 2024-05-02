@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AccessType.cpp
+  Cce.cpp
   CheckH5PropertiesMatch.cpp
   CombineH5.cpp
   Dat.cpp
@@ -31,6 +32,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AccessType.hpp
+  Cce.hpp
   CheckH5.hpp
   CheckH5PropertiesMatch.hpp
   CombineH5.hpp
