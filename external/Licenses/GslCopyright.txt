@@ -1,0 +1,2 @@
+Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+https://www.gnu.org/software/gsl/

@@ -288,6 +288,7 @@ long_lines() {
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
               'eos.*' \
+              'external/Licenses/.*License.txt' \
               'RotatingStarId.dat$' \
               'tools/CheckFiles.sh$' \
               'tools/Iwyu/boost-all.imp$' && \

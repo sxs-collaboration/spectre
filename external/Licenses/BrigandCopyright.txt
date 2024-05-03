@@ -1,0 +1,2 @@
+Copyright Edouard Alligand and Joel Falcou 2015-2017
+https://github.com/edouarda/brigand

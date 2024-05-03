@@ -18,6 +18,13 @@
  */
 std::string info_from_build();
 
+/*!
+ * \ingroup LoggingGroup
+ * \brief Returns a string containing the copyright and license info for
+ * SpECTRE and its dependencies.
+ */
+std::string copyright_and_license_info();
+
 // We declare these functions `extern "C"` so their symbols are not mangled and
 // we can ignore that they are undefined until link time (see `CMakeLists.txt`).
 // Note that the `std::string` return type is not compatible with C, but that's

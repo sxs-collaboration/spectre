@@ -16,6 +16,7 @@
 #include <string>
 #include <type_traits>
 
+#include "Informer/InfoFromBuild.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Tags.hpp"
@@ -303,6 +304,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
          "Dump the contents of SpECTRE's BuildInfo.txt")
         ("dump-only",
          "Exit after dumping requested information.")
+        ("copyright-and-licenses",
+         "Returns all of the copyright and license info for SpECTRE and "
+         "its dependencies.")
         ;
     // clang-format on
 
@@ -391,6 +395,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     if (parsed_command_line_options.count("dump-build-info") != 0) {
       Parallel::printf("BuildInfo.txt at link time was:\n%s\n",
                        formaline::get_build_info());
+    }
+    if (parsed_command_line_options.count("copyright-and-licenses") != 0) {
+      Parallel::printf("%s\n", copyright_and_license_info());
     }
     if (parsed_command_line_options.count("dump-only") != 0) {
       sys::exit();

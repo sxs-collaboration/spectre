@@ -1,0 +1,5 @@
+Copyright (c) 2016, Johan Mabille, Sylvain Corlay, Wolf Vollprecht and Martin
+Renou
+Copyright (c) 2016, QuantStack
+Copyright (c) 2018, Serge Guelton
+https://github.com/xtensor-stack/xsimd
