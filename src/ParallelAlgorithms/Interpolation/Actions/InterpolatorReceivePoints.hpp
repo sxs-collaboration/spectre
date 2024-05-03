@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -78,10 +79,7 @@ struct ReceivePoints {
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
-      std::vector<std::optional<
-          IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&&
-          block_logical_coords,
+      std::vector<BlockLogicalCoords<VolumeDim>>&& block_logical_coords,
       const size_t iteration = 0_st) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         [&temporal_id, &block_logical_coords, &iteration](

@@ -60,7 +60,9 @@ def points_on_slice(
     u *= slice_extent[1]
     lower_left = slice_origin - 0.5 * (u + v)
     xx, yy = np.meshgrid(
-        np.linspace(0, 1, num_points[0]), np.linspace(0, 1, num_points[1])
+        np.linspace(0, 1, num_points[0]),
+        np.linspace(0, 1, num_points[1]),
+        indexing="ij",
     )
     return (
         lower_left[:, np.newaxis, np.newaxis]

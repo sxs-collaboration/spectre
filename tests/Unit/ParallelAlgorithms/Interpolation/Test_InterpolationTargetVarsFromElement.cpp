@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -300,9 +301,7 @@ void test() {
   auto& target_box =
       ActionTesting::get_databox<target_component>(make_not_null(&runner), 0);
 
-  using BlockLogicalCoordType = std::vector<std::optional<
-      IdPair<domain::BlockId, tnsr::I<double, 3, ::Frame::BlockLogical>>>>;
-  BlockLogicalCoordType block_logical_coords{};
+  std::vector<BlockLogicalCoords<3>> block_logical_coords{};
   if constexpr (UseTimeDepMaps) {
     block_logical_coords =
         intrp::InterpolationTarget_detail::block_logical_coords<

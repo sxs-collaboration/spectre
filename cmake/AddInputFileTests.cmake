@@ -27,11 +27,11 @@ else()
 endif()
 
 # Environment variables for test
-set(_TEST_ENV_VARS "")
+set(_INPUT_FILE_TEST_ENV_VARS "")
 # - Disable ASAN's leak sanitizer because Charm++ has false positives
-list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
+list(APPEND _INPUT_FILE_TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
-list(APPEND _TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+list(APPEND _INPUT_FILE_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
                                     CHECK_TYPE TIMEOUT EXPECTED_EXIT_CODE)
@@ -105,7 +105,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
     PROPERTIES
     TIMEOUT ${TIMEOUT}
     LABELS "${TAGS}"
-    ENVIRONMENT "${_TEST_ENV_VARS}")
+    ENVIRONMENT "${_INPUT_FILE_TEST_ENV_VARS}")
 endfunction()
 
 # Searches the directory INPUT_FILE_DIR for .yaml files and adds a test for each

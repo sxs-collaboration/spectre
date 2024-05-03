@@ -23,6 +23,10 @@ template <size_t VolumeDim>
 class Block;
 /// \endcond
 
+template <size_t Dim>
+using BlockLogicalCoords = std::optional<
+    IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>>;
+
 /// @{
 /// \ingroup ComputationalDomainGroup
 ///
@@ -62,22 +66,13 @@ template <size_t Dim, typename Frame>
 auto block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
     double time = std::numeric_limits<double>::signaling_NaN(),
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = std::unordered_map<
-            std::string,
-            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
-    -> std::vector<std::optional<
-        IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>>>;
+    const domain::FunctionsOfTimeMap& functions_of_time = {})
+    -> std::vector<BlockLogicalCoords<Dim>>;
 
 template <size_t Dim, typename Frame>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Frame>& input_point, const Block<Dim>& block,
     double time = std::numeric_limits<double>::signaling_NaN(),
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = std::unordered_map<
-            std::string,
-            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{});
+    const domain::FunctionsOfTimeMap& functions_of_time = {});
 /// @}

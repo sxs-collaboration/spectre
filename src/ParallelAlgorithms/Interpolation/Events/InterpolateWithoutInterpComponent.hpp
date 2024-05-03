@@ -14,8 +14,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/IdPair.hpp"
 #include "DataStructures/Index.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
@@ -137,9 +137,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const ObservationValue& /*observation_value*/) const {
     const tnsr::I<DataVector, VolumeDim, frame>& all_target_points =
         get<Vars::PointInfoTag<InterpolationTargetTag, VolumeDim>>(point_infos);
-    std::vector<std::optional<IdPair<
-        domain::BlockId, tnsr::I<double, VolumeDim, ::Frame::BlockLogical>>>>
-        block_logical_coords{};
+    std::vector<BlockLogicalCoords<VolumeDim>> block_logical_coords{};
 
     // The sphere target is special because we have a better idea of where the
     // points will be.
