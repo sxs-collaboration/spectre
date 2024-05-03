@@ -63,28 +63,33 @@ all of these dependencies.
 [here](https://apt.llvm.org/) for how to get newer versions of clang through
 apt), or AppleClang 13.0.0 or later
 * [CMake](https://cmake.org/) 3.18.0 or later
-* [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
-  \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
 * [Git](https://git-scm.com/)
-* BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8. It can be
-  beneficial to install Blaze with CMake so some configuration options are
-  determined automatically, such as cache sizes. \cite Blaze1 \cite Blaze2
+* BLAS & LAPACK (e.g. [OpenBLAS](http://www.openblas.net))
 * [Boost](http://www.boost.org/) 1.60.0 or later
-* [Catch2](https://github.com/catchorg/Catch2) 3.4.0 or later. Install from your
-  package manager or do a standard CMake build and installation (as detailed
-  in the [Catch2 docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
-  Compile with `CMAKE_POSITION_INDEPENDENT_CODE=ON`.
 * [GSL](https://www.gnu.org/software/gsl/) \cite Gsl
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
   \cite Hdf5
-* [jemalloc](https://github.com/jemalloc/jemalloc)
-* LAPACK
-* [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later
-  \cite Libxsmm
-* [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 or later.
-  Building with shared library support is also recommended. \cite Yamlcpp
 * [Python](https://www.python.org/) 3.8 or later.
+* [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental).
+  See also \ref building-charm. \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
+
+The following dependencies will be fetched automatically if you set
+`SPECTRE_FETCH_MISSING_DEPS=ON`:
+
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8.
+  When installing manually, it can be beneficial to install Blaze with CMake so
+  some configuration options are determined automatically, such as cache sizes.
+  \cite Blaze1 \cite Blaze2
+* [Catch2](https://github.com/catchorg/Catch2) 3.4.0 or later.
+  You can also install Catch2 from your package manager or do a standard CMake
+  build and installation (as detailed in the [Catch2
+  docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
+  Compile with `CMAKE_POSITION_INDEPENDENT_CODE=ON`.
+* [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later.
+  \cite Libxsmm
+* [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.7.0 or later.
+  Building with shared library support is recommended when installing from
+  source. \cite Yamlcpp
 * Python dependencies listed in `support/Python/requirements.txt`.
   Install with `pip3 install -r support/Python/requirements.txt`.
   Make sure you are working in a [Python venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
@@ -97,9 +102,9 @@ apt), or AppleClang 13.0.0 or later
   </details>
 
 #### Optional:
-
 * [Pybind11](https://pybind11.readthedocs.io) 2.7.0 or later for SpECTRE Python
   bindings. Included in `support/Python/requirements.txt`.  \cite Pybind11
+* [jemalloc](https://github.com/jemalloc/jemalloc)
 * [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 to 1.9.6 — to
   generate documentation
 * Python dev dependencies listed in `support/Python/dev_requirements.txt`
