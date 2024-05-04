@@ -15,6 +15,7 @@ def compute_News(
     _4,
     _5,
     _6,
+    _7,
 ):
     return news_coefficient * (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -32,6 +33,7 @@ def compute_EthInertialRetardedTime(
     _5,
     _6,
     eth_u_coefficient,
+    _7,
 ):
     return eth_u_coefficient * (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -49,6 +51,7 @@ def compute_Du_TimeIntegral_ScriPlus_Psi4(
     _5,
     psi4_coefficient,
     _6,
+    _7,
 ):
     return psi4_coefficient * (
         linear_coefficient + 2.0 * quadratic_coefficient * time
@@ -66,6 +69,7 @@ def compute_ScriPlus_Psi3(
     _4,
     psi4_coefficient,
     eth_u_coefficient,
+    _5,
 ):
     time_factor = (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -89,6 +93,7 @@ def compute_ScriPlus_Psi2(
     _3,
     psi4_coefficient,
     eth_u_coefficient,
+    _4,
 ):
     time_factor = (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -113,6 +118,7 @@ def compute_ScriPlus_Psi1(
     _2,
     psi4_coefficient,
     eth_u_coefficient,
+    _3,
 ):
     time_factor = (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -143,6 +149,7 @@ def compute_ScriPlus_Psi0(
     psi0_coefficient,
     psi4_coefficient,
     eth_u_coefficient,
+    _2,
 ):
     time_factor = (
         1.0 + linear_coefficient * time + quadratic_coefficient * time**2
@@ -161,4 +168,22 @@ def compute_ScriPlus_Psi0(
         + 0.75 * psi2 * eth_u**2
         + 0.5 * psi3 * eth_u**3
         + 0.0625 * psi4 * eth_u**4
+    )
+
+
+def compute_ScriPlus_Strain(
+    linear_coefficient,
+    quadratic_coefficient,
+    time,
+    _1,
+    _2,
+    _3,
+    _4,
+    _5,
+    _6,
+    _7,
+    strain_coefficient,
+):
+    return strain_coefficient * (
+        1.0 + linear_coefficient * time + quadratic_coefficient * time**2
     )

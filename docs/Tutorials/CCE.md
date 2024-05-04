@@ -87,11 +87,28 @@ CCE using external data are:
 Once you have the reduction data output file from a successful CCE run, you can
 confirm the integrity of the h5 file and its contents by running
 ```
-h5ls -r CharacteristicExtractReduction.h5/Cce.dir
+h5ls -r CharacteristicExtractReduction.h5
 ```
 
 For the reduction file produced by a successful run, the output of the `h5ls`
 should resemble
+
+```
+/SpectreR0100.cce                 Group
+/SpectreR0100.cce/EthInertialRetardedTime Dataset {26451/Inf, 163}
+/SpectreR0100.cce/News            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Psi0            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Psi1            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Psi2            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Psi3            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Psi4            Dataset {26451/Inf, 163}
+/SpectreR0100.cce/Strain          Dataset {26451/Inf, 163}
+/src.tar.gz              Dataset {7757329}
+```
+
+\note Prior to
+[this Pull Request](https://github.com/sxs-collaboration/spectre/pull/5985), the
+output of `h5ls` looked like this
 ```
 /                        Group
 /Cce                     Group
@@ -103,17 +120,17 @@ should resemble
 /Cce/Psi3.dat                 Dataset {3995/Inf, 163}
 /Cce/Psi4.dat                 Dataset {3995/Inf, 163}
 /Cce/Strain.dat               Dataset {3995/Inf, 163}
-src.tar.gz               Dataset {3750199}
+/src.tar.gz               Dataset {3750199}
 ```
 
-The `Strain.dat` represents the asymptotic transverse-traceless contribution
+The `Strain` represents the asymptotic transverse-traceless contribution
 to the metric scaled by the Bondi radius (to give the asymptotically leading
-part), the `News.dat` represents the first derivative of the strain, and each
+part), the `News` represents the first derivative of the strain, and each
 of the `Psi...` datasets represent the Weyl scalars, each scaled by the
 appropriate factor of the Bondi-Sachs radius to retrieve the asymptotically
 leading contribution.
 
-The `EthInertialRetardedTime.dat` is a diagnostic dataset that represents the
+The `EthInertialRetardedTime` is a diagnostic dataset that represents the
 angular derivative of the inertial retarded time, which determines the
 coordinate transformation that is performed at scri+.
 
@@ -135,7 +152,7 @@ def spectre_imag_mode_index(l, m):
 
 def get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):
     with h5.File(filename, "r") as h5_file:
-        timeseries_data = (h5_file[dataset + ".dat"][()][:, [0] + list(
+        timeseries_data = (h5_file[dataset][()][:, [0] + list(
             np.array([[
                 spectre_real_mode_index(x[0], x[1]),
                 spectre_imag_mode_index(x[0], x[1])
@@ -160,7 +177,7 @@ for i in range(len(plot_quantities)):
     ax = plt.subplot(len(plot_quantities), 1, i + 1)
     timeseries = np.transpose(
         get_modes_from_block_output(
-            filename, f"/Cce/{plot_quantities[i]}", mode_set
+            filename, f"/SpectreR0100.cce/{plot_quantities[i]}", mode_set
         )
     )
     for j in range(len(mode_set)):
