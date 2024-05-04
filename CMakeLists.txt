@@ -135,7 +135,6 @@ include(SetupLIBXSMM)
 include(SetupGsl)
 
 include(SetupBlaze)
-include(SetupBrigand)
 include(SetupFuka)
 include(SetupGoogleBenchmark)
 include(SetupHdf5)
@@ -149,6 +148,8 @@ include(SetupXsimd)
 include(SetupYamlCpp)
 include(SetupOpenMP)
 include(SetupParaView)
+
+add_subdirectory(external)
 
 include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
@@ -194,7 +195,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 # (by `add_charm_module`)
 include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src)
 
-add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(support)
 if(BUILD_TESTING)

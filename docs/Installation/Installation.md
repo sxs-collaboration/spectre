@@ -70,8 +70,6 @@ apt), or AppleClang 13.0.0 or later
   beneficial to install Blaze with CMake so some configuration options are
   determined automatically, such as cache sizes. \cite Blaze1 \cite Blaze2
 * [Boost](http://www.boost.org/) 1.60.0 or later
-* [Brigand](https://github.com/edouarda/brigand) at commit
-  1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
 * [Catch2](https://github.com/catchorg/Catch2) 3.4.0 or later. Install from your
   package manager or do a standard CMake build and installation (as detailed
   in the [Catch2 docs](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository)).
@@ -139,6 +137,9 @@ apt), or AppleClang 13.0.0 or later
   Compile the exporter in SpEC's `Support/ApplyObservers/Exporter/` directory
   (see the `Makefile` in that directory). Also make sure to compile SpEC with
   the same compiler and MPI as SpECTRE to avoid compatibility issues.
+
+#### Bundled:
+* [Brigand](https://github.com/edouarda/brigand)
 
 ## Clone the SpECTRE repository
 
