@@ -50,6 +50,11 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/Dat.hpp"
+#include "IO/H5/File.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -192,15 +197,15 @@ std::string option_string(
 // ensure the points lie on concentric spheres defined by either the inner
 // sphere, outer sphere, or radial partition parameters.
 tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
-    const gsl::not_null<std::mt19937*> generator, const bool is_inner_cube,
+    const gsl::not_null<std::mt19937*> gen, const bool is_inner_cube,
     const bool abuts_inner_cube) {
   std::uniform_real_distribution<> real_dis(-1, 1);
 
   const double rand_int_xi = (2.0 * (rand() % 2) - 1.0);
   const double rand_int_eta = (2.0 * (rand() % 2) - 1.0);
   const double rand_int_zeta = (2.0 * (rand() % 2) - 1.0);
-  const double rand_real_xi = real_dis(*generator);
-  const double rand_real_eta = real_dis(*generator);
+  const double rand_real_xi = real_dis(*gen);
+  const double rand_real_eta = real_dis(*gen);
 
   double xi_logical_coord;
   double eta_logical_coord;
@@ -237,9 +242,11 @@ tnsr::I<double, 3, Frame::BlockLogical> logical_coords(
       {{xi_logical_coord, eta_logical_coord, zeta_logical_coord}}};
 }
 
+template <typename Generator>
 void test_sphere_construction(
-    const creators::Sphere& sphere, const double inner_radius,
-    const double outer_radius, const bool fill_interior,
+    const gsl::not_null<Generator*> gen, const creators::Sphere& sphere,
+    const double inner_radius, const double outer_radius,
+    const bool fill_interior,
     const std::vector<double> radial_partitioning = {},
     const ShellWedges which_wedges = ShellWedges::All,
     const bool expect_boundary_conditions = true,
@@ -290,8 +297,6 @@ void test_sphere_construction(
           ((fill_interior ? 5 : 1) + 1 + num_shells * 4));
   }
 
-  MAKE_GENERATOR(generator);
-
   // verify if adjacent to inner cube
   const auto abuts_inner_cube =
       [&num_blocks](const auto& direction_and_neighbor) {
@@ -310,7 +315,7 @@ void test_sphere_construction(
       // blocks (and points on upper wedge faces) lie on spherical shells
       // specified by inner radius, radial partitions, or outer radius
       const auto coords_on_spherical_partition = logical_coords(
-          make_not_null(&generator), is_inner_cube,
+          gen, is_inner_cube,
           fill_interior and alg::any_of(block.neighbors(), abuts_inner_cube));
       for (const double current_time : times) {
         CAPTURE(current_time);
@@ -606,9 +611,8 @@ void test_parse_errors() {
           "cube. Use a TimeDependence instead."));
 }
 
-void test_sphere() {
-  MAKE_GENERATOR(gen);
-
+template <typename Generator>
+void test_sphere(const gsl::not_null<Generator*> gen) {
   const double inner_radius = 1.0;
   const double outer_radius = 2.0;
   const size_t initial_refinement = 3;
@@ -652,7 +656,7 @@ void test_sphere() {
                           ShellWedges::OneAlongMinusX),
                make_array(true, false), make_array(true, false),
                make_array(true, false)),
-           make_not_null(&gen))) {
+           gen)) {
     const auto& interior = interiors[interior_index];
     const bool fill_interior =
         std::holds_alternative<creators::Sphere::InnerCube>(interior);
@@ -731,12 +735,12 @@ void test_sphere() {
         which_wedges,
         std::move(time_dependent_options),
         with_boundary_conditions ? create_boundary_condition(true) : nullptr};
-    test_sphere_construction(sphere, inner_radius, outer_radius, fill_interior,
-                             gsl::at(radial_partitioning, array_index),
-                             which_wedges, with_boundary_conditions,
-                             time_dependent ? times : std::vector<double>{0.},
-                             translation_velocity, size_values,
-                             use_hard_coded_time_dep_options);
+    test_sphere_construction(
+        gen, sphere, inner_radius, outer_radius, fill_interior,
+        gsl::at(radial_partitioning, array_index), which_wedges,
+        with_boundary_conditions,
+        time_dependent ? times : std::vector<double>{0.}, translation_velocity,
+        size_values, use_hard_coded_time_dep_options);
     TestHelpers::domain::creators::test_creation(
         option_string(inner_radius, outer_radius, interior, initial_refinement,
                       initial_extents, equiangular, equatorial_compression,
@@ -748,28 +752,10 @@ void test_sphere() {
   }
 }
 
-void test_kerr_horizon_conforming(const bool use_time_dependence) {
-  INFO(
-      "Check that inner radius is deformed to constant Boyer-Lindquist radius");
-  const double mass = 0.8;
-  const std::array<double, 3> spin{{0.0, 0.0, 0.9}};
-  const double r_plus = mass * (1. + sqrt(1. - dot(spin, spin)));
-  const double inner_radius = r_plus;
-  domain::creators::Sphere::TimeDepOptionType time_dependent_options{};
-  if (use_time_dependence) {
-    time_dependent_options = std::make_unique<
-        domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
-        0., 32_st, mass, spin, std::array<double, 3>{{0., 0., 0.}},
-        inner_radius, 4.);
-  } else {
-    time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
-        0.,
-        {{32_st, domain::creators::time_dependent_options::
-                     KerrSchildFromBoyerLindquist{mass, spin}}},
-        std::nullopt,
-        std::nullopt,
-        std::nullopt};
-  }
+void test_shape_distortion_general(
+    const double time,
+    domain::creators::Sphere::TimeDepOptionType time_dependent_options,
+    const double inner_radius, const tnsr::I<DataVector, 3>& x) {
   domain::creators::Sphere domain_creator{
       inner_radius,
       10.,
@@ -784,42 +770,119 @@ void test_kerr_horizon_conforming(const bool use_time_dependence) {
       std::move(time_dependent_options)};
   const auto domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
-  // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
-  const size_t num_points = 10;
-  MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<double> dist_phi{0., 2. * M_PI};
-  std::uniform_real_distribution<double> dist_theta{0., M_PI};
-  const std::array<DataVector, 2> theta_phi{
-      {make_with_random_values<DataVector>(
-           make_not_null(&gen), make_not_null(&dist_theta), num_points),
-       make_with_random_values<DataVector>(
-           make_not_null(&gen), make_not_null(&dist_phi), num_points)}};
-  const auto radius =
-      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius, theta_phi, mass, spin));
-  tnsr::I<DataVector, 3> x{};
-  get<0>(x) = radius * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
-  get<1>(x) = radius * sin(get<0>(theta_phi)) * sin(get<1>(theta_phi));
-  get<2>(x) = radius * cos(get<0>(theta_phi));
   // Map the coordinates through the domain. They should lie at the lower zeta
   // boundary of their block.
   const auto x_logical =
-      block_logical_coordinates(domain, x, 0., functions_of_time);
-  for (size_t i = 0; i < num_points; ++i) {
+      block_logical_coordinates(domain, x, time, functions_of_time);
+  for (size_t i = 0; i < get<0>(x).size(); ++i) {
     CAPTURE(x_logical[i]);
     REQUIRE(x_logical[i].has_value());
     CHECK(get<2>(x_logical[i]->data) == approx(-1.));
   }
 }
 
+void test_shape_distortion() {
+  domain::creators::Sphere::TimeDepOptionType time_dependent_options{};
+
+  // Set up theta phis
+  const size_t l_max = 16;
+  const ylm::Spherepack ylm{l_max, l_max};
+  const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
+
+  const double time = 0.7;
+  const double mass = 0.8;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.9}};
+  const double r_plus = mass * (1. + sqrt(1. - dot(spin, spin)));
+  const double inner_radius = r_plus;
+
+  const DataVector radius =
+      get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
+          inner_radius, theta_phi, mass, spin));
+  // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
+  tnsr::I<DataVector, 3> x{};
+  get<0>(x) = radius * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
+  get<1>(x) = radius * sin(get<0>(theta_phi)) * sin(get<1>(theta_phi));
+  get<2>(x) = radius * cos(get<0>(theta_phi));
+
+  {
+    INFO(
+        "Check that inner radius is deformed to constant Boyer-Lindquist "
+        "radius");
+
+    // Time dependence
+    time_dependent_options = std::make_unique<
+        domain::creators::time_dependence::Shape<domain::ObjectLabel::None>>(
+        time, l_max, mass, spin, std::array<double, 3>{{0., 0., 0.}},
+        inner_radius, 4.);
+
+    test_shape_distortion_general(time, std::move(time_dependent_options),
+                                  inner_radius, x);
+
+    // KerrSchild-BoyerLindquist. Use same x as above
+    time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
+        time,
+        {{l_max, domain::creators::time_dependent_options::
+                     KerrSchildFromBoyerLindquist{mass, spin}}},
+        std::nullopt,
+        std::nullopt,
+        std::nullopt};
+
+    test_shape_distortion_general(time, std::move(time_dependent_options),
+                                  inner_radius, x);
+  }
+
+  {
+    INFO("Check reading in Ylms from file");
+    const std::string h5_filename{"StrahlkorperCoefsFile.h5"};
+    const std::string subfile_name{"Ylm_coefs"};
+    if (file_system::check_if_file_exists(h5_filename)) {
+      file_system::rm(h5_filename, true);
+    }
+    ylm::Strahlkorper<Frame::Distorted> strahlkorper{l_max, l_max, radius,
+                                                     std::array{0.0, 0.0, 0.0}};
+    std::vector<std::string> legend{};
+    std::vector<double> data{};
+    ylm::fill_ylm_legend_and_data(make_not_null(&legend), make_not_null(&data),
+                                  strahlkorper, time, l_max);
+    {
+      h5::H5File<h5::AccessType::ReadWrite> test_file{h5_filename, true};
+      auto& subfile = test_file.insert<h5::Dat>("/" + subfile_name, legend);
+      subfile.append(data);
+      test_file.close_current_object();
+    }
+
+    time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
+        time,
+        {{l_max,
+          domain::creators::time_dependent_options::YlmsFromFile{
+              h5_filename, std::vector{subfile_name}, time, std::nullopt,
+              false},
+          // Constructing a strahlkorper from collocation radii will not exactly
+          // match the collocation points (see Strahlkorper constructor docs).
+          // For this reason, the 00 coef we calculate is not exact. This is why
+          // we just hard code the proper value here. If you change l_max, this
+          // value must also change.
+          std::array{-4.6442771561420703730e-01, 0.0, 0.0}}},
+        std::nullopt,
+        std::nullopt,
+        std::nullopt};
+
+    test_shape_distortion_general(time, std::move(time_dependent_options),
+                                  inner_radius, x);
+
+    if (file_system::check_if_file_exists(h5_filename)) {
+      file_system::rm(h5_filename, true);
+    }
+  }
+}
 }  // namespace
 
 // [[TimeOut, 15]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere", "[Domain][Unit]") {
+  MAKE_GENERATOR(gen);
   domain::creators::time_dependence::register_derived_with_charm();
   test_parse_errors();
-  test_sphere();
-  test_kerr_horizon_conforming(true);
-  test_kerr_horizon_conforming(false);
+  test_sphere(make_not_null(&gen));
+  test_shape_distortion();
 }
 }  // namespace domain

@@ -86,6 +86,18 @@ namespace domain::CoordinateMaps::TimeDependent {
  * FunctionOfTime representation we are using, because the resulting expressions
  * are much shorter.
  *
+ * \parblock
+ *
+ * \note Also note that the FunctionOfTime coefficients $\lambda_{lm}(t)$ are
+ * stored as *negative* of the coefficients you'd retrieve from a
+ * `Strahlkorper`. This is because you would typically represent the expansion
+ * of a strahlkorper as $S(r) = +\sum S_{lm} Y_{lm}$. However, in equation
+ * $\ref{eq:map_form_2}$ there is a minus sign on the $\sum \lambda_{lm}
+ * Y_{lm}$, not a plus sign. Therefore, $\lambda_{lm}(t)$ picks up an extra
+ * factor of $-1$. This is purely a choice of convention.
+ *
+ * \endparblock
+ *
  * An additional dimensionless domain-dependent transition function
  * \f$f(r, \theta, \phi)\f$ ensures that the distortion falls off correctly to
  * zero at a certain boundary (must be a block boundary). The function \f$f(r,
@@ -110,19 +122,19 @@ namespace domain::CoordinateMaps::TimeDependent {
  * The shape map maps the unmapped
  * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
  *
- * \f{equation}{
+ * \f{equation}{\label{eq:map_form_1}
  * x^i = \xi^i - (\xi^i - x_c^i) \frac{f(r, \theta, \phi)}{r} \sum_{lm}
  * \lambda_{lm}(t)Y_{lm}(\theta, \phi).
  * \f}
  *
  * Or written another way
  *
- * \f{equation}{\label{eq:map_center_plus_distortion}
+ * \f{equation}{\label{eq:map_form_2}
  * x^i = x_c^i + (\xi^i - x_c^i) \left(1 - \frac{f(r, \theta, \phi)}{r}
  * \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)\right).
  * \f}
  *
- * The form in Eq. \f$\ref{eq:map_center_plus_distortion}\f$ makes two things
+ * The form in Eq. \f$\ref{eq:map_form_2}\f$ makes two things
  * clearer
  *
  * 1. This shape map is just a radial distortion about \f$x_c^i\f$

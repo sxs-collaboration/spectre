@@ -72,6 +72,8 @@ target_link_libraries(
   DomainBoundaryConditions
   DomainTimeDependence
   GeneralRelativitySolutions
+  SphericalHarmonics
+  SphericalHarmonicsIO
   INTERFACE
   ErrorHandling
   Options
