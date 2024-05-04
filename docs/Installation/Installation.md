@@ -79,9 +79,6 @@ apt), or AppleClang 13.0.0 or later
   \cite Hdf5
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * LAPACK
-* [libsharp](https://github.com/Libsharp/libsharp) should be built with
-  support disabled for openmp and mpi, as we want all of our parallelism to
-  be accomplished via Charm++. \cite Libsharp
 * [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later
   \cite Libxsmm
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 or later.
@@ -140,6 +137,7 @@ apt), or AppleClang 13.0.0 or later
 
 #### Bundled:
 * [Brigand](https://github.com/edouarda/brigand)
+* [libsharp](https://github.com/Libsharp/libsharp)
 
 ## Clone the SpECTRE repository
 
