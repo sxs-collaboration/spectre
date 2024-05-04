@@ -32,4 +32,5 @@ spectre_target_headers(
   SendGhVarsToCce.hpp
   TimeManagement.hpp
   UpdateGauge.hpp
+  WriteScriBondiQuantities.hpp
   )
