@@ -51,7 +51,7 @@ set(FILES_WITH_DELETED_FEATURES
 set_source_files_properties(${FILES_WITH_DELETED_FEATURES}
     PROPERTIES COMPILE_FLAGS -w)
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 if(SPECTRE_Fortran_STATIC_LIBS)
   target_link_libraries(
