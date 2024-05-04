@@ -61,3 +61,9 @@ if(SPECTRE_Fortran_STATIC_LIBS)
     ${quadmath}
   )
 endif()
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  SpectreFlags
+)
