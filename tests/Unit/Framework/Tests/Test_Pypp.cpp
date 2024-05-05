@@ -653,8 +653,10 @@ void test_custom_conversion() {
 SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Framework/Tests/"};
   {
-    INFO("Testing scipy support");
-    CHECK((pypp::call<size_t>("scipy", "ndim", tnsr::abcc<double, 3>{})) == 4);
+    INFO("Testing numpy and scipy support");
+    CHECK((pypp::call<size_t>("numpy", "ndim", tnsr::abcc<double, 3>{})) == 4);
+    CHECK((pypp::call<double>("scipy.linalg", "det", tnsr::ii<double, 3>{})) ==
+          0.);
   }
 
   test_none();
