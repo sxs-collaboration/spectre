@@ -8,10 +8,8 @@ spectre_target_headers(
   AdaptiveSteppingDiagnostics.hpp
   HistoryEvolvedVariables.hpp
   IsUsingTimeSteppingErrorControl.hpp
-  PreviousStepperError.hpp
   StepChoosers.hpp
-  StepperError.hpp
-  StepperErrorUpdated.hpp
+  StepperErrors.hpp
   Time.hpp
   TimeAndPrevious.hpp
   TimeStep.hpp

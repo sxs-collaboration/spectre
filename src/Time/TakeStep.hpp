@@ -21,6 +21,7 @@ struct Metavariables;
 }  // namespace Parallel::Tags
 namespace Tags {
 struct TimeStep;
+struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 
@@ -35,21 +36,25 @@ template <typename System, bool LocalTimeStepping,
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
   record_time_stepper_data<System>(box);
   if constexpr (LocalTimeStepping) {
-    uint64_t step_attempts = 0;
-    const auto original_step = db::get<Tags::TimeStep>(*box);
-    do {
-      ++step_attempts;
+    if (db::get<Tags::TimeStepId>(*box).substep() == 0) {
+      uint64_t step_attempts = 0;
+      const auto original_step = db::get<Tags::TimeStep>(*box);
+      do {
+        ++step_attempts;
+        update_u<System>(box);
+      } while (not change_step_size<StepChoosersToUse>(box));
+      db::mutate<Tags::AdaptiveSteppingDiagnostics>(
+          [&](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
+              const TimeDelta& new_step) {
+            diags->number_of_step_rejections += step_attempts - 1;
+            if (original_step != new_step) {
+              ++diags->number_of_step_fraction_changes;
+            }
+          },
+          box, db::get<Tags::TimeStep>(*box));
+    } else {
       update_u<System>(box);
-    } while (not change_step_size<StepChoosersToUse>(box));
-    db::mutate<Tags::AdaptiveSteppingDiagnostics>(
-        [&](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
-            const TimeDelta& new_step) {
-          diags->number_of_step_rejections += step_attempts - 1;
-          if (original_step != new_step) {
-            ++diags->number_of_step_fraction_changes;
-          }
-        },
-        box, db::get<Tags::TimeStep>(*box));
+    }
   } else {
     update_u<System>(box);
   }

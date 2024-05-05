@@ -26,10 +26,8 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/PreviousStepperError.hpp"
 #include "Time/Tags/StepChoosers.hpp"
-#include "Time/Tags/StepperError.hpp"
-#include "Time/Tags/StepperErrorUpdated.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -169,24 +167,23 @@ void test_lts() {
           Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
           Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
           Tags::Next<Tags::TimeStep>, EvolvedVariable,
-          Tags::dt<EvolvedVariable>, Tags::StepperError<EvolvedVariable>,
-          Tags::PreviousStepperError<EvolvedVariable>,
+          Tags::dt<EvolvedVariable>, Tags::StepperErrors<EvolvedVariable>,
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-          ::Tags::IsUsingTimeSteppingErrorControl, Tags::StepperErrorUpdated,
+          ::Tags::IsUsingTimeSteppingErrorControl,
           Tags::AdaptiveSteppingDiagnostics>,
       tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>,
                       typename Metavariables::system::
                           compute_largest_characteristic_speed>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
-      initial_values, DataVector{5, 0.0}, DataVector{}, DataVector{},
-      std::move(history),
+      initial_values, DataVector{5, 0.0},
+      Tags::StepperErrors<EvolvedVariable>::type{}, std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),
-      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), true, false,
+      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), false,
       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   // update the rhs

@@ -290,7 +290,6 @@ bool AdamsMoultonPc<Monotonic>::can_change_step_size_impl(
   // just force that until we've passed all the self-start times.
   const evolution_less_equal<Time> less_equal{time_id.time_runs_forward()};
   return not ::SelfStart::is_self_starting(time_id) and
-         time_id.substep() == 0 and
          alg::all_of(history, [&](const auto& record) {
            return less_equal(record.time_step_id.step_time(),
                              time_id.step_time());

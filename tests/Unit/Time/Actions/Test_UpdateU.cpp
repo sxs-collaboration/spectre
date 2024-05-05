@@ -19,12 +19,12 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
 #include "Time/Slab.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/PreviousStepperError.hpp"
-#include "Time/Tags/StepperError.hpp"
-#include "Time/Tags/StepperErrorUpdated.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
+#include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -186,13 +186,12 @@ void test_stepper_error() {
   auto box = db::create<
       db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
                         ::Tags::IsUsingTimeSteppingErrorControl, variables_tag,
-                        history_tag, Tags::StepperError<variables_tag>,
-                        Tags::PreviousStepperError<variables_tag>,
-                        Tags::StepperErrorUpdated>,
+                        history_tag, Tags::StepperErrors<variables_tag>>,
       time_stepper_ref_tags<TimeStepper>>(
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::Rk3HesthavenSsp>()),
-      time_step, true, 1., history_tag::type{3}, 1234.5, 1234.5, false);
+      time_step, true, 1., history_tag::type{3},
+      Tags::StepperErrors<variables_tag>::type{});
 
   const std::array<TimeDelta, 3> substep_offsets{
       {0 * slab.duration(), time_step, time_step / 2}};
@@ -213,26 +212,35 @@ void test_stepper_error() {
     update_u<SingleVariableSystem>(make_not_null(&box));
   };
 
-  using error_tag = Tags::StepperError<variables_tag>;
-  using previous_error_tag = Tags::PreviousStepperError<variables_tag>;
+  using error_tag = Tags::StepperErrors<variables_tag>;
   do_substep(slab.start(), 0);
-  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  CHECK(not db::get<error_tag>(box)[1].has_value());
   do_substep(slab.start(), 1);
-  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  CHECK(not db::get<error_tag>(box)[1].has_value());
   do_substep(slab.start(), 2);
-  CHECK(db::get<Tags::StepperErrorUpdated>(box));
-  CHECK(db::get<error_tag>(box) != 1234.5);
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
 
-  const auto first_step_error = db::get<error_tag>(box);
+  const auto first_step_error = db::get<error_tag>(box)[1]->error;
   const auto second_step = slab.start() + time_step;
   do_substep(second_step, 0);
-  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
   do_substep(second_step, 1);
-  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
   do_substep(second_step, 2);
-  CHECK(db::get<Tags::StepperErrorUpdated>(box));
-  CHECK(db::get<error_tag>(box) != first_step_error);
-  CHECK(db::get<previous_error_tag>(box) == first_step_error);
+  REQUIRE(db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());
+  CHECK(db::get<error_tag>(box)[1]->step_time == second_step);
+  CHECK(db::get<error_tag>(box)[0]->error == first_step_error);
+  CHECK(db::get<error_tag>(box)[1]->error != first_step_error);
 }
 }  // namespace
 
