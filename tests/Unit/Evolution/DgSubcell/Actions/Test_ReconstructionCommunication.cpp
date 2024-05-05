@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -387,13 +388,12 @@ void test(const bool use_cell_centered_flux) {
         runner, east_id);
     CHECK_ITERABLE_APPROX(
         expected_east_data,
-        *std::get<2>(
-            east_data.at(time_step_id)
-                .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})));
-    CHECK(std::get<5>(east_data.at(time_step_id)
-                          .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(),
-                                                 self_id})) ==
-          self_tci_decision);
+        east_data.at(time_step_id)
+            .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})
+            .ghost_cell_data.value());
+    CHECK(east_data.at(time_step_id)
+              .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})
+              .tci_status == self_tci_decision);
   }
   if constexpr (Dim > 1) {
     const auto direction = Direction<Dim>::lower_eta();
@@ -437,14 +437,15 @@ void test(const bool use_cell_centered_flux) {
     const auto& south_data = ActionTesting::get_inbox_tag<
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
         runner, south_id);
-    CHECK(expected_south_data ==
-          *std::get<2>(south_data.at(time_step_id)
-                           .at(DirectionalId<Dim>{
-                               orientation(direction.opposite()), self_id})));
-    CHECK(std::get<5>(south_data.at(time_step_id)
-                          .at(DirectionalId<Dim>{
-                              orientation(direction.opposite()), self_id})) ==
-          self_tci_decision);
+    CHECK(
+        expected_south_data ==
+        south_data.at(time_step_id)
+            .at(DirectionalId<Dim>{orientation(direction.opposite()), self_id})
+            .ghost_cell_data.value());
+    CHECK(
+        south_data.at(time_step_id)
+            .at(DirectionalId<Dim>{orientation(direction.opposite()), self_id})
+            .tci_status == self_tci_decision);
   }
 
   // Set the inbox data on self_id and then check that it gets processed
@@ -469,12 +470,12 @@ void test(const bool use_cell_centered_flux) {
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{
-                DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                std::tuple{// subcell_mesh because we are sending the projected
-                           // data right now.
-                           subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
-                           boundary_data, next_time_step_id, -10}});
+            std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
+                      evolution::dg::BoundaryData<Dim>{
+                          // subcell_mesh because we are sending the projected
+                          // data right now.
+                          subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
+                          boundary_data, next_time_step_id, -10}});
   }
   [[maybe_unused]] DataVector south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
@@ -490,12 +491,12 @@ void test(const bool use_cell_centered_flux) {
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{
-                DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                std::tuple{// subcell_mesh because we are sending the projected
-                           // data right now.
-                           subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
-                           std::nullopt, next_time_step_id, -15}});
+            std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                      evolution::dg::BoundaryData<Dim>{
+                          // subcell_mesh because we are sending the projected
+                          // data right now.
+                          subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
+                          std::nullopt, next_time_step_id, -15}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id

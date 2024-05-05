@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -23,10 +24,7 @@ namespace evolution::dg::subcell {
 template <size_t Dim>
 void neighbor_tci_decision(
     gsl::not_null<db::Access*> box,
-    const std::pair<
-        const TimeStepId,
-        DirectionalIdMap<
-            Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>>>&
+    const std::pair<const TimeStepId,
+                    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell

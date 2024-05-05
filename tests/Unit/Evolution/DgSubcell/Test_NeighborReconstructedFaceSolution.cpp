@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -39,9 +40,7 @@ template <size_t Dim>
 using NeighborReconstructionMap = DirectionalIdMap<Dim, DataVector>;
 
 template <size_t Dim>
-using MortarData =
-    std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-               std::optional<DataVector>, ::TimeStepId, int>;
+using MortarData = evolution::dg::BoundaryData<Dim>;
 
 template <size_t Dim>
 using MortarDataMap = DirectionalIdMap<Dim, MortarData<Dim>>;
@@ -139,17 +138,20 @@ void test() {
         ElementId<Dim>{2 * d + 1}};
     CAPTURE(id);
     REQUIRE(mortar_data_from_neighbors.second.contains(id));
-    REQUIRE(std::get<2>(mortar_data_from_neighbors.second.at(id)).has_value());
-    REQUIRE(std::get<3>(mortar_data_from_neighbors.second.at(id)).has_value());
-    CHECK(*std::get<3>(mortar_data_from_neighbors.second.at(id)) ==
+    REQUIRE(
+        mortar_data_from_neighbors.second.at(id).ghost_cell_data.has_value());
+    REQUIRE(mortar_data_from_neighbors.second.at(id)
+                .boundary_correction_data.has_value());
+    CHECK(mortar_data_from_neighbors.second.at(id)
+              .boundary_correction_data.value() ==
           (DataVector{
-              std::get<2>(mortar_data_from_neighbors.second.at(id))->data(),
-              std::get<2>(mortar_data_from_neighbors.second.at(id))->size() -
+              mortar_data_from_neighbors.second.at(id).ghost_cell_data->data(),
+              mortar_data_from_neighbors.second.at(id).ghost_cell_data->size() -
                   4}));
     if (d_is_odd) {
-      CHECK(std::get<5>(mortar_data_from_neighbors.second.at(id)) == 4);
+      CHECK(mortar_data_from_neighbors.second.at(id).tci_status == 4);
     } else {
-      CHECK(std::get<5>(mortar_data_from_neighbors.second.at(id)) == 2);
+      CHECK(mortar_data_from_neighbors.second.at(id).tci_status == 2);
     }
   }
 }

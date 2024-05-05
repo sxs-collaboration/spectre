@@ -31,6 +31,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -716,9 +717,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
         }
       }();
 
-      using SendData =
-          std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                     std::optional<DataVector>, ::TimeStepId, int>;
+      using SendData = evolution::dg::BoundaryData<Dim>;
       SendData data{};
 
       if (neighbor_count == total_neighbors) {

@@ -45,6 +45,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -243,14 +244,13 @@ struct SendDataForReconstruction {
                             static_cast<int>(
                                 rdmp_tci_data.min_variables_values.size())));
 
-        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                   std::optional<DataVector>, ::TimeStepId, int>
-            data{subcell_mesh,
-                 dg_mesh.slice_away(direction.dimension()),
-                 std::move(subcell_data_to_send),
-                 std::nullopt,
-                 next_time_step_id,
-                 tci_decision};
+        evolution::dg::BoundaryData<Dim> data{
+            subcell_mesh,
+            dg_mesh.slice_away(direction.dimension()),
+            std::move(subcell_data_to_send),
+            std::nullopt,
+            next_time_step_id,
+            tci_decision};
 
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -320,10 +320,7 @@ struct ReceiveDataForReconstruction {
     using Key = DirectionalId<Dim>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
-             DirectionalIdMap<Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                                              std::optional<DataVector>,
-                                              std::optional<DataVector>,
-                                              ::TimeStepId, int>>>& inbox =
+             DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
@@ -335,10 +332,8 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    DirectionalIdMap<
-        Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                        std::optional<DataVector>, ::TimeStepId, int>>
-        received_data = std::move(inbox[current_time_step_id]);
+    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>> received_data =
+        std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
@@ -376,22 +371,25 @@ struct ReceiveDataForReconstruction {
             const auto& mortar_id = received_mortar_data.first;
             try {
               mortar_next_time_step_id->at(mortar_id) =
-                  std::get<4>(received_mortar_data.second);
+                  received_mortar_data.second.validity_range;
             } catch (std::exception& e) {
               ERROR("Failed retrieving the MortarId: ("
                     << mortar_id.direction << ',' << mortar_id.id
                     << ") from the mortar_next_time_step_id. Got exception: "
                     << e.what());
             }
-            if (std::get<3>(received_mortar_data.second).has_value()) {
+            if (received_mortar_data.second.boundary_correction_data
+                    .has_value()) {
               mortar_data->at(mortar_id).insert_neighbor_mortar_data(
                   current_time_step_id,
-                  std::get<1>(received_mortar_data.second),
-                  std::move(*std::get<3>(received_mortar_data.second)));
+                  received_mortar_data.second.interface_mesh,
+                  std::move(
+                      *received_mortar_data.second.boundary_correction_data));
             }
             // Set new neighbor mesh
             neighbor_mesh->insert_or_assign(
-                mortar_id, std::get<0>(received_mortar_data.second));
+                mortar_id,
+                received_mortar_data.second.volume_mesh_ghost_cell_data);
           }
 
           ASSERT(ghost_data_ptr->empty(),
@@ -414,8 +412,8 @@ struct ReceiveDataForReconstruction {
               ASSERT(ghost_data_ptr->count(directional_element_id) == 0,
                      "Found neighbor already inserted in direction "
                          << direction << " with ElementId " << neighbor);
-              ASSERT(std::get<2>(received_data[directional_element_id])
-                         .has_value(),
+              ASSERT(received_data[directional_element_id]
+                         .ghost_cell_data.has_value(),
                      "Received subcell data message that does not contain any "
                      "actual subcell data for reconstruction.");
               // Collect the max/min of u(t^n) for the RDMP as we receive data.
@@ -423,7 +421,7 @@ struct ReceiveDataForReconstruction {
 
               evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
                   rdmp_tci_data_ptr, ghost_data_ptr,
-                  *std::get<2>(received_data[directional_element_id]),
+                  *received_data[directional_element_id].ghost_cell_data,
                   number_of_rdmp_vars, directional_element_id,
                   neighbor_mesh->at(directional_element_id), element,
                   subcell_mesh, ghost_zone_size,
@@ -433,7 +431,7 @@ struct ReceiveDataForReconstruction {
                          << directional_element_id.direction << ", "
                          << directional_element_id.id << ") but doesn't");
               neighbor_tci_decisions->at(directional_element_id) =
-                  std::get<5>(received_data[directional_element_id]);
+                  received_data[directional_element_id].tci_status;
             }
           }
         },

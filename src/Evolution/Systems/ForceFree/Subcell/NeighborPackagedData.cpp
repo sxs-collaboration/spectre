@@ -33,6 +33,7 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ForceFree/FiniteDifference/Factory.hpp"
@@ -265,8 +266,5 @@ template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
     3, ForceFree::subcell::NeighborPackagedData>(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
-        const TimeStepId,
-        DirectionalIdMap<
-            3, std::tuple<Mesh<3>, Mesh<2>, std::optional<DataVector>,
-                          std::optional<DataVector>, ::TimeStepId, int>>>*>
+        const TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>
         received_temporal_id_and_data);

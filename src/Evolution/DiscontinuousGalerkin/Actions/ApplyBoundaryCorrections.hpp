@@ -25,6 +25,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -74,20 +75,13 @@ void neighbor_reconstructed_face_solution(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
         const TimeStepId,
-        DirectionalIdMap<
-            VolumeDim,
-            std::tuple<Mesh<VolumeDim>, Mesh<VolumeDim - 1>,
-                       std::optional<DataVector>, std::optional<DataVector>,
-                       ::TimeStepId, int>>>*>
+        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
         received_temporal_id_and_data);
 template <size_t Dim>
 void neighbor_tci_decision(
     gsl::not_null<db::Access*> box,
-    const std::pair<
-        const TimeStepId,
-        DirectionalIdMap<
-            Dim, std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>>>&
+    const std::pair<const TimeStepId,
+                    DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
@@ -117,11 +111,8 @@ bool receive_boundary_data_global_time_stepping(
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
   using Key = DirectionalId<volume_dim>;
   std::map<TimeStepId,
-           DirectionalIdMap<
-               volume_dim,
-               std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                          std::optional<DataVector>, std::optional<DataVector>,
-                          ::TimeStepId, int>>>& inbox =
+           DirectionalIdMap<volume_dim,
+                            evolution::dg::BoundaryData<volume_dim>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
@@ -175,18 +166,22 @@ bool receive_boundary_data_global_time_stepping(
                      << " but actually received at time "
                      << received_temporal_id_and_data->first);
           neighbor_mesh->insert_or_assign(
-              mortar_id, std::get<0>(received_mortar_data.second));
+              mortar_id,
+              received_mortar_data.second.volume_mesh_ghost_cell_data);
           mortar_next_time_step_id->at(mortar_id) =
-              std::get<4>(received_mortar_data.second);
+              received_mortar_data.second.validity_range;
           ASSERT(using_subcell_v<Metavariables> or
-                     std::get<3>(received_mortar_data.second).has_value(),
+                     received_mortar_data.second.boundary_correction_data
+                         .has_value(),
                  "Must receive number boundary correction data when not using "
                  "DG-subcell.");
-          if (std::get<3>(received_mortar_data.second).has_value()) {
+          if (received_mortar_data.second.boundary_correction_data
+                  .has_value()) {
             mortar_data->at(mortar_id).insert_neighbor_mortar_data(
                 received_temporal_id_and_data->first,
-                std::get<1>(received_mortar_data.second),
-                std::move(*std::get<3>(received_mortar_data.second)));
+                received_mortar_data.second.interface_mesh,
+                std::move(received_mortar_data.second.boundary_correction_data
+                              .value()));
           }
         }
       },
@@ -214,14 +209,10 @@ bool receive_boundary_data_local_time_stepping(
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
   using Key = DirectionalId<Dim>;
-  std::map<TimeStepId,
-           DirectionalIdMap<
-               Dim,
-               std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                          std::optional<DataVector>, std::optional<DataVector>,
-                          ::TimeStepId, int>>>& inbox =
-      tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Dim>>(*inboxes);
+  std::map<TimeStepId, DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
+      inbox = tuples::get<
+          evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+          *inboxes);
 
   const auto needed_time = [&box]() {
     const LtsTimeStepper& time_stepper =
@@ -285,17 +276,20 @@ bool receive_boundary_data_local_time_stepping(
             // - the current TimeStepId of the neighbor
             // - the current face mesh of the neighbor
             // - the current boundary correction data of the neighbor
-            ASSERT(std::get<3>(received_mortar_data->second).has_value(),
+            ASSERT(received_mortar_data->second.boundary_correction_data
+                       .has_value(),
                    "Did not receive boundary correction data from the "
                    "neighbor\nMortarId: "
                        << mortar_id
                        << "\nTimeStepId: " << mortar_next_time_step_id);
             neighbor_mesh->insert_or_assign(
-                mortar_id, std::get<0>(received_mortar_data->second));
+                mortar_id,
+                received_mortar_data->second.volume_mesh_ghost_cell_data);
             neighbor_mortar_data.insert_neighbor_mortar_data(
                 mortar_next_time_step_id,
-                std::get<1>(received_mortar_data->second),
-                std::move(*std::get<3>(received_mortar_data->second)));
+                received_mortar_data->second.interface_mesh,
+                std::move(received_mortar_data->second.boundary_correction_data
+                              .value()));
             // We don't yet communicate the integration order, because
             // we don't have any variable-order methods.  The
             // fixed-order methods ignore the field.
@@ -303,7 +297,7 @@ bool receive_boundary_data_local_time_stepping(
                 mortar_next_time_step_id, std::numeric_limits<size_t>::max(),
                 std::move(neighbor_mortar_data));
             mortar_next_time_step_id =
-                std::get<4>(received_mortar_data->second);
+                received_mortar_data->second.validity_range;
             time_entry->second.erase(received_mortar_data);
             if (time_entry->second.empty()) {
               inbox.erase(time_entry);
@@ -590,9 +584,11 @@ struct ApplyBoundaryCorrections {
                   neighbor_mesh_and_data =
                       *neighbor_mortar_data.neighbor_mortar_data();
               local_data_on_mortar.set_data_ref(
+                  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                   const_cast<double*>(std::get<1>(local_mesh_and_data).data()),
                   std::get<1>(local_mesh_and_data).size());
               neighbor_data_on_mortar.set_data_ref(
+                  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                   const_cast<double*>(
                       std::get<1>(neighbor_mesh_and_data).data()),
                   std::get<1>(neighbor_mesh_and_data).size());

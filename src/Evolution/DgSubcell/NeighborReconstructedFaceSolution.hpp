@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -52,10 +53,6 @@ void neighbor_reconstructed_face_solution(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
         const TimeStepId,
-        DirectionalIdMap<
-            VolumeDim,
-            std::tuple<Mesh<VolumeDim>, Mesh<VolumeDim - 1>,
-                       std::optional<DataVector>, std::optional<DataVector>,
-                       ::TimeStepId, int>>>*>
+        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
