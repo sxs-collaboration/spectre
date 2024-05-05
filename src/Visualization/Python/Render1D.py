@@ -9,6 +9,7 @@ from itertools import cycle
 from typing import Dict, Optional
 
 import click
+import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import lagrange
@@ -23,7 +24,10 @@ from spectre.Domain import (
 )
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.Spectral import Basis
-from spectre.Visualization.Plot import apply_stylesheet_command
+from spectre.Visualization.Plot import (
+    apply_stylesheet_command,
+    show_or_save_plot_command,
+)
 from spectre.Visualization.PlotDatFile import parse_functions
 
 logger = logging.getLogger(__name__)
@@ -232,15 +236,6 @@ def plot_element(
     ),
 )
 @click.option(
-    "-o",
-    "--output",
-    help=(
-        "Set the name of the output file you want "
-        "written. For animations this saves an mp4 file and "
-        "for stills a pdf."
-    ),
-)
-@click.option(
     "--interval",
     default=100,
     type=float,
@@ -276,6 +271,7 @@ def plot_element(
     "--title", "-t", help="Title of the graph.", show_default="subfile name"
 )
 @apply_stylesheet_command()
+@show_or_save_plot_command()
 @click.option("--show-collocation-points", is_flag=True)
 @click.option("--show-element-boundaries", is_flag=True)
 @click.option("--show-basis-polynomials", is_flag=True)
@@ -284,7 +280,6 @@ def render_1d_command(
     subfile_name,
     list_vars,
     vars,
-    output,
     x_label,
     y_label,
     x_logscale,
@@ -402,63 +397,30 @@ def render_1d_command(
     if y_bounds:
         plt.ylim(*y_bounds)
 
-    if animate:
-        import matplotlib.animation
-        import rich.progress
+    # Animate the plot or return early
+    if not animate:
+        return fig
 
-        progress = rich.progress.Progress(
-            rich.progress.TextColumn(
-                "[progress.description]{task.description}"
-            ),
-            rich.progress.BarColumn(),
-            rich.progress.MofNCompleteColumn(),
-            rich.progress.TimeRemainingColumn(),
-        )
-        task_id = progress.add_task("Rendering", total=len(obs_ids))
-
-        def update(frame):
-            obs_id = obs_ids[frame]
-            obs_value = volfiles[0].get_observation_value(obs_id)
-            if domain.is_time_dependent():
-                functions_of_time = deserialize_functions_of_time(
-                    volfiles[0].get_functions_of_time(obs_id)
-                )
-                plot_element_kwargs["functions_of_time"] = functions_of_time
-                plot_element_kwargs["time"] = obs_value
-            title_handle.set_text(title if title else f"t = {obs_value:g}")
-            for element, vars_data in iter_elements(volfiles, obs_id, vars):
-                plot_element(element, vars_data, **plot_element_kwargs)
-            progress.update(task_id, completed=frame + 1)
-
-        anim = matplotlib.animation.FuncAnimation(
-            fig=fig,
-            func=update,
-            frames=range(len(obs_ids)),
-            interval=interval,
-            blit=False,
-        )
-
-    if output:
-        if animate:
-            if not output.endswith(".mp4"):
-                output += ".mp4"
-            with progress:
-                anim.save(output, writer="ffmpeg")
-        else:
-            if not output.endswith(".pdf"):
-                output += ".pdf"
-            plt.savefig(output, bbox_inches="tight")
-    else:
-        if not os.environ.get("DISPLAY"):
-            logger.warning(
-                "No 'DISPLAY' environment variable is configured so plotting "
-                "interactively is unlikely to work. Write the plot to a file "
-                "with the --output/-o option."
+    def update_plot(frame):
+        obs_id = obs_ids[frame]
+        obs_value = volfiles[0].get_observation_value(obs_id)
+        if domain.is_time_dependent():
+            functions_of_time = deserialize_functions_of_time(
+                volfiles[0].get_functions_of_time(obs_id)
             )
-        plt.show()
+            plot_element_kwargs["functions_of_time"] = functions_of_time
+            plot_element_kwargs["time"] = obs_value
+        title_handle.set_text(title if title else f"t = {obs_value:g}")
+        for element, vars_data in iter_elements(volfiles, obs_id, vars):
+            plot_element(element, vars_data, **plot_element_kwargs)
 
-    for h5file in open_h5_files:
-        h5file.close()
+    return matplotlib.animation.FuncAnimation(
+        fig=fig,
+        func=update_plot,
+        frames=len(obs_ids),
+        interval=interval,
+        blit=False,
+    )
 
 
 if __name__ == "__main__":

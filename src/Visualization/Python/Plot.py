@@ -6,7 +6,9 @@ import logging
 import os
 
 import click
+import matplotlib.animation
 import matplotlib.pyplot as plt
+import rich.progress
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +51,11 @@ def apply_stylesheet_command():
 def show_or_save_plot_command():
     """Add an 'output' CLI option and show or save the plot accordingly
 
-    Apply this decorator to a CLI command that generates a plot. At the end of
-    the command, the plot is either shown interactively or saved to a file,
-    depending on the user-specified 'output' option.
+    Apply this decorator to a CLI command that generates a plot or animation.
+    Return the `matplotlib.Figure` or `matplotlib.animation.Animation` from your
+    command. At the end of the command, the plot or animation is either shown
+    interactively or saved to a file, depending on the user-specified 'output'
+    option.
     """
 
     def decorator(f):
@@ -63,7 +67,8 @@ def show_or_save_plot_command():
                 "Name of the output plot file. If unspecified, the plot is "
                 "shown interactively, which only works on machines with a "
                 "window server. If a filename is specified, its extension "
-                "determines the file format, e.g. 'plot.png' or 'plot.pdf'. "
+                "determines the file format, e.g. 'plot.png' or 'plot.pdf' "
+                "or 'animation.gif'. "
                 "If no extension is given, the file format depends on the "
                 "system settings (see matplotlib.pyplot.savefig docs)."
             ),
@@ -72,10 +77,28 @@ def show_or_save_plot_command():
         @functools.wraps(f)
         def command(output, **kwargs):
             # Call the original function
-            f(**kwargs)
+            fig_or_anim = f(**kwargs)
             # Show or save the plot
             if output:
-                plt.savefig(output)
+                if isinstance(fig_or_anim, matplotlib.animation.Animation):
+                    progress = rich.progress.Progress(
+                        rich.progress.TextColumn(
+                            "[progress.description]{task.description}"
+                        ),
+                        rich.progress.BarColumn(),
+                        rich.progress.MofNCompleteColumn(),
+                        rich.progress.TimeRemainingColumn(),
+                    )
+                    task_id = progress.add_task("Rendering frames", total=None)
+                    with progress:
+                        fig_or_anim.save(
+                            output,
+                            progress_callback=lambda i, n: progress.update(
+                                task_id, completed=i + 1, total=n
+                            ),
+                        )
+                else:
+                    plt.savefig(output)
             else:
                 if not os.environ.get("DISPLAY"):
                     logger.warning(
