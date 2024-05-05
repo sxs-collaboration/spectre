@@ -67,8 +67,9 @@ def show_or_save_plot_command():
                 "Name of the output plot file. If unspecified, the plot is "
                 "shown interactively, which only works on machines with a "
                 "window server. If a filename is specified, its extension "
-                "determines the file format, e.g. 'plot.png' or 'plot.pdf' "
-                "or 'animation.gif'. "
+                "determines the file format, e.g. 'plot.png' or 'plot.pdf' for "
+                "static plots and 'animation.gif' or 'animation.mp4' (requires "
+                "ffmpeg) for animations. "
                 "If no extension is given, the file format depends on the "
                 "system settings (see matplotlib.pyplot.savefig docs)."
             ),
