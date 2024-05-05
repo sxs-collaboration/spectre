@@ -56,23 +56,34 @@ DomainCreator:
       UseLogarithmicMap: true
     Envelope:
       Radius: 100.0
-      RadialDistribution: Projective
-    OuterShell:
-      Radius: 1493.0
+      # Radial distribution is logarithmic to transition from grid point spacing
+      # around the excisions to the grid point spacing in the outer shell
       RadialDistribution: Logarithmic
+    OuterShell:
+      Radius: 600.0
+      # Radial distribution is linear to resolve gravitational waves
+      RadialDistribution: Linear
       OpeningAngle: 120.0
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     UseEquiangularMap: True
+    # These values have been tested to be stable for full equal mass mergers
+    # with constraints ~10^-7 for L=1, P=10
     InitialRefinement:
-      ObjectAShell:   [{{ L + 2 }}, {{ L + 2 }}, {{ L + 3 }}]
+      ObjectAShell:   [{{ L     }}, {{ L     }}, {{ L + 1 }}]
       ObjectACube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L     }}]
-      ObjectBShell:   [{{ L + 2 }}, {{ L + 2 }}, {{ L + 3 }}]
+      ObjectBShell:   [{{ L     }}, {{ L     }}, {{ L + 1 }}]
       ObjectBCube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L     }}]
-      Envelope:       [{{ L + 1 }}, {{ L + 1 }}, {{ L + 2 }}]
-      OuterShell:     [{{ L + 1 }}, {{ L + 1 }}, {{ L + 4 }}]
-    InitialGridPoints: {{ P + 1 }}
+      Envelope:       [{{ L     }}, {{ L     }}, {{ L     }}]
+      OuterShell:     [{{ L     }}, {{ L     }}, {{ L + 1 }}]
+    InitialGridPoints:
+      ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
+      ObjectACube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
+      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
+      ObjectBCube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
+      Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
+      OuterShell:     [{{ P + 2 }}, {{ P + 2 }}, {{ P + 4 }}]
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
@@ -109,9 +120,10 @@ Evolution:
         MaxFactor: 2
         MinFactor: 0.25
         SafetyFactor: 0.95
+  # Found that order 4 offers a significant speedup compared to order 5
   TimeStepper:
     AdamsBashforth:
-      Order: 5
+      Order: 4
 
 # Set gauge and constraint damping parameters.
 # The values here are chosen empirically based on values that proved
@@ -128,7 +140,7 @@ EvolutionSystem:
     GaugeCondition:
       DampedHarmonic:
         SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0 / sqrt(34.54)
-        Amplitudes: [1.0, 1.0, 1.0]         # From SpEC run: damped harmonic
+        Amplitudes: [1.0, 0.0, 1.0]         # From SpEC run: damped harmonic
         Exponents: [2, 2, 2]                # From SpEC run
     DampingFunctionGamma0:
       TimeDependentTripleGaussian:
@@ -167,11 +179,13 @@ EvolutionSystem:
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
 
+# Half power was determined to filter only the last term up to N = 19
+# since we support up to 20 gridpoints.
 Filtering:
   ExpFilter0:
     Alpha: 36.0
-    HalfPower: 24
-    Enable: false
+    HalfPower: 420
+    Enable: true
     BlocksToFilter: All
 
 SpatialDiscretization:
@@ -235,6 +249,9 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
+          - Name: ConstraintEnergy
+            NormType: L2Norm
+            Components: Sum
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -261,7 +278,7 @@ EventsAndTriggers:
       - ObservationExcisionBoundaryB
   - Trigger:
       SeparationLessThan:
-        Value: 2.0
+        Value: 2.5
     Events:
       - ObservationAhC
   # Never terminate... run until something fails!
@@ -286,21 +303,21 @@ ApparentHorizons:
       DivergenceTol: 1.2
       DivergenceIter: 5
       MaxIts: 100
-    Verbosity: Verbose
+    Verbosity: Quiet
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *LMax
       Radius: {{ ExcisionRadiusB * 1.5 }}
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
-    Verbosity: Verbose
+    Verbosity: Quiet
   ObservationAhC:
     InitialGuess:
       LMax: 20
       Radius: 10.0
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
-    Verbosity: Verbose
+    Verbosity: Quiet
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA
@@ -367,7 +384,7 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
     Controller:
-      UpdateFraction: 0.3
+      UpdateFraction: 0.03
     TimescaleTuner:
       InitialTimescales: [0.2, 0.2, 0.2]
       MinTimescale: 1.0e-2
@@ -400,9 +417,9 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: true
     Controller:
-      UpdateFraction: 0.06
+      UpdateFraction: 0.2
     TimescaleTuner:
-      InitialTimescales: 0.2
+      InitialTimescales: 0.02
       MinTimescale: 1.0e-4
       MaxTimescale: 20.0
       IncreaseThreshold: 2.5e-4
