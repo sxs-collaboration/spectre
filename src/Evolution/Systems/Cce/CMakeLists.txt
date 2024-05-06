@@ -21,6 +21,7 @@ spectre_target_sources(
   ScriPlusValues.cpp
   SpecBoundaryData.cpp
   WorldtubeBufferUpdater.cpp
+  WorldtubeConstraint.cpp
   WorldtubeDataManager.cpp
   )
 
@@ -52,6 +53,7 @@ spectre_target_headers(
   KleinGordonSystem.hpp
   Tags.hpp
   WorldtubeBufferUpdater.hpp
+  WorldtubeConstraint.hpp
   WorldtubeDataManager.hpp
   )
 

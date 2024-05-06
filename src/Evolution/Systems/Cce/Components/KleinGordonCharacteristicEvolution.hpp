@@ -11,6 +11,7 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
+#include "Evolution/Systems/Cce/WorldtubeConstraint.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"

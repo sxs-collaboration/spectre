@@ -7,6 +7,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
+#include "Evolution/Systems/Cce/WorldtubeConstraint.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
