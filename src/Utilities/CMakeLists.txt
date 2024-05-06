@@ -101,7 +101,7 @@ target_link_libraries(
 # As of Sep 1, 2023 libxsmm has an issue with lldb on ARM Macs (detecting
 # the CPU architecture raises SIGILL signals when loading the libxsmm dynamic
 # library). Just not linking libxsmm in Debug mode works around that.
-if (NOT ENABLE_SPECTRE_DEBUG
+if (NOT SPECTRE_DEBUG
     OR NOT (APPLE AND CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64"))
   target_link_libraries(
     ${LIBRARY}
