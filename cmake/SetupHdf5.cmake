@@ -52,6 +52,34 @@ if(HDF5_IS_PARALLEL)
   endif()
 endif()
 
+if(HDF5_USE_STATIC_LIBRARIES)
+  # If we are using static libraries for HDF5, try to use static libraries
+  # for the libsz and transitive libaec dependency. These aren't very
+  # common, while other dependencies like libz are, so we leave those
+  # as shared library dependencies.
+  get_target_property(
+    _HDF5_INTERFACE_LINK_LIBS HDF5::HDF5 INTERFACE_LINK_LIBRARIES)
+  string(FIND
+    "${_HDF5_INTERFACE_LINK_LIBS}" "libsz.so" _LOCATION_OF_LIBSZ)
+  if (NOT ${_LOCATION_OF_LIBSZ} EQUAL -1)
+    find_library(_libsz NAMES libsz.a)
+    if(_libsz)
+      string(REPLACE
+        "libsz.so" "libsz.a" _HDF5_INTERFACE_LINK_LIBS
+        "${_HDF5_INTERFACE_LINK_LIBS}")
+      find_library(_libaec NAMES libaec.a)
+      if(_libaec)
+        list(APPEND _HDF5_INTERFACE_LINK_LIBS ${_libaec})
+      endif()
+    endif()
+  endif()
+  set_target_properties(
+    HDF5::HDF5
+    PROPERTIES
+    INTERFACE_LINK_LIBRARIES "${_HDF5_INTERFACE_LINK_LIBS}"
+  )
+endif()
+
 # Check if file locking API is available. The versions supporting this feature
 # are listed here:
 # https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md
