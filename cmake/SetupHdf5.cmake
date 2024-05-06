@@ -119,7 +119,7 @@ endif()
 
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
-  hdf5::hdf5
+  HDF5::HDF5
   )
 
 file(APPEND
