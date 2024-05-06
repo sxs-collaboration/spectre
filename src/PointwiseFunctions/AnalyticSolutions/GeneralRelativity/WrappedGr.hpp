@@ -149,27 +149,23 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
 
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(
-      const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
+      const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
       tmpl::list<Tag> /*meta*/,
       const IntermediateVars& intermediate_vars) const {
-    if constexpr (tmpl::list_contains_v<
-                      typename SolutionType::template tags<DataVector>, Tag>) {
-      return {get<Tag>(intermediate_vars)};
-    } else {
-      return variables(x, tmpl::list<Tag>{}, intermediate_vars);
-    }
+    static_assert(
+        tmpl::list_contains_v<typename SolutionType::template tags<DataVector>,
+                              Tag>);
+    return {get<Tag>(intermediate_vars)};
   }
 
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(
-      const tnsr::I<DataVector, volume_dim>& x, tmpl::list<Tag> /*meta*/,
+      const tnsr::I<DataVector, volume_dim>& /*x*/, tmpl::list<Tag> /*meta*/,
       const IntermediateVars& intermediate_vars) const {
-    if constexpr (tmpl::list_contains_v<
-                      typename SolutionType::template tags<DataVector>, Tag>) {
-      return {get<Tag>(intermediate_vars)};
-    } else {
-      return variables(x, tmpl::list<Tag>{}, intermediate_vars);
-    }
+    static_assert(
+        tmpl::list_contains_v<typename SolutionType::template tags<DataVector>,
+                              Tag>);
+    return {get<Tag>(intermediate_vars)};
   }
 
   tuples::TaggedTuple<gr::Tags::SpacetimeMetric<DataVector, volume_dim>>
@@ -185,6 +181,25 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
       const tnsr::I<DataVector, volume_dim>& /*x*/,
       tmpl::list<gh::Tags::Phi<DataVector, volume_dim>> /*meta*/,
       const IntermediateVars& intermediate_vars) const;
+
+  tuples::TaggedTuple<gr::Tags::SpacetimeMetric<DataVector, volume_dim>>
+  variables(const tnsr::I<DataVector, volume_dim>& x, const double /*t*/,
+            tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>> meta,
+            const IntermediateVars& intermediate_vars) const {
+    return variables(x, meta, intermediate_vars);
+  }
+  tuples::TaggedTuple<gh::Tags::Pi<DataVector, volume_dim>> variables(
+      const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
+      tmpl::list<gh::Tags::Pi<DataVector, volume_dim>> meta,
+      const IntermediateVars& intermediate_vars) const {
+    return variables(x, meta, intermediate_vars);
+  }
+  tuples::TaggedTuple<gh::Tags::Phi<DataVector, volume_dim>> variables(
+      const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
+      tmpl::list<gh::Tags::Phi<DataVector, volume_dim>> meta,
+      const IntermediateVars& intermediate_vars) const {
+    return variables(x, meta, intermediate_vars);
+  }
 };
 
 template <typename SolutionType>
