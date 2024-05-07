@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_TimeSequence.cpp
   Test_TimeStepId.cpp
   Test_TimeStepRequest.cpp
+  Test_TimeStepRequestProcessor.cpp
   Test_Utilities.cpp
   )
 
