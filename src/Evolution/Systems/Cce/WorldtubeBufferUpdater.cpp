@@ -39,9 +39,11 @@ std::pair<size_t, size_t> create_span_for_time_value(
       lower_bound < upper_bound,
       "The supplied `lower_bound` is greater than `upper_bound`, which is not "
       "permitted");
-  ASSERT(2 * interpolator_length + pad < upper_bound,
+  ASSERT(2 * interpolator_length + pad <= upper_bound,
          "The combined `interpolator_length` and `pad` is too large for the "
-         "supplied `upper_bound`");
+         "supplied `upper_bound`.\nupper_bound="
+             << upper_bound << "\npad=" << pad
+             << "\ninterpolator_length=" << interpolator_length);
 
   size_t range_start = lower_bound;
   size_t range_end = upper_bound;
