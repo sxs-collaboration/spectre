@@ -15,6 +15,7 @@ spectre_target_headers(
   ChangeSlabSize.hpp
   InitializeElementFacesGridCoordinates.hpp
   InitializeEvolvedVariables.hpp
+  IterateAccelerationTerms.hpp
   ObserveWorldtubeSolution.hpp
   ReceiveElementData.hpp
   SendToElements.hpp

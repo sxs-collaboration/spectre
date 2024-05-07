@@ -61,9 +61,9 @@ struct MockElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
                   domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
-                  Tags::PunctureField<Dim>, gr::Tags::Shift<DataVector, Dim>,
-                  gr::Tags::Lapse<DataVector>, ::Tags::TimeStepId,
-                  Tags::WorldtubeSolution<Dim>,
+                  Tags::PunctureField<Dim>, Tags::IteratedPunctureField<Dim>,
+                  gr::Tags::Shift<DataVector, Dim>, gr::Tags::Lapse<DataVector>,
+                  ::Tags::TimeStepId, Tags::WorldtubeSolution<Dim>,
                   Tags::FaceCoordinates<Dim, Frame::Inertial, true>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
@@ -104,7 +104,8 @@ struct MockMetavariables {
   using component_list = tmpl::list<MockWorldtubeSingleton<MockMetavariables>,
                                     MockElementArray<MockMetavariables>>;
   using const_global_cache_tags =
-      tmpl::list<Tags::ExcisionSphere<Dim>, Tags::ExpansionOrder>;
+      tmpl::list<Tags::ExcisionSphere<Dim>, Tags::ExpansionOrder,
+                 Tags::MaxIterations>;
 };
 
 SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
@@ -138,7 +139,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
     const auto& initial_refinements = shell.initial_refinement_levels();
     const auto& initial_extents = shell.initial_extents();
     ActionTesting::MockRuntimeSystem<metavars> runner{
-        {excision_sphere, expansion_order}};
+        {excision_sphere, expansion_order, static_cast<size_t>(0)}};
     const auto element_ids = initial_element_ids(initial_refinements);
     const auto& blocks = shell_domain.blocks();
 
@@ -199,7 +200,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           element_id,
           {std::move(element), std::move(mesh),
-           std::move(optional_puncture_field), std::move(shift),
+           std::move(optional_puncture_field), std::nullopt, std::move(shift),
            std::move(lapse), dummy_time_step_id, worldtube_solution,
            inertial_face_coords});
     }

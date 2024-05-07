@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   ElementActions/Test_ReceiveWorldtubeData.cpp
   ElementActions/Test_InitializeConstraintGammas.cpp
   ElementActions/Test_InitializeCurrentIteration.cpp
+  ElementActions/Test_Iterations.cpp
   SingletonActions/Test_ChangeSlabSize.cpp
   SingletonActions/Test_InitializeElementFacesGridCoordinates.cpp
   SingletonActions/Test_InitializeEvolvedVariables.cpp

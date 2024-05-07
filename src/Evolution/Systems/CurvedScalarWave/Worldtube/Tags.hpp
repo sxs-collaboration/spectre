@@ -583,6 +583,19 @@ struct PunctureFieldCompute : PunctureField<Dim>, db::ComputeTag {
 /// @}
 
 /*!
+ * \brief Holds the current iteration of the puncture field computed with the
+ * current iteration of the acceleration which includes the scalar self-force.
+ * It is computed in `Actions::IteratePunctureField`.
+ */
+template <size_t Dim>
+struct IteratedPunctureField : db::SimpleTag {
+  using type = std::optional<Variables<tmpl::list<
+      CurvedScalarWave::Tags::Psi, ::Tags::dt<CurvedScalarWave::Tags::Psi>,
+      ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<3>,
+                    Frame::Inertial>>>>;
+};
+
+/*!
  * \brief A map that holds the grid coordinates centered on the worldtube of
  * all element faces abutting the worldtube with the corresponding ElementIds.
  */

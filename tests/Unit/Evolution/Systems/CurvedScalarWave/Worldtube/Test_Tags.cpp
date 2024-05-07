@@ -723,6 +723,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::EvolvedPosition<3>>("EvolvedPosition");
   TestHelpers::db::test_simple_tag<Tags::EvolvedVelocity<3>>("EvolvedVelocity");
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
+  TestHelpers::db::test_simple_tag<Tags::IteratedPunctureField<3>>(
+      "IteratedPunctureField");
   TestHelpers::db::test_simple_tag<
       Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
