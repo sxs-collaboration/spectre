@@ -1,0 +1,176 @@
+/*
+
+    NOTE NOTE NOTE
+
+    This file is edited in sharp_legendre.c.in which is then preprocessed.
+    Do not make manual  modifications to sharp_legendre.c.
+
+    NOTE NOTE NOTE
+
+*/
+
+
+/*
+ *  This file is part of libsharp.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*! \file sharp_legendre.c.in
+ *
+ *  Copyright (C) 2015 University of Oslo
+ *  \author Dag Sverre Seljebotn
+ */
+
+#ifndef NO_LEGENDRE
+#if (VLEN==8)
+#error This code is not tested with MIC; please compile with -DNO_LEGENDRE
+/* ...or test it (it probably works) and remove this check */
+#endif
+
+#ifndef SHARP_LEGENDRE_CS
+#define SHARP_LEGENDRE_CS 4
+#endif
+
+#define MAX_CS 6
+#if (SHARP_LEGENDRE_CS > MAX_CS)
+#error (SHARP_LEGENDRE_CS > MAX_CS)
+#endif
+
+#include "sharp_legendre.h"
+#include "sharp_vecsupport.h"
+
+#include <stdlib.h>
+
+/*{ for scalar, T in [("double", ""), ("float", "_s")] }*/
+/*{ for cs in range(1, 7) }*/
+static void legendre_transform_vec{{cs}}{{T}}({{scalar}} *recfacs, {{scalar}} *bl, ptrdiff_t lmax,
+                                              {{scalar}} xarr[({{cs}}) * VLEN{{T}}],
+                                              {{scalar}} out[({{cs}}) * VLEN{{T}}]) {
+    /*{ for i in range(cs) }*/
+    Tv{{T}} P_{{i}}, Pm1_{{i}}, Pm2_{{i}}, x{{i}}, y{{i}};
+    /*{ endfor }*/
+    Tv{{T}} W1, W2, b, R;
+    ptrdiff_t l;
+
+    /*{ for i in range(cs) }*/
+    x{{i}} = vloadu{{T}}(xarr + {{i}} * VLEN{{T}});
+    Pm1_{{i}} = vload{{T}}(1.0);
+    P_{{i}} = x{{i}};
+    b = vload{{T}}(*bl);
+    y{{i}} = vmul{{T}}(Pm1_{{i}}, b);
+    /*{ endfor }*/
+    
+    b = vload{{T}}(*(bl + 1));
+    /*{ for i in range(cs) }*/
+    vfmaeq{{T}}(y{{i}}, P_{{i}}, b);
+    /*{ endfor }*/
+
+    for (l = 2; l <= lmax; ++l) {
+        b = vload{{T}}(*(bl + l));
+        R = vload{{T}}(*(recfacs + l));
+        
+        /* 
+           P = x * Pm1 + recfacs[l] * (x * Pm1 - Pm2)
+        */
+        /*{ for i in range(cs) }*/
+        Pm2_{{i}} = Pm1_{{i}}; Pm1_{{i}} = P_{{i}};
+        W1 = vmul{{T}}(x{{i}}, Pm1_{{i}});
+        W2 = W1;
+        W2 = vsub{{T}}(W2, Pm2_{{i}});
+        P_{{i}} = W1;
+        vfmaeq{{T}}(P_{{i}}, W2, R);
+        vfmaeq{{T}}(y{{i}}, P_{{i}}, b);
+        /*{ endfor }*/
+
+    }
+    /*{ for i in range(cs) }*/
+    vstoreu{{T}}(out + {{i}} * VLEN{{T}}, y{{i}});
+    /*{ endfor }*/
+}
+/*{ endfor }*/
+/*{ endfor }*/
+
+
+/*{ for scalar, T in [("double", ""), ("float", "_s")] }*/
+void sharp_legendre_transform_recfac{{T}}({{scalar}} *r, ptrdiff_t lmax) {
+    /* (l - 1) / l, for l >= 2 */
+    ptrdiff_t l;
+    r[0] = 0;
+    r[1] = 1;
+    for (l = 2; l <= lmax; ++l) {
+        r[l] = ({{scalar}})(l - 1) / ({{scalar}})l;
+    }
+}
+/*{ endfor }*/
+
+/*
+  Compute sum_l b_l P_l(x_i) for all i. 
+ */
+
+#define LEN (SHARP_LEGENDRE_CS * VLEN)
+#define LEN_s (SHARP_LEGENDRE_CS * VLEN_s)
+
+/*{ for scalar, T in [("double", ""), ("float", "_s")] }*/
+void sharp_legendre_transform{{T}}({{scalar}} *bl,
+                                   {{scalar}} *recfac,
+                                   ptrdiff_t lmax,
+                                   {{scalar}} *x, {{scalar}} *out, ptrdiff_t nx) {
+    {{scalar}} xchunk[MAX_CS * VLEN{{T}}], outchunk[MAX_CS * LEN{{T}}];
+    int compute_recfac;
+    ptrdiff_t i, j, len;
+
+    compute_recfac = (recfac == NULL);
+    if (compute_recfac) {
+        recfac = malloc(sizeof({{scalar}}) * (lmax + 1));
+        sharp_legendre_transform_recfac{{T}}(recfac, lmax);
+    }
+
+    for (j = 0; j != LEN{{T}}; ++j) xchunk[j] = 0;
+
+    for (i = 0; i < nx; i += LEN{{T}}) {
+        len = (i + (LEN{{T}}) <= nx) ? (LEN{{T}}) : (nx - i);
+        for (j = 0; j != len; ++j) xchunk[j] = x[i + j];
+        switch ((len + VLEN{{T}} - 1) / VLEN{{T}}) {
+          case 6: legendre_transform_vec6{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+          case 5: legendre_transform_vec5{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+          case 4: legendre_transform_vec4{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+          case 3: legendre_transform_vec3{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+          case 2: legendre_transform_vec2{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+          case 1:
+          case 0:
+              legendre_transform_vec1{{T}}(recfac, bl, lmax, xchunk, outchunk); break;
+        }
+        for (j = 0; j != len; ++j) out[i + j] = outchunk[j];
+    }
+    if (compute_recfac) {
+        free(recfac);
+    }
+}
+/*{ endfor }*/
+
+#endif

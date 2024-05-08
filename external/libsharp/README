@@ -1,0 +1,108 @@
+# SpECTRE Copy
+
+Changes:
+- Everything is put in one directory for easier compilation.
+- pragma omp are commented out in sharp.c and sharp_legendre_roots.c
+- Factor m=0 iteration out of loop in `if (spin==0)` of `sharp_Ylmgen_init`
+  in `sharp_ylmgen_c.c` in order to avoid FPE with Clang. Clang optimizes too
+  aggressively and always evaluates the `1./gen->root[m]` in the ternary
+  `(m==0) ? 0. : 1./gen->root[m];`.
+
+# Development has moved
+
+This repository has been archived and is only kept so that packages depending on
+it have a cacnonical place to download the last version.
+
+For new projects using spherical harmonic transforms we recommend to use
+- `libsharp2` (https://gitlab.mpcdf.mpg.de/mtr/libsharp) if you need MPI
+  functionality, or
+- the `sht` component of https://gitlab.mpcdf.mpg.de/mtr/ducc if your project
+  is written in modern C++ or Python, and you don't need MPI support within
+  the transforms.
+
+Both of the above libraries are successors to `libsharp` which are
+significantly faster than the last `libsharp` version available here. Since the
+switch to the new algorithms required slight changes to the API, we decided to
+develop them in separate repositories and keep the original `libsharp`
+repository unchanged.
+
+
+# Libsharp
+
+*IMPORTANT NOTE*: It appears that the default branch upon cloning from
+github.com/dagss/libsharp was an outdated 'dagss' branch instead of
+the 'master' branch. To get the latest copy,
+please do `git checkout master; git pull`. New clones are no longer affected.
+
+## Paper
+
+https://arxiv.org/abs/1303.4945
+
+## Compilation
+
+GNU make is required for compilation.
+
+Libsharp compilation has been successfully tested with GNU and Intel compilers.
+When using gcc, version 4.x is required [1].
+Since libsharp was written in standard C99, other compilers should work fine,
+but SSE2/AVX support will most likely be deactivated.
+
+If you obtained libsharp directly from the git repository, you will also
+need a copy of the GNU autotools. In this case, run "autoconf" in libsharp's
+main directory before any other steps.
+For libsharp releases distributed as a .tar.gz file, this step is not necessary.
+
+Afterwards, simply run "./configure"; if this fails, please refer to the output
+of "./configure --help" for additional hints and, if necessary, provide
+additional flags to the configure script.
+Once the script finishes successfully, run "make"
+(or "gmake"). This should install the compilation products in the
+subdirectory "auto/".
+
+Documentation can be created by the command "(g)make doc".
+However this requires the doxygen application to be installed
+on your system.
+The documentation will be created in the subdirectory doc/.
+
+
+[1] Some versions of the gcc 4.4.x release series contain a bug which causes
+the compiler to crash during libsharp compilation. This appears to be fixed
+in the gcc 4.4.7 release. It is possible to work around this problem by adding
+the compiler flag "-fno-tree-fre" after the other optimization flags - the
+configure script should do this automatically.
+
+
+ls_fft description:
+
+This package is intended to calculate one-dimensional real or complex FFTs
+with high accuracy and good efficiency even for lengths containing large
+prime factors.
+The code is written in C, but a Fortran wrapper exists as well.
+
+Before any FFT is executed, a plan must be generated for it. Plan creation
+is designed to be fast, so that there is no significant overhead if the
+plan is only used once or a few times.
+
+The main component of the code is based on Paul N. Swarztrauber's FFTPACK in the
+double precision incarnation by Hugh C. Pumphrey
+(http://www.netlib.org/fftpack/dp.tgz).
+
+I replaced the iterative sine and cosine calculations in radfg() and radbg()
+by an exact calculation, which slightly improves the transform accuracy for
+real FFTs with lengths containing large prime factors.
+
+Since FFTPACK becomes quite slow for FFT lengths with large prime factors
+(in the worst case of prime lengths it reaches O(n*n) complexity), I
+implemented Bluestein's algorithm, which computes a FFT of length n by
+several FFTs of length n2>=2*n-1 and a convolution. Since n2 can be chosen
+to be highly composite, this algorithm is more efficient if n has large
+prime factors. The longer FFTs themselves are then computed using the FFTPACK
+routines.
+Bluestein's algorithm was implemented according to the description at
+http://en.wikipedia.org/wiki/Bluestein's_FFT_algorithm.
+
+Thread-safety:
+All routines can be called concurrently; all information needed by ls_fft
+is stored in the plan variable. However, using the same plan variable on
+multiple threads simultaneously is not supported and will lead to data
+corruption.

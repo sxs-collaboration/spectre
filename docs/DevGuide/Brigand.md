@@ -1819,13 +1819,9 @@ Avoid the `*_wrapper` functions in favor of using the class directly.
 
 \par
 Brigand provides functions to produce the `boost::fusion` types `deque`,
-`list`, `set`, and `vector`, as well as `boost::variant`.
-\snippet Test_TMPLDocumentation.cpp boost_integration
-
-\note
-These functions are unavailable if `BRIGAND_NO_BOOST_SUPPORT` is defined, as is
-the case in SpECTRE.
-
+`list`, `set`, and `vector`, as well as `boost::variant`. Because we use brigand
+instead of boost::fusion and because `std::variant` replaces `boost::variant`,
+these are not available in SpECTRE.
 
 \subsubsection stl_integration STL
 

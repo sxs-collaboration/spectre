@@ -17,13 +17,6 @@
 #include "Utilities/TMPL.hpp"
 // [include]
 
-// These are disabled in TMPL.hpp, but are in the brigand.hpp include
-// if not disabled.  Trying to include any Brigand files before
-// TMPL.hpp has unpredictable results because there may be an extra
-// TMPL.hpp include at the start from the PCH.
-#include <brigand/adapted/fusion.hpp>
-#include <brigand/adapted/variant.hpp>
-
 // We want the code to be nicely formatted for the documentation, not here.
 // clang-format off
 namespace {
@@ -1458,30 +1451,6 @@ CHECK(tmpl::select<std::false_type>(NonCopyable<int>{3}, hi).value == "Hi");
 
 namespace external {
 void run() {
-// [boost_integration]
-assert_same<tmpl::as_fusion_deque<List1<Type1, Type2, Type3>>,
-            boost::fusion::deque<Type1, Type2, Type3>>();
-assert_same<tmpl::as_fusion_list<List1<Type1, Type2, Type3>>,
-            boost::fusion::list<Type1, Type2, Type3>>();
-assert_same<tmpl::as_fusion_set<List1<Type1, Type2, Type3>>,
-            boost::fusion::set<Type1, Type2, Type3>>();
-assert_same<tmpl::as_fusion_vector<List1<Type1, Type2, Type3>>,
-            boost::fusion::vector<Type1, Type2, Type3>>();
-assert_same<tmpl::as_variant<List1<Type1, Type2, Type3>>,
-            boost::variant<Type1, Type2, Type3>>();
-
-assert_same<tmpl::fusion_deque_wrapper<Type1, Type2, Type3>,
-            boost::fusion::deque<Type1, Type2, Type3>>();
-assert_same<tmpl::fusion_list_wrapper<Type1, Type2, Type3>,
-            boost::fusion::list<Type1, Type2, Type3>>();
-assert_same<tmpl::fusion_set_wrapper<Type1, Type2, Type3>,
-            boost::fusion::set<Type1, Type2, Type3>>();
-assert_same<tmpl::fusion_vector_wrapper<Type1, Type2, Type3>,
-            boost::fusion::vector<Type1, Type2, Type3>>();
-assert_same<tmpl::variant_wrapper<Type1, Type2, Type3>,
-            boost::variant<Type1, Type2, Type3>>();
-// [boost_integration]
-
 // [stl_integration]
 assert_same<tmpl::as_pair<List1<Type1, Type2>>, std::pair<Type1, Type2>>();
 assert_same<tmpl::as_tuple<List1<Type1, Type2, Type3>>,
