@@ -126,6 +126,7 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
   using tags =
       tmpl::push_back<typename gr::AnalyticSolution<3>::template tags<DataType>,
                       hydro::Tags::RestMassDensity<DataType>,
+                      hydro::Tags::ElectronFraction<DataType>,
                       hydro::Tags::SpecificInternalEnergy<DataType>,
                       hydro::Tags::Temperature<DataType>,
                       hydro::Tags::Pressure<DataType>,
