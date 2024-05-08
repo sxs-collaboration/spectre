@@ -116,6 +116,9 @@ class ElementId {
   /// which should never correspond to the Id of an actual element.
   static ElementId<VolumeDim> external_boundary_id();
 
+  /// Returns the number of block boundaries the element has.
+  size_t number_of_block_boundaries() const;
+
  protected:
   /// Create an `ElementId` in a specified direction.
   ElementId(const Direction<VolumeDim>& direction,
