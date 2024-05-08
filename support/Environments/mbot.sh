@@ -19,7 +19,7 @@ spectre_unload_modules() {
     module unload gcc/11.4.0
 }
 
-spectre_run_cmake() {
+spectre_run_cmake_gcc() {
     if [ -z ${SPECTRE_HOME} ]; then
         echo "You must set SPECTRE_HOME to the cloned SpECTRE directory"
         return 1
@@ -27,6 +27,27 @@ spectre_run_cmake() {
     spectre_load_modules > /dev/null 2>&1
     cmake -D CMAKE_C_COMPILER=gcc \
           -D CMAKE_CXX_COMPILER=g++ \
+          -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CHARM_ROOT=$CHARM_ROOT \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D MEMORY_ALLOCATOR=JEMALLOC \
+          -D BUILD_PYTHON_BINDINGS=ON \
+          -D ENABLE_PARAVIEW=ON \
+          -D MACHINE=Mbot \
+          -D USE_XSIMD=yes \
+          -D DEBUG_SYMBOLS=OFF \
+          "$@" \
+          $SPECTRE_HOME
+}
+
+spectre_run_cmake_clang() {
+    if [ -z ${SPECTRE_HOME} ]; then
+        echo "You must set SPECTRE_HOME to the cloned SpECTRE directory"
+        return 1
+    fi
+    spectre_load_modules > /dev/null 2>&1
+    cmake -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
