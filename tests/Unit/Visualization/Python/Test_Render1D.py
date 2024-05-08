@@ -84,14 +84,14 @@ class TestRender1D(unittest.TestCase):
         # We also don't have ffmpeg installed in the CI container, so we can't
         # test an animation.
         runner = CliRunner()
-        plot_file = os.path.join(self.test_dir, "plot")
+        plot_file = os.path.join(self.test_dir, "plot.pdf")
         result = runner.invoke(
             render_1d_command,
             [self.h5file, "-d", "VolumeData", "--step", "0", "-o", plot_file],
             catch_exceptions=False,
         )
         self.assertEqual(result.exit_code, 0, msg=result.output)
-        self.assertTrue(os.path.exists(plot_file + ".pdf"), msg=result.output)
+        self.assertTrue(os.path.exists(plot_file), msg=result.output)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,8 @@ import logging
 from typing import Sequence, Union
 
 import click
+import matplotlib.animation
+import matplotlib.cm
 import matplotlib.pyplot as plt
 import numpy as np
 import rich
@@ -14,6 +16,7 @@ import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.Exporter import interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
+    open_volfiles,
     open_volfiles_command,
     parse_point,
 )
@@ -21,6 +24,7 @@ from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
+from spectre.Visualization.ReadH5 import list_observations
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +76,7 @@ def points_on_slice(
 
 
 @click.command(name="slice")
-@open_volfiles_command(obs_id_required=True, multiple_vars=False)
+@open_volfiles_command(obs_id_required=False, multiple_vars=False)
 @click.option(
     "--slice-origin",
     "--slice-center",
@@ -142,6 +146,22 @@ def points_on_slice(
     help="Title for the plot.",
     show_default="name of the variable",
 )
+@click.option(
+    "--y-bounds",
+    "--data-bounds",
+    "data_bounds",
+    type=float,
+    nargs=2,
+    help="Lower and upper bounds for the color scale of the plot.",
+)
+# Animation options
+@click.option("--animate", is_flag=True, help="Animate over all observations.")
+@click.option(
+    "--interval",
+    default=100,
+    type=float,
+    help="Delay between frames in milliseconds. Only used for animations.",
+)
 @apply_stylesheet_command()
 @show_or_save_plot_command()
 def plot_slice_command(
@@ -157,14 +177,31 @@ def plot_slice_command(
     num_samples,
     num_threads,
     title,
+    data_bounds,
+    animate,
+    interval,
 ):
     """Plot variables on a slice through volume data
 
     Interpolates the volume data in the H5_FILES to a slice and plots the
-    selected variables. You choose the slice by specifying three corners of a
-    rectangle.
+    selected variables. You choose the slice by specifying its center, extents,
+    normal, and up direction.
+
+    Either select a specific observation in the volume data with '--step' or
+    '--time', or specify '--animate' to produce an animation over all
+    observations.
     """
-    # Interpolate the selected variable to the slice
+    if animate == (obs_id is not None):
+        raise click.UsageError(
+            "Specify an observation '--step' or '--time', or specify"
+            " '--animate' (but not both)."
+        )
+    if animate:
+        obs_ids, obs_times = list_observations(
+            open_volfiles(h5_files, subfile_name)
+        )
+
+    # Determine the slice coordinates
     if (
         slice_origin is None
         or slice_extent is None
@@ -179,16 +216,6 @@ def plot_slice_command(
     )
     dim = target_coords.shape[0]
     assert dim == 3, "Only 3D slices are supported"
-    data = np.array(
-        interpolate_to_points(
-            h5_files,
-            subfile_name=subfile_name,
-            observation_id=obs_id,
-            tensor_components=[var_name],
-            target_points=target_coords.reshape(3, np.prod(num_samples)),
-            num_threads=num_threads,
-        )[0]
-    ).reshape(num_samples)
 
     # Set axes for plot. For plotting along an axis, use the axis coordinate.
     # Otherwise, use the affine parameter.
@@ -213,17 +240,92 @@ def plot_slice_command(
         y = np.linspace(0, 1, num_samples[1])
         y_label = None
 
-    # Plot the slice
-    plt.contourf(x, y, data)
-    contours = plt.contour(
-        x, y, data, colors="white", linewidths=0.5, alpha=0.6
+    # Determine global data bounds. Only needed for an animation.
+    if data_bounds is None and animate:
+        data_bounds = [np.inf, -np.inf]
+        for volfile in open_volfiles(h5_files, subfile_name):
+            for obs_id in volfile.list_observation_ids():
+                data = volfile.get_tensor_component(obs_id, var_name).data
+                data_bounds[0] = min(data_bounds[0], data.min())
+                data_bounds[1] = max(data_bounds[1], data.max())
+        logger.info(
+            f"Determined data bounds for '{var_name}':"
+            f" [{data_bounds[0]:g}, {data_bounds[1]:g}]"
+        )
+    norm = (
+        plt.Normalize(vmin=data_bounds[0], vmax=data_bounds[1])
+        if data_bounds
+        else None
     )
-    plt.clabel(contours)
+    levels = (
+        np.linspace(data_bounds[0], data_bounds[1], 10) if data_bounds else 10
+    )
+
+    # Set up the figure
+    fig, ax = plt.figure(), plt.gca()
     plt.title(title or var_name)
     if np.isclose(slice_extent[0], slice_extent[1]):
         plt.gca().set_aspect("equal")
     plt.xlabel(x_label)
     plt.ylabel(y_label)
+    plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm), ax=ax)
+    time_label = plt.annotate(
+        "",
+        xy=(0, 0),
+        xycoords="axes fraction",
+        xytext=(4, 3),
+        textcoords="offset points",
+        ha="left",
+        va="bottom",
+        fontsize=9,
+    )
+
+    # Interpolate data and plot the slice
+    def plot_slice(obs_id, time):
+        data = np.array(
+            interpolate_to_points(
+                h5_files,
+                subfile_name=subfile_name,
+                observation_id=obs_id,
+                tensor_components=[var_name],
+                target_points=target_coords.reshape(3, np.prod(num_samples)),
+                num_threads=num_threads,
+            )[0]
+        ).reshape(num_samples)
+        contours_filled = plt.contourf(
+            x, y, data, levels=levels, norm=norm, extend="both"
+        )
+        contours = plt.contour(
+            contours_filled, colors="white", linewidths=0.5, alpha=0.6
+        )
+        time_label.set_text(f"t = {time:g}")
+        return contours_filled.collections + contours.collections
+
+    # Plot a static slice and return early
+    if not animate:
+        plot_slice(obs_id, obs_time)
+        return fig
+
+    # Animate the slice
+    # Keep track of old artists to clear before plotting new ones
+    artists = []
+
+    def update_plot(frame):
+        nonlocal artists
+        # Clear old artists
+        for artist in artists:
+            artist.remove()
+        # Plot new slice
+        artists = plot_slice(obs_ids[frame], obs_times[frame])
+
+    return matplotlib.animation.FuncAnimation(
+        fig,
+        update_plot,
+        init_func=list,
+        frames=len(obs_ids),
+        interval=interval,
+        blit=False,
+    )
 
 
 if __name__ == "__main__":

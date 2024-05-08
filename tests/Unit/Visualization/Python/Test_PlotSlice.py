@@ -25,27 +25,45 @@ class TestPlotSlice(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_cli(self):
-        output_filename = os.path.join(self.test_dir, "output.pdf")
         runner = CliRunner()
+        common_args = [
+            self.h5_filename,
+            "-d",
+            "element_data",
+            "-y",
+            "Psi",
+            "-C",
+            "1,1,1",
+            "-X",
+            "2",
+            "2",
+            "-n",
+            "0,0,1",
+            "-u",
+            "0,1,0",
+        ]
+        # Single plot
+        output_filename = os.path.join(self.test_dir, "output.pdf")
         result = runner.invoke(
             plot_slice_command,
-            [
-                self.h5_filename,
-                "-d",
-                "element_data",
+            common_args
+            + [
                 "--step",
                 "0",
-                "-y",
-                "Psi",
-                "-C",
-                "1,1,1",
-                "-X",
-                "2",
-                "2",
-                "-n",
-                "0,0,1",
-                "-u",
-                "0,1,0",
+                "-o",
+                output_filename,
+            ],
+            catch_exceptions=False,
+        )
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertTrue(os.path.exists(output_filename))
+        # Animation
+        output_filename = os.path.join(self.test_dir, "output.gif")
+        result = runner.invoke(
+            plot_slice_command,
+            common_args
+            + [
+                "--animate",
                 "-o",
                 output_filename,
             ],
