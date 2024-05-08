@@ -23,6 +23,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -675,11 +676,9 @@ void test_impl(const Spectral::Quadrature quadrature,
                 direction.dimension() +
                     10 * static_cast<unsigned long>(direction.side()) +
                     100 * count);
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                 std::optional<DataVector>, ::TimeStepId, int>
-          data{
-              mesh,    face_mesh, {}, {flux_data}, {neighbor_next_time_step_id},
-              decision};
+      evolution::dg::BoundaryData<Dim> data{
+          mesh,    face_mesh, {}, {flux_data}, {neighbor_next_time_step_id},
+          decision};
       neighbor_decision.insert(std::pair{mortar_id, decision});
       ++decision;
 

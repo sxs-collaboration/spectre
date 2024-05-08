@@ -21,6 +21,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -32,11 +33,7 @@ void neighbor_reconstructed_face_solution(
     const gsl::not_null<db::Access*> box,
     const gsl::not_null<std::pair<
         const TimeStepId,
-        DirectionalIdMap<
-            VolumeDim,
-            std::tuple<Mesh<VolumeDim>, Mesh<VolumeDim - 1>,
-                       std::optional<DataVector>, std::optional<DataVector>,
-                       ::TimeStepId, int>>>*>
+        DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
         received_temporal_id_and_data) {
   db::mutate<subcell::Tags::GhostDataForReconstruction<VolumeDim>,
              subcell::Tags::DataForRdmpTci>(
@@ -47,12 +44,12 @@ void neighbor_reconstructed_face_solution(
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
-          ASSERT(std::get<2>(received_mortar_data.second).has_value(),
+          ASSERT(received_mortar_data.second.ghost_cell_data.has_value(),
                  "The subcell mortar data was not sent at TimeStepId "
                      << received_temporal_id_and_data->first
                      << " with mortar id " << mortar_id);
           const DataVector& neighbor_ghost_and_subcell_data =
-              *std::get<2>(received_mortar_data.second);
+              received_mortar_data.second.ghost_cell_data.value();
           // Compute min and max over neighbors
           const size_t offset_for_min =
               neighbor_ghost_and_subcell_data.size() - number_of_evolved_vars;
@@ -98,7 +95,7 @@ void neighbor_reconstructed_face_solution(
   std::vector<DirectionalId<VolumeDim>> mortars_to_reconstruct_to{};
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
-    if (not std::get<3>(received_mortar_data.second).has_value()) {
+    if (not received_mortar_data.second.boundary_correction_data.has_value()) {
       mortars_to_reconstruct_to.push_back(mortar_id);
     }
   }
@@ -115,12 +112,12 @@ void neighbor_reconstructed_face_solution(
   // src/Evolution/DiscontinuousGalerkin)
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
-    if (not std::get<3>(received_mortar_data.second).has_value()) {
+    if (not received_mortar_data.second.boundary_correction_data.has_value()) {
       ASSERT(neighbor_reconstructed_evolved_vars.find(mortar_id) !=
                  neighbor_reconstructed_evolved_vars.end(),
              "Could not find mortar id " << mortar_id
                                          << " in reconstructed data map.");
-      std::get<3>(received_mortar_data.second) =
+      received_mortar_data.second.boundary_correction_data =
           std::move(neighbor_reconstructed_evolved_vars.at(mortar_id));
     }
   }

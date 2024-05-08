@@ -15,6 +15,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/NeighborTciDecision.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -25,26 +26,24 @@ void test() {
   using tag = subcell::Tags::NeighborTciDecisions<Dim>;
   using Type = typename tag::type;
   auto box = db::create<db::AddSimpleTags<tag>>(Type{});
-  using StorageType =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                 std::optional<DataVector>, ::TimeStepId, int>;
+  using StorageType = evolution::dg::BoundaryData<Dim>;
   std::pair<const TimeStepId, DirectionalIdMap<Dim, StorageType>>
       neighbor_data{};
   const DirectionalId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
-  std::get<5>(neighbor_data.second.at(id_xi)) = 10;
+  neighbor_data.second.at(id_xi).tci_status = 10;
   DirectionalId<Dim> id_eta;
   DirectionalId<Dim> id_zeta;
   if constexpr (Dim > 1) {
     id_eta = DirectionalId<Dim>{Direction<Dim>::lower_eta(), ElementId<Dim>{2}};
     neighbor_data.second.insert(std::pair{id_eta, StorageType{}});
-    std::get<5>(neighbor_data.second.at(id_eta)) = 12;
+    neighbor_data.second.at(id_eta).tci_status = 12;
   }
   if constexpr (Dim > 2) {
     id_zeta =
         DirectionalId<Dim>{Direction<Dim>::lower_zeta(), ElementId<Dim>{5}};
     neighbor_data.second.insert(std::pair{id_zeta, StorageType{}});
-    std::get<5>(neighbor_data.second.at(id_zeta)) = 15;
+    neighbor_data.second.at(id_zeta).tci_status = 15;
   }
 #ifdef SPECTRE_DEBUG
   // check ASSERT for neighbors works

@@ -11,7 +11,6 @@
 #include <optional>
 #include <sstream>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -19,6 +18,7 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -34,7 +34,7 @@ namespace evolution::dg::Tags {
  * \brief The inbox tag for boundary correction communication and DG-subcell
  * ghost zone cells.
  *
- * The stored data consists of the following (in argument order of the tuple):
+ * The stored data consists of the following:
  *
  * 1. the mesh of the ghost cell data we received. This allows eliding
  *    projection when all neighboring elements are doing DG.
@@ -45,6 +45,8 @@ namespace evolution::dg::Tags {
  *    fluxes, characteristic speeds, conserved variables)
  * 5. the TimeStepId beyond which the boundary terms are no longer valid, when
  *    using local time stepping.
+ * 6. the troublade cell indicator status using for determining halos around
+ *    troubled cells.
  *
  * The TimeStepId is the neighboring element's next time step. When using local
  * time stepping, the neighbor's boundary data is valid up until this time,
@@ -103,9 +105,7 @@ namespace evolution::dg::Tags {
  */
 template <size_t Dim>
 struct BoundaryCorrectionAndGhostCellsInbox {
-  using stored_type =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                 std::optional<DataVector>, ::TimeStepId, int>;
+  using stored_type = evolution::dg::BoundaryData<Dim>;
 
  public:
   using temporal_id = TimeStepId;
@@ -191,9 +191,9 @@ struct BoundaryCorrectionAndGhostCellsInbox {
       ss << pad << " Current time: " << current_time_step_id << "\n";
       // We only care about the next time because that's important for deadlock
       // detection. The data itself isn't super important
-      for (const auto& [key, tuple_data] : hash_map) {
+      for (const auto& [key, boundary_data] : hash_map) {
         ss << pad << "  Key: " << key
-           << ", next time: " << std::get<4>(tuple_data) << "\n";
+           << ", next time: " << boundary_data.validity_range << "\n";
       }
     }
 

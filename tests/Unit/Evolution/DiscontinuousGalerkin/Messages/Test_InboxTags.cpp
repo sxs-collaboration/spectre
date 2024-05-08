@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -56,8 +57,7 @@ void test_no_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
   using bm_tag = Tags::BoundaryMessageInbox<Dim>;
-  using BcType = std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>;
+  using BcType = evolution::dg::BoundaryData<Dim>;
   using BcInbox = typename bc_tag::type;
   using BmInbox = typename bm_tag::type;
 
@@ -79,18 +79,19 @@ void test_no_ghost_cells() {
                                 Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
-  get<0>(send_data_a) = volume_mesh_a;
-  get<1>(send_data_a) = mesh_a;
-  get<3>(send_data_a) =
+  send_data_a.volume_mesh_ghost_cell_data = volume_mesh_a;
+  send_data_a.interface_mesh = mesh_a;
+  send_data_a.boundary_correction_data =
       DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
-  get<4>(send_data_a) = time_step_id_a;
-  get<5>(send_data_a) = 5;
-  fill_with_random_values(make_not_null(&*get<3>(send_data_a)),
-                          make_not_null(&gen), make_not_null(&dist));
+  send_data_a.validity_range = time_step_id_a;
+  send_data_a.tci_status = 5;
+  fill_with_random_values(
+      make_not_null(&send_data_a.boundary_correction_data.value()),
+      make_not_null(&gen), make_not_null(&dist));
 
   BoundaryMessage<Dim>* boundary_message_a = create_boundary_message(
       time_step_id_a, time_step_id_a, nhbr_key, volume_mesh_a, mesh_a, nullopt,
-      get<3>(send_data_a), get<5>(send_data_a));
+      send_data_a.boundary_correction_data, send_data_a.tci_status);
   BoundaryMessage<Dim>* boundary_message_a_compare = boundary_message_a;
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
@@ -107,21 +108,22 @@ void test_no_ghost_cells() {
                                 Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
-  get<0>(send_data_b) = volume_mesh_b;
-  get<1>(send_data_b) = mesh_b;
+  send_data_b.volume_mesh_ghost_cell_data = volume_mesh_b;
+  send_data_b.interface_mesh = mesh_b;
 
-  get<3>(send_data_b) =
+  send_data_b.boundary_correction_data =
       DataVector{mesh_b.number_of_grid_points() * number_of_components, 0.0};
   // Set the future time step to make sure the implementation doesn't mix the
   // receive time ID and the validity range time ID
-  get<4>(send_data_b) = time_step_id_c;
-  get<5>(send_data_a) = 5;
-  fill_with_random_values(make_not_null(&*get<3>(send_data_b)),
-                          make_not_null(&gen), make_not_null(&dist));
+  send_data_b.validity_range = time_step_id_c;
+  send_data_a.tci_status = 5;
+  fill_with_random_values(
+      make_not_null(&send_data_b.boundary_correction_data.value()),
+      make_not_null(&gen), make_not_null(&dist));
 
   BoundaryMessage<Dim>* boundary_message_b = create_boundary_message(
       time_step_id_b, time_step_id_c, nhbr_key, volume_mesh_b, mesh_b, nullopt,
-      get<3>(send_data_b), get<5>(send_data_b));
+      send_data_b.boundary_correction_data, send_data_b.tci_status);
   BoundaryMessage<Dim>* boundary_message_b_compare = boundary_message_b;
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_b,
@@ -174,8 +176,7 @@ void test_with_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
   using bm_tag = Tags::BoundaryMessageInbox<Dim>;
-  using BcType = std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
-                            std::optional<DataVector>, ::TimeStepId, int>;
+  using BcType = evolution::dg::BoundaryData<Dim>;
   using BcInbox = typename bc_tag::type;
   using BmInbox = typename bm_tag::type;
 
@@ -198,18 +199,18 @@ void test_with_ghost_cells() {
                                 Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
-  get<0>(send_data_a) = volume_mesh_a;
-  get<1>(send_data_a) = mesh_a;
-  get<2>(send_data_a) =
+  send_data_a.volume_mesh_ghost_cell_data = volume_mesh_a;
+  send_data_a.interface_mesh = mesh_a;
+  send_data_a.ghost_cell_data =
       DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
-  get<4>(send_data_a) = time_step_id_a;
-  get<5>(send_data_a) = 5;
-  fill_with_random_values(make_not_null(&*get<2>(send_data_a)),
+  send_data_a.validity_range = time_step_id_a;
+  send_data_a.tci_status = 5;
+  fill_with_random_values(make_not_null(&send_data_a.ghost_cell_data.value()),
                           make_not_null(&gen), make_not_null(&dist));
 
   BoundaryMessage<Dim>* boundary_message_a = create_boundary_message(
       time_step_id_a, time_step_id_a, nhbr_key, volume_mesh_a, mesh_a,
-      get<2>(send_data_a), nullopt, get<5>(send_data_a));
+      send_data_a.ghost_cell_data, nullopt, send_data_a.tci_status);
   BoundaryMessage<Dim>* boundary_message_a_compare = boundary_message_a;
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
@@ -226,18 +227,19 @@ void test_with_ghost_cells() {
                                 Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
-  get<0>(send_data_b) = volume_mesh_b;
-  get<1>(send_data_b) = mesh_b;
-  get<2>(send_data_b) = DataVector{
-      get<1>(send_data_b).number_of_grid_points() * number_of_components, 0.0};
-  get<4>(send_data_b) = time_step_id_b;
-  get<5>(send_data_b) = 6;
-  fill_with_random_values(make_not_null(&*get<2>(send_data_b)),
+  send_data_b.volume_mesh_ghost_cell_data = volume_mesh_b;
+  send_data_b.interface_mesh = mesh_b;
+  send_data_b.ghost_cell_data = DataVector{
+      send_data_b.interface_mesh.number_of_grid_points() * number_of_components,
+      0.0};
+  send_data_b.validity_range = time_step_id_b;
+  send_data_b.tci_status = 6;
+  fill_with_random_values(make_not_null(&send_data_b.ghost_cell_data.value()),
                           make_not_null(&gen), make_not_null(&dist));
 
   BoundaryMessage<Dim>* boundary_message_b = create_boundary_message(
       time_step_id_b, time_step_id_b, nhbr_key, volume_mesh_b, mesh_b,
-      get<2>(send_data_b), nullopt, get<5>(send_data_b));
+      send_data_b.ghost_cell_data, nullopt, send_data_b.tci_status);
   BoundaryMessage<Dim>* boundary_message_b_compare = boundary_message_b;
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_b,
@@ -270,38 +272,42 @@ void test_with_ghost_cells() {
 
   boundary_message_a = create_boundary_message(
       time_step_id_a, time_step_id_a, nhbr_key, volume_mesh_a, mesh_a,
-      get<2>(send_data_a), nullopt, get<5>(send_data_a));
+      send_data_a.ghost_cell_data, nullopt, send_data_a.tci_status);
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), boundary_message_a);
 
   BcType send_flux_data_a;
-  get<0>(send_flux_data_a) = get<0>(send_data_a);
-  get<1>(send_flux_data_a) = get<1>(send_data_a);
-  get<3>(send_flux_data_a) = DataVector{
-      get<1>(send_data_a).number_of_grid_points() * number_of_components, 0.0};
+  send_flux_data_a.volume_mesh_ghost_cell_data =
+      send_data_a.volume_mesh_ghost_cell_data;
+  send_flux_data_a.interface_mesh = send_data_a.interface_mesh;
+  send_flux_data_a.boundary_correction_data = DataVector{
+      send_data_a.interface_mesh.number_of_grid_points() * number_of_components,
+      0.0};
   // Verify that when we update the fluxes the validity of the fluxes is also
   // updated correctly
-  get<4>(send_flux_data_a) = time_step_id_c;
-  get<5>(send_flux_data_a) = 6;
-  fill_with_random_values(make_not_null(&*get<3>(send_flux_data_a)),
-                          make_not_null(&gen), make_not_null(&dist));
+  send_flux_data_a.validity_range = time_step_id_c;
+  send_flux_data_a.tci_status = 6;
+  fill_with_random_values(
+      make_not_null(&send_flux_data_a.boundary_correction_data.value()),
+      make_not_null(&gen), make_not_null(&dist));
 
   BoundaryMessage<Dim>* flux_boundary_message_a = create_boundary_message(
       time_step_id_a, time_step_id_c, nhbr_key, volume_mesh_a, mesh_a, nullopt,
-      get<3>(send_flux_data_a), get<5>(send_flux_data_a));
+      send_flux_data_a.boundary_correction_data, send_flux_data_a.tci_status);
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_a,
                             std::make_pair(nhbr_key, send_flux_data_a));
   bm_tag::insert_into_inbox(make_not_null(&bm_inbox), flux_boundary_message_a);
 
   BcType send_all_data_a = send_data_a;
-  get<3>(send_all_data_a) = get<3>(send_flux_data_a);
-  get<4>(send_all_data_a) = get<4>(send_flux_data_a);
-  get<5>(send_all_data_a) = get<5>(send_flux_data_a);
+  send_all_data_a.boundary_correction_data =
+      send_flux_data_a.boundary_correction_data;
+  send_all_data_a.validity_range = send_flux_data_a.validity_range;
+  send_all_data_a.tci_status = send_flux_data_a.tci_status;
 
-  BoundaryMessage<Dim>* all_boundary_message_a =
-      create_boundary_message(time_step_id_a, time_step_id_c, nhbr_key,
-                              volume_mesh_a, mesh_a, get<2>(send_all_data_a),
-                              get<3>(send_all_data_a), get<5>(send_all_data_a));
+  BoundaryMessage<Dim>* all_boundary_message_a = create_boundary_message(
+      time_step_id_a, time_step_id_c, nhbr_key, volume_mesh_a, mesh_a,
+      send_all_data_a.ghost_cell_data, send_all_data_a.boundary_correction_data,
+      send_all_data_a.tci_status);
   BoundaryMessage<Dim>* all_boundary_message_a_compare = all_boundary_message_a;
 
   CHECK(bc_inbox.at(time_step_id_a).at(nhbr_key) == send_all_data_a);
@@ -310,19 +316,20 @@ void test_with_ghost_cells() {
 
   // Check sending both ghost and flux data at once
   BcType send_all_data_b = send_data_b;
-  get<3>(send_all_data_b) =
-      DataVector{2 * get<1>(send_all_data_b).number_of_grid_points() *
+  send_all_data_b.boundary_correction_data =
+      DataVector{2 * send_all_data_b.interface_mesh.number_of_grid_points() *
                      number_of_components,
                  0.0};
-  get<4>(send_all_data_b) = time_step_id_c;
-  get<5>(send_data_a) = 6;
-  fill_with_random_values(make_not_null(&*get<3>(send_all_data_b)),
-                          make_not_null(&gen), make_not_null(&dist));
+  send_all_data_b.validity_range = time_step_id_c;
+  send_data_a.tci_status = 6;
+  fill_with_random_values(
+      make_not_null(&send_all_data_b.boundary_correction_data.value()),
+      make_not_null(&gen), make_not_null(&dist));
 
-  BoundaryMessage<Dim>* all_boundary_message_b =
-      create_boundary_message(time_step_id_b, time_step_id_c, nhbr_key,
-                              volume_mesh_b, mesh_b, get<2>(send_all_data_b),
-                              get<3>(send_all_data_b), get<5>(send_all_data_b));
+  BoundaryMessage<Dim>* all_boundary_message_b = create_boundary_message(
+      time_step_id_b, time_step_id_c, nhbr_key, volume_mesh_b, mesh_b,
+      send_all_data_b.ghost_cell_data, send_all_data_b.boundary_correction_data,
+      send_all_data_b.tci_status);
   BoundaryMessage<Dim>* all_boundary_message_b_compare = all_boundary_message_b;
 
   bc_tag::insert_into_inbox(make_not_null(&bc_inbox), time_step_id_b,

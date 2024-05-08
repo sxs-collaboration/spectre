@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
+#include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
@@ -221,17 +222,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 }  // namespace ScalarAdvection::subcell
 
-#define INSTANTIATION(r, data)                                                 \
-  template void evolution::dg::subcell::neighbor_reconstructed_face_solution<  \
-      DIM(data), ScalarAdvection::subcell::NeighborPackagedData>(              \
-      gsl::not_null<db::Access*> box,                                          \
-      gsl::not_null<std::pair<                                                 \
-          const TimeStepId,                                                    \
-          DirectionalIdMap<                                                    \
-              DIM(data),                                                       \
-              std::tuple<Mesh<DIM(data)>, Mesh<DIM(data) - 1>,                 \
-                         std::optional<DataVector>, std::optional<DataVector>, \
-                         ::TimeStepId, int>>>*>                                \
+#define INSTANTIATION(r, data)                                                \
+  template void evolution::dg::subcell::neighbor_reconstructed_face_solution< \
+      DIM(data), ScalarAdvection::subcell::NeighborPackagedData>(             \
+      gsl::not_null<db::Access*> box,                                         \
+      gsl::not_null<                                                          \
+          std::pair<const TimeStepId,                                         \
+                    DirectionalIdMap<                                         \
+                        DIM(data), evolution::dg::BoundaryData<DIM(data)>>>*> \
           received_temporal_id_and_data);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
