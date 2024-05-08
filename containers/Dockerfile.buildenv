@@ -218,12 +218,10 @@ RUN apt-get update -y \
     && make altinstall && cd ../ \
     && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
     && python3.10 -m pip install --upgrade pip \
-    && pip3.10 --no-cache-dir install pybind11~=2.6.1 \
     && pip3.10 --no-cache-dir install --only-binary=h5py -r requirements.txt \
     -r dev_requirements.txt; \
     else \
     apt-get install -y python3-pip python-is-python3 pkg-config \
-    && pip3 --no-cache-dir install pybind11~=2.6.1 \
     && pip3 --no-cache-dir install --only-binary=h5py -r requirements.txt \
     -r dev_requirements.txt; \
     fi \
