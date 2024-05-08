@@ -42,8 +42,8 @@ in VSCode as well.
 For both a terminal and VSCode, create the container in a terminal and start it.
 
 ```
-docker create --rm --name spectre_demo -p 11111:11111 \
-    -i -t sxscollaboration/spectre:demo /bin/bash
+docker create --entrypoint "/bin/bash" --rm --name spectre_demo -p 11111:11111 \
+    -i -t sxscollaboration/spectre:demo
 ```
 ```
 docker start spectre_demo
@@ -52,6 +52,11 @@ docker start spectre_demo
 We connect port `11111` on your local machine to port `11111` of the container
 so we can use Paraview. The `--rm` will delete the container when you stop it.
 This won't put you into the container, only start it in the background.
+
+\note The `--entrypoint "/bin/bash"` is important because the default entrypoint
+of the container is the SpECTRE CLI. You can try out the default entrypoint by
+running `docker run sxscollaboration/spectre:demo -h` and it'll print the help
+string for the CLI. See the [Python documentation](py/cli.html) for more.
 
 You can also run a [Jupyter](https://jupyter.org/index.html) server for
 accessing the Python bindings (see \ref spectre_using_python) or running Jupyter
