@@ -20,4 +20,10 @@ struct NewSlabSize : db::SimpleTag {
 struct NumberOfExpectedMessages : db::SimpleTag {
   using type = std::map<int64_t, size_t>;
 };
+
+/// Long-term desired slab size.  Used as the default size if nothing
+/// chooses a smaller one.
+struct SlabSizeGoal : db::SimpleTag {
+  using type = double;
+};
 }  // namespace Tags::ChangeSlabSize
