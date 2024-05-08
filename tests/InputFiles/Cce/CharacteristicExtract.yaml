@@ -1,32 +1,38 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# This block is used by testing and the SpECTRE command line interface.
 Executable: CharacteristicExtract
 Testing:
   Check: parse
   Priority: High
 
 ---
+# Start of the input file that controls the CCE evolution.
 
 Evolution:
+  # The initial step sizes isn't super important because we use error-based
+  # adaptive time stepping to adjust the step size.
   InitialTimeStep: 0.25
+  # The initial Slab size controls how often the EventsAndTriggers are run. They
+  # are run once per Slab.
   InitialSlabSize: 10.0
 
 ResourceInfo:
+  # Can ignore this section since CCE performs best on a single core.
   AvoidGlobalProc0: false
-  Singletons:
-    CharacteristicEvolution:
-      Proc: Auto
-      Exclusive: False
-    H5WorldtubeBoundary:
-      Proc: Auto
-      Exclusive: False
+  Singletons: Auto
 
 Observers:
   VolumeFileName: "CharacteristicExtractUnusedVolume"
+  # The reduction file is where the CCE output will be written.
+  # Specifically, it will be in a `/SpectreRXXXX.cce` where the number is the
+  # ExtractionRadius specified below.
   ReductionFileName: "CharacteristicExtractReduction"
 
 EventsAndTriggers:
+  # Write the CCE time step every Slab. A Slab is a fixed length of simulation
+  # time and is not influenced by the dynamically adjusted step size.
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -34,6 +40,8 @@ EventsAndTriggers:
           Interval: 1
     Events:
       - ObserveTimeStep:
+          # The output is written into the "ReductionFileName" HDF5 file under
+          # "/SubfileName.dat"
           SubfileName: CceTimeStep
           PrintTimeToTerminal: true
 
@@ -41,56 +49,98 @@ Cce:
   Evolution:
     TimeStepper:
       AdamsBashforth:
-        Order: 3
+        Order: 3 # Going to higher order doesn't seem necessary for CCE
     StepChoosers:
-      - Constant: 0.5
+      - Constant: 0.1 # Don't take steps bigger than 0.1M
       - Increase:
           Factor: 2
       - ErrorControl(SwshVars):
           AbsoluteTolerance: 1e-8
           RelativeTolerance: 1e-6
+          # These factors control how much the time step is changed at once.
           MaxFactor: 2
           MinFactor: 0.25
+          # How close to the "perfect" time step we take. Since the "perfect"
+          # value assumes a linear system, we need some safety factor since our
+          # system is nonlinear, and also so that we reduce how often we retake
+          # time steps.
           SafetyFactor: 0.9
       - ErrorControl(CoordVars):
           AbsoluteTolerance: 1e-8
           RelativeTolerance: 1e-7
+          # These factors control how much the time step is changed at once.
           MaxFactor: 2
           MinFactor: 0.25
+          # How close to the "perfect" time step we take. Since the "perfect"
+          # value assumes a linear system, we need some safety factor since our
+          # system is nonlinear, and also so that we reduce how often we retake
+          # time steps.
           SafetyFactor: 0.9
 
+  # The number of angular modes used by the CCE evolution. This must be larger
+  # than ObservationLMax. We always use all of the m modes for the LMax since
+  # using fewer m modes causes aliasing-driven instabilities.
   LMax: 20
-  NumberOfRadialPoints: 12
+  # Probably don't need more than 15 radial grid points, but could increase
+  # up to ~20
+  NumberOfRadialPoints: 15
+  # The maximum ell we use for writing waveform output. While CCE can dump
+  # more, you should be cautious with higher modes since mode mixing, truncation
+  # error, and systematic numerical effects can have significant contamination
+  # in these modes.
   ObservationLMax: 8
 
   InitializeJ:
+    # To see what other J-initialization procedures are available, comment
+    # out this group of options and do, e.g. "Blah:" The code will print
+    # an error message with the available options and a help string.
+    # More details can be found at spectre-code.org.
     ConformalFactor:
       AngularCoordTolerance: 1e-13
-      MaxIterations: 1000
-      RequireConvergence: False
+      MaxIterations: 1000 # Do extra iterations in case we improve.
+      RequireConvergence: False # Often don't converge to 1e-13, but that's fine
       OptimizeL0Mode: True
       UseBetaIntegralEstimate: False
       ConformalFactorIterationHeuristic: SpinWeight1CoordPerturbation
       UseInputModes: False
       InputModes: []
 
-  StartTime: 0.0
-  EndTime: 1000.0
+  StartTime: Auto # Start at the first time in file
+  EndTime: Auto   # End at the last time in file
+  # If the CCE file name is of the form NameOfFileRXXXX.h5 then
+  # ExtractionRadius can be Auto. If the filename does not contain the radius,
+  # then you can specify it explicitly. For example:
+  #   BoundaryDataFilename: CceInputData.h5
+  #   ExtractionRadius: 257
   BoundaryDataFilename: CceR0257.h5
+  ExtractionRadius: Auto
+  # Assume data is metric & derivs. This is wrong for SpECTRE & SpEC
+  # output, but likely correct for other codes.
   H5IsBondiData: False
+  # How we interpolate the worldtube data in time for CCE.
   H5Interpolator:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10
       MaxOrder: 10
-  ExtractionRadius: 257.0
+  # Unless you are using data from an old version of the Spectral Einstein Code,
+  # leave FixSpecNormalization as False.
   FixSpecNormalization: False
 
+  # Loads this many time steps in from the HDF5 files at once. Fewer file system
+  # accesses improve performance, but requires more RAM.
   H5LookaheadTimes: 10000
 
   Filtering:
-    RadialFilterHalfPower: 24
+    # Using half-power 64 means we effectively have a Heavidside filter, zeroing
+    # out the highest mode only.
+    RadialFilterHalfPower: 64
     RadialFilterAlpha: 35.0
+    # The number of angular modes not touched by the angular filter. This should
+    # be about 2 smaller than LMax used for the CCE evolution.
     FilterLMax: 18
 
   ScriInterpOrder: 5
-  ScriOutputDensity: 5
+  # How often per CCE time step to output. Given the tight default tolerances of
+  # 1e-6 with an Adams-Bashforth stepper, once per time step is fine for most
+  # systems.
+  ScriOutputDensity: 1
