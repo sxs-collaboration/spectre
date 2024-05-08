@@ -39,7 +39,8 @@ void test_use() {
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
 
-  const StepChoosers::Constant<Use> constant{5.4};
+  // Sign of argument should be ignored.
+  const StepChoosers::Constant<Use> constant{-5.4};
   const std::unique_ptr<StepChooser<Use>> constant_base =
       std::make_unique<StepChoosers::Constant<Use>>(constant);
 
@@ -52,7 +53,7 @@ void test_use() {
             ->desired_step(current_step, box) == expected);
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(
-      "Constant: 5.4");
+      "Constant: -5.4");
 }
 }  // namespace
 
@@ -63,11 +64,4 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   test_use<StepChooserUse::Slab>();
 
   CHECK(not StepChoosers::Constant<StepChooserUse::Slab>{}.uses_local_data());
-
-  CHECK_THROWS_WITH(
-      (TestHelpers::test_creation<
-          std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables>(
-          "Constant: -5.4")),
-      Catch::Matchers::ContainsSubstring(
-          "Requested step magnitude should be positive"));
 }

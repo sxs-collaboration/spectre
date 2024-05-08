@@ -12,7 +12,6 @@
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepRequest.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -31,9 +30,7 @@ class Constant : public StepChooser<StepChooserUse> {
 
   static constexpr Options::String help{"Suggests a constant step size."};
 
-  explicit Constant(const double value) : value_(value) {
-    ASSERT(value_ > 0., "Requested step magnitude should be positive.");
-  }
+  explicit Constant(const double value) : value_(value) {}
 
   using argument_tags = tmpl::list<>;
 
