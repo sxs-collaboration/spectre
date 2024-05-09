@@ -473,8 +473,18 @@ void write_to_attribute(const hid_t location_id, const std::string& name,
   const hid_t att_id = H5Acreate2(location_id, name.c_str(), h5_type<Type>(),
                                   space_id, h5p_default(), h5p_default());
   CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
-  CHECK_H5(H5Awrite(att_id, h5_type<Type>(), static_cast<const void*>(&value)),
-           "Failed to write value: " << value);
+  if constexpr (std::is_same_v<Type, std::string>) {
+    const auto cstr = value.c_str();
+    const hid_t str_id = h5_type<Type>();
+    CHECK_H5(H5Awrite(att_id, str_id, &cstr),
+             "Failed to write value: " << value);
+    CHECK_H5(H5Tclose(str_id),
+             "Failed to close string attribute '" << name << "'");
+  } else {
+    CHECK_H5(
+        H5Awrite(att_id, h5_type<Type>(), static_cast<const void*>(&value)),
+        "Failed to write value: " << value);
+  }
   CHECK_H5(H5Aclose(att_id), "Failed to close attribute '" << name << "'");
   CHECK_H5(H5Sclose(space_id), "Unable to close dataspace");
 }
@@ -490,10 +500,14 @@ Type read_value_attribute(const hid_t location_id, const std::string& name) {
   Type value;
   if constexpr (std::is_same_v<Type, std::string>) {
     char* value_c = nullptr;
-    CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value_c),
+    const hid_t str_id = h5_type<Type>();
+    // NOLINTNEXTLINE(readability-suspicious-call-argument)
+    CHECK_H5(H5Aread(attribute_id, str_id, &value_c),
              "Failed to read attribute '" << name << "'");
     value = std::string{value_c};
     H5free_memory(value_c);
+    CHECK_H5(H5Tclose(str_id),
+             "Failed to close string attribute '" << name << "'");
   } else {
     CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value),
              "Failed to read attribute '" << name << "'");
