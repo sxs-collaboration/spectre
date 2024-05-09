@@ -4,7 +4,6 @@
 #pragma once
 
 #include <cmath>  // IWYU pragma: keep  // for abs
-#include <limits>
 #include <pup.h>
 #include <utility>
 
@@ -21,7 +20,7 @@ namespace StepChoosers {
 /// preventing the step size from increasing if any step in the
 /// time-stepper history increased.  If there have been recent step
 /// size increases, the new size bound is the size of the most recent
-/// step, otherwise it is infinite (no restriction is imposed).
+/// step, otherwise no restriction is imposed.
 template <typename StepChooserUse>
 class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
@@ -43,9 +42,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   std::pair<TimeStepRequest, bool> operator()(const History& history,
                                               const double last_step) const {
     if (history.size() < 2) {
-      return {{.size_goal = std::copysign(
-                   std::numeric_limits<double>::infinity(), last_step)},
-              true};
+      return {{}, true};
     }
 
     const double sloppiness =
@@ -59,17 +56,13 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
         // Potential roundoff error comes from the inability to make
         // slabs exactly the same length.
         if (this_step < newer_step - sloppiness) {
-          return {{.size_goal = last_step}, true};
+          return {{.size = last_step}, true};
         }
         newer_step = this_step;
       }
       previous_time.emplace(time);
     }
-    // Request that the step size be at most infinity.  This imposes
-    // no restriction on the chosen step.
-    return {{.size_goal = std::copysign(std::numeric_limits<double>::infinity(),
-                                        last_step)},
-            true};
+    return {{}, true};
   }
 
   bool uses_local_data() const override { return false; }

@@ -9,6 +9,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -59,10 +60,11 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
   for (const auto& direction : {1, -1}) {
     CAPTURE(direction);
 
-    const double expected_size =
+    const std::optional<double> expected_size =
         expected_frac == -1
-            ? direction * std::numeric_limits<double>::infinity()
-            : (direction * expected_frac * slab.duration()).value();
+            ? std::nullopt
+            : std::optional(
+                  (direction * expected_frac * slab.duration()).value());
 
     const auto make_time_id = [&direction, &slab, &times](const size_t i) {
       Frac frac = -direction * times[i];
@@ -115,8 +117,8 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       const std::unique_ptr<StepChooser<Use>> relax_base =
           std::make_unique<StepChoosers::PreventRapidIncrease<Use>>(relax);
 
-      const std::pair<TimeStepRequest, bool> expected{
-          {.size_goal = expected_size}, true};
+      const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
+                                                      true};
       CHECK(relax(history, current_step) == expected);
       CHECK(serialize_and_deserialize(relax)(history, current_step) ==
             expected);
@@ -166,10 +168,7 @@ void check_substep_methods() {
                             (slab.start() + slab.duration() / 2).value()),
                  0.0, 0.0);
   const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
-  CHECK(relax(history, 3.14) ==
-        std::pair(TimeStepRequest{.size_goal =
-                                      std::numeric_limits<double>::infinity()},
-                  true));
+  CHECK(relax(history, 3.14) == std::pair(TimeStepRequest{}, true));
 }
 }  // namespace
 
