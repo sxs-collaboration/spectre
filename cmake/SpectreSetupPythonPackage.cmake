@@ -13,7 +13,7 @@ function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
     execute_process(COMMAND
       ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
   else()
-    configure_file(${SOURCE_FILE} ${TARGET_FILE})
+    configure_file(${SOURCE_FILE} ${TARGET_FILE} @ONLY)
   endif()
 endfunction()
 

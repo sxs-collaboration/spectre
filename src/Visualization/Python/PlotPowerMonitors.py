@@ -3,7 +3,7 @@
 
 import logging
 from itertools import cycle
-from typing import Iterable, Optional, Sequence, Union
+from typing import Iterable, Optional, Sequence, Tuple, Union
 
 import click
 import matplotlib.pyplot as plt
@@ -56,6 +56,7 @@ def plot_power_monitors(
     domain: Union[Domain[1], Domain[2], Domain[3]],
     dimension_labels: Sequence[str] = [r"$\xi$", r"$\eta$", r"$\zeta$"],
     element_patterns: Optional[Sequence[str]] = None,
+    figsize: Optional[Tuple[float, float]] = None,
 ):
     plot_over_time = obs_id is None
     # One column per block or group
@@ -65,7 +66,7 @@ def plot_power_monitors(
     fig, axes = plt.subplots(
         nrows=num_rows,
         ncols=num_cols,
-        figsize=(num_cols * 4, num_rows * 4),
+        figsize=figsize or (num_cols * 4, num_rows * 4),
         sharey=True,
         sharex=True,
         squeeze=False,
@@ -252,6 +253,15 @@ def plot_power_monitors(
             if not plot_over_time:
                 ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
+    # Add y-labels to the leftmost subplots
+    if plot_over_time:
+        for d, ax in enumerate(axes):
+            ax[0].set_ylabel(
+                r"Power monitors $P_{q_" + dimension_labels[d].strip("$") + "}$"
+            )
+    else:
+        axes[0][0].set_ylabel(r"Power monitors $P_{q_{\hat{\imath}}}$")
+
     # Add x-label spanning all subplots
     ax_colspan = fig.add_subplot(111, frameon=False)
     ax_colspan.tick_params(
@@ -299,6 +309,11 @@ def plot_power_monitors(
         "'--elements' / '-e' patterns."
     ),
 )
+@click.option(
+    "--over-time", "-T", is_flag=True, help="Plot power monitors over time."
+)
+# Plotting options
+@click.option("--figsize", nargs=2, type=float, help="Figure size in inches.")
 @apply_stylesheet_command()
 @show_or_save_plot_command()
 def plot_power_monitors_command(
@@ -311,6 +326,8 @@ def plot_power_monitors_command(
     block_or_group_names,
     list_elements,
     element_patterns,
+    over_time,
+    **kwargs,
 ):
     """Plot power monitors from volume data
 
@@ -329,6 +346,11 @@ def plot_power_monitors_command(
     documentation of the 'Wedge' map to understand which logical direction is
     radial in spherical shells.
     """
+    if over_time == (obs_id is not None):
+        raise click.UsageError(
+            "Specify an observation '--step' or '--time', or specify"
+            " '--over-time' (but not both)."
+        )
 
     # Print available blocks and groups
     open_h5_file = spectre_h5.H5File(h5_files[0], "r")
@@ -412,6 +434,7 @@ def plot_power_monitors_command(
             domain=domain,
             block_or_group_names=block_or_group_names,
             element_patterns=element_patterns,
+            **kwargs,
         )
         progress.update(task_id, completed=len(h5_files))
 
