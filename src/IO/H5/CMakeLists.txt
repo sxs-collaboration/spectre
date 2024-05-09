@@ -59,7 +59,7 @@ target_link_libraries(
   DataStructures
   DomainStructure
   ErrorHandling
-  hdf5::hdf5
+  HDF5::HDF5
   Serialization
   Spectral
   Utilities

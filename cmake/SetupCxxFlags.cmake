@@ -5,14 +5,14 @@ option(DEBUG_SYMBOLS "Add -g to CMAKE_CXX_FLAGS if ON, -g0 if OFF." ON)
 
 option(OVERRIDE_ARCH "The architecture to use. Default is native." OFF)
 
-option(ENABLE_SPECTRE_DEBUG "Enable ASSERTs and other SPECTRE_DEBUG options"
+option(SPECTRE_DEBUG "Enable ASSERTs and other SPECTRE_DEBUG options"
   OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(ENABLE_SPECTRE_DEBUG ON)
+  set(SPECTRE_DEBUG ON)
 endif()
 
-if(${ENABLE_SPECTRE_DEBUG})
+if(${SPECTRE_DEBUG})
   set_property(TARGET SpectreFlags
     APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_DEBUG)
 endif()
