@@ -8,6 +8,7 @@ class PlotCommands(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "along-line",
+            "control-system",
             "dat",
             "elliptic-convergence",
             "memory-monitors",
@@ -23,6 +24,12 @@ class PlotCommands(click.MultiCommand):
             )
 
             return plot_along_line_command
+        elif name == "control-system":
+            from spectre.Visualization.PlotControlSystem import (
+                plot_control_system_command,
+            )
+
+            return plot_control_system_command
         elif name == "dat":
             from spectre.Visualization.PlotDatFile import plot_dat_command
 
