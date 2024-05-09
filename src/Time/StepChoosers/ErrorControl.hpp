@@ -203,12 +203,10 @@ class ErrorControl
   std::pair<TimeStepRequest, bool> operator()(
       const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
       const double previous_step) const {
-    // request that the step size not be changed if there isn't a new error
+    // Do not request that the step size be changed if there isn't a new error
     // estimate
     if (not errors[1].has_value()) {
-      return {{.size_goal = std::copysign(
-                   std::numeric_limits<double>::infinity(), previous_step)},
-              true};
+      return {{}, true};
     }
     double new_step;
     if (not errors[0].has_value() or errors[0]->order != errors[1]->order) {
