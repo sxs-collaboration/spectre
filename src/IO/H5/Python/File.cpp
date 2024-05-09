@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "IO/H5/Cce.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -37,6 +38,14 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
                 return f.template get<h5::Dat>(path);
               },
               py::return_value_policy::reference, py::arg("path"))
+          .def(
+              "get_cce",
+              [](const H5File& f, const std::string& path,
+                 const size_t l_max) -> const h5::Cce& {
+                return f.template get<h5::Cce>(path, l_max);
+              },
+              py::return_value_policy::reference, py::arg("path"),
+              py::arg("l_max"))
           .def("close_current_object", &H5File::close_current_object)
           .def("close", &H5File::close)
           .def("all_files",
@@ -46,6 +55,10 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
           .def("all_dat_files",
                [](const H5File& f) -> const std::vector<std::string> {
                  return f.template all_files<h5::Dat>("/");
+               })
+          .def("all_cce_files",
+               [](const H5File& f) -> const std::vector<std::string> {
+                 return f.template all_files<h5::Cce>("/");
                })
           .def("all_vol_files",
                [](const H5File& f) -> const std::vector<std::string> {
@@ -61,11 +74,10 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
               py::return_value_policy::reference, py::arg("path"))
           .def("input_source", &H5File::input_source)
           .def("__enter__", [](H5File& file) -> H5File& { return file; })
-          .def("__exit__", [](H5File& f, const py::object& /* exception_type */,
-                              const py::object& /* val */,
-                              const py::object& /* traceback */) {
-            f.close();
-          });
+          .def("__exit__",
+               [](H5File& f, const py::object& /* exception_type */,
+                  const py::object& /* val */,
+                  const py::object& /* traceback */) { f.close(); });
 
   if constexpr (Access_t == h5::AccessType::ReadWrite) {
     bind_h5_file
@@ -87,6 +99,22 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
             },
             py::return_value_policy::reference, py::arg("path"),
             py::arg("legend"), py::arg("version"))
+        .def(
+            "insert_cce",
+            [](H5File& f, const std::string& path, const size_t l_max,
+               const uint32_t version) -> h5::Cce& {
+              return f.template insert<h5::Cce>(path, l_max, version);
+            },
+            py::return_value_policy::reference, py::arg("path"),
+            py::arg("l_max"), py::arg("version"))
+        .def(
+            "try_insert_cce",
+            [](H5File& f, const std::string& path, const size_t l_max,
+               const uint32_t version) -> h5::Cce& {
+              return f.template try_insert<h5::Cce>(path, l_max, version);
+            },
+            py::return_value_policy::reference, py::arg("path"),
+            py::arg("l_max"), py::arg("version"))
         .def(
             "insert_vol",
             [](H5File& f, const std::string& path,

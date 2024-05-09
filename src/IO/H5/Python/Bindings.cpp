@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "IO/H5/Python/Cce.hpp"
 #include "IO/H5/Python/CombineH5.hpp"
 #include "IO/H5/Python/Dat.hpp"
 #include "IO/H5/Python/File.hpp"
@@ -18,6 +19,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py::module_::import("spectre.Spectral");
   py_bindings::bind_h5file(m);
   py_bindings::bind_h5dat(m);
+  py_bindings::bind_h5cce(m);
   py_bindings::bind_h5vol(m);
   py_bindings::bind_tensordata(m);
   py_bindings::bind_h5combine(m);
