@@ -598,7 +598,7 @@ jobs:
         run: |
           apt-get install -y libopenmpi-dev
           cd /work/charm_7_0_0 && ./build charm++ mpi-linux-x86_64-smp clang \
-          -j4 -g0 -O1 --build-shared --with-production
+          -j ${NUMBER_OF_CORES} -g0 -O1 --build-shared --with-production
 
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
@@ -874,17 +874,27 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
     name: Unit tests on macOS
-    runs-on: macos-13
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The number of cores is given at:
+          # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+          - arch: x86
+            macos-version: 13  # Intel
+            NUM_CORES: 4
+          - arch: arm64
+            macos-version: 14  # Apple Silicon
+            NUM_CORES: 3
+    runs-on: macos-${{ matrix.macos-version }}
     env:
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake catch2 ccache cmake pkg-config boost
+        autoconf automake boost catch2 ccache cmake gsl hdf5 openblas yaml-cpp
       # We install these packages with Spack and cache them. The full specs are
-      # listed in support/DevEnvironments/spack.yaml. This list is only needed
-      # to create the cache.
-      SPECTRE_SPACK_DEPS: >-
-        blaze charmpp gsl hdf5 libxsmm openblas yaml-cpp
+      # listed below. This list is only needed to create the cache.
+      SPECTRE_SPACK_DEPS: blaze charmpp libxsmm
       CCACHE_DIR: $HOME/ccache
       CCACHE_TEMPDIR: $HOME/ccache-tmp
       CCACHE_MAXSIZE: "2G"
@@ -893,6 +903,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       CCACHE_COMPILERCHECK: content
       SPACK_SKIP_MODULES: true
       SPACK_COLOR: always
+      NUM_CORES: ${{ matrix.NUM_CORES }}
     steps:
       - name: Record start time
         id: start
@@ -902,7 +913,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Install Homebrew dependencies
         run: |
           brew install $SPECTRE_BREW_DEPS
@@ -911,17 +922,22 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Restore dependency cache
         uses: actions/cache/restore@v4
         id: restore-dependencies
+        env:
+          CACHE_KEY_PREFIX: "dependencies-macos-${{ matrix.macos-version }}"
         with:
           path: ~/dependencies
-          key: "dependencies-macos-${{ github.run_id }}"
+          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
-            dependencies-macos-
+            ${{ env.CACHE_KEY_PREFIX }}-
       - name: Install Spack
+        # Pin a specific version of Spack to avoid breaking CI builds when
+        # Spack changes.
         run: |
           cd $HOME
-          git clone -c feature.manyFiles=true --depth=1 \
-            --branch releases/v0.18 --single-branch \
+          git clone -c feature.manyFiles=true \
             https://github.com/spack/spack.git
+          cd spack
+          git checkout 7d1de58378fa210b7db887964fcc17187a504ad8
       - name: Configure Spack
         # - To avoid re-building packages that are already installed by Homebrew
         #   we let Spack find them.
@@ -930,7 +946,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack debug report
           spack compiler find && spack compiler list
-          spack external find && spack external find perl python
+          spack external find
           spack config get packages
           spack mirror add dependencies file://$HOME/dependencies/spack
       # Install the remaining dependencies from source with Spack. We install
@@ -939,9 +955,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Install Spack dependencies
         run: |
           source $HOME/spack/share/spack/setup-env.sh
-          spack env create spectre support/DevEnvironments/spack.yaml
+          spack env create spectre
           spack env activate spectre
-          spack remove catch2 doxygen jemalloc boost
+          spack add blaze@3.8.2 ~blas ~lapack smp=none
+          spack add charmpp@7.0.0 +shared backend=multicore build-target=charm++
+          # Use main branch until spack has 2.0 release
+          spack add libxsmm@main
           spack concretize --reuse
           spack install --no-check-signature
           spack find -v
@@ -979,11 +998,13 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Restore ccache
         uses: actions/cache/restore@v4
         id: restore-ccache
+        env:
+          CACHE_KEY_PREFIX: "ccache-macos-${{ matrix.macos-version }}"
         with:
           path: ~/ccache
-          key: "ccache-macos-${{ github.run_id }}"
+          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.run_id }}"
           restore-keys: |
-            ccache-macos-
+            ${{ env.CACHE_KEY_PREFIX }}-
       - name: Configure ccache
         run: |
           ccache -pz
@@ -1008,11 +1029,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D CMAKE_CXX_COMPILER=clang++ \
             -D CMAKE_Fortran_COMPILER=gfortran-14 \
             -D CMAKE_CXX_FLAGS="-Werror" \
-            -D OVERRIDE_ARCH=x86-64 \
             -D BUILD_SHARED_LIBS=ON \
             -D BUILD_PYTHON_BINDINGS=ON \
             -D MEMORY_ALLOCATOR=SYSTEM \
             -D CHARM_ROOT=$(spack location --install-dir charmpp) \
+            -D BLAS_ROOT=$(brew --prefix openblas) \
+            -D LAPACK_ROOT=$(brew --prefix openblas) \
             -D CMAKE_BUILD_TYPE=Debug \
             -D DEBUG_SYMBOLS=OFF \
             -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF \
@@ -1020,17 +1042,15 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D STUB_LIBRARY_OBJECT_FILES=ON \
             -D USE_PCH=ON \
             -D USE_CCACHE=ON \
-            -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
+            -D SPECTRE_TEST_TIMEOUT_FACTOR=10 \
             -D CMAKE_INSTALL_PREFIX=../install \
             -D BUILD_DOCS=OFF \
             -D USE_XSIMD=OFF \
             $GITHUB_WORKSPACE
       - name: Build unit tests
         working-directory: build
-        # Build on 4 threads because GitHub's macOS VMs have 4 cores:
-        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         run: |
-          make -j4 unit-tests
+          make -j${NUM_CORES} unit-tests
       - name: Build executables
         working-directory: build
         run: |
@@ -1058,7 +1078,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Run unit tests
         working-directory: build
         run: |
-          ctest -j4 --repeat after-timeout:3 --output-on-failure
+          ctest -j${NUM_CORES} --repeat after-timeout:3 --output-on-failure
       - name: Install
         working-directory: build
         run: |

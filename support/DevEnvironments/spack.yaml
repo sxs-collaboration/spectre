@@ -42,7 +42,7 @@
 
 spack:
   specs:
-  - blaze@3.8
+  - 'blaze@3.8:3.8'
   - 'boost@1.60:+math+program_options'
   - 'catch2@3.4.0:3'
   # Charm++:
@@ -57,7 +57,7 @@ spack:
   - 'libxsmm@1.16.1:'
   - openblas
   - 'python@3.8:'
-  - yaml-cpp@0.6.3
+  - 'yaml-cpp@0.6.3:'
   concretizer:
     unify: true
   view: true
