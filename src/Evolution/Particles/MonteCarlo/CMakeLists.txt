@@ -27,6 +27,7 @@ spectre_target_headers(
   EmitPackets.tpp
   EvolvePackets.hpp
   EvolvePacketsInElement.tpp
+  ImplicitMonteCarloCorrections.tpp
   InverseJacobianInertialToFluidCompute.hpp
   NeutrinoInteractionTable.hpp
   Packet.hpp

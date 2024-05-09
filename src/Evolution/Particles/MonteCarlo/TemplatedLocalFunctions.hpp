@@ -31,14 +31,19 @@ class Mesh;
 namespace Particles::MonteCarlo {
 template<size_t EnergyBins,size_t NeutrinoSpecies>
 class NeutrinoInteractionTable;
-} // namespace Particles::MonteCarlo
+
+struct Packet;
+}  // namespace Particles::MonteCarlo
+
+namespace EquationsOfState {
+template <bool IsRelativistic, size_t ThermodynamicDim>
+class EquationOfState;
+}  // namespace EquationsOfState
 /// \endcond
 
 /// Items related to the evolution of particles
 /// Items related to Monte-Carlo radiation transport
 namespace Particles::MonteCarlo {
-
-struct Packet;
 
 namespace detail {
 
@@ -220,6 +225,40 @@ struct TemplatedLocalFunctions {
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           scattering_opacity_table,
       const std::array<double, EnergyBins>& energy_at_bin_center);
+
+  /// Function responsible to correct emissivity, absorption, and scattering
+  /// rates in regions where there is a stiff coupling between the neutrinos
+  /// and the fluid. This is done by transferring a fraction
+  /// fraction_ka_to_ks of the absorption opacity to scattering opacity,
+  /// while multiplying the emissivity by ( 1 - fraction_ka_to_ks ) to
+  /// keep the equilibrium energy density constant.
+  /// Note that to match SpEC, we would need to replace time_step by
+  /// the light crossing time of each cell (which requires GZ metric
+  /// information). The parameter max_opacity_for_implicit_mc is, in
+  /// SpEC,
+  /// std::min(MaxOpacity, MaxOpacityPerCrossingTime / light-crossing time)
+  /// with MaxOpacity, MaxOpacityPerCrossingTime input parameters.
+  void implicit_monte_carlo_interaction_rates(
+      gsl::not_null<
+          std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
+          emissivity_in_cell,
+      gsl::not_null<
+          std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
+          absorption_opacity,
+      gsl::not_null<
+          std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
+          scattering_opacity,
+      gsl::not_null<
+          std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
+          fraction_ka_to_ks,
+      double time_step, double max_opacity_for_implicit_mc,
+      const Scalar<DataVector>& electron_fraction,
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& temperature,
+      double minimum_temperature,
+      const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
+          interaction_table,
+      const EquationsOfState::EquationOfState<true, 3>& equation_of_state);
 
   // Floor for opacity values (absorption or scattering).
   // This is used in two places. First, when interpolating opacities

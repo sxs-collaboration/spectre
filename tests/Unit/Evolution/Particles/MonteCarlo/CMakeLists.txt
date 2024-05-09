@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_CellVolume.cpp
   Test_EmitPackets.cpp
   Test_EvolvePackets.cpp
+  Test_ImplicitMonteCarloCorrections.cpp
   Test_InterpolateOpacities.cpp
   Test_InverseJacobianInertialToFluid.cpp
   Test_NeutrinoInteractionTable.cpp
