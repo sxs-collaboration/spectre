@@ -187,7 +187,7 @@ def start_inspiral(
     "-L",
     type=int,
     help="h-refinement level.",
-    default=0,
+    default=1,
     show_default=True,
 )
 @click.option(
@@ -195,7 +195,7 @@ def start_inspiral(
     "-P",
     type=int,
     help="p-refinement level.",
-    default=5,
+    default=9,
     show_default=True,
 )
 @click.option(

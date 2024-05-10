@@ -138,8 +138,6 @@ class TestInitialData(unittest.TestCase):
                     "id_input_file_path": "__file__",
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
-                    "refinement_level": 1,
-                    "polynomial_order": 5,
                     "continue_with_ringdown": True,
                     "scheduler": "None",
                     "copy_executable": "None",
