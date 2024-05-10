@@ -71,7 +71,9 @@ NUM_NODES={{ num_nodes | default(1) }}
             scheduler=None,
             executable=self.executable,
             run_dir=self.test_dir / "Run",
-            extra_option="TestOpt",
+            # Passing one extra param in a dict and another as a keyword
+            # argument to test that both work
+            extra_params=dict(extra_option="TestOpt"),
             metadata_option="MetaOpt",
         )
         self.assertEqual(proc.returncode, 0)
