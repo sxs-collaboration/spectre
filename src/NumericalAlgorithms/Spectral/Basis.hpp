@@ -41,7 +41,12 @@ namespace Spectral {
  * the polar/zentith angle (or colatitude), while the second dimension
  * represents the azimuthal angle (or longitude)
  */
-enum class Basis { Chebyshev, Legendre, FiniteDifference, SphericalHarmonic };
+enum class Basis : uint8_t {
+  Chebyshev,
+  Legendre,
+  FiniteDifference,
+  SphericalHarmonic
+};
 
 /// All possible values of Basis
 std::array<Basis, 4> all_bases();

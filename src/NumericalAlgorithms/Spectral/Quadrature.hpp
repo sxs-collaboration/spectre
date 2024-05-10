@@ -41,7 +41,7 @@ namespace Spectral {
  * \note When using Basis::SphericalHarmonic in consecutive dimensions, choose
  * `Gauss` for the first dimension and `Equiangular` in the second dimension.
  */
-enum class Quadrature {
+enum class Quadrature : uint8_t {
   Gauss,
   GaussLobatto,
   CellCentered,

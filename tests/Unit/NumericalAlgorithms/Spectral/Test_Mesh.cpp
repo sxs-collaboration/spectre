@@ -247,21 +247,26 @@ void test_serialization() {
                 Spectral::Basis::Legendre}},
               {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
                 Spectral::Quadrature::GaussLobatto}}});
-  constexpr size_t expected_1d_mesh = 1 * sizeof(size_t) + 2 * sizeof(int);
-  constexpr size_t expected_2d_mesh = 2 * sizeof(size_t) + 2 * 2 * sizeof(int);
-  constexpr size_t expected_3d_mesh = 3 * sizeof(size_t) + 3 * 2 * sizeof(int);
+  // Because of alignment these are bigger than expected.
+  // However, the serialized sizes don't do that.
+  constexpr size_t expected_1d_mesh =
+      1 * sizeof(size_t) + 2 * sizeof(uint8_t) + 6;
+  constexpr size_t expected_2d_mesh =
+      2 * sizeof(size_t) + 2 * 2 * sizeof(uint8_t) + 4;
+  constexpr size_t expected_3d_mesh =
+      3 * sizeof(size_t) + 3 * 2 * sizeof(uint8_t) + 2;
   static_assert(sizeof(Mesh<1>) == expected_1d_mesh);
   static_assert(sizeof(Mesh<2>) == expected_2d_mesh);
   static_assert(sizeof(Mesh<3>) == expected_3d_mesh);
   CHECK(size_of_object_in_bytes(Mesh<1>{3, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto}) ==
-        expected_1d_mesh);
+        expected_1d_mesh - 6);
   CHECK(size_of_object_in_bytes(Mesh<2>{3, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto}) ==
-        expected_2d_mesh);
+        expected_2d_mesh - 4);
   CHECK(size_of_object_in_bytes(Mesh<3>{3, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto}) ==
-        expected_3d_mesh);
+        expected_3d_mesh - 2);
 }
 
 template <size_t Dim>
