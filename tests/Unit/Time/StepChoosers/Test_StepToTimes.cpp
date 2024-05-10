@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <utility>
 #include <vector>
@@ -18,9 +19,8 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
-#include "Time/Tags/TimeStepId.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Time/TimeSequence.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -39,99 +39,89 @@ struct Metavariables {
   };
   using component_list = tmpl::list<>;
 };
+
+void check_case(const double now, std::vector<double> times,
+                const std::optional<double>& expected_end) {
+  const auto impl = [](const double local_now, const double last_step,
+                       const std::vector<double>& impl_times) {
+    CAPTURE(local_now);
+    CAPTURE(impl_times);
+
+    using Specified = TimeSequences::Specified<double>;
+    const StepChoosers::StepToTimes step_to_times(
+        std::make_unique<Specified>(impl_times));
+    const std::unique_ptr<StepChooser<StepChooserUse::Slab>>
+        step_to_times_base = std::make_unique<StepChoosers::StepToTimes>(
+            std::make_unique<Specified>(impl_times));
+
+    auto box = db::create<db::AddSimpleTags<
+        Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Time>>(
+        Metavariables{}, local_now);
+
+    const auto answer = step_to_times(local_now, last_step);
+    CHECK(answer.second);
+
+    const auto& request = answer.first;
+    CHECK(request.end == request.end_hard_limit);
+    REQUIRE(request.size.has_value() == request.end.has_value());
+    CHECK(not request.size_goal.has_value());
+    CHECK(not request.size_hard_limit.has_value());
+
+    CHECK(step_to_times_base->desired_step(last_step, box) == answer);
+    CHECK(serialize_and_deserialize(step_to_times)(local_now, last_step) ==
+          answer);
+    CHECK(serialize_and_deserialize(step_to_times_base)
+              ->desired_step(last_step, box) == answer);
+    return request.end.has_value()
+               ? std::optional(std::pair(*request.end, *request.size))
+               : std::nullopt;
+  };
+  const auto result = impl(now, 1.0, times);
+  alg::for_each(times, [](double& x) { return x = -x; });
+  const auto backwards_result = impl(-now, -1.0, times);
+  CHECK(backwards_result.has_value() == result.has_value());
+  if (result.has_value()) {
+    CHECK(backwards_result ==
+          std::optional(std::pair(-result->first, -result->second)));
+  }
+
+  CHECK(result.has_value() == expected_end.has_value());
+  if (expected_end.has_value()) {
+    CHECK(result == std::optional(std::pair(
+                        *expected_end, 2.0 / 3.0 * (*expected_end - now))));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   register_factory_classes_with_charm<Metavariables>();
 
-  const auto requested = [](const double now, std::vector<double> times,
-                            const double last_step_magnitude) {
-    std::optional<double> result{};
-    const auto impl = [&result](const TimeStepId& now_id,
-                                const std::vector<double>& impl_times,
-                                const double last_step) {
-      CAPTURE(now_id);
-      CAPTURE(impl_times);
-      CAPTURE(last_step);
+  check_case(3.0, {}, {});
+  check_case(3.0, {1.0}, {});
+  check_case(3.0, {3.0}, {});
+  check_case(3.0, {5.0}, {5.0});
 
-      using Specified = TimeSequences::Specified<double>;
-      const StepChoosers::StepToTimes step_to_times(
-          std::make_unique<Specified>(impl_times));
-      const std::unique_ptr<StepChooser<StepChooserUse::Slab>>
-          step_to_times_base = std::make_unique<StepChoosers::StepToTimes>(
-              std::make_unique<Specified>(impl_times));
-
-      auto box = db::create<db::AddSimpleTags<
-          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
-          Metavariables{}, now_id);
-
-      const auto answer = step_to_times(now_id, last_step);
-      REQUIRE(answer.first.size_goal.has_value());
-      CHECK(answer.first ==
-            TimeStepRequest{.size_goal = answer.first.size_goal});
-      if (not result.has_value()) {
-        result.emplace(*answer.first.size_goal);
-      } else {
-        CHECK(*result == *answer.first.size_goal);
-      }
-      CHECK(step_to_times_base->desired_step(last_step, box) == answer);
-      CHECK(serialize_and_deserialize(step_to_times)(now_id, last_step) ==
-            answer);
-      CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_step(last_step, box) == answer);
-    };
-    impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times,
-         last_step_magnitude);
-    alg::for_each(times, [](double& x) { return x = -x; });
-    *result = -*result;
-    impl(TimeStepId(false, 0, Slab(-now, -now + 1.0).start()), times,
-         -last_step_magnitude);
-    return -*result;
-  };
-
-  static constexpr double infinity = std::numeric_limits<double>::infinity();
-
-  CHECK(requested(3.0, {}, infinity) == infinity);
-  CHECK(requested(3.0, {1.0}, infinity) == infinity);
-  CHECK(requested(3.0, {3.0}, infinity) == infinity);
-  CHECK(requested(3.0, {5.0}, infinity) == 2.0);
-  {
-    const double request = requested(3.0, {5.0}, 1.0);
-    CHECK(request > 1.0);
-    CHECK(request < 2.0);
-  }
-  {
-    const double request = requested(3.0, {5.0}, 1.9375);
-    CHECK(request > 1.0);
-    CHECK(request < 1.9375);
-  }
-  {
-    const double request = requested(3.0, {5.0}, 1.0625);
-    CHECK(request > 1.0);
-    CHECK(request < 2.0);
-  }
-
-  const auto one_five_check = [&requested](const std::vector<double>& times) {
-    CHECK(requested(0.0, times, infinity) == 1.0);
-    CHECK(requested(1.0, times, infinity) == 4.0);
-    CHECK(requested(2.0, times, infinity) == 3.0);
-    CHECK(requested(5.0, times, infinity) == infinity);
-    CHECK(requested(7.0, times, infinity) == infinity);
+  const auto one_five_check = [](const std::vector<double>& times) {
+    check_case(0.0, times, {1.0});
+    check_case(1.0, times, {5.0});
+    check_case(2.0, times, {5.0});
+    check_case(5.0, times, {});
+    check_case(7.0, times, {});
   };
 
   one_five_check({1.0, 5.0});
   one_five_check({5.0, 1.0});
   one_five_check({1.0, 5.0, 1.0, 5.0, 1.0, 5.0});
 
-  const auto check_rounding = [&requested](const double start,
-                                           const double step) {
+  const auto check_rounding = [](const double start, const double step) {
     CAPTURE(start);
     CAPTURE(step);
-    auto scaled_approx = Approx::custom().scale(std::abs(start));
-    CHECK(requested(std::nextafter(start, +infinity), {start, start + step},
-                    infinity) == scaled_approx(step));
-    CHECK(requested(std::nextafter(start, -infinity), {start, start + step},
-                    infinity) == scaled_approx(step));
+    static constexpr double infinity = std::numeric_limits<double>::infinity();
+    check_case(std::nextafter(start, -infinity), {start, start + step},
+               {start});
+    check_case(start, {start, start + step}, {start + step});
+    check_case(std::nextafter(start, +infinity), {start, start + step},
+               {start + step});
   };
 
   check_rounding(0.0, 1.0);
