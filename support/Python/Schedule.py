@@ -133,6 +133,7 @@ def schedule(
     submit: Optional[bool] = None,
     clean_output: bool = False,
     force: bool = False,
+    extra_params: dict = {},
     **kwargs,
 ) -> Optional[subprocess.CompletedProcess]:
     """Schedule executable runs with an input file
@@ -302,6 +303,9 @@ def schedule(
         files in the 'run_dir' before scheduling the run. (Default: 'False')
       force: Optional. When 'True', overwrite input file and submit script
         in the 'run_dir' instead of raising an error when they already exist.
+      extra_params: Optional. Dictionary of extra parameters passed to input
+        file and submit script templates. Parameters can also be passed as
+        keyword arguments to this function instead.
 
     Returns: The 'subprocess.CompletedProcess' representing either the process
       that scheduled the run, or the process that ran the executable if
@@ -322,6 +326,8 @@ def schedule(
         from_checkpoint = Path(from_checkpoint).resolve()
 
     # Snapshot function arguments for template substitutions
+    kwargs.update(extra_params)
+    del extra_params
     all_args = locals().copy()
     del all_args["kwargs"]
 
@@ -893,6 +899,29 @@ def scheduler_options(f):
         help="Wall time limit. Must be compatible with the chosen queue.",
     )
     @click.option(
+        "--param",
+        "-p",
+        "extra_params",
+        multiple=True,
+        callback=_parse_params,
+        help=(
+            "Forward an additional parameter to the input file "
+            "and submit script templates. "
+            "Can be specified multiple times. "
+            "Each entry must be a 'key=value' pair, where the key is "
+            "the parameter name. The value can be an int, float, "
+            "string, a comma-separated list, an inclusive range "
+            "like '0...3', an exclusive range like '0..3' or '0..<3', "
+            "or an exponentiated value or range like "
+            "'2**3' or '10**4...6'. "
+            "If a parameter is a list or range, multiple runs are "
+            "scheduled recursively. "
+            "You can also use the parameter in the 'job_name' and "
+            "in the 'run_dir' or 'segment_dir', and when scheduling "
+            "ranges of runs you probably should."
+        ),
+    )
+    @click.option(
         "--submit/--no-submit",
         default=None,
         help=(
@@ -950,31 +979,7 @@ def scheduler_options(f):
     ),
     help="Restart from the last checkpoint in this directory.",
 )
-@click.option(
-    "--param",
-    "-p",
-    "params",
-    multiple=True,
-    callback=_parse_params,
-    help=(
-        "Forward an additional parameter to the input file "
-        "and submit script templates. "
-        "Can be specified multiple times. "
-        "Each entry must be a 'key=value' pair, where the key is "
-        "the parameter name. The value can be an int, float, "
-        "string, a comma-separated list, an inclusive range "
-        "like '0...3', an exclusive range like '0..3' or '0..<3', "
-        "or an exponentiated value or range like "
-        "'2**3' or '10**4...6'. "
-        "If a parameter is a list or range, multiple runs are "
-        "scheduled recursively. "
-        "You can also use the parameter in the 'job_name' and "
-        "in the 'run_dir' or 'segment_dir', and when scheduling "
-        "ranges of runs you probably should."
-    ),
-)
 def schedule_command(
-    params,
     from_checkpoint,
     from_last_checkpoint,
     **kwargs,
@@ -1004,7 +1009,7 @@ def schedule_command(
                 f"that match the pattern '{Checkpoint.NAME_PATTERN.pattern}'."
             )
         from_checkpoint = all_checkpoints[-1]
-    schedule(from_checkpoint=from_checkpoint, **kwargs, **params)
+    schedule(from_checkpoint=from_checkpoint, **kwargs)
 
 
 if __name__ == "__main__":
