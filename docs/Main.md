@@ -28,17 +28,10 @@ alt="Build Status"
 data-canonical-src="https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop"
 style="max-width:100%;"></a>
 
-<a href="https://coveralls.io/github/sxs-collaboration/spectre?branch=develop"
-rel="nofollow"><img
-src="https://camo.githubusercontent.com/9ac925f8d36b285f98b8dbc9b977606a5148d9b5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7378732d636f6c6c61626f726174696f6e2f737065637472652f62616467652e7376673f6272616e63683d646576656c6f70"
-alt="Coverage Status"
-data-canonical-src="https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop"
-style="max-width:100%;"></a>
-
 <a href="https://codecov.io/gh/sxs-collaboration/spectre" rel="nofollow"><img
-src="https://camo.githubusercontent.com/ac504b33d403e271c9fb3831d1133118f1886317/68747470733a2f2f636f6465636f762e696f2f67682f7378732d636f6c6c61626f726174696f6e2f737065637472652f6272616e63682f646576656c6f702f67726170682f62616467652e737667"
+src="https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.svg?token=yyJ3uBPUE2"
 alt="codecov"
-data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg"
+data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.svg?token=yyJ3uBPUE2"
 style="max-width:100%;"></a>
 
 </p>
