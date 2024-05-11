@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Check commits
@@ -116,7 +116,7 @@ jobs:
       image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -186,7 +186,7 @@ jobs:
           python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Upload release notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: release_notes.md
@@ -214,7 +214,7 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       # Work around https://github.com/actions/checkout/issues/760
@@ -289,7 +289,7 @@ jobs:
         CCACHE_BASEDIR: $GITHUB_WORKSPACE
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -299,7 +299,7 @@ jobs:
         run: |
           python3 -m pip install -r support/Python/dev_requirements.txt
       - name: Download release notes
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         id: release-notes
         with:
           name: release-notes
@@ -312,7 +312,7 @@ jobs:
           cat /work/release_notes.md | sed 's/\(\B\@\)/\\\1/g' \
             >> docs/Changelog.md
       - name: Restore ccache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-ccache
         env:
           CACHE_KEY_PREFIX: ccache-gcc-11-Debug-pch-ON
@@ -369,7 +369,7 @@ jobs:
         run: |
           tar -cf docs-html.tar --directory docs/html .
       - name: Upload documentation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docs-html
           path: build/docs-html.tar
@@ -388,7 +388,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v2
+      - uses: actions/deploy-pages@v4
         id: deploy
         with:
           artifact_name: docs-html
@@ -524,7 +524,7 @@ jobs:
         run: |
           echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
@@ -553,7 +553,7 @@ jobs:
           rm cmake-install.sh
       - name: Install Python version
         if: matrix.PYTHON_VERSION
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.PYTHON_VERSION }}
       - name: Install Python dependencies
@@ -588,7 +588,7 @@ jobs:
       # - To restore the most recent cache we provide a partially-matched
       #   "restore key".
       - name: Restore ccache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-ccache
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
@@ -693,7 +693,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           rm -r docs/html/unit-test-coverage
       - name: Upload coverage report to codecov.io
         if: matrix.COVERAGE == 'ON'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: build/tmp/coverage.info
           # Display the job as failed if upload fails (defaults to false for
@@ -726,7 +726,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # cache.
       - name: Save ccache
         if: always() && github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: /work/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
@@ -872,8 +872,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install Homebrew dependencies
@@ -882,7 +882,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # We install the remaining dependencies with Spack and cache them.
       # See the `unit_tests` job above for details on the cache configuration.
       - name: Restore dependency cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-dependencies
         with:
           path: ~/dependencies
@@ -931,7 +931,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         continue-on-error: true
       - name: Save dependency cache
         if: github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ~/dependencies
           key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
@@ -950,7 +950,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           rm -rf $CCACHE_DIR
           mkdir -p $CCACHE_DIR
       - name: Restore ccache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-ccache
         with:
           path: ~/ccache
@@ -1016,7 +1016,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ccache --evict-older-than "${job_duration}s"
       - name: Save ccache
         if: always() && github.ref == 'refs/heads/develop'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ~/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
@@ -1063,7 +1063,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
     env:
       TZ: ${{ github.event.inputs.timezone }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           # Using a personal access token with admin privileges here so this
@@ -1072,7 +1072,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # prevents pushes with the default GITHUB_TOKEN from triggering
           # additional workflows).
           token: ${{ secrets.GH_TOKEN_RELEASE }}
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
       - name: Install Python dependencies
@@ -1118,7 +1118,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
       - name: Download release notes
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         id: release-notes
         with:
           name: release-notes
@@ -1187,7 +1187,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         CXXFLAGS: "-Werror"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # Work around https://github.com/actions/checkout/issues/760
       - name: Trust checkout
         run: |
