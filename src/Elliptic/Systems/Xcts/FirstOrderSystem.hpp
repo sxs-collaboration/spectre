@@ -160,6 +160,7 @@ struct FirstOrderSystem
           ConformalGeometry == Geometry::Curved,
           tmpl::list<
               Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
+              Tags::ConformalRicciTensor<DataVector, 3, Frame::Inertial>,
               Tags::ConformalRicciScalar<DataVector>,
               Tags::ConformalChristoffelContracted<DataVector, 3,
                                                    Frame::Inertial>,

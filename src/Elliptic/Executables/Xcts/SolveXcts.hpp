@@ -74,6 +74,7 @@ struct Metavariables {
                  gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::InverseSpatialMetric<DataVector, 3>,
                  gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+                 gr::Tags::SpatialRicci<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
                  gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
   using hydro_quantities_compute = Xcts::Tags::HydroQuantitiesCompute<

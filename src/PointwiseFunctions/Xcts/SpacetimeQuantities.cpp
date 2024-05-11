@@ -106,21 +106,81 @@ void SpacetimeQuantitiesComputer::operator()(
 }
 
 void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::ij<DataVector, 3>*> deriv2_conformal_factor,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+  const auto& deriv_conformal_factor =
+      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  // Possible optimization: store in symmetric tensor
+  partial_derivative(deriv2_conformal_factor, deriv_conformal_factor, mesh,
+                     inv_jacobian);
+  // Add Christoffel symbol terms for covariant derivative
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        deriv2_conformal_factor->get(i, j) -=
+            conformal_christoffel_second_kind.get(k, i, j) *
+            deriv_conformal_factor.get(k);
+      }
+    }
+  }
+}
+
+void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*>
         conformal_laplacian_of_conformal_factor,
     const gsl::not_null<Cache*> cache,
     detail::ConformalLaplacianOfConformalFactor<DataVector> /*meta*/) const {
+  const auto& deriv2_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                         tmpl::size_t<3>, Frame::Inertial>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  tenex::evaluate(conformal_laplacian_of_conformal_factor,
+                  deriv2_conformal_factor(ti::i, ti::j) *
+                      inv_conformal_metric(ti::I, ti::J));
+}
+
+void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_ricci,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::SpatialRicci<DataVector, 3> /*meta*/) const {
+  // Eq. (3.10) in Baumgarte/Shapiro
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
   const auto& deriv_conformal_factor =
       cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
                                           tmpl::size_t<3>, Frame::Inertial>{});
-  const auto conformal_factor_flux = tenex::evaluate<ti::I>(
-      inv_conformal_metric(ti::I, ti::J) * deriv_conformal_factor(ti::j));
-  const auto deriv_conformal_factor_flux =
-      partial_derivative(conformal_factor_flux, mesh, inv_jacobian);
-  tenex::evaluate(conformal_laplacian_of_conformal_factor,
-                  deriv_conformal_factor_flux(ti::i, ti::I) +
-                      conformal_christoffel_contracted(ti::i) *
-                          conformal_factor_flux(ti::I));
+  const auto& deriv2_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                         tmpl::size_t<3>, Frame::Inertial>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  const auto& conformal_laplacian_of_conformal_factor = cache->get_var(
+      *this, detail::ConformalLaplacianOfConformalFactor<DataVector>{});
+  *spatial_ricci = conformal_ricci;
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      spatial_ricci->get(i, j) -=
+          2. *
+          (deriv2_conformal_factor.get(i, j) +
+           conformal_metric.get(i, j) *
+               get(conformal_laplacian_of_conformal_factor)) /
+          get(conformal_factor);
+      spatial_ricci->get(i, j) += 6. * deriv_conformal_factor.get(i) *
+                                  deriv_conformal_factor.get(j) /
+                                  square(get(conformal_factor));
+      for (size_t l = 0; l < 3; ++l) {
+        for (size_t m = 0; m < 3; ++m) {
+          spatial_ricci->get(i, j) -=
+              2. * conformal_metric.get(i, j) * inv_conformal_metric.get(l, m) *
+              deriv_conformal_factor.get(l) * deriv_conformal_factor.get(m) /
+              square(get(conformal_factor));
+        }
+      }
+    }
+  }
 }
 
 void SpacetimeQuantitiesComputer::operator()(

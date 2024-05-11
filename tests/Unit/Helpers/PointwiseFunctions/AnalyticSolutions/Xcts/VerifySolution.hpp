@@ -66,6 +66,7 @@ void verify_adm_constraints(const Solution& solution,
                                                    Frame::Inertial>,
       ::Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
                                                    Frame::Inertial>,
+      ::Xcts::Tags::ConformalRicciTensor<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::ConformalRicciScalar<DataVector>,
       ::Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
@@ -114,6 +115,9 @@ void verify_adm_constraints(const Solution& solution,
   const auto& conformal_christoffel_contracted =
       get<::Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
                                                        Frame::Inertial>>(
+          analytic_vars);
+  const auto& conformal_ricci_tensor =
+      get<::Xcts::Tags::ConformalRicciTensor<DataVector, 3, Frame::Inertial>>(
           analytic_vars);
   const auto& conformal_ricci_scalar =
       get<::Xcts::Tags::ConformalRicciScalar<DataVector>>(analytic_vars);
@@ -241,6 +245,7 @@ void verify_adm_constraints(const Solution& solution,
       conformal_christoffel_first_kind,
       conformal_christoffel_second_kind,
       conformal_christoffel_contracted,
+      conformal_ricci_tensor,
       conformal_ricci_scalar,
       trace_extrinsic_curvature,
       deriv_trace_extrinsic_curvature,
@@ -269,6 +274,8 @@ void verify_adm_constraints(const Solution& solution,
   // These second derivatives (and dependent quantities) exceed the standard
   // tolerance
   Approx custom_approx2 = Approx::custom().epsilon(tolerance * 100).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_var(gr::Tags::SpatialRicci<DataVector, 3>{}),
+                               spatial_ricci, custom_approx2);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get_var(gr::Tags::HamiltonianConstraint<DataVector>{}),
       Scalar<DataVector>(num_points, 0.), custom_approx2);
