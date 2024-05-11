@@ -16,6 +16,7 @@
 
 /// \cond
 class DataVector;
+class Matrix;
 /// \endcond
 
 namespace h5 {
@@ -118,6 +119,29 @@ void write_connectivity(hid_t group_id, const std::vector<int>& connectivity);
  * \brief Delete the connectivity from the group in the H5 file
  */
 void delete_connectivity(hid_t group_id);
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Append rows to an existing dataset
+ *
+ * \return std::array<hsize_t, 2> New size of the data in the file
+ */
+std::array<hsize_t, 2> append_to_dataset(
+    hid_t file_id, const std::string& name, const std::vector<double>& data,
+    hsize_t number_of_rows, const std::array<hsize_t, 2>& current_file_size);
+
+/// @{
+/*!
+ * \ingroup HDF5Group
+ * \brief Convert the data in a dataset to a Matrix
+ */
+Matrix retrieve_dataset(hid_t file_id, const std::array<hsize_t, 2>& file_size);
+
+Matrix retrieve_dataset_subset(hid_t file_id,
+                               const std::vector<size_t>& these_columns,
+                               size_t first_row, size_t num_rows,
+                               const std::array<hsize_t, 2>& file_size);
+/// @}
 
 /*!
  * \ingroup HDF5Group
