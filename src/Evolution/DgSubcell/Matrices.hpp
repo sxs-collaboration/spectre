@@ -12,7 +12,7 @@ class Index;
 class Matrix;
 template <size_t Dim>
 class Mesh;
-enum class Side;
+enum class Side : uint8_t;
 namespace Spectral {
 enum class Quadrature : uint8_t;
 }  // namespace Spectral

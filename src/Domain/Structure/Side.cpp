@@ -2,18 +2,21 @@
 // See LICENSE.txt for details.
 
 #include "Domain/Structure/Side.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 
 #include <ostream>
 
+#include "Utilities/ErrorHandling/Error.hpp"
+
 std::ostream& operator<<(std::ostream& os, const Side& side) {
   switch (side) {
+    case Side::Uninitialized:
+      return os << "Uninitialized";
     case Side::Lower:
-      os << "Lower";
-      break;
+      return os << "Lower";
     case Side::Upper:
-      os << "Upper";
-      break;
+      return os << "Upper";
+    case Side::Self:
+      return os << "Self";
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
       ERROR(
@@ -21,5 +24,4 @@ std::ostream& operator<<(std::ostream& os, const Side& side) {
           "operator.");
       // LCOV_EXCL_STOP
   }
-  return os;
 }

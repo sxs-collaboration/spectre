@@ -12,6 +12,7 @@
 #include <iosfwd>
 
 #include "Domain/Structure/Side.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace PUP {
 class er;
@@ -25,10 +26,10 @@ class Direction {
   static constexpr const size_t volume_dim = VolumeDim;
 
   /// The logical-coordinate names of each dimension
-  enum class Axis;
+  enum class Axis : uint8_t;
 
   /// Construct by specifying an Axis and a Side.
-  Direction(Axis axis, Side side) : axis_(axis), side_(side) {}
+  Direction(Axis axis, Side side);
 
   /// Construct by specifying a dimension and a Side.
   Direction(size_t dimension, Side side);
@@ -36,17 +37,28 @@ class Direction {
   /// Default constructor for Charm++ serialization.
   Direction();
 
+  /// Get a Direction representing "self" or "no direction"
+  static Direction<VolumeDim> self();
+
   /// The dimension of the Direction
-  size_t dimension() const { return static_cast<size_t>(axis_); }
+  size_t dimension() const { return static_cast<uint8_t>(axis()); }
 
   /// The Axis of the Direction
-  Axis axis() const { return axis_; }
+  Axis axis() const { return static_cast<Axis>(bit_field_ bitand 0b0011); }
 
   /// The side of the Direction
-  Side side() const { return side_; }
+  Side side() const { return static_cast<Side>(bit_field_ bitand 0b1100); }
 
   /// The sign for the normal to the Side.
-  double sign() const { return (Side::Lower == side_ ? -1.0 : 1.0); }
+  ///
+  /// This is `+1.0` if `side() == Side::Upper` and `-1.0` if
+  /// `side() == Side::Lower`, otherwise an `ASSERT` is triggered.
+  double sign() const {
+    ASSERT(Side::Lower == side() or Side::Upper == side(),
+           "sign() is only defined for Side::Lower and Side::Upper, not "
+               << side());
+    return (Side::Lower == side() ? -1.0 : 1.0);
+  }
 
   /// The opposite Direction.
   Direction<VolumeDim> opposite() const;
@@ -67,13 +79,20 @@ class Direction {
   static Direction<VolumeDim> upper_zeta();
   /// @}
 
+  uint8_t bits() const { return bit_field_; }
+
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
  private:
-  Axis axis_{Axis::Xi};
-  Side side_{Side::Lower};
+  template <size_t LocalVolumeDim>
+  friend bool operator==(const Direction<LocalVolumeDim>& lhs,
+                         const Direction<LocalVolumeDim>& rhs);
+  template <size_t LocalVolumeDim>
+  friend size_t hash_value(const Direction<LocalVolumeDim>& d);
+
+  uint8_t bit_field_{0};
 };
 
 /// Output operator for a Direction.
@@ -97,13 +116,13 @@ Direction<VolumeDim>::Direction() = default;  // NOLINT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 template <>
-enum class Direction<1>::Axis{Xi = 0};
+enum class Direction<1>::Axis : uint8_t{Xi = 0};
 
 template <>
-enum class Direction<2>::Axis{Xi = 0, Eta = 1};
+enum class Direction<2>::Axis : uint8_t{Xi = 0, Eta = 1};
 
 template <>
-enum class Direction<3>::Axis{Xi = 0, Eta = 1, Zeta = 2};
+enum class Direction<3>::Axis : uint8_t{Xi = 0, Eta = 1, Zeta = 2};
 #pragma GCC diagnostic pop
 
 template <size_t VolumeDim>
@@ -142,7 +161,7 @@ inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() {
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const {
-  return Direction<VolumeDim>(axis_, ::opposite(side_));
+  return Direction<VolumeDim>(axis(), ::opposite(side()));
 }
 
 template <>
@@ -173,7 +192,7 @@ inline const std::array<Direction<3>, 6>& Direction<3>::all_directions() {
 template <size_t VolumeDim>
 bool operator==(const Direction<VolumeDim>& lhs,
                 const Direction<VolumeDim>& rhs) {
-  return lhs.dimension() == rhs.dimension() and lhs.sign() == rhs.sign();
+  return lhs.bit_field_ == rhs.bit_field_;
 }
 
 template <size_t VolumeDim>
@@ -206,7 +225,7 @@ bool operator>=(const Direction<VolumeDim>& lhs,
 
 template <size_t VolumeDim>
 size_t hash_value(const Direction<VolumeDim>& d) {
-  return std::hash<size_t>{}(d.dimension()) xor std::hash<double>{}(d.sign());
+  return d.bit_field_;
 }
 
 namespace std {

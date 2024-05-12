@@ -136,6 +136,17 @@ void test_helper_functions() {
   auto lower_zeta_3 = Direction<3>::lower_zeta();
   CHECK(lower_zeta_3.axis() == Direction<3>::Axis::Zeta);
   CHECK(lower_zeta_3.side() == Side::Lower);
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      Direction<3>(0, Side::Uninitialized).sign(),
+      Catch::Matchers::ContainsSubstring(
+          "sign() is only defined for Side::Lower and Side::Upper"));
+  CHECK_THROWS_WITH(
+      Direction<3>(0, Side::Self).sign(),
+      Catch::Matchers::ContainsSubstring(
+          "sign() is only defined for Side::Lower and Side::Upper"));
+#endif
 }
 
 void test_std_hash() {
@@ -239,16 +250,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
   test_output();
 
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH((Direction<1>(1, Side::Upper)),
-                    Catch::Matchers::ContainsSubstring(
-                        "dim = 1, for Direction<1> only dim = 0 is allowed."));
+  CHECK_THROWS_WITH(
+      (Direction<1>(1, Side::Upper)),
+      Catch::Matchers::ContainsSubstring("dim = 1, but must be less than 1"));
   CHECK_THROWS_WITH(
       (Direction<2>(2, Side::Upper)),
-      Catch::Matchers::ContainsSubstring(
-          "dim = 2, for Direction<2> only dim = 0 or dim = 1 are allowed."));
-  CHECK_THROWS_WITH((Direction<3>(3, Side::Upper)),
-                    Catch::Matchers::ContainsSubstring(
-                        "dim = 3, for Direction<3> only dim = 0, dim = "
-                        "1, or dim = 2 are allowed."));
+      Catch::Matchers::ContainsSubstring("dim = 2, but must be less than 2"));
+  CHECK_THROWS_WITH(
+      (Direction<3>(3, Side::Upper)),
+      Catch::Matchers::ContainsSubstring("dim = 3, but must be less than 3"));
 #endif
 }

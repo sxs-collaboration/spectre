@@ -23,7 +23,7 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class Mesh;
-enum class Side;
+enum class Side : uint8_t;
 
 namespace boost {
 template <class T>
