@@ -149,15 +149,17 @@ class ElementId {
 };
 
 /// \cond
+// clang-format off
 // macro that generate the pup operator for SegmentId
 PUPbytes(ElementId<1>)      // NOLINT
-    PUPbytes(ElementId<2>)  // NOLINT
-    PUPbytes(ElementId<3>)  // NOLINT
-    /// \endcond
+PUPbytes(ElementId<2>)  // NOLINT
+PUPbytes(ElementId<3>)  // NOLINT
+/// \endcond
 
-    /// Output operator for ElementId.
-    template <size_t VolumeDim>
-    std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id);
+/// Output operator for ElementId.
+template <size_t VolumeDim>
+std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id);
+// clang-format on
 
 /// Equivalence operator for ElementId.
 template <size_t VolumeDim>
