@@ -15,10 +15,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ExcisionSphere.hpp"
-#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {
