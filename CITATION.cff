@@ -136,6 +136,11 @@ authors:
   family-names: Corso
   given-names: Nicholas
   orcid: https://orcid.org/0000-0002-0088-2563
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  family-names: Fayyazuddin Ljungberg
+  given-names: Nora
+  orcid: https://orcid.org/0000-0002-7074-4545
 - affiliation: Department of Physics & Astronomy, University of New Hampshire, 9 Library
     Way, Durham NH 03824, USA
   family-names: Foucart
@@ -156,6 +161,11 @@ authors:
     Ithaca, New York 14853, USA
   family-names: Guo
   given-names: Jason S.
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Habib
+  given-names: Sarah
+  orcid: https://orcid.org/0000-0002-4725-4978
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Iozzo
@@ -287,8 +297,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2024-04-12
-doi: 10.5281/zenodo.10967177
+date-released: 2024-05-11
+doi: 10.5281/zenodo.11180072
 keywords:
 - Software
 - Astrophysics
@@ -1006,4 +1016,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2024.04.12
+version: 2024.05.11
