@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace dg {
@@ -98,8 +99,7 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& boundary_corrections,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian) {
-  ASSERT(std::all_of(volume_mesh.quadrature().begin(),
-                     volume_mesh.quadrature().end(),
+  ASSERT(alg::all_of(volume_mesh.quadrature(),
                      [](const Spectral::Quadrature quadrature) {
                        return quadrature == Spectral::Quadrature::Gauss;
                      }),
@@ -172,8 +172,7 @@ void lift_boundary_terms_gauss_points(
     const Variables<BoundaryCorrectionTagsList>& lower_boundary_corrections,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian) {
-  ASSERT(std::all_of(volume_mesh.quadrature().begin(),
-                     volume_mesh.quadrature().end(),
+  ASSERT(alg::all_of(volume_mesh.quadrature(),
                      [](const Spectral::Quadrature quadrature) {
                        return quadrature == Spectral::Quadrature::Gauss;
                      }),

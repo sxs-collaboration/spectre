@@ -15,9 +15,9 @@
 
 namespace Spectral {
 
-std::array<Basis, 4> all_bases() {
-  return std::array{Basis::Chebyshev, Basis::Legendre, Basis::FiniteDifference,
-                    Basis::SphericalHarmonic};
+std::array<Basis, 5> all_bases() {
+  return std::array{Basis::Uninitialized, Basis::Chebyshev, Basis::Legendre,
+                    Basis::FiniteDifference, Basis::SphericalHarmonic};
 }
 
 Basis to_basis(const std::string& basis) {
@@ -34,6 +34,8 @@ Basis to_basis(const std::string& basis) {
 
 std::ostream& operator<<(std::ostream& os, const Basis& basis) {
   switch (basis) {
+    case Basis::Uninitialized:
+      return os << "Uninitialized";
     case Basis::Legendre:
       return os << "Legendre";
     case Basis::Chebyshev:

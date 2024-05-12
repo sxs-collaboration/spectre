@@ -14,10 +14,10 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace Spectral {
-std::array<Quadrature, 5> all_quadratures() {
-  return std::array{Quadrature::Gauss, Quadrature::GaussLobatto,
-                    Quadrature::CellCentered, Quadrature::FaceCentered,
-                    Quadrature::Equiangular};
+std::array<Quadrature, 6> all_quadratures() {
+  return std::array{Quadrature::Uninitialized, Quadrature::Gauss,
+                    Quadrature::GaussLobatto,  Quadrature::CellCentered,
+                    Quadrature::FaceCentered,  Quadrature::Equiangular};
 }
 
 Quadrature to_quadrature(const std::string& quadrature) {
@@ -34,6 +34,8 @@ Quadrature to_quadrature(const std::string& quadrature) {
 
 std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature) {
   switch (quadrature) {
+    case Quadrature::Uninitialized:
+      return os << "Uninitialized";
     case Quadrature::Gauss:
       return os << "Gauss";
     case Quadrature::GaussLobatto:

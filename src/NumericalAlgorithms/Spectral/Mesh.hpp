@@ -44,6 +44,9 @@ class er;
  * expansion coefficients. They approximate the field by a polynomial of degree
  * \f$p=N-1\f$ through a linear combination of Lagrange polynomials.
  *
+ * \note Because we use a compact bit representation for the mesh, the number
+ * of grid points/extents must be fewer than 256 per dimension.
+ *
  * \tparam Dim the number of dimensions of the computational grid.
  */
 template <size_t Dim>
@@ -95,14 +98,8 @@ class Mesh {
    * \note Because a `Mesh<0>` extends over no dimensions, it has 1 grid point
    * independent of the value of `isotropic_extents`.
    */
-  Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature)
-      : extents_(isotropic_extents) {
-    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
-           "SphericalHarmonic is not a valid basis for the Mesh");
-    bases_.fill(basis);
-    quadratures_.fill(quadrature);
-  }
+  Mesh(size_t isotropic_extents, Spectral::Basis basis,
+       Spectral::Quadrature quadrature);
 
   /*!
    * \brief Construct a computational grid where each dimension can have a
@@ -114,14 +111,8 @@ class Mesh {
    * \param quadrature The choice of quadrature to compute
    * the collocation points
    */
-  Mesh(std::array<size_t, Dim> extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature)
-      : extents_(std::move(extents)) {
-    ASSERT(basis != Spectral::Basis::SphericalHarmonic,
-           "SphericalHarmonic is not a valid basis for the Mesh");
-    bases_.fill(basis);
-    quadratures_.fill(quadrature);
-  }
+  Mesh(const std::array<size_t, Dim>& extents, Spectral::Basis basis,
+       Spectral::Quadrature quadrature);
 
   /*!
    * \brief Construct a computational grid where each dimension can have both a
@@ -133,26 +124,20 @@ class Mesh {
    * \param quadratures The choice of quadratures to compute
    * the collocation points per dimension
    */
-  Mesh(std::array<size_t, Dim> extents, std::array<Spectral::Basis, Dim> bases,
-       std::array<Spectral::Quadrature, Dim> quadratures)
-      : extents_(std::move(extents)), quadratures_(std::move(quadratures)) {
-    for (auto it = bases.begin(); it != bases.end(); it++) {
-      ASSERT(*it != Spectral::Basis::SphericalHarmonic,
-             "SphericalHarmonic is not a valid basis for the Mesh");
-    }
-    bases_ = std::move(bases);
-  }
+  Mesh(const std::array<size_t, Dim>& extents,
+       const std::array<Spectral::Basis, Dim>& bases,
+       const std::array<Spectral::Quadrature, Dim>& quadratures);
 
   /*!
    * \brief The number of grid points in each dimension of the grid.
    */
-  const Index<Dim>& extents() const { return extents_; }
+  Index<Dim> extents() const;
 
   /*!
    * \brief The number of grid points in dimension \p d of the grid
    * (zero-indexed).
    */
-  size_t extents(const size_t d) const { return extents_[d]; }
+  size_t extents(size_t d) const;
 
   /*!
    * \brief The total number of grid points in all dimensions.
@@ -163,7 +148,7 @@ class Mesh {
    * \note A zero-dimensional mesh has one grid point, since it is the slice
    * through a one-dimensional mesh (a line).
    */
-  size_t number_of_grid_points() const { return extents_.product(); }
+  size_t number_of_grid_points() const;
 
   /*!
    * \brief Returns the 1-dimensional index corresponding to the `Dim`
@@ -173,33 +158,27 @@ class Mesh {
    *
    * \see collapsed_index()
    */
-  size_t storage_index(const Index<Dim>& index) const {
-    return collapsed_index(index, extents_);
-  }
+  size_t storage_index(const Index<Dim>& index) const;
 
   /*!
    * \brief The basis chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Basis, Dim>& basis() const { return bases_; }
+  std::array<Spectral::Basis, Dim> basis() const;
 
   /*!
    * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Basis basis(const size_t d) const { return gsl::at(bases_, d); }
+  Spectral::Basis basis(size_t d) const;
 
   /*!
    * \brief The quadrature chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Quadrature, Dim>& quadrature() const {
-    return quadratures_;
-  }
+  std::array<Spectral::Quadrature, Dim> quadrature() const;
 
   /*!
    * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Quadrature quadrature(const size_t d) const {
-    return gsl::at(quadratures_, d);
-  }
+  Spectral::Quadrature quadrature(size_t d) const;
 
   /*!
    * \brief Returns a Mesh with dimension \p d removed (zero-indexed).
@@ -250,9 +229,18 @@ class Mesh {
   void pup(PUP::er& p);
 
  private:
-  Index<Dim> extents_{};
-  std::array<Spectral::Basis, Dim> bases_{};
-  std::array<Spectral::Quadrature, Dim> quadratures_{};
+  template <size_t LocalDim>
+  friend class Mesh;
+
+  template <size_t LocalDim>
+  friend bool operator==(const Mesh<LocalDim>& lhs, const Mesh<LocalDim>& rhs);
+
+  // - 8 bits per extent = 3 * 8 = 24 bits = 3 bytes
+  //   This limits us to 255 extent per direction. Since FD is 2N-1 DG, this
+  //   means at most 128 DG points, which is should be fine.
+  // - We encode the basis & quadrature as two sets of 4 bits in a uint8_t.
+  std::array<uint8_t, (Dim > 0 ? Dim : 1)> extents_{};
+  std::array<uint8_t, (Dim > 0 ? Dim : 1)> quadrature_and_basis_{};
 };
 
 /*!

@@ -44,8 +44,8 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
       .def("number_of_grid_points", &Mesh<Dim>::number_of_grid_points,
            "The total number of grid points in all dimensions.")
       .def("basis",
-           static_cast<const std::array<Spectral::Basis, Dim>& (Mesh<Dim>::*)()
-                           const>(&Mesh<Dim>::basis),
+           static_cast<std::array<Spectral::Basis, Dim> (Mesh<Dim>::*)() const>(
+               &Mesh<Dim>::basis),
            "The basis chosen in each dimension of the grid.")
       .def("basis",
            static_cast<Spectral::Basis (Mesh<Dim>::*)(const size_t) const>(
@@ -53,8 +53,8 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
            py::arg("d"),
            "The basis chosen in the requested dimension of the grid.")
       .def("quadrature",
-           static_cast<const std::array<Spectral::Quadrature, Dim>& (
-               Mesh<Dim>::*)() const>(&Mesh<Dim>::quadrature),
+           static_cast<std::array<Spectral::Quadrature, Dim> (Mesh<Dim>::*)()
+                           const>(&Mesh<Dim>::quadrature),
            "The quadrature chosen in each dimension of the grid.")
       .def("quadrature",
            static_cast<Spectral::Quadrature (Mesh<Dim>::*)(const size_t) const>(

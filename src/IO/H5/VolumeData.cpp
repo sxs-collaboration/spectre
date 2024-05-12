@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
@@ -257,7 +258,12 @@ void VolumeData::write_volume_data(
               // append element basis
               alg::transform(
                   element.basis, std::back_inserter(bases),
-                  [](const Spectral::Basis t) { return static_cast<int>(t); });
+                  [](const Spectral::Basis t) {
+                    // Shift the basis to keep compatibility with old file
+                    // formats.
+                    return static_cast<int>(static_cast<uint8_t>(t) >>
+                                            Spectral::basis_shift);
+                  });
               // append element quadrature
               alg::transform(element.quadrature,
                              std::back_inserter(quadratures),

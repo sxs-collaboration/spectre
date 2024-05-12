@@ -40,8 +40,14 @@ namespace Spectral {
  *
  * \note When using Basis::SphericalHarmonic in consecutive dimensions, choose
  * `Gauss` for the first dimension and `Equiangular` in the second dimension.
+ *
+ * \note We store these effectively as a 4-bit integer using the lowest 4
+ * bits of a uint8_t. Unlike Basis, this does not need a bitshift. We cannot
+ * have more than 16 quadratures to fit into the 4 bits, including the
+ * `Uninitialized` value.
  */
 enum class Quadrature : uint8_t {
+  Uninitialized = 0,
   Gauss,
   GaussLobatto,
   CellCentered,
@@ -50,7 +56,7 @@ enum class Quadrature : uint8_t {
 };
 
 /// All possible values of Quadrature
-std::array<Quadrature, 5> all_quadratures();
+std::array<Quadrature, 6> all_quadratures();
 
 /// Convert a string to a Quadrature enum.
 Quadrature to_quadrature(const std::string& quadrature);

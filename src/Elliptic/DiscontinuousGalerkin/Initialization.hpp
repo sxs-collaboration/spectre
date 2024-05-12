@@ -47,6 +47,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -393,9 +394,10 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
         return std::nullopt;
       }
     };
-    ASSERT(std::equal(mesh.quadrature().begin() + 1, mesh.quadrature().end(),
-                      mesh.quadrature().begin()),
-           "This function is implemented assuming the quadrature is isotropic");
+    ASSERT(
+        alg::all_of(mesh.quadrature(),
+                    [&mesh](const auto t) { return t == mesh.quadrature(0); }),
+        "This function is implemented assuming the quadrature is isotropic");
     // Faces
     for (const auto& direction : Direction<Dim>::all_directions()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
