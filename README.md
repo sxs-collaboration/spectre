@@ -4,8 +4,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt)
 [![Standard](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
-[![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
-[![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
+[![codecov](https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.svg?token=yyJ3uBPUE2)](https://codecov.io/gh/sxs-collaboration/spectre)
 [![release](https://img.shields.io/badge/release-v2024.05.11-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2024.05.11)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.11180072.svg)](https://doi.org/10.5281/zenodo.11180072)
 
