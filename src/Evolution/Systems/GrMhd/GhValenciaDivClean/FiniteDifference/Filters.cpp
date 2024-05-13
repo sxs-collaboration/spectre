@@ -70,7 +70,7 @@ void spacetime_kreiss_oliger_filter(
              neighbor_number_of_points *
                  NeighborVariables::number_of_independent_components};
     ghost_cell_vars.insert(std::pair{
-        directional_element_id.direction,
+        directional_element_id.direction(),
         gsl::make_span(get<first_gh_tag>(view)[0].data(),
                        number_of_gh_components * neighbor_number_of_points)});
   }

@@ -281,7 +281,7 @@ double test(const size_t num_dg_pts) {
   DirectionalIdMap<Dim, typename variables_tag::type> evolved_vars_errors{};
   double max_abs_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
-    const auto& direction = direction_and_id.direction;
+    const auto& direction = direction_and_id.direction();
     using dg_package_field_tags =
         typename NewtonianEuler::BoundaryCorrections::Hll<
             Dim>::dg_package_field_tags;

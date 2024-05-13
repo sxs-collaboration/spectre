@@ -238,7 +238,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
   Variables<dg_package_field_tags> expected_fd_packaged_data_on_mortar{0};
 
   for (const auto& mortar_id : mortars_to_reconstruct_to) {
-    const Direction<Dim>& direction = mortar_id.direction;
+    const Direction<Dim>& direction = mortar_id.direction();
     Index<Dim> extents = subcell_mesh.extents();
 
     if constexpr (Dim == 1) {
@@ -275,7 +275,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     // reverse normal vector
     auto normal_covector = get<evolution::dg::Tags::NormalCovector<Dim>>(
         *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box).at(
-            mortar_id.direction));
+            mortar_id.direction()));
     for (auto& t : normal_covector) {
       t *= -1.0;
     }
@@ -286,8 +286,9 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       for (size_t i = 0; i < Dim; ++i) {
         normal_covector.get(i) = evolution::dg::subcell::fd::project(
             dg_normal_covector.get(i),
-            dg_mesh.slice_away(mortar_id.direction.dimension()),
-            subcell_mesh.extents().slice_away(mortar_id.direction.dimension()));
+            dg_mesh.slice_away(mortar_id.direction().dimension()),
+            subcell_mesh.extents().slice_away(
+                mortar_id.direction().dimension()));
       }
     }
 
@@ -311,12 +312,13 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       const auto expected_dg_packaged_data =
           evolution::dg::subcell::fd::reconstruct(
               expected_fd_packaged_data_on_mortar,
-              dg_mesh.slice_away(mortar_id.direction.dimension()),
+              dg_mesh.slice_away(mortar_id.direction().dimension()),
               subcell_mesh.extents().slice_away(
-                  mortar_id.direction.dimension()),
+                  mortar_id.direction().dimension()),
               evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
 
       const DataVector vector_to_check{
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
           const_cast<double*>(expected_dg_packaged_data.data()),
           expected_dg_packaged_data.size()};
 

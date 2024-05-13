@@ -67,8 +67,8 @@ void neighbor_reconstructed_face_solution(
           ASSERT(subcell_ghost_data_ptr->find(mortar_id) ==
                      subcell_ghost_data_ptr->end(),
                  "The subcell neighbor data is already inserted. Direction: "
-                     << mortar_id.direction
-                     << " with ElementId: " << mortar_id.id);
+                     << mortar_id.direction()
+                     << " with ElementId: " << mortar_id.id());
 
           (*subcell_ghost_data_ptr)[mortar_id] = GhostData{1};
           GhostData& all_ghost_data = subcell_ghost_data_ptr->at(mortar_id);

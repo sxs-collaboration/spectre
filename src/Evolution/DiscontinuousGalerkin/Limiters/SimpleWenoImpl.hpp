@@ -86,7 +86,7 @@ void simple_weno_impl(
 
     if (interpolator_buffer->find(neighbor) == interpolator_buffer->end()) {
       // No interpolator found => create one
-      const auto& direction = neighbor.direction;
+      const auto& direction = neighbor.direction();
       const auto& source_mesh = data.mesh;
       const auto target_1d_logical_coords =
           Weno_detail::local_grid_points_in_neighbor_logical_coords(

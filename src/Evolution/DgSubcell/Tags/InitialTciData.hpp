@@ -39,8 +39,8 @@ struct InitialTciData {
 
     ASSERT(current_inbox.find(direction_and_element_id) == current_inbox.end(),
            "Received data from direction "
-               << direction_and_element_id.direction << " and element ID "
-               << direction_and_element_id.id << " more than once");
+               << direction_and_element_id.direction() << " and element ID "
+               << direction_and_element_id.id() << " more than once");
     current_inbox.emplace(std::forward<ReceiveDataType>(data));
   }
 

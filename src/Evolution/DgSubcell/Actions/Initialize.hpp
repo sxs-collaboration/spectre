@@ -374,9 +374,9 @@ struct ComputeAndSendTciOnInitialGrid {
                               neighbor_initial_tci_data] : received->second) {
               ASSERT(neighbor_initial_tci_data.initial_rdmp_data.has_value(),
                      "Neighbor in direction "
-                         << direction_and_neighbor_element_id.direction
+                         << direction_and_neighbor_element_id.direction()
                          << " with element ID "
-                         << direction_and_neighbor_element_id.id << " of "
+                         << direction_and_neighbor_element_id.id() << " of "
                          << element.id()
                          << " didn't send initial TCI data correctly");
               ASSERT(
@@ -389,7 +389,7 @@ struct ComputeAndSendTciOnInitialGrid {
                              .max_variables_values.size()
                       << " the local element ID is " << element.id()
                       << " and the remote id is "
-                      << direction_and_neighbor_element_id.id);
+                      << direction_and_neighbor_element_id.id());
               ASSERT(
                   neighbor_initial_tci_data.initial_rdmp_data.value()
                           .min_variables_values.size() == number_of_rdmp_vars,
@@ -400,7 +400,7 @@ struct ComputeAndSendTciOnInitialGrid {
                              .min_variables_values.size()
                       << " the local element ID is " << element.id()
                       << " and the remote id is "
-                      << direction_and_neighbor_element_id.id);
+                      << direction_and_neighbor_element_id.id());
               for (size_t var_index = 0; var_index < number_of_rdmp_vars;
                    ++var_index) {
                 rdmp_tci_data_ptr->max_variables_values[var_index] =
@@ -527,8 +527,8 @@ struct SetInitialGridFromTciData {
               (void)element;
               ASSERT(neighbor_initial_tci_data.tci_status.has_value(),
                      "Neighbor in direction "
-                         << directional_element_id.direction
-                         << " with element ID " << directional_element_id.id
+                         << directional_element_id.direction()
+                         << " with element ID " << directional_element_id.id()
                          << " of " << element.id()
                          << " didn't send initial TCI decision correctly");
               neighbor_tci_decisions_ptr->at(directional_element_id) =

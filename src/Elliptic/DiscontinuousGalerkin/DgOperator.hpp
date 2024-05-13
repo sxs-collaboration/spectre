@@ -665,7 +665,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         PrimalFluxesVars, Frame::ElementLogical>...>>
         lifted_logical_aux_boundary_corrections{num_points, 0.};
     for (auto& [mortar_id, mortar_data] : *all_mortar_data) {
-      const auto& [direction, neighbor_id] = mortar_id;
+      const auto& direction = mortar_id.direction();
+      const auto& neighbor_id = mortar_id.id();
       const bool is_internal =
           (neighbor_id != ElementId<Dim>::external_boundary_id());
       if constexpr (AllDataIsZero) {

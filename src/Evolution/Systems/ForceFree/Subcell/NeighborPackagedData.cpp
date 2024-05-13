@@ -143,7 +143,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
           vars_on_face_with_tildej_buffer{0};
 
       for (const auto& mortar_id : mortars_to_reconstruct_to) {
-        const Direction<3>& direction = mortar_id.direction;
+        const Direction<3>& direction = mortar_id.direction();
 
         // Switch to face-centered points
         Index<3> extents = subcell_mesh.extents();
@@ -197,7 +197,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
               reconstructor->reconstruct_fd_neighbor(
                   make_not_null(&reconstructed_vars_on_face),
                   volume_vars_subcell, volume_tildej_subcell, element,
-                  ghost_subcell_data, subcell_mesh, mortar_id.direction);
+                  ghost_subcell_data, subcell_mesh, mortar_id.direction());
             });
         ForceFree::subcell::compute_fluxes(
             make_not_null(&vars_on_face_with_tildej_buffer));
@@ -212,7 +212,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
             get<evolution::dg::Tags::NormalCovector<3>>(
                 *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(
                      box)
-                     .at(mortar_id.direction));
+                     .at(mortar_id.direction()));
         for (auto& t : normal_covector) {
           t *= -1.0;
         }
@@ -223,9 +223,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
         for (size_t i = 0; i < 3; ++i) {
           normal_covector.get(i) = evolution::dg::subcell::fd::project(
               dg_normal_covector.get(i),
-              dg_mesh.slice_away(mortar_id.direction.dimension()),
+              dg_mesh.slice_away(mortar_id.direction().dimension()),
               subcell_mesh.extents().slice_away(
-                  mortar_id.direction.dimension()));
+                  mortar_id.direction().dimension()));
         }
 
         // Compute the packaged data
@@ -244,8 +244,10 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
         // boundary correction and then reconstructing, but away from a shock
         // this doesn't matter.
         auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
-            packaged_data, dg_mesh.slice_away(mortar_id.direction.dimension()),
-            subcell_mesh.extents().slice_away(mortar_id.direction.dimension()),
+            packaged_data,
+            dg_mesh.slice_away(mortar_id.direction().dimension()),
+            subcell_mesh.extents().slice_away(
+                mortar_id.direction().dimension()),
             subcell_options.reconstruction_method());
 
         // Make a view so we can use iterators with std::copy

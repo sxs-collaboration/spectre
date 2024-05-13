@@ -235,9 +235,10 @@ void test_simple_weno_1d_impl(const Spectral::Quadrature quadrature,
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const DirectionalId<1>& neighbor, const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
+        if (directions_of_external_boundaries.count(neighbor.direction()) ==
+            0) {
           const double offset =
-              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction().side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));
@@ -352,9 +353,10 @@ void test_simple_weno_2d_impl(const Spectral::Quadrature quadrature,
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const DirectionalId<2>& neighbor, const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
+        if (directions_of_external_boundaries.count(neighbor.direction()) ==
+            0) {
           const double offset =
-              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction().side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));
@@ -513,9 +515,10 @@ void test_simple_weno_3d_impl(const Spectral::Quadrature quadrature,
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const DirectionalId<3>& neighbor, const auto make_vars) {
-        if (directions_of_external_boundaries.count(neighbor.direction) == 0) {
+        if (directions_of_external_boundaries.count(neighbor.direction()) ==
+            0) {
           const double offset =
-              (neighbor.direction.side() == Side::Lower ? -2.0 : 2.0);
+              (neighbor.direction().side() == Side::Lower ? -2.0 : 2.0);
           neighbor_vars[neighbor] = make_vars(logical_coords, offset);
           neighbor_modified_vars[neighbor] =
               shift_vars_to_local_means(make_vars(logical_coords));

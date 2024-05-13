@@ -26,10 +26,10 @@ void remove_nonexistent_neighbors(
   size_t ids_index = 0;
   for (const auto& [neighbor_id, mesh] : *map_to_trim) {
     const auto& neighbors = element.neighbors();
-    if (const auto neighbors_it = neighbors.find(neighbor_id.direction);
+    if (const auto neighbors_it = neighbors.find(neighbor_id.direction());
         neighbors_it != neighbors.end()) {
       if (const auto neighbor_it =
-              neighbors_it->second.ids().find(neighbor_id.id);
+              neighbors_it->second.ids().find(neighbor_id.id());
           neighbor_it == neighbors_it->second.ids().end()) {
         gsl::at(ids_to_remove, ids_index) = neighbor_id;
         ++ids_index;

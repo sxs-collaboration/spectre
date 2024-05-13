@@ -117,7 +117,7 @@ bool kxrcf_indicator(
   // limiter to know about the boundary condition, which may be difficult to
   // do in a general way.
   for (const auto& [neighbor, data] : neighbor_data) {
-    const auto& dir = neighbor.direction;
+    const auto& dir = neighbor.direction();
 
     // Check consistency of neighbor_data with element and normals
     ASSERT(element.neighbors().contains(dir),

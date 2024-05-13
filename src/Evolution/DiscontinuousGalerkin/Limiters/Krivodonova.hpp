@@ -679,7 +679,7 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
       for (const auto& kv : neighbor_data) {
         const auto& neighbor_coeffs =
             get<Tag>(kv.second.modal_volume_data)[storage_index];
-        const double tmp = kv.first.direction.sign() * gsl::at(alphas_, i) *
+        const double tmp = kv.first.direction().sign() * gsl::at(alphas_, i) *
                            (neighbor_coeffs[i - 1] - self_coeffs[i - 1]);
 
         min_abs_coeff = std::min(min_abs_coeff, std::abs(tmp));
@@ -722,7 +722,7 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const double sgn_of_coeff = sgn(
         self_coeffs[mesh.storage_index(Index<VolumeDim>{local_i, local_j})]);
     for (const auto& kv : neighbor_data) {
-      const Direction<2>& dir = kv.first.direction;
+      const Direction<2>& dir = kv.first.direction();
       const auto& neighbor_coeffs =
           get<Tag>(kv.second.modal_volume_data)[local_tensor_storage_index];
       const size_t index_i =
@@ -810,7 +810,7 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const double sgn_of_coeff = sgn(self_coeffs[mesh.storage_index(
         Index<VolumeDim>{local_i, local_j, local_k})]);
     for (const auto& kv : neighbor_data) {
-      const Direction<3>& dir = kv.first.direction;
+      const Direction<3>& dir = kv.first.direction();
       const auto& neighbor_coeffs =
           get<Tag>(kv.second.modal_volume_data)[local_tensor_storage_index];
       const size_t index_i =

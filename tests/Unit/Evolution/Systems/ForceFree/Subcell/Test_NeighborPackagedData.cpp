@@ -332,7 +332,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
   Variables<dg_package_field_tags> expected_fd_packaged_data_on_mortar{0};
 
   for (const auto& mortar_id : mortars_to_reconstruct_to) {
-    const Direction<3>& direction = mortar_id.direction;
+    const Direction<3>& direction = mortar_id.direction();
     const size_t dim = direction.dimension();
     Index<3> extents = subcell_mesh.extents();
 
@@ -371,7 +371,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     // revert normal vector and project to DG grid
     auto normal_covector = get<evolution::dg::Tags::NormalCovector<3>>(
         *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(box).at(
-            mortar_id.direction));
+            mortar_id.direction()));
     for (auto& t : normal_covector) {
       t *= -1.0;
     }
@@ -379,8 +379,8 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     for (size_t i = 0; i < 3; ++i) {
       normal_covector.get(i) = evolution::dg::subcell::fd::project(
           dg_normal_covector.get(i),
-          dg_mesh.slice_away(mortar_id.direction.dimension()),
-          subcell_mesh.extents().slice_away(mortar_id.direction.dimension()));
+          dg_mesh.slice_away(mortar_id.direction().dimension()),
+          subcell_mesh.extents().slice_away(mortar_id.direction().dimension()));
     }
 
     // Compute the expected packaged data
@@ -398,8 +398,8 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
     // reconstruct from FD to DG grid for 2d
     auto expected_dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
         expected_fd_packaged_data_on_mortar,
-        dg_mesh.slice_away(mortar_id.direction.dimension()),
-        subcell_mesh.extents().slice_away(mortar_id.direction.dimension()),
+        dg_mesh.slice_away(mortar_id.direction().dimension()),
+        subcell_mesh.extents().slice_away(mortar_id.direction().dimension()),
         evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
     const DataVector vector_to_check{expected_dg_packaged_data.data(),

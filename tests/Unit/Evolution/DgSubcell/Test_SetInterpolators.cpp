@@ -83,20 +83,20 @@ void test() {
     orientation = OrientationMap<Dim>{{{Direction<Dim>::lower_xi()}}};
     element_neighbors.insert(
         std::pair{Direction<Dim>::lower_xi(),
-                  Neighbors<Dim>{{lower_xi_id.id}, orientation}});
+                  Neighbors<Dim>{{lower_xi_id.id()}, orientation}});
   } else if constexpr (Dim == 2) {
     orientation = OrientationMap<Dim>{
         {{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta()}}};
     element_neighbors.insert(
         std::pair{Direction<Dim>::lower_xi(),
-                  Neighbors<Dim>{{lower_xi_id.id}, orientation}});
+                  Neighbors<Dim>{{lower_xi_id.id()}, orientation}});
   } else if constexpr (Dim == 3) {
     orientation = OrientationMap<Dim>{
         {{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta(),
           Direction<Dim>::upper_zeta()}}};
     element_neighbors.insert(
         std::pair{Direction<Dim>::lower_xi(),
-                  Neighbors<Dim>{{lower_xi_id.id}, orientation}});
+                  Neighbors<Dim>{{lower_xi_id.id()}, orientation}});
   }
   const Element<Dim> element{element_id, element_neighbors};
 

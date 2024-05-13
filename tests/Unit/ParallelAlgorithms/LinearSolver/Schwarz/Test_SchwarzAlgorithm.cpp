@@ -78,7 +78,7 @@ blaze::DynamicVector<double> extend_subdomain_data(
 #pragma GCC diagnostic pop
 #endif
   for (const auto& [overlap_id, overlap_data] : subdomain_data.overlap_data) {
-    const auto& direction = overlap_id.direction;
+    const auto& direction = overlap_id.direction();
     const auto direction_from_neighbor = direction.opposite();
     const size_t overlapped_element_index = direction.side() == Side::Lower
                                                 ? (element_index - 1)
@@ -107,7 +107,7 @@ void restrict_to_subdomain(
   std::copy(restricted_element_data.begin(), restricted_element_data.end(),
             get(get<Tag>(result->element_data)).begin());
   for (auto& [overlap_id, overlap_result] : result->overlap_data) {
-    const auto& direction = overlap_id.direction;
+    const auto& direction = overlap_id.direction();
     const auto direction_from_neighbor = direction.opposite();
     const size_t overlapped_element_index = direction.side() == Side::Lower
                                                 ? (element_index - 1)

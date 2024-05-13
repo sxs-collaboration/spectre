@@ -459,12 +459,12 @@ void set_cartesian_neighbor_cell_centered_fluxes(
   for (const auto& [direction_id, ghost_data] : all_ghost_data) {
     const size_t neighbor_flux_size =
         subcell_mesh.number_of_grid_points() /
-        subcell_mesh.extents(direction_id.direction.dimension()) *
+        subcell_mesh.extents(direction_id.direction().dimension()) *
         ghost_zone_size *
         Variables<FluxesTags>::number_of_independent_components;
     const DataVector& neighbor_data =
         ghost_data.neighbor_ghost_data_for_reconstruction();
-    (*flux_neighbor_data)[direction_id.direction].set_data_ref(
+    (*flux_neighbor_data)[direction_id.direction()].set_data_ref(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<double*>(std::next(
             neighbor_data.data(),

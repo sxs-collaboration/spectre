@@ -121,7 +121,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
       Variables<dg_package_data_argument_tags> vars_on_face;
       Variables<dg_package_field_tags> packaged_data;
       for (const auto& mortar_id : mortars_to_reconstruct_to) {
-        const Direction<Dim>& direction = mortar_id.direction;
+        const Direction<Dim>& direction = mortar_id.direction();
 
         Index<Dim> extents = subcell_mesh.extents();
         // Switch to face-centered instead of cell-centered points on the FD.
@@ -140,7 +140,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
              &vars_on_face, &volume_prims](const auto& reconstructor) {
               reconstructor->reconstruct_fd_neighbor(
                   make_not_null(&vars_on_face), volume_prims, eos, element,
-                  ghost_subcell_data, subcell_mesh, mortar_id.direction);
+                  ghost_subcell_data, subcell_mesh, mortar_id.direction());
             });
 
         NewtonianEuler::subcell::compute_fluxes<Dim>(
@@ -150,7 +150,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
             get<evolution::dg::Tags::NormalCovector<Dim>>(
                 *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
                      box)
-                     .at(mortar_id.direction));
+                     .at(mortar_id.direction()));
         for (auto& t : normal_covector) {
           t *= -1.0;
         }
@@ -159,9 +159,9 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
           for (size_t i = 0; i < Dim; ++i) {
             normal_covector.get(i) = evolution::dg::subcell::fd::project(
                 dg_normal_covector.get(i),
-                dg_mesh.slice_away(mortar_id.direction.dimension()),
+                dg_mesh.slice_away(mortar_id.direction().dimension()),
                 subcell_mesh.extents().slice_away(
-                    mortar_id.direction.dimension()));
+                    mortar_id.direction().dimension()));
           }
         }
 
@@ -193,9 +193,9 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
           // matter.
           auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
               packaged_data,
-              dg_mesh.slice_away(mortar_id.direction.dimension()),
+              dg_mesh.slice_away(mortar_id.direction().dimension()),
               subcell_mesh.extents().slice_away(
-                  mortar_id.direction.dimension()),
+                  mortar_id.direction().dimension()),
               subcell_options.reconstruction_method());
           // Make a view so we can use iterators with std::copy
           DataVector dg_packaged_data_view{dg_packaged_data.data(),
