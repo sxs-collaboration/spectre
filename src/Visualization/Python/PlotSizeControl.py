@@ -163,6 +163,7 @@ def plot_size_control_command(
     axes[4].plot(
         times, data["DeltaRCrossingTime"], label="Delta R crossing time"
     )
+    axes[4].set_yscale("log")
 
     # Lambda and horizon
     axes[5].plot(times, data["FunctionOfTime"], label="Function of time")
