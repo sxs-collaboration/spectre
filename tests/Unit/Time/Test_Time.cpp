@@ -128,6 +128,9 @@ void test_time() {
   {
     const Time time = slab.start() + slab.duration() * 3 / 5;
     test_serialization(time);
+    CHECK(serialize_and_deserialize(time).value() == time.value());
+    // Check that this doesn't crash.
+    serialize_and_deserialize(Time{});
   }
 }
 
@@ -290,6 +293,9 @@ void test_time_delta() {
   {
     const TimeDelta dt = slab.duration() * 3 / 5;
     test_serialization(dt);
+    CHECK(serialize_and_deserialize(dt).value() == dt.value());
+    // Check that this doesn't crash.
+    serialize_and_deserialize(TimeDelta{});
   }
 }
 
