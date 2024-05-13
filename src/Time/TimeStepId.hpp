@@ -35,7 +35,7 @@ class TimeStepId {
   TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
              uint64_t substep, const TimeDelta& step_size, double substep_time);
 
-  bool time_runs_forward() const { return time_runs_forward_; }
+  bool time_runs_forward() const;
   int64_t slab_number() const { return slab_number_; }
   /// Time at the start of the current step
   const Time& step_time() const { return step_time_; }
@@ -62,7 +62,6 @@ class TimeStepId {
  private:
   void canonicalize();
 
-  bool time_runs_forward_{false};
   int64_t slab_number_{std::numeric_limits<int64_t>::lowest()};
   Time step_time_{};
   uint64_t substep_{0};
