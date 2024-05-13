@@ -13,6 +13,7 @@
 #include <limits>
 #include <optional>
 
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -51,15 +52,27 @@ class er;
 template <size_t VolumeDim>
 class ElementId {
  public:
-  static constexpr size_t block_id_bits = 24;
-  static constexpr size_t grid_index_bits = 8;
+  // We restrict the ElementId size to 64 bits for easy hashing into
+  // size_t. This still allows us to have over 17 trillion elements, which is
+  // probably enough. 2^36 * 2^8=17.6 trillion elements per grid index, with
+  // up to 16 grid indices.
+  //
+  // Note: C++ populates bits from right to left in order of the
+  // variables. This gives us the direction_mask we use below.
+  static constexpr size_t block_id_bits = 8;
+  static constexpr size_t grid_index_bits = 4;
+  static constexpr size_t direction_bits = 4;
   static constexpr size_t refinement_bits = 4;
-  static constexpr size_t max_refinement_level = 16;
+  static constexpr size_t max_refinement_level = 12;
+  static constexpr uint64_t direction_shift =
+      static_cast<uint64_t>(block_id_bits + grid_index_bits);
+  static constexpr uint64_t direction_mask = static_cast<uint64_t>(0b1111)
+                                             << direction_shift;
   // We need some padding to ensure bit fields align with type boundaries,
   // otherwise the size of `ElementId` is too large.
-  static constexpr size_t padding = 4;
+  static constexpr size_t padding = 32;
   static_assert(block_id_bits + 3 * (refinement_bits + max_refinement_level) +
-                        grid_index_bits + padding ==
+                        grid_index_bits + direction_bits + padding ==
                     3 * 8 * sizeof(int),
                 "Bit representation requires padding or is too large");
   static_assert(two_to_the(refinement_bits) >= max_refinement_level,
@@ -93,59 +106,36 @@ class ElementId {
 
   size_t grid_index() const { return grid_index_; }
 
-  std::array<size_t, VolumeDim> refinement_levels() const {
-    if constexpr (VolumeDim == 1) {
-      return {{refinement_level_xi_}};
-    } else if constexpr (VolumeDim == 2) {
-      return {{refinement_level_xi_, refinement_level_eta_}};
-    } else if constexpr (VolumeDim == 3) {
-      return {{refinement_level_xi_, refinement_level_eta_,
-               refinement_level_zeta_}};
-    }
-  }
+  std::array<size_t, VolumeDim> refinement_levels() const;
 
-  std::array<SegmentId, VolumeDim> segment_ids() const {
-    if constexpr (VolumeDim == 1) {
-      return {{SegmentId{refinement_level_xi_, index_xi_}}};
-    } else if constexpr (VolumeDim == 2) {
-      return {{SegmentId{refinement_level_xi_, index_xi_},
-               SegmentId{refinement_level_eta_, index_eta_}}};
-    } else if constexpr (VolumeDim == 3) {
-      return {{SegmentId{refinement_level_xi_, index_xi_},
-               SegmentId{refinement_level_eta_, index_eta_},
-               SegmentId{refinement_level_zeta_, index_zeta_}}};
-    }
-  }
+  std::array<SegmentId, VolumeDim> segment_ids() const;
 
-  SegmentId segment_id(const size_t dim) const {
-    ASSERT(dim < VolumeDim, "Dimension must be smaller than "
-                                << VolumeDim << ", but is: " << dim);
-    switch (dim) {
-      case 0:
-        return {refinement_level_xi_, index_xi_};
-      case 1:
-        return {refinement_level_eta_, index_eta_};
-      case 2:
-        return {refinement_level_zeta_, index_zeta_};
-      default:
-        ERROR("Invalid dimension: " << dim);
-    }
-  }
+  SegmentId segment_id(size_t dim) const;
 
   /// Returns an ElementId meant for identifying data on external boundaries,
   /// which should never correspond to the Id of an actual element.
   static ElementId<VolumeDim> external_boundary_id();
 
+ protected:
+  /// Create an `ElementId` in a specified direction.
+  ElementId(const Direction<VolumeDim>& direction,
+            const ElementId<VolumeDim>& element_id);
+
+  Direction<VolumeDim> direction() const;
+
+  ElementId without_direction() const;
+
  private:
-  uint32_t block_id_ : block_id_bits;
-  uint32_t grid_index_ : grid_index_bits;  // end first 32 bits
-  uint32_t index_xi_ : max_refinement_level;
-  uint32_t index_eta_ : max_refinement_level;
-  uint32_t index_zeta_ : max_refinement_level;
-  uint32_t empty_ : padding;
-  uint32_t refinement_level_xi_ : refinement_bits;  // end second 32 bits
-  uint32_t refinement_level_eta_ : refinement_bits;
-  uint32_t refinement_level_zeta_ : refinement_bits;  // end third 32 bits
+  uint8_t block_id_ : block_id_bits;
+  uint8_t grid_index_ : grid_index_bits;
+  uint8_t direction_ : direction_bits;  // end first 16 bits
+  uint16_t index_xi_ : max_refinement_level;
+  uint8_t refinement_level_xi_ : refinement_bits;  // second 16 bits
+  uint16_t index_eta_ : max_refinement_level;
+  uint8_t refinement_level_eta_ : refinement_bits;  // third 16 bits
+  uint16_t index_zeta_ : max_refinement_level;
+  uint8_t refinement_level_zeta_ : refinement_bits;  // fourth 16 bits
+  uint32_t empty_ : padding;                         // last 32 bits
 };
 
 /// \cond
@@ -256,6 +246,7 @@ struct hash<ElementId<VolumeDim>> {
 template <size_t VolumeDim>
 inline bool operator==(const ElementId<VolumeDim>& lhs,
                        const ElementId<VolumeDim>& rhs) {
+  // Note: Direction is intentionally skipped.
   return lhs.block_id() == rhs.block_id() and
          lhs.segment_ids() == rhs.segment_ids() and
          lhs.grid_index() == rhs.grid_index();

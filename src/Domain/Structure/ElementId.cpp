@@ -43,13 +43,14 @@ template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id, const size_t grid_index)
     : block_id_(block_id),
       grid_index_(grid_index),
+      direction_{Direction<VolumeDim>::self().bits()},
       index_xi_{0},
-      index_eta_{0},
-      index_zeta_{0},
-      empty_{0},
       refinement_level_xi_{0},
+      index_eta_{0},
       refinement_level_eta_{0},
-      refinement_level_zeta_{0} {
+      index_zeta_{0},
+      refinement_level_zeta_{0},
+      empty_{0} {
   ASSERT(block_id < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id << "\nMaximum value is: "
                                     << two_to_the(block_id_bits) - 1);
@@ -62,7 +63,9 @@ template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id,
                                 std::array<SegmentId, VolumeDim> segment_ids,
                                 const size_t grid_index)
-    : block_id_(block_id), grid_index_(grid_index) {
+    : block_id_(block_id),
+      grid_index_(grid_index),
+      direction_{Direction<VolumeDim>::self().bits()} {
   ASSERT(block_id < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id << "\nMaximum value is: "
                                     << two_to_the(block_id_bits) - 1);
@@ -89,7 +92,23 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
 }
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const std::string& grid_name) {
+ElementId<VolumeDim>::ElementId(const Direction<VolumeDim>& direction,
+                                const ElementId<VolumeDim>& element_id)
+    : block_id_(element_id.block_id_),
+      grid_index_(element_id.grid_index_),
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+      direction_(direction.bits()),
+      index_xi_{element_id.index_xi_},
+      refinement_level_xi_{element_id.refinement_level_xi_},
+      index_eta_{element_id.index_eta_},
+      refinement_level_eta_{element_id.refinement_level_eta_},
+      index_zeta_{element_id.index_zeta_},
+      refinement_level_zeta_{element_id.refinement_level_zeta_},
+      empty_{0} {}
+
+template <size_t VolumeDim>
+ElementId<VolumeDim>::ElementId(const std::string& grid_name)
+    : direction_{Direction<VolumeDim>::self().bits()} {
   std::string pattern_str = "\\[B([0-9]+),\\(";
   for (size_t d = 0; d < VolumeDim; ++d) {
     pattern_str.append("L([0-9]+)I([0-9]+)");
@@ -163,6 +182,55 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(
 }
 
 template <size_t VolumeDim>
+Direction<VolumeDim> ElementId<VolumeDim>::direction() const {
+  return Direction<VolumeDim>{static_cast<typename Direction<VolumeDim>::Axis>(
+                                  direction_ bitand 0b0011),
+                              static_cast<Side>(direction_ bitand 0b1100)};
+}
+
+template <size_t VolumeDim>
+std::array<size_t, VolumeDim> ElementId<VolumeDim>::refinement_levels() const {
+  if constexpr (VolumeDim == 1) {
+    return {{refinement_level_xi_}};
+  } else if constexpr (VolumeDim == 2) {
+    return {{refinement_level_xi_, refinement_level_eta_}};
+  } else if constexpr (VolumeDim == 3) {
+    return {
+        {refinement_level_xi_, refinement_level_eta_, refinement_level_zeta_}};
+  }
+}
+
+template <size_t VolumeDim>
+std::array<SegmentId, VolumeDim> ElementId<VolumeDim>::segment_ids() const {
+  if constexpr (VolumeDim == 1) {
+    return {{SegmentId{refinement_level_xi_, index_xi_}}};
+  } else if constexpr (VolumeDim == 2) {
+    return {{SegmentId{refinement_level_xi_, index_xi_},
+             SegmentId{refinement_level_eta_, index_eta_}}};
+  } else if constexpr (VolumeDim == 3) {
+    return {{SegmentId{refinement_level_xi_, index_xi_},
+             SegmentId{refinement_level_eta_, index_eta_},
+             SegmentId{refinement_level_zeta_, index_zeta_}}};
+  }
+}
+
+template <size_t VolumeDim>
+SegmentId ElementId<VolumeDim>::segment_id(const size_t dim) const {
+  ASSERT(dim < VolumeDim,
+         "Dimension must be smaller than " << VolumeDim << ", but is: " << dim);
+  switch (dim) {
+    case 0:
+      return {refinement_level_xi_, index_xi_};
+    case 1:
+      return {refinement_level_eta_, index_eta_};
+    case 2:
+      return {refinement_level_zeta_, index_zeta_};
+    default:
+      ERROR("Invalid dimension: " << dim);
+  }
+}
+
+template <size_t VolumeDim>
 ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() {
   // We use the maximum possible value that can be stored in `block_id_bits` and
   // the maximum refinement level to signal an external boundary. While in
@@ -172,6 +240,13 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() {
   return ElementId<VolumeDim>(
       two_to_the(ElementId::block_id_bits) - 1,
       make_array<VolumeDim>(SegmentId(ElementId::max_refinement_level - 1, 0)));
+}
+
+template <size_t VolumeDim>
+ElementId<VolumeDim> ElementId<VolumeDim>::without_direction() const {
+  ElementId result = *this;
+  result.direction_ = Direction<VolumeDim>::self().bits();
+  return result;
 }
 
 template <size_t VolumeDim>
@@ -229,11 +304,11 @@ bool is_zeroth_element(const ElementId<Dim>& id) {
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& id) {
   // ElementId is used as an opaque array of bytes by Charm, so we
-  // treat it that way as well.
+  // treat it that way as well. However, since only the lowest 64 bits are
+  // used, the hash is trivial: just extract the lowest 64 bits.
   // clang-tidy: do not use reinterpret_cast
-  const auto bytes = reinterpret_cast<const char*>(&id);  // NOLINT
-  // clang-tidy: do not use pointer arithmetic
-  return boost::hash_range(bytes, bytes + sizeof(id));  // NOLINT
+  return (*reinterpret_cast<const uint64_t*>(&id)) bitand  // NOLINT
+         (compl ElementId<VolumeDim>::direction_mask);
 }
 
 // clang-tidy: do not modify namespace std
