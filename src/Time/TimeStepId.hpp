@@ -13,6 +13,7 @@
 #include <limits>
 
 #include "Time/Time.hpp"
+#include "Utilities/Rational.hpp"
 
 namespace PUP {
 class er;
@@ -41,7 +42,7 @@ class TimeStepId {
   uint64_t substep() const { return substep_; }
   /// Current step size.  Only available when the substep is nonzero,
   /// because on the full step the state is valid for any step size.
-  const TimeDelta& step_size() const;
+  TimeDelta step_size() const;
   /// Time of the current substep
   double substep_time() const { return substep_time_; }
 
@@ -65,7 +66,7 @@ class TimeStepId {
   int64_t slab_number_{std::numeric_limits<int64_t>::lowest()};
   Time step_time_{};
   uint64_t substep_{0};
-  TimeDelta step_size_{};
+  Rational step_size_{};
   double substep_time_{};
 };
 

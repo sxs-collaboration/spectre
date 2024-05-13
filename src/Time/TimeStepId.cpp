@@ -28,10 +28,12 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
       slab_number_(slab_number),
       step_time_(step_time),
       substep_(substep),
-      step_size_(step_size),
+      step_size_(step_size.fraction()),
       substep_time_(substep_time) {
   ASSERT(substep_ != 0 or step_time_.value() == substep_time_,
          "Initial substep must align with the step.");
+  ASSERT(substep_ == 0 or step_time.slab() == step_size.slab(),
+         "Time and step have different slabs.");
   if (time_runs_forward_) {
     ASSERT(substep_time_ >= step_time_.value(),
            "Substep must be within the step.");
@@ -42,9 +44,9 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
   canonicalize();
 }
 
-const TimeDelta& TimeStepId::step_size() const {
+TimeDelta TimeStepId::step_size() const {
   ASSERT(substep_ != 0, "Step size not available at substep 0.");
-  return step_size_;
+  return {step_time_.slab(), step_size_};
 }
 
 bool TimeStepId::is_at_slab_boundary() const {
@@ -52,15 +54,15 @@ bool TimeStepId::is_at_slab_boundary() const {
 }
 
 TimeStepId TimeStepId::next_step(const TimeDelta& step_size) const {
-  ASSERT(substep_ == 0 or step_size == step_size_,
-         "Step size inconsistent: " << step_size_ << " " << step_size);
+  ASSERT(substep_ == 0 or step_size == this->step_size(),
+         "Step size inconsistent: " << this->step_size() << " " << step_size);
   return TimeStepId(time_runs_forward_, slab_number_, step_time_ + step_size);
 }
 
 TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
                                     const double step_fraction) const {
-  ASSERT(substep_ == 0 or step_size == step_size_,
-         "Step size inconsistent: " << step_size_ << " " << step_size);
+  ASSERT(substep_ == 0 or step_size == this->step_size(),
+         "Step size inconsistent: " << this->step_size() << " " << step_size);
   ASSERT(step_fraction >= 0.0 and step_fraction <= 1.0,
          "Substep must be within the step.");
   const double new_time = (1.0 - step_fraction) * step_time_.value() +
@@ -71,7 +73,7 @@ TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
 
 void TimeStepId::canonicalize() {
   if (substep_ == 0) {
-    step_size_ = TimeDelta{};
+    step_size_ = 0;
   }
   if (time_runs_forward_ ? step_time_.is_at_slab_end()
                          : step_time_.is_at_slab_start()) {
