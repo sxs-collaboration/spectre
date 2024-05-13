@@ -4,6 +4,7 @@
 #include "Time/TimeStepId.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <limits>
 #include <ostream>
 #include <pup.h>
 
@@ -30,6 +31,8 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
       step_size_(substep == 0 ? (time_runs_forward ? 1 : -1)
                               : step_size.fraction()),
       substep_time_(substep_time) {
+  ASSERT(substep <= std::numeric_limits<decltype(substep_)>::max(),
+         "Overflow in substep: " << substep);
   ASSERT(substep_ != 0 or step_time_.value() == substep_time_,
          "Initial substep must align with the step.");
   ASSERT(substep_ == 0 or step_time.slab() == step_size.slab(),
@@ -71,8 +74,8 @@ TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
          "Substep must be within the step.");
   const double new_time = (1.0 - step_fraction) * step_time_.value() +
                           step_fraction * (step_time_ + step_size).value();
-  return TimeStepId(time_runs_forward(), slab_number_, step_time_, substep_ + 1,
-                    step_size, new_time);
+  return {time_runs_forward(), slab_number_, step_time_, substep() + 1,
+          step_size, new_time};
 }
 
 void TimeStepId::canonicalize() {

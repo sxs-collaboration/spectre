@@ -64,7 +64,7 @@ class TimeStepId {
 
   int64_t slab_number_{std::numeric_limits<int64_t>::lowest()};
   Time step_time_{};
-  uint64_t substep_{0};
+  uint8_t substep_{0};
   Rational step_size_{};
   double substep_time_{};
 };
