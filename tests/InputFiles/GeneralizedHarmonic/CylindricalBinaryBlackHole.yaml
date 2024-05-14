@@ -22,6 +22,7 @@ Evolution:
   StepChoosers:
     - LimitIncrease:
         Factor: 2
+    - PreventRapidIncrease
     - ElementSizeCfl:
         SafetyFactor: 0.5
     - ErrorControl:

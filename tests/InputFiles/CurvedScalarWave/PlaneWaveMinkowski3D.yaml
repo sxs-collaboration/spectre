@@ -53,6 +53,7 @@ Evolution:
   StepChoosers:
     - LimitIncrease:
         Factor: 2
+    - PreventRapidIncrease
     - Cfl:
         SafetyFactor: 0.2
 
