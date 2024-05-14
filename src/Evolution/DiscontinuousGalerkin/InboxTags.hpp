@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
@@ -246,6 +247,19 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   }
 
   void pup(PUP::er& /*p*/) {}
+};
+
+/*!
+ * \brief Simple tag used to store inbox data in the DataBox.
+ *
+ * Since the inbox data can be received asynchronously and lockfree ordered
+ * containers are slow and challenging to implement, we instead use an
+ * unordered container for the inbox, then transfer the data into an ordered map
+ * in the DataBox.
+ */
+template <size_t Dim>
+struct BoundaryData : db::SimpleTag {
+  using type = typename BoundaryCorrectionAndGhostCellsInbox<Dim>::type_map;
 };
 
 /*!
