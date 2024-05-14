@@ -17,8 +17,10 @@
 namespace {
 template <bool AllowDecrease>
 void test_increase_or_decrease() {
+  // If we don't allow decrease, then just set the threshold to infinity. We
+  // can't set it to max otherwise we'll get an FPE.
   const double decrease_timescale_threshold =
-      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::max();
+      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::infinity();
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
   const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
@@ -189,8 +191,10 @@ void test_increase_or_decrease() {
 
 template <bool AllowDecrease>
 void test_no_change_to_timescale() {
+  // If we don't allow decrease, then just set the threshold to infinity. We
+  // can't set it to max otherwise we'll get an FPE.
   const double decrease_timescale_threshold =
-      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::max();
+      AllowDecrease ? 1.0e-2 : std::numeric_limits<double>::infinity();
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
   const double decrease_factor = AllowDecrease ? 0.99 : 1.0;
