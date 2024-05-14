@@ -295,6 +295,15 @@ EventsAndTriggers:
   # Never terminate... run until something fails!
 
 EventsAndDenseTriggers:
+  # BondiSachs output needs to be often enough for CCE to run properly. An
+  # interval of 0.1 was found to work well in SpEC.
+  - Trigger:
+      Times:
+        EvenlySpaced:
+          Interval: 0.1
+          Offset: 0.0
+    Events:
+      - BondiSachsInterpolation
 
 Interpolator:
   DumpVolumeDataOnFailure: false
