@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <iomanip>
@@ -14,14 +15,17 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Parallel/StaticSpscQueue.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -102,6 +106,17 @@ namespace evolution::dg::Tags {
  *   of communications that adds the most overhead, not the size of each
  *   communication. Thus, one large communication is cheaper than several small
  *   communications.
+ *
+ * #### Return Values:
+ * - In the case that the type is `type_map` the `insert_into_inbox` function
+ *   returns the size of the inbox.
+ * - In the case that the type is `type_spsc` the `insert_into_inbox` function
+ *   returns the number of neighbor data contributions made that allow the
+ *   element to take its next time step/needs a message called on it. When
+ *   this number is equal to the number of neighbors, a Charm++ message must
+ *   be sent to the element to have it continue the algorithm. This is so as
+ *   to minimize the number of communications made through Charm++ and instead
+ *   to move data atomically between neighbors whenever possible.
  */
 template <size_t Dim>
 struct BoundaryCorrectionAndGhostCellsInbox {
@@ -109,19 +124,48 @@ struct BoundaryCorrectionAndGhostCellsInbox {
 
  public:
   using temporal_id = TimeStepId;
-  using type = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
+  // Used by array implementation
+  using type_map = std::map<TimeStepId, DirectionalIdMap<Dim, stored_type>>;
 
-  template <typename Inbox, typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
-                                const temporal_id& time_step_id,
-                                ReceiveDataType&& data) {
+  // Used by nodegroup implementation
+  using type_spsc = evolution::dg::AtomicInboxBoundaryData<Dim>;
+
+  // The actual type being used.
+  using type = type_map;
+  using value_type = type;
+
+  template <typename ReceiveDataType>
+  static size_t insert_into_inbox(const gsl::not_null<type_spsc*> inbox,
+                                  const temporal_id& time_step_id,
+                                  ReceiveDataType&& data) {
+    const DirectionalId<Dim>& neighbor_id = data.first;
+    // Note: This assumes the neighbor_id is oriented into our (the element
+    // whose inbox this is) frame.
+    const size_t neighbor_index = hash_value(neighbor_id);
+    if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
+                         .try_emplace(time_step_id, std::move(data.second),
+                                      std::move(data.first)))) {
+      ERROR("Failed to emplace data into inbox. neighbor_id: ("
+            << neighbor_id.direction() << ',' << neighbor_id.id()
+            << ") at TimeStepID: " << time_step_id);
+    }
+    // Notes:
+    // 1. fetch_add does a post-increment.
+    // 2. We need thread synchronization here, so doing relaxed_order would be a
+    //    bug.
+    return inbox->message_count.fetch_add(1, std::memory_order_acq_rel) + 1;
+  }
+
+  template <typename ReceiveDataType>
+  static size_t insert_into_inbox(const gsl::not_null<type_map*> inbox,
+                                  const temporal_id& time_step_id,
+                                  ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
-    auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
-           boundary_data, boundary_data_validity_range, boundary_tci_status] =
-        data.second;
-    (void)ghost_cell_data;
-
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
+      auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
+             boundary_data, boundary_data_validity_range, boundary_tci_status] =
+          data.second;
+      (void)ghost_cell_data;
       auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
              current_ghost_cell_data, current_boundary_data,
              current_boundary_data_validity_range, current_tci_status] =
@@ -178,6 +222,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
               << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
       }
     }
+    return current_inbox.size();
   }
 
   static std::string output_inbox(const type& inbox,
