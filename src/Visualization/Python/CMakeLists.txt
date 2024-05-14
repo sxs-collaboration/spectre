@@ -12,6 +12,7 @@ spectre_python_add_module(
   OpenVolfiles.py
   Plot.py
   PlotAlongLine.py
+  PlotControlSystem.py
   PlotDatFile.py
   PlotEllipticConvergence.py
   PlotMemoryMonitors.py
