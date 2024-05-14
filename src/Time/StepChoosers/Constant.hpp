@@ -17,7 +17,7 @@
 
 namespace StepChoosers {
 
-/// Suggests a constant step size.
+/// Sets a constant goal.
 template <typename StepChooserUse>
 class Constant : public StepChooser<StepChooserUse> {
  public:
@@ -28,7 +28,7 @@ class Constant : public StepChooser<StepChooserUse> {
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond
 
-  static constexpr Options::String help{"Suggests a constant step size."};
+  static constexpr Options::String help{"Sets a constant goal."};
 
   explicit Constant(const double value) : value_(value) {}
 

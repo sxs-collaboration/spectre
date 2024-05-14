@@ -33,7 +33,7 @@ struct MinimumGridSpacing;
 /// \endcond
 
 namespace StepChoosers {
-/// Suggests a step size based on the CFL stability criterion.
+/// Sets a goal based on the CFL stability criterion.
 template <typename StepChooserUse, typename Frame, typename System>
 class Cfl : public StepChooser<StepChooserUse> {
  public:
@@ -51,7 +51,7 @@ class Cfl : public StepChooser<StepChooserUse> {
   };
 
   static constexpr Options::String help{
-      "Suggests a step size based on the CFL stability criterion."};
+      "Sets a goal based on the CFL stability criterion."};
   using options = tmpl::list<SafetyFactor>;
 
   explicit Cfl(const double safety_factor) : safety_factor_(safety_factor) {}

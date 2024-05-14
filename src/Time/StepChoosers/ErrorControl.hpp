@@ -55,8 +55,7 @@ struct ErrorControlBase : IsAnErrorControl {
 }  // namespace ErrorControl_detail
 
 /*!
- * \brief Suggests a step size based on a target absolute and/or relative error
- * measure.
+ * \brief Sets a goal based on time-stepper truncation error.
  *
  * \details The suggested step is calculated via a simple specialization of the
  * scheme suggested in \cite Hairer1993. We first compute the aggregated error
@@ -176,7 +175,7 @@ class ErrorControl
   };
 
   static constexpr Options::String help{
-      "Chooses a step based on a target relative and absolute error tolerance"};
+      "Sets a goal based on time-stepper truncation error."};
   using options = tmpl::list<AbsoluteTolerance, RelativeTolerance, MaxFactor,
                              MinFactor, SafetyFactor>;
 

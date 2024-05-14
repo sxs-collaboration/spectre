@@ -33,7 +33,7 @@ struct SizeOfElement;
 /// \endcond
 
 namespace StepChoosers {
-/// Suggests a step size based on the CFL stability criterion, but uses the full
+/// Sets a goal based on the CFL stability criterion, but uses the full
 /// size of the element as the length scale in question.
 ///
 /// This is useful as a coarse estimate for slabs, or to place a ceiling on
@@ -55,7 +55,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   };
 
   static constexpr Options::String help{
-      "Suggests a step size based on the CFL stability criterion, but in which "
+      "Sets a goal based on the CFL stability criterion, but in which "
       "the entire size of the element is used as the spacing in the "
       "computation. This is useful primarily for placing a ceiling on another "
       "dynamically-adjusted step chooser"};

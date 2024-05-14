@@ -16,6 +16,8 @@
 #include "Utilities/TMPL.hpp"
 
 namespace StepChoosers {
+/// Limits the time step to prevent multistep integrator instabilities.
+///
 /// Avoids instabilities due to rapid increases in the step size by
 /// preventing the step size from increasing if any step in the
 /// time-stepper history increased.  If there have been recent step
@@ -32,8 +34,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   /// \endcond
 
   static constexpr Options::String help{
-      "Prevents rapid increases in time step that can cause integrator \n"
-      "instabilities."};
+      "Limits the time step to prevent multistep integrator instabilities."};
   using options = tmpl::list<>;
 
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;

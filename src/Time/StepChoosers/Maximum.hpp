@@ -17,7 +17,7 @@
 
 namespace StepChoosers {
 
-/// Sets a constant step size limit.
+/// Limits the step size to a constant.
 template <typename StepChooserUse>
 class Maximum : public StepChooser<StepChooserUse> {
  public:
@@ -28,7 +28,7 @@ class Maximum : public StepChooser<StepChooserUse> {
   WRAPPED_PUPable_decl_template(Maximum);  // NOLINT
   /// \endcond
 
-  static constexpr Options::String help{"Sets a constant step size limit."};
+  static constexpr Options::String help{"Limits the step size to a constant."};
 
   explicit Maximum(const double value) : value_(value) {}
 

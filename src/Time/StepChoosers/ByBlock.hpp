@@ -29,7 +29,7 @@ struct Element;
 /// \endcond
 
 namespace StepChoosers {
-/// Suggests specified step sizes in each block
+/// Sets a goal specified per-block.
 template <typename StepChooserUse, size_t Dim>
 class ByBlock : public StepChooser<StepChooserUse> {
  public:
@@ -46,8 +46,7 @@ class ByBlock : public StepChooser<StepChooserUse> {
         "Step sizes, indexed by block number"};
   };
 
-  static constexpr Options::String help{
-      "Suggests specified step sizes in each block"};
+  static constexpr Options::String help{"Sets a goal specified per-block."};
   using options = tmpl::list<Sizes>;
 
   explicit ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
