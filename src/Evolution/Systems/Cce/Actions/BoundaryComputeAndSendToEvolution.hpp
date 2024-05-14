@@ -380,7 +380,7 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
                                      spacetime_metric, extraction_radius,
                                      l_max);
         },
-        make_not_null(&box), db::get<InitializationTags::ExtractionRadius>(box),
+        make_not_null(&box), db::get<Tags::ExtractionRadius>(box),
         db::get<Tags::LMax>(box));
     Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(

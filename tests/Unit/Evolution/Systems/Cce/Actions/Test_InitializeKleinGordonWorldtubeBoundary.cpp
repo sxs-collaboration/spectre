@@ -78,7 +78,7 @@ void test_klein_gordon_h5_initialization(const gsl::not_null<Generator*> gen) {
   ActionTesting::MockRuntimeSystem<KleinGordonH5Metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<KleinGordonH5Metavariables>>{
-          l_max, end_time, start_time}};
+          l_max, extraction_radius, end_time, start_time}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(

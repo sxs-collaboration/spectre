@@ -183,8 +183,8 @@ struct test_metavariables {
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
   using ccm_psi0 = tmpl::list<
-        Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
-        Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
+      Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+      Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,
@@ -231,7 +231,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   const double target_step_size = 0.01 * value_dist(gen);
   const double end_time = std::numeric_limits<double>::quiet_NaN();
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max,
+      {l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points}};
 

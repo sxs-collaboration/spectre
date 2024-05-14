@@ -107,7 +107,7 @@ struct InitializeWorldtubeBoundary;
  * \details Uses:
  * - simple tags from options
  * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
- * - const global cache tag `Cce::Tags::LMax`.
+ * - const global cache tag `Cce::Tags::LMax`, `Tags::ExtractionRadiusFromH5`.
  *
  * Databox changes:
  * - Adds:
@@ -130,7 +130,8 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
   using base_type::apply;
   using typename base_type::simple_tags;
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
+      tmpl::list<Tags::LMax, Tags::ExtractionRadiusFromH5,
+                 Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
   using typename base_type::simple_tags_from_options;
 };
 
@@ -142,7 +143,7 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
  * - simple tags from options
  * `Cce::Tags::H5WorldtubeBoundaryDataManager`,
  * `Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager`.
- * - const global cache tag `Cce::Tags::LMax`.
+ * - const global cache tag `Cce::Tags::LMax`, `Tags::ExtractionRadiusFromH5`.
  *
  * Databox changes:
  * - Adds:
@@ -175,7 +176,8 @@ struct InitializeWorldtubeBoundary<
   using base_type::apply;
   using typename base_type::simple_tags;
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
+      tmpl::list<Tags::LMax, Tags::ExtractionRadiusFromH5,
+                 Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
   using typename base_type::simple_tags_from_options;
 };
 
@@ -186,7 +188,7 @@ struct InitializeWorldtubeBoundary<
  * \details Uses:
  * - simple tags from options
  * `Cce::Tags::GhWorldtubeBoundaryDataManager`, `Tags::GhInterfaceManager`
- * - const global cache tags `Tags::LMax`, `Tags::ExtractionRadius`.
+ * - const global cache tags `Tags::LMax`, `Tags::ExtractionRadiusSimple`.
  *
  * Databox changes:
  * - Adds:
@@ -210,8 +212,8 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
   using typename base_type::simple_tags;
 
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, InitializationTags::ExtractionRadius,
-                 Tags::NoEndTime, Tags::SpecifiedStartTime>;
+      tmpl::list<Tags::LMax, Tags::ExtractionRadiusSimple, Tags::NoEndTime,
+                 Tags::SpecifiedStartTime>;
   using typename base_type::simple_tags_from_options;
 };
 
@@ -223,7 +225,7 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
  * - simple tags from options
  * `Cce::Tags::AnalyticBoundaryDataManager`,
  * - const global cache tags `Tags::LMax`,
- * `Tags::ExtractionRadius`.
+ * `Tags::ExtractionRadiusSimple`.
  *
  * Databox changes:
  * - Adds:
@@ -254,7 +256,8 @@ struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
   using typename base_type::simple_tags;
   using compute_tags = time_stepper_ref_tags<TimeStepperType>;
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
+      tmpl::list<Tags::LMax, Tags::ExtractionRadiusSimple,
+                 Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
   using typename base_type::simple_tags_from_options;
 };
 }  // namespace Actions

@@ -43,8 +43,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::InitializationTags::ScriInterpolationOrder>(
       "ScriInterpolationOrder");
-  TestHelpers::db::test_simple_tag<Cce::InitializationTags::ExtractionRadius>(
-      "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
       "ScriOutputDensity");
   TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
@@ -52,6 +50,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager>(
       "KleinGordonH5WorldtubeBoundaryDataManager");
+  TestHelpers::db::test_base_tag<Cce::Tags::ExtractionRadius>(
+      "ExtractionRadius");
+  TestHelpers::db::test_simple_tag<Cce::Tags::ExtractionRadiusSimple>(
+      "ExtractionRadius");
+  TestHelpers::db::test_simple_tag<Cce::Tags::ExtractionRadiusFromH5>(
+      "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::Tags::FilePrefix>("FilePrefix");
   TestHelpers::db::test_simple_tag<Cce::Tags::LMax>("LMax");
   TestHelpers::db::test_simple_tag<Cce::Tags::NumberOfRadialPoints>(

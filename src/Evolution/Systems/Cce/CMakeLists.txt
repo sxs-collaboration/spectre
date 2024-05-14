@@ -11,6 +11,7 @@ spectre_target_sources(
   AnalyticBoundaryDataManager.cpp
   BoundaryData.cpp
   Equations.cpp
+  ExtractionRadius.cpp
   GaugeTransformBoundaryData.cpp
   KleinGordonSource.cpp
   LinearOperators.cpp
@@ -32,6 +33,7 @@ spectre_target_headers(
   BoundaryData.hpp
   BoundaryDataTags.hpp
   Equations.hpp
+  ExtractionRadius.hpp
   GaugeTransformBoundaryData.hpp
   IntegrandInputSteps.hpp
   KleinGordonSystem.hpp

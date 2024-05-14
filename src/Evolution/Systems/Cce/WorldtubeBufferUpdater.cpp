@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Evolution/Systems/Cce/ExtractionRadius.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -69,12 +70,6 @@ std::pair<size_t, size_t> create_span_for_time_value(
   }
 
   return std::make_pair(span_start, span_end);
-}
-
-std::string get_text_radius(const std::string& cce_data_filename) {
-  const size_t r_pos = cce_data_filename.find_last_of('R');
-  const size_t dot_pos = cce_data_filename.find_last_of('.');
-  return cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
 }
 
 void set_time_buffer_and_lmax(const gsl::not_null<DataVector*> time_buffer,
@@ -246,18 +241,9 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
   // was an old one that had a particular normalization bug
   has_version_history_ = cce_data_file_.exists<h5::Version>("/VersionHist");
 
-  const std::string text_radius = detail::get_text_radius(cce_data_filename);
-  try {
-    extraction_radius_ = static_cast<bool>(extraction_radius)
-                             ? *extraction_radius
-                             : std::stod(text_radius);
-  } catch (const std::invalid_argument&) {
-    ERROR(
-        "The CCE filename must encode the extraction radius as an integer "
-        "between the first instance of 'R' and the first instance of '.' (SpEC "
-        "CCE filename format). Provided filename : "
-        << cce_data_filename);
-  }
+  extraction_radius_ =
+      Cce::get_extraction_radius(cce_data_filename, extraction_radius, true)
+          .value();
 
   detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
                                    cce_data_file_.get<h5::Dat>("/Lapse"));
@@ -424,17 +410,12 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
       Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>>(
       dataset_names_) = "DuR";
 
-  const std::string text_radius = detail::get_text_radius(cce_data_filename);
-  try {
-    extraction_radius_ = static_cast<bool>(extraction_radius)
-                             ? *extraction_radius
-                             : std::stod(text_radius);
-  } catch (const std::invalid_argument&) {
-    // the extraction radius is typically not used in the Bondi system, so we
-    // don't error if it isn't parsed from the filename. Instead, we'll just
-    // error if the invalid extraction radius value is ever retrieved using
-    // `get_extraction_radius`.
-  }
+  // the extraction radius is typically not used in the Bondi system, so we
+  // don't error if it isn't parsed from the filename. Instead, we'll just error
+  // if the invalid extraction radius value is ever retrieved using
+  // `get_extraction_radius`.
+  extraction_radius_ =
+      Cce::get_extraction_radius(cce_data_filename, extraction_radius, false);
 
   detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
                                    cce_data_file_.get<h5::Dat>("/U"));
@@ -485,16 +466,12 @@ KleinGordonWorldtubeH5BufferUpdater::KleinGordonWorldtubeH5BufferUpdater(
       Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPi>>>(
       dataset_names_) = "dtKGPsi";
 
-  const std::string text_radius = detail::get_text_radius(cce_data_filename);
-  try {
-    extraction_radius_ = extraction_radius.has_value() ? *extraction_radius
-                                                       : std::stod(text_radius);
-  } catch (const std::invalid_argument&) {
-    // the extraction radius is typically not used in the Klein-Gordon system,
-    // so we don't error if it isn't parsed from the filename. Instead, we'll
-    // just error if the invalid extraction radius value is ever retrieved using
-    // `get_extraction_radius`.
-  }
+  // the extraction radius is typically not used in the Klein-Gordon system, so
+  // we don't error if it isn't parsed from the filename. Instead, we'll just
+  // error if the invalid extraction radius value is ever retrieved using
+  // `get_extraction_radius`.
+  extraction_radius_ =
+      Cce::get_extraction_radius(cce_data_filename, extraction_radius, false);
 
   detail::set_time_buffer_and_lmax(make_not_null(&time_buffer_), l_max_,
                                    cce_data_file_.get<h5::Dat>("/KGPsi"));
@@ -507,7 +484,6 @@ double KleinGordonWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
     const size_t buffer_depth) const {
-
   return detail::update_buffers_for_time<klein_gordon_input_tags>(
       buffers, time_span_start, time_span_end, time, computation_l_max, l_max_,
       interpolator_length, buffer_depth, time_buffer_, dataset_names_,
@@ -519,9 +495,9 @@ void KleinGordonWorldtubeH5BufferUpdater::update_buffer(
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end) const {
   // We assume the scalar field is real-valued
-  detail::update_buffer_with_modal_data(
-      buffer_to_update, read_data, computation_l_max, l_max_, time_span_start,
-      time_span_end, true);
+  detail::update_buffer_with_modal_data(buffer_to_update, read_data,
+                                        computation_l_max, l_max_,
+                                        time_span_start, time_span_end, true);
 }
 
 void KleinGordonWorldtubeH5BufferUpdater::pup(PUP::er& p) {
