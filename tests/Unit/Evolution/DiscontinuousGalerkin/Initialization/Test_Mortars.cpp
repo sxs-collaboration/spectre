@@ -502,7 +502,7 @@ void test_p_refine_gts() {
     expected_normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
-      expected_mortar_data.emplace(mortar_id, MortarData<Dim>{1});
+      expected_mortar_data.emplace(mortar_id, MortarData<Dim>{});
       expected_mortar_mesh.emplace(
           mortar_id,
           ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),

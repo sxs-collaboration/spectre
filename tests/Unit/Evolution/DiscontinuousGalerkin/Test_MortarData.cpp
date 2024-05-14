@@ -100,10 +100,8 @@ void test_global_time_stepping_usage() {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
-  const size_t number_of_buffers = 2;
 
-  MortarData<Dim> mortar_data{number_of_buffers};
-  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
+  MortarData<Dim> mortar_data{};
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
@@ -146,9 +144,7 @@ void test_global_time_stepping_usage() {
   CHECK(mortar_data.pretty_print_current_buffer_no_data(1_st) ==
         expected_pretty_output);
 
-  CHECK(mortar_data.current_buffer_index() == 0);
-  mortar_data.next_buffer();
-  CHECK(mortar_data.current_buffer_index() == 1);
+  mortar_data = MortarData<Dim>{};
 
   // Then assign things with the local_mortar_data() non-const reference
   // functions
@@ -157,18 +153,12 @@ void test_global_time_stepping_usage() {
                         std::optional{neighbor_data}, expected_output);
 
   expected_pretty_output = MakeString{}
-                           << "  Current buffer: 1, time = " << std::scientific
+                           << "  Current buffer: 0, time = " << std::scientific
                            << std::setprecision(16) << time_step_id << "\n";
   CHECK(mortar_data.pretty_print_current_buffer_no_data(2_st) ==
         expected_pretty_output);
 
   check_serialization(make_not_null(&mortar_data));
-
-  const auto second_index_mortar_data = mortar_data.extract();
-  mortar_data.next_buffer();
-  const auto first_index_mortar_data = mortar_data.extract();
-
-  CHECK(second_index_mortar_data == first_index_mortar_data);
 }
 
 template <size_t Dim>
@@ -178,10 +168,8 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
-  const size_t number_of_buffers = 1;
 
-  MortarData<Dim> mortar_data{1};
-  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
+  MortarData<Dim> mortar_data{};
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
@@ -204,9 +192,7 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
                      std::optional{local_data}, local_mesh, std::nullopt,
                      expected_output);
 
-  CHECK(mortar_data.current_buffer_index() == 0);
-  mortar_data.next_buffer();
-  CHECK(mortar_data.current_buffer_index() == 0);
+  mortar_data = MortarData<Dim>{};
 
   assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
                         std::optional{local_data}, local_mesh, std::nullopt,
