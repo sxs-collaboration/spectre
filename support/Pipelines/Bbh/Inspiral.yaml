@@ -216,8 +216,9 @@ PhaseChangeAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          # Current implementation checks wallclock at these global syncs
-          Interval: 100
+          # Trigger checkpoint often enough so it triggers within the last 30
+          # minutes of the run
+          Interval: 20
           Offset: 0
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
@@ -270,12 +271,22 @@ EventsAndTriggers:
             - PointwiseL2Norm(ThreeIndexConstraint)
             - PointwiseL2Norm(FourIndexConstraint)
           InterpolateToMesh: None
-          CoordinatesFloatingPointType: Double
-          FloatingPointTypes: [Double]
-      - ObservationAhA
-      - ObservationAhB
+          # Save disk space by saving single precision data. This is enough
+          # for visualization.
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
       - ObservationExcisionBoundaryA
       - ObservationExcisionBoundaryB
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          # Trigger apparent horizon observations often enough so they find the
+          # next horizon based on the previous initial guess.
+          Interval: 10
+          Offset: 0
+    Events:
+      - ObservationAhA
+      - ObservationAhB
   - Trigger:
       SeparationLessThan:
         Value: 2.5
