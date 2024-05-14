@@ -18,6 +18,7 @@ OutputFileChecks:
   - Label: Linear solver convergence
     Subfile: GmresResiduals.dat
     FileGlob: PoissonProductOfSinusoids2DReductions.h5
+    SkipColumns: [1] # Skip walltime
     ExpectedData:
       - [0, 2.30405926122538e+01]
       - [1, 0.]

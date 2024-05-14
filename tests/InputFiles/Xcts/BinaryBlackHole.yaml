@@ -55,6 +55,7 @@ OutputFileChecks:
   - Label: Nonlinear solver convergence
     Subfile: NewtonRaphsonResiduals.dat
     FileGlob: BbhReductions.h5
+    SkipColumns: [1] # Skip walltime
     ExpectedData:
       # AMR iteration 0
       - [0, 0, 9.58836468792872e+00, 1.]

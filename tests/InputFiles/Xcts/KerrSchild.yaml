@@ -42,6 +42,7 @@ OutputFileChecks:
   - Label: Nonlinear solver convergence
     Subfile: NewtonRaphsonResiduals.dat
     FileGlob: KerrSchildReductions.h5
+    SkipColumns: [1] # Skip walltime
     ExpectedData:
       # AMR iteration 0
       - [0, 0, 6.86317921700308e+01, 1.]

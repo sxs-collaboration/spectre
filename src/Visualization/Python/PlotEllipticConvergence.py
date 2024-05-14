@@ -3,6 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import datetime
 import logging
 from typing import List
 
@@ -17,7 +18,7 @@ from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
-from spectre.Visualization.ReadH5 import to_dataframe
+from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ def split_iteration_sequence(data: pd.DataFrame) -> List[pd.DataFrame]:
 
 def plot_elliptic_convergence(
     h5_file,
-    ax=None,
+    axes=None,
     linear_residuals_subfile_name="GmresResiduals.dat",
     nonlinear_residuals_subfile_name="NewtonRaphsonResiduals.dat",
 ):
@@ -43,13 +44,21 @@ def plot_elliptic_convergence(
 
     Arguments:
       h5_file: The H5 reductions file.
-      ax: Optional. The matplotlib axis to plot on.
+      axes: Optional. The matplotlib axes to plot on. Should be a tuple of two
+        axes, the first for the residuals and the second for the walltime.
       linear_residuals_subfile_name: The name of the subfile containing the
         linear solver residuals.
       nonlinear_residuals_subfile_name: The name of the subfile containing the
         nonlinear solver residuals.
     """
     with h5py.File(h5_file, "r") as open_h5file:
+        if not linear_residuals_subfile_name in open_h5file:
+            all_subfiles = available_subfiles(open_h5file, extension=".dat")
+            raise ValueError(
+                "Could not find the linear residuals subfile"
+                f" '{linear_residuals_subfile_name}' in the H5 file. Available"
+                f" subfiles: {all_subfiles}"
+            )
         linear_residuals = split_iteration_sequence(
             to_dataframe(open_h5file[linear_residuals_subfile_name]).set_index(
                 "Iteration"
@@ -73,39 +82,85 @@ def plot_elliptic_convergence(
         else linear_residuals
     )[0]["Residual"].iloc[0]
     # Plot nonlinear solver residuals
-    if ax is not None:
-        plt.sca(ax)
+    if axes is None:
+        fig, (ax_residual, ax_time) = plt.subplots(
+            nrows=2, ncols=1, sharex=True, gridspec_kw={"height_ratios": [3, 1]}
+        )
+    else:
+        ax_residual, ax_time = axes
     if nonlinear_residuals is not None:
         m = 0
         for i, residuals in enumerate(nonlinear_residuals):
-            plt.plot(
+            ax_residual.plot(
                 cumulative_linsolv_iterations[m : m + len(residuals)],
                 residuals["Residual"] / norm,
                 color="black",
                 ls="dotted",
                 marker=".",
-                label="Nonlinear residual" if i == 0 else None,
+                label="Nonlinear solver" if i == 0 else None,
             )
+            if "Walltime" in residuals:
+                ax_time.plot(
+                    cumulative_linsolv_iterations[m : m + len(residuals) - 1],
+                    np.diff(residuals["Walltime"]),
+                    color="black",
+                    ls="dotted",
+                    marker=".",
+                )
             m += len(residuals) - 1
     # Plot linear solver residuals
     for i, residuals in enumerate(linear_residuals):
-        plt.plot(
+        ax_residual.plot(
             residuals.index + cumulative_linsolv_iterations[i],
             residuals["Residual"] / norm,
             color="black",
-            label="Linear residual" if i == 0 else None,
+            label="Linear solver" if i == 0 else None,
             marker="." if len(residuals) < 20 else None,
+        )
+        if "Walltime" in residuals:
+            ax_time.plot(
+                residuals.index[:-1] + cumulative_linsolv_iterations[i],
+                np.diff(residuals["Walltime"]),
+                color="black",
+                marker="." if len(residuals) < 20 else None,
+            )
+    # Annotate time of last linear solver iteration
+    if "Walltime" in residuals:
+        last_time = linear_residuals[-1].iloc[-1]["Walltime"]
+        ax_time.annotate(
+            f"Walltime: {datetime.timedelta(seconds=round(last_time))}",
+            xy=(1, 1),
+            xycoords="axes fraction",
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="right",
+            va="bottom",
+            fontsize=9,
+        )
+    else:
+        ax_time.annotate(
+            "No walltime data",
+            xy=(1, 1),
+            xycoords="axes fraction",
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="right",
+            va="bottom",
+            fontsize=9,
         )
 
     # Configure the axes
-    plt.yscale("log")
-    plt.grid()
-    plt.legend()
-    plt.xlabel("Cumulative linear solver iteration")
-    plt.ylabel("Relative residual")
-    plt.title("Elliptic solver convergence")
+    ax_residual.set_title("Elliptic solver convergence")
+    ax_residual.set_yscale("log")
+    ax_residual.grid()
+    ax_residual.legend()
+    ax_residual.set_ylabel("Relative residual")
+    ax_time.set_yscale("log")
+    ax_time.grid()
+    ax_time.set_ylabel("Walltime per iteration [s]")
+    ax_time.set_xlabel("Cumulative linear solver iteration")
     # Allow only integer ticks for the x-axis
-    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax_time.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
 @click.command(name="elliptic-convergence")
