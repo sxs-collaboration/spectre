@@ -6,6 +6,7 @@ set(LIBRARY "Test_FunctionsOfTime")
 set(LIBRARY_SOURCES
   Test_FixedSpeedCubic.cpp
   Test_FunctionsOfTimeAreReady.cpp
+  Test_IntegratedFunctionOfTime.cpp
   Test_ThreadsafeList.cpp
   Test_OutputTimeBounds.cpp
   Test_PiecewisePolynomial.cpp

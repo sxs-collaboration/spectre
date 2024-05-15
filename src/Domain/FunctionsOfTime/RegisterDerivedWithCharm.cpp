@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
+#include "Domain/FunctionsOfTime/IntegratedFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
@@ -20,6 +21,7 @@
 namespace domain::FunctionsOfTime {
 void register_derived_with_charm() {
   register_classes_with_charm<FunctionsOfTime::FixedSpeedCubic,
+                              FunctionsOfTime::IntegratedFunctionOfTime,
                               FunctionsOfTime::PiecewisePolynomial<0>,
                               FunctionsOfTime::PiecewisePolynomial<1>,
                               FunctionsOfTime::PiecewisePolynomial<2>,
