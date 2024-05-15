@@ -5,10 +5,13 @@
 
 #include <boost/functional/hash.hpp>
 #include <cmath>
+#include <cstddef>
+#include <functional>
 #include <ostream>
 #include <pup.h>
 #include <utility>
 
+#include "Time/Slab.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 

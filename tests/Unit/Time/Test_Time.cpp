@@ -11,7 +11,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace {
@@ -98,7 +97,7 @@ void test_time() {
            Time(slab.retreat(), rational_t(2, 3)));
 
   // Hashing
-  std::hash<Time> h;
+  const std::hash<Time> h{};
   CHECK(h(Slab(0, 1).start()) == h(Slab(0, 2).start()));
   CHECK(h(Slab(0, 1).start()) != h(Slab(0, 1).end()));
   CHECK(h(Slab(0, 1).start()) == h(Slab(-2, 0).end()));
@@ -113,7 +112,7 @@ void test_time() {
   CHECK(get_output(Time(slab, rational_t(3, 5))) == slab_str + ":3/5");
 
   const auto check_structural_compare = [](const Time& a, const Time& b) {
-    Time::StructuralCompare sc;
+    const Time::StructuralCompare sc{};
     CHECK_FALSE(sc(a, a));
     CHECK_FALSE(sc(b, b));
     CHECK(sc(a, b) != sc(b, a));
@@ -279,7 +278,7 @@ void test_time_delta() {
         Time(slab.retreat(), rational_t(2, 3)));
 
   // Hashing
-  std::hash<TimeDelta> h;
+  const std::hash<TimeDelta> h{};
   CHECK(h(Slab(0.0, 1.0).duration()) != h(Slab(0.0, 2.0).duration()));
   CHECK(h(Slab(0.0, 1.0).duration()) != h(Slab(0.0, 1.0).duration() / 2));
 

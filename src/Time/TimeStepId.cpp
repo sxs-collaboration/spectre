@@ -4,6 +4,9 @@
 #include "Time/TimeStepId.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <ostream>
 #include <pup.h>
@@ -63,7 +66,7 @@ bool TimeStepId::is_at_slab_boundary() const {
 TimeStepId TimeStepId::next_step(const TimeDelta& step_size) const {
   ASSERT(substep_ == 0 or step_size == this->step_size(),
          "Step size inconsistent: " << this->step_size() << " " << step_size);
-  return TimeStepId(time_runs_forward(), slab_number_, step_time_ + step_size);
+  return {time_runs_forward(), slab_number_, step_time_ + step_size};
 }
 
 TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
