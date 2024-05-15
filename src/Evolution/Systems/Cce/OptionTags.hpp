@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
+#include "Evolution/Systems/Cce/ExtractionRadius.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
@@ -237,16 +238,6 @@ struct ScriInterpolationOrder : db::SimpleTag {
   }
 };
 
-struct ExtractionRadius : db::SimpleTag {
-  using type = double;
-  using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
-
-  static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double extraction_radius) {
-    return extraction_radius;
-  }
-};
-
 struct ScriOutputDensity : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriOutputDensity>;
@@ -259,6 +250,35 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+struct ExtractionRadius : db::BaseTag {};
+
+struct ExtractionRadiusSimple : ExtractionRadius, db::SimpleTag {
+  static std::string name() { return "ExtractionRadius"; }
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double extraction_radius) {
+    return extraction_radius;
+  }
+};
+
+struct ExtractionRadiusFromH5 : ExtractionRadius, db::SimpleTag {
+  static std::string name() { return "ExtractionRadius"; }
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::BoundaryDataFilename,
+                                 OptionTags::StandaloneExtractionRadius>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(
+      const std::string& filename,
+      const std::optional<double>& extraction_radius) {
+    const std::optional<double> radius =
+        Cce::get_extraction_radius(filename, extraction_radius);
+    return radius.value();
+  }
+};
+
 struct FilePrefix : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::BondiSachsOutputFilePrefix>;

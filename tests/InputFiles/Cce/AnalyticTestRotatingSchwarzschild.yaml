@@ -10,7 +10,7 @@ ExpectedOutput:
   - CharacteristicExtractReduction.h5
 OutputFileChecks:
   - Label: "check_news"
-    Subfile: "/Cce/News.dat"
+    Subfile: "/SpectreR0020.cce/News"
     FileGlob: "CharacteristicExtractReduction.h5"
     ExpectedDataSubfile: "/Cce/News_expected.dat"
     AbsoluteTolerance: 1e-11

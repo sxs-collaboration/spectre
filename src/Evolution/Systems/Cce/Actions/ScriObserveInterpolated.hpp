@@ -7,16 +7,17 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "Evolution/Systems/Cce/Actions/WriteScriBondiQuantities.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ScriPlusInterpolationManager.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -127,17 +128,13 @@ struct ScriObserveInterpolated {
       const ParallelComponent* const /*meta*/) {
     const size_t observation_l_max = db::get<Tags::ObservationLMax>(box);
     const size_t l_max = db::get<Tags::LMax>(box);
-    std::vector<double> data_to_write(2 * square(observation_l_max + 1) + 1);
+    const double extraction_radius =
+        Parallel::get<Tags::ExtractionRadius>(cache);
+    const std::string subfile_name =
+        MakeString{} << "SpectreR" << std::setfill('0') << std::setw(4)
+                     << std::lround(extraction_radius);
     ComplexModalVector goldberg_modes{square(l_max + 1)};
-    std::vector<std::string> file_legend;
-    file_legend.reserve(2 * square(observation_l_max + 1) + 1);
-    file_legend.emplace_back("time");
-    for (int i = 0; i <= static_cast<int>(observation_l_max); ++i) {
-      for (int j = -i; j <= i; ++j) {
-        file_legend.push_back(MakeString{} << "Real Y_" << i << "," << j);
-        file_legend.push_back(MakeString{} << "Imag Y_" << i << "," << j);
-      }
-    }
+
     // alternative for the coordinate transformation getting scri+ values of the
     // weyl scalars:
     // need to obtain the eth of the inertial retarded time, each of the Weyl
@@ -176,30 +173,29 @@ struct ScriObserveInterpolated {
       detail::correct_weyl_scalars_for_inertial_time(
           make_not_null(&corrected_scri_plus_weyl));
 
-      // then output each of them
+      // add them to the data to write
+      std::unordered_map<std::string, std::vector<double>> data_to_write{};
       tmpl::for_each<detail::weyl_correction_list>(
           [&data_to_write, &corrected_scri_plus_weyl, &interpolation_time,
-           &file_legend, &observation_l_max, &l_max, &cache,
-           &goldberg_modes](auto tag_v) {
+           &observation_l_max, &l_max, &goldberg_modes](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             if constexpr (tmpl::list_contains_v<
                               typename Metavariables::scri_values_to_observe,
                               tag>) {
-              ScriObserveInterpolated::transform_and_write<
-                  tag, tag::type::type::spin, ParallelComponent>(
-                  get(get<tag>(corrected_scri_plus_weyl)).data(),
-                  interpolation_time, make_not_null(&goldberg_modes),
-                  make_not_null(&data_to_write), file_legend, l_max,
-                  observation_l_max, cache);
+              data_to_write[detail::ScriOutput<tag>::name()] =
+                  transform_nodal_data(
+                      make_not_null(&goldberg_modes),
+                      get(get<tag>(corrected_scri_plus_weyl)).data(),
+                      interpolation_time, l_max, observation_l_max, tag{});
             }
           });
 
-      // then do the interpolation and output of each of the rest of the tags.
+      // then do the interpolation and add the rest of the tags.
       tmpl::for_each<
           tmpl::list_difference<typename Metavariables::scri_values_to_observe,
                                 detail::weyl_correction_list>>(
-          [&box, &data_to_write, &file_legend, &observation_l_max, &l_max,
-           &cache, &goldberg_modes](auto tag_v) {
+          [&box, &data_to_write, &observation_l_max, &l_max,
+           &goldberg_modes](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             std::pair<double, ComplexDataVector> interpolation;
             db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
@@ -211,12 +207,25 @@ struct ScriObserveInterpolated {
                       interpolation_manager->interpolate_and_pop_first_time();
                 },
                 make_not_null(&box));
-            ScriObserveInterpolated::transform_and_write<
-                tag, tag::type::type::spin, ParallelComponent>(
-                interpolation.second, interpolation.first,
-                make_not_null(&goldberg_modes), make_not_null(&data_to_write),
-                file_legend, l_max, observation_l_max, cache);
+            data_to_write[detail::ScriOutput<tag>::name()] =
+                transform_nodal_data(make_not_null(&goldberg_modes),
+                                     interpolation.second, interpolation.first,
+                                     l_max, observation_l_max, tag{});
           });
+
+      auto observer_proxy =
+          Parallel::get_parallel_component<ObserverWriterComponent>(cache)[0];
+      if constexpr (WriteSynchronously) {
+        Parallel::local_synchronous_action<
+            Cce::Actions::WriteScriBondiQuantities>(
+            observer_proxy, cache, subfile_name, observation_l_max,
+            std::move(data_to_write));
+      } else {
+        Parallel::threaded_action<Cce::Actions::WriteScriBondiQuantities>(
+            observer_proxy, subfile_name, observation_l_max,
+            std::move(data_to_write));
+      }
+
       // output the expected news associated with the time value interpolated at
       // scri+.
       if constexpr (tmpl::list_contains_v<DbTags,
@@ -232,15 +241,12 @@ struct ScriObserveInterpolated {
   }
 
  private:
-  template <typename Tag, int Spin, typename ParallelComponent,
-            typename Metavariables>
-  static void transform_and_write(
-      const ComplexDataVector& data, const double time,
+  template <typename Tag>
+  static std::vector<double> transform_nodal_data(
       const gsl::not_null<ComplexModalVector*> goldberg_mode_buffer,
-      const gsl::not_null<std::vector<double>*> data_to_write_buffer,
-      const std::vector<std::string>& legend, const size_t l_max,
-      const size_t observation_l_max,
-      Parallel::GlobalCache<Metavariables>& cache) {
+      const ComplexDataVector& data, const double time, const size_t l_max,
+      const size_t observation_l_max, const Tag& /*meta*/) {
+    constexpr int Spin = Tag::type::type::spin;
     const SpinWeighted<ComplexDataVector, Spin> to_transform;
     make_const_view(make_not_null(&to_transform.data()), data, 0, data.size());
     SpinWeighted<ComplexModalVector, Spin> goldberg_modes;
@@ -249,24 +255,15 @@ struct ScriObserveInterpolated {
         make_not_null(&goldberg_modes),
         Spectral::Swsh::swsh_transform(l_max, 1, to_transform), l_max);
 
-    (*data_to_write_buffer)[0] = time;
+    std::vector<double> modal_data(2 * square(observation_l_max + 1) + 1);
+
+    modal_data[0] = time;
     for (size_t i = 0; i < square(observation_l_max + 1); ++i) {
-      (*data_to_write_buffer)[2 * i + 1] = real(goldberg_modes.data()[i]);
-      (*data_to_write_buffer)[2 * i + 2] = imag(goldberg_modes.data()[i]);
+      modal_data[2 * i + 1] = real(goldberg_modes.data()[i]);
+      modal_data[2 * i + 2] = imag(goldberg_modes.data()[i]);
     }
-    auto observer_proxy =
-        Parallel::get_parallel_component<ObserverWriterComponent>(cache)[0];
-    if constexpr (WriteSynchronously) {
-      Parallel::local_synchronous_action<
-          observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, cache, "/Cce/" + detail::ScriOutput<Tag>::name(),
-          legend, std::make_tuple(*data_to_write_buffer));
-    } else {
-      Parallel::threaded_action<
-          observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, "/Cce/" + detail::ScriOutput<Tag>::name(), legend,
-          std::make_tuple(*data_to_write_buffer));
-    }
+
+    return modal_data;
   }
 };
 }  // namespace Actions

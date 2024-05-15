@@ -209,7 +209,7 @@ void test_klein_gordon_h5_boundary_communication(
 
   // tests start here
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max,
+      {l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points}};
 

@@ -186,7 +186,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
-          l_max, end_time, start_time, number_of_radial_points}};
+          l_max, extraction_radius, end_time, start_time,
+          number_of_radial_points}};
 
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,

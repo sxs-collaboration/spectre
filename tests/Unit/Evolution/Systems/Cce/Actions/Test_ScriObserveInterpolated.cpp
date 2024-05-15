@@ -29,6 +29,9 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTestHelpers.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/Cce.hpp"
+#include "IO/H5/File.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
@@ -175,7 +178,8 @@ struct test_metavariables {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>>;
   };
 
-  using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::SpecifiedStartTime, Tags::ExtractionRadiusSimple>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
@@ -193,14 +197,14 @@ struct test_metavariables {
                  Tags::ScriPlus<Tags::Psi2>, Tags::ScriPlus<Tags::Psi1>,
                  Tags::ScriPlus<Tags::Psi0>,
                  Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>,
-                 Tags::EthInertialRetardedTime>;
+                 Tags::EthInertialRetardedTime, Tags::ScriPlus<Tags::Strain>>;
 
   using scri_values_to_observe =
       tmpl::list<Tags::News, Tags::ScriPlus<Tags::Psi3>,
                  Tags::ScriPlus<Tags::Psi2>, Tags::ScriPlus<Tags::Psi1>,
                  Tags::ScriPlus<Tags::Psi0>,
                  Tags::Du<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>,
-                 Tags::EthInertialRetardedTime>;
+                 Tags::EthInertialRetardedTime, Tags::ScriPlus<Tags::Strain>>;
 
   using observed_reduction_data_tags = tmpl::list<>;
   using cce_boundary_component =
@@ -267,8 +271,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
       l_max, extraction_radius, analytic_solution.get_clone()};
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {start_time, filename, l_max, l_max, number_of_radial_points,
-       scri_output_density, false}};
+      {start_time, extraction_radius, filename, l_max, l_max,
+       number_of_radial_points, scri_output_density, false}};
 
   runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
@@ -287,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   ActionTesting::emplace_component<observation_component>(&runner, 0);
 
   // the initialization actions
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
   for (size_t i = 0; i < 2; ++i) {
@@ -374,18 +378,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   // scoped to close the file
   {
     h5::H5File<h5::AccessType::ReadOnly> read_file{filename + ".h5"};
+    const auto& cce_file = read_file.get<h5::Cce>("SpectreR0100", l_max, 0);
+    const std::unordered_map<std::string, Matrix> all_data =
+        cce_file.get_data();
     Approx interpolation_approx =
         Approx::custom()
             .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
             .scale(1.0);
     tmpl::for_each<typename test_metavariables::scri_values_to_observe>(
         [&random_scri_values, &linear_coefficient, &quadratic_coefficient,
-         &l_max, &interpolation_approx, &read_file](auto tag_v) {
+         &l_max, &interpolation_approx, &all_data](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
-          read_file.close_current_object();
-          const auto& dataset = read_file.get<h5::Dat>(
-              "/Cce/" + Actions::detail::ScriOutput<tag>::name());
-          const Matrix data_matrix = dataset.get_data();
+          const std::string& name = Actions::detail::ScriOutput<tag>::name();
+          REQUIRE(all_data.contains(name));
+          const Matrix& data_matrix = all_data.at(name);
           CHECK(data_matrix.rows() > 20);
           // skip the first time because the extrapolation will make that value
           // unreliable

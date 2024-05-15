@@ -82,12 +82,6 @@ std::pair<size_t, size_t> create_span_for_time_value(
     double time, size_t pad, size_t interpolator_length, size_t lower_bound,
     size_t upper_bound, const DataVector& time_buffer);
 
-// retrieves the extraction radius from the specified file.
-// We assume that the filename has the extraction radius encoded as an
-// integer between the last occurrence of 'R' and the last occurrence of
-// '.'. This is the format provided by SpEC.
-std::string get_text_radius(const std::string& cce_data_filename);
-
 // retrieves time stamps and lmax the from the specified file.
 void set_time_buffer_and_lmax(gsl::not_null<DataVector*> time_buffer,
                               size_t& l_max, const h5::Dat& data);

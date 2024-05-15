@@ -92,10 +92,11 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
   const size_t l_max = 8;
   const size_t end_time = 100.0;
   const size_t start_time = 0.0;
+  const double extraction_radius = 100.0;
   ActionTesting::MockRuntimeSystem<H5Metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<H5Metavariables>>{
-          l_max, end_time, start_time}};
+          l_max, extraction_radius, end_time, start_time}};
 
   const size_t buffer_size = 8;
   const std::string filename = "InitializeWorldtubeBoundaryTest_CceR0100.h5";
@@ -111,7 +112,6 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
       {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   gr::Solutions::KerrSchild solution{mass, spin, center};
 
-  const double extraction_radius = 100.0;
   const double frequency = 0.1 * value_dist(*gen);
   const double amplitude = 0.1 * value_dist(*gen);
   const double target_time = 50.0 * value_dist(*gen);
@@ -197,14 +197,15 @@ template <typename SolutionType>
 void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
+  const double extraction_radius = 20.0;
   register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, 100.0, 0.0}};
+      {l_max, extraction_radius, 100.0, 0.0}};
 
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
-      AnalyticBoundaryDataManager{12_st, 20.0,
+      AnalyticBoundaryDataManager{12_st, extraction_radius,
                                   std::make_unique<SolutionType>()},
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
