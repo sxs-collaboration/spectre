@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
@@ -93,7 +94,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>,
+            evolution::dg::Tags::BoundaryData<volume_dim>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>;

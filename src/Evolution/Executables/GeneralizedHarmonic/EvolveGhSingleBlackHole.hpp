@@ -22,6 +22,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Deadlock/PrintDgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
@@ -269,7 +270,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
             Tags::StepperErrors<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<typename system::variables_tag>,
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
-            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>>,
+            SelfStart::Tags::InitialValue<Tags::Next<Tags::TimeStep>>,
+            evolution::dg::Tags::BoundaryData<volume_dim>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
             typename control_system::Actions::InitializeMeasurements<
                 control_systems>::simple_tags,

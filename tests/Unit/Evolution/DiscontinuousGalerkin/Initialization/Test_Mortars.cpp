@@ -25,6 +25,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
@@ -172,6 +173,9 @@ void test_impl(
   CHECK(static_cast<bool>(
       get_tag(evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{}) ==
       expected_normal_covector_quantities));
+
+  CHECK(get_tag(evolution::dg::Tags::BoundaryData<Dim>{}) ==
+        typename evolution::dg::Tags::BoundaryData<Dim>::type{});
 }
 
 template <size_t Dim, bool LocalTimeStepping>
