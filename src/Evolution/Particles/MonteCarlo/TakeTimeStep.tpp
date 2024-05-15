@@ -44,6 +44,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
 
         const Mesh<3>& mesh,
         const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+        const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
         const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
             mesh_velocity,
         const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -115,7 +116,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   evolve_packets(
       packets, random_number_generator,
       &coupling_tilde_tau, &coupling_tilde_s, &coupling_rho_ye,
-      target_end_time, mesh, mesh_coordinates,
+      target_end_time, mesh, mesh_coordinates, inertial_coordinates,
       absorption_opacity, scattering_opacity, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
       d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,

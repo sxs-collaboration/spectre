@@ -90,8 +90,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
       DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
   mesh_coordinates.get(2) =
       DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coordinates =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  inertial_coordinates.get(0) =
+      DataVector{-0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5};
+  inertial_coordinates.get(1) =
+      DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
+  inertial_coordinates.get(2) =
+      DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
 
-  Particles::MonteCarlo::Packet packet(1, 1.0, 0, 0.0, -1.0, -1.0, -1.0, 1.0,
+  Particles::MonteCarlo::Packet packet(1, 1.0, 0, 0.0, -0.75, -1.0, -1.0, 1.0,
                                        1.0, 0.0, 0.0);
 
   packet.renormalize_momentum(inv_spatial_metric, lapse);
@@ -125,14 +133,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   Particles::MonteCarlo::TemplatedLocalFunctions<2, 2> MonteCarloStruct;
   MonteCarloStruct.evolve_packets(
       &packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, absorption_opacity,
-      scattering_opacity, energy_at_bin_center, lorentz_factor,
-      lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-      d_inv_spatial_metric, spatial_metric, inv_spatial_metric, mesh_velocity,
+      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, inertial_coordinates,
+      absorption_opacity, scattering_opacity, energy_at_bin_center,
+      lorentz_factor, lower_spatial_four_velocity, lapse, shift,
+      d_lapse, d_shift, d_inv_spatial_metric,
+      spatial_metric, inv_spatial_metric, mesh_velocity,
       inverse_jacobian, jacobian_inertial_to_fluid,
       inverse_jacobian_inertial_to_fluid);
   CHECK(packets[0].species == 1);
-  CHECK(packets[0].coordinates.get(0) == 0.5);
+  CHECK(packets[0].coordinates.get(0) == 0.75);
   CHECK(packets[0].coordinates.get(1) == -1.0);
   CHECK(packets[0].coordinates.get(2) == -1.0);
   CHECK(packets[0].momentum.get(0) == 1.0);
@@ -141,9 +150,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   CHECK(packets[0].time == 1.5);
   CHECK(packets[0].index_of_closest_grid_point == 1);
   // Check coupling terms against analytical expectations
-  CHECK(fabs(get(coupling_tilde_tau)[0] - 1.5e-60) < 1.5e-75);
-  CHECK(fabs(coupling_tilde_s.get(0)[0] - 1.65e-59) < 1.65e-74);
+  // Note that the packet spends dt = 1.0 in cell 0 and
+  // dt=0.5 in cell 1 (due to the use of partial time steps)
+  CHECK(fabs(get(coupling_tilde_tau)[0] - 1.0e-60) < 1.5e-75);
+  CHECK(fabs(coupling_tilde_s.get(0)[0] - 1.1e-59) < 1.65e-74);
   CHECK(coupling_tilde_s.get(1)[0] == 0.0);
   CHECK(coupling_tilde_s.get(2)[0] == 0.0);
-  CHECK(fabs(get(coupling_rho_ye)[0] + proton_mass * 1.5e-60) < 1.e-72);
+  CHECK(fabs(get(coupling_rho_ye)[0] + proton_mass * 1.0e-60) < 1.e-72);
+  CHECK(fabs(get(coupling_tilde_tau)[1] - 5.0e-61) < 1.5e-75);
+  CHECK(fabs(coupling_tilde_s.get(0)[1] - 5.5e-60) < 1.65e-74);
+  CHECK(coupling_tilde_s.get(1)[1] == 0.0);
+  CHECK(coupling_tilde_s.get(2)[1] == 0.0);
+  CHECK(fabs(get(coupling_rho_ye)[1] + proton_mass * 5.0e-61) < 1.e-72);
 }
