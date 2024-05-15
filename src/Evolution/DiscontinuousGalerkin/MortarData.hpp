@@ -48,32 +48,6 @@ class MortarData {
 
  public:
   /*!
-   * \brief Insert data onto the mortar.
-   *
-   * Exactly one local and neighbor insert call must be made between calls to
-   * `extract()`.
-   *
-   * The insert functions require that:
-   * - the data is inserted only once
-   * - the `TimeStepId` of the local and neighbor data are the same (this is
-   *   only checked if the local/neighbor data was already inserted)
-   *
-   * \note it is not required that the number of grid points between the local
-   * and neighbor data be the same since one may be using FD/FV instead of DG
-   * and this switch is done locally in space and time in such a way that
-   * neighboring elements have no a priori knowledge about what well be
-   * received.
-   */
-  /// @{
-  void insert_local_mortar_data(TimeStepId time_step_id,
-                                Mesh<Dim - 1> local_interface_mesh,
-                                DataVector local_mortar_vars);
-  void insert_neighbor_mortar_data(TimeStepId time_step_id,
-                                   Mesh<Dim - 1> neighbor_interface_mesh,
-                                   DataVector neighbor_mortar_vars);
-  /// @}
-
-  /*!
    * \brief Insert the magnitude of the local face normal, the determinant
    * of the volume inverse Jacobian, and the determinant of the face Jacobian.
    * Used for local time stepping with Gauss points.

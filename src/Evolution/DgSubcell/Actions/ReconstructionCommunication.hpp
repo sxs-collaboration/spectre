@@ -378,11 +378,11 @@ struct ReceiveDataForReconstruction {
             }
             if (received_mortar_data.second.boundary_correction_data
                     .has_value()) {
-              mortar_data->at(mortar_id).insert_neighbor_mortar_data(
-                  current_time_step_id,
+              mortar_data->at(mortar_id).time_step_id() = current_time_step_id;
+              mortar_data->at(mortar_id).neighbor_mortar_data() = std::pair{
                   received_mortar_data.second.interface_mesh,
                   std::move(
-                      *received_mortar_data.second.boundary_correction_data));
+                      *received_mortar_data.second.boundary_correction_data)};
             }
             // Set new neighbor mesh
             neighbor_mesh->insert_or_assign(

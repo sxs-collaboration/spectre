@@ -148,9 +148,10 @@ void test() {
   // cleared.
   DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
   evolution::dg::MortarData<Dim> lower_xi_data{};
-  lower_xi_data.insert_local_mortar_data(
-      TimeStepId{true, 1, Time{Slab{1.2, 7.8}, {1, 10}}},
-      subcell_mesh.slice_away(0), DataVector{1.1, 2.43, 7.8});
+  lower_xi_data.time_step_id() =
+      TimeStepId{true, 1, Time{Slab{1.2, 7.8}, {1, 10}}};
+  lower_xi_data.local_mortar_data() =
+      std::pair{subcell_mesh.slice_away(0), DataVector{1.1, 2.43, 7.8}};
   const DirectionalId<Dim> lower_id{Direction<Dim>::lower_xi(),
                                     ElementId<Dim>{1}};
   mortar_data[lower_id] = lower_xi_data;
