@@ -28,6 +28,7 @@
 #include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroupDeclarations.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ElementRegistration.hpp"
@@ -1074,10 +1075,17 @@ void DistributedObject<ParallelComponent,
     forward_tuple_to_threaded_action(std::tuple<Args...>&& args,
                                      std::index_sequence<Is...> /*meta*/) {
   const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
-  Action::template apply<ParallelComponent>(
-      box_, *Parallel::local_branch(global_cache_proxy_),
-      static_cast<const array_index&>(array_index_), node_lock,
-      std::forward<Args>(std::get<Is>(args))...);
+  if constexpr (Parallel::is_dg_element_collection_v<parallel_component>) {
+    Action::template apply<ParallelComponent>(
+        box_, *Parallel::local_branch(global_cache_proxy_),
+        static_cast<const array_index&>(array_index_), node_lock, this,
+        std::forward<Args>(std::get<Is>(args))...);
+  } else {
+    Action::template apply<ParallelComponent>(
+        box_, *Parallel::local_branch(global_cache_proxy_),
+        static_cast<const array_index&>(array_index_), node_lock,
+        std::forward<Args>(std::get<Is>(args))...);
+  }
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
