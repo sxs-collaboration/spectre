@@ -239,6 +239,8 @@ class DistributedObject<ParallelComponent,
   /// Get read access to all the inboxes
   const auto& get_inboxes() const { return inboxes_; }
 
+  auto& get_node_lock() { return node_lock_; }
+
   void pup(PUP::er& p) override;  // NOLINT
 
   /*!
