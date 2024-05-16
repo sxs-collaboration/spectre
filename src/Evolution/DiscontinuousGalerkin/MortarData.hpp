@@ -113,13 +113,6 @@ class MortarData {
   void get_local_face_normal_magnitude(
       gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude) const;
 
-  /// Return the inserted data and reset the state to empty.
-  ///
-  /// The first element is the local data while the second element is the
-  /// neighbor data.
-  auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
-                              std::pair<Mesh<Dim - 1>, DataVector>>;
-
   const TimeStepId& time_step_id() const { return time_step_id_; }
 
   TimeStepId& time_step_id() { return time_step_id_; }

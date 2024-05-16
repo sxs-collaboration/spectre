@@ -958,10 +958,6 @@ struct ApplyBoundaryCorrections {
                                       : volume_dt_correction;
               lifted_data = compute_correction_coupling(
                   mortar_id_and_data.second, mortar_id_and_data.second);
-              // Remove data since it's tagged with the time. In the future we
-              // _might_ be able to reuse allocations, but this optimization
-              // should only be done after profiling.
-              mortar_id_and_data.second.extract();
 
               if (using_gauss_lobatto_points) {
                 // Add the flux contribution to the volume data

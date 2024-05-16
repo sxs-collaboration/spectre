@@ -974,16 +974,6 @@ void test_impl(const Spectral::Quadrature quadrature,
           get_tag<variables_tag>(runner, self_id));
   }
 
-  for (const auto& mortar_data :
-       get_tag<::evolution::dg::Tags::MortarData<Dim>>(runner, self_id)) {
-    // The MortarData currently requires there to be no data already inserted.
-    // In theory we could re-use the allocation, but that is a future
-    // optimization. For now, we require that there is nothing in the MortarData
-    // after `ApplyBoundaryCorrections` was called.
-    CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
-    CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
-  }
-
   // Check neighbor meshes
   size_t total_neighbors = 0;
   const auto& neighbor_meshes =

@@ -165,23 +165,6 @@ void MortarData<Dim>::get_local_face_normal_magnitude(
 }
 
 template <size_t Dim>
-std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
-          std::pair<Mesh<Dim - 1>, DataVector>>
-MortarData<Dim>::extract() {
-  ASSERT(local_mortar_data_.has_value() and neighbor_mortar_data_.has_value(),
-         "Tried to extract boundary data, but do not have "
-             << (local_mortar_data_.has_value()      ? "neighbor"
-                 : neighbor_mortar_data_.has_value() ? "local"
-                                                     : "any")
-             << " data.");
-  auto result = std::pair{std::move(*local_mortar_data_),
-                          std::move(*neighbor_mortar_data_)};
-  local_mortar_data_.reset();
-  neighbor_mortar_data_.reset();
-  return result;
-}
-
-template <size_t Dim>
 void MortarData<Dim>::pup(PUP::er& p) {
   p | time_step_id_;
   p | local_mortar_data_;
