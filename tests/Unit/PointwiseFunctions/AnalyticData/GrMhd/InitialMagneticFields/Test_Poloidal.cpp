@@ -44,7 +44,7 @@ struct PoloidalProxy : Poloidal {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.InitialMagneticFields.Poloidal",
     "[Unit][PointwiseFunctions]") {
-  register_derived_classes_with_charm<InitialMagneticField>();
+  register_classes_with_charm<Poloidal>();
   // test creation
   const auto factory_solution = serialize_and_deserialize(
       TestHelpers::test_factory_creation<InitialMagneticField, Poloidal>(
@@ -70,7 +70,6 @@ SPECTRE_TEST_CASE(
   }
 
   // test derived
-  register_classes_with_charm<Poloidal>();
   const std::unique_ptr<InitialMagneticField> base_ptr =
       std::make_unique<Poloidal>();
   const std::unique_ptr<InitialMagneticField> deserialized_base_ptr =

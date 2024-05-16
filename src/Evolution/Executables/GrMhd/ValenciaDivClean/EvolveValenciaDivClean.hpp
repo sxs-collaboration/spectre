@@ -349,6 +349,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
