@@ -90,6 +90,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     const double final_time, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
+    const size_t num_ghost_zones,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         absorption_opacity_table,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
@@ -135,6 +136,9 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                                                 mesh_coordinates.get(1)[0],
                                                 mesh_coordinates.get(2)[0]};
   const std::array<size_t, 3> step{1, extents[0], extents[0] * extents[1]};
+  const std::array<size_t, 3> step_with_ghost_zones{1,
+    extents[0] + 2 * num_ghost_zones,
+    (extents[0] + 2 * num_ghost_zones) * (extents[1] + 2 * num_ghost_zones)};
   const std::array<double, 3> dx_mesh{
       mesh_coordinates.get(0)[step[0]] - bottom_coord_mesh[0],
       mesh_coordinates.get(1)[step[1]] - bottom_coord_mesh[1],
@@ -164,26 +168,90 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
 
     // Get quantities that we do NOT update if the packet
     // changes cell.
-    size_t idx = packet.index_of_closest_grid_point;
-    const double& lapse_packet = get(lapse)[idx];
-    const double& lorentz_factor_packet = get(lorentz_factor)[idx];
+    // local_idx is the index on the mesh without ghost zones
+    // extended_idx is the index on the mesh with ghost zones
+    // We only update extended_idx during a time step, as we
+    // only recompute the opacities during a step (and they
+    // live on the extended grid). We also need the extended
+    // index for coupling to the fluid.
+    const size_t& local_idx = packet.index_of_closest_grid_point;
+    Index<3> index_3d{0,0,0};
+    size_t extended_idx = local_idx;
+    for(size_t d=0; d<3 ; d++){
+      index_3d[d] = extended_idx % extents[d];
+      extended_idx = (extended_idx - index_3d[d]) / extents[d];
+      index_3d[d] += num_ghost_zones;
+    }
+    extended_idx = index_3d[0] +
+      (extents[0] + 2 * num_ghost_zones) *
+        ( index_3d[1] +
+          ( extents[1] + 2 * num_ghost_zones) *
+            index_3d[2] );
+    // Bookkeeping variable to know whether opacities should be
+    // recomputed.
+    size_t previous_extended_idx = extended_idx;
+
+    const double& lapse_packet = get(lapse)[local_idx];
+    const double& lorentz_factor_packet = get(lorentz_factor)[local_idx];
     const std::array<double, 3> lower_spatial_four_velocity_packet = {
-        lower_spatial_four_velocity.get(0)[idx],
-        lower_spatial_four_velocity.get(1)[idx],
-        lower_spatial_four_velocity.get(2)[idx]};
+        lower_spatial_four_velocity.get(0)[local_idx],
+        lower_spatial_four_velocity.get(1)[local_idx],
+        lower_spatial_four_velocity.get(2)[local_idx]};
 
     // Estimate light-crossing time in the cell.
     double min_crossing_time =
         dx_inertial[0] /
-        (fabs(shift.get(0)[idx]) +
-         sqrt(inv_spatial_metric.get(0, 0)[idx]) * get(lapse)[idx]);
+        (fabs(shift.get(0)[local_idx]) +
+         sqrt(inv_spatial_metric.get(0, 0)[local_idx]) * get(lapse)[local_idx]);
     for (size_t d = 1; d < 3; d++) {
       const double dim_crossing_time =
           dx_inertial[d] /
-          (fabs(shift.get(d)[idx]) +
-           sqrt(inv_spatial_metric.get(d, d)[idx]) * get(lapse)[idx]);
+          (fabs(shift.get(d)[local_idx]) +
+           sqrt(inv_spatial_metric.get(d, d)[local_idx]) *
+           get(lapse)[local_idx]);
       min_crossing_time = std::min(min_crossing_time, dim_crossing_time);
     }
+
+    // Get fluid frame energy of neutrinos in packet, then retrieve
+    // opacities at current points and neighboring points. We do
+    // not have interactions that modify the fluid frame energy
+    // of the packets so far, so we precompute it.
+    packet.renormalize_momentum(inv_spatial_metric, lapse);
+    fluid_frame_energy = compute_fluid_frame_energy(
+        packet, lorentz_factor, lower_spatial_four_velocity, lapse,
+        inv_spatial_metric);
+
+    // Find maximum total opacity in current cell and
+    // neighbors, to limit time step in high opacity regions
+    // Need to properly deal with ghost zones.
+    // Opacities calculated at the current location of the packet
+    this->interpolate_opacities_at_fluid_energy(
+        &absorption_opacity, &scattering_opacity, fluid_frame_energy,
+        packet.species, extended_idx, absorption_opacity_table,
+        scattering_opacity_table, energy_at_bin_center);
+    double max_opacity = absorption_opacity + scattering_opacity;
+    for (size_t d = 0; d < 3; d++) {
+      double ka_neighbor = 0.0;
+      double ks_neighbor = 0.0;
+      this->interpolate_opacities_at_fluid_energy(
+          &ka_neighbor, &ks_neighbor, fluid_frame_energy, packet.species,
+          extended_idx - step_with_ghost_zones[d],
+          absorption_opacity_table, scattering_opacity_table,
+          energy_at_bin_center);
+      max_opacity = std::max(max_opacity, ka_neighbor + ks_neighbor);
+      this->interpolate_opacities_at_fluid_energy(
+          &ka_neighbor, &ks_neighbor, fluid_frame_energy, packet.species,
+          extended_idx + step_with_ghost_zones[d],
+          absorption_opacity_table, scattering_opacity_table,
+          energy_at_bin_center);
+      max_opacity = std::max(max_opacity, ka_neighbor + ks_neighbor);
+    }
+    // Minimum fraction of light crossing time used for time step.
+    // This is a compromise between taking very small steps in high
+    // opacity regions close to cell boundaries, and minimizing
+    // computational costs.
+    const double fmin = std::max(
+        0.03, 0.1 / (max_opacity * min_crossing_time + opacity_floor));
 
     // We evolve until at least 95 percent of the desired step.
     // We don't require the full step because diffusion in the fluid
@@ -191,50 +259,13 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     // and we want to avoid taking a lot of potentially small steps
     // when reaching the end of the desired step.
     while (dt_end_step > 0.05 * (final_time - initial_time)) {
-      idx = packet.index_of_closest_grid_point;
-      // Get fluid frame energy of neutrinos in packet, then retrieve
-      // opacities
-      packet.renormalize_momentum(inv_spatial_metric, lapse);
-      fluid_frame_energy = compute_fluid_frame_energy(
-          packet, lorentz_factor, lower_spatial_four_velocity, lapse,
-          inv_spatial_metric);
-      this->interpolate_opacities_at_fluid_energy(
-          &absorption_opacity, &scattering_opacity, fluid_frame_energy,
-          packet.species, idx, absorption_opacity_table,
-          scattering_opacity_table, energy_at_bin_center);
 
-      // Find maximum total opacity in current cell and
-      // neighbors, to limit time step in high opacity regions
-      // Need to properly deal with ghost zones.
-      double max_opacity = absorption_opacity + scattering_opacity;
-      for (size_t d = 0; d < 3; d++) {
-        double ka_neighbor = 0.0;
-        double ks_neighbor = 0.0;
-        if (idx >= step[d]) {
-          this->interpolate_opacities_at_fluid_energy(
-              &ka_neighbor, &ks_neighbor, fluid_frame_energy, packet.species,
-              idx - step[d], absorption_opacity_table, scattering_opacity_table,
-              energy_at_bin_center);
-          max_opacity = std::max(max_opacity, ka_neighbor + ks_neighbor);
-        }
-        if (idx < mesh.number_of_grid_points() - step[d]) {
-          this->interpolate_opacities_at_fluid_energy(
-              &ka_neighbor, &ks_neighbor, fluid_frame_energy, packet.species,
-              idx + step[d], absorption_opacity_table, scattering_opacity_table,
-              energy_at_bin_center);
-          max_opacity = std::max(max_opacity, ka_neighbor + ks_neighbor);
-        }
-      }
-      // Minimum fraction of light crossing time used for time step.
-      // This is a compromise between taking very small steps in high
-      // opacity regions close to cell boundaries, and minimizing
-      // computational costs.
-      const double fmin = std::max(
-          0.03, 0.1 / (max_opacity * min_crossing_time + opacity_floor));
       // Shortest distance to a grid boundary, in units of the grid spacing.
+      // Note that this does not use the extents, so it is safe to use in the
+      // ghost zones... if we allow negative indices.
       double frac_min_grid = 1.0;
       {
-        std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+        std::array<int, 3> closest_point_index_3d{0, 0, 0};
         for (size_t d = 0; d < 3; d++) {
           gsl::at(closest_point_index_3d, d) = std::floor(
               (packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
@@ -250,8 +281,15 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         }
       }
 
+      // Recompute opacities if needed
+      if(previous_extended_idx != extended_idx){
+        this->interpolate_opacities_at_fluid_energy(
+          &absorption_opacity, &scattering_opacity, fluid_frame_energy,
+          packet.species, extended_idx, absorption_opacity_table,
+          scattering_opacity_table, energy_at_bin_center);
+      }
+
       // Determine time to next events
-      // TO DO: Implement cell check with ghost zone methods
       dt_min = dt_end_step;
       // Limit time step close to cell boundary in high-opacity regions
       dt_cell_check = frac_min_grid * min_crossing_time;
@@ -281,7 +319,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                                        inv_spatial_metric, mesh_velocity,
                                        inverse_jacobian_logical_to_inertial);
       AddCouplingTermsForPropagation(
-          coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet, dt_min,
+          coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet,
+          extended_idx, dt_min,
           absorption_opacity, scattering_opacity, fluid_frame_energy,
           lapse_packet, lorentz_factor_packet,
           lower_spatial_four_velocity_packet);
@@ -316,15 +355,15 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         dt_min = std::min(dt_cell_check, dt_min);
         dt_min = std::min(dt_absorption, dt_min);
         const double scattering_optical_depth = dt_min * scattering_opacity *
-                                                get(lapse)[idx] /
-                                                get(lorentz_factor)[idx];
+                                         lapse_packet / lorentz_factor_packet;
         // High optical depth: use approximate diffusion method to move packet
         // The scatterig depth of 3.0 was found to be sufficient for diffusion
         // to be accurate (see Foucart 2018, 10.1093/mnras/sty108)
         if (scattering_optical_depth > 3.0) {
           diffuse_packet(
               &packet, random_number_generator, &fluid_frame_energy,
-              coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, dt_min,
+              coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye,
+              extended_idx, dt_min,
               diffusion_params, absorption_opacity, scattering_opacity,
               lorentz_factor, lower_spatial_four_velocity, lapse, shift,
               d_lapse, d_shift, d_inv_spatial_metric, spatial_metric,
@@ -354,7 +393,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                 inverse_jacobian_logical_to_inertial);
             AddCouplingTermsForPropagation(
                 coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet,
-                dt_min, absorption_opacity, scattering_opacity,
+                extended_idx, dt_min, absorption_opacity, scattering_opacity,
                 fluid_frame_energy, lapse_packet, lorentz_factor_packet,
                 lower_spatial_four_velocity_packet);
             dt_end_step -= dt_min;
@@ -374,48 +413,51 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
           break;
         }
       }
-      // TO DO: Deal with update to opacities to neighboring
-      // points when we can handle ghost zones. At this point
-      // updating the index in the packet forces the use of
-      // the new index when getting metric quantities, which
-      // would required ghost zone data for the metric.
-      // Overall, we have to review how we access fluid/metric
-      // data and add to the coupling terms when we implement
-      // ghost zones.
+
+      // Index of the new cells including ghost zones.
       std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
       for (size_t d = 0; d < 3; d++) {
         gsl::at(closest_point_index_3d, d) =
+            num_ghost_zones +
             std::floor((packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
                            gsl::at(dx_mesh, d) +
                        0.5);
       }
-      packet.index_of_closest_grid_point =
+      previous_extended_idx = extended_idx;
+      extended_idx =
           closest_point_index_3d[0] +
-          extents[0] * (closest_point_index_3d[1] +
-                        extents[1] * closest_point_index_3d[2]);
+          (extents[0] + 2 * num_ghost_zones) * (closest_point_index_3d[1] +
+            (extents[1] + 2 * num_ghost_zones) * closest_point_index_3d[2]);
 
       // Update time to end of step
       dt_end_step = final_time - packet.time;
     }
 
-    // Find closest grid point to packet at current time
-    // TO DO: Handle ghost zones
+    // Find closest grid point to packet at current time, using
+    // extents for live points only.
     std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+    bool packet_out_of_bounds = false;
     for (size_t d = 0; d < 3; d++) {
+      if(packet.coordinates[d]<-1.0 || packet.coordinates[d]>1.0){
+        packet_out_of_bounds = true;
+        break;
+      }
       gsl::at(closest_point_index_3d, d) =
           std::floor((packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
                          gsl::at(dx_mesh, d) +
                      0.5);
     }
-    // In SpEC, we update a packet index after a full time step;
-    // only the opacities are updated mid-step. Decide whether to do
-    // the same here once we handle ghost zone (the main reason not to
-    // update is to limit the amount of ghost zone information we
-    // store.
-    packet.index_of_closest_grid_point =
-        closest_point_index_3d[0] +
-        extents[0] * (closest_point_index_3d[1] +
-                      extents[1] * closest_point_index_3d[2]);
+    // Update index of packet at the end of a step.
+    // Note that we mark out of bounds packets with an out of bound
+    // index.
+    if(packet_out_of_bounds){
+      packet.index_of_closest_grid_point = mesh.number_of_grid_points();
+    } else{
+      packet.index_of_closest_grid_point =
+          closest_point_index_3d[0] +
+          extents[0] * (closest_point_index_3d[1] +
+                        extents[1] * closest_point_index_3d[2]);
+    }
   }
 }
 

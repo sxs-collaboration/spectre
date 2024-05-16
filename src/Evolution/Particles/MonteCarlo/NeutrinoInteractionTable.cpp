@@ -283,7 +283,6 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::
         const Scalar<DataVector>& electron_fraction,
         const Scalar<DataVector>& rest_mass_density,
         const Scalar<DataVector>& temperature,
-        const Scalar<DataVector>& cell_proper_four_volume,
         const double& minimum_temperature) const {
   const size_t n_rho_points = table_log_density.size();
   const size_t n_temp_points = table_log_temperature.size();
@@ -326,12 +325,10 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::
                 ns * EnergyBins + ng + EnergyBins * NeutrinoSpecies * 2);
       }
     }
-    // Multiply emissivity by cell volume, and apply corrections for
-    // low-temperature points.
+    // Apply corrections for low-temperature points.
     for (size_t ng = 0; ng < EnergyBins; ng++) {
       for (size_t ns = 0; ns < NeutrinoSpecies; ns++) {
         gsl::at(gsl::at(*emissivity_in_cell, ns), ng)[p] *=
-            get(cell_proper_four_volume)[p] *
             square(cube(temperature_correction_factor));
         gsl::at(gsl::at(*absorption_opacity, ns), ng)[p] *=
             square(square(temperature_correction_factor));
