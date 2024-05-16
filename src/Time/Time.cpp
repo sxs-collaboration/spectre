@@ -5,11 +5,15 @@
 
 #include <boost/functional/hash.hpp>
 #include <cmath>
+#include <cstddef>
+#include <functional>
 #include <ostream>
 #include <pup.h>
 #include <utility>
 
+#include "Time/Slab.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 // Time implementations
 
@@ -71,7 +75,12 @@ bool Time::is_at_slab_boundary() const {
 void Time::pup(PUP::er& p) {
   p | slab_;
   p | fraction_;
-  p | value_;
+  if (p.isUnpacking()) {
+    // If the serialized object was uninitialized, this calculation
+    // can be garbage.
+    const ScopedFpeState disable_fpes(false);
+    compute_value();
+  }
 }
 
 bool Time::StructuralCompare::operator()(const Time& a, const Time& b) const {

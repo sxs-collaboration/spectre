@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <string>
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/Slab.hpp"

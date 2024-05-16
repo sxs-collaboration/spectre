@@ -4,6 +4,10 @@
 #include "Time/TimeStepId.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <limits>
 #include <ostream>
 #include <pup.h>
 
@@ -14,9 +18,9 @@
 
 TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
                        const Time& time)
-    : time_runs_forward_(time_runs_forward),
-      slab_number_(slab_number),
+    : slab_number_(slab_number),
       step_time_(time),
+      step_size_(time_runs_forward ? 1 : -1),
       substep_time_(time.value()) {
   canonicalize();
 }
@@ -24,15 +28,21 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
 TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
                        const Time& step_time, const uint64_t substep,
                        const TimeDelta& step_size, const double substep_time)
-    : time_runs_forward_(time_runs_forward),
-      slab_number_(slab_number),
+    : slab_number_(slab_number),
       step_time_(step_time),
       substep_(substep),
-      step_size_(step_size),
+      step_size_(substep == 0 ? (time_runs_forward ? 1 : -1)
+                              : step_size.fraction()),
       substep_time_(substep_time) {
+  ASSERT(substep <= std::numeric_limits<decltype(substep_)>::max(),
+         "Overflow in substep: " << substep);
   ASSERT(substep_ != 0 or step_time_.value() == substep_time_,
          "Initial substep must align with the step.");
-  if (time_runs_forward_) {
+  ASSERT(substep_ == 0 or step_time.slab() == step_size.slab(),
+         "Time and step have different slabs.");
+  ASSERT(substep == 0 or time_runs_forward == step_size.is_positive(),
+         "Step size has wrong sign: " << step_size);
+  if (time_runs_forward) {
     ASSERT(substep_time_ >= step_time_.value(),
            "Substep must be within the step.");
   } else {
@@ -42,9 +52,11 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
   canonicalize();
 }
 
-const TimeDelta& TimeStepId::step_size() const {
+bool TimeStepId::time_runs_forward() const { return step_size_ > 0; }
+
+TimeDelta TimeStepId::step_size() const {
   ASSERT(substep_ != 0, "Step size not available at substep 0.");
-  return step_size_;
+  return {step_time_.slab(), step_size_};
 }
 
 bool TimeStepId::is_at_slab_boundary() const {
@@ -52,33 +64,30 @@ bool TimeStepId::is_at_slab_boundary() const {
 }
 
 TimeStepId TimeStepId::next_step(const TimeDelta& step_size) const {
-  ASSERT(substep_ == 0 or step_size == step_size_,
-         "Step size inconsistent: " << step_size_ << " " << step_size);
-  return TimeStepId(time_runs_forward_, slab_number_, step_time_ + step_size);
+  ASSERT(substep_ == 0 or step_size == this->step_size(),
+         "Step size inconsistent: " << this->step_size() << " " << step_size);
+  return {time_runs_forward(), slab_number_, step_time_ + step_size};
 }
 
 TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
                                     const double step_fraction) const {
-  ASSERT(substep_ == 0 or step_size == step_size_,
-         "Step size inconsistent: " << step_size_ << " " << step_size);
+  ASSERT(substep_ == 0 or step_size == this->step_size(),
+         "Step size inconsistent: " << this->step_size() << " " << step_size);
   ASSERT(step_fraction >= 0.0 and step_fraction <= 1.0,
          "Substep must be within the step.");
   const double new_time = (1.0 - step_fraction) * step_time_.value() +
                           step_fraction * (step_time_ + step_size).value();
-  return TimeStepId(time_runs_forward_, slab_number_, step_time_, substep_ + 1,
-                    step_size, new_time);
+  return {time_runs_forward(), slab_number_, step_time_, substep() + 1,
+          step_size, new_time};
 }
 
 void TimeStepId::canonicalize() {
-  if (substep_ == 0) {
-    step_size_ = TimeDelta{};
-  }
-  if (time_runs_forward_ ? step_time_.is_at_slab_end()
-                         : step_time_.is_at_slab_start()) {
+  if (time_runs_forward() ? step_time_.is_at_slab_end()
+                          : step_time_.is_at_slab_start()) {
     ASSERT(substep_ == 0,
            "Time needs to be advanced, but step already started");
-    const Slab new_slab = time_runs_forward_ ? step_time_.slab().advance()
-                                             : step_time_.slab().retreat();
+    const Slab new_slab = time_runs_forward() ? step_time_.slab().advance()
+                                              : step_time_.slab().retreat();
     ++slab_number_;
     step_time_ = step_time_.with_slab(new_slab);
     ASSERT(substep_time_ == step_time_.value(),
@@ -87,7 +96,6 @@ void TimeStepId::canonicalize() {
 }
 
 void TimeStepId::pup(PUP::er& p) {
-  p | time_runs_forward_;
   p | slab_number_;
   p | step_time_;
   p | substep_;
