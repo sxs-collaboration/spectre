@@ -27,6 +27,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
   MAKE_GENERATOR(generator);
   const Mesh<3> mesh(3, Spectral::Basis::FiniteDifference,
                      Spectral::Quadrature::CellCentered);
+  const size_t num_ghost_zones = 0;
 
   // Zero vector for tensor creations
   DataVector zero_dv(27, 0.0);
@@ -92,9 +93,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
 
   MonteCarloStruct.emit_packets(
       &all_packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, time, time_step, mesh, emission_in_cells,
-      single_packet_energy, energy_at_bin_center, lorentz_factor,
-      lower_spatial_four_velocity, jacobian, inverse_jacobian);
+      &coupling_rho_ye, time, time_step, mesh, num_ghost_zones,
+      emission_in_cells, single_packet_energy, energy_at_bin_center,
+      lorentz_factor, lower_spatial_four_velocity, jacobian, inverse_jacobian);
 
   // Check some things
   const size_t n_packets = all_packets.size();

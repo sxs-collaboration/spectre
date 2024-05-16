@@ -84,6 +84,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
     const double final_time, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+    const size_t num_ghost_zones,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         absorption_opacity_table,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
@@ -151,28 +152,50 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     initial_time = packet.time;
     dt_end_step = final_time - initial_time;
 
+    // local_idx is the index on the mesh without ghost zones
+    // extended_idx is the index on the mesh with ghost zones
+    // We only update extended_idx during a time step.
+    const size_t& local_idx = packet.index_of_closest_grid_point;
+    // Calculate this properly with ghost zones...
+    Index<3> index_3d{0,0,0};
+
+    size_t extended_idx = local_idx;
+    for(size_t d=0; d<3 ; d++){
+      index_3d[d] = extended_idx % extents[d];
+      extended_idx = (extended_idx - index_3d[d]) / extents[d];
+      index_3d[d] += num_ghost_zones;
+    }
+    extended_idx = index_3d[0] +
+      (extents[0] + 2 * num_ghost_zones) *
+        ( index_3d[1] +
+          ( extents[1] + 2 * num_ghost_zones) *
+            index_3d[2] );
+
+    const double& lapse_packet = get(lapse)[local_idx];
+    const double& lorentz_factor_packet = get(lorentz_factor)[local_idx];
+    const std::array<double, 3> lower_spatial_four_velocity_packet = {
+        lower_spatial_four_velocity.get(0)[local_idx],
+        lower_spatial_four_velocity.get(1)[local_idx],
+        lower_spatial_four_velocity.get(2)[local_idx]};
+
     // We evolve until at least 95 percent of the desired step.
     // We don't require the full step because diffusion in the fluid
     // frame leads to unpredictable time steps in the inertial frame,
     // and we want to avoid taking a lot of potentially small steps
     // when reaching the end of the desired step.
     while (dt_end_step > 0.05 * (final_time - initial_time)) {
-      const size_t& idx = packet.index_of_closest_grid_point;
-      const double& lapse_packet = get(lapse)[idx];
-      const double& lorentz_factor_packet = get(lorentz_factor)[idx];
-      const std::array<double, 3> lower_spatial_four_velocity_packet = {
-          lower_spatial_four_velocity.get(0)[idx],
-          lower_spatial_four_velocity.get(1)[idx],
-          lower_spatial_four_velocity.get(2)[idx]};
       // Get fluid frame energy of neutrinos in packet, then retrieve
       // opacities
       packet.renormalize_momentum(inv_spatial_metric, lapse);
       fluid_frame_energy = compute_fluid_frame_energy(
           packet, lorentz_factor, lower_spatial_four_velocity, lapse,
           inv_spatial_metric);
+
+      // Opacities calculated at the current location of the packet
+      // (possibly in ghost zones)
       this->interpolate_opacities_at_fluid_energy(
           &absorption_opacity, &scattering_opacity, fluid_frame_energy,
-          packet.species, idx, absorption_opacity_table,
+          packet.species, extended_idx, absorption_opacity_table,
           scattering_opacity_table, energy_at_bin_center);
 
       // Determine time to next events
@@ -205,7 +228,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                                        inv_spatial_metric, mesh_velocity,
                                        inverse_jacobian_logical_to_inertial);
       AddCouplingTermsForPropagation(
-          coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet, dt_min,
+          coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet,
+          extended_idx, dt_min,
           absorption_opacity, scattering_opacity, fluid_frame_energy,
           lapse_packet, lorentz_factor_packet,
           lower_spatial_four_velocity_packet);
@@ -239,15 +263,16 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         dt_min = std::min(dt_cell_check, dt_min);
         dt_min = std::min(dt_absorption, dt_min);
         const double scattering_optical_depth = dt_min * scattering_opacity *
-                                                get(lapse)[idx] /
-                                                get(lorentz_factor)[idx];
+                                                get(lapse)[local_idx] /
+                                                get(lorentz_factor)[local_idx];
         // High optical depth: use approximate diffusion method to move packet
         // The scatterig depth of 3.0 was found to be sufficient for diffusion
         // to be accurate (see Foucart 2018, 10.1093/mnras/sty108)
         if (scattering_optical_depth > 3.0) {
           diffuse_packet(
               &packet, random_number_generator, &fluid_frame_energy,
-              coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, dt_min,
+              coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye,
+              extended_idx, dt_min,
               diffusion_params, absorption_opacity, scattering_opacity,
               lorentz_factor, lower_spatial_four_velocity, lapse, shift,
               d_lapse, d_shift, d_inv_spatial_metric, spatial_metric,
@@ -277,7 +302,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
                 inverse_jacobian_logical_to_inertial);
             AddCouplingTermsForPropagation(
                 coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, packet,
-                dt_min, absorption_opacity, scattering_opacity,
+                extended_idx, dt_min, absorption_opacity, scattering_opacity,
                 fluid_frame_energy, lapse_packet, lorentz_factor_packet,
                 lower_spatial_four_velocity_packet);
             dt_end_step -= dt_min;
@@ -296,8 +321,20 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
           break;
         }
       }
-      // TO DO: Deal with update to opacities to neighboring
-      // points when we can handle ghost zones.
+
+      // Index of the new cells including ghost zones.
+      std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+      for (size_t d = 0; d < 3; d++) {
+        gsl::at(closest_point_index_3d, d) =
+            num_ghost_zones +
+            std::floor((packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
+                           gsl::at(dx_mesh, d) +
+                       0.5);
+      }
+      extended_idx =
+          closest_point_index_3d[0] +
+          (extents[0] + 2 * num_ghost_zones) * (closest_point_index_3d[1] +
+            (extents[1] + 2 * num_ghost_zones) * closest_point_index_3d[2]);
 
       // Update time to end of step
       dt_end_step = final_time - packet.time;
@@ -306,21 +343,28 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     // Find closest grid point to packet at current time
     // TO DO: Handle ghost zones
     std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+    bool packet_out_of_bounds = false;
     for (size_t d = 0; d < 3; d++) {
+      if(packet.coordinates[d]<-1.0 || packet.coordinates[d]>1.0){
+        packet_out_of_bounds = true;
+        break;
+      }
       gsl::at(closest_point_index_3d, d) =
           std::floor((packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
                          gsl::at(dx_mesh, d) +
                      0.5);
     }
-    // In SpEC, we update a packet index after a full time step;
-    // only the opacities are updated mid-step. Decide whether to do
-    // the same here once we handle ghost zone (the main reason not to
-    // update is to limit the amount of ghost zone information we
-    // store.
-    packet.index_of_closest_grid_point =
-        closest_point_index_3d[0] +
-        extents[0] * (closest_point_index_3d[1] +
-                      extents[1] * closest_point_index_3d[2]);
+    // Update index of packet at the end of a step.
+    // Note that we mark out of bounds packets with an out of bound
+    // index.
+    if(packet_out_of_bounds){
+      packet.index_of_closest_grid_point = mesh.number_of_grid_points();
+    } else{
+      packet.index_of_closest_grid_point =
+          closest_point_index_3d[0] +
+          extents[0] * (closest_point_index_3d[1] +
+                        extents[1] * closest_point_index_3d[2]);
+    }
   }
 }
 

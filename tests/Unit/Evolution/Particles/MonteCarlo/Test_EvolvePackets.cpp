@@ -16,13 +16,21 @@ using hydro::units::nuclear::proton_mass;
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
                   "[Unit][Evolution]") {
-  const Mesh<3> mesh(2, Spectral::Basis::FiniteDifference,
+  const size_t mesh_1d_size = 2;
+  const Mesh<3> mesh(mesh_1d_size, Spectral::Basis::FiniteDifference,
                      Spectral::Quadrature::CellCentered);
+  const size_t num_ghost_zones = 1;
+  const size_t extended_mesh_1d_size = mesh_1d_size + 2 * num_ghost_zones;
+  const Mesh<3> extended_mesh(extended_mesh_1d_size,
+                              Spectral::Basis::FiniteDifference,
+                              Spectral::Quadrature::CellCentered);
 
   MAKE_GENERATOR(generator);
 
-  const size_t dv_size = 8;
+  const size_t dv_size = mesh.number_of_grid_points();
+  const size_t extended_dv_size = extended_mesh.number_of_grid_points();
   DataVector zero_dv(dv_size, 0.0);
+  DataVector extended_zero_dv(extended_dv_size, 0.0);
   // Minkowski metric
   Scalar<DataVector> lapse{DataVector(dv_size, 1.0)};
   Scalar<DataVector> lorentz_factor{
@@ -96,11 +104,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
 
   const std::array<double, 2> energy_at_bin_center = {2.0, 5.0};
   std::array<std::array<DataVector, 2>, 2> absorption_opacity = {
-      std::array<DataVector, 2>{{zero_dv, zero_dv}},
-      std::array<DataVector, 2>{{zero_dv, zero_dv}}};
+      std::array<DataVector, 2>{{extended_zero_dv, extended_zero_dv}},
+      std::array<DataVector, 2>{{extended_zero_dv, extended_zero_dv}}};
   std::array<std::array<DataVector, 2>, 2> scattering_opacity = {
-      std::array<DataVector, 2>{{zero_dv, zero_dv}},
-      std::array<DataVector, 2>{{zero_dv, zero_dv}}};
+      std::array<DataVector, 2>{{extended_zero_dv, extended_zero_dv}},
+      std::array<DataVector, 2>{{extended_zero_dv, extended_zero_dv}}};
 
   // Set non-zero value that should never lead
   // to interaction, to get non-zero interaction terms
@@ -111,21 +119,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   gsl::at(gsl::at(absorption_opacity,1),0) = 1.e-60;
   gsl::at(gsl::at(scattering_opacity,1),0) = 1.e-59;
 
-  Scalar<DataVector> coupling_tilde_tau
-    = make_with_value< Scalar<DataVector> >(zero_dv, 0.0);
-  Scalar<DataVector> coupling_rho_ye
-    = make_with_value< Scalar<DataVector> >(zero_dv, 0.0);
-  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s
-    = make_with_value< tnsr::i<DataVector, 3, Frame::Inertial> >(zero_dv, 0.0);
+  Scalar<DataVector> coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(extended_zero_dv, 0.0);
+  Scalar<DataVector> coupling_rho_ye =
+      make_with_value<Scalar<DataVector>>(extended_zero_dv, 0.0);
+  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(extended_zero_dv,
+                                                               0.0);
 
   std::vector<Particles::MonteCarlo::Packet> packets{packet};
   Particles::MonteCarlo::TemplatedLocalFunctions<2, 2> MonteCarloStruct;
   MonteCarloStruct.evolve_packets(
       &packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, absorption_opacity,
-      scattering_opacity, energy_at_bin_center, lorentz_factor,
-      lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-      d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
+      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, num_ghost_zones,
+      absorption_opacity, scattering_opacity, energy_at_bin_center,
+      lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
+      d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
       mesh_velocity, inverse_jacobian, jacobian_inertial_to_fluid,
       inverse_jacobian_inertial_to_fluid);
   CHECK(packets[0].species == 1);
@@ -138,9 +147,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   CHECK(packets[0].time == 1.5);
   CHECK(packets[0].index_of_closest_grid_point == 1);
   // Check coupling terms against analytical expectations
-  CHECK(fabs(get(coupling_tilde_tau)[0] - 1.5e-60) < 1.5e-75);
-  CHECK(fabs(coupling_tilde_s.get(0)[0] - 1.65e-59) < 1.65e-74);
-  CHECK(coupling_tilde_s.get(1)[0] == 0.0);
-  CHECK(coupling_tilde_s.get(2)[0] == 0.0);
-  CHECK(fabs(get(coupling_rho_ye)[0] + proton_mass*1.5e-60) < 1.e-72);
+  const size_t ext_idx =
+      num_ghost_zones + num_ghost_zones * extended_mesh_1d_size +
+      num_ghost_zones * extended_mesh_1d_size * extended_mesh_1d_size;
+  CHECK(fabs(get(coupling_tilde_tau)[ext_idx] - 1.5e-60) < 1.5e-75);
+  CHECK(fabs(coupling_tilde_s.get(0)[ext_idx] - 1.65e-59) < 1.65e-74);
+  CHECK(coupling_tilde_s.get(1)[ext_idx] == 0.0);
+  CHECK(coupling_tilde_s.get(2)[ext_idx] == 0.0);
+  CHECK(fabs(get(coupling_rho_ye)[ext_idx] + proton_mass * 1.5e-60) < 1.e-72);
 }

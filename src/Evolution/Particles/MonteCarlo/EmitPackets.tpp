@@ -22,6 +22,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
         coupling_tilde_s,
     const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
     const double& time_start_step, const double& time_step, const Mesh<3>& mesh,
+    const size_t num_ghost_zones,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         emission_in_cell,
     const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
@@ -36,6 +37,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
   // We begin by determining how many packets to create for each cell, neutrino
   // species, and energy group.
   const size_t grid_size = mesh.number_of_grid_points();
+  const Index<3>& extents = mesh.extents();
   std::array<std::array<std::vector<size_t>, EnergyBins>, NeutrinoSpecies>
       number_of_packets_to_create_per_cell;
   size_t number_of_packets_to_create_total = 0;
@@ -44,6 +46,9 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
       gsl::at(gsl::at(number_of_packets_to_create_per_cell, s), g)
           .resize(grid_size);
       for (size_t i = 0; i < grid_size; i++) {
+        const size_t extended_idx = i + num_ghost_zones +
+          num_ghost_zones * extents[0] +
+          num_ghost_zones * extents[0] * extents[1];
         const double& emission_this_cell =
             gsl::at(gsl::at(emission_in_cell, s), g)[i];
         const double packets_to_create_double =
@@ -61,14 +66,14 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
         // Coupling to hydro variables. These will need to be divided by the
         // appropriate coordinate volume when the coupling is performed, as here
         // we consider total emission numbers, rather than emission densities.
-        coupling_tilde_tau->get()[i] -=
+        coupling_tilde_tau->get()[extended_idx] -=
             emission_this_cell * get(lorentz_factor)[i];
         for (int d = 0; d < 3; d++) {
-          coupling_tilde_s->get(d)[i] -=
+          coupling_tilde_s->get(d)[extended_idx] -=
               emission_this_cell * lower_spatial_four_velocity.get(d)[i];
         }
         if (NeutrinoSpecies >= 2 && s < 2) {
-          coupling_rho_ye->get()[i] -=
+          coupling_rho_ye->get()[extended_idx] -=
               (s == 0 ? 1.0 : -1.0) * emission_this_cell /
               gsl::at(energy_at_bin_center, g) * proton_mass;
         }
@@ -87,7 +92,6 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
   std::array<double, 3> coord_normalized{{0.0, 0.0, 0.0}};
   std::array<double, 3> three_momentum_normalized{{0.0, 0.0, 0.0}};
   std::array<double, 4> four_momentum_fluid_frame{{0.0, 0.0, 0.0, 0.0}};
-  const Index<3> extents = mesh.extents();
   const std::array<double, 3> logical_dx{2.0 / static_cast<double>(extents[0]),
                                          2.0 / static_cast<double>(extents[1]),
                                          2.0 / static_cast<double>(extents[2])};

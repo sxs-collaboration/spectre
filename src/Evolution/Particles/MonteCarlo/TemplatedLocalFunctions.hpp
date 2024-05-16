@@ -64,6 +64,9 @@ struct TemplatedLocalFunctions {
    * each packet is defined as
    * `n = single_packet_energy[s] / energy_at_bin_center[b]`
    * Note that the packet energy is in code units and energy of a bin in MeV.
+   *
+   * All tensors are assumed to correspond to live points only, except for
+   * the coupling terms, which include ghost zones.
    */
   void emit_packets(
       gsl::not_null<std::vector<Packet>*> packets,
@@ -72,7 +75,7 @@ struct TemplatedLocalFunctions {
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
       gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
       const double& time_start_step, const double& time_step,
-      const Mesh<3>& mesh,
+      const Mesh<3>& mesh, size_t num_ghost_zones,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           emission_in_cell,
       const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
@@ -98,16 +101,20 @@ struct TemplatedLocalFunctions {
    * using the diffusion approximation (for large scattering
    * opacities) we take fixed time steps in the fluid frame,
    * leading to unpredictable time steps in the inertial frame.
+   *
+   * The absorption and scattering opacity tables include ghost
+   * zones, and so do the coupling terms. Other variables are
+   * only using live points.
    */
   void evolve_packets(
       gsl::not_null<std::vector<Packet>*> packets,
       gsl::not_null<std::mt19937*> random_number_generator,
       gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
-      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        coupling_tilde_s,
-      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-      double final_time, const Mesh<3>& mesh,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
+      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye, double final_time,
+      const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+      size_t num_ghost_zones,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           absorption_opacity_table,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&

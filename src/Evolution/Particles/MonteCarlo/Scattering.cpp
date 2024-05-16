@@ -194,9 +194,9 @@ void diffuse_packet(
     const gsl::not_null<double*> neutrino_energy,
     const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-    coupling_tilde_s,
+        coupling_tilde_s,
     const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-    const double time_step,
+    const size_t extended_idx, const double time_step,
     const DiffusionMonteCarloParameters& diffusion_params,
     const double absorption_opacity, const double scattering_opacity,
     const Scalar<DataVector>& lorentz_factor,
@@ -329,18 +329,18 @@ void diffuse_packet(
   const double energy_coupling = (1.0 - dr_over_dt_free) * time_step *
     get(lapse)[idx] * absorption_opacity * packet->number_of_neutrinos *
     (*neutrino_energy);
-  coupling_tilde_tau->get()[idx] += energy_coupling;
+  coupling_tilde_tau->get()[extended_idx] += energy_coupling;
   // Momentum coupling term
   for (size_t d = 0; d < 3; d++) {
-    coupling_tilde_s->get(d)[idx] += energy_coupling /
-      get(lorentz_factor)[idx] *
-      lower_spatial_four_velocity.get(d)[idx];
+    coupling_tilde_s->get(d)[extended_idx] +=
+        energy_coupling / get(lorentz_factor)[idx] *
+        lower_spatial_four_velocity.get(d)[idx];
   }
   // Lepton number coupling term
   if (packet->species < 2) {
-    coupling_rho_ye->get()[idx] +=
-      (packet->species == 0 ? 1.0 : -1.0) * proton_mass *
-      energy_coupling / (*neutrino_energy) / get(lorentz_factor)[idx];
+    coupling_rho_ye->get()[extended_idx] +=
+        (packet->species == 0 ? 1.0 : -1.0) * proton_mass * energy_coupling /
+        (*neutrino_energy) / get(lorentz_factor)[idx];
   }
 
   // Scatter in fluid frame. Output array contains (cos_theta, sin_theta,
@@ -374,11 +374,9 @@ void diffuse_packet(
     lower_spatial_four_velocity.get(1)[idx],
     lower_spatial_four_velocity.get(2)[idx]};
   AddCouplingTermsForPropagation(
-    coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, *packet,
-    dt_free, absorption_opacity, 0.0, (*neutrino_energy),
-    lapse_packet, lorentz_factor_packet,
-    lower_spatial_four_velocity_packet);
-
+      coupling_tilde_tau, coupling_tilde_s, coupling_rho_ye, *packet,
+      extended_idx, dt_free, absorption_opacity, 0.0, (*neutrino_energy),
+      lapse_packet, lorentz_factor_packet, lower_spatial_four_velocity_packet);
 
   // Get final momentum in fluid frame then transform to inertial frame
   const size_t b_pts = diffusion_params.BvsRhoForScattering.size();

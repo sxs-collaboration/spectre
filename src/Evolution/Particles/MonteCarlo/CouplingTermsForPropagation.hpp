@@ -35,12 +35,11 @@ namespace Particles::MonteCarlo {
 /// divide by the coordinate volume V).
 void AddCouplingTermsForPropagation(
     gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        coupling_tilde_s,
-    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-    const Packet& packet, double dt, double absorption_opacity,
-    double scattering_opacity, double fluid_frame_energy,
-    double lapse, double lorentz_factor,
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
+    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye, const Packet& packet,
+    size_t extended_idx, double dt, double absorption_opacity,
+    double scattering_opacity, double fluid_frame_energy, double lapse,
+    double lorentz_factor,
     const std::array<double, 3>& lower_spatial_four_velocity_packet);
 
 } // namespace Particles::MonteCarlo
