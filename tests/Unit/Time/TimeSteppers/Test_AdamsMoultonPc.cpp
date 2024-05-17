@@ -55,19 +55,16 @@ void test_am() {
                                                     start_points, epsilon);
     }
     TimeStepperTestUtils::check_convergence_order(stepper, {10, 30});
-    for (size_t history_order = 2; history_order <= order; ++history_order) {
-      CAPTURE(history_order);
+    {
       std::pair<int32_t, int32_t> convergence_step_range{10, 30};
       int32_t stride = 1;
       if (Monotonic) {
         // Monotonic dense output is much noisier.
-        convergence_step_range.second =
-            110 - 10 * static_cast<int32_t>(history_order);
-        stride = 3 - static_cast<int32_t>(history_order) / 3;
+        convergence_step_range.second = 110 - 10 * static_cast<int32_t>(order);
+        stride = 3 - static_cast<int32_t>(order) / 3;
       }
-      TimeStepperTestUtils::check_dense_output(stepper, history_order,
-                                               convergence_step_range, stride,
-                                               not Monotonic);
+      TimeStepperTestUtils::check_dense_output(stepper, convergence_step_range,
+                                               stride, not Monotonic);
     }
   }
 

@@ -33,7 +33,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3Kennedy", "[Unit][Time]") {
   TimeStepperTestUtils::integrate_variable_test(stepper, 3, 0, 1.0e-9);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_convergence_order(stepper, {10, 50});
-  TimeStepperTestUtils::check_dense_output(stepper, 3_st, {10, 30}, 1, true);
+  TimeStepperTestUtils::check_dense_output(stepper, {10, 30}, 1, true);
 
   TimeStepperTestUtils::imex::check_convergence_order(stepper, {10, 50});
   TimeStepperTestUtils::imex::check_bounded_dense_output(stepper);

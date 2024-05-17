@@ -20,10 +20,10 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Algorithm.hpp"
 
 namespace TimeStepperTestUtils {
 
@@ -337,12 +337,12 @@ void check_convergence_order(const TimeStepper& stepper,
 }
 
 void check_dense_output(
-    const TimeStepper& stepper, const size_t history_integration_order,
+    const TimeStepper& stepper,
     const std::pair<int32_t, int32_t>& convergence_step_range,
     const int32_t stride, const bool check_backward_continuity) {
-  const auto get_dense = [&stepper, &history_integration_order](
-                             const TimeDelta& step_size, const double time) {
-    const auto impl = [&stepper, &history_integration_order, &step_size,
+  const auto get_dense = [&stepper](const TimeDelta& step_size,
+                                    const double time) {
+    const auto impl = [&stepper, &step_size,
                        &time](const bool use_error_methods) {
       CAPTURE(use_error_methods);
       TimeStepId time_id(step_size.is_positive(), 0,
@@ -350,7 +350,7 @@ void check_dense_output(
                                                  : step_size.slab().end());
       const evolution_less<double> before{time_id.time_runs_forward()};
       double y = 1.;
-      TimeSteppers::History<double> history{history_integration_order};
+      TimeSteppers::History<double> history{stepper.order()};
       initialize_history(
           time_id.step_time(), make_not_null(&history),
           [](const double t) { return exp(t); },
@@ -396,7 +396,7 @@ void check_dense_output(
       CAPTURE(time_step);
       Time time = Slab(0., 1.).start().with_slab(time_step.slab());
       double y = 1.;
-      TimeSteppers::History<double> history{history_integration_order};
+      TimeSteppers::History<double> history{stepper.order()};
       const auto rhs = [](const double v, const double /*t*/) { return v; };
       initialize_history(
           time, make_not_null(&history), [](const double t) { return exp(t); },
@@ -427,7 +427,7 @@ void check_dense_output(
                  exp(0.25 * M_PI));
     };
     CHECK(convergence_rate(convergence_step_range, stride, error) ==
-          approx(history_integration_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
       const Slab slab(-1., 0.);
@@ -435,7 +435,7 @@ void check_dense_output(
                  exp(-0.25 * M_PI));
     };
     CHECK(convergence_rate(convergence_step_range, stride, error_backwards) ==
-          approx(history_integration_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
   }
 }
 
