@@ -67,7 +67,6 @@ void internal_mortar_data_impl(
     const DirectionalIdMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
     const DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         mortar_sizes,
-    const TimeStepId& temporal_id,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
@@ -263,9 +262,6 @@ void internal_mortar_data_impl(
               std::optional{std::pair{face_mesh, DataVector{}}};
         }
 
-        // Always set the time step ID
-        mortar_data_ptr->at(mortar_id).time_step_id() = temporal_id;
-
         DataVector& local_mortar_data = local_mortar_data_opt->second;
 
         // Do a destructive resize to account for potential p-refinement
@@ -311,10 +307,6 @@ void internal_mortar_data_impl(
           local_mortar_data_opt =
               std::optional{std::pair{face_mesh, DataVector{}}};
         }
-
-        // Set the time id since above we only set it for cases that didn't need
-        // projection
-        mortar_data_ptr->at(mortar_id).time_step_id() = temporal_id;
 
         DataVector& local_mortar_data = local_mortar_data_opt->second;
 
@@ -364,17 +356,16 @@ void internal_mortar_data(
        &mortar_sizes = db::get<Tags::MortarSize<Dim>>(*box),
        &moving_mesh_map = db::get<domain::CoordinateMaps::Tags::CoordinateMap<
            Dim, Frame::Grid, Frame::Inertial>>(*box),
-       &primitive_vars, &temporaries,
-       &time_step_id = db::get<::Tags::TimeStepId>(*box), &volume_fluxes](
+       &primitive_vars, &temporaries, &volume_fluxes](
           const auto normal_covector_and_magnitude_ptr,
           const auto mortar_data_ptr, const auto&... package_data_volume_args) {
         detail::internal_mortar_data_impl<System>(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
             face_temporaries, packaged_data_buffer, boundary_correction,
             evolved_variables, volume_fluxes, temporaries, primitive_vars,
-            element, mesh, mortar_meshes, mortar_sizes, time_step_id,
-            moving_mesh_map, mesh_velocity,
-            logical_to_inertial_inverse_jacobian, package_data_volume_args...);
+            element, mesh, mortar_meshes, mortar_sizes, moving_mesh_map,
+            mesh_velocity, logical_to_inertial_inverse_jacobian,
+            package_data_volume_args...);
       },
       box, db::get<PackageDataVolumeTags>(*box)...);
 }

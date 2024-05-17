@@ -15,7 +15,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -166,7 +165,6 @@ void MortarData<Dim>::get_local_face_normal_magnitude(
 
 template <size_t Dim>
 void MortarData<Dim>::pup(PUP::er& p) {
-  p | time_step_id_;
   p | local_mortar_data_;
   p | neighbor_mortar_data_;
   p | local_geometric_quantities_;
@@ -175,20 +173,8 @@ void MortarData<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-std::string MortarData<Dim>::pretty_print_current_buffer_no_data(
-    size_t padding_size) const {
-  std::stringstream ss{};
-  ss << std::scientific << std::setprecision(16);
-  const std::string pad(padding_size, ' ');
-  ss << pad << "Current buffer: " << 0_st << ", time = " << time_step_id_
-     << "\n";
-  return ss.str();
-}
-
-template <size_t Dim>
 bool operator==(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
-  return lhs.time_step_id() == rhs.time_step_id() and
-         lhs.local_mortar_data() == rhs.local_mortar_data() and
+  return lhs.local_mortar_data() == rhs.local_mortar_data() and
          lhs.neighbor_mortar_data() == rhs.neighbor_mortar_data() and
          lhs.local_geometric_quantities_ == rhs.local_geometric_quantities_ and
          lhs.using_volume_and_face_jacobians_ ==
@@ -204,7 +190,6 @@ bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
 
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data) {
-  os << "TimeStepId: " << mortar_data.time_step_id() << "\n";
   os << "LocalMortarData: " << mortar_data.local_mortar_data() << "\n";
   os << "NeighborMortarData: " << mortar_data.neighbor_mortar_data() << "\n";
   return os;

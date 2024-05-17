@@ -117,10 +117,8 @@ void test() {
     }();
 
     // Insert neighbor DG data.
-    upper_mortar_data.time_step_id() = time_step_id;
     upper_mortar_data.neighbor_mortar_data() =
         std::pair{dg_face_mesh, upper_neighbor_data};
-    lower_mortar_data.time_step_id() = time_step_id;
     lower_mortar_data.neighbor_mortar_data() =
         std::pair{dg_face_mesh, lower_neighbor_data};
 
@@ -225,10 +223,8 @@ void test() {
       DataVector lower_local_data{dg_number_of_independent_components *
                                   dg_face_mesh.number_of_grid_points()};
       std::iota(lower_local_data.begin(), lower_local_data.end(), 1.0e7);
-      upper_mortar_data.time_step_id() = time_step_id;
       upper_mortar_data.local_mortar_data() =
           std::pair{dg_face_mesh, upper_local_data};
-      lower_mortar_data.time_step_id() = time_step_id;
       lower_mortar_data.local_mortar_data() =
           std::pair{dg_face_mesh, lower_local_data};
 

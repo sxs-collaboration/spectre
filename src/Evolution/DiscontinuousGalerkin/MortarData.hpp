@@ -13,7 +13,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
@@ -113,10 +112,6 @@ class MortarData {
   void get_local_face_normal_magnitude(
       gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude) const;
 
-  const TimeStepId& time_step_id() const { return time_step_id_; }
-
-  TimeStepId& time_step_id() { return time_step_id_; }
-
   auto local_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
     return local_mortar_data_;
@@ -140,15 +135,12 @@ class MortarData {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  std::string pretty_print_current_buffer_no_data(size_t padding_size) const;
-
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE
   friend bool operator==(const MortarData<LocalDim>& lhs,
                          const MortarData<LocalDim>& rhs);
 
-  TimeStepId time_step_id_{};
   MortarType local_mortar_data_{};
   MortarType neighbor_mortar_data_{};
   DataVector local_geometric_quantities_{};

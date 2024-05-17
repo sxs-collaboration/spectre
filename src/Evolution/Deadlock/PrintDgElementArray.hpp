@@ -111,15 +111,6 @@ struct PrintElementInfo {
           ss << "   Key: " << key << ", history:\n";
           history.template print<false>(ss, 4_st);
         }
-      } else {
-        const auto& mortar_data =
-            db::get<evolution::dg::Tags::MortarData<3>>(box);
-        ss << "  MortarData:\n";
-
-        for (const auto& [key, single_mortar_data] : mortar_data) {
-          ss << "   Key: " << key << ", mortar data:\n";
-          ss << single_mortar_data.pretty_print_current_buffer_no_data(4_st);
-        }
       }
     } else {
       ss << "\n";

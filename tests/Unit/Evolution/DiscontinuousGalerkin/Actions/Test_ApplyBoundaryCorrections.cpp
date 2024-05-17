@@ -231,13 +231,12 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            [&face_mesh, &mortar_id, &time_step_id,
+            [&face_mesh, &mortar_id,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
-              mortar_data_ptr->at(mortar_id).time_step_id() = time_step_id;
               mortar_data_ptr->at(mortar_id).local_mortar_data() = std::pair{
                   face_mesh, std::move(type_erased_boundary_data_on_mortar)};
             },
@@ -267,7 +266,6 @@ struct SetLocalMortarData {
           count++;
           evolution::dg::MortarData<Metavariables::volume_dim>
               past_mortar_data{};
-          past_mortar_data.time_step_id() = past_time_step_id;
           past_mortar_data.local_mortar_data() = std::pair{
               face_mesh, std::move(type_erased_boundary_data_on_mortar)};
           Scalar<DataVector> local_face_normal_magnitude{
@@ -693,7 +691,6 @@ void test_impl(const Spectral::Quadrature quadrature,
       if (UseLocalTimeStepping) {
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
-          nhbr_mortar_data.time_step_id() = neighbor_time_step_id;
           nhbr_mortar_data.neighbor_mortar_data() =
               std::pair{face_mesh, flux_data};
           mortar_data_history.at(mortar_id).remote().insert(
@@ -701,7 +698,6 @@ void test_impl(const Spectral::Quadrature quadrature,
               std::move(nhbr_mortar_data));
         }
       } else {
-        all_mortar_data.at(mortar_id).time_step_id() = neighbor_time_step_id;
         all_mortar_data.at(mortar_id).neighbor_mortar_data() =
             std::pair{face_mesh, flux_data};
       }
