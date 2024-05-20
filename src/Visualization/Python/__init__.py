@@ -8,6 +8,7 @@ class PlotCommands(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "along-line",
+            "cce",
             "control-system",
             "dat",
             "elliptic-convergence",
@@ -24,6 +25,10 @@ class PlotCommands(click.MultiCommand):
             )
 
             return plot_along_line_command
+        if name == "cce":
+            from spectre.Visualization.PlotCce import plot_cce_command
+
+            return plot_cce_command
         elif name == "control-system":
             from spectre.Visualization.PlotControlSystem import (
                 plot_control_system_command,
