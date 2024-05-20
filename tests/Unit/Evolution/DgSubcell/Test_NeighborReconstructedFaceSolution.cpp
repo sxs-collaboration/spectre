@@ -85,7 +85,7 @@ void test() {
                  evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
       std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
 
-  std::pair<const TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};
+  std::pair<TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};
   for (size_t d = 0; d < Dim; ++d) {
     const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                    Spectral::Quadrature::GaussLobatto};

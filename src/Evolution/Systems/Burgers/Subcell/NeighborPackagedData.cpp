@@ -150,5 +150,5 @@ template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
     1, Burgers::subcell::NeighborPackagedData>(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
-        const TimeStepId, DirectionalIdMap<1, evolution::dg::BoundaryData<1>>>*>
+        TimeStepId, DirectionalIdMap<1, evolution::dg::BoundaryData<1>>>*>
         received_temporal_id_and_data);
