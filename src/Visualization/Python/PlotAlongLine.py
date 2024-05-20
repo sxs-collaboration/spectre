@@ -88,6 +88,8 @@ def points_on_line(
         " has an effect if multiple files are specified."
     ),
 )
+@click.option("--x-logscale", is_flag=True, help="Set the x-axis to log scale.")
+@click.option("--y-logscale", is_flag=True, help="Set the y-axis to log scale.")
 @click.option(
     "--y-bounds",
     type=float,
@@ -114,6 +116,8 @@ def plot_along_line_command(
     line_end,
     num_samples,
     num_threads,
+    x_logscale,
+    y_logscale,
     y_bounds,
     animate,
     interval,
@@ -173,6 +177,10 @@ def plot_along_line_command(
     # Set up the figure
     fig, ax = plt.figure(), plt.gca()
     plt.xlim(x[0], x[-1])
+    if x_logscale:
+        plt.xscale("log")
+    if y_logscale:
+        plt.yscale("log")
     if y_bounds:
         plt.ylim(*y_bounds)
     plt.xlabel(x_label)
