@@ -97,14 +97,14 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
   size_t next_packet_index = initial_size;
   for (size_t x_idx = 0; x_idx < extents[0]; x_idx++) {
     gsl::at(coord_bottom_cell, 0) =
-        -1.0 + 2.0 * static_cast<double>(x_idx) * gsl::at(logical_dx, 0);
+        -1.0 + static_cast<double>(x_idx) * gsl::at(logical_dx, 0);
     for (size_t y_idx = 0; y_idx < extents[1]; y_idx++) {
       gsl::at(coord_bottom_cell, 1) =
-          -1.0 + 2.0 * static_cast<double>(y_idx) * gsl::at(logical_dx, 1);
+          -1.0 + static_cast<double>(y_idx) * gsl::at(logical_dx, 1);
       for (size_t z_idx = 0; z_idx < extents[2]; z_idx++) {
         const size_t idx = mesh.storage_index(Index<3>{{x_idx, y_idx, z_idx}});
         gsl::at(coord_bottom_cell, 2) =
-            -1.0 + 2.0 * static_cast<double>(z_idx) * gsl::at(logical_dx, 2);
+            -1.0 + static_cast<double>(z_idx) * gsl::at(logical_dx, 2);
         for (size_t s = 0; s < NeutrinoSpecies; s++) {
           for (size_t g = 0; g < EnergyBins; g++) {
             for (size_t p = 0;

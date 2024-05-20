@@ -49,8 +49,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
     for (size_t i = 0; i < zero_dv.size(); i++) {
       gsl::at(single_packet_energy, s)[i] = 2.0;
       for (size_t g = 0; g < 2; g++) {
-        gsl::at(gsl::at(emission_in_cells, s), g)[i] =
-            static_cast<double>(2 - 2 * s);
+        if (i == 25) {
+          gsl::at(gsl::at(emission_in_cells, s), g)[i] =
+              static_cast<double>(4 - 4 * s);
+        }
       }
     }
   }
@@ -96,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
 
   // Check some things
   const size_t n_packets = all_packets.size();
-  CHECK(n_packets == 54);
+  CHECK(n_packets == 4);
   for (size_t n = 0; n < n_packets; n++) {
     // Check that -p_mu u^\mu is the expected energy of the neutrinos
     const double neutrino_energy =
@@ -104,16 +106,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
                    all_packets[n].momentum.get(1) * v_boost);
     CHECK(fabs(all_packets[n].number_of_neutrinos * neutrino_energy - 2.0) <
           1.e-14);
+    CHECK(all_packets[n].index_of_closest_grid_point == 25);
+    CHECK(((all_packets[n].coordinates.get(0) >= -1.0 / 3.0) &&
+           (all_packets[n].coordinates.get(0) <= 1.0 / 3.0)));
+    CHECK((all_packets[n].coordinates.get(1) >= 1.0 / 3.0));
+    CHECK((all_packets[n].coordinates.get(2) >= 1.0 / 3.0));
   }
   CHECK(gsl::at(energy_at_bin_center, 0) == 2.0);
 
   Scalar<DataVector> expected_coupling_tilde_tau =
-      make_with_value<Scalar<DataVector>>(zero_dv, -8.0);
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  get(expected_coupling_tilde_tau)[25] = -16.0;
   Scalar<DataVector> expected_coupling_rho_ye =
-      make_with_value<Scalar<DataVector>>(zero_dv, -1.4 * proton_mass);
+      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+  get(expected_coupling_rho_ye)[25] = -2.8 * proton_mass;
   tnsr::i<DataVector, 3, Frame::Inertial> expected_coupling_tilde_s =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
-  expected_coupling_tilde_s.get(1) = -4.0 * sqrt(3.0);
+  expected_coupling_tilde_s.get(1)[25] = -8.0 * sqrt(3.0);
 
   CHECK_ITERABLE_CUSTOM_APPROX(
       coupling_tilde_tau, expected_coupling_tilde_tau,
