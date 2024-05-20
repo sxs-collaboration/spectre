@@ -3,6 +3,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 
+#include <atomic>
 #include <cstddef>
 
 #include "Domain/Structure/Direction.hpp"
@@ -44,6 +45,35 @@ size_t AtomicInboxBoundaryData<Dim>::index(
                     ? 0_st
                     : 1_st) +
            result;
+  }
+}
+
+template <size_t Dim>
+void AtomicInboxBoundaryData<Dim>::pup(PUP::er& p) {
+  if (UNLIKELY(number_of_neighbors.load(std::memory_order_acquire) != 0)) {
+    ERROR(
+        "Can only serialize AtomicInboxBoundaryData if there are no messages. "
+        "We need to be very careful about serializing atomics since "
+        "serialization requires strong synchronization like a lock.");
+  }
+  for (size_t i = 0; i < boundary_data_in_directions.size(); ++i) {
+    if (UNLIKELY(not gsl::at(boundary_data_in_directions, i).empty())) {
+      ERROR(
+          "We can only serialize empty StaticSpscQueues but the queue in "
+          "element "
+          << i << " is not empty.");
+    }
+  }
+  if (p.isUnpacking()) {
+    std::atomic_uint::value_type number_of_neighbors_to_serialize = 0;
+    p | number_of_neighbors_to_serialize;
+    number_of_neighbors.store(number_of_neighbors_to_serialize,
+                              std::memory_order_release);
+    message_count.store(0, std::memory_order_release);
+  } else {
+    std::atomic_uint::value_type number_of_neighbors_to_serialize =
+        number_of_neighbors.load(std::memory_order_acquire);
+    p | number_of_neighbors_to_serialize;
   }
 }
 

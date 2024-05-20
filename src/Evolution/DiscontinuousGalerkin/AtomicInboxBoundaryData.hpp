@@ -62,7 +62,9 @@ struct AtomicInboxBoundaryData {
    */
   static size_t index(const DirectionalId<Dim>& directional_id);
 
-  // We use 20 entiries in the SPSC under the assumption that each neighbor
+  void pup(PUP::er& p);
+
+  // We use 20 entries in the SPSC under the assumption that each neighbor
   // will never insert more than 20 entries before the element uses
   // them. While in practice a smaller buffer could be used, this is to
   // safeguard against future features.
