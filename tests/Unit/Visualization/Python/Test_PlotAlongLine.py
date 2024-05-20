@@ -36,6 +36,8 @@ class TestPlotAlongLine(unittest.TestCase):
             "0,0,0",
             "-B",
             "1,1,1",
+            "--x-logscale",
+            "--y-logscale",
         ]
         # Single plot
         output_filename = os.path.join(self.test_dir, "output.pdf")
