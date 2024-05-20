@@ -9,6 +9,7 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
+#include "Framework/TestHelpers.hpp"
 
 namespace evolution::dg {
 namespace {
@@ -125,6 +126,39 @@ void test_3d_helper(const Direction<3>& dir) {
               dir,
               ElementId<Dim>{2, swap_segments({{{2, i}, {1, 0}, {1, 0}}})}}) ==
           0 + offset);
+  }
+}
+
+template <size_t Dim>
+void test_serialization() {
+  const auto check_all_empty = [](const AtomicInboxBoundaryData<Dim>& data) {
+    for (size_t i = 0; i < data.boundary_data_in_directions.size(); ++i) {
+      CAPTURE(i);
+      CHECK(gsl::at(data.boundary_data_in_directions, i).empty());
+    }
+  };
+
+  AtomicInboxBoundaryData<Dim> data_works{};
+  data_works.number_of_neighbors = 10;
+  const auto data_works_out = serialize_and_deserialize(data_works);
+  CHECK(data_works_out.number_of_neighbors.load() == 10);
+  CHECK(data_works_out.message_count.load() == 0);
+  check_all_empty(data_works);
+
+  AtomicInboxBoundaryData<Dim> data_has_message_count{};
+  data_has_message_count.message_count = 5;
+  CHECK_THROWS_WITH(serialize_and_deserialize(data_has_message_count),
+                    Catch::Matchers::ContainsSubstring(
+                        "Can only serialize AtomicInboxBoundaryData if there "
+                        "are no messages. "));
+
+  for (size_t i = 0; i < data_works.boundary_data_in_directions.size(); ++i) {
+    AtomicInboxBoundaryData<Dim> data_has_queue{};
+    gsl::at(data_has_queue.boundary_data_in_directions, i).push({});
+    CHECK_THROWS_WITH(
+        serialize_and_deserialize(data_has_queue),
+        Catch::Matchers::ContainsSubstring(
+            "We can only serialize empty StaticSpscQueues but the queue in "));
   }
 }
 
