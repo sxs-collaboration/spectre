@@ -11,8 +11,31 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/System/Abort.hpp"
 
 namespace evolution::dg {
+template <size_t Dim>
+AtomicInboxBoundaryData<Dim>::AtomicInboxBoundaryData(
+    AtomicInboxBoundaryData<Dim>&& rhs) noexcept {
+  if (rhs.message_count.load(std::memory_order_acquire) != 0) {
+    sys::abort(
+        "You cannot move an AtomicInboxBoundaryData with non-zero message "
+        "count.");
+  }
+  for (size_t i = 0; i < rhs.boundary_data_in_directions.size(); ++i) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    if (not rhs.boundary_data_in_directions[i].empty()) {
+      sys::abort(
+          "You cannot move an AtomicInboxBoundaryData with data in "
+          "boundary_data_in_directions.");
+    }
+  }
+  message_count.store(0, std::memory_order_release);
+  number_of_neighbors.store(
+      rhs.number_of_neighbors.load(std::memory_order_acquire),
+      std::memory_order_release);
+}
+
 template <size_t Dim>
 size_t AtomicInboxBoundaryData<Dim>::index(
     const DirectionalId<Dim>& neighbor_directional_id) {
