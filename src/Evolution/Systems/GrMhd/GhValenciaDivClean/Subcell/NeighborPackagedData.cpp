@@ -137,7 +137,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
         Variables<dg_package_data_argument_tags> vars_on_face{0};
         Variables<dg_package_field_tags> packaged_data{0};
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
-          const Direction<3>& direction = mortar_id.direction;
+          const Direction<3>& direction = mortar_id.direction();
 
           const Mesh<2> dg_face_mesh =
               dg_mesh.slice_away(direction.dimension());
@@ -162,7 +162,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims,
                     volume_spacetime_vars, eos, element, ghost_subcell_data,
-                    subcell_mesh, mortar_id.direction);
+                    subcell_mesh, mortar_id.direction());
               });
 
           // Get the mesh velocity if needed
@@ -255,7 +255,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
               get<evolution::dg::Tags::NormalCovector<3>>(
                   *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<3>>(
                        box)
-                       .at(mortar_id.direction));
+                       .at(mortar_id.direction()));
           for (auto& t : normal_covector) {
             t *= -1.0;
           }
@@ -264,9 +264,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
           for (size_t i = 0; i < 3; ++i) {
             normal_covector.get(i) = evolution::dg::subcell::fd::project(
                 normal_covector.get(i),
-                dg_mesh.slice_away(mortar_id.direction.dimension()),
+                dg_mesh.slice_away(mortar_id.direction().dimension()),
                 subcell_mesh.extents().slice_away(
-                    mortar_id.direction.dimension()));
+                    mortar_id.direction().dimension()));
           }
           // Need to renormalize the normal vector with the neighbor's
           // inverse spatial metric.
@@ -313,7 +313,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
           evolution::dg::subcell::fd::reconstruct(
               make_not_null(&dg_packaged_data), packaged_data, dg_face_mesh,
               subcell_mesh.extents().slice_away(
-                  mortar_id.direction.dimension()),
+                  mortar_id.direction().dimension()),
               subcell_options.reconstruction_method());
 
           neighbor_package_data[mortar_id] = std::move(dg_data);

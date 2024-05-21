@@ -351,9 +351,9 @@ struct SubdomainOperator
       elements_with_zero_data.insert(central_element.id());
     }
     for (const auto& [overlap_id, overlap_data] : operand.overlap_data) {
-      elements_in_subdomain.insert(overlap_id.id);
+      elements_in_subdomain.insert(overlap_id.id());
       if (equal_within_roundoff(overlap_data, 0.)) {
-        elements_with_zero_data.insert(overlap_id.id);
+        elements_with_zero_data.insert(overlap_id.id());
       }
     }
     const auto is_in_subdomain =
@@ -505,8 +505,8 @@ struct SubdomainOperator
           // work until C++20
           const auto& neighbor_mortar_id = neighbor_mortar_id_and_data.first;
           const auto& neighbor_mortar_data = neighbor_mortar_id_and_data.second;
-          const auto& neighbor_direction = neighbor_mortar_id.direction;
-          const auto& neighbors_neighbor_id = neighbor_mortar_id.id;
+          const auto& neighbor_direction = neighbor_mortar_id.direction();
+          const auto& neighbors_neighbor_id = neighbor_mortar_id.id();
           // No need to do anything on external boundaries
           if (neighbors_neighbor_id == ElementId<Dim>::external_boundary_id()) {
             continue;
@@ -556,7 +556,7 @@ struct SubdomainOperator
             }
             for (const auto& [local_overlap_id, local_mortar_meshes] :
                  local_all_neighbor_mortar_meshes) {
-              if (local_overlap_id.id != neighbors_neighbor_id) {
+              if (local_overlap_id.id() != neighbors_neighbor_id) {
                 continue;
               }
               for (const auto& local_mortar_id_and_mesh : local_mortar_meshes) {
@@ -581,7 +581,7 @@ struct SubdomainOperator
             send_mortar_data(
                 neighbors_mortar_data_[*neighbors_neighbor_overlap_id]
                                       [mortar_id_from_neighbors_neighbor],
-                neighbors_neighbor_overlap_id->id);
+                neighbors_neighbor_overlap_id->id());
           } else if (not neighbor_data_is_zero) {
             // The neighbor's neighbor does not overlap with the subdomain, so
             // we don't copy mortar data and also don't expect to receive any.

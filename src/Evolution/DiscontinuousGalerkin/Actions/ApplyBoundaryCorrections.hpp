@@ -257,7 +257,7 @@ bool receive_boundary_data_local_time_stepping(
         // Move received boundary data into boundary history.
         for (auto& [mortar_id, mortar_next_time_step_id] :
              *mortar_next_time_step_ids) {
-          if (mortar_id.id == ElementId<Dim>::external_boundary_id()) {
+          if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
             continue;
           }
           while (needed_time(mortar_next_time_step_id)) {
@@ -535,8 +535,8 @@ struct ApplyBoundaryCorrections {
 
           for (auto& mortar_id_and_data : *mortar_data) {
             const auto& mortar_id = mortar_id_and_data.first;
-            const auto& direction = mortar_id.direction;
-            if (UNLIKELY(mortar_id.id ==
+            const auto& direction = mortar_id.direction();
+            if (UNLIKELY(mortar_id.id() ==
                          ElementId<volume_dim>::external_boundary_id())) {
               ERROR(
                   "Cannot impose boundary conditions on external boundary in "

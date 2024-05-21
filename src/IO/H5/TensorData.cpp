@@ -3,6 +3,7 @@
 
 #include "IO/H5/TensorData.hpp"
 
+#include <limits>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
@@ -69,9 +70,15 @@ ElementVolumeData::ElementVolumeData(const ElementId<Dim>& element_id,
                                      const Mesh<Dim>& mesh)
     : element_name(get_output(element_id)),
       tensor_components(std::move(components)),
-      extents(mesh.extents().indices().begin(), mesh.extents().indices().end()),
-      basis(mesh.basis().begin(), mesh.basis().end()),
-      quadrature(mesh.quadrature().begin(), mesh.quadrature().end()) {}
+      extents(mesh.dim),
+      basis(mesh.dim),
+      quadrature(mesh.dim) {
+  for (size_t i = 0; i < mesh.dim; ++i) {
+    extents[i] = mesh.extents(i);
+    basis[i] = mesh.basis(i);
+    quadrature[i] = mesh.quadrature(i);
+  }
+}
 
 void ElementVolumeData::pup(PUP::er& p) {
   p | element_name;

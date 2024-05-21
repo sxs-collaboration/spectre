@@ -151,13 +151,13 @@ DirectionMap<Dim, DataVector> slice_data_impl(
          fd_to_neighbor_fd_interpolants) {
       if (LIKELY(not interpolant.has_value())) {
         // Just to keep track.
-        interpolated[directional_element_id.direction] = false;
+        interpolated[directional_element_id.direction()] = false;
         continue;
       }
-      interpolated[directional_element_id.direction] = true;
+      interpolated[directional_element_id.direction()] = true;
       auto result_span =
-          gsl::make_span(result.at(directional_element_id.direction).data(),
-                         result.at(directional_element_id.direction).size() -
+          gsl::make_span(result.at(directional_element_id.direction()).data(),
+                         result.at(directional_element_id.direction()).size() -
                              additional_buffer);
       interpolant.value().interpolate(make_not_null(&result_span),
                                       volume_subcell_vars);

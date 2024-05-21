@@ -108,7 +108,7 @@ DirectionalIdMap<1, DataVector> NeighborPackagedData::apply(
              &vars_on_face, &volume_vars_subcell](const auto& reconstructor) {
               reconstructor->reconstruct_fd_neighbor(
                   make_not_null(&vars_on_face), volume_vars_subcell, element,
-                  ghost_subcell_data, subcell_mesh, mortar_id.direction);
+                  ghost_subcell_data, subcell_mesh, mortar_id.direction());
             });
 
         // Compute fluxes
@@ -118,7 +118,7 @@ DirectionalIdMap<1, DataVector> NeighborPackagedData::apply(
             get<evolution::dg::Tags::NormalCovector<1>>(
                 *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<1>>(
                      box)
-                     .at(mortar_id.direction));
+                     .at(mortar_id.direction()));
         for (auto& t : normal_covector) {
           t *= -1.0;
         }

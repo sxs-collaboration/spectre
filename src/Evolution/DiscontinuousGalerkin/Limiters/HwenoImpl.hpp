@@ -228,7 +228,7 @@ DataVector b_vector(
       continue;
     }
 
-    const auto& direction = neighbor_and_data.first.direction;
+    const auto& direction = neighbor_and_data.first.direction();
     ASSERT(interpolation_matrices.contains(direction),
            "interpolation_matrices does not contain key: " << direction);
     ASSERT(
@@ -297,12 +297,12 @@ void solve_constrained_fit(
 
   // Because we don't support h-refinement, the direction is the only piece
   // of the neighbor information that we actually need.
-  const Direction<VolumeDim> primary_direction = primary_neighbor.direction;
+  const Direction<VolumeDim> primary_direction = primary_neighbor.direction();
   const std::vector<Direction<VolumeDim>> directions_to_exclude =
       [&neighbors_to_exclude]() {
         std::vector<Direction<VolumeDim>> result(neighbors_to_exclude.size());
         for (size_t i = 0; i < result.size(); ++i) {
-          result[i] = neighbors_to_exclude[i].direction;
+          result[i] = neighbors_to_exclude[i].direction();
         }
         return result;
       }();
@@ -548,7 +548,7 @@ void hweno_impl(const gsl::not_null<
   alg::for_each(
       neighbor_data, [&mesh, &element](const auto& neighbor_and_data) {
         ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
-                   element, neighbor_and_data.first.direction),
+                   element, neighbor_and_data.first.direction()),
                "Found some amount of h-refinement; this is not supported");
         ASSERT(neighbor_and_data.second.mesh == mesh,
                "Found some amount of p-refinement; this is not supported");

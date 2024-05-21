@@ -65,7 +65,7 @@ void check_volume_data(
     grid_positions[i] =
         static_cast<size_t>(std::distance(read_grid_names.begin(), position));
   }
-  CHECK(volume_file.get_bases(observation_id) == bases);
+  REQUIRE(volume_file.get_bases(observation_id) == bases);
   CHECK(volume_file.get_quadratures(observation_id) == quadratures);
 
   {

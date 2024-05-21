@@ -53,16 +53,16 @@ void test() {
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   // aligned with neighbor so default construct
   neighbors.insert(std::pair{Direction<Dim>::upper_xi(),
-                             Neighbors<Dim>{{upper_xi_id.id}, {}}});
+                             Neighbors<Dim>{{upper_xi_id.id()}, {}}});
   if constexpr (Dim == 1) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.id},
+        Neighbors<Dim>{{lower_xi_id.id()},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi()}}}}});
   } else if constexpr (Dim == 2) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.id},
+        Neighbors<Dim>{{lower_xi_id.id()},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta()}}}}});
     neighbors.insert(std::pair{Direction<Dim>::upper_eta(),
@@ -70,7 +70,7 @@ void test() {
   } else if constexpr (Dim == 3) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
-        Neighbors<Dim>{{lower_xi_id.id},
+        Neighbors<Dim>{{lower_xi_id.id()},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta(),
                                              Direction<Dim>::upper_zeta()}}}}});
@@ -89,7 +89,7 @@ void test() {
   Interps neighbor_dg_to_fd_interpolants{};
   {
     const auto& orientation_map =
-        neighbors.at(lower_xi_id.direction).orientation();
+        neighbors.at(lower_xi_id.direction()).orientation();
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -97,7 +97,7 @@ void test() {
     }
     const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
         oriented_logical_coords, subcell_mesh.extents(), number_of_ghost_zones,
-        orientation_map(lower_xi_id.direction), {});
+        orientation_map(lower_xi_id.direction()), {});
     neighbor_dg_to_fd_interpolants[lower_xi_id] =
         intrp::Irregular<Dim>{dg_mesh, target_points};
   }
@@ -105,7 +105,7 @@ void test() {
     const DirectionalId<Dim> lower_zeta_id{Direction<Dim>::lower_zeta(),
                                            ElementId<Dim>{4}};
     const auto& orientation_map =
-        neighbors.at(lower_zeta_id.direction).orientation();
+        neighbors.at(lower_zeta_id.direction()).orientation();
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -113,7 +113,7 @@ void test() {
     }
     const auto target_points = evolution::dg::subcell::slice_tensor_for_subcell(
         oriented_logical_coords, subcell_mesh.extents(), number_of_ghost_zones,
-        orientation_map(lower_zeta_id.direction).opposite(), {});
+        orientation_map(lower_zeta_id.direction()).opposite(), {});
     neighbor_dg_to_fd_interpolants[lower_zeta_id] =
         intrp::Irregular<Dim>{dg_mesh, target_points};
   }

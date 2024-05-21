@@ -162,7 +162,7 @@ void test_impl(
       get_tag(Tags::MortarNextTemporalId<Dim>{});
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     const auto& mortar_id = mortar_id_and_mesh.first;
-    if (mortar_id.id != ElementId<Dim>::external_boundary_id()) {
+    if (mortar_id.id() != ElementId<Dim>::external_boundary_id()) {
       CHECK(mortar_next_temporal_ids.at(mortar_id) == next_time_step_id);
     }
   }

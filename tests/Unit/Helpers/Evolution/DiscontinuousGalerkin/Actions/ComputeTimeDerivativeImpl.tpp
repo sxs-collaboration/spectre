@@ -1799,9 +1799,9 @@ void test_impl(const Spectral::Quadrature quadrature,
                                   &det_inv_jacobian, &get_tag, &mesh,
                                   &quadrature](const auto& mortar_data,
                                                const auto& mortar_id) {
-    CHECK_ITERABLE_APPROX(
-        mortar_data.local_mortar_data()->second,
-        compute_expected_mortar_data(mortar_id.direction, mortar_id.id, true));
+    CHECK_ITERABLE_APPROX(mortar_data.local_mortar_data()->second,
+                          compute_expected_mortar_data(mortar_id.direction(),
+                                                       mortar_id.id(), true));
 
     // Check face normal and/or Jacobians
     const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
@@ -1812,7 +1812,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     CHECK(local_face_normal_magnitude ==
           get<::evolution::dg::Tags::MagnitudeOfNormal>(
               *get_tag(::evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{})
-                   .at(mortar_id.direction)));
+                   .at(mortar_id.direction())));
 
     if (using_gauss_points) {
       Scalar<DataVector> local_volume_det_inv_jacobian{};
@@ -1823,9 +1823,10 @@ void test_impl(const Spectral::Quadrature quadrature,
       // We use IrregularGridInterpolant to avoid reusing/copying the
       // apply_matrices-based interpolation in the source tree.
       const Mesh<Dim - 1> face_mesh =
-          mesh.slice_away(mortar_id.direction.dimension());
+          mesh.slice_away(mortar_id.direction().dimension());
       const intrp::Irregular<Dim> interpolator{
-          mesh, interface_logical_coordinates(face_mesh, mortar_id.direction)};
+          mesh,
+          interface_logical_coordinates(face_mesh, mortar_id.direction())};
       Variables<tmpl::list<::Tags::TempScalar<0>>> volume_det_jacobian{
           mesh.number_of_grid_points()};
       get(get<::Tags::TempScalar<0>>(volume_det_jacobian)) =
@@ -1860,33 +1861,33 @@ void test_impl(const Spectral::Quadrature quadrature,
             .at(mortar_id_east)
             .local_mortar_data()
             ->second,
-        compute_expected_mortar_data(mortar_id_east.direction,
-                                     mortar_id_east.id, true));
+        compute_expected_mortar_data(mortar_id_east.direction(),
+                                     mortar_id_east.id(), true));
   }
   CHECK_ITERABLE_APPROX(
       (ActionTesting::get_inbox_tag<
            component<metavars>,
            ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-           runner, mortar_id_east.id)
+           runner, mortar_id_east.id())
            .at(time_step_id)
            .at(DirectionalId<Dim>{
                element.neighbors()
-                   .at(mortar_id_east.direction)
-                   .orientation()(mortar_id_east.direction.opposite()),
+                   .at(mortar_id_east.direction())
+                   .orientation()(mortar_id_east.direction().opposite()),
                element.id()})
            .boundary_correction_data.value()),
-      compute_expected_mortar_data(mortar_id_east.direction, mortar_id_east.id,
-                                   false));
+      compute_expected_mortar_data(mortar_id_east.direction(),
+                                   mortar_id_east.id(), false));
 
   CHECK((ActionTesting::get_inbox_tag<
              component<metavars>,
              ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_east.id)
+             runner, mortar_id_east.id())
              .at(time_step_id)
              .at(DirectionalId<Dim>{
                  element.neighbors()
-                     .at(mortar_id_east.direction)
-                     .orientation()(mortar_id_east.direction.opposite()),
+                     .at(mortar_id_east.direction())
+                     .orientation()(mortar_id_east.direction().opposite()),
                  element.id()})
              .validity_range) ==
         (LocalTimeStepping ? next_time_step_id : time_step_id));
@@ -1898,12 +1899,12 @@ void test_impl(const Spectral::Quadrature quadrature,
         (ActionTesting::get_inbox_tag<
              component<metavars>,
              ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_south.id)
+             runner, mortar_id_south.id())
              .at(time_step_id)
              .at(DirectionalId<Dim>{
                  element.neighbors()
-                     .at(mortar_id_south.direction)
-                     .orientation()(mortar_id_south.direction.opposite()),
+                     .at(mortar_id_south.direction())
+                     .orientation()(mortar_id_south.direction().opposite()),
                  element.id()})
              .validity_range) ==
         (LocalTimeStepping ? next_time_step_id : time_step_id));
@@ -1933,16 +1934,16 @@ void test_impl(const Spectral::Quadrature quadrature,
         (ActionTesting::get_inbox_tag<
              component<metavars>,
              ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_south.id)
+             runner, mortar_id_south.id())
              .at(time_step_id)
              .at(DirectionalId<Dim>{
                  element.neighbors()
-                     .at(mortar_id_south.direction)
-                     .orientation()(mortar_id_south.direction.opposite()),
+                     .at(mortar_id_south.direction())
+                     .orientation()(mortar_id_south.direction().opposite()),
                  element.id()})
              .boundary_correction_data.value()),
-        compute_expected_mortar_data(mortar_id_south.direction,
-                                     mortar_id_south.id, false));
+        compute_expected_mortar_data(mortar_id_south.direction(),
+                                     mortar_id_south.id(), false));
   }
   if constexpr (LocalTimeStepping) {
     for (const auto& mortar_data :

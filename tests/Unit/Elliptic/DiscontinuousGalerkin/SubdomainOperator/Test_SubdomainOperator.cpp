@@ -681,7 +681,8 @@ void test_subdomain_operator(
         set_tag(subdomain_center, fields_tag{}, subdomain_data.element_data);
         for (const auto& [overlap_id, overlap_data] :
              subdomain_data.overlap_data) {
-          const auto& [direction, neighbor_id] = overlap_id;
+          const auto& direction = overlap_id.direction();
+          const auto& neighbor_id = overlap_id.id();
           const auto direction_from_neighbor =
               central_element.neighbors().at(direction).orientation()(
                   direction.opposite());
@@ -736,7 +737,8 @@ void test_subdomain_operator(
         for (const auto& [overlap_id, overlap_result] :
              subdomain_result.overlap_data) {
           CAPTURE(overlap_id);
-          const auto& [direction, neighbor_id] = overlap_id;
+          const auto& direction = overlap_id.direction();
+          const auto& neighbor_id = overlap_id.id();
           const auto direction_from_neighbor =
               central_element.neighbors().at(direction).orientation()(
                   direction.opposite());

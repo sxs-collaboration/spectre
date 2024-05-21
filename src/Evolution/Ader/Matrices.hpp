@@ -4,12 +4,13 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 /// \cond
 class Matrix;
 namespace Spectral {
-enum class Basis;
-enum class Quadrature;
+enum class Basis : uint8_t;
+enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
 

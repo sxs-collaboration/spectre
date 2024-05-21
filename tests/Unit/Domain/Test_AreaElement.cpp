@@ -57,7 +57,7 @@ void test_area_element_against_normal_vector() {
 
   const Mesh<2> interface_mesh{8, Spectral::Basis::Legendre,
                                Spectral::Quadrature::GaussLobatto};
-  const Direction<3> direction{};
+  const Direction<3> direction{0, Side::Lower};
   const auto logical_coords =
       interface_logical_coordinates(interface_mesh, direction);
   const auto inverse_jacobian = element_map_3d.inv_jacobian(logical_coords);

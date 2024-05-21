@@ -374,7 +374,7 @@ struct ReceiveDataForReconstruction {
                   received_mortar_data.second.validity_range;
             } catch (std::exception& e) {
               ERROR("Failed retrieving the MortarId: ("
-                    << mortar_id.direction << ',' << mortar_id.id
+                    << mortar_id.direction() << ',' << mortar_id.id()
                     << ") from the mortar_next_time_step_id. Got exception: "
                     << e.what());
             }
@@ -428,8 +428,8 @@ struct ReceiveDataForReconstruction {
                   neighbor_dg_to_fd_interpolants);
               ASSERT(neighbor_tci_decisions->contains(directional_element_id),
                      "The NeighorTciDecisions should contain the neighbor ("
-                         << directional_element_id.direction << ", "
-                         << directional_element_id.id << ") but doesn't");
+                         << directional_element_id.direction() << ", "
+                         << directional_element_id.id() << ") but doesn't");
               neighbor_tci_decisions->at(directional_element_id) =
                   received_data[directional_element_id].tci_status;
             }

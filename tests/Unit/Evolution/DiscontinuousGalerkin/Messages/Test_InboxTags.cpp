@@ -42,8 +42,8 @@ BoundaryMessage<Dim>* create_boundary_message(
       tci_status,                                // tci_status
       current_time_step_id,                      // current_time_step_id
       next_time_step_id,                         // next_time_step_id
-      key.direction,                             // neighbor_direction
-      key.id,                                    // element_id
+      key.direction(),                           // neighbor_direction
+      key.id(),                                  // element_id
       volume_mesh,                               // volume_or_ghost_mesh
       interface_mesh,                            // interface_mesh
       ghost_data.has_value() ? ghost_data.value().data()

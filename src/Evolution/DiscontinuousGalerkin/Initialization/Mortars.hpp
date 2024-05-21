@@ -45,7 +45,7 @@ class GlobalCache;
 namespace Spectral {
 enum class ChildSize;
 using MortarSize = ChildSize;
-enum class Quadrature;
+enum class Quadrature : uint8_t;
 }  // namespace Spectral
 namespace Tags {
 struct TimeStepId;

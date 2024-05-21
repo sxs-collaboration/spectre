@@ -471,8 +471,8 @@ struct SolveSubdomain {
           Parallel::get_parallel_component<ParallelComponent>(cache);
       for (auto& [overlap_id, overlap_solution] :
            subdomain_solution.overlap_data) {
-        const auto& direction = overlap_id.direction;
-        const auto& neighbor_id = overlap_id.id;
+        const auto& direction = overlap_id.direction();
+        const auto& neighbor_id = overlap_id.id();
         const auto& orientation =
             element.neighbors().at(direction).orientation();
         const auto direction_from_neighbor = orientation(direction.opposite());
@@ -549,7 +549,7 @@ struct ReceiveOverlapSolution {
                 all_intruding_overlap_weights) {
           for (const auto& [overlap_id, overlap_solution] :
                received_overlap_solutions) {
-            const auto& direction = overlap_id.direction;
+            const auto& direction = overlap_id.direction();
             const auto& intruding_extents =
                 gsl::at(all_intruding_extents, direction.dimension());
             const auto& overlap_weight =

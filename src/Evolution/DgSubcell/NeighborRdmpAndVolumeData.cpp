@@ -80,7 +80,7 @@ void insert_or_update_neighbor_volume_data(
            "Neighbor subcell mesh computed from the neighbor DG mesh ("
                << evolution::dg::subcell::fd::mesh(neighbor_mesh)
                << ") and my mesh (" << subcell_mesh << ") must be the same.");
-    const Direction<Dim>& direction = directional_element_id.direction;
+    const Direction<Dim>& direction = directional_element_id.direction();
     const size_t total_number_of_ghost_zones =
         number_of_ghost_zones *
         subcell_mesh.extents().slice_away(direction.dimension()).product();

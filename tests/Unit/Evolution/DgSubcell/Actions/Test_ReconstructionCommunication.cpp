@@ -363,7 +363,7 @@ void test(const bool use_cell_centered_flux) {
       }();
   {
     const auto& east_sliced_neighbor_data =
-        all_sliced_data.at(east_neighbor_id.direction);
+        all_sliced_data.at(east_neighbor_id.direction());
     DataVector expected_east_data{east_sliced_neighbor_data.size() + rdmp_size};
     std::copy(east_sliced_neighbor_data.begin(),
               east_sliced_neighbor_data.end(), expected_east_data.begin());

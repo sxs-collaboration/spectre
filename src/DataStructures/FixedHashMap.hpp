@@ -181,17 +181,7 @@ class FixedHashMap {
   hasher hash_function() const { return hasher{}; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) {
-    size_t version = 0;
-    p | version;
-    // Remember to increment the version number when making changes to this
-    // function. Retain support for unpacking data written by previous versions
-    // whenever possible. See `Domain` docs for details.
-    if (version >= 0) {
-      p | data_;
-      p | size_;
-    }
-  }
+  void pup(PUP::er& p);
 
  private:
   template <size_t FMaxSize, class FKey, class FValueType, class FHash,
@@ -233,8 +223,52 @@ class FixedHashMap {
   }
 
   storage_type data_{};
-  size_t size_ = 0;
+  tmpl::conditional_t<(MaxSize <= 255), uint8_t, size_t> size_ = 0;
 };
+
+template <size_t MaxSize, class Key, class ValueType, class Hash,
+          class KeyEqual>
+void FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::pup(PUP::er& p) {
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible. See `Domain` docs for details.
+  const uint8_t current_version = 1;
+  if (p.isUnpacking()) {
+    uint8_t version_read{0};
+    p | version_read;
+    if (LIKELY(version_read > 0)) {
+      p | data_;
+      p | size_;
+    } else {
+      // Read next 3 bytes.
+      p | version_read;
+      p | version_read;
+      p | version_read;
+      // Read "bottom" of version
+      uint32_t old_version{0};
+      p | old_version;
+      if (UNLIKELY(old_version > 0)) {
+        ERROR(
+            "Incompatible version format for Direction. Expected to receive "
+            "version 0 but got "
+            << old_version);
+      }
+      p | data_;
+      if constexpr (MaxSize <= 255) {
+        size_t read_size{0};
+        p | read_size;
+        size_ = static_cast<uint8_t>(read_size);
+      } else {
+        p | size_;
+      }
+    }
+  } else {
+    uint8_t version_write = current_version;
+    p | version_write;
+    p | data_;
+    p | size_;
+  }
+}
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t MaxSize, class Key, class ValueType, class Hash,

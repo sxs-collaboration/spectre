@@ -343,7 +343,7 @@ double test(const size_t num_dg_pts) {
   DirectionalIdMap<3, typename variables_tag::type> evolved_vars_errors{};
   double max_rel_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
-    const auto& direction = direction_and_id.direction;
+    const auto& direction = direction_and_id.direction();
     const Mesh<2> dg_interface_mesh = dg_mesh.slice_away(direction.dimension());
 
     using dg_package_field_tags =

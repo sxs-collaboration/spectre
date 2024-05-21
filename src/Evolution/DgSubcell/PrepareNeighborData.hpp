@@ -163,7 +163,7 @@ void prepare_neighbor_data(
              "All interpolators must have values. The std::optional is used "
              "for some local optimizations.");
       DataVector& data_in_direction = all_neighbor_data_for_reconstruction->at(
-          directional_element_id.direction);
+          directional_element_id.direction());
       gsl::span result_in_direction{data_in_direction.data(),
                                     data_in_direction.size() - rdmp_size};
       interpolator->interpolate(

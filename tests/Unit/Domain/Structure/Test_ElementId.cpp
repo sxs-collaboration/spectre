@@ -23,6 +23,12 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 namespace {
+template <size_t Dim>
+struct DirectionTester : public ElementId<Dim> {
+  DirectionTester(const Direction<Dim>& direction, const ElementId<Dim>& id)
+      : ElementId<Dim>(direction, id) {}
+};
+
 template <size_t VolumeDim>
 void test_placement_new_and_hashing_impl(
     const size_t block1, const std::array<SegmentId, VolumeDim>& segments1,
@@ -51,6 +57,12 @@ void test_placement_new_and_hashing_impl(
   CHECK((test_id1 == test_id2) == (id1 == id2));
   CHECK((test_id1 != test_id2) == (id1 != id2));
   CHECK((Hash{}(test_id1) == Hash{}(test_id2)) == (id1 == id2));
+
+  for (const auto& dir : Direction<VolumeDim>::all_directions()) {
+    const DirectionTester<VolumeDim> dir_test_id1{dir, test_id1};
+    CHECK(static_cast<const ElementId<VolumeDim>&>(dir_test_id1) == test_id1);
+    CHECK(Hash{}(dir_test_id1) == Hash{}(test_id1));
+  }
 }
 
 void test_placement_new_and_hashing() {

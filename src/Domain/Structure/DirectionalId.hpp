@@ -19,13 +19,19 @@ class er;
 ///
 /// \details Used as the key in a DirectionalIdMap
 template <size_t VolumeDim>
-struct DirectionalId {
-  Direction<VolumeDim> direction;
-  ElementId<VolumeDim> id;
+struct DirectionalId : private ElementId<VolumeDim> {
+  DirectionalId() = default;
 
-  /// Serialization for Charm++
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  DirectionalId(const Direction<VolumeDim>& direction,
+                const ElementId<VolumeDim>& element_id)
+      : ElementId<VolumeDim>(direction, element_id) {}
+
+  ElementId<VolumeDim> id() const { return this->without_direction(); }
+
+  Direction<VolumeDim> direction() const {
+    return ElementId<VolumeDim>::direction();
+  }
+  void pup(PUP::er& p) { p | static_cast<ElementId<VolumeDim>&>(*this); }
 };
 
 template <size_t VolumeDim>

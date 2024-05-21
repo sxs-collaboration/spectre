@@ -21,8 +21,8 @@ struct ElementVolumeData;
 template <size_t>
 class Mesh;
 namespace Spectral {
-enum class Basis;
-enum class Quadrature;
+enum class Basis : uint8_t;
+enum class Quadrature : uint8_t;
 }  // namespace Spectral
 struct TensorComponent;
 /// \endcond

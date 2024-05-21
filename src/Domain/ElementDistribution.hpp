@@ -24,7 +24,7 @@ template <size_t Dim>
 class ElementId;
 
 namespace Spectral {
-enum class Quadrature;
+enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
 

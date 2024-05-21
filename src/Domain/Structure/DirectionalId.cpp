@@ -9,18 +9,14 @@
 
 #include "Utilities/GenerateInstantiations.hpp"
 
-template <size_t VolumeDim>
-void DirectionalId<VolumeDim>::pup(PUP::er& p) {
-  p | direction;
-  p | id;
-}
+static_assert(sizeof(DirectionalId<1>) == sizeof(ElementId<1>));
+static_assert(sizeof(DirectionalId<2>) == sizeof(ElementId<2>));
+static_assert(sizeof(DirectionalId<3>) == sizeof(ElementId<3>));
 
 template <size_t VolumeDim>
 size_t hash_value(const DirectionalId<VolumeDim>& id) {
-  size_t h = 0;
-  boost::hash_combine(h, id.direction);
-  boost::hash_combine(h, id.id);
-  return h;
+  return hash_value(id.id()) bitor static_cast<uint64_t>(id.direction().bits())
+                                       << ElementId<VolumeDim>::direction_shift;
 }
 
 // NOLINTNEXTLINE(cert-dcl58-cpp)
@@ -35,23 +31,23 @@ size_t hash<DirectionalId<VolumeDim>>::operator()(
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
                          const DirectionalId<VolumeDim>& direction_id) {
-  os << "(" << direction_id.direction << ", " << direction_id.id << ")";
+  os << "(" << direction_id.direction() << ", " << direction_id.id() << ")";
   return os;
 }
 
 template <size_t VolumeDim>
 bool operator==(const DirectionalId<VolumeDim>& lhs,
                 const DirectionalId<VolumeDim>& rhs) {
-  return lhs.direction == rhs.direction and lhs.id == rhs.id;
+  return lhs.direction() == rhs.direction() and lhs.id() == rhs.id();
 }
 
 template <size_t VolumeDim>
 bool operator<(const DirectionalId<VolumeDim>& lhs,
                const DirectionalId<VolumeDim>& rhs) {
-  if (lhs.direction != rhs.direction) {
-    return lhs.direction < rhs.direction;
+  if (lhs.direction() != rhs.direction()) {
+    return lhs.direction() < rhs.direction();
   }
-  return lhs.id < rhs.id;
+  return lhs.id() < rhs.id();
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -63,7 +59,6 @@ bool operator<(const DirectionalId<VolumeDim>& lhs,
                            const DirectionalId<GET_DIM(data)>& rhs);      \
   template bool operator<(const DirectionalId<GET_DIM(data)>& lhs,        \
                           const DirectionalId<GET_DIM(data)>& rhs);       \
-  template void DirectionalId<GET_DIM(data)>::pup(PUP::er&);              \
   template size_t hash_value(const DirectionalId<GET_DIM(data)>&);        \
   namespace std { /* NOLINT */                                            \
   template struct hash<DirectionalId<GET_DIM(data)>>;                     \
