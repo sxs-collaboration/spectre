@@ -40,54 +40,60 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <tr><th> Description <th> TCI status
  *
  * <tr><td> if `min(tilde_d)` is less than
- *  `tci_options.minimum_rest_mass_density_times_lorentz_factor`, or if
- *  `min(tilde_ye)` is less than
- *  `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
- *  `tci_options.minimum_ye`, or if `min(tilde_tau)` is less than
- *  `tci_options.minimum_tilde_tau`, then the we remain on FD.
+ *  `tci_options.minimum_rest_mass_density_times_lorentz_factor`, then we
+ *  remain on FD.
  * <td> `+1`
+ *
+ * <tr><td> if `min(tilde_ye)` is less than
+ *  `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
+ *  `tci_options.minimum_ye`, then we remain on FD.
+ * <td> `+2`
+ *
+ * <tr><td> if `min(tilde_tau)` is less than
+ *  `tci_options.minimum_tilde_tau`, then we remain on FD.
+ * <td> `+3`
  *
  * <tr><td> if `grmhd::ValenciaDivClean::Tags::VariablesNeededFixing` is `true`
  *  and the maximum of rest mass density on FD grid is greater than
  * `tci_options.atmosphere_density`, then we remain on FD.
- * <td> `+2`
+ * <td> `+4`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$, \f$\tilde{Y}_e\f$, and
  * pressure if the maximum of rest mass density on FD grid is greater than
  * `tci_options.atmosphere_density`.
- * <td> `+3`
+ * <td> `+5`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{Y}_e\f$ if the maximum of rest
  * mass density on FD grid is greater than `tci_options.atmosphere_density`.
- * <td> `+4`
+ * <td> `+6`
  *
  * <tr><td> apply the Persson TCI to pressure if the maximum of rest mass
  * density on FD grid is greater than `tci_options.atmosphere_density`. <td>
- * `+5`
+ * `+7`
  *
  * <tr><td> apply the RDMP TCI to `TildeD`
- * <td> `+6`
- *
- * <tr><td> apply the RDMP TCI to `TildeYe`
- * <td> `+7`
- *
- * <tr><td> apply the RDMP TCI to `TildeTau`
  * <td> `+8`
  *
- * <tr><td> apply the RDMP TCI to `TildeB`
+ * <tr><td> apply the RDMP TCI to `TildeYe`
  * <td> `+9`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <td> `+10`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `+11`
  *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
  * its magnitude is greater than `tci_options.magnetic_field_cutoff`.
- * <td> `+10`
+ * <td> `+12`
  *
  * </table>
  *
  * The second column of the table above denotes the value of an integer stored
  * as the first element of the returned `std::tuple`, which indicates the
- * particular kind of check that failed. For example, if the fifth check
+ * particular kind of check that failed. For example, if the tenth check
  * (RDMP TCI to TildeTau) fails and cell is marked as troubled, an integer with
- * value `+5` is stored in the first slot of the returned tuple. Note that this
+ * value `+10` is stored in the first slot of the returned tuple. Note that this
  * integer is marking only the _first_ check to fail, since checks are done in a
  * particular sequence as listed above. If all checks are passed and cell is not
  * troubled, it is returned with the value `0`.

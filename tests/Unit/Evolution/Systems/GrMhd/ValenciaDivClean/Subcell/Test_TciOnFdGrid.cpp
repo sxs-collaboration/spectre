@@ -248,15 +248,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
   test(TestThis::AllGood, 0);
   test(TestThis::Atmosphere, 0);
   test(TestThis::NegativeTildeD, 1);
-  test(TestThis::NegativeTildeYe, 1);
-  test(TestThis::NegativeTildeTau, 1);
-  test(TestThis::NeededFixing, 2);
-  test(TestThis::PerssonTildeD, 3);
-  test(TestThis::PerssonTildeYe, 4);
-  test(TestThis::PerssonPressure, 5);
-  test(TestThis::RdmpTildeD, 6);
-  test(TestThis::RdmpTildeYe, 7);
-  test(TestThis::RdmpTildeTau, 8);
-  test(TestThis::RdmpMagnitudeTildeB, 9);
-  test(TestThis::PerssonTildeB, 10);
+  test(TestThis::NegativeTildeYe, 2);
+  test(TestThis::NegativeTildeTau, 3);
+  test(TestThis::NeededFixing, 4);
+  test(TestThis::PerssonTildeD, 5);
+  test(TestThis::PerssonTildeYe, 6);
+  test(TestThis::PerssonPressure, 7);
+  test(TestThis::RdmpTildeD, 8);
+  test(TestThis::RdmpTildeYe, 9);
+  test(TestThis::RdmpTildeTau, 10);
+  test(TestThis::RdmpMagnitudeTildeB, 11);
+  test(TestThis::PerssonTildeB, 12);
 }

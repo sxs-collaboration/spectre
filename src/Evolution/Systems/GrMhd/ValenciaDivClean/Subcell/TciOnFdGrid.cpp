@@ -79,19 +79,23 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
   if (min(get(dg_tilde_d)) <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor or
-      min(get(dg_tilde_ye)) <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor *
-              tci_options.minimum_ye or
-      min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau) {
+          tci_options.minimum_rest_mass_density_times_lorentz_factor) {
     return {+1, rdmp_tci_data};
+  }
+  if (min(get(dg_tilde_ye)) <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor *
+              tci_options.minimum_ye) {
+    return {+2, rdmp_tci_data};
+  }
+  if (min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau) {
+    return {+3, rdmp_tci_data};
   }
 
   const bool in_atmosphere =
       max(get(subcell_rest_mass_density)) < tci_options.atmosphere_density;
 
   if (not(in_atmosphere) and vars_needed_fixing) {
-    return {+2, rdmp_tci_data};
+    return {+4, rdmp_tci_data};
   }
 
   if (not in_atmosphere) {
@@ -105,17 +109,17 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     if (evolution::dg::subcell::persson_tci(
             dg_tilde_d, dg_mesh, persson_exponent,
             subcell_options.persson_num_highest_modes())) {
-      return {+3, rdmp_tci_data};
+      return {+5, rdmp_tci_data};
     }
     if (evolution::dg::subcell::persson_tci(
             dg_tilde_ye, dg_mesh, persson_exponent,
             subcell_options.persson_num_highest_modes())) {
-      return {+4, rdmp_tci_data};
+      return {+6, rdmp_tci_data};
     }
     if (evolution::dg::subcell::persson_tci(
             dg_pressure, dg_mesh, persson_exponent,
             subcell_options.persson_num_highest_modes())) {
-      return {+5, rdmp_tci_data};
+      return {+7, rdmp_tci_data};
     }
   }
 
@@ -148,7 +152,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
           past_rdmp_tci_data.max_variables_values,
           past_rdmp_tci_data.min_variables_values,
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon())) {
-    return {+5 + rdmp_tci_status, rdmp_tci_data};
+    return {+7 + rdmp_tci_status, rdmp_tci_data};
   }
 
   if (tci_options.magnetic_field_cutoff.has_value() and
@@ -156,7 +160,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
        evolution::dg::subcell::persson_tci(
            dg_mag_tilde_b, dg_mesh, persson_exponent,
            subcell_options.persson_num_highest_modes()))) {
-    return {+10, rdmp_tci_data};
+    return {+12, rdmp_tci_data};
   }
 
   return {0, rdmp_tci_data};
