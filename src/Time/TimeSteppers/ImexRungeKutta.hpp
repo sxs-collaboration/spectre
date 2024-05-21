@@ -14,8 +14,6 @@ class TimeDelta;
 namespace TimeSteppers {
 template <typename T>
 class ConstUntypedHistory;
-template <typename T>
-class MutableUntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -63,11 +61,11 @@ class ImexRungeKutta : public virtual RungeKutta,
  private:
   template <typename T>
   void add_inhomogeneous_implicit_terms_impl(
-      gsl::not_null<T*> u, const MutableUntypedHistory<T>& implicit_history,
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& implicit_history,
       const TimeDelta& time_step) const;
 
   template <typename T>
-  double implicit_weight_impl(const MutableUntypedHistory<T>& implicit_history,
+  double implicit_weight_impl(const ConstUntypedHistory<T>& implicit_history,
                               const TimeDelta& time_step) const;
 
   IMEX_TIME_STEPPER_DECLARE_OVERLOADS

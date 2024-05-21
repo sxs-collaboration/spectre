@@ -57,28 +57,19 @@ void check_convergence_order(const ImexTimeStepper& stepper,
       // This system is simple enough that we can do the implicit
       // solve analytically.
 
-      // Verify that the functions can be called in either order.  The
-      // order used by the IMEX code has not been consistent during
-      // development, so make sure to support both orders.
-      auto y2 = y;
-      auto implicit_history2 = implicit_history;
-      stepper.add_inhomogeneous_implicit_terms(
-          make_not_null(&y2), make_not_null(&implicit_history2), step_size);
-      const double weight =
-          stepper.implicit_weight(make_not_null(&implicit_history), step_size);
-      // Both methods are required to do history cleanup
-      CHECK(implicit_history == implicit_history2);
+      stepper.add_inhomogeneous_implicit_terms(make_not_null(&y),
+                                               implicit_history, step_size);
+
       // Verify that the weight calculation only uses the history times.
+      auto implicit_history2 = implicit_history;
       implicit_history2.map_entries([](const auto value) {
         *value = std::numeric_limits<double>::signaling_NaN();
       });
-      CHECK(stepper.implicit_weight(make_not_null(&implicit_history2),
-                                    step_size) == weight);
-      stepper.add_inhomogeneous_implicit_terms(
-          make_not_null(&y), make_not_null(&implicit_history), step_size);
-      CHECK(y == y2);
+      const double weight =
+          stepper.implicit_weight(implicit_history2, step_size);
 
       y /= 1.0 + 2.0 * weight;
+      stepper.clean_history(make_not_null(&implicit_history));
       time_step_id = stepper.next_time_id(time_step_id, step_size);
     }
     const double result = abs(y - exp(1.));
@@ -122,12 +113,12 @@ void check_bounded_dense_output(const ImexTimeStepper& stepper) {
     }
 
     y = 1.0;
-    stepper.add_inhomogeneous_implicit_terms(
-        make_not_null(&y), make_not_null(&history), time_step);
-    const double weight =
-        stepper.implicit_weight(make_not_null(&history), time_step);
+    stepper.add_inhomogeneous_implicit_terms(make_not_null(&y), history,
+                                             time_step);
+    const double weight = stepper.implicit_weight(history, time_step);
 
     y /= 1.0 + decay_constant * weight;
+    stepper.clean_history(make_not_null(&history));
     time_step_id = stepper.next_time_id(time_step_id, time_step);
   }
   CHECK(test_time >= 1.0);

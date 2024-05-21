@@ -11,18 +11,6 @@ namespace TimeSteppers {
 
 namespace {
 template <typename T>
-void remove_old_values(const MutableUntypedHistory<T>& implicit_history) {
-  if (implicit_history.at_step_start()) {
-    implicit_history.clear_substeps();
-    if (implicit_history.size() > 1) {
-      implicit_history.pop_front();
-    }
-  }
-  ASSERT(implicit_history.size() == 1,
-         "Have more than one step after cleanup.");
-}
-
-template <typename T>
 void apply_explicit_coefficients(const gsl::not_null<T*> u,
                                  const ConstUntypedHistory<T>& implicit_history,
                                  const std::vector<double>& coefficients,
@@ -30,7 +18,7 @@ void apply_explicit_coefficients(const gsl::not_null<T*> u,
                                  const double time_step) {
   if (number_of_coefficients_to_apply > 0) {
     if (coefficients[0] != 0.0) {
-      *u += coefficients[0] * time_step * implicit_history.front().derivative;
+      *u += coefficients[0] * time_step * implicit_history.back().derivative;
     }
     for (size_t i = 1; i < number_of_coefficients_to_apply; ++i) {
       if (coefficients[i] != 0.0) {
@@ -44,14 +32,14 @@ void apply_explicit_coefficients(const gsl::not_null<T*> u,
 
 template <typename T>
 void ImexRungeKutta::add_inhomogeneous_implicit_terms_impl(
-    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& implicit_history,
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& implicit_history,
     const TimeDelta& time_step) const {
   ASSERT(implicit_history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << implicit_history.integration_order());
-  remove_old_values(implicit_history);
 
-  auto substep = implicit_history.substeps().size();
+  auto substep =
+      implicit_history.at_step_start() ? 0 : implicit_history.substeps().size();
 
   ASSERT(number_of_substeps() == number_of_substeps_for_error(),
          "The current interface does not provide enough information to "
@@ -74,10 +62,10 @@ void ImexRungeKutta::add_inhomogeneous_implicit_terms_impl(
 
 template <typename T>
 double ImexRungeKutta::implicit_weight_impl(
-    const MutableUntypedHistory<T>& implicit_history,
+    const ConstUntypedHistory<T>& implicit_history,
     const TimeDelta& time_step) const {
-  remove_old_values(implicit_history);
-  const auto substep = implicit_history.substeps().size();
+  const auto substep =
+      implicit_history.at_step_start() ? 0 : implicit_history.substeps().size();
   const auto& coefficients = implicit_butcher_tableau().substep_coefficients;
   if (coefficients.size() > substep and
       coefficients[substep].size() == substep + 2) {

@@ -56,9 +56,8 @@ class ImplicitEquation {
   template <typename ImplicitSector, typename SystemVariables>
   ImplicitEquation(
       const gsl::not_null<SystemVariables*> system_variables,
-      const gsl::not_null<TimeSteppers::History<SectorVariables>*>
-          implicit_history,
       const ImexTimeStepper& time_stepper, const TimeDelta& time_step,
+      const TimeSteppers::History<SectorVariables>& implicit_history,
       const ForwardTuple<typename ImplicitSector::initial_guess::argument_tags>&
           initial_guess_arguments,
       tmpl::type_<ImplicitSector> /*meta*/)
@@ -408,10 +407,9 @@ class ImplicitSolver {
 template <typename SystemVariablesTag, typename ImplicitSector>
 void SolveImplicitSector<SystemVariablesTag, ImplicitSector>::apply_impl(
     const gsl::not_null<SystemVariables*> system_variables,
-    const gsl::not_null<TimeSteppers::History<SectorVariables>*>
-        implicit_history,
     const gsl::not_null<Scalar<DataVector>*> solve_failures,
     const ImexTimeStepper& time_stepper, const TimeDelta& time_step,
+    const TimeSteppers::History<SectorVariables>& implicit_history,
     const Mode implicit_solve_mode, const double implicit_solve_tolerance,
     const EvolutionDataTuple& joined_evolution_data) {
   get(*solve_failures) = 0.0;
@@ -422,7 +420,7 @@ void SolveImplicitSector<SystemVariablesTag, ImplicitSector>::apply_impl(
   const auto& initial_guess_arguments = std::get<0>(evolution_data);
 
   const solve_implicit_sector_detail::ImplicitEquation<SectorVariables>
-      equation(system_variables, implicit_history, time_stepper, time_step,
+      equation(system_variables, time_stepper, time_step, implicit_history,
                initial_guess_arguments, tmpl::type_<ImplicitSector>{});
   if (not equation.solve_needed()) {
     return;

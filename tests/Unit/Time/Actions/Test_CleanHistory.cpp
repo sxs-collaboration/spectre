@@ -6,7 +6,16 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Imex/GuessResult.hpp"
+#include "Evolution/Imex/Protocols/ImexSystem.hpp"
+#include "Evolution/Imex/Protocols/ImplicitSector.hpp"
+#include "Evolution/Imex/Tags/ImplicitHistory.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -17,8 +26,11 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
+#include "Time/TimeSteppers/Heun2.hpp"
+#include "Time/TimeSteppers/ImexTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -98,11 +110,97 @@ void test_action() {
   CHECK(db::get<Tags::HistoryEvolvedVariables<AlternativeVar>>(box).size() ==
         (TwoVars ? 1 : 2));
 }
+
+struct FieldVar : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct ImexSystem : tt::ConformsTo<imex::protocols::ImexSystem> {
+  using variables_tag = Tags::Variables<tmpl::list<FieldVar>>;
+
+  struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
+    using tensors = tmpl::list<FieldVar>;
+    using initial_guess = imex::GuessExplicitResult;
+    struct Attempt {
+      using tags_from_evolution = tmpl::list<>;
+      using simple_tags = tmpl::list<>;
+      using compute_tags = tmpl::list<>;
+      struct source {
+        using return_tags = tmpl::list<Tags::Source<FieldVar>>;
+        using argument_tags = tmpl::list<>;
+        static void apply(gsl::not_null<Scalar<DataVector>*> var_source);
+      };
+      using jacobian = imex::NoJacobianBecauseSolutionIsAnalytic;
+      using source_prep = tmpl::list<>;
+      using jacobian_prep = tmpl::list<>;
+    };
+    using solve_attempts = tmpl::list<Attempt>;
+  };
+
+  using implicit_sectors = tmpl::list<Sector>;
+};
+
+static_assert(
+    tt::assert_conforms_to_v<ImexSystem, imex::protocols::ImexSystem>);
+
+struct ImexMetavariables;
+
+struct ImexComponent {
+  using metavariables = ImexMetavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tags = tmpl::list<>;
+  using simple_tags =
+      tmpl::list<Tags::ConcreteTimeStepper<ImexTimeStepper>,
+                 Tags::HistoryEvolvedVariables<ImexSystem::variables_tag>,
+                 imex::Tags::ImplicitHistory<ImexSystem::Sector>>;
+  using compute_tags = time_stepper_ref_tags<ImexTimeStepper>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::CleanHistory<ImexSystem>>>>;
+};
+
+struct ImexMetavariables {
+  using component_list = tmpl::list<ImexComponent>;
+
+  void pup(PUP::er& /*p*/) {}
+};
+
+void test_imex() {
+  const Slab slab(1., 3.);
+  TimeSteppers::History<Variables<tmpl::list<FieldVar>>> history{2};
+  history.insert(TimeStepId(true, 0, slab.start()), {5, 0.0}, {5, 0.0});
+  history.insert(
+      TimeStepId(true, 0, slab.start(), 1, slab.duration(), slab.end().value()),
+      {5, 0.0}, {5, 0.0});
+  history.insert(TimeStepId(true, 1, slab.end()), {5, 0.0}, {5, 0.0});
+
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<ImexMetavariables>;
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_component_and_initialize<ImexComponent>(
+      &runner, 0, {std::make_unique<TimeSteppers::Heun2>(), history, history});
+
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  ActionTesting::next_action<ImexComponent>(make_not_null(&runner), 0);
+
+  const auto& box = ActionTesting::get_databox<ImexComponent>(runner, 0);
+  CHECK(db::get<Tags::HistoryEvolvedVariables<ImexSystem::variables_tag>>(box)
+            .size() == 1);
+  CHECK(db::get<imex::Tags::ImplicitHistory<ImexSystem::Sector>>(box).size() ==
+        1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.CleanHistory", "[Unit][Time][Actions]") {
-  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth,
+                              TimeSteppers::Heun2>();
 
   test_action<false>();
   test_action<true>();
+  test_imex();
 }
