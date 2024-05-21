@@ -74,6 +74,7 @@
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -217,6 +218,7 @@ struct EvolutionMetavars {
                   tmpl::list<AlwaysReadyPostprocessor<
                       typename system::primitive_from_conservative>>>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<

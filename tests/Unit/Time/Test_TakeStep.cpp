@@ -204,11 +204,15 @@ void test_lts() {
 
   // advance time
   db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-             Tags::Next<Tags::TimeStep>>(
+             Tags::Next<Tags::TimeStep>,
+             Tags::HistoryEvolvedVariables<EvolvedVariable>>(
       [](const gsl::not_null<TimeStepId*> time_id,
          const gsl::not_null<TimeStepId*> next_time_id,
          const gsl::not_null<TimeDelta*> local_time_step,
          const gsl::not_null<TimeDelta*> next_time_step,
+         const gsl::not_null<
+             Tags::HistoryEvolvedVariables<EvolvedVariable>::type*>
+             local_history,
          const LtsTimeStepper& time_stepper) {
         *time_id = *next_time_id;
         *local_time_step =
@@ -218,6 +222,7 @@ void test_lts() {
             time_stepper.next_time_id(*next_time_id, *local_time_step);
         *next_time_step =
             local_time_step->with_slab(next_time_id->step_time().slab());
+        time_stepper.clean_history(local_history);
       },
       make_not_null(&box), db::get<Tags::TimeStepper<LtsTimeStepper>>(box));
 

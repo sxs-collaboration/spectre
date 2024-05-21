@@ -25,6 +25,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -164,6 +165,7 @@ struct Component {
       tmpl::list<ComputeTimeDerivative,
                  Actions::RecordTimeStepperData<typename metavariables::system>,
                  Actions::UpdateU<typename metavariables::system>,
+                 Actions::CleanHistory<typename metavariables::system>,
                  tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                                      tmpl::list<>>>;
   using action_list = tmpl::flatten<

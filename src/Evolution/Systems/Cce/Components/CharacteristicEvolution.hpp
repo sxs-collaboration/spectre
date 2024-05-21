@@ -36,6 +36,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -194,7 +195,8 @@ struct CharacteristicEvolution {
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
       ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>>;
+      ::Actions::UpdateU<cce_system>,
+      ::Actions::CleanHistory<cce_system>>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<
@@ -223,13 +225,14 @@ struct CharacteristicEvolution {
       ::Actions::RecordTimeStepperData<cce_system>,
       ::Actions::UpdateU<cce_system>,
       ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
+      ::Actions::CleanHistory<cce_system>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
-      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
-      ::Actions::Goto<CceEvolutionLabelTag>>;
+      ::Actions::AdvanceTime,
+      Actions::ExitIfEndTimeReached, ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,

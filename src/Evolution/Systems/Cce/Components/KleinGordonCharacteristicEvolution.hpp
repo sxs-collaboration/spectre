@@ -14,6 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -154,13 +155,14 @@ struct KleinGordonCharacteristicEvolution
       ::Actions::RecordTimeStepperData<cce_system>,
       ::Actions::UpdateU<cce_system>,
       ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
+      ::Actions::CleanHistory<cce_system>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           KleinGordonCharacteristicEvolution<Metavariables>>,
-      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
-      ::Actions::Goto<CceEvolutionLabelTag>>;
+      ::Actions::AdvanceTime,
+      Actions::ExitIfEndTimeReached, ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,

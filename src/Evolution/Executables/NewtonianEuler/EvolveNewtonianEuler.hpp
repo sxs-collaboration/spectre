@@ -99,6 +99,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -296,6 +297,7 @@ struct EvolutionMetavars {
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<typename system::primitive_from_conservative>>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       // Conservative `UpdatePrimitives` expects system to possess
@@ -339,6 +341,7 @@ struct EvolutionMetavars {
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           NewtonianEuler::subcell::TciOnDgGrid<volume_dim>>,
+      Actions::CleanHistory<system>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
@@ -354,6 +357,7 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           NewtonianEuler::subcell::TimeDerivative<volume_dim>>,
       Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
+      Actions::CleanHistory<system>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,

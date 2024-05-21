@@ -89,6 +89,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
@@ -254,6 +255,7 @@ struct EvolutionMetavars {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -273,6 +275,7 @@ struct EvolutionMetavars {
               Actions::UpdateU<system>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
+      Actions::CleanHistory<system>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -284,6 +287,7 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
       Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
+      Actions::CleanHistory<system>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

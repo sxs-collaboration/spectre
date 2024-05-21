@@ -126,6 +126,7 @@
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -389,6 +390,7 @@ struct GeneralizedHarmonicTemplateBase {
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,

@@ -52,7 +52,8 @@ void check_convergence_order(const ImexTimeStepper& stepper,
       implicit_history.insert(time_step_id,
                               TimeSteppers::History<double>::no_value,
                               implicit_rhs(y, time_step_id.substep_time()));
-      stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
+      stepper.update_u(make_not_null(&y), history, step_size);
+      stepper.clean_history(make_not_null(&history));
       // This system is simple enough that we can do the implicit
       // solve analytically.
 

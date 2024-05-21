@@ -156,6 +156,7 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -549,6 +550,7 @@ struct EvolutionMetavars {
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor>>,
               control_system::Actions::LimitTimeStep<control_systems>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,

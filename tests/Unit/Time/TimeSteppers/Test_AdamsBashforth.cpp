@@ -429,7 +429,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Reversal",
   add_history(0, slab.start() + slab.duration() * 3 / 4);
   add_history(1, slab.start() + slab.duration() / 3);
   double y = f(1. / 3.);
-  ab3.update_u(make_not_null(&y), make_not_null(&history), slab.duration() / 3);
+  ab3.update_u(make_not_null(&y), history, slab.duration() / 3);
   CHECK(y == approx(f(2. / 3.)));
 }
 

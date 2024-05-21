@@ -27,65 +27,6 @@ static_assert(adams_coefficients::maximum_order ==
               AdamsMoultonPc<false>::maximum_order);
 
 namespace {
-template <typename T>
-void clean_history_nonmonotonic(const MutableUntypedHistory<T>& history) {
-  ASSERT(history.integration_order() > 1, "Cannot run below second order.");
-  const auto required_points = history.integration_order() - 1;
-  ASSERT(history.size() >= required_points,
-         "Insufficient data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << required_points);
-  if (history.at_step_start()) {
-    history.clear_substeps();
-    while (history.size() > required_points) {
-      history.pop_front();
-    }
-    if (history.size() > 1) {
-      history.discard_value(history[history.size() - 2].time_step_id);
-    }
-  } else {
-    history.discard_value(history.substeps().back().time_step_id);
-  }
-}
-
-template <typename T>
-void clean_history_monotonic(const MutableUntypedHistory<T>& history) {
-  ASSERT(history.integration_order() > 1, "Cannot run below second order.");
-  // Unlike in nonmonotonic mode, monotonic cleaning happens after the
-  // update.  This behavior is reasonable because it is normally kept
-  // for dense output, which has already happened.
-  //
-  // It is also a bit of a hack, since it is necessary to trick the
-  // dense output code into using the correct starting values.  During
-  // dense output, the variables are initialized with
-  // History::complete_step_start(), but monotonic dense output
-  // doesn't require a complete step, so this is wrong.  Clearing the
-  // substeps tricks that code into considering the current step to be
-  // complete.
-  //
-  // Unfortunately, this also breaks self-start, which sometimes jumps
-  // out of the middle of the algorithm to avoid triggering the
-  // clean-up code to elongate the history.  This is dealt with by
-  // cleaning one fewer entries during self-start.
-  if (not history.at_step_start()) {
-    const auto required_points =
-        ::SelfStart::is_self_starting(history.back().time_step_id)
-            ? history.integration_order() - 1
-            : history.integration_order() - 2;
-    ASSERT(history.size() >= required_points,
-           "Insufficient data to take an order-" << history.integration_order()
-           << " step.  Have " << history.size() << " times, need "
-           << required_points);
-    history.clear_substeps();
-    while (history.size() > required_points) {
-      history.pop_front();
-    }
-    if (not history.empty()) {
-      history.discard_value(history.back().time_step_id);
-    }
-  }
-}
-
 template <typename T, typename TimeType>
 void update_u_common(const gsl::not_null<T*> u,
                      const ConstUntypedHistory<T>& history,
@@ -213,45 +154,53 @@ void AdamsMoultonPc<Monotonic>::pup(PUP::er& p) {
 template <bool Monotonic>
 template <typename T>
 void AdamsMoultonPc<Monotonic>::update_u_impl(
-    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step) const {
-  if constexpr (not Monotonic) {
-    clean_history_nonmonotonic(history);
-  }
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not history.at_step_start());
-  if constexpr (Monotonic) {
-    clean_history_monotonic(history);
-  }
 }
 
 template <bool Monotonic>
 template <typename T>
 bool AdamsMoultonPc<Monotonic>::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  if constexpr (not Monotonic) {
-    clean_history_nonmonotonic(history);
-  }
+    const ConstUntypedHistory<T>& history, const TimeDelta& time_step) const {
   const bool predictor = history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   *u = *history.back().value;
   update_u_common(u, history, next_time, history.integration_order(),
                   not predictor);
   if (predictor) {
-    // No monotonic cleaning necessary on predictor phase.
     return false;
   }
   *u_error = *history.back().value;
   update_u_common(u_error, history, next_time, history.integration_order() - 1,
                   true);
   *u_error = *u - *u_error;
-  if constexpr (Monotonic) {
-    clean_history_monotonic(history);
-  }
   return true;
+}
+
+template <bool Monotonic>
+template <typename T>
+void AdamsMoultonPc<Monotonic>::clean_history_impl(
+    const MutableUntypedHistory<T>& history) const {
+  if (not history.at_step_start()) {
+    ASSERT(history.integration_order() > 1, "Cannot run below second order.");
+    const auto required_points = history.integration_order() - 2;
+    ASSERT(history.size() >= required_points,
+           "Insufficient data to take an order-" << history.integration_order()
+           << " step.  Have " << history.size() << " times, need "
+           << required_points);
+    history.clear_substeps();
+    while (history.size() > required_points) {
+      history.pop_front();
+    }
+    if (not history.empty()) {
+      history.discard_value(history.back().time_step_id);
+    }
+  }
 }
 
 template <bool Monotonic>

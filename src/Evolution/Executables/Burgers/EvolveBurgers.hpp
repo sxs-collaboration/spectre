@@ -88,6 +88,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -235,6 +236,7 @@ struct EvolutionMetavars {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -253,6 +255,7 @@ struct EvolutionMetavars {
               Actions::UpdateU<system>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           Burgers::subcell::TciOnDgGrid>,
+      Actions::CleanHistory<system>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -265,6 +268,7 @@ struct EvolutionMetavars {
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::UpdateU<system>,
+      Actions::CleanHistory<system>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           Burgers::subcell::TciOnFdGrid>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

@@ -81,8 +81,8 @@ void test_equal_rate(const LtsTimeStepper& stepper, const size_t order,
       boundary_history.remote().insert(time_id, order,
                                        driver(time_id.substep_time()));
 
-      stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
-                       step_size);
+      stepper.update_u(make_not_null(&y), volume_history, step_size);
+      stepper.clean_history(make_not_null(&volume_history));
       stepper.add_boundary_delta(&y, make_not_null(&boundary_history),
                                  step_size, coupling);
       time_id = stepper.next_time_id(time_id, step_size);

@@ -126,6 +126,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarCharge.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -441,6 +442,7 @@ struct ScalarTensorTemplateBase {
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       // We allow for separate filtering of the system variables
       dg::Actions::Filter<Filters::Exponential<0>,
                           system::gh_system::variables_tag::tags_list>,

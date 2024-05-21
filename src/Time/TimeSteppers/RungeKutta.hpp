@@ -96,14 +96,16 @@ class RungeKutta : public virtual TimeStepper {
 
  private:
   template <typename T>
-  void update_u_impl(gsl::not_null<T*> u,
-                     const MutableUntypedHistory<T>& history,
+  void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
 
   template <typename T>
   bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     const MutableUntypedHistory<T>& history,
+                     const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
+
+  template <typename T>
+  void clean_history_impl(const MutableUntypedHistory<T>& history) const;
 
   template <typename T>
   bool dense_update_u_impl(gsl::not_null<T*> u,

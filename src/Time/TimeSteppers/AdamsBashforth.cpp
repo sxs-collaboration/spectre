@@ -50,20 +50,6 @@ template <typename Iter>
 auto history_time_iterator(const Iter& it) {
   return boost::transform_iterator(it, TimeFromRecord<Iter>{});
 }
-
-template <typename T>
-void clean_history(const MutableUntypedHistory<T>& history) {
-  ASSERT(history.size() >= history.integration_order(),
-         "Insufficient data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  while (history.size() > history.integration_order()) {
-    history.pop_front();
-  }
-  if (history.size() > 1) {
-    history.discard_value(history[history.size() - 2].time_step_id);
-  }
-}
 }  // namespace
 
 AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
@@ -132,19 +118,26 @@ void AdamsBashforth::pup(PUP::er& p) {
 }
 
 template <typename T>
-void AdamsBashforth::update_u_impl(
-    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
-    const TimeDelta& time_step) const {
-  clean_history(history);
+void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
+                                   const ConstUntypedHistory<T>& history,
+                                   const TimeDelta& time_step) const {
+  ASSERT(history.size() == history.integration_order(),
+         "Incorrect data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
   *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
 }
 
 template <typename T>
-bool AdamsBashforth::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  clean_history(history);
+bool AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
+                                   const gsl::not_null<T*> u_error,
+                                   const ConstUntypedHistory<T>& history,
+                                   const TimeDelta& time_step) const {
+  ASSERT(history.size() == history.integration_order(),
+         "Incorrect data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
   *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
   // the error estimate is only useful once the history has enough elements to
@@ -153,6 +146,17 @@ bool AdamsBashforth::update_u_impl(
   update_u_common(u_error, history, time_step, history.integration_order() - 1);
   *u_error = *u - *u_error;
   return true;
+}
+
+template <typename T>
+void AdamsBashforth::clean_history_impl(
+    const MutableUntypedHistory<T>& history) const {
+  while (history.size() >= history.integration_order()) {
+    history.pop_front();
+  }
+  if (history.size() > 1) {
+    history.discard_value(history[history.size() - 2].time_step_id);
+  }
 }
 
 template <typename T>

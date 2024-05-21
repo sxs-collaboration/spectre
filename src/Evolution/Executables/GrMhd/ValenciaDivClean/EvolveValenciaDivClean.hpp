@@ -167,6 +167,7 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
@@ -425,6 +426,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   tmpl::list<system::primitive_from_conservative<
                       ordered_list_of_primitive_recovery_schemes>>>,
               Actions::UpdateU<system>>>,
+      Actions::CleanHistory<system>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<grmhd::ValenciaDivClean::Flattener<
@@ -454,6 +456,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
+      Actions::CleanHistory<system>,
       parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
@@ -484,6 +487,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       Actions::UpdateU<system>,
+      Actions::CleanHistory<system>,
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,
