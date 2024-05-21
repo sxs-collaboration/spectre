@@ -388,12 +388,12 @@ struct GeneralizedHarmonicTemplateBase {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
-              Actions::UpdateU<system>,
-              dg::Actions::Filter<
-                  Filters::Exponential<0>,
-                  tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
-                             gh::Tags::Pi<DataVector, volume_dim>,
-                             gh::Tags::Phi<DataVector, volume_dim>>>>>>;
+              Actions::UpdateU<system>>>,
+      dg::Actions::Filter<
+          Filters::Exponential<0>,
+          tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
+                     gh::Tags::Pi<DataVector, volume_dim>,
+                     gh::Tags::Phi<DataVector, volume_dim>>>>;
 
   template <typename DerivedMetavars, bool UseControlSystems>
   using initialization_actions = tmpl::list<
