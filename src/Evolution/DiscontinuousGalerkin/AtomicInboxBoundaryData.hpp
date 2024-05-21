@@ -33,10 +33,22 @@ namespace evolution::dg {
  * messages. Note that some additional logic is needed also for supporting
  * local time stepping, since not every message entry "counts" since it
  * depends on the time level of neighboring elements.
+ *
+ * \warning Only `AtomicInboxBoundaryData` with zero messages can be move
+ * constructed. A non-zero number of neighbors is allowed. This is necessary
+ * in order to be able to serialize a
+ * `std::unordered_map<Key,AtomicInboxBoundaryData>`.
  */
 template <size_t Dim>
 struct AtomicInboxBoundaryData {
   using stored_type = evolution::dg::BoundaryData<Dim>;
+  AtomicInboxBoundaryData() = default;
+  AtomicInboxBoundaryData(const AtomicInboxBoundaryData&) = delete;
+  AtomicInboxBoundaryData& operator=(const AtomicInboxBoundaryData&) = delete;
+  AtomicInboxBoundaryData(AtomicInboxBoundaryData&& rhs) noexcept;
+  AtomicInboxBoundaryData& operator=(AtomicInboxBoundaryData&&) noexcept =
+      delete;
+  ~AtomicInboxBoundaryData() = default;
 
   /*!
    * Computes the 1d index into the `boundary_data_in_directions` array

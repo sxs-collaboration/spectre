@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <atomic>
 #include <cstddef>
 
 #include "Domain/Structure/Direction.hpp"
@@ -160,6 +161,16 @@ void test_serialization() {
         Catch::Matchers::ContainsSubstring(
             "We can only serialize empty StaticSpscQueues but the queue in "));
   }
+
+  std::unordered_map<int, AtomicInboxBoundaryData<Dim>> data_map{};
+  data_map[0] = AtomicInboxBoundaryData<Dim>{};
+  data_map.at(0).number_of_neighbors = 7;
+  const auto data_map_out = serialize_and_deserialize(data_map);
+  CHECK(data_map_out.size() == 1);
+  CHECK(data_map_out.at(0).number_of_neighbors.load(std::memory_order_acquire) =
+            7);
+  CHECK(data_map_out.at(0).message_count.load(std::memory_order_acquire) = 0);
+  check_all_empty(data_map_out.at(0));
 }
 
 template <size_t Dim>
