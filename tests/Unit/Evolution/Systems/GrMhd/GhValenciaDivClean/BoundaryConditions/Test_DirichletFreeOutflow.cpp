@@ -562,7 +562,8 @@ SPECTRE_TEST_CASE(
             "              CutoffPressure: 0.04\n"
             "              VectorPotentialAmplitude: 2500\n"
             "              Center: [0.0, 0.0, 0.0]\n"
-            "              MaxDistanceFromCenter: 100.0\n")
+            "              MaxDistanceFromCenter: 100.0\n"
+            "        Perturbation: 0.0\n")
             ->get_clone();
     const gh::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedTovStar>
         analytic_solution_or_data{
@@ -575,7 +576,7 @@ SPECTRE_TEST_CASE(
                                     InitialMagneticField>>(
                 std::make_unique<
                     grmhd::AnalyticData::InitialMagneticFields::Poloidal>(
-                    2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0))};
+                    2, 0.04, 2500.0, std::array{0.0, 0.0, 0.0}, 100.0)), 0.0};
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
             *dynamic_cast<grmhd::GhValenciaDivClean::BoundaryConditions::
