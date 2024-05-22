@@ -73,3 +73,8 @@ spectre_add_python_bindings_test(
   Test_Matrix.py
   "Unit;DataStructures;Python"
   PyDataStructures)
+spectre_add_python_bindings_test(
+  "Unit.DataStructures.Python.ModalVector"
+  Test_ModalVector.py
+  "Unit;DataStructures;Python"
+  PyDataStructures)

@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   DataVector.cpp
   Matrix.cpp
+  ModalVector.cpp
   PYTHON_FILES
   __init__.py
   )
@@ -20,6 +21,7 @@ spectre_python_headers(
   HEADERS
   DataVector.hpp
   Matrix.hpp
+  ModalVector.hpp
   )
 
 spectre_python_link_libraries(
