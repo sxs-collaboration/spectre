@@ -6,6 +6,10 @@
 #include <string>
 #include <type_traits>
 
+#include "Time/Slab.hpp"
+#include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
+#include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/ImexTimeStepper.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -33,6 +37,22 @@ void check_list_contents(const std::string& description,
       });
 }
 
+template <typename Stepper>
+Stepper create_example(tmpl::type_<Stepper> /*meta*/) {
+  return Stepper{};
+}
+
+TimeSteppers::AdamsBashforth create_example(
+    tmpl::type_<TimeSteppers::AdamsBashforth> /*meta*/) {
+  return TimeSteppers::AdamsBashforth{4};
+}
+
+template <bool Monotonic>
+TimeSteppers::AdamsMoultonPc<Monotonic> create_example(
+    tmpl::type_<TimeSteppers::AdamsMoultonPc<Monotonic>> /*meta*/) {
+  return TimeSteppers::AdamsMoultonPc<Monotonic>{4};
+}
+
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Factory", "[Unit][Time]") {
   check_list_contents<TimeSteppers::time_steppers>(
       "time_steppers", []<typename Stepper>(tmpl::type_<Stepper> /*meta*/) {
@@ -46,6 +66,21 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Factory", "[Unit][Time]") {
       "imex_time_steppers",
       []<typename Stepper>(tmpl::type_<Stepper> /*meta*/) {
         return std::is_convertible_v<Stepper*, ImexTimeStepper*>;
+      });
+  check_list_contents<TimeSteppers::increasing_substep_time_steppers>(
+      "increasing_substep_time_steppers", [](auto stepper_type) {
+        const auto stepper = create_example(stepper_type);
+        const Slab slab(0.0, 1.0);
+        const auto step = slab.duration();
+        TimeStepId id(true, 0, slab.start());
+        while (id.slab_number() == 0) {
+          auto next_id = stepper.next_time_id_for_error(id, step);
+          if (next_id.substep_time() <= id.substep_time()) {
+            return false;
+          }
+          id = next_id;
+        }
+        return true;
       });
 }
 }  // namespace

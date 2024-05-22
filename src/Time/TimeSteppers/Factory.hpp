@@ -32,4 +32,8 @@ using lts_time_steppers = tmpl::list<AdamsBashforth>;
 /// Typelist of available ImexTimeSteppers
 using imex_time_steppers =
     tmpl::list<Heun2, Rk3Kennedy, Rk3Pareschi, Rk4Kennedy>;
+
+/// Typelist of TimeSteppers whose substep times are strictly increasing
+using increasing_substep_time_steppers =
+    tmpl::list<AdamsBashforth, Rk3Owren, Rk4Owren>;
 }  // namespace TimeSteppers
