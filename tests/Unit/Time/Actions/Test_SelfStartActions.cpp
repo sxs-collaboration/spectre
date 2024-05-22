@@ -165,7 +165,7 @@ struct Component {
       tmpl::list<ComputeTimeDerivative,
                  Actions::RecordTimeStepperData<typename metavariables::system>,
                  Actions::UpdateU<typename metavariables::system>,
-                 Actions::CleanHistory<typename metavariables::system>,
+                 Actions::CleanHistory<typename metavariables::system, false>,
                  tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                                      tmpl::list<>>>;
   using action_list = tmpl::flatten<

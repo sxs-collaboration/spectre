@@ -712,7 +712,7 @@ struct GhValenciaDivCleanTemplateBase<
                   system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               Actions::UpdateU<system>>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
       VariableFixing::Actions::FixVariables<
@@ -742,7 +742,7 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
@@ -767,7 +767,7 @@ struct GhValenciaDivCleanTemplateBase<
           events_and_dense_triggers_subcell_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,
       Actions::UpdateU<system>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,

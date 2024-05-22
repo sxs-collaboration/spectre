@@ -218,7 +218,7 @@ struct EvolutionMetavars {
                   tmpl::list<AlwaysReadyPostprocessor<
                       typename system::primitive_from_conservative>>>,
               Actions::UpdateU<system>>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<

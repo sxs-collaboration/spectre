@@ -83,8 +83,8 @@ void test_equal_rate(const LtsTimeStepper& stepper, const size_t order,
 
       stepper.update_u(make_not_null(&y), volume_history, step_size);
       stepper.clean_history(make_not_null(&volume_history));
-      stepper.add_boundary_delta(&y, make_not_null(&boundary_history),
-                                 step_size, coupling);
+      stepper.add_boundary_delta(&y, boundary_history, step_size, coupling);
+      stepper.clean_boundary_history(make_not_null(&boundary_history));
       time_id = stepper.next_time_id(time_id, step_size);
     }
     CHECK(y == approx(analytic(time_id.substep_time())));
@@ -160,8 +160,8 @@ void test_dense_output(const LtsTimeStepper& stepper) {
       stepper.boundary_dense_output(&dense_result, history, next_check.value(),
                                     coupling);
       double delta = 0.0;
-      stepper.add_boundary_delta(&delta, make_not_null(&history),
-                                 next_check - t, coupling);
+      stepper.add_boundary_delta(&delta, history, next_check - t, coupling);
+      stepper.clean_boundary_history(make_not_null(&history));
       CHECK(dense_result == approx(delta));
       if (next_check.is_at_slab_boundary()) {
         break;

@@ -263,8 +263,8 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
 
     ASSERT(not simulation_less(next_check, t), "Screwed up arithmetic");
     if (t == next_check) {
-      ab4.add_boundary_delta(&y, make_not_null(&history), dt[0],
-                             quartic_coupling);
+      ab4.add_boundary_delta(&y, history, dt[0], quartic_coupling);
+      ab4.clean_boundary_history(make_not_null(&history));
       CHECK(y() == approx(quartic_answer(t.value())));
       if (t.is_at_slab_boundary()) {
         break;
@@ -328,8 +328,8 @@ void check_lts_vts() {
     gsl::at(next, side) += this_dt;
 
     if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
-      ab4.add_boundary_delta(&y, make_not_null(&history), next_check - t,
-                             quartic_coupling);
+      ab4.add_boundary_delta(&y, history, next_check - t, quartic_coupling);
+      ab4.clean_boundary_history(make_not_null(&history));
       CHECK(y() == approx(quartic_answer(next_check.value())));
       if (next_check.is_at_slab_boundary()) {
         break;
@@ -454,7 +454,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary.Reversal",
   add_history(TimeStepId(true, 1, slab.start() + slab.duration() / 3));
   double y = f(1. / 3.);
   ab3.add_boundary_delta(
-      &y, make_not_null(&history), slab.duration() / 3,
+      &y, history, slab.duration() / 3,
       [](const double local, const double /*remote*/) { return local; });
   CHECK(y == approx(f(2. / 3.)));
 }

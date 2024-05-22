@@ -550,7 +550,7 @@ struct EvolutionMetavars {
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor>>,
               control_system::Actions::LimitTimeStep<control_systems>,
               Actions::UpdateU<system>>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,

@@ -35,6 +35,7 @@ target_link_libraries(
   DataStructures
   Domain
   DomainStructure
+  Evolution
   Imex
   Time
   TimeStepperHelpers

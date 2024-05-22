@@ -255,7 +255,7 @@ struct EvolutionMetavars {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -275,7 +275,7 @@ struct EvolutionMetavars {
               Actions::UpdateU<system>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -287,7 +287,7 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
       Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
-      Actions::CleanHistory<system>,
+      Actions::CleanHistory<system, local_time_stepping>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

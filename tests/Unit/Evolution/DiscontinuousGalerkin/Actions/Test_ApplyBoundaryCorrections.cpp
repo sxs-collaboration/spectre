@@ -931,8 +931,7 @@ void test_impl(const Spectral::Quadrature quadrature,
               ? mesh.slice_away(direction.dimension()).number_of_grid_points()
               : mesh.number_of_grid_points(),
           0.0};
-      time_stepper.add_boundary_delta(&lifted_volume_data,
-                                      make_not_null(&mortar_data_hist),
+      time_stepper.add_boundary_delta(&lifted_volume_data, mortar_data_hist,
                                       time_step, compute_correction_coupling);
       if (quadrature == Spectral::Quadrature::GaussLobatto) {
         // Add the flux contribution to the volume data

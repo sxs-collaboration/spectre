@@ -286,10 +286,15 @@ class AdamsBashforth : public LtsTimeStepper {
   template <typename T>
   void add_boundary_delta_impl(
       gsl::not_null<T*> result,
-      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
-      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
       const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
       const TimeDelta& time_step) const;
+
+  void clean_boundary_history_impl(
+      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times)
+      const override;
 
   template <typename T>
   void boundary_dense_output_impl(

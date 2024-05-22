@@ -155,7 +155,7 @@ struct KleinGordonCharacteristicEvolution
       ::Actions::RecordTimeStepperData<cce_system>,
       ::Actions::UpdateU<cce_system>,
       ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
-      ::Actions::CleanHistory<cce_system>,
+      ::Actions::CleanHistory<cce_system, false>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<
