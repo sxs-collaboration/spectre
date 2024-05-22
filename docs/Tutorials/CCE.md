@@ -134,61 +134,22 @@ The `EthInertialRetardedTime` is a diagnostic dataset that represents the
 angular derivative of the inertial retarded time, which determines the
 coordinate transformation that is performed at scri+.
 
-The following python script will load data from a successful CCE run and
-construct a plot of all of the physical waveform data.
-```py
-import matplotlib.pyplot as plt
-import numpy as np
-import h5py as h5
+If you'd like to visualize the output of a CCE run, we offer a
+[CLI](py/cli.html) that will produce a plot of all of quantities except
+`EthInertialRetardedTime`. To see how to use this cli, run
 
-
-def spectre_real_mode_index(l, m):
-    return 2 * (l**2 + l + m) + 1
-
-
-def spectre_imag_mode_index(l, m):
-    return 2 * (l**2 + l + m) + 2
-
-
-def get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):
-    with h5.File(filename, "r") as h5_file:
-        timeseries_data = (h5_file[dataset][()][:, [0] + list(
-            np.array([[
-                spectre_real_mode_index(x[0], x[1]),
-                spectre_imag_mode_index(x[0], x[1])
-            ] for x in modes]).flatten())])
-    return timeseries_data
-
-
-plot_quantities = ["Strain", "News", "Psi0", "Psi1", "Psi2", "Psi3", "Psi4"]
-mode_set = [[2, 2], [3, 3]]
-filename = "CharacteristicExtractReduction.h5"
-output_plot_filename = "CCE_plot.pdf"
-
-legend = []
-for (mode_l, mode_m) in mode_set:
-    legend = np.append(legend, [
-        r"Re $Y_{" + str(mode_l) + r"\," + str(mode_m) + r"}$",
-        r"Im $Y_{" + str(mode_l) + r"\," + str(mode_m) + r"}$"
-    ])
-
-plt.figure(figsize=(8, 1.9 * len(plot_quantities)))
-for i in range(len(plot_quantities)):
-    ax = plt.subplot(len(plot_quantities), 1, i + 1)
-    timeseries = np.transpose(
-        get_modes_from_block_output(
-            filename, f"/SpectreR0100.cce/{plot_quantities[i]}", mode_set
-        )
-    )
-    for j in range(len(mode_set)):
-        plt.plot(timeseries[0], timeseries[j + 1], linestyle='--', marker='')
-    ax.set_xlabel("Simulation time (M)")
-    ax.set_ylabel("Mode coefficient")
-    ax.set_title(plot_quantities[i])
-plt.tight_layout()
-plt.savefig(output_plot_filename, dpi=400)
-plt.clf()
 ```
+spectre plot cce -h
+```
+
+If you'd like to do something more complicated than just make a quick plot,
+you'll have to load in the output data yourself using `h5py` or our
+`spectre.IO.H5` bindings.
+
+\note The CLI can also plot the "old" version of CCE output, described above.
+Pass `--cce-group Cce` to the CLI. This option is only for backwards
+compatibility with the old CCE output and is not supported for the current
+version of output. This options is deprecated and will be removed in the future.
 
 ### Input data formats
 

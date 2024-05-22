@@ -100,6 +100,7 @@ def show_or_save_plot_command():
                         )
                 else:
                     plt.savefig(output)
+                    plt.close()
             else:
                 if not os.environ.get("DISPLAY"):
                     logger.warning(

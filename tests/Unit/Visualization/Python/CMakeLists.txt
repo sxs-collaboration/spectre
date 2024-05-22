@@ -14,6 +14,12 @@ spectre_add_python_bindings_test(
   None)
 
 spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotCce"
+  Test_PlotCce.py
+  "unit;visualization;python"
+  None)
+
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotControlSystem"
   Test_PlotControlSystem.py
   "unit;visualization;python"
@@ -60,6 +66,11 @@ if(${BUILD_PYTHON_BINDINGS})
   # the argument handling works.
   set_tests_properties(
     "Unit.Visualization.Python.PlotAlongLine"
+    PROPERTIES
+    TIMEOUT 10
+    )
+  set_tests_properties(
+    "Unit.Visualization.Python.PlotCce"
     PROPERTIES
     TIMEOUT 10
     )
