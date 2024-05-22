@@ -7,6 +7,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CreateElementCollection.hpp
   DgElementArrayMember.hpp
   DgElementArrayMemberBase.hpp
   IsDgElementArrayMember.hpp
