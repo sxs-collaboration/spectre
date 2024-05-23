@@ -30,8 +30,9 @@ struct CreateMemberFunctionPointer<ThermodynamicDim,
                                    std::index_sequence<Is...>> {
   template <class DataType, class EoS>
   using f = Scalar<DataType> (EoS::*)(
-      const Scalar<std::remove_pointer_t<decltype(
-          (void)Is, std::add_pointer_t<DataType>{nullptr})>>&...) const;
+      const Scalar<std::remove_pointer_t<
+          decltype((void)Is, std::add_pointer_t<DataType>{nullptr})>>&...)
+      const;
 };
 
 template <class T, typename EoS>
@@ -113,15 +114,23 @@ void check_impl(
     const std::string& python_function_prefix, const T& used_for_size,
     const MemberArgs&... member_args) {
   // Bounds for: density, specific internal energy
+  // Caution! This configuration can produce nonsense
+  // configurations if the sampled rho, epsilon require a
+  // negative temperature.  If any EoS assumes T >= 0
+  // this will have to be modified.
   const std::array<std::pair<double, double>, 2> random_value_bounds{
-      {{1.0e-4, 4.0}, {0.0, 1.0e4}}};
+      {{1.0e-4, 4.0}, {0.0, 1e4}}};
   MAKE_GENERATOR(generator, std::random_device{}());
-  std::uniform_real_distribution<> distribution(random_value_bounds[0].first,
-                                                random_value_bounds[0].second);
+  std::uniform_real_distribution<> distribution_density{
+      random_value_bounds[0].first, random_value_bounds[0].second};
+  std::uniform_real_distribution<> distribution_energy{
+      random_value_bounds[1].first, random_value_bounds[1].second};
   const auto rest_mass_density = make_with_random_values<Scalar<T>>(
-      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+      make_not_null(&generator), make_not_null(&distribution_density),
+      used_for_size);
   const auto specific_internal_energy = make_with_random_values<Scalar<T>>(
-      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+      make_not_null(&generator), make_not_null(&distribution_energy),
+      used_for_size);
   using EoS = ::EquationsOfState::EquationOfState<IsRelativistic, 2>;
   using Function = typename CreateMemberFunctionPointer<2>::template f<T, EoS>;
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
@@ -145,6 +154,10 @@ void check_impl(
                           "_newt_pressure_from_density_and_enthalpy"),
         {{{1.0e-4, 4.0}, {1.0, 1.0e4}}}, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density_and_pressure...");
+    // This test doesn't make sense, as pressure arguement is
+    // is receiving randomly generated specific energies. It will
+    // still work though, as long as the pressure is sufficiently large
+    // and the rest mass density sufficiently small.
     pypp::check_with_random_values<2>(
         func = &EoS::specific_internal_energy_from_density_and_pressure, *eos,
         python_file_name,
@@ -185,6 +198,73 @@ void check_impl(
   helper(in_eos);
   helper(serialize_and_deserialize(in_eos));
 }
+template <bool IsRelativistic, class... MemberArgs, class T>
+void check_impl(
+    const std::unique_ptr<
+        ::EquationsOfState::EquationOfState<IsRelativistic, 3>>& in_eos,
+    const std::string& python_file_name,
+    const std::string& python_function_prefix, const T& used_for_size,
+    const MemberArgs&... member_args) {
+  // Bounds for: density, temperature, electron fraction
+  const std::array<std::pair<double, double>, 3> random_value_bounds{
+      {{1.0e-4, 1.0}, {0.0, 1.0}, {0.0, 0.5}}};
+  MAKE_GENERATOR(generator, std::random_device{}());
+  std::uniform_real_distribution<> distribution_density{
+      random_value_bounds[0].first, random_value_bounds[0].second};
+  std::uniform_real_distribution<> distribution_temperature{
+      random_value_bounds[1].first, random_value_bounds[1].second};
+  std::uniform_real_distribution<> distribution_electron_fraction{
+      random_value_bounds[2].first, random_value_bounds[2].second};
+  const auto rest_mass_density = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution_density),
+      used_for_size);
+  const auto temperature = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution_temperature),
+      used_for_size);
+  const auto electron_fraction = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution_electron_fraction),
+      used_for_size);
+
+  using EoS = ::EquationsOfState::EquationOfState<IsRelativistic, 3>;
+  using Function = typename CreateMemberFunctionPointer<3>::template f<T, EoS>;
+  INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
+       " equation of state"s);
+  const auto specific_internal_energy =
+      in_eos.specific_internal_energy_from_density_and_temperautre(
+          rest_mass_density, temperature, electron_fraction);
+  CHECK(get(temperature) ==
+        get(in_eos.temperature_from_energy_and_density(
+            rest_mass_density, specific_internal_energy, electron_fraction)));
+  INFO("Done\nTesting temperature_from_energy_and_density...");
+  const auto member_args_tuple = std::make_tuple(member_args...);
+  const auto helper = [&](const std::unique_ptr<EoS>& eos) {
+    // need func variable to work around GCC bug
+    Function func{&EoS::temperature_from_density_and_energy};
+    INFO("Done\nTesting specific_int_energy_from_density_and_temperature...");
+    pypp::check_with_random_values<3>(
+        func = &EoS::specific_internal_energy_from_density_and_temperature,
+        *eos, python_file_name,
+        python_function_prefix + "_energy_from_density_and_temperature",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting pressure_from_density_and_temperature...");
+    pypp::check_with_random_values<3>(
+        func = &EoS::pressure_from_density_and_temperature, *eos,
+        python_file_name,
+        python_function_prefix + "_pressure_from_density_and_temperature",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting sound_speed_from_density_and_temperature...");
+    pypp::check_with_random_values<3>(
+        func = &EoS::sound_speed_squared_from_density_and_temperature, *eos,
+        python_file_name,
+        python_function_prefix +
+            "_sound_speed_squared_from_density_and_temperature",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\n\n");
+  };
+  helper(in_eos);
+  helper(serialize_and_deserialize(in_eos));
+}
+
 }  // namespace detail
 
 /// @{
