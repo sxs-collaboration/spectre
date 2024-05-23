@@ -10,6 +10,7 @@ spectre_target_headers(
   CreateElementCollection.hpp
   DgElementArrayMember.hpp
   DgElementArrayMemberBase.hpp
+  DgElementCollection.hpp
   IsDgElementArrayMember.hpp
   IsDgElementCollection.hpp
   ReceiveDataForElement.hpp
