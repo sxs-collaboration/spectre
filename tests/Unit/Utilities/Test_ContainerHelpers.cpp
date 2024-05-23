@@ -121,4 +121,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.ContainerHelpers", "[Unit][Utilities]") {
   }
   CHECK(min(constant_spectre_vector) == min(2.0));
   CHECK(max(constant_spectre_vector) == max(2.0));
+  CHECK(max(2.0, 1.0) == 2.0);
+  CHECK(min(2.0, 1.0) == 1.0);
 }

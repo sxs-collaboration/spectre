@@ -123,6 +123,16 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
 
 /// Fall-back that allows using `min(x)` where `x` can be a vector or a double
 SPECTRE_ALWAYS_INLINE double min(const double val) { return val; }
+/// Fall-back that allows using `min(x, y)` where `x` or `y` could be a vector
+/// or a double
+SPECTRE_ALWAYS_INLINE double min(const double x, const double y) {
+  return std::min(x, y);
+}
 
 /// Fall-back that allows using `max(x)` where `x` can be a vector or a double
 SPECTRE_ALWAYS_INLINE double max(const double val) { return val; }
+/// Fall-back that allows using `max(x, y)` where `x` or `y` could be a vector
+/// or a double
+SPECTRE_ALWAYS_INLINE double max(const double x, const double y) {
+  return std::max(x, y);
+}
