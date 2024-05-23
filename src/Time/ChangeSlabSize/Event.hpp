@@ -18,6 +18,7 @@
 #include "Options/Context.hpp"
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -164,21 +165,31 @@ class ChangeSlabSize : public Event {
         },
         box);
 
-    const auto& component_proxy =
-        Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto& self_proxy = component_proxy[array_index];
-    if (synchronization_required) {
-      Parallel::contribute_to_reduction<
-          ChangeSlabSize_detail::StoreNewSlabSize>(
-          ReductionData(slab_to_change, step_requests), self_proxy,
-          component_proxy);
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      ERROR(
+          "Slab changing is not yet implemented for the DgElementCollection "
+          "parallel component. Specifically, the ability to do reductions "
+          "using Charm++-style reductions has not been implemented.");
     } else {
-      db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
-          [&](const gsl::not_null<
-              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
-                  sizes) { (*sizes)[slab_to_change].push_back(step_requests); },
-          box);
+      const auto& component_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+      const auto& self_proxy = component_proxy[array_index];
+      if (synchronization_required) {
+        Parallel::contribute_to_reduction<
+            ChangeSlabSize_detail::StoreNewSlabSize>(
+            ReductionData(slab_to_change, step_requests), self_proxy,
+            component_proxy);
+      } else {
+        db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
+            [&](const gsl::not_null<
+                std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                    sizes) {
+              (*sizes)[slab_to_change].push_back(step_requests);
+            },
+            box);
+      }
     }
+    (void)cache, (void)array_index;
   }
 
   using is_ready_argument_tags = tmpl::list<>;
