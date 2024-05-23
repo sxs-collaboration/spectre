@@ -47,6 +47,8 @@ struct UpdateFoT {
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 size_t simple_action_no_args_call_count = 0;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+size_t threaded_action_no_args_call_count = 0;
 
 struct SimpleActionNoArgs {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -58,8 +60,21 @@ struct SimpleActionNoArgs {
   }
 };
 
+struct ThreadedActionNoArgs {
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
+  static void apply(db::DataBox<DbTags>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) {
+    ++threaded_action_no_args_call_count;
+  }
+};
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 size_t simple_action_args_call_count = 0;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+size_t threaded_action_args_call_count = 0;
 
 struct SimpleActionArgs {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -69,6 +84,19 @@ struct SimpleActionArgs {
                     const ArrayIndex& /*array_index*/, const size_t size,
                     const DataVector& some_data) {
     ++simple_action_args_call_count;
+    CHECK(some_data.size() == size);
+  }
+};
+
+struct ThreadedActionArgs {
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
+  static void apply(db::DataBox<DbTags>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const size_t size, const DataVector& some_data) {
+    ++threaded_action_args_call_count;
     CHECK(some_data.size() == size);
   }
 };
@@ -144,6 +172,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
   // the "standard" tags domain::Tags::FunctionsOfTime is ready, but this code
   // should never examine it.
   {
+    INFO("Testing perform algorithm callback support");
     // Neither function ready
     CHECK(not domain::functions_of_time_are_ready_algorithm_callback<
           OtherFunctionsOfTime>(cache, 0, component_0_p, 0.5, std::nullopt));
@@ -195,6 +224,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
 
   // Test simple action callback free function
   {
+    INFO("Testing simple action support");
     DataVector data{6, 0.0};
     const size_t size = data.size();
 
@@ -312,6 +342,128 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
     // No actions should have run
     CHECK(simple_action_no_args_call_count == 2_st);
     CHECK(simple_action_args_call_count == 2_st);
+  }
+
+  // Test threaded action callback free function
+  {
+    INFO("Testing threaded action support");
+    DataVector data{6, 0.0};
+    const size_t size = data.size();
+
+    // No callbacks should be registered
+    CHECK(domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionNoArgs>(
+        cache, 0, component_0_p, 5.0, std::nullopt));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_no_args_call_count == 0_st);
+    CHECK(domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionArgs>(
+        cache, 0, component_0_p, 5.0, std::nullopt, size, data));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_args_call_count == 0_st);
+
+    // Again no callbacks should be registered
+    CHECK(domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionNoArgs>(
+        cache, 0, component_0_p, 6.0, std::unordered_set{"FunctionB"s}));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_no_args_call_count == 0_st);
+    CHECK(domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionArgs>(
+        cache, 0, component_0_p, 6.0, std::unordered_set{"FunctionB"s}, size,
+        data));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_args_call_count == 0_st);
+
+    // Evaluate at time when A isn't ready. Can't have two different
+    // callbacks on same component so we use different components
+    CHECK(not domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionNoArgs>(
+        cache, 0, component_0_p, 16.0, std::unordered_set{"FunctionA"s}));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_no_args_call_count == 0_st);
+    CHECK(not domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionArgs>(
+        cache, 0, component_1_p, 16.0, std::unordered_set{"FunctionA"s}, size,
+        data));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component1>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_args_call_count == 0_st);
+
+    // Make FunctionA valid again
+    Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
+        cache, "FunctionA"s, 20.0);
+    // Both actions should have been queued
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 1);
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component1>(runner,
+                                                                       0) == 1);
+    CHECK(threaded_action_no_args_call_count == 0_st);
+    CHECK(threaded_action_args_call_count == 0_st);
+    ActionTesting::invoke_queued_threaded_action<component0>(
+        make_not_null(&runner), 0);
+    // Only one ran
+    CHECK(threaded_action_no_args_call_count == 1_st);
+    CHECK(threaded_action_args_call_count == 0_st);
+    ActionTesting::invoke_queued_threaded_action<component1>(
+        make_not_null(&runner), 0);
+    // Both ran
+    CHECK(threaded_action_no_args_call_count == 1_st);
+    CHECK(threaded_action_args_call_count == 1_st);
+    CHECK(domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionNoArgs>(
+        cache, 0, component_0_p, 16.0, std::unordered_set{"FunctionA"s}));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+
+    // Evaluate at time when neither are ready.
+    CHECK(not domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionNoArgs>(
+        cache, 0, component_0_p, 21.0, std::nullopt));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_no_args_call_count == 1_st);
+    CHECK(not domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime, ThreadedActionArgs>(
+        cache, 0, component_1_p, 21.0, std::nullopt, size, data));
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component1>(runner,
+                                                                       0) == 0);
+    CHECK(threaded_action_args_call_count == 1_st);
+
+    // Make A valid
+    Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
+        cache, "FunctionA"s, 25.0);
+    // Both actions should have been queued
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 1);
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component1>(runner,
+                                                                       0) == 1);
+    CHECK(threaded_action_no_args_call_count == 1_st);
+    CHECK(threaded_action_args_call_count == 1_st);
+    ActionTesting::invoke_queued_threaded_action<component0>(
+        make_not_null(&runner), 0);
+    CHECK(threaded_action_no_args_call_count == 2_st);
+    CHECK(threaded_action_args_call_count == 1_st);
+    ActionTesting::invoke_queued_threaded_action<component1>(
+        make_not_null(&runner), 0);
+    CHECK(threaded_action_no_args_call_count == 2_st);
+    CHECK(threaded_action_args_call_count == 2_st);
+
+    // Make B valid. Nothing should have happened
+    Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
+        cache, "FunctionB"s, 25.0);
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component0>(runner,
+                                                                       0) == 0);
+    CHECK(ActionTesting::number_of_queued_threaded_actions<component1>(runner,
+                                                                       0) == 0);
+    // No actions should have run
+    CHECK(threaded_action_no_args_call_count == 2_st);
+    CHECK(threaded_action_args_call_count == 2_st);
   }
 
   // No FoTs in the cache

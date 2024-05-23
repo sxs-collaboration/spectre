@@ -125,7 +125,7 @@ bool functions_of_time_are_ready_algorithm_callback(
 /// a `std::nullopt`, checks all functions in \p CacheTag.  If any function is
 /// not ready, schedules a `Parallel::SimpleActionCallback` with the GlobalCache
 /// which calls the simple action passed in as a template parameter. The `Args`
-/// are moved into the callback.
+/// are forwareded to the callback.
 template <typename CacheTag, typename SimpleAction, typename Metavariables,
           typename ArrayIndex, typename Component, typename... Args>
 bool functions_of_time_are_ready_simple_action_callback(
@@ -139,6 +139,32 @@ bool functions_of_time_are_ready_simple_action_callback(
   return detail::functions_of_time_are_ready_impl<
       CacheTag,
       Parallel::SimpleActionCallback<SimpleAction, ProxyType, Args...>>(
+      cache, array_index, component_p, time, functions_to_check,
+      std::forward<Args>(args)...);
+}
+
+/// \ingroup ComputationalDomainGroup
+/// Check that functions of time are up-to-date.
+///
+/// Check that functions of time in \p CacheTag with names in \p
+/// functions_to_check are ready at time \p time.  If  \p functions_to_check is
+/// a `std::nullopt`, checks all functions in \p CacheTag.  If any function is
+/// not ready, schedules a `Parallel::ThreadedActionCallback` with the
+/// GlobalCache which calls the threaded action passed in as a template
+/// parameter. The `Args` are forwareded to the callback.
+template <typename CacheTag, typename ThreadedAction, typename Metavariables,
+          typename ArrayIndex, typename Component, typename... Args>
+bool functions_of_time_are_ready_threaded_action_callback(
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const Component* component_p, const double time,
+    const std::optional<std::unordered_set<std::string>>& functions_to_check,
+    Args&&... args) {
+  using ProxyType =
+      std::decay_t<decltype(::Parallel::get_parallel_component<Component>(
+          cache)[array_index])>;
+  return detail::functions_of_time_are_ready_impl<
+      CacheTag,
+      Parallel::ThreadedActionCallback<ThreadedAction, ProxyType, Args...>>(
       cache, array_index, component_p, time, functions_to_check,
       std::forward<Args>(args)...);
 }
