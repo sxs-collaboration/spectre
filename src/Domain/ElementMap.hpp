@@ -60,8 +60,6 @@ class ElementMap {
     return *block_map_;
   }
 
-  const ElementId<Dim>& element_id() const { return element_id_; }
-
   template <typename T>
   tnsr::I<T, Dim, TargetFrame> operator()(
       const tnsr::I<T, Dim, Frame::ElementLogical>& source_point,

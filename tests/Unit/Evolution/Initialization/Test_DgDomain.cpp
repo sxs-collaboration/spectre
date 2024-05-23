@@ -576,10 +576,8 @@ Parallel::GlobalCache<TestMetavariables> make_global_cache() {
 }
 
 template <bool IsTimeDependent>
-void check_maps(const ElementId<1>& expected_element_id,
-                const ElementMap<1, Frame::Grid>& element_map,
+void check_maps(const ElementMap<1, Frame::Grid>& element_map,
                 const GridToInertialMap& grid_to_inertial_map) {
-  CHECK(expected_element_id == element_map.element_id());
   const auto expected_block_map = create_affine_map<Frame::Grid>();
   CHECK(are_maps_equal(expected_block_map, element_map.block_map()));
   if constexpr (IsTimeDependent) {
@@ -630,7 +628,7 @@ void test_p_refine() {
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
       make_not_null(&box), std::make_pair(mesh, element));
   check_maps<IsTimeDependent>(
-      element_id, db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(box),
+      db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(box),
       db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                             Frame::Inertial>>(
           box));
@@ -682,7 +680,6 @@ void test_split() {
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
       make_not_null(&child_1_box), parent_items);
   check_maps<IsTimeDependent>(
-      child_1_id,
       db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(child_1_box),
       db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                             Frame::Inertial>>(
@@ -706,7 +703,6 @@ void test_split() {
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
       make_not_null(&child_2_box), parent_items);
   check_maps<IsTimeDependent>(
-      child_2_id,
       db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(child_2_box),
       db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                             Frame::Inertial>>(
@@ -779,7 +775,6 @@ void test_join() {
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(
       make_not_null(&parent_box), children_items);
   check_maps<IsTimeDependent>(
-      parent_id,
       db::get<::domain::Tags::ElementMap<1, Frame::Grid>>(parent_box),
       db::get<::domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                             Frame::Inertial>>(

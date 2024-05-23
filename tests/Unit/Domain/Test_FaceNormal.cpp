@@ -109,6 +109,7 @@ std::unordered_set<Direction<3>> get_directions<3>() {
 
 template <size_t Dim>
 void check_time_dependent(
+    const ElementId<Dim>& element_id,
     const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
     const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
         grid_to_inertial_map,
@@ -171,10 +172,10 @@ void check_time_dependent(
           Tags::InterfaceCompute<
               Directions<Dim>,
               Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>>>(
-      Element<Dim>(logical_to_grid_map.element_id(), {}), get_directions<Dim>(),
+      Element<Dim>(element_id, {}), get_directions<Dim>(),
       Mesh<Dim>{3, Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto},
-      ElementMap<Dim, Frame::Grid>(logical_to_grid_map.element_id(),
+      ElementMap<Dim, Frame::Grid>(element_id,
                                    logical_to_grid_map.block_map().get_clone()),
       grid_to_inertial_map->get_clone(), time,
       clone_unique_ptrs(functions_of_time));
@@ -291,10 +292,10 @@ void test_face_normal_moving_mesh() {
 
   {
     INFO("1d");
+    const ElementId<1> element_id{0};
     const ElementMap<1, Frame::Grid> logical_to_grid_map(
-        ElementId<1>(0),
-        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-            CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
+        element_id, make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                        CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             CoordinateMaps::TimeDependent::CubicScale<1>{
@@ -308,16 +309,17 @@ void test_face_normal_moving_mesh() {
                 functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
-      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
-                           logical_to_inertial_map, time, functions_of_time);
+      check_time_dependent(element_id, logical_to_grid_map,
+                           grid_to_inertial_map, logical_to_inertial_map, time,
+                           functions_of_time);
     }
   }
   {
     INFO("2d");
+    const ElementId<2> element_id{0};
     const ElementMap<2, Frame::Grid> logical_to_grid_map(
-        ElementId<2>(0),
-        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-            CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+        element_id, make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                        CoordinateMaps::Rotation<2>(atan2(4., 3.))));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             CoordinateMaps::TimeDependent::CubicScale<2>{
@@ -331,14 +333,16 @@ void test_face_normal_moving_mesh() {
                 functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
-      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
-                           logical_to_inertial_map, time, functions_of_time);
+      check_time_dependent(element_id, logical_to_grid_map,
+                           grid_to_inertial_map, logical_to_inertial_map, time,
+                           functions_of_time);
     }
   }
   {
     INFO("3d");
+    const ElementId<3> element_id{0};
     const ElementMap<3, Frame::Grid> logical_to_grid_map(
-        ElementId<3>(0),
+        element_id,
         make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
@@ -359,8 +363,9 @@ void test_face_normal_moving_mesh() {
                 functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
-      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
-                           logical_to_inertial_map, time, functions_of_time);
+      check_time_dependent(element_id, logical_to_grid_map,
+                           grid_to_inertial_map, logical_to_inertial_map, time,
+                           functions_of_time);
     }
   }
 }
