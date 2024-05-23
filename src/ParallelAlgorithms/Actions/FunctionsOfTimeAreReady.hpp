@@ -123,7 +123,7 @@ bool functions_of_time_are_ready_algorithm_callback(
 /// Check that functions of time in \p CacheTag with names in \p
 /// functions_to_check are ready at time \p time.  If  \p functions_to_check is
 /// a `std::nullopt`, checks all functions in \p CacheTag.  If any function is
-/// ready, schedules a `Parallel::SimpleActionCallback` with the GlobalCache
+/// not ready, schedules a `Parallel::SimpleActionCallback` with the GlobalCache
 /// which calls the simple action passed in as a template parameter. The `Args`
 /// are moved into the callback.
 template <typename CacheTag, typename SimpleAction, typename Metavariables,
