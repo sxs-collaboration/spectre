@@ -50,9 +50,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
               -gsl::at(this->map_offset_, d) / gsl::at(this->map_slope_, d);
         }
         return result;
-      }()},
-      jacobian_{map_slope_},
-      inverse_jacobian_{map_inverse_slope_} {}
+      }()} {}
 
 // We could refactor the ElementMap class to use a `Composition` internally also
 // for the element-to-block-logical map, so the whole map is just one
@@ -95,8 +93,6 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) {
   p | map_offset_;
   p | map_inverse_slope_;
   p | map_inverse_offset_;
-  p | jacobian_;
-  p | inverse_jacobian_;
 }
 
 // For dual frame evolutions the ElementMap only goes to the grid frame
