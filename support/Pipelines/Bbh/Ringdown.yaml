@@ -147,6 +147,15 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    Events:
+      - ErrorIfDataTooBig:
+          Threshold: 100
+          VariablesToCheck: [SpacetimeMetric]
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
           Interval: 100
           Offset: 0
     Events:

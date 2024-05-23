@@ -285,6 +285,12 @@ EventsAndTriggers:
           Interval: 10
           Offset: 0
     Events:
+      - ErrorIfDataTooBig:
+          Threshold: 10
+          VariablesToCheck: [ConstraintEnergy]
+      - ErrorIfDataTooBig:
+          Threshold: 100
+          VariablesToCheck: [SpacetimeMetric]
       - ObservationAhA
       - ObservationAhB
   - Trigger:
