@@ -46,7 +46,7 @@ class Completion : public Event {
       Parallel::local_synchronous_action<
           Parallel::Actions::SetTerminateOnElement>(
           Parallel::get_parallel_component<Component>(cache),
-          make_not_null(&cache), array_index);
+          make_not_null(&cache), array_index, true);
     } else {
       auto al_gore = Parallel::local(
           Parallel::get_parallel_component<Component>(cache)[array_index]);

@@ -5,6 +5,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AtomicInboxBoundaryData.hpp
   BackgroundGrVars.hpp
   BoundaryData.hpp
   DgElementArray.hpp
@@ -18,6 +19,7 @@ spectre_target_headers(
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AtomicInboxBoundaryData.cpp
   BoundaryData.cpp
   MortarData.cpp
   )

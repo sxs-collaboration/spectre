@@ -240,6 +240,99 @@ void test_element_id() {
     CHECK_FALSE(is_zeroth_element(element));
     CHECK_FALSE(is_zeroth_element(element, {1}));
   }
+
+  CHECK(ElementId<1>{0, {{{0, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<1>{0, {{{1, 0}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<1>{0, {{{1, 1}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<1>{0, {{{2, 0}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<1>{0, {{{2, 1}}}}.number_of_block_boundaries() == 0);
+  CHECK(ElementId<1>{0, {{{2, 3}}}}.number_of_block_boundaries() == 1);
+
+  CHECK(ElementId<2>{0, {{{0, 0}, {0, 0}}}}.number_of_block_boundaries() == 4);
+  CHECK(ElementId<2>{0, {{{1, 0}, {0, 0}}}}.number_of_block_boundaries() == 3);
+  CHECK(ElementId<2>{0, {{{0, 0}, {1, 0}}}}.number_of_block_boundaries() == 3);
+  CHECK(ElementId<2>{0, {{{1, 0}, {1, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{1, 1}, {1, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{1, 0}, {1, 1}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 0}, {1, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 3}, {1, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{1, 0}, {2, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{1, 0}, {2, 3}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 1}, {1, 0}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<2>{0, {{{1, 0}, {2, 2}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<2>{0, {{{2, 0}, {2, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 0}, {2, 2}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<2>{0, {{{2, 2}, {2, 0}}}}.number_of_block_boundaries() == 1);
+  CHECK(ElementId<2>{0, {{{2, 3}, {2, 0}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 0}, {2, 3}}}}.number_of_block_boundaries() == 2);
+  CHECK(ElementId<2>{0, {{{2, 3}, {2, 3}}}}.number_of_block_boundaries() == 2);
+
+  CHECK(ElementId<3>{0, {{{0, 0}, {0, 0}, {0, 0}}}}
+            .number_of_block_boundaries() == 6);
+  CHECK(ElementId<3>{0, {{{1, 0}, {0, 0}, {0, 0}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{0, 0}, {1, 0}, {0, 0}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{0, 0}, {0, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{1, 1}, {0, 0}, {0, 0}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{0, 0}, {1, 1}, {0, 0}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{0, 0}, {0, 0}, {1, 1}}}}
+            .number_of_block_boundaries() == 5);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {0, 0}}}}
+            .number_of_block_boundaries() == 4);
+  CHECK(ElementId<3>{0, {{{1, 0}, {0, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 4);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 1}, {1, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 1}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {1, 1}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{2, 0}, {1, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {2, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {2, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{2, 3}, {1, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {2, 3}, {1, 0}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {2, 3}}}}
+            .number_of_block_boundaries() == 3);
+  CHECK(ElementId<3>{0, {{{2, 1}, {1, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{1, 0}, {2, 1}, {1, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{1, 0}, {1, 0}, {2, 1}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 1}, {2, 0}, {1, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 1}, {1, 0}, {2, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 0}, {2, 1}, {1, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{1, 0}, {2, 1}, {2, 0}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 0}, {1, 0}, {2, 1}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{1, 0}, {2, 0}, {2, 1}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 0}, {2, 0}, {2, 1}}}}
+            .number_of_block_boundaries() == 2);
+  CHECK(ElementId<3>{0, {{{2, 1}, {2, 0}, {2, 1}}}}
+            .number_of_block_boundaries() == 1);
+  CHECK(ElementId<3>{0, {{{2, 0}, {2, 1}, {2, 1}}}}
+            .number_of_block_boundaries() == 1);
+  CHECK(ElementId<3>{0, {{{2, 1}, {2, 1}, {2, 0}}}}
+            .number_of_block_boundaries() == 1);
+  CHECK(ElementId<3>{0, {{{2, 1}, {2, 1}, {2, 1}}}}
+            .number_of_block_boundaries() == 0);
 }
 
 template <size_t VolumeDim>

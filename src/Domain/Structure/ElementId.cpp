@@ -15,6 +15,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -247,6 +248,33 @@ ElementId<VolumeDim> ElementId<VolumeDim>::without_direction() const {
   ElementId result = *this;
   result.direction_ = Direction<VolumeDim>::self().bits();
   return result;
+}
+
+template <size_t VolumeDim>
+size_t ElementId<VolumeDim>::number_of_block_boundaries() const {
+  return (index_xi_ == 0 ? (refinement_level_xi_ == 0 ? 2 : 1)
+          : (index_xi_ ==
+             two_to_the(static_cast<unsigned short>(refinement_level_xi_)) - 1)
+              ? 1_st
+              : 0_st) +
+         (VolumeDim > 1
+              ? (index_eta_ == 0
+                     ? (refinement_level_eta_ == 0 ? 2 : 1)
+                     : ((index_eta_ == two_to_the(static_cast<unsigned short>(
+                                           refinement_level_eta_)) -
+                                           1)
+                            ? 1_st
+                            : 0_st))
+              : 0_st) +
+         (VolumeDim > 2
+              ? (index_zeta_ == 0
+                     ? (refinement_level_zeta_ == 0 ? 2 : 1)
+                     : ((index_zeta_ == two_to_the(static_cast<unsigned short>(
+                                            refinement_level_zeta_)) -
+                                            1)
+                            ? 1_st
+                            : 0_st))
+              : 0_st);
 }
 
 template <size_t VolumeDim>
