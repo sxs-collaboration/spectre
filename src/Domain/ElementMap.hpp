@@ -42,7 +42,7 @@ class ElementMap {
   ElementMap() = default;
   /// \endcond
 
-  ElementMap(ElementId<Dim> element_id,
+  ElementMap(const ElementId<Dim>& element_id,
              std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
                                                        TargetFrame, Dim>>
                  block_map);
@@ -53,7 +53,7 @@ class ElementMap {
   /// - If the block is time-independent: the `block.stationary_map()` is used.
   /// - If the block is time-dependent: The `block.moving_mesh_*_map()` maps
   ///   are used. Which maps are used depends on the TargetFrame.
-  ElementMap(ElementId<Dim> element_id, const Block<Dim>& block);
+  ElementMap(const ElementId<Dim>& element_id, const Block<Dim>& block);
 
   const domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>&
   block_map() const {
@@ -144,7 +144,6 @@ class ElementMap {
   std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
       block_map_{nullptr};
-  ElementId<Dim> element_id_{};
   // map_slope_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) -
   //                        segment_ids[i].endpoint(Side::Lower))
   std::array<double, Dim> map_slope_{

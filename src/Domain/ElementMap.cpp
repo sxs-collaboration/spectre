@@ -12,12 +12,11 @@
 
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(
-    ElementId<Dim> element_id,
+    const ElementId<Dim>& element_id,
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
         block_map)
     : block_map_(std::move(block_map)),
-      element_id_(std::move(element_id)),
       map_slope_{[](const ElementId<Dim>& id) {
         std::array<double, Dim> result{};
         for (size_t d = 0; d < Dim; ++d) {
@@ -25,7 +24,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
                                       id.segment_id(d).endpoint(Side::Lower));
         }
         return result;
-      }(element_id_)},
+      }(element_id)},
       map_offset_{[](const ElementId<Dim>& id) {
         std::array<double, Dim> result{};
         for (size_t d = 0; d < Dim; ++d) {
@@ -36,7 +35,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
                                       id.segment_id(d).endpoint(Side::Lower));
         }
         return result;
-      }(element_id_)},
+      }(element_id)},
       map_inverse_slope_{[this]() {
         std::array<double, Dim> result{};
         for (size_t d = 0; d < Dim; ++d) {
@@ -59,10 +58,10 @@ ElementMap<Dim, TargetFrame>::ElementMap(
 // for the element-to-block-logical map, so the whole map is just one
 // composition.
 template <size_t Dim, typename TargetFrame>
-ElementMap<Dim, TargetFrame>::ElementMap(ElementId<Dim> element_id,
+ElementMap<Dim, TargetFrame>::ElementMap(const ElementId<Dim>& element_id,
                                          const Block<Dim>& block)
     : ElementMap(
-          std::move(element_id),
+          element_id,
           [&block]() -> std::unique_ptr<domain::CoordinateMapBase<
                          Frame::BlockLogical, TargetFrame, Dim>> {
             if constexpr (std::is_same_v<TargetFrame, Frame::Inertial>) {
@@ -85,14 +84,13 @@ ElementMap<Dim, TargetFrame>::ElementMap(ElementId<Dim> element_id,
               }
             }
           }()) {
-  ASSERT(element_id_.block_id() == block.id(),
-         "Element " << element_id_ << " is not in block " << block.id() << ".");
+  ASSERT(element_id.block_id() == block.id(),
+         "Element " << element_id << " is not in block " << block.id() << ".");
 }
 
 template <size_t Dim, typename TargetFrame>
 void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) {
   p | block_map_;
-  p | element_id_;
   p | map_slope_;
   p | map_offset_;
   p | map_inverse_slope_;
