@@ -54,3 +54,5 @@ target_link_libraries(
   LinearAlgebra
   Utilities
   )
+
+add_subdirectory(Python)
