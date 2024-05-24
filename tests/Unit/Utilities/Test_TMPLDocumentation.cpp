@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <numeric>
 #include <string>
 #include <type_traits>
 #include <typeindex>

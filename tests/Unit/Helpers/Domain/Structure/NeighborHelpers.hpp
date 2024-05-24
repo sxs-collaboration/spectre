@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <random>
 #include <vector>
 
 #include "Domain/Structure/Side.hpp"
