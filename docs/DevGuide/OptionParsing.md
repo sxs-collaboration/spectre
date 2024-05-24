@@ -62,8 +62,8 @@ input file as usual, but a warning will be issued if the specified
 value does not match the suggestion.
 
 Examples:
-\snippet Test_Options.cpp options_example_scalar_struct
-\snippet Test_Options.cpp options_example_vector_struct
+\snippet Options/Test_Options.cpp options_example_scalar_struct
+\snippet Options/Test_Options.cpp options_example_vector_struct
 
 The option type can be any type understood natively by yaml-cpp
 (fundamentals, `std::string`, and `std::map`, `std::vector`,
@@ -78,7 +78,7 @@ struct. The alias should refer to a type that, like option tags, defines a help
 string and may override a static `name()` function.
 
 Example:
-\snippet Test_Options.cpp options_example_group
+\snippet Options/Test_Options.cpp options_example_group
 
 ## Constructible classes
 
@@ -105,7 +105,7 @@ options ensuring that the error message will have a full backtrace so it is easy
 for the user to diagnose.
 
 Example:
-\snippet Test_CustomTypeConstruction.cpp class_creation_example
+\snippet Options/Test_CustomTypeConstruction.cpp class_creation_example
 
 Classes may use the Metavariables struct, which is effectively the compile time
 input file, in their parsing by templating the `options` type alias or by taking
@@ -113,7 +113,7 @@ the Metavariables as a final argument to the constructor (after the
 `Options::Context`).
 
 Example:
-\snippet Test_CustomTypeConstruction.cpp class_creation_example_with_metavariables
+\snippet Options/Test_CustomTypeConstruction.cpp class_creation_example_with_metavariables
 
 ## Factory
 
@@ -123,7 +123,7 @@ from `Base`.  The list of creatable derived classes is specified in
 the `factory_creation` struct in the metavariables, which must contain
 a `factory_classes` type alias that is a `tmpl::map` from base classes
 to lists of derived classes:
-\snippet Test_Factory.cpp factory_creation
+\snippet Options/Test_Factory.cpp factory_creation
 
 When a `std::unique_ptr<Base>` is requested, the factory will expect a
 single YAML argument specifying the name of the class (as given by a
@@ -133,8 +133,8 @@ string, otherwise it must be given as a single key-value pair, with
 the key the name of the class.  The value portion of this pair is then
 used to create the requested derived class in the same way as an
 explicitly constructible class.  Examples:
-\snippet Test_Factory.cpp factory_without_arguments
-\snippet Test_Factory.cpp factory_with_arguments
+\snippet Options/Test_Factory.cpp factory_without_arguments
+\snippet Options/Test_Factory.cpp factory_with_arguments
 
 \anchor custom-parsing
 ## Custom parsing
@@ -154,7 +154,7 @@ The create function can perform any operations required to construct
 the object.
 
 Example of using a specialization to parse an enum:
-\snippet Test_CustomTypeConstruction.cpp enum_creation_example
+\snippet Options/Test_CustomTypeConstruction.cpp enum_creation_example
 
 Note that in the case where the `create` function does *not* need to use the
 `Metavariables` it is recommended that a general implementation forward to an
@@ -167,8 +167,8 @@ metavariables-independent case efficiently. As a concrete example, the general
 definition and forward declaration of the `void` specialization in the header
 file would be:
 
-\snippet Test_CustomTypeConstruction.cpp enum_void_creation_header_example
+\snippet Options/Test_CustomTypeConstruction.cpp enum_void_creation_header_example
 
 while in the `cpp` file the definition of the `void` specialization is:
 
-\snippet Test_CustomTypeConstruction.cpp enum_void_creation_cpp_example
+\snippet Options/Test_CustomTypeConstruction.cpp enum_void_creation_cpp_example

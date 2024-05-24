@@ -22,7 +22,7 @@ namespace Options::protocols {
  *
  * Here's an example for a class conforming to this protocol:
  *
- * \snippet Test_Factory.cpp factory_creation
+ * \snippet Options/Test_Factory.cpp factory_creation
  */
 struct FactoryCreation {
   template <typename ConformingType>
