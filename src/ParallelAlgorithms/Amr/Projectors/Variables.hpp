@@ -62,10 +62,10 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
     const auto& element_id = element.id();
     const auto& parent_id = get<domain::Tags::Element<Dim>>(parent_items).id();
     const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
-    std::array<Spectral::ChildSize, Dim> child_sizes{Spectral::ChildSize::Full};
+    std::array<Spectral::ChildSize, Dim> child_sizes{};
     for (size_t d = 0; d < Dim; ++d) {
       if (parent_id.segment_id(d) == element_id.segment_id(d)) {
-        continue;
+        gsl::at(child_sizes, d) = Spectral::ChildSize::Full;
       } else if (parent_id.segment_id(d).id_of_child(Side::Lower) ==
                  element_id.segment_id(d)) {
         gsl::at(child_sizes, d) = Spectral::ChildSize::LowerHalf;
