@@ -36,10 +36,10 @@ class Element:
             CoordinateMapElementLogicalToInertial3D,
         ]
     ]
-    time: Optional[float]
-    functions_of_time: Optional[Dict[str, FunctionOfTime]]
+    time: Optional[float] = None
+    functions_of_time: Optional[Dict[str, FunctionOfTime]] = None
     # Offset and length in contiguous tensor data corresponding to this element
-    data_slice: slice
+    data_slice: Optional[slice] = None
 
     @property
     def dim(self):
