@@ -17,7 +17,7 @@ class Mesh;
 namespace Spectral {
 
 /// The portion of a mesh covered by a child mesh.
-enum class ChildSize { Full, UpperHalf, LowerHalf };
+enum class ChildSize : uint8_t { Full, UpperHalf, LowerHalf };
 
 /// The portion of an element covered by a mortar.
 using MortarSize = ChildSize;
