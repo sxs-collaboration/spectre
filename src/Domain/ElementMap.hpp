@@ -82,9 +82,9 @@ class ElementMap {
     // Apply the affine map to the points
     tnsr::I<T, Dim, Frame::ElementLogical> source_point;
     for (size_t d = 0; d < Dim; ++d) {
-      source_point.get(d) =
-          block_source_point.get(d) * gsl::at(map_inverse_slope_, d) +
-          gsl::at(map_inverse_offset_, d);
+      const double inv_jac = 1.0 / gsl::at(map_slope_, d);
+      const double temp = gsl::at(map_offset_, d) * inv_jac;
+      source_point.get(d) = inv_jac * block_source_point.get(d) - temp;
     }
     return source_point;
   }
@@ -100,9 +100,9 @@ class ElementMap {
                                                   time, functions_of_time);
     InverseJacobian<T, Dim, Frame::ElementLogical, TargetFrame> inv_jac;
     for (size_t d = 0; d < Dim; ++d) {
+      const double inv_jac_in_dir = 1.0 / gsl::at(map_slope_, d);
       for (size_t i = 0; i < Dim; ++i) {
-        inv_jac.get(d, i) =
-            block_inv_jac.get(d, i) * gsl::at(map_inverse_slope_, d);
+        inv_jac.get(d, i) = inv_jac_in_dir * block_inv_jac.get(d, i);
       }
     }
     return inv_jac;
@@ -152,13 +152,6 @@ class ElementMap {
   // map_offset_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) +
   //                         segment_ids[i].endpoint(Side::Lower))
   std::array<double, Dim> map_offset_{
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
-  // map_inverse_slope_[i] = 1.0 / map_slope_[i]
-  // Note: the map_inverse_slope_ is the inverse_jacobian_
-  std::array<double, Dim> map_inverse_slope_{
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
-  // map_inverse_offset_[i] = -map_offset_[i] / map_slope_[i]
-  std::array<double, Dim> map_inverse_offset_{
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
 };
 

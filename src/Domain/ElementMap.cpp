@@ -35,22 +35,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
                                       id.segment_id(d).endpoint(Side::Lower));
         }
         return result;
-      }(element_id)},
-      map_inverse_slope_{[this]() {
-        std::array<double, Dim> result{};
-        for (size_t d = 0; d < Dim; ++d) {
-          gsl::at(result, d) = 1.0 / gsl::at(this->map_slope_, d);
-        }
-        return result;
-      }()},
-      map_inverse_offset_{[this]() {
-        std::array<double, Dim> result{};
-        for (size_t d = 0; d < Dim; ++d) {
-          gsl::at(result, d) =
-              -gsl::at(this->map_offset_, d) / gsl::at(this->map_slope_, d);
-        }
-        return result;
-      }()} {}
+      }(element_id)} {}
 
 // We could refactor the ElementMap class to use a `Composition` internally also
 // for the element-to-block-logical map, so the whole map is just one
@@ -91,8 +76,6 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) {
   p | block_map_;
   p | map_slope_;
   p | map_offset_;
-  p | map_inverse_slope_;
-  p | map_inverse_offset_;
 }
 
 // For dual frame evolutions the ElementMap only goes to the grid frame
