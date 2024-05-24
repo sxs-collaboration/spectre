@@ -45,3 +45,5 @@ target_link_libraries(
   Interpolation
   Serialization
   )
+
+add_subdirectory(Python)
