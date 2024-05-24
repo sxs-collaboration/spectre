@@ -122,6 +122,41 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
   }
 };
 
+template <>
+struct VectorTo<5, std::vector<float>> {
+  static std::vector<float> apply(std::vector<float> raw_data,
+                                  const std::array<hsize_t, 5>& /*size*/) {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<5, boost::multi_array<T, 5>> {
+  static boost::multi_array<T, 5> apply(const std::vector<T>& raw_data,
+                                        const std::array<hsize_t, 5>& size) {
+    DEBUG_STATIC_ASSERT(std::is_fundamental_v<T>,
+                        "VectorTo is optimized for fundamentals. Need to "
+                        "use move semantics for handling generic data types.");
+    boost::multi_array<T, 5> temp(
+        boost::extents[size[0]][size[1]][size[2]][size[3]][size[4]]);
+    for (size_t i = 0; i < size[0]; ++i) {
+      for (size_t j = 0; j < size[1]; ++j) {
+        for (size_t k = 0; k < size[2]; ++k) {
+          for (size_t l = 0; l < size[3]; ++l) {
+            for (size_t m = 0; m < size[4]; ++m) {
+              temp[i][j][k][l][m] =
+                  raw_data[m + size[4] *
+                                   (l + size[3] *
+                                            (k + size[2] * (j + size[1] * i)))];
+            }
+          }
+        }
+      }
+    }
+    return temp;
+  }
+};
+
 // Given a vector of contiguous data and an array giving the dimensions of the
 // matrix returns a `vector<vector<T>>` representing the matrix.
 Matrix vector_to_matrix(const std::vector<double>& raw_data,
@@ -972,7 +1007,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
   read_data<RANK(DATA), std::vector<TYPE(DATA)>>( \
       const hid_t group_id, const std::string& dataset_name);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR, (float), (2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR, (float), (2, 3, 5))
 
 #define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
   template boost::multi_array<TYPE(DATA), RANK(DATA)>                \
@@ -982,7 +1017,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR, (float), (2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_MULTIARRAY,
                         (double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
-                        (2, 3))
+                        (2, 3, 5))
 
 #define INSTANTIATE_READ_DATAVECTOR(_, DATA)             \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
