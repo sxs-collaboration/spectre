@@ -144,7 +144,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
   double dt_min = -1.0;
   double initial_time = -1.0;
   // Loop over packets
-  const size_t n_packets = packets->size();
+  size_t n_packets = packets->size();
   for (size_t p = 0; p < n_packets; p++) {
     Packet& packet = (*packets)[p];
 
@@ -224,6 +224,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         std::swap((*packets)[p], (*packets)[n_packets - 1]);
         packets->pop_back();
         p--;
+        n_packets--;
         break;
       }
       // If the next event was a scatter, perform that scatter and
@@ -293,6 +294,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
           (*packets)[p] = (*packets)[n_packets - 1];
           packets->pop_back();
           p--;
+          n_packets--;
           break;
         }
       }
