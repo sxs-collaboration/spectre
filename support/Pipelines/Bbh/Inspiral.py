@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import logging
+import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
@@ -22,7 +23,7 @@ def inspiral_parameters(
     refinement_level: int,
     polynomial_order: int,
 ) -> dict:
-    """Determine inspiral parameters from initial data.
+    """Determine inspiral parameters from SpECTRE initial data.
 
     These parameters fill the 'INSPIRAL_INPUT_FILE_TEMPLATE'.
 
@@ -55,6 +56,62 @@ def inspiral_parameters(
     }
 
 
+def _load_spec_id_params(id_params_file: Path) -> dict:
+    """Load SpEC initial data parameters from 'ID_Params.perl'."""
+    # Here we have to deal with SpEC storing the initial data parameters in a
+    # perl script (yay!). We convert the perl syntax to YAML and load that into
+    # a Python dictionary.
+    id_params_yaml = (
+        # Drop last three lines that contain the 'ID_Origin' variable
+        "\n".join(id_params_file.read_text().split("\n")[:-3])
+        # Convert perl syntax to YAML
+        .replace("$", "")
+        .replace("@", "")
+        .replace(";", "")
+        .replace(" = ", ": ")
+        .replace("=", ": ")
+        .replace("(", "[")
+        .replace(")", "]")
+    )
+    logger.debug(f"ID_Params.perl converted to YAML:\n{id_params_yaml}")
+    return yaml.safe_load(id_params_yaml)
+
+
+def inspiral_parameters_spec(
+    id_params: dict,
+    id_run_dir: Union[str, Path],
+    refinement_level: int,
+    polynomial_order: int,
+) -> dict:
+    """Determine inspiral parameters from SpEC initial data.
+
+    These parameters fill the 'INSPIRAL_INPUT_FILE_TEMPLATE'.
+
+    Arguments:
+      id_params: Initial data parameters loaded from 'ID_Params.perl'.
+      id_run_dir: Directory of the initial data, which contains
+        'ID_Params.perl' and 'GrDomain.input'.
+      refinement_level: h-refinement level.
+      polynomial_order: p-refinement level.
+    """
+    return {
+        # Initial data files
+        "SpecDataDirectory": str(Path(id_run_dir).resolve()),
+        # Domain geometry
+        "ExcisionRadiusA": id_params["ID_rExcA"],
+        "ExcisionRadiusB": id_params["ID_rExcB"],
+        # Off-axis excisions are not supported yet
+        "XCoordA": id_params["ID_cA"][0],
+        "XCoordB": id_params["ID_cB"][0],
+        # Initial functions of time
+        "InitialAngularVelocity": id_params["ID_Omega0"],
+        "RadialExpansionVelocity": id_params["ID_adot0"],
+        # Resolution
+        "L": refinement_level,
+        "P": polynomial_order,
+    }
+
+
 def start_inspiral(
     id_input_file_path: Union[str, Path],
     refinement_level: int,
@@ -71,7 +128,8 @@ def start_inspiral(
 ):
     """Schedule an inspiral simulation from initial data.
 
-    Point the ID_INPUT_FILE_PATH to the input file of your initial data run.
+    Point the ID_INPUT_FILE_PATH to the input file of your initial data run,
+    or to an 'ID_Params.perl' file from SpEC.
     Also specify 'id_run_dir' if the initial data was run in a different
     directory than where the input file is. Parameters for the inspiral will be
     determined from the initial data and inserted into the
@@ -89,16 +147,26 @@ def start_inspiral(
     )
 
     # Determine inspiral parameters from initial data
-    with open(id_input_file_path, "r") as open_input_file:
-        _, id_input_file = yaml.safe_load_all(open_input_file)
     if id_run_dir is None:
         id_run_dir = Path(id_input_file_path).resolve().parent
-    inspiral_params = inspiral_parameters(
-        id_input_file,
-        id_run_dir,
-        refinement_level=refinement_level,
-        polynomial_order=polynomial_order,
-    )
+    if Path(id_input_file_path).name == "ID_Params.perl":
+        # Load SpEC initial data (ID_Params.perl)
+        inspiral_params = inspiral_parameters_spec(
+            _load_spec_id_params(Path(id_input_file_path)),
+            id_run_dir,
+            refinement_level=refinement_level,
+            polynomial_order=polynomial_order,
+        )
+    else:
+        # Load SpECTRE initial data
+        with open(id_input_file_path, "r") as open_input_file:
+            _, id_input_file = yaml.safe_load_all(open_input_file)
+        inspiral_params = inspiral_parameters(
+            id_input_file,
+            id_run_dir,
+            refinement_level=refinement_level,
+            polynomial_order=polynomial_order,
+        )
     logger.debug(f"Inspiral parameters: {pretty_repr(inspiral_params)}")
 
     # Resolve directories
