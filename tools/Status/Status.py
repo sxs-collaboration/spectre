@@ -114,8 +114,6 @@ def get_input_file(comment: Optional[str], work_dir: str) -> Optional[str]:
             )
     # Fallback: Get the input file from the scheduler context file if present
     context_file = Path(work_dir) / "SchedulerContext.yaml"
-    if not context_file.exists():  # Default name of the file changed in #5547
-        context_file = Path(work_dir) / "SubmitContext.yaml"
     try:
         with open(context_file, "r") as open_context_file:
             input_file = yaml.safe_load(open_context_file)["input_file"]
