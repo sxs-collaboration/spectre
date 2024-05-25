@@ -3,6 +3,7 @@
 
 #include "Evolution/DiscontinuousGalerkin/AtomicInboxBoundaryData.hpp"
 
+#include <atomic>
 #include <cstddef>
 
 #include "Domain/Structure/Direction.hpp"
@@ -10,8 +11,31 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/System/Abort.hpp"
 
 namespace evolution::dg {
+template <size_t Dim>
+AtomicInboxBoundaryData<Dim>::AtomicInboxBoundaryData(
+    AtomicInboxBoundaryData<Dim>&& rhs) noexcept {
+  if (rhs.message_count.load(std::memory_order_acquire) != 0) {
+    sys::abort(
+        "You cannot move an AtomicInboxBoundaryData with non-zero message "
+        "count.");
+  }
+  for (size_t i = 0; i < rhs.boundary_data_in_directions.size(); ++i) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+    if (not rhs.boundary_data_in_directions[i].empty()) {
+      sys::abort(
+          "You cannot move an AtomicInboxBoundaryData with data in "
+          "boundary_data_in_directions.");
+    }
+  }
+  message_count.store(0, std::memory_order_release);
+  number_of_neighbors.store(
+      rhs.number_of_neighbors.load(std::memory_order_acquire),
+      std::memory_order_release);
+}
+
 template <size_t Dim>
 size_t AtomicInboxBoundaryData<Dim>::index(
     const DirectionalId<Dim>& neighbor_directional_id) {
@@ -44,6 +68,35 @@ size_t AtomicInboxBoundaryData<Dim>::index(
                     ? 0_st
                     : 1_st) +
            result;
+  }
+}
+
+template <size_t Dim>
+void AtomicInboxBoundaryData<Dim>::pup(PUP::er& p) {
+  if (UNLIKELY(number_of_neighbors.load(std::memory_order_acquire) != 0)) {
+    ERROR(
+        "Can only serialize AtomicInboxBoundaryData if there are no messages. "
+        "We need to be very careful about serializing atomics since "
+        "serialization requires strong synchronization like a lock.");
+  }
+  for (size_t i = 0; i < boundary_data_in_directions.size(); ++i) {
+    if (UNLIKELY(not gsl::at(boundary_data_in_directions, i).empty())) {
+      ERROR(
+          "We can only serialize empty StaticSpscQueues but the queue in "
+          "element "
+          << i << " is not empty.");
+    }
+  }
+  if (p.isUnpacking()) {
+    std::atomic_uint::value_type number_of_neighbors_to_serialize = 0;
+    p | number_of_neighbors_to_serialize;
+    number_of_neighbors.store(number_of_neighbors_to_serialize,
+                              std::memory_order_release);
+    message_count.store(0, std::memory_order_release);
+  } else {
+    std::atomic_uint::value_type number_of_neighbors_to_serialize =
+        number_of_neighbors.load(std::memory_order_acquire);
+    p | number_of_neighbors_to_serialize;
   }
 }
 
