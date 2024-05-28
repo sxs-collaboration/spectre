@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace ylm::Tags {
 template <typename Frame>
 struct EuclideanAreaElement;
@@ -36,10 +38,6 @@ struct MaxRicciScalar;
 struct MaxRicciScalarCompute;
 struct MinRicciScalar;
 struct MinRicciScalarCompute;
-template <typename Frame>
-struct DimensionfulSpinVector;
-template <typename Frame>
-struct DimensionfulSpinVectorCompute;
 }  // namespace ylm::Tags
 
 namespace gr::surfaces::Tags {
@@ -72,4 +70,8 @@ template <typename Frame>
 struct DimensionfulSpinVector;
 template <typename MeasurementFrame, typename MetricDataFrame>
 struct DimensionfulSpinVectorCompute;
+template <typename Frame>
+struct DimensionlessSpinVector;
+template <typename MeasurementFrame, typename MetricDataFrame>
+struct DimensionlessSpinVectorCompute;
 }  // namespace gr::surfaces::Tags

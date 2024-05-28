@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -31,7 +32,9 @@ void bind_horizon_quantities_impl(py::module& m) {
         const auto box = db::create<
             tmpl::append<tmpl::list<ylm::Tags::Strahlkorper<Frame>>,
                          ::ah::vars_to_interpolate_to_target<Dim, Frame>>,
-            ::ah::compute_items_on_target<Dim, Frame>>(
+            tmpl::push_back<::ah::compute_items_on_target<Dim, Frame>,
+                            gr::surfaces::Tags::DimensionlessSpinVectorCompute<
+                                Frame, Frame>>>(
             std::move(horizon), std::move(spatial_metric),
             std::move(inv_spatial_metric), std::move(extrinsic_curvature),
             std::move(spatial_christoffel_second_kind),
@@ -46,6 +49,8 @@ void bind_horizon_quantities_impl(py::module& m) {
             db::get<gr::surfaces::Tags::ChristodoulouMass>(box);
         result["DimensionlessSpinMagnitude"] =
             db::get<gr::surfaces::Tags::DimensionlessSpinMagnitude<Frame>>(box);
+        result["DimensionlessSpinVector"] =
+            db::get<gr::surfaces::Tags::DimensionlessSpinVector<Frame>>(box);
         return result;
       },
       py::arg("horizon"), py::arg("spatial_metric"),

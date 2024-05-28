@@ -509,5 +509,31 @@ struct DimensionlessSpinMagnitudeCompute : DimensionlessSpinMagnitude<Frame>,
       tmpl::list<DimensionfulSpinMagnitude, ChristodoulouMass>;
 };
 
+/// The dimensionless spin angular momentum vector
+template <typename Frame>
+struct DimensionlessSpinVector : db::SimpleTag {
+  using type = std::array<double, 3>;
+};
+
+/// Computes the dimensionless spin angular momentum vector
+template <typename MeasurementFrame, typename MetricDataFrame>
+struct DimensionlessSpinVectorCompute
+    : DimensionlessSpinVector<MeasurementFrame>,
+      db::ComputeTag {
+  using base = DimensionlessSpinVector<MeasurementFrame>;
+  using argument_tags =
+      tmpl::list<DimensionlessSpinMagnitude<MeasurementFrame>,
+                 AreaElement<MetricDataFrame>, ylm::Tags::RicciScalar,
+                 SpinFunction, ylm::Tags::Strahlkorper<MetricDataFrame>,
+                 ylm::Tags::CartesianCoords<MeasurementFrame>>;
+  using return_type = std::array<double, 3>;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<std::array<double, 3>*>, double,
+      const Scalar<DataVector>&, const Scalar<DataVector>&,
+      const Scalar<DataVector>&, const ylm::Strahlkorper<MetricDataFrame>&,
+      const tnsr::I<DataVector, 3, MeasurementFrame>&)>(
+      &gr::surfaces::spin_vector<MetricDataFrame, MeasurementFrame>);
+};
+
 }  // namespace Tags
 }  // namespace gr::surfaces

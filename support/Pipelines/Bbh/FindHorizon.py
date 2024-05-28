@@ -283,7 +283,14 @@ def find_horizon_command(l_max, initial_radius, center, vars, **kwargs):
 
     table = rich.table.Table(show_header=False, box=None)
     for name, value in quantities.items():
-        table.add_row(name, f"{value:g}")
+        table.add_row(
+            name,
+            (
+                f"{value:g}"
+                if isinstance(value, float)
+                else "[" + ", ".join(f"{v:g}" for v in value) + "]"
+            ),
+        )
     rich.print(table)
 
 

@@ -56,6 +56,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
       gr::surfaces::Tags::DimensionfulSpinVector<Frame::Inertial>>(
       "DimensionfulSpinVector");
   TestHelpers::db::test_simple_tag<
+      gr::surfaces::Tags::DimensionlessSpinVector<Frame::Inertial>>(
+      "DimensionlessSpinVector");
+  TestHelpers::db::test_simple_tag<
       gr::surfaces::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");
   TestHelpers::db::test_compute_tag<
@@ -113,6 +116,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Surfaces.Tags",
       gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame::Inertial,
                                                         Frame::Inertial>>(
       "DimensionfulSpinVector");
+  TestHelpers::db::test_compute_tag<
+      gr::surfaces::Tags::DimensionlessSpinVectorCompute<Frame::Inertial,
+                                                         Frame::Inertial>>(
+      "DimensionlessSpinVector");
   TestHelpers::db::test_compute_tag<
       gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
       "DimensionlessSpinMagnitude");

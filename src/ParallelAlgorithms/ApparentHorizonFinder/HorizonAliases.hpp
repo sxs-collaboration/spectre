@@ -36,13 +36,15 @@ using vars_to_interpolate_to_target =
                gr::Tags::SpatialRicci<DataVector, Dim, Frame>>;
 
 template <typename Frame>
-using tags_for_observing =
-    tmpl::list<gr::surfaces::Tags::AreaCompute<Frame>,
-               gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
-               ylm::Tags::MaxRicciScalarCompute,
-               ylm::Tags::MinRicciScalarCompute,
-               gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
-               gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>>;
+using tags_for_observing = tmpl::list<
+    gr::surfaces::Tags::AreaCompute<Frame>,
+    gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
+    ylm::Tags::MaxRicciScalarCompute, ylm::Tags::MinRicciScalarCompute,
+    gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
+    gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>
+    // Needs `ObserveTimeSeriesOnSurface` to be able to write a `std::array`
+    // gr::surfaces::Tags::DimensionlessSpinVectorCompute<Frame, Frame>
+    >;
 
 using surface_tags_for_observing = tmpl::list<ylm::Tags::RicciScalar>;
 
@@ -50,7 +52,8 @@ template <size_t Dim, typename Frame>
 using compute_items_on_target = tmpl::append<
     tmpl::list<
         ylm::Tags::ThetaPhiCompute<Frame>, ylm::Tags::RadiusCompute<Frame>,
-        ylm::Tags::RhatCompute<Frame>, ylm::Tags::InvJacobianCompute<Frame>,
+        ylm::Tags::RhatCompute<Frame>, ylm::Tags::CartesianCoordsCompute<Frame>,
+        ylm::Tags::InvJacobianCompute<Frame>,
         ylm::Tags::InvHessianCompute<Frame>, ylm::Tags::JacobianCompute<Frame>,
         ylm::Tags::DxRadiusCompute<Frame>, ylm::Tags::D2xRadiusCompute<Frame>,
         ylm::Tags::NormalOneFormCompute<Frame>,
