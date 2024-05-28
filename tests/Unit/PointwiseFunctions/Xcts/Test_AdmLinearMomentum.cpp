@@ -56,7 +56,8 @@ void test_linear_momentum_surface_integral(const double distance,
   const std::array<double, 3> dimensionless_spin{{0., 0., 0.}};
   const std::array<double, 3> boost_velocity{{0., 0., boost_speed}};
   const KerrSchild solution{mass, dimensionless_spin,
-                            /* center */ {{0., 0., 0.}}, boost_velocity};
+                            /* center */ std::array<double, 3>{{0., 0., 0.}},
+                            boost_velocity};
 
   // Set up domain
   const double horizon_kerrschild_radius =

@@ -432,10 +432,8 @@ template class WrappedGrVariables<DataVector, true>;
 
 }  // namespace detail
 
-template <typename GrSolution, bool HasMhd, typename... GrSolutionOptions>
-PUP::able::PUP_ID
-    WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>::my_PUP_ID =
-        0;  // NOLINT
+template <typename GrSolution, bool HasMhd>
+PUP::able::PUP_ID WrappedGr<GrSolution, HasMhd>::my_PUP_ID = 0;  // NOLINT
 
 }  // namespace Xcts::Solutions
 
