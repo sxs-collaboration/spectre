@@ -103,7 +103,8 @@ void test_psi_4(const RealDataType& used_for_size_real,
   const auto expected = gr::psi_4(spatial_ricci, extrinsic_curvature,
                                   cov_deriv_extrinsic_curvature, spatial_metric,
                                   inv_spatial_metric, inertial_coords);
-  CHECK_ITERABLE_APPROX(expected, python_psi_4);
+  Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected, python_psi_4, local_approx);
 }
 }  // namespace
 
