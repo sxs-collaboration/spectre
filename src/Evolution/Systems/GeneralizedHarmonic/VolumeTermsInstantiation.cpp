@@ -8,13 +8,14 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
-  template void volume_terms<::gh::TimeDerivative<DIM(data)>>(                 \
+  template void evolution::dg::Actions::detail::volume_terms<                  \
+      ::gh::TimeDerivative<DIM(data)>>(                                        \
       const gsl::not_null<Variables<db::wrap_tags_in<                          \
           ::Tags::dt,                                                          \
           typename ::gh::System<DIM(data)>::variables_tag::tags_list>>*>       \
@@ -59,10 +60,11 @@ namespace evolution::dg::Actions::detail {
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
                             Frame::Inertial>& inverse_jacobian,                \
       const std::optional<tnsr::I<DataVector, DIM(data), Frame::Inertial>>&    \
-          mesh_velocity_from_time_deriv_args);
+          mesh_velocity_from_time_deriv_args);                                 \
+  INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(gh::System<DIM(data)>,           \
+                                              DIM(data), Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace evolution::dg::Actions::detail

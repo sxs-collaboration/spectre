@@ -371,3 +371,34 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
   }
 };
 }  // namespace partial_derivatives_detail
+
+// Macro to explicitly instantiate partial_derivatives()
+// for a given system of equations
+#define INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(SYSTEM, DIM,             \
+                                                    DERIVATIVE_FRAME)        \
+  template void partial_derivatives(                                         \
+      gsl::not_null<Variables<                                               \
+          db::wrap_tags_in<Tags::deriv, typename SYSTEM::gradient_variables, \
+                           tmpl::size_t<DIM>, DERIVATIVE_FRAME>>*>           \
+          du,                                                                \
+      const std::array<Variables<typename SYSTEM::gradient_variables>, DIM>& \
+          logical_partial_derivatives_of_u,                                  \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,          \
+                            DERIVATIVE_FRAME>& inverse_jacobian);            \
+  template void partial_derivatives(                                         \
+      gsl::not_null<Variables<                                               \
+          db::wrap_tags_in<Tags::deriv, typename SYSTEM::gradient_variables, \
+                           tmpl::size_t<DIM>, DERIVATIVE_FRAME>>*>           \
+          du,                                                                \
+      const Variables<typename SYSTEM::gradient_variables>& u,               \
+      const Mesh<DIM>& mesh,                                                 \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,          \
+                            DERIVATIVE_FRAME>& inverse_jacobian);            \
+  template Variables<                                                        \
+      db::wrap_tags_in<Tags::deriv, typename SYSTEM::gradient_variables,     \
+                       tmpl::size_t<DIM>, DERIVATIVE_FRAME>>                 \
+  partial_derivatives<typename SYSTEM::gradient_variables>(                  \
+      const Variables<typename SYSTEM::gradient_variables>& u,               \
+      const Mesh<DIM>& mesh,                                                 \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,          \
+                            DERIVATIVE_FRAME>& inverse_jacobian);

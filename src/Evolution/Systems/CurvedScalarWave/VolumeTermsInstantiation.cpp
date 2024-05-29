@@ -6,13 +6,14 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                \
-  template void volume_terms<::CurvedScalarWave::TimeDerivative<DIM(data)>>(  \
+  template void evolution::dg::Actions::detail::volume_terms<                 \
+      ::CurvedScalarWave::TimeDerivative<DIM(data)>>(                         \
       const gsl::not_null<Variables<db::wrap_tags_in<                         \
           ::Tags::dt, typename ::CurvedScalarWave::System<DIM(                \
                           data)>::variables_tag::tags_list>>*>                \
@@ -60,10 +61,11 @@ namespace evolution::dg::Actions::detail {
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
           trace_spatial_christoffel,                                          \
       const Scalar<DataVector>& trace_extrinsic_curvature,                    \
-      const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2);
+      const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2);    \
+  INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(                                \
+      CurvedScalarWave::System<DIM(data)>, DIM(data), Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace evolution::dg::Actions::detail
