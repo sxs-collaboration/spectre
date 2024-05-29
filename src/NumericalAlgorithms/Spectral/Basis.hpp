@@ -1,10 +1,10 @@
-
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 
