@@ -30,6 +30,7 @@ spectre_target_headers(
   Callback.hpp
   CharmMain.tpp
   CharmRegistration.hpp
+  CreateElementsUsingDistribution.hpp
   CreateFromOptions.hpp
   DistributedObject.hpp
   DomainDiagnosticInfo.hpp
@@ -66,6 +67,7 @@ target_link_libraries(
   Boost::boost
   Boost::program_options
   DataStructures
+  Domain
   Informer
   PUBLIC
   Charmxx::charmxx

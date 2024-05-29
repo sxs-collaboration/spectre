@@ -22,7 +22,7 @@
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
-#include "Parallel/DomainDiagnosticInfo.hpp"
+#include "Parallel/CreateElementsUsingDistribution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
@@ -128,75 +128,17 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
 
   const auto& blocks = domain.blocks();
 
-  // Only need the element distribution if the element weight has a value
-  // because then we have to use the space filling curve and not just use round
-  // robin.
-  domain::BlockZCurveProcDistribution<volume_dim> element_distribution{};
-  if (element_weight.has_value()) {
-    const std::unordered_map<ElementId<volume_dim>, double> element_costs =
-        domain::get_element_costs(blocks, initial_refinement_levels,
-                                  initial_extents, element_weight.value(),
-                                  quadrature);
-    element_distribution = domain::BlockZCurveProcDistribution<volume_dim>{
-        element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
-        initial_extents, procs_to_ignore};
-  }
-
-  // Will be used to print domain diagnostic info
-  std::vector<size_t> elements_per_core(number_of_procs, 0_st);
-  std::vector<size_t> elements_per_node(number_of_nodes, 0_st);
-  std::vector<size_t> grid_points_per_core(number_of_procs, 0_st);
-  std::vector<size_t> grid_points_per_node(number_of_nodes, 0_st);
-
-  size_t which_proc = 0;
-  for (const auto& block : blocks) {
-    const auto& initial_ref_levs = initial_refinement_levels[block.id()];
-    const size_t grid_points_per_element = alg::accumulate(
-        initial_extents[block.id()], 1_st, std::multiplies<size_t>());
-
-    const std::vector<ElementId<volume_dim>> element_ids =
-        initial_element_ids(block.id(), initial_ref_levs);
-
-    // Value means ZCurve. nullopt means round robin
-    if (element_weight.has_value()) {
-      for (const auto& element_id : element_ids) {
-        const size_t target_proc =
-            element_distribution.get_proc_for_element(element_id);
+  Parallel::create_elements_using_distribution(
+      [&dg_element_array, &global_cache, &initialization_items](
+          const ElementId<volume_dim>& element_id, const size_t target_proc,
+          const size_t /*target_node*/) {
         dg_element_array(element_id)
             .insert(global_cache, initialization_items, target_proc);
+      },
+      element_weight, blocks, initial_extents, initial_refinement_levels,
+      quadrature,
 
-        const size_t target_node =
-            Parallel::node_of<size_t>(target_proc, local_cache);
-        ++elements_per_core[target_proc];
-        ++elements_per_node[target_node];
-        grid_points_per_core[target_proc] += grid_points_per_element;
-        grid_points_per_node[target_node] += grid_points_per_element;
-      }
-    } else {
-      for (size_t i = 0; i < element_ids.size(); ++i) {
-        while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
-          which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-        }
-
-        dg_element_array(ElementId<volume_dim>(element_ids[i]))
-            .insert(global_cache, initialization_items, which_proc);
-
-        const size_t target_node =
-            Parallel::node_of<size_t>(which_proc, local_cache);
-        ++elements_per_core[which_proc];
-        ++elements_per_node[target_node];
-        grid_points_per_core[which_proc] += grid_points_per_element;
-        grid_points_per_node[target_node] += grid_points_per_element;
-
-        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-      }
-    }
-  }
-
+      procs_to_ignore, number_of_procs, number_of_nodes, num_of_procs_to_use,
+      local_cache, true);
   dg_element_array.doneInserting();
-
-  Parallel::printf("\n%s\n", domain::diagnostic_info(
-                                 domain.blocks().size(), local_cache,
-                                 elements_per_core, elements_per_node,
-                                 grid_points_per_core, grid_points_per_node));
 }
