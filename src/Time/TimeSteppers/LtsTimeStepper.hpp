@@ -75,7 +75,7 @@ class LtsTimeStepper : public virtual TimeStepper {
       const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
       const TimeSteppers::BoundaryHistoryEvaluator<                \
           LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
-      const double time) const = 0;
+      double time) const = 0;
 
   GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL,
                           (MATH_WRAPPER_TYPES))
@@ -164,7 +164,7 @@ class LtsTimeStepper : public virtual TimeStepper {
   ///     const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
   ///     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
   ///     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
-  ///     const double time) const;
+  ///     double time) const;
   /// ```
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void boundary_dense_output(
@@ -198,7 +198,7 @@ class LtsTimeStepper : public virtual TimeStepper {
       const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
       const TimeSteppers::BoundaryHistoryEvaluator<                \
           LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
-      const double time) const override;
+      double time) const override;
 
 #define LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                     \
   LTS_TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                             \

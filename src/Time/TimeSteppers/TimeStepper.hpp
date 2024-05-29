@@ -69,7 +69,7 @@ class TimeStepper : public PUP::able {
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
           data)>& history,                                                 \
-      const double time) const = 0;                                        \
+      double time) const = 0;                                              \
   virtual bool can_change_step_size_forward(                               \
       const TimeStepId& time_id,                                           \
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
