@@ -24,6 +24,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -95,6 +96,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
  *   - `Tags::MortarSize<Dim>`
  *   - `Tags::MortarNextTemporalId<Dim>`
  *   - `evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>`
+ *   - `evolution::dg::Tags::BoundaryData<Dim>`
  * - Removes: nothing
  * - Modifies: nothing
  */
@@ -116,7 +118,8 @@ struct Mortars {
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<
           Dim, typename db::add_tag_prefix<
-                   ::Tags::dt, typename System::variables_tag>::type>>;
+                   ::Tags::dt, typename System::variables_tag>::type>,
+      evolution::dg::Tags::BoundaryData<Dim>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -149,8 +152,8 @@ struct Mortars {
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
         std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
-        std::move(normal_covector_quantities),
-        std::move(boundary_data_history));
+        std::move(normal_covector_quantities), std::move(boundary_data_history),
+        typename evolution::dg::Tags::BoundaryData<Dim>::type{});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
