@@ -23,6 +23,10 @@ Parallelization:
   ElementDistribution: NumGridPointsAndGridSpacing
 
 InitialData:
+{% if SpecDataDirectory is defined %}
+  SpecInitialData:
+    DataDirectory: "{{ SpecDataDirectory }}"
+{% else %}
   NumericInitialData:
     FileGlob: "{{ IdFileGlob }}"
     Subgroup: "VolumeData"
@@ -35,6 +39,7 @@ InitialData:
       Shift: ShiftExcess
       SpatialMetric: SpatialMetric
       ExtrinsicCurvature: ExtrinsicCurvature
+{% endif %}
 
 DomainCreator:
   BinaryCompactObject:
