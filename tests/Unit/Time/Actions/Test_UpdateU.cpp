@@ -29,6 +29,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -38,7 +39,6 @@
 
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
-class TimeStepper;
 namespace PUP {
 struct er;
 }  // namespace PUP
@@ -67,7 +67,8 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
-      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+                 Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  ::Tags::IsUsingTimeSteppingErrorControl, Var,
                  Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
                  Tags::HistoryEvolvedVariables<AlternativeVar>>;
@@ -96,42 +97,42 @@ void test_integration() {
   using alternative_history_tag = Tags::HistoryEvolvedVariables<AlternativeVar>;
 
   const Slab slab(1., 3.);
+  const TimeStepId initial_id(true, 0, slab.start());
   const TimeDelta time_step = slab.duration() / 2;
+  std::unique_ptr<TimeStepper> time_stepper =
+      std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
 
   const auto rhs = [](const auto t, const auto y) {
     return 2. * t - 2. * (y - t * t);
   };
 
-  auto box = db::create<
-      db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
-                        ::Tags::IsUsingTimeSteppingErrorControl, Var,
-                        history_tag, AlternativeVar, alternative_history_tag>,
-      time_stepper_ref_tags<TimeStepper>>(
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<TimeSteppers::Rk3HesthavenSsp>()),
-      time_step, false, 1., typename history_tag::type{3}, 1.,
-      typename alternative_history_tag::type{3});
+  auto box =
+      db::create<db::AddSimpleTags<
+                     Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+                     Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+                     ::Tags::IsUsingTimeSteppingErrorControl, Var, history_tag,
+                     AlternativeVar, alternative_history_tag>,
+                 time_stepper_ref_tags<TimeStepper>>(
+          std::move(time_stepper), initial_id,
+          time_stepper->next_time_id(initial_id, time_step), time_step, false,
+          1., typename history_tag::type{3}, 1.,
+          typename alternative_history_tag::type{3});
 
-  const std::array<Time, 3> substep_times{
-      {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
   // The exact answer is y = x^2, but the integrator would need a
   // smaller step size to get that accurately.
   const std::array<double, 3> expected_values{{3., 3., 10. / 3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
     db::mutate<history_tag, alternative_history_tag>(
-        [&rhs, &substep, &substep_times, &time_step](
-            const gsl::not_null<typename history_tag::type*> history,
-            const gsl::not_null<typename alternative_history_tag::type*>
-                alternative_history,
-            const double vars) {
-          const double time = gsl::at(substep_times, substep).value();
-          history->insert(
-              TimeStepId(true, 0, substep_times[0], substep, time_step, time),
-              vars, rhs(time, vars));
+        [&rhs](const gsl::not_null<typename history_tag::type*> history,
+               const gsl::not_null<typename alternative_history_tag::type*>
+                   alternative_history,
+               const TimeStepId& time_step_id, const double vars) {
+          history->insert(time_step_id, vars,
+                          rhs(time_step_id.substep_time(), vars));
           *alternative_history = *history;
         },
-        make_not_null(&box), db::get<Var>(box));
+        make_not_null(&box), db::get<Tags::TimeStepId>(box), db::get<Var>(box));
 
     update_u<System>(make_not_null(&box));
     CHECK(db::get<Var>(box) == approx(gsl::at(expected_values, substep)));
@@ -141,6 +142,17 @@ void test_integration() {
     } else {
       CHECK(db::get<AlternativeVar>(box) == 1.0);
     }
+
+    db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, history_tag>(
+        [&time_step](const gsl::not_null<TimeStepId*> time_step_id,
+                     const gsl::not_null<TimeStepId*> next_time_step_id,
+                     const gsl::not_null<typename history_tag::type*> history,
+                     const TimeStepper& stepper) {
+          *time_step_id = *next_time_step_id;
+          *next_time_step_id = stepper.next_time_id(*time_step_id, time_step);
+          stepper.clean_history(history);
+        },
+        make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
   }
 }
 
@@ -150,17 +162,20 @@ void test_action() {
   using component = Component<metavariables>;
 
   const Slab slab(1., 3.);
+  const TimeStepId initial_id(true, 0, slab.start());
   const TimeDelta time_step = slab.duration() / 2;
+  auto time_stepper = std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
 
   Var::type vars = 1.0;
   Tags::HistoryEvolvedVariables<Var>::type history{3};
-  history.insert(TimeStepId(true, 0, slab.start()), vars, 3.0);
+  history.insert(initial_id, vars, 3.0);
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   MockRuntimeSystem runner{{}};
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), time_step, false,
+      {std::move(time_stepper), initial_id,
+       time_stepper->next_time_id(initial_id, time_step), time_step, false,
        vars, std::move(history), AlternativeVar::type{},
        Tags::HistoryEvolvedVariables<AlternativeVar>::type{}});
 
@@ -181,60 +196,71 @@ void test_stepper_error() {
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
 
   const Slab slab(1., 3.);
-  const TimeDelta time_step = slab.duration() / 2;
+  const TimeStepId initial_id(true, 0, slab.start());
+  const TimeDelta initial_time_step = slab.duration() / 2;
+  std::unique_ptr<TimeStepper> time_stepper =
+      std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
 
-  auto box = db::create<
-      db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStep,
-                        ::Tags::IsUsingTimeSteppingErrorControl, variables_tag,
-                        history_tag, Tags::StepperErrors<variables_tag>>,
-      time_stepper_ref_tags<TimeStepper>>(
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<TimeSteppers::Rk3HesthavenSsp>()),
-      time_step, true, 1., history_tag::type{3},
-      Tags::StepperErrors<variables_tag>::type{});
+  auto box =
+      db::create<db::AddSimpleTags<
+                     Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+                     Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+                     ::Tags::IsUsingTimeSteppingErrorControl, variables_tag,
+                     history_tag, Tags::StepperErrors<variables_tag>>,
+                 time_stepper_ref_tags<TimeStepper>>(
+          std::move(time_stepper), initial_id,
+          time_stepper->next_time_id(initial_id, initial_time_step),
+          initial_time_step, true, 1., history_tag::type{3},
+          Tags::StepperErrors<variables_tag>::type{});
 
-  const std::array<TimeDelta, 3> substep_offsets{
-      {0 * slab.duration(), time_step, time_step / 2}};
-
-  const auto do_substep = [&box, &substep_offsets, &time_step](
-                              const Time& step_start, const size_t substep) {
+  const auto do_substep = [&box]() {
     db::mutate<history_tag>(
-        [&step_start, &substep, &substep_offsets, &time_step](
-            const gsl::not_null<typename history_tag::type*> history,
-            const double vars) {
-          const Time time = step_start + gsl::at(substep_offsets, substep);
-          history->insert(
-              TimeStepId(true, 0, step_start, substep, time_step, time.value()),
-              vars, vars);
-        },
-        make_not_null(&box), db::get<variables_tag>(box));
+        [](const gsl::not_null<typename history_tag::type*> history,
+           const TimeStepId& time_step_id,
+           const double vars) { history->insert(time_step_id, vars, vars); },
+        make_not_null(&box), db::get<Tags::TimeStepId>(box),
+        db::get<variables_tag>(box));
 
     update_u<SingleVariableSystem>(make_not_null(&box));
+
+    db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+               history_tag>(
+        [](const gsl::not_null<TimeStepId*> time_step_id,
+           const gsl::not_null<TimeStepId*> next_time_step_id,
+           const gsl::not_null<TimeDelta*> time_step,
+           const gsl::not_null<typename history_tag::type*> history,
+           const TimeStepper& stepper) {
+          *time_step_id = *next_time_step_id;
+          *time_step = time_step->with_slab(time_step_id->step_time().slab());
+          *next_time_step_id = stepper.next_time_id(*time_step_id, *time_step);
+          stepper.clean_history(history);
+        },
+        make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
   };
 
   using error_tag = Tags::StepperErrors<variables_tag>;
-  do_substep(slab.start(), 0);
+  do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
   CHECK(not db::get<error_tag>(box)[1].has_value());
-  do_substep(slab.start(), 1);
+  do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
   CHECK(not db::get<error_tag>(box)[1].has_value());
-  do_substep(slab.start(), 2);
+  do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
 
   const auto first_step_error = db::get<error_tag>(box)[1]->error;
-  const auto second_step = slab.start() + time_step;
-  do_substep(second_step, 0);
+  const auto second_step = slab.start() + initial_time_step;
+  do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
-  do_substep(second_step, 1);
+  do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
-  do_substep(second_step, 2);
+  do_substep();
   REQUIRE(db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());

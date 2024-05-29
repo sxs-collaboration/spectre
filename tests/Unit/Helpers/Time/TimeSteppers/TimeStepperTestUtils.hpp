@@ -92,7 +92,7 @@ void check_convergence_order(const TimeStepper& stepper,
                              bool output = false);
 
 void check_dense_output(
-    const TimeStepper& stepper, size_t history_integration_order,
+    const TimeStepper& stepper,
     const std::pair<int32_t, int32_t>& convergence_step_range, int32_t stride,
     bool check_backward_continuity);
 

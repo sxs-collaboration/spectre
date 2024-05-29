@@ -52,32 +52,25 @@ TimeStepId Rk3HesthavenSsp::next_time_id_for_error(
 
 template <typename T>
 void Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
-                                    const MutableUntypedHistory<T>& history,
+                                    const ConstUntypedHistory<T>& history,
                                     const TimeDelta& time_step) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
-  if (history.at_step_start()) {
-    history.clear_substeps();
-  }
-  if (history.size() > 1) {
-    history.pop_front();
-  }
-  ASSERT(history.size() == 1, "Too much history supplied.");
-
-  switch (history.substeps().size()) {
+  const auto substep = history.at_step_start() ? 0 : history.substeps().size();
+  switch (substep) {
     case 0:
-      *u = *history.front().value +
-           time_step.value() * history.front().derivative;
+      *u =
+          *history.back().value + time_step.value() * history.back().derivative;
       return;
     case 1:
-      *u = 0.25 * (3.0 * *history.front().value + *history.substeps()[0].value +
+      *u = 0.25 * (3.0 * *history.back().value + *history.substeps()[0].value +
                    time_step.value() * history.substeps()[0].derivative);
       return;
     case 2:
       *u = (1.0 / 3.0) *
-           (*history.front().value + 2.0 * *history.substeps()[1].value +
+           (*history.back().value + 2.0 * *history.substeps()[1].value +
             2.0 * time_step.value() * history.substeps()[1].derivative);
       return;
     default:
@@ -88,7 +81,7 @@ void Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
 template <typename T>
 bool Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
                                     const gsl::not_null<T*> u_error,
-                                    const MutableUntypedHistory<T>& history,
+                                    const ConstUntypedHistory<T>& history,
                                     const TimeDelta& time_step) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
@@ -96,14 +89,26 @@ bool Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
 
   update_u_impl(u, history, time_step);
 
-  if (history.substeps().size() < 2) {
+  if (history.at_step_start() or history.substeps().size() < 2) {
     return false;
   }
 
-  *u_error = *u - 0.5 * (*history.front().value + *history.substeps()[0].value +
+  *u_error = *u - 0.5 * (*history.back().value + *history.substeps()[0].value +
                          time_step.value() * history.substeps()[0].derivative);
 
   return true;
+}
+
+template <typename T>
+void Rk3HesthavenSsp::clean_history_impl(
+    const MutableUntypedHistory<T>& history) const {
+  if (history.at_step_start()) {
+    history.clear_substeps();
+  }
+  if (history.size() > 1) {
+    history.pop_front();
+  }
+  ASSERT(history.size() == 1, "Too much history supplied.");
 }
 
 template <typename T>

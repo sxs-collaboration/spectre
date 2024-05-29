@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   AdvanceTime.hpp
   ChangeStepSize.hpp
+  CleanHistory.hpp
   RecordTimeStepperData.hpp
   SelfStartActions.hpp
   UpdateU.hpp

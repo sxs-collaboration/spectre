@@ -50,20 +50,6 @@ template <typename Iter>
 auto history_time_iterator(const Iter& it) {
   return boost::transform_iterator(it, TimeFromRecord<Iter>{});
 }
-
-template <typename T>
-void clean_history(const MutableUntypedHistory<T>& history) {
-  ASSERT(history.size() >= history.integration_order(),
-         "Insufficient data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  while (history.size() > history.integration_order()) {
-    history.pop_front();
-  }
-  if (history.size() > 1) {
-    history.discard_value(history[history.size() - 2].time_step_id);
-  }
-}
 }  // namespace
 
 AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
@@ -132,19 +118,26 @@ void AdamsBashforth::pup(PUP::er& p) {
 }
 
 template <typename T>
-void AdamsBashforth::update_u_impl(
-    const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
-    const TimeDelta& time_step) const {
-  clean_history(history);
+void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
+                                   const ConstUntypedHistory<T>& history,
+                                   const TimeDelta& time_step) const {
+  ASSERT(history.size() == history.integration_order(),
+         "Incorrect data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
   *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
 }
 
 template <typename T>
-bool AdamsBashforth::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  clean_history(history);
+bool AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
+                                   const gsl::not_null<T*> u_error,
+                                   const ConstUntypedHistory<T>& history,
+                                   const TimeDelta& time_step) const {
+  ASSERT(history.size() == history.integration_order(),
+         "Incorrect data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
   *u = *history.back().value;
   update_u_common(u, history, time_step, history.integration_order());
   // the error estimate is only useful once the history has enough elements to
@@ -153,6 +146,17 @@ bool AdamsBashforth::update_u_impl(
   update_u_common(u_error, history, time_step, history.integration_order() - 1);
   *u_error = *u - *u_error;
   return true;
+}
+
+template <typename T>
+void AdamsBashforth::clean_history_impl(
+    const MutableUntypedHistory<T>& history) const {
+  while (history.size() >= history.integration_order()) {
+    history.pop_front();
+  }
+  if (history.size() > 1) {
+    history.discard_value(history[history.size() - 2].time_step_id);
+  }
 }
 
 template <typename T>
@@ -215,52 +219,29 @@ bool AdamsBashforth::can_change_step_size_impl(
 template <typename T>
 void AdamsBashforth::add_boundary_delta_impl(
     const gsl::not_null<T*> result,
-    const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
-    const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,
+    const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+    const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const TimeDelta& time_step) const {
-  const size_t integration_order =
-      local_times.integration_order(local_times.size() - 1);
-  const auto signed_order =
-      static_cast<typename decltype(local_times.end())::difference_type>(
-          integration_order);
-
-  ASSERT(local_times.size() >= integration_order,
-         "Insufficient data to take an order-" << integration_order
-         << " step.  Have " << local_times.size() << " times, need "
-         << integration_order);
-  while (local_times.size() > integration_order) {
-    local_times.pop_front();
-  }
-
-  ASSERT(remote_times.size() >= integration_order,
-         "Insufficient data to take an order-" << integration_order
-         << " step.  Have " << remote_times.size() << " times, need "
-         << integration_order);
-  if (std::equal(local_times.begin(), local_times.end(),
-                 remote_times.end() - signed_order)) {
-    // GTS
-    while (remote_times.size() > integration_order) {
-      remote_times.pop_front();
-    }
-  } else {
-    const auto remote_step_after_step_start = std::upper_bound(
-        remote_times.begin(), remote_times.end(), local_times.back());
-    ASSERT(remote_step_after_step_start - remote_times.begin() >= signed_order,
-           "Insufficient data to take an order-" << integration_order
-           << " step.  Have "
-           << remote_step_after_step_start - remote_times.begin()
-           << " times before the step, need " << integration_order);
-    // The pop_front() calls invalidate remote_step_after_step_start.
-    const TimeStepId first_needed =
-        *(remote_step_after_step_start - signed_order);
-    while (remote_times.front() != first_needed) {
-      remote_times.pop_front();
-    }
-  }
-
   boundary_impl(result, local_times, remote_times, coupling,
                 local_times.back().step_time() + time_step);
+}
+
+void AdamsBashforth::clean_boundary_history_impl(
+    const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+    const TimeSteppers::MutableBoundaryHistoryTimes& remote_times) const {
+  const size_t integration_order =
+      local_times.integration_order(local_times.size() - 1);
+
+  while (local_times.size() >= integration_order) {
+    local_times.pop_front();
+  }
+  // We're guaranteed to have a new local value inserted before the
+  // next use, but not a new remote value, so we need to keep one more
+  // of these.
+  while (remote_times.size() > integration_order) {
+    remote_times.pop_front();
+  }
 }
 
 template <typename T>
@@ -443,25 +424,21 @@ void AdamsBashforth::boundary_impl(
   const Time start_time = local_times.back().step_time();
   const auto time_step = end_time - start_time;
 
-  // We define the local_begin and remote_begin variables as the start
-  // of the part of the history relevant to this calculation.
-  // Boundary history cleanup happens immediately before the step, but
-  // boundary dense output happens before that, so there may be data
-  // left over that was needed for the previous step and has not been
-  // cleaned out yet.
-  const auto local_begin = local_times.end() - order_s;
+  ASSERT(local_times.size() == current_order,
+         "Incorrect local data, have " << local_times.size() << " entry, need "
+         << current_order);
 
-  if (std::equal(local_begin, local_times.end(),
+  if (std::equal(local_times.begin(), local_times.end(),
                  remote_times.end() - order_s)) {
     // No local time-stepping going on.
     OrderVector<Time> control_points{};
-    std::transform(local_begin, local_times.end(),
+    std::transform(local_times.begin(), local_times.end(),
                    std::back_inserter(control_points),
                    [](const TimeStepId& t) { return t.step_time(); });
     const auto coefficients = adams_coefficients::coefficients(
         control_points.begin(), control_points.end(), start_time, end_time);
 
-    auto local_it = local_begin;
+    auto local_it = local_times.begin();
     auto remote_it = remote_times.end() - order_s;
     for (auto coefficients_it = coefficients.begin();
          coefficients_it != coefficients.end();
@@ -480,7 +457,7 @@ void AdamsBashforth::boundary_impl(
                        local_times.back()) -
       order_s;
 
-  ASSERT(std::is_sorted(local_begin, local_times.end()),
+  ASSERT(std::is_sorted(local_times.begin(), local_times.end()),
          "Local history not in order");
   ASSERT(std::is_sorted(remote_begin, remote_times.end()),
          "Remote history not in order");
@@ -494,7 +471,7 @@ void AdamsBashforth::boundary_impl(
   using difference_type = std::ptrdiff_t;
 
   SmallStepIterator<T> contributing_small_step(
-      local_begin, remote_begin, local_times.end(), remote_times.end());
+      local_times.begin(), remote_begin, local_times.end(), remote_times.end());
   SmallStepIterator<T> small_step_of_current_step = std::next(
       contributing_small_step, static_cast<difference_type>(current_order - 1));
   while (*small_step_of_current_step != start_time) {

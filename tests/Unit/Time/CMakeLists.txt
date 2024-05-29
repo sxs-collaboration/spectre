@@ -32,8 +32,11 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   CoordinateMaps
+  DataStructures
   Domain
   DomainStructure
+  Evolution
+  Imex
   Time
   TimeStepperHelpers
   Utilities

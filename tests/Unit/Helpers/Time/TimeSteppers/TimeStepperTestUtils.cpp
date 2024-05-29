@@ -20,10 +20,10 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Algorithm.hpp"
 
 namespace TimeStepperTestUtils {
 
@@ -41,7 +41,8 @@ void take_step(
     history->insert(time_id, *y, rhs(*y, time_id.substep_time()));
     // There is no std::numeric_limits<complex>
     *y = std::numeric_limits<double>::signaling_NaN();
-    stepper.update_u(y, history, step_size);
+    stepper.update_u(y, *history, step_size);
+    stepper.clean_history(history);
     time_id = stepper.next_time_id(time_id, step_size);
   }
   CHECK(time_id.substep() == 0);
@@ -61,7 +62,8 @@ void take_step_and_check_error(
     CHECK(time_id.substep() == substep);
     history->insert(time_id, *y, rhs(*y, time_id.substep_time()));
     *y = std::numeric_limits<double>::signaling_NaN();
-    bool error_updated = stepper.update_u(y, y_error, history, step_size);
+    bool error_updated = stepper.update_u(y, y_error, *history, step_size);
+    stepper.clean_history(history);
     CAPTURE(substep);
     REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
             error_updated);
@@ -337,12 +339,12 @@ void check_convergence_order(const TimeStepper& stepper,
 }
 
 void check_dense_output(
-    const TimeStepper& stepper, const size_t history_integration_order,
+    const TimeStepper& stepper,
     const std::pair<int32_t, int32_t>& convergence_step_range,
     const int32_t stride, const bool check_backward_continuity) {
-  const auto get_dense = [&stepper, &history_integration_order](
-                             const TimeDelta& step_size, const double time) {
-    const auto impl = [&stepper, &history_integration_order, &step_size,
+  const auto get_dense = [&stepper](const TimeDelta& step_size,
+                                    const double time) {
+    const auto impl = [&stepper, &step_size,
                        &time](const bool use_error_methods) {
       CAPTURE(use_error_methods);
       TimeStepId time_id(step_size.is_positive(), 0,
@@ -350,7 +352,7 @@ void check_dense_output(
                                                  : step_size.slab().end());
       const evolution_less<double> before{time_id.time_runs_forward()};
       double y = 1.;
-      TimeSteppers::History<double> history{history_integration_order};
+      TimeSteppers::History<double> history{stepper.order()};
       initialize_history(
           time_id.step_time(), make_not_null(&history),
           [](const double t) { return exp(t); },
@@ -371,11 +373,12 @@ void check_dense_output(
         y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {
           double error = 0.0;
-          stepper.update_u(make_not_null(&y), make_not_null(&error),
-                           make_not_null(&history), step);
+          stepper.update_u(make_not_null(&y), make_not_null(&error), history,
+                           step);
         } else {
-          stepper.update_u(make_not_null(&y), make_not_null(&history), step);
+          stepper.update_u(make_not_null(&y), history, step);
         }
+        stepper.clean_history(make_not_null(&history));
         time_id = use_error_methods
                       ? stepper.next_time_id_for_error(time_id, step)
                       : stepper.next_time_id(time_id, step);
@@ -396,7 +399,7 @@ void check_dense_output(
       CAPTURE(time_step);
       Time time = Slab(0., 1.).start().with_slab(time_step.slab());
       double y = 1.;
-      TimeSteppers::History<double> history{history_integration_order};
+      TimeSteppers::History<double> history{stepper.order()};
       const auto rhs = [](const double v, const double /*t*/) { return v; };
       initialize_history(
           time, make_not_null(&history), [](const double t) { return exp(t); },
@@ -427,7 +430,7 @@ void check_dense_output(
                  exp(0.25 * M_PI));
     };
     CHECK(convergence_rate(convergence_step_range, stride, error) ==
-          approx(history_integration_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
 
     const auto error_backwards = [&get_dense](const int32_t steps) {
       const Slab slab(-1., 0.);
@@ -435,7 +438,7 @@ void check_dense_output(
                  exp(-0.25 * M_PI));
     };
     CHECK(convergence_rate(convergence_step_range, stride, error_backwards) ==
-          approx(history_integration_order).margin(0.4));
+          approx(stepper.order()).margin(0.4));
   }
 }
 
@@ -445,9 +448,9 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
   ASSERT(stepper.number_of_past_steps() == 0,
          "Unimplemented for multistep methods");
 
-  const auto impl = [&step_size](const size_t order,
-                                 const uint64_t number_of_substeps_to_test,
-                                 const auto update_u, const auto next_time_id) {
+  const auto impl = [&](const size_t order,
+                        const uint64_t number_of_substeps_to_test,
+                        const auto update_u, const auto next_time_id) {
     const Slab slab(0.0, step_size);
     const auto time_step = slab.duration();
 
@@ -470,10 +473,11 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
           derivative_history.insert(time_step_id, 0.0, 0.0);
         }
         double u = std::numeric_limits<double>::signaling_NaN();
-        update_u(make_not_null(&u), make_not_null(&value_history), time_step);
+        update_u(make_not_null(&u), value_history, time_step);
+        stepper.clean_history(make_not_null(&value_history));
         const double value_dependence = u;
-        update_u(make_not_null(&u), make_not_null(&derivative_history),
-                 time_step);
+        update_u(make_not_null(&u), derivative_history, time_step);
+        stepper.clean_history(make_not_null(&derivative_history));
         const double derivative_dependence = u;
         CHECK(value_dependence >= 0.0);
         CHECK(derivative_dependence >= 0.0);
@@ -488,7 +492,7 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
     impl(
         stepper.order(), stepper.number_of_substeps(),
         [&](const gsl::not_null<double*> u,
-            const gsl::not_null<TimeSteppers::History<double>*> history,
+            const TimeSteppers::History<double>& history,
             const TimeDelta& time_step) {
           stepper.update_u(u, history, time_step);
         },
@@ -501,7 +505,7 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
     impl(
         stepper.order(), stepper.number_of_substeps_for_error(),
         [&](const gsl::not_null<double*> u,
-            const gsl::not_null<TimeSteppers::History<double>*> history,
+            const TimeSteppers::History<double>& history,
             const TimeDelta& time_step) {
           double error;
           stepper.update_u(u, make_not_null(&error), history, time_step);

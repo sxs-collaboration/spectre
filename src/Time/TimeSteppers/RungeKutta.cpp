@@ -66,9 +66,9 @@ template <typename T>
 void compute_substep(const gsl::not_null<T*> u,
                      const ConstUntypedHistory<T>& history, const double dt,
                      const std::vector<double>& substep_coefficients) {
-  *u = *history.front().value;
+  *u = *history.back().value;
   if (substep_coefficients[0] != 0.0) {
-    *u += substep_coefficients[0] * dt * history.front().derivative;
+    *u += substep_coefficients[0] * dt * history.back().derivative;
   }
   for (size_t i = 1; i < substep_coefficients.size(); ++i) {
     if (substep_coefficients[i] != 0.0) {
@@ -79,24 +79,13 @@ void compute_substep(const gsl::not_null<T*> u,
 
 template <typename T>
 void update_u_impl_with_tableau(const gsl::not_null<T*> u,
-                                const MutableUntypedHistory<T>& history,
+                                const ConstUntypedHistory<T>& history,
                                 const TimeDelta& time_step,
                                 const RungeKutta::ButcherTableau& tableau,
                                 const size_t number_of_substeps) {
-  // Clean up old history
-  if (history.at_step_start()) {
-    history.clear_substeps();
-    if (history.size() > 1) {
-      history.pop_front();
-    }
-  } else {
-    history.discard_value(history.substeps().back().time_step_id);
-  }
-  ASSERT(history.size() == 1, "Have more than one step after cleanup.");
-
   const double dt = time_step.value();
 
-  const auto substep = history.substeps().size();
+  const auto substep = history.at_step_start() ? 0 : history.substeps().size();
   if (substep == number_of_substeps - 1) {
     compute_substep(u, history, dt, tableau.result_coefficients);
   } else if (substep < number_of_substeps - 1) {
@@ -110,7 +99,7 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
 
 template <typename T>
 void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
-                               const MutableUntypedHistory<T>& history,
+                               const ConstUntypedHistory<T>& history,
                                const TimeDelta& time_step) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
@@ -122,7 +111,7 @@ void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 template <typename T>
 bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
                                const gsl::not_null<T*> u_error,
-                               const MutableUntypedHistory<T>& history,
+                               const ConstUntypedHistory<T>& history,
                                const TimeDelta& time_step) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
@@ -133,7 +122,8 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   update_u_impl_with_tableau(u, history, time_step, tableau,
                              number_of_substeps);
 
-  const size_t substep = history.substeps().size();
+  const size_t substep =
+      history.at_step_start() ? 0 : history.substeps().size();
 
   if (substep < number_of_substeps - 1) {
     return false;
@@ -144,6 +134,20 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   *u_error = *u - *u_error;
 
   return true;
+}
+
+template <typename T>
+void RungeKutta::clean_history_impl(
+    const MutableUntypedHistory<T>& history) const {
+  if (history.at_step_start()) {
+    history.clear_substeps();
+    if (history.size() > 1) {
+      history.pop_front();
+    }
+  } else {
+    history.discard_value(history.substeps().back().time_step_id);
+  }
+  ASSERT(history.size() == 1, "Have more than one step after cleanup.");
 }
 
 template <typename T>

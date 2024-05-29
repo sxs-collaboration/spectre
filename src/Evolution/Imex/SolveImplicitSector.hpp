@@ -90,32 +90,31 @@ struct SolveImplicitSector {
 
   static void apply_impl(
       gsl::not_null<SystemVariables*> system_variables,
-      gsl::not_null<TimeSteppers::History<SectorVariables>*> implicit_history,
       gsl::not_null<Scalar<DataVector>*> solve_failures,
       const ImexTimeStepper& time_stepper, const TimeDelta& time_step,
+      const TimeSteppers::History<SectorVariables>& implicit_history,
       Mode implicit_solve_mode, double implicit_solve_tolerance,
       const EvolutionDataTuple& joined_evolution_data);
 
  public:
-  using return_tags = tmpl::list<SystemVariablesTag,
-                                 imex::Tags::ImplicitHistory<ImplicitSector>,
-                                 Tags::SolveFailures<ImplicitSector>>;
+  using return_tags =
+      tmpl::list<SystemVariablesTag, Tags::SolveFailures<ImplicitSector>>;
   using argument_tags = tmpl::append<
       tmpl::list<::Tags::TimeStepper<ImexTimeStepper>, ::Tags::TimeStep,
-                 Tags::Mode, Tags::SolveTolerance>,
+                 imex::Tags::ImplicitHistory<ImplicitSector>, Tags::Mode,
+                 Tags::SolveTolerance>,
       tmpl::join<evolution_data_tags>>;
 
   template <typename... ForwardArgs>
-  static void apply(const gsl::not_null<SystemVariables*> system_variables,
-                    const gsl::not_null<TimeSteppers::History<SectorVariables>*>
-                        implicit_history,
-                    const gsl::not_null<Scalar<DataVector>*> solve_failures,
-                    const ImexTimeStepper& time_stepper,
-                    const TimeDelta& time_step, const Mode implicit_solve_mode,
-                    const double implicit_solve_tolerance,
-                    const ForwardArgs&... forward_args) {
-    apply_impl(system_variables, implicit_history, solve_failures, time_stepper,
-               time_step, implicit_solve_mode, implicit_solve_tolerance,
+  static void apply(
+      const gsl::not_null<SystemVariables*> system_variables,
+      const gsl::not_null<Scalar<DataVector>*> solve_failures,
+      const ImexTimeStepper& time_stepper, const TimeDelta& time_step,
+      const TimeSteppers::History<SectorVariables>& implicit_history,
+      const Mode implicit_solve_mode, const double implicit_solve_tolerance,
+      const ForwardArgs&... forward_args) {
+    apply_impl(system_variables, solve_failures, time_stepper, time_step,
+               implicit_history, implicit_solve_mode, implicit_solve_tolerance,
                std::forward_as_tuple(forward_args...));
   }
 };

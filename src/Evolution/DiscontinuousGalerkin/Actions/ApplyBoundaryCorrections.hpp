@@ -44,6 +44,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
+#include "Time/SelfStart.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -725,9 +726,9 @@ struct ApplyBoundaryCorrections {
                     compute_correction_coupling);
               } else {
                 (void)dense_output_time;
-                time_stepper.add_boundary_delta(
-                    &lifted_data, make_not_null(&mortar_data_history),
-                    time_step, compute_correction_coupling);
+                time_stepper.add_boundary_delta(&lifted_data,
+                                                mortar_data_history, time_step,
+                                                compute_correction_coupling);
               }
 
               if (using_gauss_lobatto_points) {
@@ -878,6 +879,12 @@ struct ApplyLtsBoundaryCorrections {
     if (not receive_boundary_data_local_time_stepping<System, VolumeDim, false>(
             make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+
+    if (::SelfStart::step_unused(
+            db::get<::Tags::TimeStepId>(box),
+            db::get<::Tags::Next<::Tags::TimeStepId>>(box))) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     db::mutate_apply<

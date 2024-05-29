@@ -40,6 +40,7 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/Heun2.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -336,8 +337,8 @@ void test_internal_jacobian_ordering() {
   SectorVariables variables = std::move(get<sector_variables_tag>(values));
 
   const imex::solve_implicit_sector_detail::ImplicitEquation<SectorVariables>
-      equation(make_not_null(&variables), &history, TimeSteppers::Heun2{},
-               slab.duration(), std::tuple<>{}, tmpl::type_<sector>{});
+      equation(make_not_null(&variables), TimeSteppers::Heun2{},
+               slab.duration(), history, std::tuple<>{}, tmpl::type_<sector>{});
   const auto evolution_data = std::forward_as_tuple(
       std::as_const(get<Var1>(values)), std::as_const(get<NonTensor>(values)),
       std::as_const(get<VariablesFromEvolution>(values)));
@@ -451,6 +452,10 @@ void test_solve_implicit_sector(const imex::Mode solve_mode) {
 
   db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
       make_not_null(&box));
+  db::mutate<history_tag>(
+      [](const gsl::not_null<typename history_tag::type*> history,
+         const TimeStepper& stepper) { stepper.clean_history(history); },
+      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
   const double dt = time_step.value();
   const auto final_vars = db::get<variables_tag>(box);
@@ -555,6 +560,10 @@ void test_solve_implicit_sector(const imex::Mode solve_mode) {
   db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
       make_not_null(&box));
   performing_step_with_no_implicit_term = false;
+  db::mutate<history_tag>(
+      [](const gsl::not_null<typename history_tag::type*> history,
+         const TimeStepper& stepper) { stepper.clean_history(history); },
+      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
   CHECK_ITERABLE_APPROX(get<Var2>(db::get<variables_tag>(box)),
                         expected_var2_final);
   CHECK_ITERABLE_APPROX(get<Var3>(db::get<variables_tag>(box)), expected_var3);
@@ -567,6 +576,10 @@ void test_solve_implicit_sector(const imex::Mode solve_mode) {
                          initial_time_step_id.next_step(time_step));
   db::mutate_apply<imex::SolveImplicitSector<variables_tag, sector>>(
       make_not_null(&box));
+  db::mutate<history_tag>(
+      [](const gsl::not_null<typename history_tag::type*> history,
+         const TimeStepper& stepper) { stepper.clean_history(history); },
+      make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
   CHECK(db::get<history_tag>(box).size() == 1);
   CHECK(db::get<history_tag>(box).substeps().empty());

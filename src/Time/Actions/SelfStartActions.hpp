@@ -370,18 +370,6 @@ struct CheckForOrderIncrease {
                      "integration order.");
               mutable_history->integration_order(
                   mutable_history->integration_order() + 1);
-              // The time steppers do cleanup internally when taking a
-              // step, but since we are resetting to the start instead
-              // of taking a step we have to do it here.  If we
-              // skipped this the extra value would harmlessly fall
-              // off the end after a few steps, but that would
-              // unnecessarily increase the size of the data held by
-              // the History object.  A different way to handle this
-              // would be to call shrink_to_fit() on the history a few
-              // steps after the start of the evolution.
-              for (const auto& record : *mutable_history) {
-                mutable_history->discard_value(record.time_step_id);
-              }
             },
             make_not_null(&box));
       });

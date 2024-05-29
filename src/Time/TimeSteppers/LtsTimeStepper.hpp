@@ -59,20 +59,20 @@ class LtsTimeStepper : public virtual TimeStepper {
       std::invoke_result_t<const Coupling&, LocalVars, RemoteVars>>;
 
 /// \cond
-#define LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL(_, data)              \
-  virtual void add_boundary_delta_forward(                           \
-      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,    \
-      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,  \
-      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times, \
-      const TimeSteppers::BoundaryHistoryEvaluator<                  \
-          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,            \
-      const TimeDelta& time_step) const = 0;                         \
-  virtual void boundary_dense_output_forward(                        \
-      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,    \
-      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,    \
-      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,   \
-      const TimeSteppers::BoundaryHistoryEvaluator<                  \
-          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,            \
+#define LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL(_, data)            \
+  virtual void add_boundary_delta_forward(                         \
+      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
+      const TimeSteppers::BoundaryHistoryEvaluator<                \
+          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
+      const TimeDelta& time_step) const = 0;                       \
+  virtual void boundary_dense_output_forward(                      \
+      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
+      const TimeSteppers::BoundaryHistoryEvaluator<                \
+          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
       const double time) const = 0;
 
   GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL,
@@ -111,8 +111,8 @@ class LtsTimeStepper : public virtual TimeStepper {
   /// template <typename T>
   /// void add_boundary_delta_impl(
   ///     gsl::not_null<T*> result,
-  ///     const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
-  ///     const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,
+  ///     const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+  ///     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
   ///     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
   ///     const TimeDelta& time_step) const;
   /// ```
@@ -124,12 +124,33 @@ class LtsTimeStepper : public virtual TimeStepper {
   void add_boundary_delta(
       const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
           result,
-      const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
-          history,
+      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       const TimeDelta& time_step, const Coupling& coupling) const {
     return add_boundary_delta_forward(&*make_math_wrapper(result),
-                                      history->local(), history->remote(),
-                                      history->evaluator(coupling), time_step);
+                                      history.local(), history.remote(),
+                                      history.evaluator(coupling), time_step);
+  }
+
+  /// Remove old entries from the history.
+  ///
+  /// This should be called after update_u and dense output.
+  /// Afterward, the history will generally require a new local entry
+  /// to be added before it can be used by the TimeStepper.
+  ///
+  /// Derived classes must implement this as a function with signature
+  ///
+  /// ```
+  /// void clean_boundary_history_impl(
+  ///     const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+  ///     const TimeSteppers::MutableBoundaryHistoryTimes& remote_times)
+  ///     const override;
+  /// ```
+  template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+  void clean_boundary_history(
+      const gsl::not_null<
+          TimeSteppers::BoundaryHistory<LocalVars, RemoteVars, CouplingResult>*>
+          history) const {
+    return clean_boundary_history_impl(history->local(), history->remote());
   }
 
   /// Derived classes must implement this as a function with signature
@@ -153,30 +174,35 @@ class LtsTimeStepper : public virtual TimeStepper {
                                          history.local(), history.remote(),
                                          history.evaluator(coupling), time);
   }
+
+ private:
+  virtual void clean_boundary_history_impl(
+      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times) const = 0;
 };
 
 /// \cond
-#define LTS_TIME_STEPPER_DECLARE_OVERLOADS_IMPL(_, data)             \
-  void add_boundary_delta_forward(                                   \
-      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,    \
-      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,  \
-      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times, \
-      const TimeSteppers::BoundaryHistoryEvaluator<                  \
-          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,            \
-      const TimeDelta& time_step) const override;                    \
-  void boundary_dense_output_forward(                                \
-      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,    \
-      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,    \
-      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,   \
-      const TimeSteppers::BoundaryHistoryEvaluator<                  \
-          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,            \
+#define LTS_TIME_STEPPER_DECLARE_OVERLOADS_IMPL(_, data)           \
+  void add_boundary_delta_forward(                                 \
+      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
+      const TimeSteppers::BoundaryHistoryEvaluator<                \
+          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
+      const TimeDelta& time_step) const override;                  \
+  void boundary_dense_output_forward(                              \
+      gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,  \
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
+      const TimeSteppers::BoundaryHistoryEvaluator<                \
+          LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
       const double time) const override;
 
 #define LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                     \
   void LTS_TIME_STEPPER_DERIVED_CLASS(data)::add_boundary_delta_forward(    \
       const gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,     \
-      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,         \
-      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,        \
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,           \
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,          \
       const TimeSteppers::BoundaryHistoryEvaluator<                         \
           LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,                   \
       const TimeDelta& time_step) const {                                   \

@@ -258,14 +258,16 @@ class AdamsBashforth : public LtsTimeStepper {
   // constant-time-step case, while the latter are necessary for dense
   // output.
   template <typename T>
-  void update_u_impl(gsl::not_null<T*> u,
-                     const MutableUntypedHistory<T>& history,
+  void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
 
   template <typename T>
   bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     const MutableUntypedHistory<T>& history,
+                     const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
+
+  template <typename T>
+  void clean_history_impl(const MutableUntypedHistory<T>& history) const;
 
   template <typename T>
   bool dense_update_u_impl(gsl::not_null<T*> u,
@@ -284,10 +286,15 @@ class AdamsBashforth : public LtsTimeStepper {
   template <typename T>
   void add_boundary_delta_impl(
       gsl::not_null<T*> result,
-      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
-      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
+      const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
       const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
       const TimeDelta& time_step) const;
+
+  void clean_boundary_history_impl(
+      const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
+      const TimeSteppers::MutableBoundaryHistoryTimes& remote_times)
+      const override;
 
   template <typename T>
   void boundary_dense_output_impl(
