@@ -93,7 +93,7 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
             size_t grid_index = 0);
 
   /// Create an ElementId from its string representation (see `operator<<`).
-  ElementId(const std::string& grid_name);
+  explicit ElementId(const std::string& grid_name);
 
   ElementId<VolumeDim> id_of_child(size_t dim, Side side) const;
 
