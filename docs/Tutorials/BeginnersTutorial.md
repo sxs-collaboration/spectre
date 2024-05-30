@@ -481,8 +481,8 @@ Once your run finishes, extract the volume data with `generate-xdmf` using
 
 ```
 spectre generate-xdmf \
-  --file-prefix ScalarAdvectionKuzmin2DVolume \
-  --subfile-name VolumeData --output kuzmin_problem
+  --subfile-name VolumeData --output kuzmin_problem \
+  ScalarAdvectionKuzmin2DVolume*h5
 ```
 
 (Note that the `subfile-name` is different than before because it was different
