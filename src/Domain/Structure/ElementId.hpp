@@ -50,7 +50,7 @@ class er;
  * constraints.
  */
 template <size_t VolumeDim>
-class ElementId {
+class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
  public:
   // We restrict the ElementId size to 64 bits for easy hashing into
   // size_t. This still allows us to have over 17 trillion elements, which is
@@ -68,12 +68,9 @@ class ElementId {
       static_cast<uint64_t>(block_id_bits + grid_index_bits);
   static constexpr uint64_t direction_mask = static_cast<uint64_t>(0b1111)
                                              << direction_shift;
-  // We need some padding to ensure bit fields align with type boundaries,
-  // otherwise the size of `ElementId` is too large.
-  static constexpr size_t padding = 32;
   static_assert(block_id_bits + 3 * (refinement_bits + max_refinement_level) +
-                        grid_index_bits + direction_bits + padding ==
-                    3 * 8 * sizeof(int),
+                        grid_index_bits + direction_bits ==
+                    static_cast<size_t>(2 * 8) * sizeof(int),
                 "Bit representation requires padding or is too large");
   static_assert(two_to_the(refinement_bits) >= max_refinement_level,
                 "Not enough bits to represent all refinement levels");
@@ -138,7 +135,6 @@ class ElementId {
   uint8_t refinement_level_eta_ : refinement_bits;  // third 16 bits
   uint16_t index_zeta_ : max_refinement_level;
   uint8_t refinement_level_zeta_ : refinement_bits;  // fourth 16 bits
-  uint32_t empty_ : padding;                         // last 32 bits
 };
 
 /// \cond
