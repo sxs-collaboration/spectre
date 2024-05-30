@@ -20,6 +20,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 namespace {
@@ -365,6 +366,7 @@ void test_serialization() {
   };
 
   const ElementId<volume_dim> unused_id(0);
+  CHECK(size_of_object_in_bytes(unused_id) == 8);
   for (size_t i = 0; i < 100; ++i) {
     ElementId<volume_dim> element_id{dist_block_id(gen), random_segment_ids(),
                                      dist_grid_index(gen)};
