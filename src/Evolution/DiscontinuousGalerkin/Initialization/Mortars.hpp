@@ -44,7 +44,7 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Spectral {
-enum class ChildSize;
+enum class ChildSize : uint8_t;
 using MortarSize = ChildSize;
 enum class Quadrature : uint8_t;
 }  // namespace Spectral

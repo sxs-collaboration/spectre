@@ -42,7 +42,7 @@ class ElementMap {
   ElementMap() = default;
   /// \endcond
 
-  ElementMap(ElementId<Dim> element_id,
+  ElementMap(const ElementId<Dim>& element_id,
              std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
                                                        TargetFrame, Dim>>
                  block_map);
@@ -53,14 +53,12 @@ class ElementMap {
   /// - If the block is time-independent: the `block.stationary_map()` is used.
   /// - If the block is time-dependent: The `block.moving_mesh_*_map()` maps
   ///   are used. Which maps are used depends on the TargetFrame.
-  ElementMap(ElementId<Dim> element_id, const Block<Dim>& block);
+  ElementMap(const ElementId<Dim>& element_id, const Block<Dim>& block);
 
   const domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>&
   block_map() const {
     return *block_map_;
   }
-
-  const ElementId<Dim>& element_id() const { return element_id_; }
 
   template <typename T>
   tnsr::I<T, Dim, TargetFrame> operator()(
@@ -84,9 +82,9 @@ class ElementMap {
     // Apply the affine map to the points
     tnsr::I<T, Dim, Frame::ElementLogical> source_point;
     for (size_t d = 0; d < Dim; ++d) {
-      source_point.get(d) =
-          block_source_point.get(d) * gsl::at(map_inverse_slope_, d) +
-          gsl::at(map_inverse_offset_, d);
+      const double inv_jac = 1.0 / gsl::at(map_slope_, d);
+      const double temp = gsl::at(map_offset_, d) * inv_jac;
+      source_point.get(d) = inv_jac * block_source_point.get(d) - temp;
     }
     return source_point;
   }
@@ -102,9 +100,9 @@ class ElementMap {
                                                   time, functions_of_time);
     InverseJacobian<T, Dim, Frame::ElementLogical, TargetFrame> inv_jac;
     for (size_t d = 0; d < Dim; ++d) {
+      const double inv_jac_in_dir = 1.0 / gsl::at(map_slope_, d);
       for (size_t i = 0; i < Dim; ++i) {
-        inv_jac.get(d, i) =
-            block_inv_jac.get(d, i) * gsl::at(inverse_jacobian_, d);
+        inv_jac.get(d, i) = inv_jac_in_dir * block_inv_jac.get(d, i);
       }
     }
     return inv_jac;
@@ -122,7 +120,7 @@ class ElementMap {
     Jacobian<T, Dim, Frame::ElementLogical, TargetFrame> jac;
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
-        jac.get(i, d) = block_jac.get(i, d) * gsl::at(jacobian_, d);
+        jac.get(i, d) = block_jac.get(i, d) * gsl::at(map_slope_, d);
       }
     }
     return jac;
@@ -146,24 +144,15 @@ class ElementMap {
   std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
       block_map_{nullptr};
-  ElementId<Dim> element_id_{};
   // map_slope_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) -
   //                        segment_ids[i].endpoint(Side::Lower))
+  // Note: the map_slope_ is the jacobian_
   std::array<double, Dim> map_slope_{
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
   // map_offset_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) +
   //                         segment_ids[i].endpoint(Side::Lower))
   std::array<double, Dim> map_offset_{
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
-  // map_inverse_slope_[i] = 1.0 / map_slope_[i]
-  std::array<double, Dim> map_inverse_slope_{
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
-  // map_inverse_offset_[i] = -map_offset_[i] / map_slope_[i]
-  std::array<double, Dim> map_inverse_offset_{
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN())};
-  // Note: The Jacobian is diagonal
-  std::array<double, Dim> jacobian_{map_slope_};
-  std::array<double, Dim> inverse_jacobian_{map_inverse_slope_};
 };
 
 template <size_t Dim, typename TargetFrame>

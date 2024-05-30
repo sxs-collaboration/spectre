@@ -281,7 +281,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       }(),
 
       soln, element,
-      ElementMap<dim, Frame::Grid>{element_map.element_id(),
+      ElementMap<dim, Frame::Grid>{element.id(),
                                    element_map.block_map().get_clone()},
       subcell_mesh,
       std::unique_ptr<NewtonianEuler::fd::Reconstructor<dim>>{

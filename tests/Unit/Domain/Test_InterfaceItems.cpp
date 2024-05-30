@@ -613,6 +613,7 @@ std::unordered_set<Direction<3>> get_directions<3>() {
 
 template <size_t Dim>
 void test_boundary_coordinates_moving_mesh_impl(
+    const ElementId<Dim>& element_id,
     const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
     const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
         grid_to_inertial_map,
@@ -638,7 +639,7 @@ void test_boundary_coordinates_moving_mesh_impl(
           Tags::InterfaceCompute<Directions<Dim>,
                                  Tags::BoundaryCoordinates<Dim, true>>>>(
       mesh, get_directions<Dim>(),
-      ElementMap<Dim, Frame::Grid>(logical_to_grid_map.element_id(),
+      ElementMap<Dim, Frame::Grid>(element_id,
                                    logical_to_grid_map.block_map().get_clone()),
       grid_to_inertial_map->get_clone(), time,
       clone_unique_ptrs(functions_of_time));
@@ -695,8 +696,8 @@ void test_boundary_coordinates_moving_mesh() {
 
     for (const double time : times_to_check) {
       test_boundary_coordinates_moving_mesh_impl(
-          logical_to_grid_map, grid_to_inertial_map, logical_to_inertial_map,
-          time, functions_of_time);
+          element_id, logical_to_grid_map, grid_to_inertial_map,
+          logical_to_inertial_map, time, functions_of_time);
     }
   };
 
