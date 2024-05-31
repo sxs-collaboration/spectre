@@ -281,10 +281,10 @@ WORKDIR /work
 # easier for people, and build with O2 to reduce build size.
 RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v7.0.0.patch
 
-RUN git clone --single-branch --branch v7.0.0 --depth 1 \
+RUN git clone --single-branch --branch v7.0.1 --depth 1 \
         https://github.com/UIUC-PPL/charm charm_7_0_0 \
     && cd /work/charm_7_0_0 \
-    && git checkout v7.0.0 \
+    && git checkout v7.0.1 \
     && git apply /work/v7.0.0.patch \
     && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
