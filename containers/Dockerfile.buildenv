@@ -196,10 +196,6 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O bla
     && mv blaze-* blaze \
     && mv blaze/blaze /usr/local/include \
     && rm -rf blaze*
-# - Brigand
-RUN git clone https://github.com/edouarda/brigand.git \
-    && mv brigand/include/brigand /usr/local/include \
-    && rm -rf brigand
 # - Catch2
 RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O catch.tar.gz \
     && tar -xzf catch.tar.gz && rm catch.tar.gz \
@@ -220,21 +216,6 @@ RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && ./configure --prefix=/usr/local \
     && make $PARALLEL_MAKE_ARG install \
     && cd .. && rm -rf libbacktrace
-# - Libsharp
-RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
-    && tar -xzf libsharp.tar.gz \
-    && mv libsharp-* libsharp_build \
-    && cd libsharp_build \
-    && { if [ "$TARGETARCH" != "arm64" ]; \
-        then sed -i 's/march=native/march=x86-64/' configure.ac; fi } \
-    && autoconf \
-    && ./configure --prefix=/usr/local --enable-pic --disable-openmp \
-    && make $PARALLEL_MAKE_ARG \
-    && mv auto/bin/* /usr/local/bin \
-    && mv auto/include/* /usr/local/include \
-    && mv auto/lib/* /usr/local/lib \
-    && cd ../ \
-    && rm -r libsharp*
 # - LibXSMM
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         git clone --single-branch --branch main --depth 1 \
