@@ -6,13 +6,14 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/TimeDerivative.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                \
-  template void volume_terms<::ScalarWave::TimeDerivative<DIM(data)>>(        \
+  template void evolution::dg::Actions::detail::volume_terms<                 \
+      ::ScalarWave::TimeDerivative<DIM(data)>>(                               \
       const gsl::not_null<Variables<db::wrap_tags_in<                         \
           ::Tags::dt, typename ::ScalarWave::System<DIM(                      \
                           data)>::variables_tag::tags_list>>*>                \
@@ -51,10 +52,11 @@ namespace evolution::dg::Actions::detail {
       const std::optional<Scalar<DataVector>>& div_mesh_velocity,             \
       const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
-      const Scalar<DataVector>& gamma2);
+      const Scalar<DataVector>& gamma2);                                      \
+  INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(ScalarWave::System<DIM(data)>,  \
+                                              DIM(data), Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace evolution::dg::Actions::detail

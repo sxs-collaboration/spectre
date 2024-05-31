@@ -14,6 +14,7 @@ spectre_target_headers(
   SetTerminateOnElement.hpp
   SpawnInitializeElementsInCollection.hpp
   StartPhaseOnNodegroup.hpp
+  TransformPdalForNodegroup.hpp
 )
 
 spectre_target_sources(

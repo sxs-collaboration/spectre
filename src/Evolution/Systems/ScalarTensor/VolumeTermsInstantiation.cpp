@@ -8,9 +8,10 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/ScalarTensor/System.hpp"
 #include "Evolution/Systems/ScalarTensor/TimeDerivative.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 
-namespace evolution::dg::Actions::detail {
-template void volume_terms<::ScalarTensor::TimeDerivative>(
+template void
+evolution::dg::Actions::detail::volume_terms<::ScalarTensor::TimeDerivative>(
     const gsl::not_null<Variables<db::wrap_tags_in<
         ::Tags::dt,
         typename ::ScalarTensor::System::variables_tag::tags_list>>*>
@@ -70,4 +71,6 @@ template void volume_terms<::ScalarTensor::TimeDerivative>(
     const Scalar<DataVector>& gamma2_scalar,
     // Scalar Tensor extra argument tags
     const Scalar<DataVector>& scalar_source);
-}  // namespace evolution::dg::Actions::detail
+
+INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(ScalarTensor::System, 3,
+                                            Frame::Inertial)

@@ -21,13 +21,4 @@ template <size_t Dim>
 struct ElementLocations : db::SimpleTag {
   using type = std::unordered_map<ElementId<Dim>, size_t>;
 };
-
-/// \brief The node (location) where different elements are.
-///
-/// This should be in the DgElementArrayMember's DataBox and should point to
-/// the one located in the nodegroup's DataBox.
-template <size_t Dim>
-struct ElementLocationsPointer : db::SimpleTag {
-  using type = std::unordered_map<ElementId<Dim>, size_t>*;
-};
 }  // namespace Parallel::Tags

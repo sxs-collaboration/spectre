@@ -245,6 +245,22 @@ void mortar_jacobian(
       const std::optional<tnsr::II<DataVector, DIM(data)>>&                    \
           inv_metric_on_mortar,                                                \
       const ElementMap<DIM(data), Frame::Inertial>& element_map,               \
+      const domain::FunctionsOfTimeMap& functions_of_time);                    \
+  template void detail::initialize_coords_and_jacobians(                       \
+      gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::ElementLogical>*>    \
+          logical_coords,                                                      \
+      gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>          \
+          inertial_coords,                                                     \
+      gsl::not_null<InverseJacobian<DataVector, DIM(data),                     \
+                                    Frame::ElementLogical, Frame::Inertial>*>  \
+          inv_jacobian,                                                        \
+      gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,                     \
+      gsl::not_null<Scalar<DataVector>*> det_jacobian,                         \
+      gsl::not_null<InverseJacobian<DataVector, DIM(data),                     \
+                                    Frame::ElementLogical, Frame::Inertial>*>  \
+          det_times_inv_jacobian,                                              \
+      const Mesh<DIM(data)>& mesh,                                             \
+      const ElementMap<DIM(data), Frame::Inertial>& element_map,               \
       const domain::FunctionsOfTimeMap& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
