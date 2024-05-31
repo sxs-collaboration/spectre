@@ -7,5 +7,6 @@ spectre_target_headers(
   HEADERS
   ElementCollection.hpp
   ElementLocations.hpp
+  ElementLocationsReference.hpp
   NumberOfElementsTerminated.hpp
   )
