@@ -254,7 +254,7 @@ jobs:
           -D BUILD_PYTHON_BINDINGS=ON
           $GITHUB_WORKSPACE
 
-          make -j2 module_All
+          make -j4 module_All
       - name: Use new clang-tidy-diff
         # The clang-tidy-diff tool shipped with clang 14 doesn't report exit
         # codes, so we grab the version that does:
@@ -515,6 +515,9 @@ jobs:
         # container which arises from using the "--privileged" flag just below.
         OMPI_ALLOW_RUN_AS_ROOT: 1
         OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+        # The number of cores to run on. This is given at:
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        NUMBER_OF_CORES: 4
       # See https://lists.cs.illinois.edu/lists/arc/charm/2018-10/msg00011.html
       # for why we need this
       options: --privileged
@@ -673,7 +676,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         if: matrix.unit_tests != 'OFF'
         working-directory: build
         run: |
-          make -j2 unit-tests
+          make -j${NUMBER_OF_CORES} unit-tests
       - name: Run unit tests
         if: matrix.unit_tests != 'OFF' && matrix.COVERAGE != 'ON'
         working-directory: build
@@ -684,7 +687,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # We run ctest -L unit before build test-executables to make
           # sure that all the unit tests are actually built by the
           # unit-tests target.
-          ctest -j2 -L unit --output-on-failure --repeat after-timeout:3
+          ctest -j${NUMBER_OF_CORES} -L unit \
+              --output-on-failure --repeat after-timeout:3
       - name: Run unit tests with coverage reporting
         if: matrix.COVERAGE == 'ON'
         working-directory: build
@@ -714,7 +718,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         if: matrix.build_type == 'Release'
         working-directory: build
         run: |
-          make -j2 Benchmark
+          make -j${NUMBER_OF_CORES} Benchmark
       # Delete unused cache entries before uploading the cache
       - name: Clean up ccache
         if: github.ref == 'refs/heads/develop'
@@ -745,7 +749,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           # We get occasional random timeouts, repeat tests to see if
           # it is a random timeout or systematic
-          ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
+          #
+          # Only use 2 cores because these tests run more slowly.
+          ctest -j2 -LE unit --output-on-failure \
+                --repeat after-timeout:3
       - name: Install
         if: matrix.install == 'ON'
         working-directory: build
@@ -772,7 +779,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         if: matrix.build_type == 'Debug'
         working-directory: build
         run: >
-          make EvolveBurgers -j2
+          make EvolveBurgers -j${NUMBER_OF_CORES}
 
           if [ ! -f ./bin/EvolveBurgers ]; then
             echo "Could not find the executable EvolveBurgers";
@@ -822,20 +829,24 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D BUILD_DOCS=OFF
           ..
 
-          make EvolveBurgers -j2
+          make EvolveBurgers -j${NUMBER_OF_CORES}
 
-          ctest -j2 -R InputFiles.Burgers.Step.yaml --output-on-failure
+          # Run on multiple cores to run both the "parse" and "execute" tests
+          # simultaneously.
+
+          ctest -j${NUMBER_OF_CORES} -R InputFiles.Burgers.Step.yaml
+          --output-on-failure
 
           cd .. && rm -r build-formaline
       - name: Test bundled exporter
         if: matrix.ASAN != 'ON'
         working-directory: build
         run: |
-          make -j2 BundledExporter
+          make -j${NUMBER_OF_CORES} BundledExporter
           mkdir build-test-exporter && cd build-test-exporter
           cmake -D SPECTRE_ROOT=$GITHUB_WORKSPACE/build \
             $GITHUB_WORKSPACE/tests/Unit/IO/Exporter/BundledExporter
-          make -j2
+          make -j${NUMBER_OF_CORES}
           ./TestSpectreExporter \
             $GITHUB_WORKSPACE/tests/Unit/Visualization/Python/VolTestData0.h5 \
             element_data 0 Psi 0 0 0 -0.07059806932542323
@@ -1245,7 +1256,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D BUILD_DOCS=OFF\
             $GITHUB_WORKSPACE
 
-            make -j2 TestArchitectureVectorization
+            make -j4 TestArchitectureVectorization
 
             /work/sde/sde ${SDE_FLAG}\
             -- ./bin/TestArchitectureVectorization [Unit]
