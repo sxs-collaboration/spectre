@@ -97,12 +97,21 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
     desired_step = -desired_step;
   }
 
-  if (abs(desired_step / current_step.slab().duration().value()) < 1.0e-9) {
+  constexpr double smallest_relative_step_size = 1.0e-9;
+  if (abs(desired_step / current_step.slab().duration().value()) <
+      smallest_relative_step_size) {
     ERROR(
-        "Chosen step is extremely small; this can indicate a flaw in the a "
+        "Chosen step is extremely small; this can indicate a flaw in the "
         "step chooser, the grid, or a simualtion instability that an "
         "error-based stepper is naively attempting to resolve. It is unlikely "
-        "that the simulation can proceed");
+        "that the simulation can proceed in a stable and accurate manner. "
+        "A possible issue is an aliasing-driven instability that could be "
+        "cured by more aggressive filtering if you are using DG. The desired "
+        "time step size is "
+        << desired_step << " which, when divided by the slab size ("
+        << current_step.slab().duration().value() << ") is below the tolerance "
+        << smallest_relative_step_size << ". The current time is "
+        << time_step_id.substep_time() << ".");
   }
 
   const auto& next_time_id = db::get<Tags::Next<Tags::TimeStepId>>(*box);

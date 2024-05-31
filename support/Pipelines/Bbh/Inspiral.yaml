@@ -113,7 +113,10 @@ DomainCreator:
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.0002
-  InitialSlabSize: 0.25
+  # This is the smallest interval we'd need to observe time step/constraints. If
+  # you need it smaller you can edit it, but make sure to change the slab
+  # intervals in the EventsAndTriggers
+  InitialSlabSize: 0.5
   StepChoosers:
     - Increase:
         Factor: 2
@@ -255,9 +258,32 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
+  - Trigger:
+      Slabs:
+        # Trigger apparent horizon observations often enough so they find the
+        # next horizon based on the previous initial guess.
+        EvenlySpaced:
+          Interval: 20
+          Offset: 0
+    Events:
+      # Observe constraint energy while we need it for ErrorIfDataTooBig so we
+      # only compute it once
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
           - Name: ConstraintEnergy
             NormType: L2Norm
             Components: Sum
+      - ErrorIfDataTooBig:
+          Threshold: 10
+          VariablesToCheck: [ConstraintEnergy]
+      - ErrorIfDataTooBig:
+          Threshold: 100
+          VariablesToCheck: [SpacetimeMetric]
+      - ObservationAhA
+      - ObservationAhB
+      - ObservationExcisionBoundaryA
+      - ObservationExcisionBoundaryB
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -280,24 +306,6 @@ EventsAndTriggers:
           # for visualization.
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
-      - ObservationExcisionBoundaryA
-      - ObservationExcisionBoundaryB
-  - Trigger:
-      Slabs:
-        EvenlySpaced:
-          # Trigger apparent horizon observations often enough so they find the
-          # next horizon based on the previous initial guess.
-          Interval: 10
-          Offset: 0
-    Events:
-      - ErrorIfDataTooBig:
-          Threshold: 10
-          VariablesToCheck: [ConstraintEnergy]
-      - ErrorIfDataTooBig:
-          Threshold: 100
-          VariablesToCheck: [SpacetimeMetric]
-      - ObservationAhA
-      - ObservationAhB
   - Trigger:
       SeparationLessThan:
         Value: 2.5

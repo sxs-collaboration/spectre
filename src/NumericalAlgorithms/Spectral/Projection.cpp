@@ -26,6 +26,8 @@ namespace Spectral {
 
 std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) {
   switch (mortar_size) {
+    case ChildSize::Uninitialized:
+      return os << "Uninitialized";
     case ChildSize::Full:
       return os << "Full";
     case ChildSize::UpperHalf:
@@ -44,6 +46,8 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
                       const std::array<ChildSize, Dim>& child_sizes) {
   return mesh1 != mesh2 or
          alg::any_of(child_sizes, [](const Spectral::MortarSize child_size) {
+           ASSERT(child_size != Spectral::ChildSize::Uninitialized,
+                  "Received uninitialized child_size.");
            return child_size != Spectral::ChildSize::Full;
          });
 }

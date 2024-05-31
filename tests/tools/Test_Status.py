@@ -85,9 +85,14 @@ class TestExecutableStatus(unittest.TestCase):
             open_h5_file.close_current_object()
             # Constraints
             constraints_subfile = open_h5_file.insert_dat(
-                "/Norms", legend=["L2Norm(ConstraintEnergy)"], version=0
+                "/Norms",
+                legend=[
+                    "L2Norm(ConstraintEnergy)",
+                    "L2Norm(PointwiseL2Norm(ThreeIndexConstraint))",
+                ],
+                version=0,
             )
-            constraints_subfile.append([1.0e-3])
+            constraints_subfile.append([1.0e-3, 1.0e-4])
             open_h5_file.close_current_object()
             # Elliptic solver residuals
             residuals_subfile = open_h5_file.insert_dat(
@@ -125,7 +130,7 @@ class TestExecutableStatus(unittest.TestCase):
         self.assertEqual(status["Speed"], 2640.0)
         self.assertEqual(status["Orbits"], 0.5)
         self.assertEqual(status["Separation"], 2.0)
-        self.assertEqual(status["Constraint Energy"], 1.0e-3)
+        self.assertEqual(status["3-Index Constraint"], 1.0e-4)
 
     def test_evolve_single_bh_status(self):
         executable_status = match_executable_status("EvolveGhSingleBlackHole")

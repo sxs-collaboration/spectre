@@ -139,10 +139,16 @@ Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
 template <size_t DimMinusOne>
 size_t hash(const std::array<Spectral::ChildSize, DimMinusOne>& mortar_size) {
   if constexpr (DimMinusOne == 2) {
-    return static_cast<size_t>(mortar_size[0]) % 2 +
-           2 * (static_cast<size_t>(mortar_size[1]) % 2);
+    ASSERT(mortar_size[0] != Spectral::ChildSize::Uninitialized and
+               mortar_size[1] != Spectral::ChildSize::Uninitialized,
+           "Cannot hash an uninitialized mortar_size: " << mortar_size[0] << " "
+                                                        << mortar_size[1]);
+    return (static_cast<size_t>(mortar_size[0]) - 1) % 2 +
+           2 * ((static_cast<size_t>(mortar_size[1]) - 1) % 2);
   } else if constexpr (DimMinusOne == 1) {
-    return static_cast<size_t>(mortar_size[0]) % 2;
+    ASSERT(mortar_size[0] != Spectral::ChildSize::Uninitialized,
+           "Cannot hash an uninitialized mortar_size: " << mortar_size[0]);
+    return (static_cast<size_t>(mortar_size[0]) - 1) % 2;
   } else if constexpr (DimMinusOne == 0) {
     (void)mortar_size;
     return 0;

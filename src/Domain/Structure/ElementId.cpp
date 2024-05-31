@@ -33,11 +33,11 @@ static_assert(std::is_standard_layout_v<ElementId<2>> and
 static_assert(std::is_standard_layout_v<ElementId<3>> and
               std::is_trivial_v<ElementId<3>>);
 
-static_assert(sizeof(ElementId<1>) == 3 * sizeof(int),
+static_assert(sizeof(ElementId<1>) == 2 * sizeof(int),
               "Wrong size for ElementId<1>");
-static_assert(sizeof(ElementId<2>) == 3 * sizeof(int),
+static_assert(sizeof(ElementId<2>) == 2 * sizeof(int),
               "Wrong size for ElementId<2>");
-static_assert(sizeof(ElementId<3>) == 3 * sizeof(int),
+static_assert(sizeof(ElementId<3>) == 2 * sizeof(int),
               "Wrong size for ElementId<3>");
 
 template <size_t VolumeDim>
@@ -50,8 +50,7 @@ ElementId<VolumeDim>::ElementId(const size_t block_id, const size_t grid_index)
       index_eta_{0},
       refinement_level_eta_{0},
       index_zeta_{0},
-      refinement_level_zeta_{0},
-      empty_{0} {
+      refinement_level_zeta_{0} {
   ASSERT(block_id < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id << "\nMaximum value is: "
                                     << two_to_the(block_id_bits) - 1);
@@ -73,7 +72,6 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
   ASSERT(grid_index < two_to_the(grid_index_bits),
          "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
                                       << two_to_the(grid_index_bits) - 1);
-  empty_ = 0;
   index_xi_ = segment_ids[0].index();
   refinement_level_xi_ = segment_ids[0].refinement_level();
   if constexpr (VolumeDim > 1) {
@@ -104,8 +102,7 @@ ElementId<VolumeDim>::ElementId(const Direction<VolumeDim>& direction,
       index_eta_{element_id.index_eta_},
       refinement_level_eta_{element_id.refinement_level_eta_},
       index_zeta_{element_id.index_zeta_},
-      refinement_level_zeta_{element_id.refinement_level_zeta_},
-      empty_{0} {}
+      refinement_level_zeta_{element_id.refinement_level_zeta_} {}
 
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const std::string& grid_name)
@@ -156,7 +153,6 @@ ElementId<VolumeDim>::ElementId(const std::string& grid_name)
   } else {
     grid_index_ = 0;
   }
-  empty_ = 0;
   ASSERT(block_id_ < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id_ << "\nMaximum value is: "
                                     << two_to_the(block_id_bits) - 1);

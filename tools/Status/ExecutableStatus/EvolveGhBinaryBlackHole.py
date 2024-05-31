@@ -21,7 +21,7 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         "Speed": "M/h",
         "Orbits": None,
         "Separation": "M",
-        "Constraint Energy": None,
+        "3-Index Constraint": None,
     }
 
     def status(self, input_file, work_dir):
@@ -77,12 +77,12 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
                 norms = to_dataframe(
                     open_reductions_file["Norms.dat"], slice=np.s_[-1:]
                 )
-                result["Constraint Energy"] = norms.iloc[-1][
-                    "L2Norm(ConstraintEnergy)"
+                result["3-Index Constraint"] = norms.iloc[-1][
+                    "L2Norm(PointwiseL2Norm(ThreeIndexConstraint))"
                 ]
             except:
                 logger.debug(
-                    "Unable to extract constraint energy.", exc_info=True
+                    "Unable to extract three index constraint.", exc_info=True
                 )
         return result
 
@@ -91,6 +91,6 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
             return f"{value:g}"
         elif field == "Orbits":
             return f"{value:g}"
-        elif field == "Constraint Energy":
+        elif field == "3-Index Constraint":
             return f"{value:.2e}"
         return super().format(field, value)
