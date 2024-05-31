@@ -40,7 +40,9 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: &ExcisionRadiusA {{ ExcisionRadiusA }}
-      OuterRadius: 6.683
+      # Found that the max allowable value for the OuterRadius is 6.0. Higher
+      # values cause the constraints to blow up the cubes around each object.
+      OuterRadius: 6.0
       XCoord: &XCoordA {{ XCoordA }}
       Interior:
         ExciseWithBoundaryCondition:
@@ -48,7 +50,9 @@ DomainCreator:
       UseLogarithmicMap: true
     ObjectB:
       InnerRadius: &ExcisionRadiusB {{ ExcisionRadiusB }}
-      OuterRadius: 6.683
+      # Found that the max allowable value for the OuterRadius is 6.0. Higher
+      # values cause the constraints to blow up the cubes around each object.
+      OuterRadius: 6.0
       XCoord: &XCoordB {{ XCoordB }}
       Interior:
         ExciseWithBoundaryCondition:
@@ -56,8 +60,9 @@ DomainCreator:
       UseLogarithmicMap: true
     Envelope:
       Radius: 100.0
-      # Radial distribution is logarithmic to transition from grid point spacing
-      # around the excisions to the grid point spacing in the outer shell
+      # Radial distribution is logarithmic to transition from grid point
+      # spacing around the excisions to the grid point spacing in the
+      # outer shell
       RadialDistribution: Logarithmic
     OuterShell:
       Radius: 600.0
@@ -139,7 +144,7 @@ EvolutionSystem:
   GeneralizedHarmonic:
     GaugeCondition:
       DampedHarmonic:
-        SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0 / sqrt(34.54)
+        SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0/sqrt(34.54)
         Amplitudes: [1.0, 0.0, 1.0]         # From SpEC run: damped harmonic
         Exponents: [2, 2, 2]                # From SpEC run
     DampingFunctionGamma0:
@@ -378,7 +383,8 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
     Controller:
-      UpdateFraction: 0.03
+      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
+      UpdateFraction: 0.3
     TimescaleTuner:
       InitialTimescales: [0.2]
       MinTimescale: 1.0e-2
@@ -394,7 +400,8 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
     Controller:
-      UpdateFraction: 0.03
+      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
+      UpdateFraction: 0.3
     TimescaleTuner:
       InitialTimescales: [0.2, 0.2, 0.2]
       MinTimescale: 1.0e-2
@@ -410,7 +417,8 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
     Controller:
-      UpdateFraction: 0.03
+      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
+      UpdateFraction: 0.3
     TimescaleTuner:
       InitialTimescales: [0.2, 0.2, 0.2]
       MinTimescale: 1.0e-2
@@ -426,7 +434,8 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
     Controller:
-      UpdateFraction: 0.03
+      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
+      UpdateFraction: 0.3
     TimescaleTuner:
       InitialTimescales: 2.0
       MinTimescale: 1.0e-2
