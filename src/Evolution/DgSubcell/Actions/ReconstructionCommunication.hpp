@@ -317,7 +317,6 @@ struct ReceiveDataForReconstruction {
     }
 
     using ::operator<<;
-    using Key = DirectionalId<Dim>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
              DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>& inbox =
@@ -351,11 +350,10 @@ struct ReceiveDataForReconstruction {
             const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
-            const gsl::not_null<std::unordered_map<
-                Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
-                mortar_data,
             const gsl::not_null<
-                std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+                DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
+                mortar_data,
+            const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
                 mortar_next_time_step_id,
             const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
                 neighbor_mesh,

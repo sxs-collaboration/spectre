@@ -4,9 +4,7 @@
 #pragma once
 
 #include <algorithm>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -16,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -77,8 +76,7 @@ void correct_package_data(
     const gsl::not_null<Variables<DgPackageFieldTags>*> upper_packaged_data,
     const size_t logical_dimension_to_operate_in, const Element<Dim>& element,
     const Mesh<Dim>& subcell_volume_mesh,
-    const std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
-                             boost::hash<DirectionalId<Dim>>>& mortar_data,
+    const DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>& mortar_data,
     const size_t variables_to_offset_in_dg_grid) {
   const Direction<Dim> upper_direction{logical_dimension_to_operate_in,
                                        Side::Upper};

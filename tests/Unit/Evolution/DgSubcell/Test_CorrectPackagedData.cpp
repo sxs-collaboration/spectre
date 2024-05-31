@@ -3,10 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <numeric>
-#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -85,9 +83,7 @@ void test() {
     const SubcellFaceVars interior_lower_packaged_data = lower_packaged_data;
     const SubcellFaceVars interior_upper_packaged_data = upper_packaged_data;
 
-    std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
-                       boost::hash<DirectionalId<Dim>>>
-        mortar_data{};
+    DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
     const Direction<Dim> upper{direction_to_check, Side::Upper};
     const Direction<Dim> lower{direction_to_check, Side::Lower};
     const DirectionalId<Dim> upper_neighbor{

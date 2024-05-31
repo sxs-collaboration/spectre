@@ -4,17 +4,13 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/String.hpp"
@@ -26,12 +22,11 @@ namespace dg {}
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
-/// Data on mortars, indexed by (Direction, ElementId) pairs
+/// Data on mortars, indexed by a DirectionalId
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using Key = DirectionalId<VolumeDim>;
-  using type = std::unordered_map<Key, typename Tag::type, boost::hash<Key>>;
+  using type = DirectionalIdMap<VolumeDim, typename Tag::type>;
 };
 
 /// \ingroup DataBoxTagsGroup

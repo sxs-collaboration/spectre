@@ -110,7 +110,6 @@ bool receive_boundary_data_global_time_stepping(
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
-  using Key = DirectionalId<volume_dim>;
   std::map<TimeStepId,
            DirectionalIdMap<volume_dim,
                             evolution::dg::BoundaryData<volume_dim>>>& inbox =
@@ -125,8 +124,8 @@ bool receive_boundary_data_global_time_stepping(
       db::get<domain::Tags::Element<volume_dim>>(*box);
   for (const auto& [direction, neighbors] : element.neighbors()) {
     for (const auto& neighbor : neighbors) {
-      const auto neighbor_received =
-          received_neighbor_data.find(Key{direction, neighbor});
+      const auto neighbor_received = received_neighbor_data.find(
+          DirectionalId<volume_dim>{direction, neighbor});
       if (neighbor_received == received_neighbor_data.end()) {
         return false;
       }
@@ -147,11 +146,10 @@ bool receive_boundary_data_global_time_stepping(
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
              domain::Tags::NeighborMesh<volume_dim>>(
       [&received_temporal_id_and_data](
-          const gsl::not_null<std::unordered_map<
-              Key, evolution::dg::MortarData<volume_dim>, boost::hash<Key>>*>
+          const gsl::not_null<DirectionalIdMap<
+              volume_dim, evolution::dg::MortarData<volume_dim>>*>
               mortar_data,
-          const gsl::not_null<
-              std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+          const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
               mortar_next_time_step_id,
           const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
               neighbor_mesh) {
@@ -209,7 +207,6 @@ bool receive_boundary_data_local_time_stepping(
   // using the `NormalDotNumericalFlux` prefix tag. This is because the
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-  using Key = DirectionalId<Dim>;
   std::map<TimeStepId, DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
       inbox = tuples::get<
           evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -238,19 +235,15 @@ bool receive_boundary_data_local_time_stepping(
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>>(
       [&inbox, &needed_time](
-          const gsl::not_null<
-              std::unordered_map<Key,
-                                 TimeSteppers::BoundaryHistory<
-                                     evolution::dg::MortarData<Dim>,
-                                     evolution::dg::MortarData<Dim>,
-                                     typename dt_variables_tag::type>,
-                                 boost::hash<Key>>*>
+          const gsl::not_null<DirectionalIdMap<
+              Dim,
+              TimeSteppers::BoundaryHistory<evolution::dg::MortarData<Dim>,
+                                            evolution::dg::MortarData<Dim>,
+                                            typename dt_variables_tag::type>>*>
               boundary_data_history,
-          const gsl::not_null<
-              std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
+          const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
               mortar_next_time_step_ids,
-          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
-              neighbor_mesh,
+          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_mesh,
           const Element<Dim>& element) {
         // Remove neighbor meshes for neighbors that don't exist anymore
         domain::remove_nonexistent_neighbors(neighbor_mesh, element);

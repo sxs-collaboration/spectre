@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <tuple>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -23,27 +22,18 @@
 
 namespace evolution::dg::Initialization::detail {
 namespace {
-template <size_t Dim>
-using Key = DirectionalId<Dim>;
 template <typename MappedType, size_t Dim>
-using MortarMap =
-    std::unordered_map<Key<Dim>, MappedType, boost::hash<Key<Dim>>>;
+using MortarMap = DirectionalIdMap<Dim, MappedType>;
 }  // namespace
 
 template <size_t Dim>
-std::tuple<
-    std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>, Mesh<Dim - 1>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>,
-                       std::array<Spectral::MortarSize, Dim - 1>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>, TimeStepId,
-                       boost::hash<DirectionalId<Dim>>>,
-    DirectionMap<Dim, std::optional<Variables<tmpl::list<
-                          evolution::dg::Tags::MagnitudeOfNormal,
-                          evolution::dg::Tags::NormalCovector<Dim>>>>>>
+std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>,
+           DirectionalIdMap<Dim, Mesh<Dim - 1>>,
+           DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>,
+           DirectionalIdMap<Dim, TimeStepId>,
+           DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                                 evolution::dg::Tags::MagnitudeOfNormal,
+                                 evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                    const Spectral::Quadrature quadrature,
                    const Element<Dim>& element,
@@ -93,16 +83,11 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
 
 #define INSTANTIATION(r, data)                                               \
   template std::tuple<                                                       \
-      std::unordered_map<DirectionalId<DIM(data)>,                           \
-                         evolution::dg::MortarData<DIM(data)>,               \
-                         boost::hash<DirectionalId<DIM(data)>>>,             \
-      std::unordered_map<DirectionalId<DIM(data)>, Mesh<DIM(data) - 1>,      \
-                         boost::hash<DirectionalId<DIM(data)>>>,             \
-      std::unordered_map<DirectionalId<DIM(data)>,                           \
-                         std::array<Spectral::MortarSize, DIM(data) - 1>,    \
-                         boost::hash<DirectionalId<DIM(data)>>>,             \
-      std::unordered_map<DirectionalId<DIM(data)>, TimeStepId,               \
-                         boost::hash<DirectionalId<DIM(data)>>>,             \
+      DirectionalIdMap<DIM(data), evolution::dg::MortarData<DIM(data)>>,     \
+      DirectionalIdMap<DIM(data), Mesh<DIM(data) - 1>>,                      \
+      DirectionalIdMap<DIM(data),                                            \
+                       std::array<Spectral::MortarSize, DIM(data) - 1>>,     \
+      DirectionalIdMap<DIM(data), TimeStepId>,                               \
       DirectionMap<DIM(data),                                                \
                    std::optional<Variables<tmpl::list<                       \
                        evolution::dg::Tags::MagnitudeOfNormal,               \

@@ -3,11 +3,9 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -20,6 +18,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -51,9 +50,7 @@ void internal_mortar_data_impl(
                               evolution::dg::Tags::MagnitudeOfNormal,
                               evolution::dg::Tags::NormalCovector<Dim>>>>>*>
         normal_covector_and_magnitude_ptr,
-    const gsl::not_null<
-        std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
-                           boost::hash<DirectionalId<Dim>>>*>
+    const gsl::not_null<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
         mortar_data_ptr,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
@@ -67,11 +64,9 @@ void internal_mortar_data_impl(
     const Variables<get_primitive_vars_tags_from_system<System>>* const
         volume_primitive_variables,
     const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
-    const std::unordered_map<DirectionalId<Dim>, Mesh<Dim - 1>,
-                             boost::hash<DirectionalId<Dim>>>& mortar_meshes,
-    const std::unordered_map<DirectionalId<Dim>,
-                             std::array<Spectral::MortarSize, Dim - 1>,
-                             boost::hash<DirectionalId<Dim>>>& mortar_sizes,
+    const DirectionalIdMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
+    const DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+        mortar_sizes,
     const TimeStepId& temporal_id,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,

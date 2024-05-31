@@ -3,11 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
-#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -25,6 +23,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
@@ -147,9 +146,7 @@ void test() {
                                Spectral::Quadrature::CellCentered};
   // Set up nonsense mortar data since we only need to check that it got
   // cleared.
-  using Key = DirectionalId<Dim>;
-  std::unordered_map<Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>
-      mortar_data{};
+  DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
   evolution::dg::MortarData<Dim> lower_xi_data{};
   lower_xi_data.insert_local_mortar_data(
       TimeStepId{true, 1, Time{Slab{1.2, 7.8}, {1, 10}}},

@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <tuple>
@@ -60,19 +59,13 @@ class TaggedTuple;
 namespace evolution::dg::Initialization {
 namespace detail {
 template <size_t Dim>
-std::tuple<
-    std::unordered_map<DirectionalId<Dim>, evolution::dg::MortarData<Dim>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>, Mesh<Dim - 1>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>,
-                       std::array<Spectral::MortarSize, Dim - 1>,
-                       boost::hash<DirectionalId<Dim>>>,
-    std::unordered_map<DirectionalId<Dim>, TimeStepId,
-                       boost::hash<DirectionalId<Dim>>>,
-    DirectionMap<Dim, std::optional<Variables<tmpl::list<
-                          evolution::dg::Tags::MagnitudeOfNormal,
-                          evolution::dg::Tags::NormalCovector<Dim>>>>>>
+std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>,
+           DirectionalIdMap<Dim, Mesh<Dim - 1>>,
+           DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>,
+           DirectionalIdMap<Dim, TimeStepId>,
+           DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                                 evolution::dg::Tags::MagnitudeOfNormal,
+                                 evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                    Spectral::Quadrature quadrature, const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
@@ -102,10 +95,8 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
  */
 template <size_t Dim, typename System>
 struct Mortars {
-  using Key = DirectionalId<Dim>;
-
   template <typename MappedType>
-  using MortarMap = std::unordered_map<Key, MappedType, boost::hash<Key>>;
+  using MortarMap = DirectionalIdMap<Dim, MappedType>;
 
  public:
   using simple_tags_from_options =
