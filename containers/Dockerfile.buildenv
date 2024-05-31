@@ -134,7 +134,7 @@ FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
 WORKDIR /root
 COPY --from=xx / /
 ARG TARGETPLATFORM
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 # Install build dependencies for the host system
 RUN apt-get update -y \
     && apt-get install -y cmake clang lld wget
@@ -183,7 +183,7 @@ ENV TEX_ARCH=aarch64
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
 
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 ARG DEBIAN_FRONTEND=noninteractive
 
 # We install dependencies not available through apt manually rather than using
@@ -337,7 +337,7 @@ ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 
 # Install OpenMPI
 RUN apt-get install -y libopenmpi-dev
@@ -402,7 +402,7 @@ CMD ["--help"]
 FROM deploy AS demo
 ARG BUILDARCH
 ARG TARGETARCH
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files
 # Also ffmpeg for making movies with paraview output pngs
