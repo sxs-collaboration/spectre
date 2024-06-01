@@ -49,6 +49,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SendDataToElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
@@ -64,19 +65,15 @@ namespace Tags {
 struct TimeStepId;
 }  // namespace Tags
 
-namespace Parallel::Actions {
-struct SendDataToElement;
-}  // namespace Parallel::Actions
-
 namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <typename Metavariables, typename DbTagsList, size_t Dim>
 void prepare_neighbor_data(
-    const gsl::not_null<DirectionMap<Dim, DataVector>*>
+    gsl::not_null<DirectionMap<Dim, DataVector>*>
         all_neighbor_data_for_reconstruction,
-    const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
+    gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+    gsl::not_null<db::DataBox<DbTagsList>*> box,
     [[maybe_unused]] const Variables<db::wrap_tags_in<
         ::Tags::Flux, typename Metavariables::system::flux_variables,
         tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes);
