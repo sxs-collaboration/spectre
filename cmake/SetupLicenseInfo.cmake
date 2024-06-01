@@ -6,6 +6,7 @@ set(_LIST_OF_3PLS
   Boost
   Brigand
   Catch2
+  Charm
   Gsl
   Hdf5
   Jemalloc
