@@ -285,6 +285,7 @@ long_lines() {
               'containers/Dockerfile.travis$' \
               'docs/DevGuide/Travis.md' \
               'docs/MainSite/Main.md' \
+              'docs/Tutorials/CCE.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
               'eos.*' \
