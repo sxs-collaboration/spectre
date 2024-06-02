@@ -200,6 +200,8 @@ def find_horizon(
             "Specify either 'output_coeffs_subfile' or 'output_coords_subfile'"
             " or both."
         )
+        if not (output.endswith(".h5") or output.endswith(".hdf5")):
+            output += ".h5"
         if output_coeffs_subfile:
             legend, ylm_data = ylm_legend_and_data(
                 strahlkorper, obs_time, output_l_max or strahlkorper.l_max
