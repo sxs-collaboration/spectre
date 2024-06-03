@@ -20,7 +20,7 @@
 #
 # Alternatively, you can build the container locally and push it, but remember
 # to build and push both x86 and ARM versions. Docker must be run as root on
-# your machine. There are 3 different images in this Dockerfile. Here is how to
+# your machine. There are 4 different images in this Dockerfile. Here is how to
 # build them for x86_64 (for Apple Silicon, replace linux/amd64 with
 # linux/arm64):
 #
@@ -57,6 +57,17 @@
 #    and then to push the `demo` image to DockerHub:
 #
 #   docker push sxscollaboration/spectre:demo
+#
+# 4. `deploy_static_execs_and_libs` This is used for building various
+#    executables and libraries with an old enough version of glibc so
+#    that the resulting executables are quite portable. This must be built
+#    as
+#
+#  docker build --target deploy_static_execs_and_libs --platform linux/amd64 \
+#    --build-arg UBUNTU_VERSION=18.04 -f ./containers/Dockerfile.buildenv .
+#
+#    That is, it uses Ubuntu 18.04 and AMD64. There is no support for ARM and
+#    newer versions of Ubuntu will limit compatibility.
 ARG UBUNTU_VERSION=22.04
 FROM ubuntu:${UBUNTU_VERSION} AS base
 ARG UBUNTU_VERSION=22.04
@@ -499,3 +510,51 @@ RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
     ; fi
 
 RUN pip3 --no-cache-dir install jupyterlab
+
+# Used for compiling the static executables and libraries during CI so that we
+# can release statically linked versions of our executables and libraries
+# for other groups to use.
+FROM sxscollaboration/spectre:dev1804 AS deploy_static_execs_and_libs
+ARG BUILDARCH
+ARG TARGETARCH
+ARG UBUNTU_VERSION=18.04
+ARG PARALLEL_MAKE_ARG=-j4
+
+WORKDIR /work
+
+COPY . spectre/
+
+# Build SpECTRE with as many static libraries as possible. Because we cannot
+# statically link to glibc (it is unsupported and causes a lot of undefined
+# behavior) we build using Ubuntu 18.04 to support a fairly old version of
+# glibc.
+RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
+    echo "Must use Ubuntu 18.04 with AMD64 for deploying static execs" \
+    && exit 1; fi \
+    && mkdir spectre/build && cd spectre/build \
+    && cmake \
+    -D CMAKE_C_COMPILER=gcc-9 \
+    -D CMAKE_CXX_COMPILER=g++-9 \
+    -D CMAKE_Fortran_COMPILER=gfortran-9 \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D DEBUG_SYMBOLS=OFF \
+    -D BUILD_PYTHON_BINDINGS=OFF \
+    -D MEMORY_ALLOCATOR=SYSTEM \
+    -D BUILD_SHARED_LIBS=OFF \
+    -D ENABLE_PARAVIEW=OFF \
+    -D Boost_USE_STATIC_LIBS=ON \
+    -D BLA_STATIC=ON \
+    -D GSL_STATIC=ON \
+    -D HDF5_USE_STATIC_LIBRARIES=ON \
+    -D SPECTRE_Fortran_STATIC_LIBS=ON \
+    -D YAMLCPP_STATIC_LIBRARY=ON \
+    -D USE_GIT_HOOKS=OFF \
+    -D OVERRIDE_ARCH=haswell \
+    -D USE_LD=gold \
+    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/9/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/9/libquadmath.a \
+    -D BUILD_DOCS=OFF \
+    -D USE_CCACHE=OFF \
+    .. \
+    && make ${PARALLEL_MAKE_ARG} CharacteristicExtract ReduceCceWorldtube \
+    && ctest -LE unit -R CharacteristicExtract
