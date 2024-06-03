@@ -204,6 +204,7 @@ void test_mean_value_on_boundary_1d() {
 }
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   SECTION("Mean Value") { test_mean_value(); }
