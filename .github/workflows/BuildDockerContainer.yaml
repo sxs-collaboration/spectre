@@ -60,6 +60,7 @@ jobs:
           platforms: >
             ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
             || 'linux/amd64' }}
+          build-args: PARALLEL_MAKE_ARG=-j4
       - name: Build CI container
         uses: docker/build-push-action@v5
         with:
@@ -70,6 +71,7 @@ jobs:
           tags: ${{ inputs.image_name }}:ci
           # No ARM container for CI because GitHub doesn't host ARM runners yet
           platforms: linux/amd64
+          build-args: PARALLEL_MAKE_ARG=-j4
 
   run_tests:
     name: Test

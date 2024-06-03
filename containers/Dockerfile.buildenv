@@ -134,7 +134,7 @@ FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
 WORKDIR /root
 COPY --from=xx / /
 ARG TARGETPLATFORM
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 # Install build dependencies for the host system
 RUN apt-get update -y \
     && apt-get install -y cmake clang lld wget
@@ -183,7 +183,7 @@ ENV TEX_ARCH=aarch64
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
 
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 ARG DEBIAN_FRONTEND=noninteractive
 
 # We install dependencies not available through apt manually rather than using
@@ -196,10 +196,6 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O bla
     && mv blaze-* blaze \
     && mv blaze/blaze /usr/local/include \
     && rm -rf blaze*
-# - Brigand
-RUN git clone https://github.com/edouarda/brigand.git \
-    && mv brigand/include/brigand /usr/local/include \
-    && rm -rf brigand
 # - Catch2
 RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O catch.tar.gz \
     && tar -xzf catch.tar.gz && rm catch.tar.gz \
@@ -220,21 +216,6 @@ RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && ./configure --prefix=/usr/local \
     && make $PARALLEL_MAKE_ARG install \
     && cd .. && rm -rf libbacktrace
-# - Libsharp
-RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
-    && tar -xzf libsharp.tar.gz \
-    && mv libsharp-* libsharp_build \
-    && cd libsharp_build \
-    && { if [ "$TARGETARCH" != "arm64" ]; \
-        then sed -i 's/march=native/march=x86-64/' configure.ac; fi } \
-    && autoconf \
-    && ./configure --prefix=/usr/local --enable-pic --disable-openmp \
-    && make $PARALLEL_MAKE_ARG \
-    && mv auto/bin/* /usr/local/bin \
-    && mv auto/include/* /usr/local/include \
-    && mv auto/lib/* /usr/local/lib \
-    && cd ../ \
-    && rm -r libsharp*
 # - LibXSMM
 RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         git clone --single-branch --branch main --depth 1 \
@@ -281,10 +262,10 @@ WORKDIR /work
 # easier for people, and build with O2 to reduce build size.
 RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v7.0.0.patch
 
-RUN git clone --single-branch --branch v7.0.0 --depth 1 \
+RUN git clone --single-branch --branch v7.0.1 --depth 1 \
         https://github.com/UIUC-PPL/charm charm_7_0_0 \
     && cd /work/charm_7_0_0 \
-    && git checkout v7.0.0 \
+    && git checkout v7.0.1 \
     && git apply /work/v7.0.0.patch \
     && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
@@ -337,7 +318,7 @@ ARG TARGETARCH
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 
 # Install OpenMPI
 RUN apt-get install -y libopenmpi-dev
@@ -402,7 +383,7 @@ CMD ["--help"]
 FROM deploy AS demo
 ARG BUILDARCH
 ARG TARGETARCH
-ARG PARALLEL_MAKE_ARG=-j2
+ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files
 # Also ffmpeg for making movies with paraview output pngs

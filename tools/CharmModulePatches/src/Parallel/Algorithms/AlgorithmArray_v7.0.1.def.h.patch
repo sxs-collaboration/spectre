@@ -1,0 +1,43 @@
+diff --git a/src/Parallel/Algorithms/AlgorithmArray.def.h b/src/Parallel/Algorithms/AlgorithmArray.def.h
+index 79de7a10b..ac9571c89 100644
+--- a/src/Parallel/Algorithms/AlgorithmArray.def.h
++++ b/src/Parallel/Algorithms/AlgorithmArray.def.h
+@@ -555,16 +555,17 @@ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::recei
+ /* DEFS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_7, const ReceiveData_t &impl_noname_8, bool enable_if_disabled);
+  */
+ template <class ParallelComponent, class SpectreArrayIndex> 
+-template <class ReceiveTag, class ReceiveData_t, typename Fwd1, typename Fwd2>
++template <typename ReceiveTag, typename Fwd2, typename Fwd1>
+ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::receive_data(Fwd1 &&impl_noname_7, Fwd2 &&impl_noname_8, bool enable_if_disabled, const CkEntryOptions *impl_e_opts) 
+ {
++  using ReceiveData_t = Fwd2;
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+   envelope env;
+   env.setMsgtype(ForArrayEltMsg);
+   env.setTotalsize(0);
+-  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>());
++  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()));
+   _TRACE_CREATION_DONE(1);
+   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall10<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+@@ -669,7 +670,7 @@ bool CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::invok
+   envelope env;
+   env.setMsgtype(ForArrayEltMsg);
+   env.setTotalsize(0);
+-  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>());
++  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()));
+   _TRACE_CREATION_DONE(1);
+   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+@@ -1399,7 +1400,7 @@ template <class ParallelComponent, class SpectreArrayIndex>
+ template <class ReceiveTag, class MessageType>
+ int CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::reg_receive_data_MessageType() {
+   int epidx = CkRegisterEp<ReceiveTag, MessageType>("receive_data(MessageType* impl_msg)",
+-      reinterpret_cast<CkCallFnPtr>(_call_receive_data_MessageType<ReceiveTag, MessageType>), CMessage_MessageType::__idx, __idx, 0);
++      reinterpret_cast<CkCallFnPtr>(_call_receive_data_MessageType<ReceiveTag, MessageType>), MessageType::base::__idx, __idx, 0);
+   CkRegisterMessagePupFn(epidx, (CkMessagePupFn)MessageType::ckDebugPup);
+   return epidx;
+ }

@@ -1,0 +1,101 @@
+diff --git a/cmake/detect-features-cxx.cmake b/cmake/detect-features-cxx.cmake
+index d3aa6ab94..830da9cf1 100644
+--- a/cmake/detect-features-cxx.cmake
++++ b/cmake/detect-features-cxx.cmake
+@@ -38,12 +38,12 @@ endif()
+ 
+ # Needed so that tlsglobals works correctly with --build-shared
+ # See https://github.com/UIUC-PPL/charm/issues/3168 for details.
+-check_cxx_compiler_flag("-ftls-model=initial-exec" CMK_COMPILER_KNOWS_FTLS_MODEL)
+-if(CMK_COMPILER_KNOWS_FTLS_MODEL)
+-  set(OPTS_CC "${OPTS_CC} -ftls-model=initial-exec")
+-  set(OPTS_CXX "${OPTS_CXX} -ftls-model=initial-exec")
+-  set(OPTS_LD "${OPTS_LD} -ftls-model=initial-exec")
+-endif()
++# check_cxx_compiler_flag("-ftls-model=initial-exec" CMK_COMPILER_KNOWS_FTLS_MODEL)
++# if(CMK_COMPILER_KNOWS_FTLS_MODEL)
++#   set(OPTS_CC "${OPTS_CC} -ftls-model=initial-exec")
++#   set(OPTS_CXX "${OPTS_CXX} -ftls-model=initial-exec")
++#   set(OPTS_LD "${OPTS_LD} -ftls-model=initial-exec")
++# endif()
+ 
+ # Allow seeing own symbols dynamically, needed for programmatic backtraces
+ check_cxx_compiler_flag("-rdynamic" CMK_COMPILER_KNOWS_RDYNAMIC)
+diff --git a/src/scripts/configure.ac b/src/scripts/configure.ac
+index f6c0f311b..41a7c9f46 100644
+--- a/src/scripts/configure.ac
++++ b/src/scripts/configure.ac
+@@ -820,15 +820,15 @@ then
+ fi
+ 
+ # Needed so that tlsglobals works correctly with --build-shared
+-# See https://github.com/UIUC-PPL/charm/issues/3168 for details.
+-test_cxx "whether C++ compiler accepts -ftls-model=initial-exec" "yes" "no" "-ftls-model=initial-exec"
+-if test $strictpass -eq 1
+-then
+-    add_flag 'CMK_COMPILER_KNOWS_FTLS_MODEL="1"' "tlsglobals"
+-    OPTS_CC="$OPTS_CC -ftls-model=initial-exec"
+-    OPTS_CXX="$OPTS_CXX -ftls-model=initial-exec"
+-    OPTS_LD="$OPTS_LD -ftls-model=initial-exec"
+-fi
++# # See https://github.com/UIUC-PPL/charm/issues/3168 for details.
++# test_cxx "whether C++ compiler accepts -ftls-model=initial-exec" "yes" "no" "-ftls-model=initial-exec"
++# if test $strictpass -eq 1
++# then
++#     add_flag 'CMK_COMPILER_KNOWS_FTLS_MODEL="1"' "tlsglobals"
++#     OPTS_CC="$OPTS_CC -ftls-model=initial-exec"
++#     OPTS_CXX="$OPTS_CXX -ftls-model=initial-exec"
++#     OPTS_LD="$OPTS_LD -ftls-model=initial-exec"
++# fi
+ 
+ # Test for a flag important for shared linking
+ test_cxx "whether C++ compiler accepts -fvisibility=hidden" "yes" "no" "-fvisibility=hidden"
+diff --git a/src/util/ckhashtable.h b/src/util/ckhashtable.h
+index 3f2c895aa..6b19c4641 100644
+--- a/src/util/ckhashtable.h
++++ b/src/util/ckhashtable.h
+@@ -437,9 +437,9 @@ as a fast key like this:
+ template <class T> class CkHashtableAdaptorT {
+ 	T val;
+ public:
+-	CkHashtableAdaptorT<T>(const T &v):val(v) {}
++	CkHashtableAdaptorT(const T &v):val(v) {}
+ 	/**added to allow pup to do Key k while unPacking*/
+-	CkHashtableAdaptorT<T>(){}
++	CkHashtableAdaptorT(){}
+ 	operator T & () {return val;}
+ 	operator const T & () const {return val;}
+ 	inline CkHashCode hash(void) const 
+diff --git a/src/util/pup_util.C b/src/util/pup_util.C
+index 82206c118..22ad68fd9 100644
+--- a/src/util/pup_util.C
++++ b/src/util/pup_util.C
+@@ -580,12 +580,16 @@ static PUP_registry *PUP_getRegistry(void) {
+ 	return reg;
+ }
+ 
+-const PUP_regEntry *PUP_getRegEntry(const PUP::able::PUP_ID &id)
++const PUP_regEntry *PUP_getRegEntry(const PUP::able::PUP_ID &id,
++                                    const char *const name_hint = NULL)
+ {
+ 	const PUP_regEntry *cur=(const PUP_regEntry *)(
+ 		PUP_getRegistry()->CkHashtable::get((const void *)&id) );
+-	if (cur==NULL)
+-		CmiAbort("Unrecognized PUP::able::PUP_ID. is there an unregistered module?");
++	if (cur==NULL){
++          if (name_hint != NULL)
++            CmiAbort("Unrecognized PUP::able::PUP_ID for %s", name_hint);
++          CmiAbort("Unrecognized PUP::able::PUP_ID. is there an unregistered module?");
++        }
+ 	return cur;
+ }
+ 
+@@ -623,7 +627,7 @@ void PUP::er::object(able** a)
+ 		} else {
+ 			const PUP::able::PUP_ID &id=(*a)->get_PUP_ID();
+ 			id.pup(*this);
+-			r=PUP_getRegEntry(id);
++			r=PUP_getRegEntry(id, typeid(**a).name());
+ 		}
+ 	}
+ 	syncComment(PUP::sync_begin_object,r->name);
