@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
 #include <tuple>
@@ -19,6 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -44,8 +44,7 @@ using MortarId = DirectionalId<VolumeDim>;
 template <size_t MortarDim>
 using MortarSize = std::array<Spectral::MortarSize, MortarDim>;
 template <size_t VolumeDim, typename ValueType>
-using MortarMap = std::unordered_map<MortarId<VolumeDim>, ValueType,
-                                     boost::hash<MortarId<VolumeDim>>>;
+using MortarMap = DirectionalIdMap<VolumeDim, ValueType>;
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Find a mesh for a mortar capable of representing data from either

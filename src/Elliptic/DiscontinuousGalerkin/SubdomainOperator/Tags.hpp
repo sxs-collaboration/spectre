@@ -3,12 +3,10 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 
 namespace elliptic::dg::subdomain_operator::Tags {
 
@@ -26,8 +24,7 @@ struct ExtrudingExtent : db::SimpleTag {
 template <typename Tag, size_t VolumeDim>
 struct NeighborMortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using Key = DirectionalId<VolumeDim>;
-  using type = std::unordered_map<Key, typename Tag::type, boost::hash<Key>>;
+  using type = DirectionalIdMap<VolumeDim, typename Tag::type>;
 };
 
 }  // namespace elliptic::dg::subdomain_operator::Tags

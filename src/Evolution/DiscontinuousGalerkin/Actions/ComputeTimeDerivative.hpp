@@ -784,7 +784,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     // using the `NormalDotNumericalFlux` prefix tag. This is because the
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    using Key = DirectionalId<Dim>;
     const auto integration_order =
         db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
@@ -792,15 +791,14 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                    Dim, typename dt_variables_tag::type>>(
         [&element, integration_order, &time_step_id, using_gauss_points,
          &volume_det_inv_jacobian](
-            const gsl::not_null<std::unordered_map<
-                Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
+            const gsl::not_null<
+                DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
                 mortar_data,
-            const gsl::not_null<std::unordered_map<
-                Key,
-                TimeSteppers::BoundaryHistory<evolution::dg::MortarData<Dim>,
-                                              evolution::dg::MortarData<Dim>,
-                                              typename dt_variables_tag::type>,
-                boost::hash<Key>>*>
+            const gsl::not_null<
+                DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
+                                          evolution::dg::MortarData<Dim>,
+                                          evolution::dg::MortarData<Dim>,
+                                          typename dt_variables_tag::type>>*>
                 boundary_data_history,
             const Mesh<Dim>& volume_mesh,
             const DirectionMap<Dim,
