@@ -60,6 +60,7 @@ jobs:
           platforms: >
             ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
             || 'linux/amd64' }}
+          build-args: PARALLEL_MAKE_ARG=-j4
       - name: Build and push demo container
         uses: docker/build-push-action@v3
         with:
@@ -71,4 +72,4 @@ jobs:
           platforms: >
             ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
             || 'linux/amd64' }}
-
+          build-args: PARALLEL_MAKE_ARG=-j4
