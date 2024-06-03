@@ -73,6 +73,26 @@ if(HDF5_USE_STATIC_LIBRARIES)
       endif()
     endif()
   endif()
+  string(FIND
+    "${_HDF5_INTERFACE_LINK_LIBS}" "libcrypto.so" _LOCATION_OF_LIBCRYPTO)
+  if (NOT ${_LOCATION_OF_LIBCRYPTO} EQUAL -1)
+    find_library(_libcrypto NAMES libcrypto.a)
+    if(_libcrypto)
+      string(REPLACE
+        "libcrypto.so" "libcrypto.a" _HDF5_INTERFACE_LINK_LIBS
+        "${_HDF5_INTERFACE_LINK_LIBS}")
+    endif()
+  endif()
+  string(FIND
+    "${_HDF5_INTERFACE_LINK_LIBS}" "libz.so" _LOCATION_OF_LIBZ)
+  if (NOT ${_LOCATION_OF_LIBZ} EQUAL -1)
+    find_library(_libz NAMES libz.a)
+    if(_libz)
+      string(REPLACE
+        "libz.so" "libz.a" _HDF5_INTERFACE_LINK_LIBS
+        "${_HDF5_INTERFACE_LINK_LIBS}")
+    endif()
+  endif()
   set_target_properties(
     HDF5::HDF5
     PROPERTIES
