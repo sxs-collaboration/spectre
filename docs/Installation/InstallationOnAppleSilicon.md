@@ -37,8 +37,6 @@ export SPECTRE_HOME=$(pwd)
 export SPECTRE_DEPS_ROOT=$HOME/apps
 mkdir $SPECTRE_DEPS_ROOT
 cd $SPECTRE_DEPS_ROOT
-mkdir src
-cd src
 ```
 
 ### 2. Install python dependencies
@@ -73,7 +71,7 @@ following the instructions on the [homebrew](https://brew.sh) homepage. Then,
 run the following to install a fortran compiler and other dependencies:
 ```
 brew install gcc
-brew install boost gsl cmake doxygen catch2
+brew install boost gsl cmake doxygen catch2 openblas
 brew install ccache autoconf automake jemalloc hdf5 pybind11 yaml-cpp
 ```
 
@@ -99,27 +97,10 @@ tar -xf blaze-3.8.tar.gz
 mv blaze-3.8 include
 popd
 
-git clone https://github.com/edouarda/brigand.git
-
 # Need master branch of libxsmm to support Apple Silicon
 git clone https://github.com/hfp/libxsmm.git
 pushd libxsmm
 make
-popd
-
-pushd ./src
-git clone https://github.com/Libsharp/libsharp.git
-cd libsharp
-
-# Do not use compiler flag -march=native (unsupported on Apple Silicon)
-sed "s/-march=native//" configure.ac > configure.ac.mod
-mv configure.ac.mod configure.ac
-
-autoupdate
-autoconf
-./configure
-make
-mv auto $SPECTRE_DEPS_ROOT/libsharp
 popd
 ```
 
@@ -128,7 +109,9 @@ Next, clone, patch, and install charm++ v7.0.0.
 git clone https://github.com/UIUC-PPL/charm
 pushd charm
 git checkout v7.0.0
-./build LIBS multicore-darwin-arm8 --with-production -g3 -j
+git apply $SPECTRE_HOME/support/charm/v7.0.0.patch
+./build LIBS multicore-darwin-arm8 --with-production -g3 -j \
+--without-romio --build-shared
 popd
 ```
 
@@ -149,10 +132,8 @@ spack external find python
 # Install dependencies
 spack install \
   blaze@3.8.2 \
-  brigand@master \
-  charmpp@7.0.0: backend=multicore \
+  charmpp@7.0.0: +shared backend=multicore \
   libxsmm@main \
-  libsharp~mpi~openmp
 ```
 
 ### 5. Configure and build SpECTRE
@@ -174,14 +155,12 @@ cmake \
 -D CMAKE_CXX_COMPILER=clang++ \
 -D CMAKE_Fortran_COMPILER=gfortran \
 -D CMAKE_BUILD_TYPE=Debug \
--D BUILD_SHARED_LIBS=OFF \
+-D BUILD_SHARED_LIBS=ON \
 -D MEMORY_ALLOCATOR=SYSTEM \
 -D CHARM_ROOT=${SPECTRE_DEPS_ROOT}/charm/multicore-darwin-arm8 \
 -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
 -D LIBXSMM_ROOT=${SPECTRE_DEPS_ROOT}/libxsmm/ \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
--D BRIGAND_ROOT=${SPECTRE_DEPS_ROOT}/brigand/ \
--D LIBSHARP_ROOT=${SPECTRE_DEPS_ROOT}/libsharp/ \
 ..
 ```
 
@@ -190,4 +169,10 @@ Finally, build and test SpECTRE. E.g., on a Mac with 10 cores,
 make -j10 unit-tests
 make -j10 test-executables
 ctest --output-on-failure -j10
+```
+
+Optionally, to install the python bindings in your python environment,
+```
+make all-pybindings
+pip install -e ${SPECTRE_HOME}/build/bin/python
 ```
