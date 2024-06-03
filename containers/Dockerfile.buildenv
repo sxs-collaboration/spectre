@@ -57,8 +57,9 @@
 #    and then to push the `demo` image to DockerHub:
 #
 #   docker push sxscollaboration/spectre:demo
-
-FROM ubuntu:22.04 AS base
+ARG UBUNTU_VERSION=22.04
+FROM ubuntu:${UBUNTU_VERSION} AS base
+ARG UBUNTU_VERSION=22.04
 
 # See
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -66,22 +67,40 @@ FROM ubuntu:22.04 AS base
 ARG TARGETARCH
 
 # Install add-apt-repository and basic tools
-RUN apt-get update -y \
-    && apt-get install -y software-properties-common wget git
+RUN if [ ${UBUNTU_VERSION} = 18.04 ] && [ "$TARGETARCH" = "arm64" ]; then \
+    echo "Cannot use Ubuntu 18.04 with ARM" && exit 1; fi && apt-get update -y \
+    && apt-get install -y software-properties-common wget git \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    add-apt-repository ppa:ubuntu-toolchain-r/test; fi
 
 # Add LLVM apt repository for newer versions of clang
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
     tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
-    && add-apt-repository -y \
-    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    add-apt-repository -y \
+    'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-17 main'; \
+    elif [ ${UBUNTU_VERSION} = 22.04 ]; then \
+    add-apt-repository -y \
+    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'; \
+    else \
+    exit 1; \
+    fi
 
 # Install compilers and build tools
 RUN apt-get update -y \
-    && apt-get install -y \
-        gcc g++ gfortran \
-        clang clang-format clang-tidy lld \
-        bison flex libncurses-dev \
-        gdb cmake autoconf automake ninja-build lcov
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    apt-get install -y gcc-9 g++-9 gfortran-9 clang-17; \
+    else \
+    apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake; \
+    fi \
+    && apt-get install -y lld bison flex libncurses-dev gdb autoconf automake \
+    ninja-build lcov \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    wget -O cmake-install.sh \
+    "https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-linux-x86_64.sh" \
+    && chmod +x ./cmake-install.sh && ./cmake-install.sh --skip-license \
+    --prefix=/usr/local && rm cmake-install.sh; \
+    fi
 
 # Install SpECTRE dependencies that are available through apt
 #
@@ -95,13 +114,32 @@ RUN apt-get update -y \
     && apt-get install -y \
         libopenblas-dev liblapack-dev \
         libgsl-dev \
-        libjemalloc2 libjemalloc-dev \
         libboost-dev libboost-program-options-dev \
         libboost-thread-dev libboost-tools-dev libssl-dev \
         libhdf5-dev hdf5-tools \
         libarpack2-dev \
-        libyaml-cpp-dev \
-        libbenchmark-dev
+        libbenchmark-dev \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz \
+    && tar xf 0.8.0.tar.gz && mkdir ./yaml-cpp-0.8.0/build \
+    && cd ./yaml-cpp-0.8.0/build \
+    && cmake \
+    -D CMAKE_C_COMPILER=gcc-9 \
+    -D CMAKE_CXX_COMPILER=g++-9 \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D YAML_BUILD_SHARED_LIBS=OFF \
+    -D BUILD_SHARED_LIBS=OFF \
+    -D YAML_ENABLE_PIC=ON \
+    -D POSITION_INDEPENDENT_CODE=ON \
+    -D YAML_CPP_BUILD_TESTS=OFF \
+    -D YAML_CPP_BUILD_CONTRIB=OFF \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    .. \
+    && make ${PARALLEL_MAKE_ARG} && make install \
+    && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0; \
+    else \
+    apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev; \
+    fi
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -112,10 +150,27 @@ RUN apt-get update -y \
 #   scripts use `/usr/bin/env python` to find python so restore it.
 COPY support/Python/requirements.txt requirements.txt
 COPY support/Python/dev_requirements.txt dev_requirements.txt
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
-    && apt-get install -y python3-pip python-is-python3 \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
+    libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev \
+    make \
+    && wget https://www.python.org/ftp/python/3.10.1/Python-3.10.1.tgz \
+    && tar -xf Python-3.10.1.tgz && cd ./Python-3.10.1 \
+    && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
+    && make altinstall && cd ../ \
+    && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
+    && python3.10 -m pip install --upgrade pip \
+    && pip3.10 --no-cache-dir install pybind11~=2.6.1 \
+    && pip3.10 --no-cache-dir install --only-binary=h5py -r requirements.txt \
+    -r dev_requirements.txt; \
+    else \
+    apt-get install -y python3-pip python-is-python3 \
     && pip3 --no-cache-dir install pybind11~=2.6.1 \
-    && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
+    && pip3 --no-cache-dir install -r requirements.txt \
+    -r dev_requirements.txt; \
+    fi \
     && rm requirements.txt dev_requirements.txt
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
@@ -124,24 +179,34 @@ RUN apt-get update -y \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
-
+# WARNING: We switch to an empty container briefly!!!
+#
 # Cross-compile dependencies on the host system that take a long time to build
 # when emulating the target architecture. The `xbuild` stage is an image with
 # the same architecture as the host. It compiles the packages for the target
 # architecture. Then we can copy the compiled packages into the `base` image.
+#
+# Note: because we only cross-compile the latest Ubuntu version we support,
+# we just delete the executables on Ubuntu 18.04 and disable doxygen and ccache.
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
 WORKDIR /root
 COPY --from=xx / /
 ARG TARGETPLATFORM
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j4
+
 # Install build dependencies for the host system
 RUN apt-get update -y \
-    && apt-get install -y cmake clang lld wget
+    && apt-get install -y cmake clang lld flex bison wget git
+
 # Install build dependencies for the target architecture
+#
+# We need libstd++ to work on the target arch that we are cross-compiling for
 RUN xx-apt-get update -y \
     && xx-apt-get install -y --no-install-recommends \
-        libc6-dev libstdc++-10-dev bison flex
+    libc6-dev libstdc++-10-dev
+
 # - Ccache
 RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
     && tar -xzf ccache.tar.gz \
@@ -163,13 +228,30 @@ RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxy
         -D CMAKE_BUILD_TYPE=Release .. \
     && make $PARALLEL_MAKE_ARG
 
+# WARNING: We now copy the things from the "xbuild" container/image into the
+#          xbuild-test container to make sure the copying works. We do the
+#          actual copy into the spectre container below.
+#
 FROM base AS xbuild-test
+ARG UBUNTU_VERSION=22.04
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 RUN ccache --version
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
 RUN doxygen --version
+COPY --from=xbuild /usr/local/bin/cmake /work/
+RUN /work/cmake --version \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    rm /usr/local/bin/ccache /usr/local/bin/doxygen; \
+    else \
+    mv /work/cmake /usr/local/bin; \
+    fi
 
 
+# WARNING: We are now back in the spectre container. We create two base
+#          images for the 2 possible target architectures and then select
+#          the one we need as the `dev` container below. This is essentially an
+#          `if` in the Dockerfile.
+#
 # Install software that we can't install through apt. We have to distinguish
 # between different architectures for many of those.
 FROM base AS base-amd64
@@ -182,6 +264,7 @@ ENV TEX_ARCH=aarch64
 
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 
 ARG PARALLEL_MAKE_ARG=-j4
 ARG DEBIAN_FRONTEND=noninteractive
@@ -315,6 +398,7 @@ WORKDIR /work
 #   same.
 FROM dev as ci
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 
 # When building this image individually, the PARALLEL_MAKE_ARG from above is not
 # remembered (and it doesn't hurt to redefine the env variable).
@@ -347,6 +431,7 @@ WORKDIR /work
 FROM sxscollaboration/spectre:dev AS deploy
 ARG BUILDARCH
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j2
 
 COPY . spectre/
@@ -383,6 +468,7 @@ CMD ["--help"]
 FROM deploy AS demo
 ARG BUILDARCH
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files
