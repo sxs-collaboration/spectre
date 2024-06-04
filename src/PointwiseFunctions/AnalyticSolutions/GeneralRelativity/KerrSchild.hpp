@@ -77,10 +77,10 @@ namespace Solutions {
  *
  * The corresponding 3+1 quantities are
  * \f{eqnarray}{
- * g_{i j}     &=& \delta_{i j} + 2 H l_i l_j,\\
- * g^{i j}  &=& \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\
- * {\rm det} g_{i j}&=& 1+2H l^t l^t,\\
- * \partial_k ({\rm det} g_{i j})&=& 2 l^t l^t \partial_k H,\\
+ * \gamma_{i j}     &=& \delta_{i j} + 2 H l_i l_j,\\
+ * \gamma^{i j}  &=& \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\
+ * {\rm det} \gamma_{i j}&=& 1+2H l^t l^t,\\
+ * \partial_k ({\rm det} \gamma_{i j})&=& 2 l^t l^t \partial_k H,\\
  * \beta^i       &=& - {2 H l^t l^i \over 1+2H l^t l^t},\\
  * N        &=& \left(1+2 H l^t l^t\right)^{-1/2},\quad\hbox{(lapse)}\\
  * \alpha     &=& \left(1+2 H l^t l^t\right)^{-1},
@@ -92,7 +92,7 @@ namespace Solutions {
  *                \left[H l^t \partial_{(i}l_{j)} + H l_{(i}\partial_{j)}l^t
  *          + l^t l_{(i}\partial_{j)} H + 2H^2 l^t l_{(i} l^k\partial_{k}l_{j)}
  *          + H l^t l_i l_j l^k \partial_{k} H\right],\\
- * \partial_{k}g_{i j}&=& 2 l_i l_j\partial_{k} H +
+ * \partial_{k}\gamma_{i j}&=& 2 l_i l_j\partial_{k} H +
  *    4 H l_{(i} \partial_{k}l_{j)},\\
  * \partial_{k}N   &=& -\left(1+2 H l^t l^t\right)^{-3/2}
  *                    \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right),\\
@@ -112,8 +112,8 @@ namespace Solutions {
  *                                      -\partial_{j)} l^t)
  *                     \right].
  * \f}
- * Note that \f$l^i\f$ is **not** equal to \f$g^{i j} l_j\f$; it is equal
- * to \f${}^{(4)}g^{i \mu} l_\mu\f$.
+ * Note that \f$l^i\f$ is **not** equal to \f$\gamma^{i j} l_j\f$; it is equal
+ * to \f$g^{i \mu} l_\mu\f$.
  *
  * ## Kerr Spacetime
  *
