@@ -8,6 +8,8 @@
 #include "Evolution/Particles/MonteCarlo/EmitPackets.tpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePacketsInElement.tpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Evolution/Particles/MonteCarlo/TakeTimeStep.tpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Particles::MonteCarlo::detail {
 // Draw a single packet with homogeneouse spatial distribution
@@ -37,3 +39,5 @@ void draw_single_packet(
 
 template struct Particles::MonteCarlo::TemplatedLocalFunctions<2, 2>;
 template struct Particles::MonteCarlo::TemplatedLocalFunctions<2, 3>;
+template struct Particles::MonteCarlo::TemplatedLocalFunctions<4, 3>;
+template struct Particles::MonteCarlo::TemplatedLocalFunctions<16, 3>;

@@ -3,11 +3,16 @@
 
 #pragma once
 
+#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/CouplingTermsForPropagation.hpp"
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Scattering.hpp"
-#include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Particles::MonteCarlo {
 

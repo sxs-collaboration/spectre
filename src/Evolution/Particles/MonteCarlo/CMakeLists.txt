@@ -13,9 +13,9 @@ spectre_target_sources(
   EvolvePackets.cpp
   InverseJacobianInertialToFluidCompute.cpp
   NeutrinoInteractionTable.cpp
-  TemplatedLocalFunctions.cpp
   Packet.cpp
   Scattering.cpp
+  TemplatedLocalFunctions.cpp
   )
 
 spectre_target_headers(
@@ -31,6 +31,7 @@ spectre_target_headers(
   NeutrinoInteractionTable.hpp
   Packet.hpp
   Scattering.hpp
+  TakeTimeStep.tpp
   TemplatedLocalFunctions.hpp
   )
 
