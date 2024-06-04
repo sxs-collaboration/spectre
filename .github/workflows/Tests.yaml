@@ -1151,12 +1151,11 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           git push origin HEAD:release
           git push origin v$RELEASE_VERSION
       - name: Create release on GitHub
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE }}
+        uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.GH_TOKEN_RELEASE }}
           tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: Release ${{ env.RELEASE_VERSION }}
+          name: Release ${{ env.RELEASE_VERSION }}
           body_path: >-
             ${{ steps.release-notes.outputs.download-path }}/release_notes.md
       # Publish the Zenodo record. Once published, the record can't be deleted
