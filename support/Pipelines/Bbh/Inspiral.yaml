@@ -269,7 +269,7 @@ EventsAndTriggers:
       # Observe constraint energy while we need it for ErrorIfDataTooBig so we
       # only compute it once
       - ObserveNorms:
-          SubfileName: Norms
+          SubfileName: ConstraintEnergy
           TensorsToObserve:
           - Name: ConstraintEnergy
             NormType: L2Norm
