@@ -34,24 +34,40 @@ class Policies {
         "refinement."};
   };
 
-  using options = tmpl::list<Isotropy, Limits>;
+  /// Whether or not to enforce 2:1 balance in the direction normal to element
+  /// faces
+  struct EnforceTwoToOneBalanceInNormalDirection {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether or not to enforce 2:1 balance in the direction normal to "
+        "element faces."};
+  };
+
+  using options =
+      tmpl::list<Isotropy, Limits, EnforceTwoToOneBalanceInNormalDirection>;
 
   static constexpr Options::String help = {
       "Policies controlling adaptive mesh refinement."};
 
   Policies() = default;
 
-  Policies(amr::Isotropy isotropy, const amr::Limits& limits);
+  Policies(amr::Isotropy isotropy, const amr::Limits& limits,
+           bool enforce_two_to_one_balance_in_normal_direction);
 
   amr::Isotropy isotropy() const { return isotropy_; }
 
   amr::Limits limits() const { return limits_; }
+
+  bool enforce_two_to_one_balance_in_normal_direction() const {
+    return enforce_two_to_one_balance_in_normal_direction_;
+  }
 
   void pup(PUP::er& p);
 
  private:
   amr::Isotropy isotropy_{amr::Isotropy::Anisotropic};
   amr::Limits limits_{};
+  bool enforce_two_to_one_balance_in_normal_direction_{true};
 };
 
 bool operator==(const Policies& lhs, const Policies& rhs);

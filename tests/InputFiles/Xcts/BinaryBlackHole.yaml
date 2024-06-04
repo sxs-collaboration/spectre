@@ -155,6 +155,7 @@ Amr:
   Verbosity: Verbose
   Criteria: []
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       NumGridPoints: Auto

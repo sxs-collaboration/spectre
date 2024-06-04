@@ -164,6 +164,7 @@ Amr:
   Verbosity: Quiet
   Criteria: []
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       NumGridPoints: Auto

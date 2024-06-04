@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Policies/EnforcePolicies.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -103,8 +104,9 @@ struct EvaluateRefinementCriteria {
       }
     }
 
-    amr::enforce_policies(make_not_null(&overall_decision),
-                          db::get<amr::Tags::Policies>(box), element_id,
+    const auto& policies = db::get<amr::Tags::Policies>(box);
+    amr::enforce_policies(make_not_null(&overall_decision), policies,
+                          element_id,
                           get<::domain::Tags::Mesh<volume_dim>>(box));
 
     // An element cannot join if it is splitting in another dimension.
@@ -123,8 +125,10 @@ struct EvaluateRefinementCriteria {
     if (not my_neighbors_amr_info.empty()) {
       for (const auto& [neighbor_id, neighbor_amr_info] :
            my_neighbors_amr_info) {
-        amr::update_amr_decision(make_not_null(&overall_decision), my_element,
-                                 neighbor_id, neighbor_amr_info.flags);
+        amr::update_amr_decision(
+            make_not_null(&overall_decision), my_element, neighbor_id,
+            neighbor_amr_info.flags,
+            policies.enforce_two_to_one_balance_in_normal_direction());
       }
     }
 

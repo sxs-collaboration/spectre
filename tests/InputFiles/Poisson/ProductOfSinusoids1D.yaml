@@ -92,6 +92,7 @@ Amr:
         TargetNumberOfGridPoints: [5]
         OscillationAtTarget: [DoNothing]
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       NumGridPoints: Auto

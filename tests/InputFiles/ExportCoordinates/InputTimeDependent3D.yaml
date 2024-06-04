@@ -18,6 +18,7 @@ Parallelization:
 Amr:
   Criteria:
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       RefinementLevel: Auto

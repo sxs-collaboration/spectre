@@ -35,6 +35,7 @@ Amr:
         AbsoluteTarget: 1.e-6
         RelativeTarget: 1.0
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       RefinementLevel: Auto

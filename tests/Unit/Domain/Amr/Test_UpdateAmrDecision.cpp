@@ -30,14 +30,15 @@ template <size_t VolumeDim>
 void check_amr_decision_is_unchanged(
     std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) {
+    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags,
+    const bool enforce_two_to_one_balance_in_normal_direction) {
   const auto expected_updated_flags = my_initial_amr_flags;
   std::stringstream os;
   os << neighbor_amr_flags;
   INFO(os.str());
-  CHECK_FALSE(amr::update_amr_decision(make_not_null(&my_initial_amr_flags),
-                                       element, neighbor_id,
-                                       neighbor_amr_flags));
+  CHECK_FALSE(amr::update_amr_decision(
+      make_not_null(&my_initial_amr_flags), element, neighbor_id,
+      neighbor_amr_flags, enforce_two_to_one_balance_in_normal_direction));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
@@ -46,12 +47,14 @@ void check_amr_decision_is_changed(
     std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags,
-    const std::array<amr::Flag, VolumeDim>& expected_updated_flags) {
+    const std::array<amr::Flag, VolumeDim>& expected_updated_flags,
+    const bool enforce_two_to_one_balance_in_normal_direction) {
   std::stringstream os;
   os << my_initial_amr_flags << " " << neighbor_amr_flags;
   INFO(os.str());
-  CHECK(amr::update_amr_decision(make_not_null(&my_initial_amr_flags), element,
-                                 neighbor_id, neighbor_amr_flags));
+  CHECK(amr::update_amr_decision(
+      make_not_null(&my_initial_amr_flags), element, neighbor_id,
+      neighbor_amr_flags, enforce_two_to_one_balance_in_normal_direction));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
@@ -63,17 +66,20 @@ template <size_t VolumeDim>
 void check_update_amr_decision(
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::vector<std::array<amr::Flag, VolumeDim>>& all_flags,
-    const changed_flags_t<VolumeDim>& changed_flags) {
+    const changed_flags_t<VolumeDim>& changed_flags,
+    const bool enforce_two_to_one_balance_in_normal_direction) {
   for (const auto& my_flags : all_flags) {
     for (const auto& neighbor_flags : all_flags) {
       auto search =
           changed_flags.find(std::make_pair(my_flags, neighbor_flags));
       if (search == changed_flags.end()) {
-        check_amr_decision_is_unchanged(my_flags, element, neighbor_id,
-                                        neighbor_flags);
+        check_amr_decision_is_unchanged(
+            my_flags, element, neighbor_id, neighbor_flags,
+            enforce_two_to_one_balance_in_normal_direction);
       } else {
-        check_amr_decision_is_changed(my_flags, element, neighbor_id,
-                                      neighbor_flags, search->second);
+        check_amr_decision_is_changed(
+            my_flags, element, neighbor_id, neighbor_flags, search->second,
+            enforce_two_to_one_balance_in_normal_direction);
       }
     }
   }
@@ -121,7 +127,9 @@ Element<2> make_element(
   return Element<2>{element_id, std::move(neighbors)};
 }
 
+template <bool EnforceTwoToOneInNormalDirection>
 void test_update_amr_decision_1d() {
+  INFO(EnforceTwoToOneInNormalDirection);
   const std::array<amr::Flag, 1> split{{amr::Flag::Split}};
   const std::array<amr::Flag, 1> join{{amr::Flag::Join}};
   const std::array<amr::Flag, 1> stay{{amr::Flag::DoNothing}};
@@ -138,31 +146,61 @@ void test_update_amr_decision_1d() {
   // changed flags: first flags of pair is initial_amr_flags
   //                second flags of pair is neighbor_amr_flags
   //                last flags are the new amr_flags for the element
-  check_update_amr_decision(
-      element, id_lx_s, all_flags,
-      changed_flags_t<1>{{{join, stay}, stay}, {{join, split}, stay}});
-  check_update_amr_decision(element, id_ux_c, all_flags,
-                            changed_flags_t<1>{{{join, split}, stay}});
+  {
+    INFO("lower neighbor is sibling");
+    check_update_amr_decision(
+        element, id_lx_s, all_flags,
+        changed_flags_t<1>{{{join, stay}, stay}, {{join, split}, stay}},
+        EnforceTwoToOneInNormalDirection);
+  }
+  {
+    INFO("upper neighbor is cousin");
+    check_update_amr_decision(element, id_ux_c, all_flags,
+                              EnforceTwoToOneInNormalDirection
+                                  ? changed_flags_t<1>{{{join, split}, stay}}
+                                  : changed_flags_t<1>{},
+                              EnforceTwoToOneInNormalDirection);
+  }
 
   const ElementId<1> id_lx_n{0, {{x_segment.id_of_abutting_nibling()}}};
   const ElementId<1> id_ux_cp{0, {{x_cousin.id_of_parent()}}};
   element = make_element(element_id, {id_lx_n}, {id_ux_cp});
-  check_update_amr_decision(element, id_lx_n, all_flags,
-                            changed_flags_t<1>{{{join, join}, stay},
-                                               {{join, stay}, stay},
-                                               {{join, split}, split},
-                                               {{stay, split}, split}});
-  check_update_amr_decision(element, id_ux_cp, all_flags, changed_flags_t<1>{});
 
+  {
+    INFO("lower neighbor is nibling");
+    check_update_amr_decision(element, id_lx_n, all_flags,
+                              EnforceTwoToOneInNormalDirection
+                                  ? changed_flags_t<1>{{{join, join}, stay},
+                                                       {{join, stay}, stay},
+                                                       {{join, split}, split},
+                                                       {{stay, split}, split}}
+                                  : changed_flags_t<1>{{{join, join}, stay},
+                                                       {{join, stay}, stay},
+                                                       {{join, split}, stay}},
+                              EnforceTwoToOneInNormalDirection);
+  }
+  {
+    INFO("upper neighbor is parent of cousin");
+    check_update_amr_decision(element, id_ux_cp, all_flags,
+                              changed_flags_t<1>{},
+                              EnforceTwoToOneInNormalDirection);
+  }
   // note having no lower neighbor is okay for this test
   const ElementId<1> id_ux_cc{0, {{x_cousin.id_of_child(Side::Lower)}}};
   element = make_element(element_id, {}, {id_ux_cc});
-  check_update_amr_decision(element, id_ux_cc, all_flags,
-                            changed_flags_t<1>{{{join, stay}, stay},
-                                               {{join, split}, split},
-                                               {{stay, split}, split}});
+  {
+    INFO("upper neighbor is child of cousin");
+    check_update_amr_decision(element, id_ux_cc, all_flags,
+                              EnforceTwoToOneInNormalDirection
+                                  ? changed_flags_t<1>{{{join, stay}, stay},
+                                                       {{join, split}, split},
+                                                       {{stay, split}, split}}
+                                  : changed_flags_t<1>{},
+                              EnforceTwoToOneInNormalDirection);
+  }
 }
 
+template <bool EnforceTwoToOneInNormalDirection>
 void test_update_amr_decision_2d() {
   const std::array<amr::Flag, 2> split_split{
       {amr::Flag::Split, amr::Flag::Split}};
@@ -217,7 +255,8 @@ void test_update_amr_decision_2d() {
                          {{join_join, stay_stay}, stay_join},
                          {{join_join, stay_join}, stay_join},
                          {{stay_join, split_split}, stay_stay},
-                         {{stay_join, stay_split}, stay_stay}});
+                         {{stay_join, stay_split}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor same refinement in x and y, non-sibling side in x
   check_update_amr_decision<2>(
       element, id_ux_c_s, all_flags,
@@ -227,7 +266,8 @@ void test_update_amr_decision_2d() {
                          {{join_join, stay_split}, join_stay},
                          {{join_join, split_stay}, stay_join},
                          {{stay_join, split_split}, stay_stay},
-                         {{stay_join, stay_split}, stay_stay}});
+                         {{stay_join, stay_split}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor same in x, coarser in y, sibling side of y
   check_update_amr_decision<2>(
       element, id_ly_s_n, all_flags,
@@ -251,14 +291,16 @@ void test_update_amr_decision_2d() {
                          {{stay_join, join_stay}, stay_stay},
                          {{stay_join, stay_stay}, stay_stay},
                          {{stay_join, join_join}, stay_stay},
-                         {{stay_join, stay_join}, stay_stay}});
+                         {{stay_join, stay_join}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor same in x, coarser in y, non-sibling side of y
   check_update_amr_decision<2>(
       element, id_uy_s_cp, all_flags,
       changed_flags_t<2>{{{join_stay, split_split}, stay_stay},
                          {{join_stay, split_stay}, stay_stay},
                          {{join_join, split_split}, stay_join},
-                         {{join_join, split_stay}, stay_join}});
+                         {{join_join, split_stay}, stay_join}},
+      EnforceTwoToOneInNormalDirection);
 
   const ElementId<2> id_lx_s_p{
       0, {{x_segment.id_of_sibling(), y_segment.id_of_parent()}}};
@@ -284,14 +326,16 @@ void test_update_amr_decision_2d() {
                          {{join_join, split_stay}, stay_join},
                          {{join_join, stay_stay}, stay_join},
                          {{join_join, join_join}, stay_join},
-                         {{join_join, stay_join}, stay_join}});
+                         {{join_join, stay_join}, stay_join}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor same in x, coarser in y, non-sibling side of x
   check_update_amr_decision<2>(
       element, id_ux_c_p, all_flags,
       changed_flags_t<2>{{{join_stay, split_split}, stay_stay},
                          {{join_stay, split_stay}, stay_stay},
                          {{join_join, split_split}, stay_join},
-                         {{join_join, split_stay}, stay_join}});
+                         {{join_join, split_stay}, stay_join}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor coarser in x, finer in y, sibling side of y
   check_update_amr_decision<2>(
       element, id_ly_p_n, all_flags,
@@ -314,10 +358,12 @@ void test_update_amr_decision_2d() {
                          {{stay_join, join_stay}, stay_stay},
                          {{stay_join, stay_stay}, stay_stay},
                          {{stay_join, join_join}, stay_stay},
-                         {{stay_join, stay_join}, stay_stay}});
+                         {{stay_join, stay_join}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor coarser in x and y, non-sibling side -f y
   check_update_amr_decision<2>(element, id_uy_p_cp, all_flags,
-                               changed_flags_t<2>{});
+                               changed_flags_t<2>{},
+                               EnforceTwoToOneInNormalDirection);
 
   const ElementId<2> id_lx_s_cl{
       0, {{x_segment.id_of_sibling(), y_segment.id_of_child(Side::Lower)}}};
@@ -364,7 +410,8 @@ void test_update_amr_decision_2d() {
                          {{stay_join, stay_split}, stay_split},
                          {{stay_join, split_stay}, stay_stay},
                          {{stay_join, join_stay}, stay_stay},
-                         {{stay_join, stay_stay}, stay_stay}});
+                         {{stay_join, stay_stay}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor same in x, finer in y, non-sibling side of x
   check_update_amr_decision<2>(
       element, id_ux_c_cu, all_flags,
@@ -384,7 +431,8 @@ void test_update_amr_decision_2d() {
                          {{stay_join, stay_split}, stay_split},
                          {{stay_join, split_stay}, stay_stay},
                          {{stay_join, join_stay}, stay_stay},
-                         {{stay_join, stay_stay}, stay_stay}});
+                         {{stay_join, stay_stay}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor finer in x and y, sibling side of y
   check_update_amr_decision<2>(
       element, id_ly_cl_n, all_flags,
@@ -413,7 +461,8 @@ void test_update_amr_decision_2d() {
                          {{stay_join, join_stay}, stay_stay},
                          {{stay_join, stay_stay}, stay_stay},
                          {{stay_join, join_join}, stay_stay},
-                         {{stay_join, stay_join}, stay_stay}});
+                         {{stay_join, stay_join}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor finer in x, coarser in y, non-sibling side of y
   check_update_amr_decision<2>(
       element, id_uy_cu_cp, all_flags,
@@ -432,7 +481,8 @@ void test_update_amr_decision_2d() {
                          {{join_join, stay_stay}, stay_join},
                          {{join_join, stay_join}, stay_join},
                          {{stay_join, split_split}, split_stay},
-                         {{stay_join, split_stay}, split_stay}});
+                         {{stay_join, split_stay}, split_stay}},
+      EnforceTwoToOneInNormalDirection);
 
   const ElementId<2> id_ux_cc_s{
       0, {{x_cousin.id_of_child(Side::Lower), y_segment}}};
@@ -464,7 +514,8 @@ void test_update_amr_decision_2d() {
                          {{join_join, stay_join}, stay_join},
                          {{stay_join, split_split}, split_stay},
                          {{stay_join, stay_split}, stay_stay},
-                         {{stay_join, split_stay}, split_stay}});
+                         {{stay_join, split_stay}, split_stay}},
+      EnforceTwoToOneInNormalDirection);
   // neighbor finer in x and y, non-sibling side of y
   check_update_amr_decision<2>(
       element, id_uy_cu_cc, all_flags,
@@ -490,7 +541,8 @@ void test_update_amr_decision_2d() {
                          {{stay_join, stay_split}, stay_split},
                          {{stay_join, split_stay}, split_stay},
                          {{stay_join, join_stay}, stay_stay},
-                         {{stay_join, stay_stay}, stay_stay}});
+                         {{stay_join, stay_stay}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
 
   const ElementId<2> id_uy_p_cc{
       0, {{x_segment.id_of_parent(), y_cousin.id_of_child(Side::Lower)}}};
@@ -513,13 +565,15 @@ void test_update_amr_decision_2d() {
                          {{stay_join, stay_split}, stay_split},
                          {{stay_join, split_stay}, stay_stay},
                          {{stay_join, join_stay}, stay_stay},
-                         {{stay_join, stay_stay}, stay_stay}});
+                         {{stay_join, stay_stay}, stay_stay}},
+      EnforceTwoToOneInNormalDirection);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Amr.UpdateAmrDecision", "[Domain][Unit]") {
-  test_update_amr_decision_1d();
-  test_update_amr_decision_2d();
+  test_update_amr_decision_1d<true>();
+  test_update_amr_decision_1d<false>();
+  test_update_amr_decision_2d<true>();
   // 3d is not tested for every case as the algorithm is independent of
   // dimensions once there is a transverse direction for a neighbor and there
   // are 729 AMR flag combinations for 45 different types of neighbors.

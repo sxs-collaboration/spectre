@@ -19,6 +19,8 @@
 #include "Domain/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -93,9 +95,11 @@ struct UpdateAmrDecision {
     const auto& element = get<::domain::Tags::Element<volume_dim>>(box);
     const auto my_initial_new_mesh = my_amr_info.new_mesh;
 
-    const bool my_amr_decision_changed =
-        amr::update_amr_decision(make_not_null(&my_amr_flags), element,
-                                 neighbor_id, neighbor_amr_info.flags);
+    const bool my_amr_decision_changed = amr::update_amr_decision(
+        make_not_null(&my_amr_flags), element, neighbor_id,
+        neighbor_amr_info.flags,
+        get<amr::Tags::Policies>(box)
+            .enforce_two_to_one_balance_in_normal_direction());
 
     auto& my_new_mesh = my_amr_info.new_mesh;
     my_new_mesh =

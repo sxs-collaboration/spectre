@@ -23,6 +23,7 @@ Amr:
           Join: 1
           DoNothing: 1
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       RefinementLevel: [0, 8]
