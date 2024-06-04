@@ -88,6 +88,14 @@ void test_flat_space_time_step() {
       DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
   mesh_coordinates.get(2) =
       DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coordinates =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  inertial_coordinates.get(0) =
+      DataVector{-0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5};
+  inertial_coordinates.get(1) =
+      DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
+  inertial_coordinates.get(2) =
+      DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
 
   Particles::MonteCarlo::Packet packet(1, 1.0, 0, 0.0, -1.0, -1.0, -1.0, 1.0,
                                        1.0, 0.0, 0.0);
@@ -146,7 +154,8 @@ void test_flat_space_time_step() {
       interaction_table, electron_fraction, baryon_density, temperature,
       lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
       d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-      determinant_spatial_metric, mesh, mesh_coordinates, mesh_velocity,
+      determinant_spatial_metric, mesh, mesh_coordinates, inertial_coordinates,
+      mesh_velocity,
       inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
       jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid);
 

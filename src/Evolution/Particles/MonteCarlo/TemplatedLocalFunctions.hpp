@@ -78,6 +78,7 @@ struct TemplatedLocalFunctions {
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& determinant_spatial_metric, const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -156,11 +157,11 @@ struct TemplatedLocalFunctions {
       gsl::not_null<std::vector<Packet>*> packets,
       gsl::not_null<std::mt19937*> random_number_generator,
       gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
-      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        coupling_tilde_s,
-      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-      double final_time, const Mesh<3>& mesh,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
+      gsl::not_null<Scalar<DataVector>*> coupling_rho_ye, double final_time,
+      const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           absorption_opacity_table,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
