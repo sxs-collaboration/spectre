@@ -1,0 +1,92 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+name: Deploy static executables
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        type: string
+        required: true
+        description: The name of the release tag
+
+jobs:
+  deploy_static_execs:
+    name: Deploy static executables and libraries
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG_NAME: ${{ inputs.tag_name || github.event.release.tag_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      # Build static executables in a Docker container with an older version
+      # of Ubuntu so that the glibc is compatible with most Linux distros.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build static executables
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          context: .
+          file: "./containers/Dockerfile.buildenv"
+          target: deploy_static_execs_and_libs
+          tags: sxs-collaboration/spectre:deploy_static_execs_and_libs
+          platforms: linux/amd64
+          load: true
+          build-args: |
+            UBUNTU_VERSION=18.04
+            PARALLEL_MAKE_ARG=-j4
+      - name: Run Docker container
+        run: >
+          docker run --name static-execs
+          sxs-collaboration/spectre:deploy_static_execs_and_libs
+      - name: Install python dependencies
+        run: >
+          pip3 install numpy h5py gdown
+      - name: Download extra data to include for CCE
+        run: |
+          gdown \
+          "https://drive.google.com/uc?id=1CmgLLfuLod8stc13EtmjHUvBoIgSVD-Y"
+          gdown \
+          "https://drive.google.com/uc?id=1uaESVdylNmcHwpZwogX4TVrNs8JbWNF1"
+          gdown \
+          "https://drive.google.com/uc?id=1rfzjtXtrP9pQE2az3935uN0z_5aSF1hy"
+      - name: Copy CCE executables from the container
+        run: >
+          mkdir CceExecutables
+
+          cp ./tests/InputFiles/Cce/CharacteristicExtract.yaml
+          ./CceExecutables/CharacteristicExtract.yaml
+
+          for i in CharacteristicExtract ReduceCceWorldtube; do
+            docker cp static-execs:/work/spectre/build/bin/$i ./CceExecutables;
+          done
+      - name: Test CCE executable outside of container
+        run: |
+          sed -i 's/CceR0257/BondiSachsCceR0200/g' \
+          ./CceExecutables/CharacteristicExtract.yaml
+          sed -i 's/H5IsBondiData: False/H5IsBondiData: True/g' \
+          ./CceExecutables/CharacteristicExtract.yaml
+          ./CceExecutables/CharacteristicExtract \
+          --input-file ./CceExecutables/CharacteristicExtract.yaml
+          python ./CheckCceOutput.py
+          rm CharacteristicExtractReduction.h5
+      - name: Create CCE executables release asset
+        # Note: We use xz compression since it's much better than gzip, even
+        # though it's a decent bit slower. Specifically, xz is two thirds the
+        # size of gzip.
+        run:  |
+          mv BondiSachsCceR0200.h5 ./CceExecutables/
+          mv CharacteristicExtractReduction_Expected.h5 ./CceExecutables/
+          mv CheckCceOutput.py ./CceExecutables/
+          tar cJf CceExecutables.tar.xz CceExecutables
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG_NAME }}
+          fail_on_unmatched_files: true
+          files: |
+            CceExecutables.tar.xz
