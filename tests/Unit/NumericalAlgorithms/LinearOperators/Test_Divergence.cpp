@@ -25,6 +25,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Tags.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -141,17 +142,13 @@ void test_divergence_impl(
   const auto div_fluxes = divergence<flux_tags>(fluxes, mesh, inv_jacobian);
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   CHECK(Dim * div_fluxes.size() == fluxes.size());
-  for (size_t n = 0; n < div_fluxes.size(); ++n) {
-    // clang-tidy: pointer arithmetic
-    CHECK(div_fluxes.data()[n] ==                                  // NOLINT
-          approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
-  }
+  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+  CHECK_VARIABLES_CUSTOM_APPROX(div_fluxes, expected_div_fluxes, local_approx);
 
   // Test divergence of a single tensor
   const auto div_vector =
       divergence(get<Flux1<Dim, Frame>>(fluxes), mesh, inv_jacobian);
   const auto& expected = get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes);
-  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
   CHECK_ITERABLE_CUSTOM_APPROX(expected, div_vector, local_approx);
 }
 
@@ -250,17 +247,13 @@ void test_divergence_compute_item_impl(
   const auto& div_fluxes = db::get<Tags::Variables<div_tags>>(box);
 
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
-  for (size_t n = 0; n < div_fluxes.size(); ++n) {
-    // clang-tidy: pointer arithmetic
-    CHECK(div_fluxes.data()[n] ==                                  // NOLINT
-          approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
-  }
+  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+  CHECK_VARIABLES_CUSTOM_APPROX(div_fluxes, expected_div_fluxes, local_approx);
 
   const auto& div_flux1 =
       db::get<Tags::DivVectorCompute<Flux1<Dim, Frame>, mesh_tag, inv_jac_tag>>(
           box);
   const auto& expected = get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes);
-  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
   CHECK_ITERABLE_CUSTOM_APPROX(expected, div_flux1, local_approx);
 }
 

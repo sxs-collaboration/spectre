@@ -28,6 +28,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Tags.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -192,30 +193,29 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
   Variables<VariableTags> u(number_of_grid_points);
+  Variables<GradientTags> du_expected(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t n = 0; n < u.number_of_independent_components; ++n) {
       for (size_t s = 0; s < number_of_grid_points; ++s) {
         u.data()[s + n * number_of_grid_points]  // NOLINT
-            = static_cast<double>(n + 1) * pow(xi[s], a);
+            = static_cast<double>(n + 1) * pow(xi[s], static_cast<double>(a));
       }
     }
-
-    const auto helper = [&](const auto& du) {
-      for (size_t n = 0;
-           n < Variables<GradientTags>::number_of_independent_components; ++n) {
-        for (size_t s = 0; s < number_of_grid_points; ++s) {
-          const double expected =
-              (0 == a ? 0.0
-                      : static_cast<double>(a * (n + 1)) * pow(xi[s], a - 1));
-          CHECK(du[0].data()[s + n * number_of_grid_points]  // NOLINT
-                == approx(expected));
-        }
+    // Generate expected data
+    for (size_t n = 0;
+         n < Variables<GradientTags>::number_of_independent_components; ++n) {
+      for (size_t s = 0; s < number_of_grid_points; ++s) {
+        du_expected.data()[s + n * number_of_grid_points] =
+            (0 == a ? 0.0
+                    : static_cast<double>(a * (n + 1)) *
+                          pow(xi[s], static_cast<double>(a - 1)));
       }
-    };
-    helper(logical_partial_derivatives<GradientTags>(u, mesh));
+    }
+    CHECK_VARIABLES_APPROX(
+        (logical_partial_derivatives<GradientTags>(u, mesh)[0]), du_expected);
     std::array<Variables<GradientTags>, 1> du{};
     logical_partial_derivatives(make_not_null(&du), u, mesh);
-    helper(du);
+    CHECK_VARIABLES_APPROX(du[0], du_expected);
     // We've checked that du is correct, now test that taking derivatives of
     // individual tensors gets the matching result.
     test_logical_partial_derivative_per_tensor(du, u, mesh);
@@ -228,42 +228,39 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
   const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
   const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
   Variables<VariableTags> u(mesh.number_of_grid_points());
+  std::array<Variables<GradientTags>, 2> du_expected{};
+  du_expected[0].initialize(mesh.number_of_grid_points());
+  du_expected[1].initialize(mesh.number_of_grid_points());
   const size_t a = mesh.extents(0) - 1;
   const size_t b = mesh.extents(1) - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
-          static_cast<double>(n + 1) * pow(xi[ii()[0]], a) *
-          pow(eta[ii()[1]], b);
+          static_cast<double>(n + 1) *
+          pow(xi[ii()[0]], static_cast<double>(a)) *
+          pow(eta[ii()[1]], static_cast<double>(b));
     }
   }
-
-  const auto helper = [&](const auto& du) {
-    for (size_t n = 0;
-         n < Variables<GradientTags>::number_of_independent_components; ++n) {
-      for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
-        const double expected_dxi =
-            (0 == a ? 0.0
-                    : static_cast<double>(a * (n + 1)) *
-                          pow(xi[ii()[0]], a - 1) * pow(eta[ii()[1]], b));
-        const double expected_deta =
-            (0 == b ? 0.0
-                    : static_cast<double>(b * (n + 1)) * pow(xi[ii()[0]], a) *
-                          pow(eta[ii()[1]], b - 1));
-        // clang-tidy: pointer arithmetic
-        CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
-                           n * number_of_grid_points] ==  // NOLINT
-              approx(expected_dxi));
-        CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
-                           n * number_of_grid_points] ==  // NOLINT
-              approx(expected_deta));
-      }
+  // Generate expected data
+  for (size_t n = 0;
+       n < Variables<GradientTags>::number_of_independent_components; ++n) {
+    for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
+      du_expected[0].data()[ii.collapsed_index() + n * number_of_grid_points] =
+          (0 == a ? 0.0
+                  : static_cast<double>(a * (n + 1)) *
+                        pow(xi[ii()[0]], static_cast<double>(a - 1)) *
+                        pow(eta[ii()[1]], static_cast<double>(b)));
+      du_expected[1].data()[ii.collapsed_index() + n * number_of_grid_points] =
+          (0 == b ? 0.0
+                  : static_cast<double>(b * (n + 1)) *
+                        pow(xi[ii()[0]], static_cast<double>(a)) *
+                        pow(eta[ii()[1]],
+                            static_cast<double>(static_cast<double>(b - 1))));
     }
-  };
-  helper(logical_partial_derivatives<GradientTags>(u, mesh));
-  std::array<Variables<GradientTags>, 2> du{};
-  logical_partial_derivatives(make_not_null(&du), u, mesh);
-  helper(du);
+  }
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
+  CHECK_VARIABLES_APPROX(du[0], du_expected[0]);
+  CHECK_VARIABLES_APPROX(du[1], du_expected[1]);
   // We've checked that du is correct, now test that taking derivatives of
   // individual tensors gets the matching result.
   test_logical_partial_derivative_per_tensor(du, u, mesh);
@@ -276,51 +273,50 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
   const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
   const DataVector& zeta = Spectral::collocation_points(mesh.slice_through(2));
   Variables<VariableTags> u(number_of_grid_points);
+  std::array<Variables<GradientTags>, 3> du_expected{};
+  du_expected[0].initialize(number_of_grid_points);
+  du_expected[1].initialize(number_of_grid_points);
+  du_expected[2].initialize(number_of_grid_points);
   const size_t a = mesh.extents(0) - 1;
   const size_t b = mesh.extents(1) - 1;
   const size_t c = mesh.extents(2) - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
-          static_cast<double>(n + 1) * pow(xi[ii()[0]], a) *
-          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c);
+          static_cast<double>(n + 1) *
+          pow(xi[ii()[0]], static_cast<double>(a)) *
+          pow(eta[ii()[1]], static_cast<double>(b)) *
+          pow(zeta[ii()[2]], static_cast<double>(c));
     }
   }
-
-  const auto helper = [&](const auto& du) {
-    for (size_t n = 0;
-         n < Variables<GradientTags>::number_of_independent_components; ++n) {
-      for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
-        const double expected_dxi =
-            (0 == a
-                 ? 0.0
-                 : static_cast<double>(a * (n + 1)) * pow(xi[ii()[0]], a - 1) *
-                       pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
-        const double expected_deta =
-            (0 == b ? 0.0
-                    : static_cast<double>(b * (n + 1)) * pow(xi[ii()[0]], a) *
-                          pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
-        const double expected_dzeta =
-            (0 == c ? 0.0
-                    : static_cast<double>(c * (n + 1)) * pow(xi[ii()[0]], a) *
-                          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c - 1));
-        // clang-tidy: pointer arithmetic
-        CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
-                           n * number_of_grid_points] ==  // NOLINT
-              approx(expected_dxi));
-        CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
-                           n * number_of_grid_points] ==  // NOLINT
-              approx(expected_deta));
-        CHECK(du[2].data()[ii.collapsed_index() +         // NOLINT
-                           n * number_of_grid_points] ==  // NOLINT
-              approx(expected_dzeta));
-      }
+  // Generate expected data
+  for (size_t n = 0;
+       n < Variables<GradientTags>::number_of_independent_components; ++n) {
+    for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
+      du_expected[0].data()[ii.collapsed_index() + n * number_of_grid_points] =
+          (0 == a ? 0.0
+                  : static_cast<double>(a * (n + 1)) *
+                        pow(xi[ii()[0]], static_cast<double>(a - 1)) *
+                        pow(eta[ii()[1]], static_cast<double>(b)) *
+                        pow(zeta[ii()[2]], static_cast<double>(c)));
+      du_expected[1].data()[ii.collapsed_index() + n * number_of_grid_points] =
+          (0 == b ? 0.0
+                  : static_cast<double>(b * (n + 1)) *
+                        pow(xi[ii()[0]], static_cast<double>(a)) *
+                        pow(eta[ii()[1]], static_cast<double>(b - 1)) *
+                        pow(zeta[ii()[2]], static_cast<double>(c)));
+      du_expected[2].data()[ii.collapsed_index() + n * number_of_grid_points] =
+          (0 == c ? 0.0
+                  : static_cast<double>(c * (n + 1)) *
+                        pow(xi[ii()[0]], static_cast<double>(a)) *
+                        pow(eta[ii()[1]], static_cast<double>(b)) *
+                        pow(zeta[ii()[2]], static_cast<double>(c - 1)));
     }
-  };
-  helper(logical_partial_derivatives<GradientTags>(u, mesh));
-  std::array<Variables<GradientTags>, 3> du{};
-  logical_partial_derivatives(make_not_null(&du), u, mesh);
-  helper(du);
+  }
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
+  CHECK_VARIABLES_APPROX(du[0], du_expected[0]);
+  CHECK_VARIABLES_APPROX(du[1], du_expected[1]);
+  CHECK_VARIABLES_APPROX(du[2], du_expected[2]);
   // We've checked that du is correct, now test that taking derivatives of
   // individual tensors gets the matching result.
   test_logical_partial_derivative_per_tensor(du, u, mesh);
@@ -341,7 +337,9 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>, Frame::Grid>>
       expected_du(number_of_grid_points);
+  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
+    CAPTURE(a);
     tmpl::for_each<VariableTags>([&a, &x, &u](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(u) = Tag::f({{a}}, x);
@@ -352,27 +350,21 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
       get<DerivativeTag>(expected_du) = Tag::df({{a}}, x);
     });
 
-    const auto helper = [&](const auto& du) {
-      for (size_t n = 0; n < du.size(); ++n) {
-        CHECK(du.data()[n] == approx(expected_du.data()[n]));  // NOLINT
-      }
-    };
-    helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+    CHECK_VARIABLES_CUSTOM_APPROX(
+        (partial_derivatives<GradientTags>(u, mesh, inverse_jacobian)),
+        expected_du, local_approx);
     using vars_type =
         decltype(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
     vars_type du{};
     partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
-    helper(du);
-
-    vars_type du_with_logical{};
-    partial_derivatives(make_not_null(&du_with_logical),
+    CHECK_VARIABLES_CUSTOM_APPROX(du, expected_du, local_approx);
+    partial_derivatives(make_not_null(&du),
                         logical_partial_derivatives<GradientTags>(u, mesh),
                         inverse_jacobian);
-    helper(du_with_logical);
-
+    CHECK_VARIABLES_CUSTOM_APPROX(du, expected_du, local_approx);
     // We've checked that du is correct, now test that taking derivatives of
     // individual tensors gets the matching result.
-    test_partial_derivative_per_tensor(du, u, mesh, inverse_jacobian);
+    test_partial_derivative_per_tensor(expected_du, u, mesh, inverse_jacobian);
   }
 }
 
@@ -392,6 +384,7 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>, Frame::Grid>>
       expected_du(number_of_grid_points);
+  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t b = 0; b < mesh.extents(1); ++b) {
       tmpl::for_each<VariableTags>([&a, &b, &x, &u](auto tag) {
@@ -404,24 +397,20 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
-      const auto helper = [&](const auto& du) {
-        for (size_t n = 0; n < du.size(); ++n) {
-          CHECK(du.data()[n] ==                                  // NOLINT
-                approx(expected_du.data()[n]).epsilon(1.e-11));  // NOLINT
-        }
-      };
-      helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+      CHECK_VARIABLES_CUSTOM_APPROX(
+          (partial_derivatives<GradientTags>(u, mesh, inverse_jacobian)),
+          expected_du, local_approx);
       using vars_type = decltype(partial_derivatives<GradientTags>(
           u, mesh, inverse_jacobian));
       vars_type du{};
       partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
-      helper(du);
+      CHECK_VARIABLES_CUSTOM_APPROX(du, expected_du, local_approx);
 
       vars_type du_with_logical{};
       partial_derivatives(make_not_null(&du_with_logical),
                           logical_partial_derivatives<GradientTags>(u, mesh),
                           inverse_jacobian);
-      helper(du_with_logical);
+      CHECK_VARIABLES_CUSTOM_APPROX(du_with_logical, expected_du, local_approx);
 
       // We've checked that du is correct, now test that taking derivatives of
       // individual tensors gets the matching result.
@@ -448,6 +437,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
+  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
       for (size_t c = 0; c < mesh.extents(2) / 2; ++c) {
@@ -461,24 +451,21 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
-        const auto helper = [&](const auto& du) {
-          for (size_t n = 0; n < du.size(); ++n) {
-            CHECK(du.data()[n] ==  // NOLINT
-                  approx(expected_du.data()[n]).epsilon(1.e-11));
-          }
-        };
-        helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+        CHECK_VARIABLES_CUSTOM_APPROX(
+            (partial_derivatives<GradientTags>(u, mesh, inverse_jacobian)),
+            expected_du, local_approx);
         using vars_type = decltype(partial_derivatives<GradientTags>(
             u, mesh, inverse_jacobian));
         vars_type du{};
         partial_derivatives(make_not_null(&du), u, mesh, inverse_jacobian);
-        helper(du);
+        CHECK_VARIABLES_CUSTOM_APPROX(du, expected_du, local_approx);
 
         vars_type du_with_logical{};
         partial_derivatives(make_not_null(&du_with_logical),
                             logical_partial_derivatives<GradientTags>(u, mesh),
                             inverse_jacobian);
-        helper(du_with_logical);
+        CHECK_VARIABLES_CUSTOM_APPROX(du_with_logical, expected_du,
+                                      local_approx);
 
         // We've checked that du is correct, now test that taking derivatives of
         // individual tensors gets the matching result.
