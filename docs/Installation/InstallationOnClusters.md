@@ -94,15 +94,15 @@ https://www.hpc.caltech.edu/documentation/slurm-commands. For example to ensure
 you get an entire node to build on, use the following command:
 
 ```
-srun [--reservation=sxs] [--constraint=skylake/cascadelake/icelake] \
+srun [--reservation=sxs_standing] [--constraint=skylake/cascadelake/icelake] \
   -t 02:00:00 -N 1 --exclusive -D . --pty /bin/bash
 ```
 
 If you are part of the SXS collaboration, you can use our reserved nodes by
-specifying `--reservation=sxs`. Our reserved nodes are currently cascadelake
-nodes with 56 cores each. If you want to use another type of node you can
-specify a `--constraint`. However, note that the reservation flag won't work for
-nodes other than cascadelake.
+specifying `--reservation=sxs_standing`. Our reserved nodes are currently
+cascadelake nodes with 56 cores each. If you want to use another type of node
+you can specify a `--constraint`. However, note that the reservation flag won't
+work for nodes other than cascadelake.
 
 Be sure to re-source the correct environment files once you get the interactive
 node shell.
