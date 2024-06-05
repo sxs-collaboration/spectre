@@ -26,6 +26,7 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralRelativityHelpers
+  GeneralRelativitySolutions
   H5
   Hydro
   HydroHelpers
