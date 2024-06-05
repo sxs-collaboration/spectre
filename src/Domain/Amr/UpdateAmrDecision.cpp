@@ -22,7 +22,8 @@ template <size_t VolumeDim>
 bool update_amr_decision(
     const gsl::not_null<std::array<Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<Flag, VolumeDim>& neighbor_amr_flags) {
+    const std::array<Flag, VolumeDim>& neighbor_amr_flags,
+    bool enforce_two_to_one_balance_in_normal_direction) {
   const auto& element_id = element.id();
   bool my_amr_decision_changed = false;
   bool neighbor_found = false;
@@ -45,8 +46,13 @@ bool update_amr_decision(
               neighbor_id, neighbor_amr_flags, orientation_of_neighbor);
 
       // update flags if my element wants to be two or more levels
-      // coarser than the neighbor in any dimension
+      // coarser than the neighbor in any dimension (unless it is not
+      // required in the direction to the neighbor)
       for (size_t d = 0; d < VolumeDim; ++d) {
+        if (d == direction_to_neighbor.dimension() and
+            not enforce_two_to_one_balance_in_normal_direction) {
+          continue;
+        }
         if (Flag::Split == gsl::at(*my_current_amr_flags, d) or
             gsl::at(my_desired_levels, d) >=
                 gsl::at(neighbor_desired_levels, d)) {
@@ -110,12 +116,13 @@ bool update_amr_decision(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template bool update_amr_decision(                                         \
-      const gsl::not_null<std::array<Flag, DIM(data)>*> my_current_amr_flags,\
-      const Element<DIM(data)>& element,                                     \
-      const ElementId<DIM(data)>& neighbor_id,                               \
-      const std::array<Flag, DIM(data)>& neighbor_amr_flags);
+#define INSTANTIATE(_, data)                                                  \
+  template bool update_amr_decision(                                          \
+      const gsl::not_null<std::array<Flag, DIM(data)>*> my_current_amr_flags, \
+      const Element<DIM(data)>& element,                                      \
+      const ElementId<DIM(data)>& neighbor_id,                                \
+      const std::array<Flag, DIM(data)>& neighbor_amr_flags,                  \
+      bool enforce_two_to_one_balance_in_normal_direction);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

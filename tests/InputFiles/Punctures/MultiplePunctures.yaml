@@ -78,6 +78,7 @@ Amr:
     - RefineAtPunctures
     - IncreaseResolution
   Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
     Limits:
       NumGridPoints: Auto

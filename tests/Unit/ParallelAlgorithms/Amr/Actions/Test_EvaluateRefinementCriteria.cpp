@@ -120,7 +120,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
 
   ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
       {std::move(criteria),
-       amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}}}};
+       amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
 
   const Element<1> self(self_id, {{{Direction<1>::lower_xi(), {{lo_id}, {}}},
                                    {Direction<1>::upper_xi(), {{up_id}, {}}}}});
@@ -259,7 +259,7 @@ void check_split_while_join_is_avoided() {
   // action should change the flags to (DoNothing, Split)
   ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
       {std::move(criteria),
-       amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}}}};
+       amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
 
   const Element<2> self(self_id, {});
   ActionTesting::emplace_component_and_initialize<my_component>(

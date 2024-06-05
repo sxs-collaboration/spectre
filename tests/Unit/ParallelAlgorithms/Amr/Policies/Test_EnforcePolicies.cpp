@@ -37,8 +37,8 @@ void test_1d() {
   const auto join = std::array{amr::Flag::Join};
   const auto all_flags = std::vector{split, increase, stay, decrease, join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
   const auto policies = std::array{anisotropic, isotropic};
   const ElementId<1> element_id{0, {{{1, 0}}}};
   const Mesh<1> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
@@ -48,7 +48,8 @@ void test_1d() {
     }
   }
 
-  amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{0, 5, 1, 12}};
+  amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{0, 5, 1, 12},
+                       true};
   test_decision(join, policy, ElementId<1>{0}, mesh, stay);
   test_decision(split, policy, ElementId<1>{0, {{{5, 2}}}}, mesh, stay);
   test_decision(
@@ -116,8 +117,8 @@ void test_2d() {
       split_join,        increase_join,  stay_join,         decrease_join,
       join_join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
 
   const ElementId<2> element_id{0, {{{1, 0}, {1, 0}}}};
   const Mesh<2> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
@@ -152,8 +153,8 @@ void test_3d() {
       std::array{amr::Flag::DoNothing, amr::Flag::Split, amr::Flag::Split};
   const auto split_split_split =
       std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split};
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
   const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
   const Mesh<3> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
   test_decision(stay_split_split, anisotropic, element_id, mesh,

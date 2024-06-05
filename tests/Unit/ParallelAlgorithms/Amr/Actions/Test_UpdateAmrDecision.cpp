@@ -24,6 +24,10 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Amr/Actions/UpdateAmrDecision.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -36,7 +40,7 @@ struct Component {
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<volume_dim>;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<amr::Tags::Policies>;
   using simple_tags =
       tmpl::list<domain::Tags::Mesh<volume_dim>,
                  domain::Tags::Element<volume_dim>, amr::Tags::Info<volume_dim>,
@@ -89,7 +93,8 @@ void test() {
 
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info{};
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
 
   const Element<1> self(self_id,
                         {{{Direction<1>::lower_xi(), {{sibling_id}, {}}},

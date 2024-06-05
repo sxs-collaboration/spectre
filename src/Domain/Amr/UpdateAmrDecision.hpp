@@ -34,6 +34,8 @@ namespace amr {
 /// following changes are made to the current flags of the element:
 /// - If the neighbor wants to be two or more refinement levels higher than
 ///   the element, the flag is updated to bring the element to within one level
+///   (unless this occurs in the direction to the neighbor and
+///   `enforce_two_to_one_balance_in_normal_direction` is set to false).
 /// - If the element wants to join, and the neighbor is a potential sibling but
 ///   wants to be at a different refinement level in any dimension, the flag is
 ///   updated to not do h-refinement.
@@ -49,5 +51,6 @@ template <size_t VolumeDim>
 bool update_amr_decision(
     gsl::not_null<std::array<Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<Flag, VolumeDim>& neighbor_amr_flags);
+    const std::array<Flag, VolumeDim>& neighbor_amr_flags,
+    bool enforce_two_to_one_balance_in_normal_direction);
 }  // namespace amr

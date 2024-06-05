@@ -15,15 +15,18 @@
 namespace {
 void test_equality() {
   INFO("Equality");
-  CHECK(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}} ==
-        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}});
-  CHECK(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}} !=
-        amr::Policies{amr::Isotropy::Isotropic, amr::Limits{}});
+  CHECK(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true} ==
+        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true});
+  CHECK(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true} !=
+        amr::Policies{amr::Isotropy::Isotropic, amr::Limits{}, true});
+  CHECK(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true} !=
+        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, false});
 }
 
 void test_pup() {
   INFO("Serialization");
-  test_serialization(amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}});
+  test_serialization(
+      amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true});
 }
 
 void test_option_parsing() {
@@ -34,27 +37,36 @@ void test_option_parsing() {
   const amr::Limits specified_limits{1, 5, 3, 7};
   for (const auto isotropy : isotropies) {
     CAPTURE(isotropy);
-    {
-      INFO("specified limits");
-      std::ostringstream creation_string;
-      creation_string << "Isotropy: " << isotropy << "\n";
-      creation_string << "Limits:\n"
-                      << "  RefinementLevel: [1, 5]\n"
-                      << "  NumGridPoints: [3, 7]\n";
-      const auto policies =
-          TestHelpers::test_creation<amr::Policies>(creation_string.str());
-      CHECK(policies == amr::Policies{isotropy, specified_limits});
-    }
-    {
-      INFO("default limits");
-      std::ostringstream creation_string;
-      creation_string << "Isotropy: " << isotropy << "\n";
-      creation_string << "Limits:\n"
-                      << "  RefinementLevel: Auto\n"
-                      << "  NumGridPoints: Auto\n";
-      const auto policies =
-          TestHelpers::test_creation<amr::Policies>(creation_string.str());
-      CHECK(policies == amr::Policies{isotropy, default_limits});
+    for (const auto enforce_two_to_one : std::array{true, false}) {
+      CAPTURE(enforce_two_to_one);
+      {
+        INFO("specified limits");
+        std::ostringstream creation_string;
+        creation_string << "Isotropy: " << isotropy << "\n";
+        creation_string << "Limits:\n"
+                        << "  RefinementLevel: [1, 5]\n"
+                        << "  NumGridPoints: [3, 7]\n";
+        creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
+                        << std::boolalpha << enforce_two_to_one << "\n";
+        const auto policies =
+            TestHelpers::test_creation<amr::Policies>(creation_string.str());
+        CHECK(policies ==
+              amr::Policies{isotropy, specified_limits, enforce_two_to_one});
+      }
+      {
+        INFO("default limits");
+        std::ostringstream creation_string;
+        creation_string << "Isotropy: " << isotropy << "\n";
+        creation_string << "Limits:\n"
+                        << "  RefinementLevel: Auto\n"
+                        << "  NumGridPoints: Auto\n";
+        creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
+                        << std::boolalpha << enforce_two_to_one << "\n";
+        const auto policies =
+            TestHelpers::test_creation<amr::Policies>(creation_string.str());
+        CHECK(policies ==
+              amr::Policies{isotropy, default_limits, enforce_two_to_one});
+      }
     }
   }
 }
