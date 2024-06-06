@@ -80,6 +80,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
             single_packet_energy,
 
         const double start_time, const double target_end_time,
+        const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
         const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
             interaction_table,
 
@@ -98,10 +99,10 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
         const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
         const Scalar<DataVector>& determinant_spatial_metric,
+        const Scalar<DataVector>& cell_light_crossing_time,
 
         const Mesh<3>& mesh,
         const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
-        const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
         const size_t num_ghost_zones,
         const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
             mesh_velocity,
@@ -119,7 +120,9 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         const DirectionalIdMap<3, std::optional<DataVector>>&
             rest_mass_density_ghost,
         const DirectionalIdMap<3, std::optional<DataVector>>&
-            temperature_ghost) {
+            temperature_ghost,
+        const DirectionalIdMap<3, std::optional<DataVector>>&
+            cell_light_crossing_time_ghost) {
   // Minimum  temperature for use of the NuLib table
   // (Could be an option).
   const double minimum_temperature_table = 0.5;
@@ -147,41 +150,51 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   }
 
   // Get interaction rates
-  // The interaction rates are on the mesh with ghost zones.
-  // Replace with high-opacity corrections after merging 5977
   std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>
-      emission_in_cell;
+      emissivity_in_cell;
   std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>
       absorption_opacity;
   std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>
       scattering_opacity;
+  std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>
+      frac_ka_to_ks;
   DataVector zero_dv_ghost_zones(mesh_size_with_ghost_zones, 0.0);
   for (size_t ns = 0; ns < NeutrinoSpecies; ns++) {
     for (size_t ng = 0; ng < EnergyBins; ng++) {
-      gsl::at(gsl::at(emission_in_cell, ns), ng) = zero_dv_ghost_zones;
+      gsl::at(gsl::at(emissivity_in_cell, ns), ng) = zero_dv_ghost_zones;
       gsl::at(gsl::at(absorption_opacity, ns), ng) = zero_dv_ghost_zones;
       gsl::at(gsl::at(scattering_opacity, ns), ng) = zero_dv_ghost_zones;
+      gsl::at(gsl::at(frac_ka_to_ks, ns), ng) = zero_dv_ghost_zones;
     }
   }
 
   // Join live points and ghost zones for fluid variables
+  // We initialize cell_light_crossing_time_with_ghost to time_step
+  // to avoid division by zero on outer boundaries
   Scalar<DataVector> rest_mass_density_with_ghost =
       make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
   Scalar<DataVector> electron_fraction_with_ghost =
       make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
   Scalar<DataVector> temperature_with_ghost =
       make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
+  Scalar<DataVector> cell_light_crossing_time_with_ghost =
+      make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, time_step);
   combine_ghost_data(&get(rest_mass_density_with_ghost), mesh, num_ghost_zones,
                      get(rest_mass_density), rest_mass_density_ghost);
   combine_ghost_data(&get(electron_fraction_with_ghost), mesh, num_ghost_zones,
                      get(electron_fraction), electron_fraction_ghost);
   combine_ghost_data(&get(temperature_with_ghost), mesh, num_ghost_zones,
                      get(temperature), temperature_ghost);
+  combine_ghost_data(&get(cell_light_crossing_time_with_ghost), mesh,
+                     num_ghost_zones, get(cell_light_crossing_time),
+                     cell_light_crossing_time_ghost);
 
-  interaction_table.get_neutrino_matter_interactions(
-      &emission_in_cell, &absorption_opacity, &scattering_opacity,
+  this->implicit_monte_carlo_interaction_rates(
+      &emissivity_in_cell, &absorption_opacity, &scattering_opacity,
+      &frac_ka_to_ks, cell_light_crossing_time_with_ghost,
       electron_fraction_with_ghost, rest_mass_density_with_ghost,
-      temperature_with_ghost, minimum_temperature_table);
+      temperature_with_ghost, minimum_temperature_table,
+      interaction_table, equation_of_state);
   const std::array<double, EnergyBins>& energy_at_bin_center =
       interaction_table.get_neutrino_energies();
 
@@ -199,7 +212,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   this->emit_packets(
       packets, random_number_generator, &coupling_tilde_tau, &coupling_tilde_s,
       &coupling_rho_ye, start_time, time_step, mesh, num_ghost_zones,
-      emission_in_cell, *single_packet_energy, energy_at_bin_center,
+      emissivity_in_cell, *single_packet_energy, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, inertial_to_fluid_jacobian,
       inertial_to_fluid_inverse_jacobian, cell_proper_four_volume);
 
@@ -207,11 +220,11 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   evolve_packets(
       packets, random_number_generator,
       &coupling_tilde_tau, &coupling_tilde_s, &coupling_rho_ye,
-      target_end_time, mesh, mesh_coordinates, inertial_coordinates,
-      num_ghost_zones,
+      target_end_time, mesh, mesh_coordinates, num_ghost_zones,
       absorption_opacity, scattering_opacity, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
       d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
+      cell_light_crossing_time,
       mesh_velocity, inverse_jacobian_logical_to_inertial,
       inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian);
 

@@ -17,9 +17,6 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloImplicitCorrections",
                   "[Unit][Evolution]") {
-  const double time_step = 1.5;
-  const double max_opacity_for_implicit_mc = 100.0;
-
   const size_t dv_size = 1;
 
   DataVector zero_dv(dv_size, 0.0);
@@ -43,6 +40,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloImplicitCorrections",
   Scalar<DataVector> baryon_density(dv_size, 1.619109365278362e-05);
   Scalar<DataVector> temperature(dv_size, 10.0);
   Scalar<DataVector> electron_fraction(dv_size, 0.06);
+  Scalar<DataVector> cell_light_crossing_time(dv_size, 1.1);
   const double minimum_temperature = 0.0;
 
   const std::string h5_file_name_nulib{
@@ -62,9 +60,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloImplicitCorrections",
   Particles::MonteCarlo::TemplatedLocalFunctions<4, 3> MonteCarloStruct;
   MonteCarloStruct.implicit_monte_carlo_interaction_rates(
       &emission_in_cells, &absorption_opacity, &scattering_opacity,
-      &fraction_ka_to_ks, time_step, max_opacity_for_implicit_mc,
-      electron_fraction, baryon_density, temperature,
-      minimum_temperature, interaction_table, equation_of_state);
+      &fraction_ka_to_ks, cell_light_crossing_time, electron_fraction,
+      baryon_density, temperature, minimum_temperature, interaction_table,
+      equation_of_state);
 
   std::array<std::array<DataVector, 4>, 3> emission_in_cells_0 = {
       std::array<DataVector, 4>{{zero_dv, zero_dv, zero_dv, zero_dv}},

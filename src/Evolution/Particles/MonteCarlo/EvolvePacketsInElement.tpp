@@ -89,7 +89,6 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
     const double final_time, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
     const size_t num_ghost_zones,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         absorption_opacity_table,
@@ -105,6 +104,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& cell_light_crossing_time,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
@@ -143,10 +143,6 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
       mesh_coordinates.get(0)[step[0]] - bottom_coord_mesh[0],
       mesh_coordinates.get(1)[step[1]] - bottom_coord_mesh[1],
       mesh_coordinates.get(2)[step[2]] - bottom_coord_mesh[2]};
-  const std::array<double, 3> dx_inertial{
-      inertial_coordinates.get(0)[step[0]] - inertial_coordinates.get(0)[0],
-      inertial_coordinates.get(1)[step[1]] - inertial_coordinates.get(1)[0],
-      inertial_coordinates.get(2)[step[2]] - inertial_coordinates.get(2)[0]};
 
   // Temporary variables keeping track of opacities and times to next events
   double fluid_frame_energy = -1.0;
@@ -199,18 +195,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
         lower_spatial_four_velocity.get(2)[local_idx]};
 
     // Estimate light-crossing time in the cell.
-    double min_crossing_time =
-        dx_inertial[0] /
-        (fabs(shift.get(0)[local_idx]) +
-         sqrt(inv_spatial_metric.get(0, 0)[local_idx]) * get(lapse)[local_idx]);
-    for (size_t d = 1; d < 3; d++) {
-      const double dim_crossing_time =
-          dx_inertial[d] /
-          (fabs(shift.get(d)[local_idx]) +
-           sqrt(inv_spatial_metric.get(d, d)[local_idx]) *
-           get(lapse)[local_idx]);
-      min_crossing_time = std::min(min_crossing_time, dim_crossing_time);
-    }
+    const double& cell_light_crossing_time_packet =
+      get(cell_light_crossing_time)[local_idx];
 
     // Get fluid frame energy of neutrinos in packet, then retrieve
     // opacities at current points and neighboring points. We do
@@ -251,7 +237,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     // opacity regions close to cell boundaries, and minimizing
     // computational costs.
     const double fmin = std::max(
-        0.03, 0.1 / (max_opacity * min_crossing_time + opacity_floor));
+        0.03, 0.1 / (max_opacity * cell_light_crossing_time_packet
+                     + opacity_floor));
 
     // We evolve until at least 95 percent of the desired step.
     // We don't require the full step because diffusion in the fluid
@@ -292,7 +279,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
       // Determine time to next events
       dt_min = dt_end_step;
       // Limit time step close to cell boundary in high-opacity regions
-      dt_cell_check = frac_min_grid * min_crossing_time;
+      dt_cell_check = frac_min_grid * cell_light_crossing_time_packet;
       dt_min = std::min(dt_cell_check, dt_min);
       // Time step to next absorption is
       // -ln(r)/K_a*p^t/nu
