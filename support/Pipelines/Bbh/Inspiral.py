@@ -114,8 +114,8 @@ def inspiral_parameters_spec(
 
 def start_inspiral(
     id_input_file_path: Union[str, Path],
-    refinement_level: int,
-    polynomial_order: int,
+    refinement_level: int = 1,
+    polynomial_order: int = 9,
     id_run_dir: Optional[Union[str, Path]] = None,
     inspiral_input_file_template: Union[
         str, Path
