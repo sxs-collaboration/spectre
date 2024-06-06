@@ -1083,6 +1083,19 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # that the pushes can trigger additional workflows (GitHub only
           # prevents pushes with the default GITHUB_TOKEN from triggering
           # additional workflows).
+          #
+          # Note: sxs-bot has the personal access token configured.
+          #
+          # GitHub has 2 forms of personal access tokens.
+          # For Fine-Grained Access:
+          #  "Only selected repositories"
+          #   - Contents: Access: Read and write
+          #   - Deployments: Access: Read and write
+          #
+          # For Tokens (classic):
+          #   repo: (off)
+          #      public_repo: on
+          #  Everything else is off.
           token: ${{ secrets.GH_TOKEN_RELEASE }}
       - uses: actions/setup-python@v5
         with:
