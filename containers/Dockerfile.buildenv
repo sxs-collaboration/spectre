@@ -423,7 +423,7 @@ RUN git clone --single-branch --branch v7.0.1 --depth 1 \
     && cd /work/charm_7_0_0 \
     && git checkout v7.0.1 \
     && git apply /work/v7.0.0.patch \
-    && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
+    && ./build charm++ multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
