@@ -15,7 +15,9 @@ There are a couple different ways to acquire the CCE module/executable.
 Starting from late May 2024, in every
 [Release of SpECTRE](https://github.com/sxs-collaboration/spectre/releases) we
 offer a tarball that contains everything needed to run CCE on a large number of
-different systems. Inside this tarball is
+different systems. This will be under the `Assets` section towards the bottom
+of the release (there may be a lot of text detailing what's been updated in this
+release). Inside this tarball is
 
 - the CCE executable `CharacteristicExtract`
 - an example set of Bondi-Sachs worldtube data (see
@@ -24,6 +26,9 @@ different systems. Inside this tarball is
 - example output from CCE
 - a `ReduceCceWorldtube` executable for converting between
    [worldtube data formats](#input_worldtube_data_formats)
+
+\note The tarball is `.xz` so use `tar -xf TarName.tar.xz` to extract. The `-z`
+flag to use gzip will cause an error.
 
 See [Running the CCE executable](#running_the_cce_executable) for how to run
 CCE.
@@ -398,6 +403,10 @@ merged May 15, 2024, the output of `h5ls` looked like this
 /src.tar.gz               Dataset {3750199}
 ```
 
+No matter the spin weight of the quantity, the $\ell = 0,1$ modes will always be
+output by CCE. Also, the `/SpectreR0100.cce` group will have a legend attribute
+that specifies the columns.
+
 ### Raw CCE output
 
 The `Strain` represents the asymptotic transverse-traceless contribution
@@ -447,8 +456,8 @@ improper BMS frame that the SpECTRE CCE waveform is in. A supertranslation must
 be applied to transform the waveform into the correct BMS frame. See
 \cite Mitman2024review for a review of BMS transformations and gravitational
 memory. To perform the frame fixing, see
-[this tutorial](https://scri.readthedocs.io/en/latest/tutorial_abd.html) in
-scri.
+[this tutorial](https://scri.readthedocs.io/en/latest/tutorial_abd.html#loading-cce-data-and-adjusting-the-bms-frame)
+in scri.
 
 \image html im_h22.png "Imaginary part of 2,2 component of the strain"
 
