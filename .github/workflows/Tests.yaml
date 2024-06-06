@@ -54,7 +54,7 @@ on:
         description: >
           Container to use for builds
         required: false
-        default: 'sxscollaboration/spectre:ci'
+        default: 'sxscollaboration/spectre:dev'
   # Allow running this workflow as a job in another workflow. This is used to
   # test a new Docker container before publishing it.
   workflow_call:
@@ -64,7 +64,7 @@ on:
           Container to use for builds
         required: false
         type: string
-        default: 'sxscollaboration/spectre:ci'
+        default: 'sxscollaboration/spectre:dev'
 
 # Cancel all other queued or in-progress runs of this workflow when it is
 # scheduled, so repeated pushes to a branch or a PR don't block CI. Repeated
@@ -113,7 +113,7 @@ jobs:
     name: Files and formatting
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -208,7 +208,7 @@ jobs:
       || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
     strategy:
       matrix:
         build_type: [Debug, Release]
@@ -281,7 +281,7 @@ jobs:
     needs: check_files_and_formatting
     runs-on: ubuntu-latest
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
       env:
         CCACHE_DIR: /work/ccache
         CCACHE_READONLY: 1
@@ -480,12 +480,14 @@ jobs:
             CHARM_ROOT: /work/charm_7_0_0/mpi-linux-x86_64-smp-clang
             # MPI running tests is a bit slower than multicore
             TEST_TIMEOUT_FACTOR: 3
+            # If MPI should be tested
+            USE_MPI: ON
             # Test `install` target with clang in Release mode because it uses
             # little disk space
             install: ON
 
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
       env:
         # We run unit tests with the following compiler flags:
         # - `-Werror`: Treat warnings as error.
@@ -584,6 +586,14 @@ jobs:
           # Give system-installed Python packages priority over ParaView's
           PYTHONPATH=$pythonLocation/lib/python3.9/site-packages:$PYTHONPATH
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+      - name: Install MPI and Charm++
+        if: matrix.USE_MPI == 'ON'
+        working-directory: /work
+        run: |
+          apt-get install -y libopenmpi-dev
+          cd /work/charm_7_0_0 && ./build charm++ mpi-linux-x86_64-smp clang \
+          -j4 -g0 -O1 --build-shared --with-production
+
       # Assign a unique cache key for every run.
       # - We will save the cache using this unique key, but only on the develop
       #   branch. This way we regularly update the cache without filling up the
@@ -1205,7 +1215,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
             compiler: clang-14
     container:
-      image: ${{ inputs.container || 'sxscollaboration/spectre:ci' }}
+      image: ${{ inputs.container || 'sxscollaboration/spectre:dev' }}
       env:
         # See the unit test job for the reasons for these configuration choices
         CXXFLAGS: "-Werror"
