@@ -16,6 +16,7 @@ class PlotCommands(click.MultiCommand):
             "power-monitors",
             "size-control",
             "slice",
+            "trajectories",
         ]
 
     def get_command(self, ctx, name):
@@ -67,6 +68,12 @@ class PlotCommands(click.MultiCommand):
             from spectre.Visualization.PlotSlice import plot_slice_command
 
             return plot_slice_command
+        elif name == "trajectories":
+            from spectre.Visualization.PlotTrajectories import (
+                plot_trajectories_command,
+            )
+
+            return plot_trajectories_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise click.UsageError(
