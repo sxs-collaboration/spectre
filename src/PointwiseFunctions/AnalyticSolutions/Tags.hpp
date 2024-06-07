@@ -229,6 +229,7 @@ struct Subitem<Tag, ParentTag,
     : Tag, db::ComputeTag {
   using field_tags = typename ParentTag::field_tags;
   using base = Tag;
+  using DataType = typename Tag::tag::type::type;
   using parent_tag = AnalyticSolutions<field_tags>;
   using argument_tags = tmpl::list<parent_tag>;
   static void function(const gsl::not_null<typename base::type*> result,
@@ -242,7 +243,8 @@ struct Subitem<Tag, ParentTag,
       for (size_t storage_index = 0; storage_index < num_components;
            ++storage_index) {
         (**result)[storage_index].set_data_ref(
-            make_not_null(&const_cast<DataVector&>(tensor[storage_index])));
+            // NOLINTNEXTLINE
+            make_not_null(&const_cast<DataType&>(tensor[storage_index])));
       }
     } else {
       *result = std::nullopt;
@@ -255,6 +257,7 @@ struct Subitem<Tag, ParentTag, Requires<detail::is_errors_v<ParentTag>>>
     : Tag, db::ComputeTag {
   using field_tags = typename ParentTag::field_tags;
   using base = Tag;
+  using DataType = typename Tag::tag::type::type;
   using parent_tag = Errors<field_tags>;
   using argument_tags = tmpl::list<parent_tag>;
   static void function(const gsl::not_null<typename base::type*> result,
@@ -268,7 +271,8 @@ struct Subitem<Tag, ParentTag, Requires<detail::is_errors_v<ParentTag>>>
       for (size_t storage_index = 0; storage_index < num_components;
            ++storage_index) {
         (**result)[storage_index].set_data_ref(
-            make_not_null(&const_cast<DataVector&>(tensor[storage_index])));
+            // NOLINTNEXTLINE
+            make_not_null(&const_cast<DataType&>(tensor[storage_index])));
       }
     } else {
       *result = std::nullopt;

@@ -364,6 +364,16 @@ void fill_norm_values_and_names(
     const Mesh<Dim>& mesh, const DataVector& det_jacobian,
     const std::string& tensor_name, const std::string& tensor_norm_type,
     const std::string& tensor_component, size_t number_of_points);
+
+// Expand complex data into real and imaginary parts, or just forward real data
+std::pair<std::vector<std::string>, std::vector<DataVector>>
+split_complex_vector_of_data(
+    std::pair<std::vector<std::string>, std::vector<DataVector>>&&
+        names_and_components);
+std::pair<std::vector<std::string>, std::vector<DataVector>>
+split_complex_vector_of_data(
+    const std::pair<std::vector<std::string>, std::vector<ComplexDataVector>>&
+        names_and_components);
 }  // namespace ObserveNorms_impl
 
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
@@ -388,8 +398,9 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>,
           tensor_name, has_value(get<TensorToObserveTag>(box)));
       ObserveNorms_impl::fill_norm_values_and_names(
           norm_values_and_names,
-          value(get<TensorToObserveTag>(box)).get_vector_of_data(), mesh,
-          det_jacobian, tensor_name, tensor_norm_types_[i],
+          ObserveNorms_impl::split_complex_vector_of_data(
+              value(get<TensorToObserveTag>(box)).get_vector_of_data()),
+          mesh, det_jacobian, tensor_name, tensor_norm_types_[i],
           tensor_components_[i], number_of_points);
     }
   }

@@ -62,8 +62,23 @@ void RegularGrid<Dim>::interpolate(const gsl::not_null<DataVector*> result,
 }
 
 template <size_t Dim>
+void RegularGrid<Dim>::interpolate(
+    const gsl::not_null<ComplexDataVector*> result,
+    const ComplexDataVector& input) const {
+  result->destructive_resize(number_of_target_points_);
+  apply_matrices(result, interpolation_matrices_, input, source_extents_);
+}
+
+template <size_t Dim>
 DataVector RegularGrid<Dim>::interpolate(const DataVector& input) const {
   DataVector result(number_of_target_points_);
+  interpolate(make_not_null(&result), input);
+  return result;
+}
+template <size_t Dim>
+ComplexDataVector RegularGrid<Dim>::interpolate(
+    const ComplexDataVector& input) const {
+  ComplexDataVector result(number_of_target_points_);
   interpolate(make_not_null(&result), input);
   return result;
 }

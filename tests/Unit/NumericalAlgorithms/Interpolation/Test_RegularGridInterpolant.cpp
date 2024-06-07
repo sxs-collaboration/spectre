@@ -72,21 +72,27 @@ auto make_affine_map<3>() {
 
 namespace TestTags {
 
+template <typename DataType>
 struct ScalarTag : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
   template <size_t Dim>
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) {
-    return Scalar<DataVector>{{{get(f(x))}}};
+    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+      return Scalar<DataType>{
+          {{get(f(x)) + std::complex<double>{0., 1.} * get(f(x))}}};
+    } else {
+      return f(x);
+    }
   }
 };
 
-template <size_t Dim>
+template <size_t Dim, typename DataType>
 struct Vector : db::SimpleTag {
-  using type = tnsr::I<DataVector, Dim>;
+  using type = tnsr::I<DataType, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) {
-    auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);
+    auto result = make_with_value<tnsr::I<DataType, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
       result.get(d) = (d + 0.5) * get(f_of_x);
@@ -98,7 +104,7 @@ struct Vector : db::SimpleTag {
 }  // namespace TestTags
 
 // Test interpolation from source_mesh onto target_mesh.
-template <size_t Dim>
+template <size_t Dim, typename DataType>
 void test_regular_interpolation(const Mesh<Dim>& source_mesh,
                                 const Mesh<Dim>& target_mesh) {
   CAPTURE(source_mesh);
@@ -108,7 +114,8 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
   const auto target_coords = map(logical_coordinates(target_mesh));
 
   // Set up variables
-  using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
+  using tags = tmpl::list<TestTags::ScalarTag<DataType>,
+                          TestTags::Vector<Dim, DataType>>;
   Variables<tags> source_vars(source_mesh.number_of_grid_points());
   Variables<tags> expected_result(target_mesh.number_of_grid_points());
 
@@ -150,10 +157,10 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
       CHECK_ITERABLE_APPROX(get<Tag>(result), get<Tag>(expected_result));
     });
 
-    const DataVector result_dv = regular_grid_interpolant.interpolate(
-        get(get<TestTags::ScalarTag>(source_vars)));
-    CHECK_ITERABLE_APPROX(result_dv,
-                          get(get<TestTags::ScalarTag>(expected_result)));
+    const auto result_dv = regular_grid_interpolant.interpolate(
+        get(get<TestTags::ScalarTag<DataType>>(source_vars)));
+    CHECK_ITERABLE_APPROX(
+        result_dv, get(get<TestTags::ScalarTag<DataType>>(expected_result)));
   }
 }
 
@@ -200,7 +207,8 @@ void test_regular_interpolation_override(const Mesh<Dim>& source_mesh,
     const auto target_coords = map(target_logical_coords);
 
     // Set up variables
-    using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
+    using tags = tmpl::list<TestTags::ScalarTag<DataVector>,
+                            TestTags::Vector<Dim, DataVector>>;
     Variables<tags> source_vars(source_mesh.number_of_grid_points());
     Variables<tags> expected_result(get<0>(target_coords).size());
 
@@ -243,9 +251,9 @@ void test_regular_interpolation_override(const Mesh<Dim>& source_mesh,
     });
 
     const DataVector result_dv = regular_grid_interpolant.interpolate(
-        get(get<TestTags::ScalarTag>(source_vars)));
-    CHECK_ITERABLE_APPROX(result_dv,
-                          get(get<TestTags::ScalarTag>(expected_result)));
+        get(get<TestTags::ScalarTag<DataVector>>(source_vars)));
+    CHECK_ITERABLE_APPROX(
+        result_dv, get(get<TestTags::ScalarTag<DataVector>>(expected_result)));
   }
 }
 
@@ -258,8 +266,11 @@ void test_1d_regular_interpolation() {
                                   Spectral::Quadrature::GaussLobatto};
     const auto mesh_lg_high_res =
         Mesh<1>{n + 2, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
-    test_regular_interpolation(mesh_lgl, mesh_lgl);
-    test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
+    test_regular_interpolation<1, DataVector>(mesh_lgl, mesh_lgl);
+    test_regular_interpolation<1, DataVector>(mesh_lgl, mesh_lg_high_res);
+    test_regular_interpolation<1, ComplexDataVector>(mesh_lgl, mesh_lgl);
+    test_regular_interpolation<1, ComplexDataVector>(mesh_lgl,
+                                                     mesh_lg_high_res);
     test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
     test_regular_interpolation_override(mesh_lgl, mesh_lg_high_res, coords);
   }
@@ -277,8 +288,12 @@ void test_2d_regular_interpolation() {
       const auto mesh_lg_high_res = Mesh<2>{{{nx + 2, ny + 3}},
                                             Spectral::Basis::Legendre,
                                             Spectral::Quadrature::Gauss};
-      test_regular_interpolation(mesh_lgl, mesh_lgl);
-      test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
+      test_regular_interpolation<2, DataVector>(mesh_lgl, mesh_lgl);
+      test_regular_interpolation<2, DataVector>(mesh_lgl, mesh_lgl);
+      test_regular_interpolation<2, ComplexDataVector>(mesh_lgl,
+                                                       mesh_lg_high_res);
+      test_regular_interpolation<2, ComplexDataVector>(mesh_lgl,
+                                                       mesh_lg_high_res);
       test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
       test_regular_interpolation_override(mesh_lgl, mesh_lg_high_res, coords);
     }
@@ -298,8 +313,12 @@ void test_3d_regular_interpolation() {
         const auto mesh_lg_high_res = Mesh<3>{{{nx + 2, ny + 3, nz + 1}},
                                               Spectral::Basis::Legendre,
                                               Spectral::Quadrature::Gauss};
-        test_regular_interpolation(mesh_lgl, mesh_lgl);
-        test_regular_interpolation(mesh_lgl, mesh_lg_high_res);
+        test_regular_interpolation<3, DataVector>(mesh_lgl, mesh_lgl);
+        test_regular_interpolation<3, DataVector>(mesh_lgl, mesh_lgl);
+        test_regular_interpolation<3, ComplexDataVector>(mesh_lgl,
+                                                         mesh_lg_high_res);
+        test_regular_interpolation<3, ComplexDataVector>(mesh_lgl,
+                                                         mesh_lg_high_res);
         test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
         test_regular_interpolation_override(mesh_lgl, mesh_lg_high_res, coords);
       }

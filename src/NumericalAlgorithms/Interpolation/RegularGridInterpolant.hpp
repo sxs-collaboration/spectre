@@ -81,6 +81,9 @@ class RegularGrid {
   void interpolate(gsl::not_null<DataVector*> result,
                    const DataVector& input) const;
   DataVector interpolate(const DataVector& input) const;
+  void interpolate(gsl::not_null<ComplexDataVector*> result,
+                   const ComplexDataVector& input) const;
+  ComplexDataVector interpolate(const ComplexDataVector& input) const;
   /// @}
 
   /// \brief Return the internally-stored matrices that interpolate from the
