@@ -106,19 +106,28 @@ class TestTransformVolumeData(unittest.TestCase):
         ]
 
         kernels = [
-            Kernel(psi_squared),
-            Kernel(coordinate_radius),
+            Kernel(
+                psi_squared,
+                output_name="PsiSquared",
+                map_input_names={"psi": "Psi"},
+            ),
+            Kernel(coordinate_radius, output_name="CoordinateRadius"),
             Kernel(
                 coordinate_radius,
                 elementwise=True,
                 output_name="CoordinateRadiusElementwise",
             ),
-            Kernel(deriv_coords),
+            Kernel(deriv_coords, output_name="DerivCoords"),
             Kernel(
                 square_component,
+                output_name="SquareComponent",
                 map_input_names={"component": "InertialCoordinates_x"},
             ),
-            Kernel(abs_and_max, map_input_names={"component": "Psi"}),
+            Kernel(
+                abs_and_max,
+                output_name=None,
+                map_input_names={"component": "Psi"},
+            ),
         ]
 
         transform_volume_data(volfiles=open_volfiles, kernels=kernels)
@@ -193,7 +202,7 @@ class TestTransformVolumeData(unittest.TestCase):
         ]
 
         kernels = [
-            Kernel(sinusoid),
+            Kernel(sinusoid, output_name="Sinusoid"),
         ]
 
         integrals = transform_volume_data(
