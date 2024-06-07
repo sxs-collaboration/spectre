@@ -36,12 +36,6 @@
 #   -t sxscollaboration/spectre:dev
 #
 #   Arch: linux/amd64
-#   Ubuntu version: 22.04 (default)
-#   --platform linux/amd64
-#   --target ci
-#   -t sxscollaboration/spectre:ci
-#
-#   Arch: linux/amd64
 #   Ubuntu version: 18.04
 #   --platform linux/amd64
 #   --target dev
@@ -86,23 +80,12 @@
 #                 --platform linux/amd64,linux/arm64 \
 #                 -f ./containers/Dockerfile.buildenv --push .
 #
-# 2. `ci` (this should use the `dev` image you just built for most of it).
-#         NOT NEEDED FOR ARM64!!!!
-#
-#   cd $SPECTRE_HOME
-#   docker build --target ci -t sxscollaboration/spectre:ci \
-#                 --platform linux/amd64 \
-#                 -f ./containers/Dockerfile.buildenv .
-#   docker push sxscollaboration/spectre:dev
-#   docker push sxscollaboration/spectre:ci # don't do this on ARM64
-#
 # You DO NOT need to push the below. CI does that automatically.
 #
-# 3. `demo` To build this, you MUST first push the `dev` and `ci` images to
+# 3. `demo` To build this, you MUST first push the `dev` images to
 #           DockerHub as the `demo` image uses the remote `dev` image.
 #
 #   docker push sxscollaboration/spectre:dev
-#   docker push sxscollaboration/spectre:ci # don't do this on ARM64
 #
 #    To build `demo`, you must be in $SPECTRE_ROOT and there cannot be a
 #    directory named `build` in $SPECTRE_ROOT because the image will create
@@ -453,38 +436,6 @@ RUN mkdir /work/texlive && cd /work/texlive \
     && rm -r install-tl-* texlive.profile install-tl.log \
     && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex
 ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
-
-# Remove the apt-get cache in order to reduce image size
-RUN apt-get -y clean
-
-WORKDIR /work
-
-
-# Everything we need to run tests on CI on GitHub. We install most things
-# on-demand on CI for a number of reasons:
-# - Smaller container size and hence less disk usage on CI, where space is very
-#   limited.
-# - Flexibility to change compilers, Python versions, etc. without rebuilding
-#   the container.
-# - There's no advantage to "pre-downloading" things available through apt here
-#   in the Dockerfile, since the amount of data to download on CI will be the
-#   same.
-FROM dev as ci
-ARG TARGETARCH
-ARG UBUNTU_VERSION=22.04
-
-# When building this image individually, the PARALLEL_MAKE_ARG from above is not
-# remembered (and it doesn't hurt to redefine the env variable).
-ARG PARALLEL_MAKE_ARG=-j4
-
-# Install OpenMPI
-RUN apt-get install -y libopenmpi-dev
-
-# We build an mpi version of charm (with clang) because many of our production
-# environments have charm built with mpi and we should test that.
-RUN cd /work/charm_7_0_0 \
-    && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
-        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
