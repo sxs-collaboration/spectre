@@ -83,6 +83,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
   const auto conformal_christoffel_contracted =
       make_with_random_values<tnsr::i<DataVector, 3>>(
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto conformal_ricci_tensor =
+      make_with_random_values<tnsr::ii<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto conformal_ricci_scalar =
       make_with_random_values<Scalar<DataVector>>(
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
@@ -114,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
       shift_excess, conformal_metric, inv_conformal_metric,
       deriv_conformal_metric, conformal_christoffel_first_kind,
       conformal_christoffel_second_kind, conformal_christoffel_contracted,
-      conformal_ricci_scalar, trace_extrinsic_curvature,
+      conformal_ricci_tensor, conformal_ricci_scalar, trace_extrinsic_curvature,
       deriv_trace_extrinsic_curvature, shift_background,
       longitudinal_shift_background_minus_dt_conformal_metric,
       div_longitudinal_shift_background_minus_dt_conformal_metric,

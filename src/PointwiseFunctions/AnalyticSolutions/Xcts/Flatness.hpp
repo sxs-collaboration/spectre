@@ -69,6 +69,7 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
         Tags::ConformalChristoffelFirstKind<DataType, 3, Frame::Inertial>,
         Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
         Tags::ConformalChristoffelContracted<DataType, 3, Frame::Inertial>,
+        Tags::ConformalRicciTensor<DataVector, 3, Frame::Inertial>,
         Tags::ConformalRicciScalar<DataVector>,
         gr::Tags::TraceExtrinsicCurvature<DataType>,
         ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,

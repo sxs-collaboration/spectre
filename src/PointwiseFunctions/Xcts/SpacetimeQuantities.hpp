@@ -40,6 +40,11 @@ using SpacetimeQuantities = CachedTempBuffer<
     // Derivatives of XCTS variables
     ::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
                   Frame::Inertial>,
+    // Note: this is the _covariant_ second derivative of the conformal factor
+    // (includes Christoffel symbols)
+    ::Tags::deriv<::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
     detail::ConformalLaplacianOfConformalFactor<DataVector>,
     ::Tags::deriv<Tags::LapseTimesConformalFactor<DataVector>, tmpl::size_t<3>,
                   Frame::Inertial>,
@@ -54,6 +59,7 @@ using SpacetimeQuantities = CachedTempBuffer<
     gr::Tags::InverseSpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
     gr::Tags::Shift<DataVector, 3>, gr::Tags::ExtrinsicCurvature<DataVector, 3>,
     gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+    gr::Tags::SpatialRicci<DataVector, 3>,
     // Constraints
     gr::Tags::HamiltonianConstraint<DataVector>,
     gr::Tags::MomentumConstraint<DataVector, 3>>;
@@ -86,10 +92,19 @@ struct SpacetimeQuantitiesComputer {
       gsl::not_null<Cache*> cache,
       gr::Tags::SpatialChristoffelSecondKind<DataVector, 3> /*meta*/) const;
   void operator()(
+      gsl::not_null<tnsr::ij<DataVector, 3>*> deriv2_conformal_factor,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                  tmpl::size_t<3>, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(
       gsl::not_null<Scalar<DataVector>*>
           conformal_laplacian_of_conformal_factor,
       gsl::not_null<Cache*> cache,
       detail::ConformalLaplacianOfConformalFactor<DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_ricci,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::SpatialRicci<DataVector, 3> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataVector, 3>*> deriv_lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
@@ -147,6 +162,7 @@ struct SpacetimeQuantitiesComputer {
   const tnsr::ijj<DataVector, 3>& conformal_christoffel_first_kind;
   const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind;
   const tnsr::i<DataVector, 3>& conformal_christoffel_contracted;
+  const tnsr::ii<DataVector, 3>& conformal_ricci;
   const Scalar<DataVector>& conformal_ricci_scalar;
   const Scalar<DataVector>& trace_extrinsic_curvature;
   const tnsr::i<DataVector, 3>& deriv_trace_extrinsic_curvature;
@@ -180,6 +196,7 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
       ConformalChristoffelFirstKind<DataVector, 3, Frame::Inertial>,
       ConformalChristoffelSecondKind<DataVector, 3, Frame::Inertial>,
       ConformalChristoffelContracted<DataVector, 3, Frame::Inertial>,
+      ConformalRicciTensor<DataVector, 3, Frame::Inertial>,
       ConformalRicciScalar<DataVector>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,

@@ -3,26 +3,136 @@
 
 import logging
 import os
+import shutil
 import unittest
 
+import numpy as np
+import numpy.testing as npt
 from click.testing import CliRunner
 
-from spectre.Informer import unit_test_src_path
-from spectre.Pipelines.Bbh.FindHorizon import find_horizon_command
+import spectre.IO.H5 as spectre_h5
+from spectre.Domain import ElementId, ElementMap, serialize_domain
+from spectre.Domain.Creators import Sphere
+from spectre.Informer import unit_test_build_path
+from spectre.IO.H5.IterElements import Element
+from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
+from spectre.Pipelines.Bbh.FindHorizon import find_horizon, find_horizon_command
+from spectre.PointwiseFunctions.AnalyticSolutions.GeneralRelativity import (
+    KerrSchild,
+)
+from spectre.PointwiseFunctions.GeneralRelativity import ricci_tensor
+from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
+from spectre.SphericalHarmonics import Strahlkorper, cartesian_coords
+
+
+def _to_tensor_components(tensors):
+    """Convert a dictionary of tensors to a list of tensor components"""
+    result = []
+    for name, tensor in tensors.items():
+        result.extend(
+            spectre_h5.TensorComponent(
+                name + tensor.component_suffix(i), tensor[i]
+            )
+            for i in range(len(tensor))
+        )
+    return result
+
+
+def _compute_derived(tensors, mesh, inv_jacobian):
+    """Compute the spatial Ricci tensor from the spatial Christoffel symbols"""
+    christoffels = tensors["SpatialChristoffelSecondKind"]
+    deriv_christoffels = partial_derivative(christoffels, mesh, inv_jacobian)
+    tensors["SpatialRicci"] = ricci_tensor(christoffels, deriv_christoffels)
+    return tensors
 
 
 class TestFindHorizon(unittest.TestCase):
     def setUp(self):
-        self.h5_filename = os.path.join(
-            unit_test_src_path(), "Visualization/Python", "VolTestData0.h5"
+        self.test_dir = os.path.join(
+            unit_test_build_path(), "Pipelines/Bbh/FindHorizon"
         )
-        self.output_filename = os.path.join(
-            unit_test_src_path(), "Visualization/Python", "Horizons.h5"
+        self.h5_filename = os.path.join(self.test_dir, "TestData.h5")
+        self.output_filename = os.path.join(self.test_dir, "Horizons.h5")
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+        os.makedirs(self.test_dir, exist_ok=True)
+
+        # Create a spherical domain
+        domain = Sphere(
+            inner_radius=1.0,
+            outer_radius=3.0,
+            excise=True,
+            initial_refinement=0,
+            initial_number_of_grid_points=8,
+            use_equiangular_map=True,
+        ).create_domain()
+        element_ids = [ElementId[3](block_id) for block_id in range(6)]
+        elements = [
+            Element(
+                id=element_id,
+                mesh=Mesh[3](10, Basis.Legendre, Quadrature.GaussLobatto),
+                map=ElementMap(element_id, domain),
+            )
+            for element_id in element_ids
+        ]
+
+        # Evaluate a Kerr solution on the domain and write to file
+        solution = KerrSchild(mass=1.0, dimensionless_spin=[0.0, 0.0, 0.0])
+        tensor_names = [
+            "SpatialMetric",
+            "InverseSpatialMetric",
+            "ExtrinsicCurvature",
+            "SpatialChristoffelSecondKind",
+            # "SpatialRicci", < have to compute this from numeric derivative
+        ]
+        with spectre_h5.H5File(self.h5_filename, "w") as h5file:
+            volfile = h5file.insert_vol("element_data", version=0)
+            volfile.write_volume_data(
+                observation_id=0,
+                observation_value=0.0,
+                elements=[
+                    spectre_h5.ElementVolumeData(
+                        element.id,
+                        _to_tensor_components(
+                            _compute_derived(
+                                solution.variables(
+                                    element.inertial_coordinates,
+                                    tensor_names,
+                                ),
+                                element.mesh,
+                                element.inv_jacobian,
+                            )
+                        ),
+                        element.mesh,
+                    )
+                    for element in elements
+                ],
+                serialized_domain=serialize_domain(domain),
+            )
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+
+    def test_find_horizon(self):
+        horizon, quantities = find_horizon(
+            self.h5_filename,
+            subfile_name="element_data",
+            obs_id=0,
+            obs_time=0.0,
+            initial_guess=Strahlkorper(
+                l_max=12, m_max=12, radius=2.5, center=[0.0, 0.0, 0.0]
+            ),
+        )
+        # Horizon should be a sphere of coordinate radius 2.0
+        npt.assert_allclose(
+            np.linalg.norm(cartesian_coords(horizon), axis=0), 2.0, atol=1e-3
+        )
+        # Mass and spin should be 1.0 and 0.0
+        npt.assert_allclose(quantities["ChristodoulouMass"], 1.0, atol=1e-3)
+        npt.assert_allclose(
+            quantities["DimensionlessSpinMagnitude"], 0.0, atol=1e-3
         )
 
     def test_cli(self):
-        # Can't test more than that this code runs until it errors until we have
-        # a way to generate data with an apparent horizon.
         runner = CliRunner()
         result = runner.invoke(
             find_horizon_command,
@@ -35,11 +145,11 @@ class TestFindHorizon(unittest.TestCase):
                 "--l-max",
                 "12",
                 "--initial-radius",
-                "0.5",
+                "2.5",
                 "--center",
-                "1.0",
-                "1.0",
-                "1.0",
+                "0.0",
+                "0.0",
+                "0.0",
                 "-o",
                 self.output_filename,
                 "--output-coeffs-subfile",
@@ -49,11 +159,8 @@ class TestFindHorizon(unittest.TestCase):
             ],
             catch_exceptions=True,
         )
-        self.assertEqual(result.exit_code, 1)
-        self.assertIn(
-            "Failed to open dataset 'InverseSpatialMetric_xx'",
-            str(result.exception),
-        )
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertTrue(os.path.exists(self.output_filename))
 
 
 if __name__ == "__main__":

@@ -220,6 +220,7 @@ EventsAndTriggers:
             - InverseSpatialMetric
             - SpatialChristoffelSecondKind
             - ExtrinsicCurvature
+            - SpatialRicci
             - RadiallyCompressedCoordinates
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double

@@ -1,5 +1,4 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-*.yaml
-*.h5
+from ._Pybindings import *
