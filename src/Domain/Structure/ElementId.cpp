@@ -72,18 +72,28 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
   ASSERT(grid_index < two_to_the(grid_index_bits),
          "Grid index out of bounds: " << grid_index << "\nMaximum value is: "
                                       << two_to_the(grid_index_bits) - 1);
+  const auto check_refinement_level = [](const size_t refinement_level) {
+    ASSERT(refinement_level <= max_refinement_level,
+           "Refinement level out of bounds: " << refinement_level
+                                              << "\nMaximum value is: "
+                                              << max_refinement_level);
+    return refinement_level;
+  };
   index_xi_ = segment_ids[0].index();
-  refinement_level_xi_ = segment_ids[0].refinement_level();
+  refinement_level_xi_ =
+      check_refinement_level(segment_ids[0].refinement_level());
   if constexpr (VolumeDim > 1) {
     index_eta_ = segment_ids[1].index();
-    refinement_level_eta_ = segment_ids[1].refinement_level();
+    refinement_level_eta_ =
+        check_refinement_level(segment_ids[1].refinement_level());
   } else {
     index_eta_ = 0;
     refinement_level_eta_ = 0;
   }
   if constexpr (VolumeDim > 2) {
     index_zeta_ = segment_ids[2].index();
-    refinement_level_zeta_ = segment_ids[2].refinement_level();
+    refinement_level_zeta_ =
+        check_refinement_level(segment_ids[2].refinement_level());
   } else {
     index_zeta_ = 0;
     refinement_level_zeta_ = 0;
@@ -126,18 +136,27 @@ ElementId<VolumeDim>::ElementId(const std::string& grid_name)
   const auto to_size_t = [](const std::ssub_match& s) {
     return static_cast<size_t>(std::stoi(s.str()));
   };
+  const auto check_refinement_level =
+      [&grid_name](const size_t refinement_level) {
+        ASSERT(refinement_level <= ElementId<VolumeDim>::max_refinement_level,
+               "Refinement level '"
+                   << refinement_level << "' out of bounds for element ID '"
+                   << grid_name << "'. Maximum value is: "
+                   << ElementId<VolumeDim>::max_refinement_level);
+        return refinement_level;
+      };
   block_id_ = to_size_t(match[1]);
-  refinement_level_xi_ = to_size_t(match[2]);
+  refinement_level_xi_ = check_refinement_level(to_size_t(match[2]));
   index_xi_ = to_size_t(match[3]);
   if constexpr (VolumeDim > 1) {
-    refinement_level_eta_ = to_size_t(match[4]);
+    refinement_level_eta_ = check_refinement_level(to_size_t(match[4]));
     index_eta_ = to_size_t(match[5]);
   } else {
     refinement_level_eta_ = 0;
     index_eta_ = 0;
   }
   if constexpr (VolumeDim > 2) {
-    refinement_level_zeta_ = to_size_t(match[6]);
+    refinement_level_zeta_ = check_refinement_level(to_size_t(match[6]));
     index_zeta_ = to_size_t(match[7]);
   } else {
     refinement_level_zeta_ = 0;
