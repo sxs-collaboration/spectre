@@ -4,6 +4,9 @@ See LICENSE.txt for details.
 \endcond
 # Developer Guides {#dev_guide}
 
+### Adaptive Mesh Refinement
+- \subpage dev_guide_amr "Adaptive Mesh Refinement"
+
 ### Charm++ Interface
 - \subpage load_balancing_notes "Load Balancing Notes and Recommendations"
 

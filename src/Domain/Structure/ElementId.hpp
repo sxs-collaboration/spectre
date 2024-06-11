@@ -63,6 +63,7 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
   static constexpr size_t grid_index_bits = 4;
   static constexpr size_t direction_bits = 4;
   static constexpr size_t refinement_bits = 4;
+  /// The maximum allowed refinement level
   static constexpr size_t max_refinement_level = 12;
   static constexpr uint64_t direction_shift =
       static_cast<uint64_t>(block_id_bits + grid_index_bits);
