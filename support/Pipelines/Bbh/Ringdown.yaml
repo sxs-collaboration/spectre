@@ -45,10 +45,25 @@ DomainCreator:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
+  InitialTimeStep: 0.0002
+  # This is the smallest interval we'd need to observe time step/constraints. If
+  # you would like more frequent output, consider using dense output.
+  InitialSlabSize: 0.1
+  StepChoosers:
+    - Increase:
+        Factor: 2
+    - ElementSizeCfl:
+        SafetyFactor: 0.5
+    - ErrorControl:
+        AbsoluteTolerance: 1e-10
+        RelativeTolerance: 1e-8
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.95
+  # Found that order 4 offers a significant speedup compared to order 5
   TimeStepper:
     AdamsBashforth:
-      Order: 1
+      Order: 4
 
 EvolutionSystem:
   GeneralizedHarmonic:

@@ -76,9 +76,10 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
-struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
+template <bool UseLts>
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
   static constexpr size_t volume_dim = 3;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, UseLts>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
 
@@ -263,7 +264,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3> {
         evolution::Actions::ProjectRunEventsAndDenseTriggers,
         ::amr::projectors::DefaultInitialize<
             Initialization::Tags::InitialTimeDelta,
-            Initialization::Tags::InitialSlabSize<local_time_stepping>,
+            Initialization::Tags::InitialSlabSize<gh_base::local_time_stepping>,
             ::domain::Tags::InitialExtents<volume_dim>,
             ::domain::Tags::InitialRefinementLevels<volume_dim>,
             evolution::dg::Tags::Quadrature,

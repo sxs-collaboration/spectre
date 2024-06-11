@@ -67,11 +67,11 @@ class CProxy_GlobalCache;
 /// \endcond
 
 template <bool EvolveCcm>
-struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3>,
+struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, false>,
                            public CharacteristicExtractDefaults<EvolveCcm> {
   static constexpr size_t volume_dim = 3;
   using cce_base = CharacteristicExtractDefaults<EvolveCcm>;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, false>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using cce_boundary_component = Cce::GhWorldtubeBoundary<EvolutionMetavars>;
 
