@@ -347,7 +347,7 @@ void test_serialization() {
   std::uniform_int_distribution<size_t> dist_grid_index(
       0, two_to_the(ElementId<VolumeDim>::grid_index_bits) - 1);
   std::uniform_int_distribution<size_t> dist_refinement(
-      0, two_to_the(ElementId<VolumeDim>::refinement_bits) - 1);
+      0, ElementId<VolumeDim>::max_refinement_level);
   const auto random_segment_id = [&gen, &dist_refinement]() -> SegmentId {
     const size_t refinement = dist_refinement(gen);
     std::uniform_int_distribution<size_t> dist_index(
