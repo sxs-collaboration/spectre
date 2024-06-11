@@ -109,8 +109,8 @@ def generate_id(
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
     # Resolution
-    refinement_level: int,
-    polynomial_order: int,
+    refinement_level: int = 1,
+    polynomial_order: int = 6,
     # Scheduling options
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
     evolve: bool = False,
@@ -289,7 +289,7 @@ def generate_id(
     "-L",
     type=click.IntRange(0, None),
     help="h-refinement level.",
-    default=0,
+    default=1,
     show_default=True,
 )
 @click.option(
@@ -297,7 +297,7 @@ def generate_id(
     "-P",
     type=click.IntRange(1, None),
     help="p-refinement level.",
-    default=5,
+    default=6,
     show_default=True,
 )
 # Scheduling options
