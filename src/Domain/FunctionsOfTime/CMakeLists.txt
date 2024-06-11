@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FixedSpeedCubic.cpp
+  IntegratedFunctionOfTime.cpp
   OutputTimeBounds.cpp
   PiecewisePolynomial.cpp
   QuaternionFunctionOfTime.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   HEADERS
   FixedSpeedCubic.hpp
   FunctionOfTime.hpp
+  IntegratedFunctionOfTime.hpp
   OptionTags.hpp
   OutputTimeBounds.hpp
   PiecewisePolynomial.hpp
