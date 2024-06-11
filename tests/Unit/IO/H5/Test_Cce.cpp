@@ -43,7 +43,7 @@
 
 namespace {
 void test_errors() {
-  std::string file_name{"./Unit.IO.H5.FileErrorObjectAlreadyExists.h5"};
+  std::string file_name{"./Unit.IO.H5.Cce.FileErrorObjectAlreadyExists.h5"};
   CHECK_THROWS_WITH(
       ([&file_name]() {
         const uint32_t version_number = 4;
@@ -67,7 +67,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5";
+  file_name = "./Unit.IO.H5.Cce.FileErrorObjectAlreadyOpenGet.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -86,7 +86,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5";
+  file_name = "./Unit.IO.H5.Cce.FileErrorObjectAlreadyOpenInsert.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -106,7 +106,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5";
+  file_name = "./Unit.IO.H5.Cce.FileErrorObjectAlreadyOpenTryInsert.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -126,7 +126,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5";
+  file_name = "./Unit.IO.H5.Cce.FileErrorObjectAlreadyOpen.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -153,7 +153,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.LegendsDontMatch.h5";
+  file_name = "./Unit.IO.H5.Cce.LegendsDontMatch.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -176,7 +176,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.NoBondiVariable.h5";
+  file_name = "./Unit.IO.H5.Cce.NoBondiVariable.h5";
   CHECK_THROWS_WITH(
       ([&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -198,7 +198,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.IncorrectDataSize.h5";
+  file_name = "./Unit.IO.H5.Cce.IncorrectDataSize.h5";
   CHECK_THROWS_WITH(
       ([&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -230,7 +230,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.LTooLarge.h5";
+  file_name = "./Unit.IO.H5.Cce.LTooLarge.h5";
   CHECK_THROWS_WITH(
       ([&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
@@ -261,7 +261,7 @@ void test_errors() {
     file_system::rm(file_name, true);
   }
 
-  file_name = "./Unit.IO.H5.IncorrectBondiVarDim.h5";
+  file_name = "./Unit.IO.H5.Cce.IncorrectBondiVarDim.h5";
   CHECK_THROWS_WITH(
       [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
