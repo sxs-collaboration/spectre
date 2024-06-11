@@ -22,10 +22,11 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
-template <size_t VolumeDim>
-struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<VolumeDim> {
+template <size_t VolumeDim, bool UseLts>
+struct EvolutionMetavars
+    : public GeneralizedHarmonicTemplateBase<VolumeDim, UseLts> {
   static constexpr size_t volume_dim = VolumeDim;
-  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim>;
+  using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, UseLts>;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::dg_registration_list;
   using initialization_actions =

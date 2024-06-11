@@ -4,7 +4,7 @@
 Executable: EvolveGhSingleBlackHole
 Testing:
   Check: parse;execute_check_output
-  Timeout: 8
+  Timeout: 20
   Priority: High
 ExpectedOutput:
   - GhKerrSchildVolume0.h5
@@ -27,10 +27,26 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
+  InitialTimeStep: 0.0002
+  # *Important* this slab size was chosen for testing purposes, a more realistic
+  # slab size for evolutions would be 0.1 to observe constraints. If you would
+  # like more frequent output, consider using dense output.
+  InitialSlabSize: 0.001
+  StepChoosers:
+    - Increase:
+        Factor: 2
+    - ElementSizeCfl:
+        SafetyFactor: 0.5
+    - ErrorControl:
+        AbsoluteTolerance: 1e-10
+        RelativeTolerance: 1e-8
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.95
+  # Found that order 4 offers a significant speedup compared to order 5
   TimeStepper:
     AdamsBashforth:
-      Order: 1
+      Order: 4
 
 Amr:
   Criteria:
