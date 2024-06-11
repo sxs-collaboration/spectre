@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl/filesystem.h>
 #include <string>
 #include <vector>
 
@@ -141,13 +142,13 @@ void bind_h5file(py::module& m) {
 
   m.def(
       "H5File",
-      [](const std::string& file_name, const std::string& mode) {
+      [](const std::filesystem::path& file_name, const std::string& mode) {
         if (mode == "r") {
           return py::cast(
-              h5::H5File<h5::AccessType::ReadOnly>{file_name, false});
+              h5::H5File<h5::AccessType::ReadOnly>{file_name.string(), false});
         }
         return py::cast(h5::H5File<h5::AccessType::ReadWrite>{
-            file_name, (mode == "a" or mode == "r+")});
+            file_name.string(), (mode == "a" or mode == "r+")});
       },
       py::arg("file_name"), py::arg("mode") = "r",
       "Open an H5File object\n\nfile_name: the name of the H5File to "
