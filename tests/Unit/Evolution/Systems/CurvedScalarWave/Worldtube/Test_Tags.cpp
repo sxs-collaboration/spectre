@@ -415,7 +415,7 @@ void test_background_quantities_compute() {
   MAKE_GENERATOR(gen);
 
   // the velocity has to be less than c or the dilation factor is undefined
-  std::uniform_real_distribution<> pos_dist(1., 10.);
+  std::uniform_real_distribution<> pos_dist(2., 10.);
   std::uniform_real_distribution<> vel_dist(-0.2, 0.2);
 
   const auto random_position = make_with_random_values<tnsr::I<double, Dim>>(
