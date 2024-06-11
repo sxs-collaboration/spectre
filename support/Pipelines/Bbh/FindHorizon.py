@@ -50,6 +50,26 @@ def _strahlkorper_vol_data(strahlkorper):
     ]
 
 
+def _horizon_reduction_data(quantities):
+    """Row of horizon quantities, can be written to an H5 dat file."""
+    # Flatten vector quantities into a single row of values. So the spin is
+    # returned as 3 columns with the x, y, and z components.
+    legend = []
+    reduction_data = []
+    for key, value in quantities.items():
+        if isinstance(value, float):
+            legend.append(key)
+            reduction_data.append(value)
+        elif len(value) == 3:
+            legend.extend([f"{key}_{xyz}" for xyz in "xyz"])
+            reduction_data.extend(value)
+        else:
+            raise ValueError(
+                f"Unsupported shape of horizon quantity {key}: {value}"
+            )
+    return legend, reduction_data
+
+
 def find_horizon(
     h5_files: Union[str, Sequence[str]],
     subfile_name: str,
@@ -57,9 +77,11 @@ def find_horizon(
     obs_time: float,
     initial_guess: Strahlkorper,
     fast_flow: Optional[FastFlow] = None,
-    output: Optional[str] = None,
+    output_surfaces_file: Optional[Union[str, Path]] = None,
     output_coeffs_subfile: Optional[str] = None,
     output_coords_subfile: Optional[str] = None,
+    output_reductions_file: Optional[Union[str, Path]] = None,
+    output_quantities_subfile: Optional[str] = None,
     output_l_max: Optional[int] = None,
     tensor_names: Optional[Sequence[str]] = None,
 ):
@@ -78,17 +100,24 @@ def find_horizon(
         'spectre.SphericalHarmonics.Strahlkorper'.
       fast_flow: Optional. FastFlow object that controls the horizon finder.
         If not specified, a FastFlow object with default parameters is used.
-      output: Optional. H5 output file where the horizon Ylm coefficients will
-        be written. Can be a new or existing file. Requires either
-        'output_coeffs_subfile' or 'output_coords_subfile' is also specified,
-        or both.
-      output_coeffs_subfile: Optional. Name of the subfile in the H5 output file
-        where the horizon Ylm coefficients will be written.
-        These can be used to reconstruct the horizon, e.g. to initialize
-        excisions in domains.
-      output_coords_subfile: Optional. Name of the subfile in the H5 output file
-        where the horizon coordinates will be written.
+      output_surfaces_file: Optional. H5 output file where the horizon Ylm
+        coefficients will be written. Can be a new or existing file. Requires
+        either 'output_coeffs_subfile' or 'output_coords_subfile' is also
+        specified, or both.
+      output_coeffs_subfile: Optional. Name of the subfile in the
+        'output_surfaces_file' where the horizon Ylm coefficients will be
+        written. These can be used to reconstruct the horizon, e.g. to
+        initialize excisions in domains.
+      output_coords_subfile: Optional. Name of the subfile in the
+        'output_surfaces_file' where the horizon coordinates will be written.
         These can be used for visualization.
+      output_reductions_file: Optional. H5 output file where the reduction
+        quantities on the horizon will be written, e.g. masses and spins.
+        Can be a new or existing file. Requires 'output_quantities_subfile'
+        is also specified.
+      output_quantities_subfile: Optional. Name of the subfile in the
+        'output_reductions_file' where the horizon quantities will be written,
+        e.g. masses and spins.
       output_l_max: Optional. Maximum l-mode for the horizon Ylm coefficients
         written to the output file. Defaults to the l_max of the initial guess.
         Only used if 'output_coeffs_subfile' is specified.
@@ -195,27 +224,44 @@ def find_horizon(
         spatial_ricci=spatial_ricci,
     )
     # Write the horizon to a file and return it
-    if output:
+    if output_surfaces_file:
         assert output_coeffs_subfile or output_coords_subfile, (
             "Specify either 'output_coeffs_subfile' or 'output_coords_subfile'"
             " or both."
         )
-        if not (output.endswith(".h5") or output.endswith(".hdf5")):
-            output += ".h5"
+        if Path(output_surfaces_file).suffix not in [".h5", ".hdf5"]:
+            output_surfaces_file += ".h5"
         if output_coeffs_subfile:
             legend, ylm_data = ylm_legend_and_data(
                 strahlkorper, obs_time, output_l_max or strahlkorper.l_max
             )
-            with spectre_h5.H5File(output, "a") as output_file:
+            with spectre_h5.H5File(
+                str(output_surfaces_file), "a"
+            ) as output_file:
                 datfile = output_file.try_insert_dat(
                     output_coeffs_subfile, legend, 0
                 )
                 datfile.append(ylm_data)
         if output_coords_subfile:
             vol_data = _strahlkorper_vol_data(strahlkorper)
-            with spectre_h5.H5File(output, "a") as output_file:
+            with spectre_h5.H5File(
+                str(output_surfaces_file), "a"
+            ) as output_file:
                 volfile = output_file.try_insert_vol(output_coords_subfile, 0)
                 volfile.write_volume_data(obs_id, obs_time, vol_data)
+    if output_reductions_file:
+        assert output_quantities_subfile, (
+            "Specify 'output_quantities_subfile' if 'output_reductions_file'"
+            " is specified."
+        )
+        if Path(output_reductions_file).suffix not in [".h5", ".hdf5"]:
+            output_reductions_file += ".h5"
+        legend, reduction_data = _horizon_reduction_data(quantities)
+        with spectre_h5.H5File(str(output_reductions_file), "a") as output_file:
+            datfile = output_file.try_insert_dat(
+                output_quantities_subfile, legend, 0
+            )
+            datfile.append(reduction_data)
     return strahlkorper, quantities
 
 
@@ -246,8 +292,7 @@ def find_horizon(
     help="Coordinate center of the horizon.",
 )
 @click.option(
-    "--output",
-    "-o",
+    "--output-surfaces-file",
     type=click.Path(writable=True),
     help=(
         "H5 output file where the horizon Ylm coefficients will be written. Can"
@@ -257,16 +302,31 @@ def find_horizon(
 @click.option(
     "--output-coeffs-subfile",
     help=(
-        "Name of the subfile in the H5 output file where the horizon Ylm"
-        " coefficients will be written. These can be used to reconstruct the"
-        " horizon, e.g. to initialize excisions in domains."
+        "Name of the subfile in the 'output_surfaces_file' where the horizon"
+        " Ylm coefficients will be written. These can be used to reconstruct"
+        " the horizon, e.g. to initialize excisions in domains."
     ),
 )
 @click.option(
     "--output-coords-subfile",
     help=(
-        "Name of the subfile in the H5 output file where the horizon"
+        "Name of the subfile in the 'output_surfaces_file' where the horizon"
         " coordinates will be written. These can be used for visualization."
+    ),
+)
+@click.option(
+    "--output-reductions-file",
+    type=click.Path(writable=True),
+    help=(
+        "H5 output file where the reduction quantities on the horizon will be"
+        " written, e.g. masses and spins. Can be a new or existing file."
+    ),
+)
+@click.option(
+    "--output-quantities-subfile",
+    help=(
+        "Name of the subfile in the 'output_reductions_file' where the horizon"
+        " quantities will be written, e.g. masses and spins."
     ),
 )
 def find_horizon_command(l_max, initial_radius, center, vars, **kwargs):
