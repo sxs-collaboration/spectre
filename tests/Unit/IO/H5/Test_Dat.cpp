@@ -39,17 +39,16 @@
 
 namespace {
 void test_errors() {
+  std::string file_name{"./Unit.IO.H5.Dat.FileErrorObjectAlreadyExists.h5"};
   CHECK_THROWS_WITH(
-      ([]() {
-        const std::string h5_file_name =
-            "./Unit.IO.H5.FileErrorObjectAlreadyExists.h5";
+      ([&file_name]() {
         const uint32_t version_number = 4;
-        if (file_system::check_if_file_exists(h5_file_name)) {
-          file_system::rm(h5_file_name, true);
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
         }
         const std::vector<std::string> legend{"Time", "Error L2", "Error L1",
                                               "Error"};
-        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
         {
           auto& error_file =
               my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
@@ -61,15 +60,13 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring(
           "Cannot insert an Object that already exists. Failed to "
           "add Object named: /L2_errors"));
-  if (file_system::check_if_file_exists(
-          "./Unit.IO.H5.FileErrorObjectAlreadyExists.h5")) {
-    file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyExists.h5", true);
+  if (file_system::check_if_file_exists(file_name)) {
+    file_system::rm(file_name, true);
   }
 
+  file_name = "./Unit.IO.H5.Dat.FileErrorObjectAlreadyOpenGet.h5";
   CHECK_THROWS_WITH(
-      []() {
-        const std::string file_name =
-            "./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5";
+      [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
           file_system::rm(file_name, true);
         };
@@ -82,15 +79,13 @@ void test_errors() {
       }(),
       Catch::Matchers::ContainsSubstring(
           "Object /DummyPath already open. Cannot open object /DummyPath."));
-  if (file_system::check_if_file_exists(
-          "./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5")) {
-    file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5", true);
+  if (file_system::check_if_file_exists(file_name)) {
+    file_system::rm(file_name, true);
   }
 
+  file_name = "./Unit.IO.H5.Dat.FileErrorObjectAlreadyOpenInsert.h5";
   CHECK_THROWS_WITH(
-      []() {
-        const std::string file_name =
-            "./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5";
+      [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
           file_system::rm(file_name, true);
         };
@@ -103,15 +98,13 @@ void test_errors() {
       }(),
       Catch::Matchers::ContainsSubstring(
           "Object /DummyPath already open. Cannot insert object /DummyPath2."));
-  if (file_system::check_if_file_exists(
-          "./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5")) {
-    file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5", true);
+  if (file_system::check_if_file_exists(file_name)) {
+    file_system::rm(file_name, true);
   }
 
+  file_name = "./Unit.IO.H5.Dat.FileErrorObjectAlreadyOpenTryInsert.h5";
   CHECK_THROWS_WITH(
-      []() {
-        const std::string file_name =
-            "./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5";
+      [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
           file_system::rm(file_name, true);
         };
@@ -125,16 +118,13 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring(
           "Object /DummyPath already open. Cannot try to insert "
           "object /DummyPath2."));
-  if (file_system::check_if_file_exists(
-          "./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5")) {
-    file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5",
-                    true);
+  if (file_system::check_if_file_exists(file_name)) {
+    file_system::rm(file_name, true);
   }
 
+  file_name = "./Unit.IO.H5.Dat.FileErrorObjectAlreadyOpen.h5";
   CHECK_THROWS_WITH(
-      []() {
-        const std::string file_name =
-            "./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5";
+      [&file_name]() {
         if (file_system::check_if_file_exists(file_name)) {
           file_system::rm(file_name, true);
         };
@@ -155,9 +145,8 @@ void test_errors() {
       }(),
       Catch::Matchers::ContainsSubstring(
           "Object /Dummy/Path2 already open. Cannot open object /DummyPath."));
-  if (file_system::check_if_file_exists(
-          "./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5")) {
-    file_system::rm("./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5", true);
+  if (file_system::check_if_file_exists(file_name)) {
+    file_system::rm(file_name, true);
   }
 }
 
