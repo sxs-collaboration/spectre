@@ -37,4 +37,9 @@ using imex_time_steppers =
 /// Typelist of TimeSteppers whose substep times are strictly increasing
 using increasing_substep_time_steppers =
     tmpl::list<AdamsBashforth, Rk3Owren, Rk4Owren>;
+
+/// Typelist of LtsTimeSteppers with monotonic() true, i.e., those
+/// that work with control systems.
+using monotonic_lts_time_steppers =
+    tmpl::list<AdamsBashforth, AdamsMoultonPc<true>>;
 }  // namespace TimeSteppers

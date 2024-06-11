@@ -82,5 +82,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Factory", "[Unit][Time]") {
         }
         return true;
       });
+  check_list_contents<TimeSteppers::monotonic_lts_time_steppers>(
+      "monotonic_lts_time_steppers",
+      []<typename Stepper>(tmpl::type_<Stepper> /*meta*/) {
+        return std::is_convertible_v<Stepper*, LtsTimeStepper*> and
+               create_example(tmpl::type_<Stepper>{}).monotonic();
+      });
 }
 }  // namespace
