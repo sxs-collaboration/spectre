@@ -1043,7 +1043,9 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Run unit tests
         working-directory: build
         run: |
-          ctest -j4 --repeat after-timeout:3 --output-on-failure
+          # Only use 2 cores because these tests can have charm execs which
+          # require 2 cores.
+          ctest -j2 --repeat after-timeout:3 --output-on-failure
       - name: Install
         working-directory: build
         run: |
