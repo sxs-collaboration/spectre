@@ -118,7 +118,8 @@ def open_volfiles_command(
                 "in the volume data file, such as 'Shift_x'. "
                 "Also accepts glob patterns like 'Shift_*'."
             )
-            + (" Can be specified multiple times." if multiple_vars else ""),
+            + (" Can be specified multiple times." if multiple_vars else "")
+            + ("  [required]" if vars_required else ""),
         )
         @click.option(
             "--list-observations",
