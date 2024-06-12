@@ -96,6 +96,9 @@ CheckOptions:
     value: true
   - key: performance-move-const-arg.CheckTriviallyCopyableMove
     value: false
+  # The fix for this is not supported by GCC 9.
+  - key: modernize-loop-convert.UseCxx20ReverseRanges
+    value: false
 WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers

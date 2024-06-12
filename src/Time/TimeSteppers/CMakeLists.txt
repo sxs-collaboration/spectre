@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   AdamsBashforth.cpp
   AdamsCoefficients.cpp
+  AdamsLts.cpp
   AdamsMoultonPc.cpp
   ClassicalRungeKutta4.cpp
   DormandPrince5.cpp
@@ -28,6 +29,7 @@ spectre_target_headers(
   HEADERS
   AdamsBashforth.hpp
   AdamsCoefficients.hpp
+  AdamsLts.hpp
   AdamsMoultonPc.hpp
   ClassicalRungeKutta4.hpp
   DormandPrince5.hpp

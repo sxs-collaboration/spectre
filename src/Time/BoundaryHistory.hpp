@@ -15,7 +15,6 @@
 
 #include "DataStructures/CircularDeque.hpp"
 #include "DataStructures/MathWrapper.hpp"
-#include "DataStructures/StaticDeque.hpp"
 #include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -342,20 +341,16 @@ class BoundaryHistory {
   void clear_substeps_local(size_t n);
   void clear_substeps_remote(size_t n);
 
-  StaticDeque<StepData<LocalData>, history_max_past_steps + 2> local_data_{};
+  CircularDeque<StepData<LocalData>> local_data_{};
   CircularDeque<StepData<RemoteData>> remote_data_{};
 
   template <typename Data>
   using CouplingSubsteps =
       boost::container::static_vector<Data, history_max_substeps + 1>;
 
-  // Putting the CircularDeque outermost means that we are inserting
-  // and removing containers that do not allocate, so we don't have to
-  // worry about that.
   // NOLINTNEXTLINE(spectre-mutable)
   mutable CircularDeque<CouplingSubsteps<
-      StaticDeque<CouplingSubsteps<std::optional<CouplingResult>>,
-                  decltype(local_data_)::max_size()>>>
+      CircularDeque<CouplingSubsteps<std::optional<CouplingResult>>>>>
       couplings_;
 };
 

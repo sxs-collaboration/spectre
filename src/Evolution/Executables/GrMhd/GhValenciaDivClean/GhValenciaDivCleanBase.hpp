@@ -616,7 +616,13 @@ struct GhValenciaDivCleanTemplateBase<
             boundary_conditions>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+        // Restrict to monotonic time steppers in LTS to avoid control
+        // systems deadlocking.
+        tmpl::pair<
+            LtsTimeStepper,
+            tmpl::conditional_t<use_control_systems,
+                                TimeSteppers::monotonic_lts_time_steppers,
+                                TimeSteppers::lts_time_steppers>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

@@ -22,6 +22,8 @@ class TimeStepId;
 /// \cond
 #define LTS_TIME_STEPPER_WRAPPED_TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define LTS_TIME_STEPPER_DERIVED_CLASS(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define LTS_TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data) \
+  BOOST_PP_TUPLE_ELEM(2, data)
 /// \endcond
 
 /// \ingroup TimeSteppersGroup
@@ -73,7 +75,7 @@ class LtsTimeStepper : public virtual TimeStepper {
       const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
       const TimeSteppers::BoundaryHistoryEvaluator<                \
           LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
-      const double time) const = 0;
+      double time) const = 0;
 
   GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DECLARE_VIRTUALS_IMPL,
                           (MATH_WRAPPER_TYPES))
@@ -162,7 +164,7 @@ class LtsTimeStepper : public virtual TimeStepper {
   ///     const TimeSteppers::ConstBoundaryHistoryTimes& local_times,
   ///     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
   ///     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
-  ///     const double time) const;
+  ///     double time) const;
   /// ```
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void boundary_dense_output(
@@ -196,9 +198,10 @@ class LtsTimeStepper : public virtual TimeStepper {
       const TimeSteppers::ConstBoundaryHistoryTimes& remote_times, \
       const TimeSteppers::BoundaryHistoryEvaluator<                \
           LTS_TIME_STEPPER_WRAPPED_TYPE(data)>& coupling,          \
-      const double time) const override;
+      double time) const override;
 
 #define LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                     \
+  LTS_TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                             \
   void LTS_TIME_STEPPER_DERIVED_CLASS(data)::add_boundary_delta_forward(    \
       const gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,     \
       const TimeSteppers::ConstBoundaryHistoryTimes& local_times,           \
@@ -209,6 +212,7 @@ class LtsTimeStepper : public virtual TimeStepper {
     return add_boundary_delta_impl(result, local_times, remote_times,       \
                                    coupling, time_step);                    \
   }                                                                         \
+  LTS_TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                             \
   void LTS_TIME_STEPPER_DERIVED_CLASS(data)::boundary_dense_output_forward( \
       const gsl::not_null<LTS_TIME_STEPPER_WRAPPED_TYPE(data)*> result,     \
       const TimeSteppers::ConstBoundaryHistoryTimes& local_times,           \
@@ -233,6 +237,13 @@ class LtsTimeStepper : public virtual TimeStepper {
 /// Macro defining overloaded detail methods in classes derived from
 /// TimeStepper.  Must be placed in the cpp file for the derived
 /// class.
+/// @{
 #define LTS_TIME_STEPPER_DEFINE_OVERLOADS(derived_class)          \
   GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL, \
-                          (MATH_WRAPPER_TYPES), (derived_class))
+                          (MATH_WRAPPER_TYPES), (derived_class), ())
+#define LTS_TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(derived_class, \
+                                                    template_args) \
+  GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL,  \
+                          (MATH_WRAPPER_TYPES), (derived_class),   \
+                          (template <template_args>))
+/// @}

@@ -488,7 +488,9 @@ struct EvolutionMetavars {
         tmpl::pair<
             gh::gauges::GaugeCondition,
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+        // Restrict to monotonic time steppers in LTS to avoid control
+        // systems deadlocking.
+        tmpl::pair<LtsTimeStepper, TimeSteppers::monotonic_lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
