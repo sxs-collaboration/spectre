@@ -23,7 +23,11 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
@@ -69,13 +73,26 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   using spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   using inv_spatial_metric_tag = gr::Tags::InverseSpatialMetric<DataVector, 3>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
+  using deriv_lapse_tag =
+      ::Tags::deriv<lapse_tag, tmpl::size_t<3>, Frame::Inertial>;
   using shift_tag = gr::Tags::Shift<DataVector, 3>;
+  using deriv_shift_tag =
+      ::Tags::deriv<shift_tag, tmpl::size_t<3>, Frame::Inertial>;
+  using spatial_christoffel_tag =
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>;
+  // Needed for an intermediate computation
+  using spacetime_normal_vector_tag =
+      gr::Tags::SpacetimeNormalVector<DataVector, 3>;
+  using inv_spacetime_metric_tag =
+      gr::Tags::InverseSpacetimeMetric<DataVector, 3>;
 
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).
   using full_temp_tags_list =
       tmpl::list<spacetime_metric_tag, spatial_metric_tag,
-                 inv_spatial_metric_tag, lapse_tag, shift_tag>;
+                 inv_spatial_metric_tag, lapse_tag, deriv_lapse_tag, shift_tag,
+                 deriv_shift_tag, spatial_christoffel_tag,
+                 spacetime_normal_vector_tag, inv_spacetime_metric_tag>;
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
@@ -84,17 +101,28 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
 
   // These may or may not be temporaries
   auto& lapse = *(get<lapse_tag>(target_vars, make_not_null(&buffer)));
+  auto& deriv_lapse =
+      *(get<deriv_lapse_tag>(target_vars, make_not_null(&buffer)));
   auto& shift = *(get<shift_tag>(target_vars, make_not_null(&buffer)));
+  auto& deriv_shift =
+      *(get<deriv_shift_tag>(target_vars, make_not_null(&buffer)));
   auto& spatial_metric =
       *(get<spatial_metric_tag>(target_vars, make_not_null(&buffer)));
   auto& spacetime_metric =
       *(get<spacetime_metric_tag>(target_vars, make_not_null(&buffer)));
   auto& inv_spatial_metric =
       *(get<inv_spatial_metric_tag>(target_vars, make_not_null(&buffer)));
+  auto& spacetime_normal_vector =
+      *(get<spacetime_normal_vector_tag>(target_vars, make_not_null(&buffer)));
+  auto& inv_spacetime_metric =
+      *(get<inv_spacetime_metric_tag>(target_vars, make_not_null(&buffer)));
+  auto& spatial_christoffel =
+      *(get<spatial_christoffel_tag>(target_vars, make_not_null(&buffer)));
 
   // Actual computation starts here
   const auto& src_spacetime_metric =
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(src_vars);
+  const auto& phi = get<gh::Tags::Phi<DataVector, 3>>(src_vars);
   spacetime_metric = src_spacetime_metric;
 
   gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
@@ -103,13 +131,24 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
                           make_not_null(&inv_spatial_metric), spatial_metric);
   gr::shift(make_not_null(&shift), spacetime_metric, inv_spatial_metric);
   gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
+  gr::spacetime_normal_vector(make_not_null(&spacetime_normal_vector), lapse,
+                              shift);
+  gh::spatial_deriv_of_lapse(make_not_null(&deriv_lapse), lapse,
+                             spacetime_normal_vector, phi);
+  gr::inverse_spacetime_metric(make_not_null(&inv_spacetime_metric), lapse,
+                               shift, inv_spatial_metric);
+  gh::spatial_deriv_of_shift(make_not_null(&deriv_shift), lapse,
+                             inv_spacetime_metric, spacetime_normal_vector,
+                             phi);
+  gh::christoffel_second_kind(make_not_null(&spatial_christoffel), phi,
+                              inv_spatial_metric);
 }
 
 /// Dual frame case
 template <typename SrcTagList, typename DestTagList, typename TargetFrame>
 void ComputeExcisionBoundaryVolumeQuantities::apply(
     const gsl::not_null<Variables<DestTagList>*> target_vars,
-    const Variables<SrcTagList>& src_vars, const Mesh<3>& /*mesh*/,
+    const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
     const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
         jac_target_to_inertial,
     const InverseJacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
@@ -117,7 +156,9 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
     const Jacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
     /*jac_logical_to_target*/,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
-    /*invjac_logical_to_target*/,
+        invjac_logical_to_target,
+    const InverseJacobian<DataVector, 3, Frame::Grid, TargetFrame>&
+        invjac_grid_to_target,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity,
     const tnsr::I<DataVector, 3, TargetFrame>&
         grid_to_target_frame_mesh_velocity) {
@@ -154,22 +195,36 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   using inv_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>;
   using lapse_tag = gr::Tags::Lapse<DataVector>;
+  using deriv_lapse_tag =
+      ::Tags::deriv<lapse_tag, tmpl::size_t<3>, TargetFrame>;
   using shift_tag = gr::Tags::Shift<DataVector, 3, TargetFrame>;
+  // Note that this is NOT the same as the shift quantity
+  using deriv_shift_tag =
+      ::Tags::deriv<shift_tag, tmpl::size_t<3>, TargetFrame>;
   using inertial_shift_tag = gr::Tags::Shift<DataVector, 3>;
   using shifty_quantity_tag =
       gr::Tags::ShiftyQuantity<DataVector, 3, TargetFrame>;
+  using spatial_christoffel_tag =
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>;
 
   // Additional temporary tags used for multiple frames
   using inertial_spatial_metric_tag = gr::Tags::SpatialMetric<DataVector, 3>;
   using inertial_inv_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<DataVector, 3>;
+  using deriv_spatial_metric_tag =
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>,
+                    tmpl::size_t<3>, TargetFrame>;
+  using target_phi_tag = gh::Tags::Phi<DataVector, 3, TargetFrame>;
 
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).
   using full_temp_tags_list =
       tmpl::list<spatial_metric_tag, inv_spatial_metric_tag, lapse_tag,
-                 shift_tag, inertial_shift_tag, shifty_quantity_tag,
-                 inertial_spatial_metric_tag, inertial_inv_spatial_metric_tag>;
+                 deriv_lapse_tag, shift_tag, deriv_shift_tag,
+                 inertial_shift_tag, shifty_quantity_tag,
+                 spatial_christoffel_tag, inertial_spatial_metric_tag,
+                 inertial_inv_spatial_metric_tag, deriv_spatial_metric_tag,
+                 target_phi_tag>;
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
@@ -179,11 +234,17 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // These may or may not be temporaries, depending on if they are asked for
   // in target_vars.
   auto& lapse = *(get<lapse_tag>(target_vars, make_not_null(&buffer)));
+  auto& deriv_lapse =
+      *(get<deriv_lapse_tag>(target_vars, make_not_null(&buffer)));
   auto& shift = *(get<shift_tag>(target_vars, make_not_null(&buffer)));
+  auto& deriv_shift =
+      *(get<deriv_shift_tag>(target_vars, make_not_null(&buffer)));
   auto& inertial_shift =
       *(get<inertial_shift_tag>(target_vars, make_not_null(&buffer)));
   auto& shifty_quantity =
       *(get<shifty_quantity_tag>(target_vars, make_not_null(&buffer)));
+  auto& spatial_christoffel =
+      *(get<spatial_christoffel_tag>(target_vars, make_not_null(&buffer)));
   auto& inertial_spatial_metric =
       *(get<inertial_spatial_metric_tag>(target_vars, make_not_null(&buffer)));
   auto& inertial_inv_spatial_metric = *(get<inertial_inv_spatial_metric_tag>(
@@ -192,8 +253,18 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
       *(get<spatial_metric_tag>(target_vars, make_not_null(&buffer)));
   auto& inv_spatial_metric =
       *(get<inv_spatial_metric_tag>(target_vars, make_not_null(&buffer)));
+  auto& deriv_spatial_metric =
+      *(get<deriv_spatial_metric_tag>(target_vars, make_not_null(&buffer)));
+  auto& target_phi =
+      *(get<target_phi_tag>(target_vars, make_not_null(&buffer)));
 
   // Actual computation starts here
+
+  using invjac_grid_to_target_tag =
+      domain::Tags::InverseJacobian<3, Frame::Grid, TargetFrame>;
+  if constexpr (tmpl::list_contains_v<DestTagList, invjac_grid_to_target_tag>) {
+    get<invjac_grid_to_target_tag>(*target_vars) = invjac_grid_to_target;
+  }
 
   gr::spatial_metric(make_not_null(&inertial_spatial_metric), spacetime_metric);
   // put determinant of 3-metric temporarily into lapse to save memory.
@@ -218,23 +289,33 @@ void ComputeExcisionBoundaryVolumeQuantities::apply(
   // We assume the lapse does note transform between the target and
   // inertial frames.
   gr::lapse(make_not_null(&lapse), inertial_shift, spacetime_metric);
+  partial_derivative(make_not_null(&deriv_lapse), lapse, mesh,
+                     invjac_logical_to_target);
 
   // Transform the shift
   const size_t VolumeDim = 3;
-  auto dest = &shift;
-  const auto& src = inertial_shift;
   for (size_t i = 0; i < VolumeDim; ++i) {
-    dest->get(i) = invjac_target_to_inertial.get(i, 0) *
-                   (src.get(0) + inertial_mesh_velocity.get(0));
+    shift.get(i) = invjac_target_to_inertial.get(i, 0) *
+                   (inertial_shift.get(0) + inertial_mesh_velocity.get(0));
     for (size_t j = 1; j < VolumeDim; ++j) {
-      dest->get(i) += invjac_target_to_inertial.get(i, j) *
-                      (src.get(j) + inertial_mesh_velocity.get(j));
+      shift.get(i) += invjac_target_to_inertial.get(i, j) *
+                      (inertial_shift.get(j) + inertial_mesh_velocity.get(j));
     }
   }
+  // Again, this is NOT the same as the shifty quantity
+  partial_derivative(make_not_null(&deriv_shift), shift, mesh,
+                     invjac_logical_to_target);
 
   tenex::evaluate<ti::I>(
       make_not_null(&shifty_quantity),
       shift(ti::I) + grid_to_target_frame_mesh_velocity(ti::I));
+
+  partial_derivative(make_not_null(&deriv_spatial_metric), spatial_metric, mesh,
+                     invjac_logical_to_target);
+  gh::phi(make_not_null(&target_phi), lapse, deriv_lapse, shift, deriv_shift,
+          spatial_metric, deriv_spatial_metric);
+  gh::christoffel_second_kind(make_not_null(&spatial_christoffel), target_phi,
+                              inv_spatial_metric);
 }
 
 }  // namespace ah

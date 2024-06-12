@@ -73,6 +73,8 @@ struct ComputeHorizonVolumeQuantities
           jac_logical_to_target,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
           invjac_logical_to_target,
+      const InverseJacobian<DataVector, 3, Frame::Grid, TargetFrame>&
+          invjac_grid_to_target,
       const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_mesh_velocity,
       const tnsr::I<DataVector, 3, TargetFrame>&
           grid_to_target_frame_mesh_velocity);

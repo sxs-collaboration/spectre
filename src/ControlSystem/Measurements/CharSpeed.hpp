@@ -10,8 +10,10 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
@@ -23,6 +25,7 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -73,11 +76,18 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
 
       using temporal_id = ::Tags::TimeAndPrevious<1>;
 
-      using vars_to_interpolate_to_target =
-          tmpl::list<gr::Tags::Lapse<DataVector>,
-                     gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
-                     gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
-                     gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>>;
+      using vars_to_interpolate_to_target = tmpl::list<
+          gr::Tags::Lapse<DataVector>,
+          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Distorted>,
+          gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+          ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+                        tmpl::size_t<3>, Frame::Distorted>,
+          gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
+          gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
+          ::domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Distorted>,
+          gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                 Frame::Distorted>>;
       using compute_vars_to_interpolate =
           ah::ComputeExcisionBoundaryVolumeQuantities;
       using compute_items_on_source =

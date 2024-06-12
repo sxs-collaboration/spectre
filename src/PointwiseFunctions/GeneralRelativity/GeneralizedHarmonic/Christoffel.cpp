@@ -160,7 +160,7 @@ void trace_christoffel(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial,
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial,
                          Frame::Spherical<Frame::Inertial>,
                          Frame::Spherical<Frame::Grid>))
 
