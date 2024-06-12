@@ -25,6 +25,7 @@ combine_h5_command.add_command(combine_h5_dat_command, name="dat")
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--subfile-name",
@@ -66,10 +67,6 @@ def combine_h5_vol_command(h5files, subfile_name, output, check_src):
     time steps (e.g. from multiple segments of a simulation). All input H5 files
     must contain the same set of observation IDs.
     """
-    # CLI scripts should be noops when input is empty
-    if not h5files:
-        return
-
     # Print available subfile names and exit
     if not subfile_name:
         spectre_file = spectre_h5.H5File(h5files[0], "r")

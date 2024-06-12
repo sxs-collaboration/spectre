@@ -20,6 +20,7 @@ HDF5_REPACK_EXECUTABLE = "@HDF5_REPACK_EXECUTABLE@"
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--subfile",

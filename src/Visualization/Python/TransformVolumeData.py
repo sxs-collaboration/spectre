@@ -651,6 +651,7 @@ def parse_kernels(kernels, exec_files, map_input_names):
 @click.argument(
     "h5files",
     nargs=-1,
+    required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
 @click.option(
@@ -780,10 +781,6 @@ def transform_volume_data_command(
     The output would be written to a dataset named 'ShiftMagnitude', which is
     the function name transformed to CamelCase.
     """
-    # Script should be a noop if input files are empty
-    if not h5files:
-        return
-
     open_h5_files = [
         spectre_h5.H5File(filename, "r" if integrate else "a")
         for filename in h5files

@@ -195,6 +195,7 @@ def plot_element(
 @click.argument(
     "h5_files",
     nargs=-1,
+    required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
 @click.option(
@@ -292,10 +293,6 @@ def render_1d_command(
     **plot_element_kwargs,
 ):
     """Render 1D data"""
-    # Script should be a noop if input files are empty
-    if not h5_files:
-        return
-
     open_h5_files = [spectre_h5.H5File(filename, "r") for filename in h5_files]
 
     # Print available subfile names and exit

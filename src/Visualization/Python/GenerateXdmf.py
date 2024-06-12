@@ -303,10 +303,6 @@ def generate_xdmf(
       coordinates: Optional. Name of coordinates dataset. Default:
         "InertialCoordinates".
     """
-    # CLI scripts should be noops when input is empty
-    if not h5files:
-        return
-
     h5files = [(h5py.File(filename, "r"), filename) for filename in h5files]
 
     if not subfile_name:
@@ -445,6 +441,7 @@ def generate_xdmf(
     "h5files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--output",

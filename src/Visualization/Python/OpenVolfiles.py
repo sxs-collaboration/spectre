@@ -87,6 +87,7 @@ def open_volfiles_command(
         @click.argument(
             "h5_files",
             nargs=-1,
+            required=True,
             type=click.Path(
                 exists=True, file_okay=True, dir_okay=False, readable=True
             ),
@@ -154,10 +155,6 @@ def open_volfiles_command(
             time,
             **kwargs,
         ):
-            # Script should be a noop if input files are empty
-            if not h5_files:
-                return
-
             # Print available subfile names and exit
             if not subfile_name:
                 import rich.columns

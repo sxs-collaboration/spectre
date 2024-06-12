@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
     "reduction_files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 # Plotting options
 @click.option(
