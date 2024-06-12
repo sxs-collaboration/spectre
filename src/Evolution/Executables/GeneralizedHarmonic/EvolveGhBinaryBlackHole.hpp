@@ -58,6 +58,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Tags/Filter.hpp"
+#include "Evolution/Triggers/FractionOfOrbit.hpp"
 #include "Evolution/Triggers/NumberOfOrbits.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
@@ -504,6 +505,7 @@ struct EvolutionMetavars {
         tmpl::pair<
             Trigger,
             tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
+                         tmpl::list<Triggers::FractionOfOrbit>,
                          tmpl::list<Triggers::SeparationLessThan>,
                          tmpl::list<Triggers::NumberOfOrbits>>>>;
   };
