@@ -8,7 +8,7 @@ def deriv_normalized_normal(
     grid_frame_excision_sphere_radius,
     excision_rhat,
     normalized_normal_one_form,
-    excision_normal_one_form_norm,
+    one_over_excision_normal_one_form_norm,
     inverse_spatial_metric_on_excision_boundary,
     spatial_christoffel_second_kind,
     inverse_jacobian_grid_to_distorted,
@@ -51,7 +51,7 @@ def comoving_char_speed_derivative(
     grid_frame_excision_sphere_radius,
     excision_rhat,
     excision_normal_one_form,
-    excision_normal_one_form_norm,
+    one_over_excision_normal_one_form_norm,
     distorted_components_of_grid_shift,
     inverse_spatial_metric_on_excision_boundary,
     spatial_christoffel_second_kind,
@@ -62,7 +62,7 @@ def comoving_char_speed_derivative(
     Y00 = 0.5 / np.sqrt(np.pi)
 
     normalized_normal_one_form = (
-        excision_normal_one_form / excision_normal_one_form_norm
+        excision_normal_one_form * one_over_excision_normal_one_form_norm
     )
 
     temp = (
@@ -81,7 +81,7 @@ def comoving_char_speed_derivative(
         grid_frame_excision_sphere_radius,
         excision_rhat,
         normalized_normal_one_form,
-        excision_normal_one_form_norm,
+        one_over_excision_normal_one_form_norm,
         inverse_spatial_metric_on_excision_boundary,
         spatial_christoffel_second_kind,
         inverse_jacobian_grid_to_distorted,
