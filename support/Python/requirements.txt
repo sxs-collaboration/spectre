@@ -27,7 +27,7 @@ matplotlib <= 3.8.4
 # Pandas: To work with columns of data. Need a sufficiently recent version
 # to do some fancy indexing in Status CLI
 pandas >= 1.5
-pybind11 >= 2.6.1
+pybind11 >= 2.7.0
 pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 12.0.0
