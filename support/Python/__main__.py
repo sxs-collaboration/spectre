@@ -10,6 +10,7 @@ import rich.traceback
 import yaml
 
 import spectre
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.support.Machines import UnknownMachineError, this_machine
 
 logger = logging.getLogger(__name__)
@@ -139,9 +140,9 @@ class Cli(click.MultiCommand):
             return validate_input_file_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
-        raise click.UsageError(
-            f"The command '{name}' is not implemented. "
-            f"Available commands are:\n{available_commands}"
+        raise RequiredChoiceError(
+            f"The command '{name}' is not implemented.",
+            choices=available_commands,
         )
 
 

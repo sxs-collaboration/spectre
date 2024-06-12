@@ -3,6 +3,8 @@
 
 import click
 
+from spectre.support.CliExceptions import RequiredChoiceError
+
 
 # Load subcommands lazily, i.e., only import the module when the subcommand is
 # invoked. This is important so the CLI responds quickly.
@@ -34,9 +36,9 @@ class Bbh(click.MultiCommand):
             return start_ringdown_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
-        raise click.UsageError(
-            f"The command '{name}' is not implemented. "
-            f"Available commands are:\n{available_commands}"
+        raise RequiredChoiceError(
+            f"The command '{name}' is not implemented.",
+            choices=available_commands,
         )
 
 

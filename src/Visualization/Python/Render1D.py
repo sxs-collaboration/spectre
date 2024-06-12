@@ -24,6 +24,7 @@ from spectre.Domain import (
 )
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.Spectral import Basis
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -297,10 +298,13 @@ def render_1d_command(
 
     # Print available subfile names and exit
     if not subfile_name:
-        import rich.columns
-
-        rich.print(rich.columns.Columns(open_h5_files[0].all_vol_files()))
-        return
+        raise RequiredChoiceError(
+            (
+                "Specify '--subfile-name' / '-d' to select a"
+                " subfile containing 1D volume data."
+            ),
+            choices=open_h5_files[0].all_vol_files(),
+        )
 
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
     dim = volfiles[0].get_dimension()
@@ -320,8 +324,8 @@ def render_1d_command(
         return
     for var in vars:
         if var not in all_vars:
-            raise click.UsageError(
-                f"Unknown variable '{var}'. Available variables are: {all_vars}"
+            raise RequiredChoiceError(
+                f"Unknown variable '{var}'.", choices=all_vars
             )
     if not vars:
         vars = {var: var for var in all_vars}

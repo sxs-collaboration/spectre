@@ -27,6 +27,7 @@ from spectre.DataStructures.Tensor import (
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
+from spectre.support.CliExceptions import RequiredChoiceError
 
 logger = logging.getLogger(__name__)
 
@@ -795,10 +796,13 @@ def transform_volume_data_command(
                 f"Selected subfile {subfile_name} (the only available one)."
             )
         else:
-            import rich.columns
-
-            rich.print(rich.columns.Columns())
-            return
+            raise RequiredChoiceError(
+                (
+                    "Specify '--subfile-name' / '-d' to select a"
+                    " subfile containing volume data."
+                ),
+                choices=available_subfile_names,
+            )
 
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
 

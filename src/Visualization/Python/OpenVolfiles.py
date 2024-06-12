@@ -11,6 +11,7 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.ReadH5 import list_observations, select_observation
 
 logger = logging.getLogger(__name__)
@@ -161,8 +162,6 @@ def open_volfiles_command(
         ):
             # Print available subfile names and exit
             if not subfile_name:
-                import rich.columns
-
                 with spectre_h5.H5File(h5_files[0], "r") as open_h5_file:
                     available_subfiles = open_h5_file.all_vol_files()
                 if len(available_subfiles) == 1:
@@ -172,8 +171,13 @@ def open_volfiles_command(
                         " (the only available one)."
                     )
                 else:
-                    rich.print(rich.columns.Columns(available_subfiles))
-                    return
+                    raise RequiredChoiceError(
+                        (
+                            "Specify '--subfile-name' / '-d' to select a"
+                            " subfile containing volume data."
+                        ),
+                        choices=available_subfiles,
+                    )
 
             # Print available observations/times and exit
             if list_times:
@@ -219,11 +223,16 @@ def open_volfiles_command(
                     obs_id or volfile.list_observation_ids()[0]
                 )
                 break
-            if list_vars or (vars_required and not vars_patterns):
+            if list_vars:
                 import rich.columns
 
                 rich.print(rich.columns.Columns(all_vars))
                 return
+            elif vars_required and not vars_patterns:
+                raise RequiredChoiceError(
+                    "Specify '--var' / '-y' to select a variable to plot.",
+                    choices=all_vars,
+                )
             # Expand globs in vars
             vars = []
             if not multiple_vars:
@@ -231,9 +240,9 @@ def open_volfiles_command(
             for var_pattern in vars_patterns:
                 matched_vars = fnmatch.filter(all_vars, var_pattern)
                 if not matched_vars:
-                    raise click.UsageError(
-                        f"The pattern '{var_pattern}' matches no variables. "
-                        f"Available variables are: {all_vars}"
+                    raise RequiredChoiceError(
+                        f"The pattern '{var_pattern}' matches no variables.",
+                        choices=all_vars,
                     )
                 vars.extend(matched_vars)
             # Remove duplicates. Ordering is lost, but that's not important here.

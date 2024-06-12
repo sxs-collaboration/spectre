@@ -20,6 +20,7 @@ import h5py
 import numpy as np
 import rich
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
@@ -306,8 +307,6 @@ def generate_xdmf(
     h5files = [(h5py.File(filename, "r"), filename) for filename in h5files]
 
     if not subfile_name:
-        import rich.columns
-
         subfiles = available_subfiles(
             (h5file for h5file, _ in h5files), extension=".vol"
         )
@@ -317,8 +316,13 @@ def generate_xdmf(
                 f"Selected subfile {subfile_name} (the only available one)."
             )
         else:
-            rich.print(rich.columns.Columns(subfiles))
-            return
+            raise RequiredChoiceError(
+                (
+                    "Specify '--subfile-name' / '-d' to select a"
+                    " subfile containing volume data."
+                ),
+                choices=subfiles,
+            )
 
     if not subfile_name.endswith(".vol"):
         subfile_name += ".vol"

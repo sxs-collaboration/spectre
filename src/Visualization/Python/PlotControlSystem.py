@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -106,10 +107,12 @@ def plot_control_system_command(
         h5file = h5py.File(h5_filename, "r")
         control_system_dir = h5file.get("ControlSystems")
         if control_system_dir is None:
-            raise click.UsageError(
-                "Unable to open group 'ControlSystems' from h5 file"
-                f" {h5_filename}. Available subfiles are:\n"
-                f" {available_subfiles(h5file, extension='.dat')}"
+            raise RequiredChoiceError(
+                (
+                    "Unable to open group 'ControlSystems' from h5 file"
+                    f" {h5_filename}."
+                ),
+                choices=available_subfiles(h5file, extension=".dat"),
             )
 
         # No size control
@@ -129,10 +132,12 @@ def plot_control_system_command(
         )
         subfile = h5file.get(subfile_path)
         if subfile_path is None:
-            raise click.UsageError(
-                f"Unable to open control system file '{subfile_path}'"
-                f" from h5 file {h5_filename}. Available subfiles are:\n"
-                f" {available_subfiles(h5file, extension='.dat')}"
+            raise RequiredChoiceError(
+                (
+                    f"Unable to open control system subfile '{subfile_path}'"
+                    f" from h5 file {h5_filename}."
+                ),
+                choices=available_subfiles(h5file, extension=".dat"),
             )
 
         return to_dataframe(subfile).set_index("Time")

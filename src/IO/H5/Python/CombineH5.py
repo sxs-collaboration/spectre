@@ -9,6 +9,7 @@ import rich
 
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5.CombineH5Dat import combine_h5_dat_command
+from spectre.support.CliExceptions import RequiredChoiceError
 
 
 @click.group(name="combine-h5")
@@ -70,10 +71,13 @@ def combine_h5_vol_command(h5files, subfile_name, output, check_src):
     # Print available subfile names and exit
     if not subfile_name:
         spectre_file = spectre_h5.H5File(h5files[0], "r")
-        import rich.columns
-
-        rich.print(rich.columns.Columns(spectre_file.all_vol_files()))
-        return
+        raise RequiredChoiceError(
+            (
+                "Specify '--subfile-name' / '-d' to select a"
+                " subfile containing volume data."
+            ),
+            choices=spectre_file.all_vol_files(),
+        )
 
     if not output.endswith(".h5"):
         output += ".h5"

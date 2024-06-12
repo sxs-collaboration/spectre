@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rich
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -54,10 +55,7 @@ def parse_functions(ctx, param, all_values):
 @click.option(
     "--subfile-name",
     "-d",
-    help=(
-        "The dat subfile to read. "
-        "If unspecified, all available dat subfiles will be printed."
-    ),
+    help="The dat subfile to read.  [required]",
 )
 @click.option(
     "--legend-only",
@@ -134,24 +132,23 @@ def plot_dat_command(
     """Plot columns in '.dat' datasets in H5 files"""
     with h5py.File(h5_file, "r") as h5file:
         # Print available subfiles and exit
-        if subfile_name is None:
-            import rich.columns
-
-            rich.print(
-                rich.columns.Columns(
-                    available_subfiles(h5file, extension=".dat")
-                )
+        if not subfile_name:
+            raise RequiredChoiceError(
+                (
+                    "Specify '--subfile-name' / '-d' to select a"
+                    " subfile containing data to plot."
+                ),
+                choices=available_subfiles(h5file, extension=".dat"),
             )
-            return
 
         # Open subfile
         if not subfile_name.endswith(".dat"):
             subfile_name += ".dat"
         dat_file = h5file.get(subfile_name)
         if dat_file is None:
-            raise click.UsageError(
-                f"Unable to open dat file '{subfile_name}'. Available "
-                f"files are:\n {available_subfiles(h5file, extension='.dat')}"
+            raise RequiredChoiceError(
+                f"Unable to open dat subfile '{subfile_name}'.",
+                choices=available_subfiles(h5file, extension=".dat"),
             )
 
         # Read legend from subfile
@@ -161,8 +158,8 @@ def plot_dat_command(
         if x_axis is None:
             x_axis = legend[0]
         elif x_axis not in legend:
-            raise click.UsageError(
-                f"Unknown x-axis '{x_axis}'. Available columns are: {legend}"
+            raise RequiredChoiceError(
+                f"Unknown x-axis '{x_axis}'.", choices=legend
             )
 
         # Print legend and exit if requested
@@ -203,9 +200,8 @@ def plot_dat_command(
         # Plot the selected quantities
         for function, label in functions.items():
             if function not in legend:
-                raise click.UsageError(
-                    f"Unknown function '{function}'. "
-                    f"Available functions are: {legend}"
+                raise RequiredChoiceError(
+                    f"Unknown function '{function}'.", choices=legend
                 )
 
             plt.plot(

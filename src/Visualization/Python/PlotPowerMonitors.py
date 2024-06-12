@@ -17,6 +17,7 @@ from spectre.Domain import Domain, deserialize_domain
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 from spectre.Spectral import Basis
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
@@ -362,17 +363,25 @@ def plot_power_monitors_command(
     domain = deserialize_domain[dim](volfile.get_domain(any_obs_id))
     all_block_groups = list(domain.block_groups.keys())
     all_block_names = [block.name for block in domain.blocks]
-    if list_blocks or not block_or_group_names:
+    if list_blocks:
         import rich.columns
 
         rich.print(rich.columns.Columns(all_block_groups + all_block_names))
         return
+    elif not block_or_group_names:
+        raise RequiredChoiceError(
+            (
+                "Specify '--block' / '-b' to select (possibly multiple) blocks"
+                " or block groups to analyze."
+            ),
+            choices=all_block_groups + all_block_names,
+        )
     # Validate block and group names
     for name in block_or_group_names:
         if not (name in all_block_groups or name in all_block_names):
-            raise click.UsageError(
-                f"'{name}' matches no block or group name. "
-                f"Available names are: {all_block_groups + all_block_names}"
+            raise RequiredChoiceError(
+                f"'{name}' matches no block or block group.",
+                choices=all_block_groups + all_block_names,
             )
 
     # Print available elements IDs
