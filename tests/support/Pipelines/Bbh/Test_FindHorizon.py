@@ -119,7 +119,7 @@ class TestFindHorizon(unittest.TestCase):
             obs_id=0,
             obs_time=0.0,
             initial_guess=Strahlkorper(
-                l_max=12, m_max=12, radius=2.5, center=[0.0, 0.0, 0.0]
+                l_max=12, radius=2.5, center=[0.0, 0.0, 0.0]
             ),
         )
         # Horizon should be a sphere of coordinate radius 2.0

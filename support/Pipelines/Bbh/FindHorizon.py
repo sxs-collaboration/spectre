@@ -272,7 +272,7 @@ def find_horizon(
 def find_horizon_command(l_max, initial_radius, center, vars, **kwargs):
     """Find an apparent horizon in volume data."""
     initial_guess = Strahlkorper(
-        l_max=l_max, m_max=l_max, radius=initial_radius, center=center
+        l_max=l_max, radius=initial_radius, center=center
     )
     horizon, quantities = find_horizon(
         initial_guess=initial_guess,

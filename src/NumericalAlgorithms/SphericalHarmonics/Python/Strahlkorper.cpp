@@ -21,9 +21,8 @@ namespace py = pybind11;
 namespace ylm::py_bindings {
 void bind_strahlkorper(pybind11::module& m) {  // NOLINT
   py::class_<ylm::Strahlkorper<Frame::Inertial>>(m, "Strahlkorper")
-      .def(py::init<size_t, size_t, double, std::array<double, 3>>(),
-           py::arg("l_max"), py::arg("m_max"), py::arg("radius"),
-           py::arg("center"))
+      .def(py::init<size_t, double, std::array<double, 3>>(), py::arg("l_max"),
+           py::arg("radius"), py::arg("center"))
       .def(py::init<size_t, size_t, const DataVector&, std::array<double, 3>>(),
            py::arg("l_max"), py::arg("m_max"),
            py::arg("radius_at_collocation_points"), py::arg("center"))
