@@ -4,8 +4,11 @@
 # If you change this file please push the new images to DockerHub. If you do not
 # have permission to push to DockerHub please coordinate with someone who does.
 # Since changes to this image affect our testing infrastructure it is important
-# all changes be carefully reviewed before they are pushed. This is how you use
-# GitHub Actions to build and push the new images:
+# all changes be carefully reviewed before they are pushed.
+#
+# GitHub Actions (recommended method)
+#
+# This is how you use GitHub Actions to build and push the new images:
 #
 # 1. Push your changes to the `develop` branch on your fork of the spectre
 #    repository on GitHub (https://github.com/YOURNAME/spectre).
@@ -18,11 +21,31 @@
 # 4. The images will be built and pushed to DockerHub and CI will run over them.
 #    See `.github/workflows/BuildDockerContainer.yaml` for details.
 #
-# Alternatively, you can build the container locally and push it, but remember
-# to build and push both x86 and ARM versions. Docker must be run as root on
-# your machine. There are 3 different images in this Dockerfile. Here is how to
-# build them for x86_64 (for Apple Silicon, replace linux/amd64 with
-# linux/arm64):
+# Local build & push (can be tedious and time consuming)
+#
+# What you need to push to Dockerhub is:
+#
+#   Arch: linux/amd64,linux/arm64
+#         # Note that cross compiling can be slow, so for testing just do amd64
+#         # or arm64 depending on your CPU. Docker builds the image in a way
+#         # that when someone clones it, depending on their CPU architecture,
+#         # they will get either the amd64 or arm64 version.
+#   Ubuntu version: 22.04 (default)
+#   --platform linux/amd64,linux/arm64
+#   --target dev
+#   -t sxscollaboration/spectre:dev
+#
+#   Arch: linux/amd64
+#   Ubuntu version: 18.04
+#   --platform linux/amd64
+#   --target dev
+#   -t sxscollaboration/spectre:dev1804
+#   --build-arg UBUNTU_VERSION=18.04
+#
+# Docker must be run as root on your machine. There are 4 different images in
+# this Dockerfile, but you can ignore the 'deploy_static_execs_and_libs' since
+# it's only used in CI. Here is how to build them for x86_64 (for Apple Silicon,
+# replace linux/amd64 with linux/arm64):
 #
 # 1. `dev`
 #
@@ -31,18 +54,38 @@
 #                 --platform linux/amd64 \
 #                 -f ./containers/Dockerfile.buildenv .
 #
-# 2. `ci` (this should use the `dev` image you just built for most of it)
+#   # Cross compiling for AMD64 and ARM64:
+#   #
+#   # To check if you can cross compile, first run
+#   #   docker buildx ls
+#   # This will look something like:
+#   #  NAME/NODE        DRIVER/ENDPOINT                   STATUS    BUILDKIT   \
+#   #    PLATFORMS
+#   # default*          docker
+#   #  \_ default       \_ default                       running   v0.13.2    \
+#   #     linux/amd64, linux/amd64/v2, linux/amd64/v3, linux/386
+#   #
+#   # Note that the DRIVER/ENDPOINT is 'docker'. We want to instead use
+#   # 'docker-container'. To do this, run
+#   #    docker buildx create --name mybuilder --bootstrap --use
+#   # When you run 'docker buildx ls' now you should see
+#   #  mybuilder*       docker-container
+#   # The asterisk means docker will use this builder. You are now ready to
+#   # cross-compile code.
+#   #
+#   # This is documented at:
+#   #   https://docs.docker.com/build/building/multi-platform/#getting-started
 #
-#   cd $SPECTRE_HOME
-#   docker build --target ci -t sxscollaboration/spectre:ci \
-#                 --platform linux/amd64 \
-#                 -f ./containers/Dockerfile.buildenv .
+#   docker buildx build --target dev -t sxscollaboration/spectre:dev \
+#                 --platform linux/amd64,linux/arm64 \
+#                 -f ./containers/Dockerfile.buildenv --push .
 #
-# 3. `demo` To build this, it is recommended to first push the `dev` and `ci`
-#    images to DockerHub as the `demo` image uses the remote `dev` image.
+# You DO NOT need to push the below. CI does that automatically.
+#
+# 3. `demo` To build this, you MUST first push the `dev` images to
+#           DockerHub as the `demo` image uses the remote `dev` image.
 #
 #   docker push sxscollaboration/spectre:dev
-#   docker push sxscollaboration/spectre:ci
 #
 #    To build `demo`, you must be in $SPECTRE_ROOT and there cannot be a
 #    directory named `build` in $SPECTRE_ROOT because the image will create
@@ -57,8 +100,21 @@
 #    and then to push the `demo` image to DockerHub:
 #
 #   docker push sxscollaboration/spectre:demo
-
-FROM ubuntu:22.04 AS base
+#
+# 4. `deploy_static_execs_and_libs` This is used for building various
+#    executables and libraries with an old enough version of glibc so
+#    that the resulting executables are quite portable. This must be built
+#    as, but should generally only be done in CI unless you are debugging
+#    the container build.
+#
+#  docker build --target deploy_static_execs_and_libs --platform linux/amd64 \
+#    --build-arg UBUNTU_VERSION=18.04 -f ./containers/Dockerfile.buildenv .
+#
+#    That is, it uses Ubuntu 18.04 and AMD64. There is no support for ARM and
+#    newer versions of Ubuntu will limit compatibility.
+ARG UBUNTU_VERSION=22.04
+FROM ubuntu:${UBUNTU_VERSION} AS base
+ARG UBUNTU_VERSION=22.04
 
 # See
 # https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
@@ -66,22 +122,40 @@ FROM ubuntu:22.04 AS base
 ARG TARGETARCH
 
 # Install add-apt-repository and basic tools
-RUN apt-get update -y \
-    && apt-get install -y software-properties-common wget git
+RUN if [ ${UBUNTU_VERSION} = 18.04 ] && [ "$TARGETARCH" = "arm64" ]; then \
+    echo "Cannot use Ubuntu 18.04 with ARM" && exit 1; fi && apt-get update -y \
+    && apt-get install -y software-properties-common wget git \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    add-apt-repository ppa:ubuntu-toolchain-r/test; fi
 
 # Add LLVM apt repository for newer versions of clang
 RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
     tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc \
-    && add-apt-repository -y \
-    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    add-apt-repository -y \
+    'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-17 main'; \
+    elif [ ${UBUNTU_VERSION} = 22.04 ]; then \
+    add-apt-repository -y \
+    'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main'; \
+    else \
+    exit 1; \
+    fi
 
 # Install compilers and build tools
 RUN apt-get update -y \
-    && apt-get install -y \
-        gcc g++ gfortran \
-        clang clang-format clang-tidy lld \
-        bison flex libncurses-dev \
-        gdb cmake autoconf automake ninja-build lcov
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    apt-get install -y gcc-9 g++-9 gfortran-9 clang-17; \
+    else \
+    apt-get install -y gcc g++ gfortran clang clang-format clang-tidy cmake; \
+    fi \
+    && apt-get install -y lld bison flex libncurses-dev gdb autoconf automake \
+    ninja-build lcov \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    wget -O cmake-install.sh \
+    "https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-linux-x86_64.sh" \
+    && chmod +x ./cmake-install.sh && ./cmake-install.sh --skip-license \
+    --prefix=/usr/local && rm cmake-install.sh; \
+    fi
 
 # Install SpECTRE dependencies that are available through apt
 #
@@ -95,13 +169,32 @@ RUN apt-get update -y \
     && apt-get install -y \
         libopenblas-dev liblapack-dev \
         libgsl-dev \
-        libjemalloc2 libjemalloc-dev \
         libboost-dev libboost-program-options-dev \
         libboost-thread-dev libboost-tools-dev libssl-dev \
         libhdf5-dev hdf5-tools \
         libarpack2-dev \
-        libyaml-cpp-dev \
-        libbenchmark-dev
+        libbenchmark-dev \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz \
+    && tar xf 0.8.0.tar.gz && mkdir ./yaml-cpp-0.8.0/build \
+    && cd ./yaml-cpp-0.8.0/build \
+    && cmake \
+    -D CMAKE_C_COMPILER=gcc-9 \
+    -D CMAKE_CXX_COMPILER=g++-9 \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D YAML_BUILD_SHARED_LIBS=OFF \
+    -D BUILD_SHARED_LIBS=OFF \
+    -D YAML_ENABLE_PIC=ON \
+    -D POSITION_INDEPENDENT_CODE=ON \
+    -D YAML_CPP_BUILD_TESTS=OFF \
+    -D YAML_CPP_BUILD_CONTRIB=OFF \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    .. \
+    && make ${PARALLEL_MAKE_ARG} && make install \
+    && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0; \
+    else \
+    apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev; \
+    fi
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -110,12 +203,30 @@ RUN apt-get update -y \
 # - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
 #   to aid in tracking down anything that depends on python 2. However, many
 #   scripts use `/usr/bin/env python` to find python so restore it.
+# - We install h5py explicitly from binary so that cross compilation is quicker.
 COPY support/Python/requirements.txt requirements.txt
 COPY support/Python/dev_requirements.txt dev_requirements.txt
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
-    && apt-get install -y python3-pip python-is-python3 \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
+    libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev \
+    make \
+    && wget https://www.python.org/ftp/python/3.10.1/Python-3.10.1.tgz \
+    && tar -xf Python-3.10.1.tgz && cd ./Python-3.10.1 \
+    && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
+    && make altinstall && cd ../ \
+    && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
+    && python3.10 -m pip install --upgrade pip \
+    && pip3.10 --no-cache-dir install pybind11~=2.6.1 \
+    && pip3.10 --no-cache-dir install --only-binary=h5py -r requirements.txt \
+    -r dev_requirements.txt; \
+    else \
+    apt-get install -y python3-pip python-is-python3 pkg-config \
     && pip3 --no-cache-dir install pybind11~=2.6.1 \
-    && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
+    && pip3 --no-cache-dir install --only-binary=h5py -r requirements.txt \
+    -r dev_requirements.txt; \
+    fi \
     && rm requirements.txt dev_requirements.txt
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
@@ -124,24 +235,34 @@ RUN apt-get update -y \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
-
+# WARNING: We switch to an empty container briefly!!!
+#
 # Cross-compile dependencies on the host system that take a long time to build
 # when emulating the target architecture. The `xbuild` stage is an image with
 # the same architecture as the host. It compiles the packages for the target
 # architecture. Then we can copy the compiled packages into the `base` image.
+#
+# Note: because we only cross-compile the latest Ubuntu version we support,
+# we just delete the executables on Ubuntu 18.04 and disable doxygen and ccache.
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS xbuild
 WORKDIR /root
 COPY --from=xx / /
 ARG TARGETPLATFORM
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j4
+
 # Install build dependencies for the host system
 RUN apt-get update -y \
-    && apt-get install -y cmake clang lld wget
+    && apt-get install -y cmake clang lld flex bison wget git
+
 # Install build dependencies for the target architecture
+#
+# We need libstd++ to work on the target arch that we are cross-compiling for
 RUN xx-apt-get update -y \
     && xx-apt-get install -y --no-install-recommends \
-        libc6-dev libstdc++-10-dev bison flex
+    libc6-dev libstdc++-10-dev
+
 # - Ccache
 RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.tar.gz -O ccache.tar.gz \
     && tar -xzf ccache.tar.gz \
@@ -163,13 +284,30 @@ RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxy
         -D CMAKE_BUILD_TYPE=Release .. \
     && make $PARALLEL_MAKE_ARG
 
+# WARNING: We now copy the things from the "xbuild" container/image into the
+#          xbuild-test container to make sure the copying works. We do the
+#          actual copy into the spectre container below.
+#
 FROM base AS xbuild-test
+ARG UBUNTU_VERSION=22.04
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 RUN ccache --version
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
 RUN doxygen --version
+COPY --from=xbuild /usr/local/bin/cmake /work/
+RUN /work/cmake --version \
+    && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
+    rm /usr/local/bin/ccache /usr/local/bin/doxygen; \
+    else \
+    mv /work/cmake /usr/local/bin; \
+    fi
 
 
+# WARNING: We are now back in the spectre container. We create two base
+#          images for the 2 possible target architectures and then select
+#          the one we need as the `dev` container below. This is essentially an
+#          `if` in the Dockerfile.
+#
 # Install software that we can't install through apt. We have to distinguish
 # between different architectures for many of those.
 FROM base AS base-amd64
@@ -182,6 +320,7 @@ ENV TEX_ARCH=aarch64
 
 FROM base-${TARGETARCH} AS dev
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 
 ARG PARALLEL_MAKE_ARG=-j4
 ARG DEBIAN_FRONTEND=noninteractive
@@ -267,7 +406,7 @@ RUN git clone --single-branch --branch v7.0.1 --depth 1 \
     && cd /work/charm_7_0_0 \
     && git checkout v7.0.1 \
     && git apply /work/v7.0.0.patch \
-    && ./build LIBS multicore-linux-${CHARM_ARCH} gcc \
+    && ./build charm++ multicore-linux-${CHARM_ARCH} gcc \
         ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production \
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-${CHARM_ARCH}-gcc"
@@ -304,37 +443,6 @@ RUN apt-get -y clean
 WORKDIR /work
 
 
-# Everything we need to run tests on CI on GitHub. We install most things
-# on-demand on CI for a number of reasons:
-# - Smaller container size and hence less disk usage on CI, where space is very
-#   limited.
-# - Flexibility to change compilers, Python versions, etc. without rebuilding
-#   the container.
-# - There's no advantage to "pre-downloading" things available through apt here
-#   in the Dockerfile, since the amount of data to download on CI will be the
-#   same.
-FROM dev as ci
-ARG TARGETARCH
-
-# When building this image individually, the PARALLEL_MAKE_ARG from above is not
-# remembered (and it doesn't hurt to redefine the env variable).
-ARG PARALLEL_MAKE_ARG=-j4
-
-# Install OpenMPI
-RUN apt-get install -y libopenmpi-dev
-
-# We build an mpi version of charm (with clang) because many of our production
-# environments have charm built with mpi and we should test that.
-RUN cd /work/charm_7_0_0 \
-    && ./build LIBS mpi-linux-${CHARM_ARCH}-smp clang \
-        ${PARALLEL_MAKE_ARG} -g -O2 --build-shared --with-production
-
-# Remove the apt-get cache in order to reduce image size
-RUN apt-get -y clean
-
-WORKDIR /work
-
-
 # Deploy compiled executables to an image that can be run on HPC systems.
 # - We could also compile in the dev container and then copy the executables to
 #   a minimal deploy container to reduce its size. That requires keeping track
@@ -347,6 +455,7 @@ WORKDIR /work
 FROM sxscollaboration/spectre:dev AS deploy
 ARG BUILDARCH
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j2
 
 COPY . spectre/
@@ -383,6 +492,7 @@ CMD ["--help"]
 FROM deploy AS demo
 ARG BUILDARCH
 ARG TARGETARCH
+ARG UBUNTU_VERSION=22.04
 ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files
@@ -413,3 +523,51 @@ RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
     ; fi
 
 RUN pip3 --no-cache-dir install jupyterlab
+
+# Used for compiling the static executables and libraries during CI so that we
+# can release statically linked versions of our executables and libraries
+# for other groups to use.
+FROM sxscollaboration/spectre:dev1804 AS deploy_static_execs_and_libs
+ARG BUILDARCH
+ARG TARGETARCH
+ARG UBUNTU_VERSION=18.04
+ARG PARALLEL_MAKE_ARG=-j4
+
+WORKDIR /work
+
+COPY . spectre/
+
+# Build SpECTRE with as many static libraries as possible. Because we cannot
+# statically link to glibc (it is unsupported and causes a lot of undefined
+# behavior) we build using Ubuntu 18.04 to support a fairly old version of
+# glibc.
+RUN if [ ${UBUNTU_VERSION} != 18.04 ] && [ "$TARGETARCH" != "amd64" ]; then \
+    echo "Must use Ubuntu 18.04 with AMD64 for deploying static execs" \
+    && exit 1; fi \
+    && mkdir spectre/build && cd spectre/build \
+    && cmake \
+    -D CMAKE_C_COMPILER=gcc-9 \
+    -D CMAKE_CXX_COMPILER=g++-9 \
+    -D CMAKE_Fortran_COMPILER=gfortran-9 \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D DEBUG_SYMBOLS=OFF \
+    -D BUILD_PYTHON_BINDINGS=OFF \
+    -D MEMORY_ALLOCATOR=SYSTEM \
+    -D BUILD_SHARED_LIBS=OFF \
+    -D ENABLE_PARAVIEW=OFF \
+    -D Boost_USE_STATIC_LIBS=ON \
+    -D BLA_STATIC=ON \
+    -D GSL_STATIC=ON \
+    -D HDF5_USE_STATIC_LIBRARIES=ON \
+    -D SPECTRE_Fortran_STATIC_LIBS=ON \
+    -D YAMLCPP_STATIC_LIBRARY=ON \
+    -D USE_GIT_HOOKS=OFF \
+    -D OVERRIDE_ARCH=haswell \
+    -D USE_LD=gold \
+    -D gfortran=/usr/lib/gcc/x86_64-linux-gnu/9/libgfortran.a \
+    -D quadmath=/usr/lib/gcc/x86_64-linux-gnu/9/libquadmath.a \
+    -D BUILD_DOCS=OFF \
+    -D USE_CCACHE=OFF \
+    .. \
+    && make ${PARALLEL_MAKE_ARG} CharacteristicExtract ReduceCceWorldtube \
+    && ctest -LE unit -R CharacteristicExtract

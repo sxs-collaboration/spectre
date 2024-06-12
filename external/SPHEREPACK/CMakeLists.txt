@@ -54,6 +54,12 @@ set_source_files_properties(${FILES_WITH_DELETED_FEATURES}
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 if(SPECTRE_Fortran_STATIC_LIBS)
+  if (NOT $gfortran)
+    find_library(gfortran NAMES libgfortran.a)
+  endif()
+  if (NOT $quadmath)
+    find_library(quadmath NAMES libquadmath.a)
+  endif()
   target_link_libraries(
     ${LIBRARY}
     PRIVATE
