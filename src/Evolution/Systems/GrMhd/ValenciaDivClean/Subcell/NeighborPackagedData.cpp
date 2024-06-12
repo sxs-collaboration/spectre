@@ -278,5 +278,5 @@ template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
     3, grmhd::ValenciaDivClean::subcell::NeighborPackagedData>(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
-        const TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>
+        TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>
         received_temporal_id_and_data);

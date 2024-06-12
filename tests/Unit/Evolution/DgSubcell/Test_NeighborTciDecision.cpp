@@ -27,8 +27,7 @@ void test() {
   using Type = typename tag::type;
   auto box = db::create<db::AddSimpleTags<tag>>(Type{});
   using StorageType = evolution::dg::BoundaryData<Dim>;
-  std::pair<const TimeStepId, DirectionalIdMap<Dim, StorageType>>
-      neighbor_data{};
+  std::pair<TimeStepId, DirectionalIdMap<Dim, StorageType>> neighbor_data{};
   const DirectionalId<Dim> id_xi{Direction<Dim>::lower_xi(), ElementId<Dim>{0}};
   neighbor_data.second.insert(std::pair{id_xi, StorageType{}});
   neighbor_data.second.at(id_xi).tci_status = 10;

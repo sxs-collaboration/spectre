@@ -225,14 +225,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 }  // namespace NewtonianEuler::subcell
 
-#define INSTANTIATION(r, data)                                                \
-  template void evolution::dg::subcell::neighbor_reconstructed_face_solution< \
-      DIM(data), NewtonianEuler::subcell::NeighborPackagedData>(              \
-      gsl::not_null<db::Access*> box,                                         \
-      gsl::not_null<                                                          \
-          std::pair<const TimeStepId,                                         \
-                    DirectionalIdMap<                                         \
-                        DIM(data), evolution::dg::BoundaryData<DIM(data)>>>*> \
+#define INSTANTIATION(r, data)                                                 \
+  template void evolution::dg::subcell::neighbor_reconstructed_face_solution<  \
+      DIM(data), NewtonianEuler::subcell::NeighborPackagedData>(               \
+      gsl::not_null<db::Access*> box,                                          \
+      gsl::not_null<std::pair<                                                 \
+          TimeStepId, DirectionalIdMap<DIM(data), evolution::dg::BoundaryData< \
+                                                      DIM(data)>>>*>           \
           received_temporal_id_and_data);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

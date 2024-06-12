@@ -26,7 +26,7 @@ namespace evolution::dg::subcell {
 template <size_t Dim>
 void neighbor_tci_decision(
     const gsl::not_null<db::Access*> box,
-    const std::pair<const TimeStepId,
+    const std::pair<TimeStepId,
                     DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>&
         received_temporal_id_and_data) {
   db::mutate<subcell::Tags::NeighborTciDecisions<Dim>>(
@@ -48,7 +48,7 @@ void neighbor_tci_decision(
 #define INSTANTIATION(r, data)                                                 \
   template void neighbor_tci_decision(                                         \
       gsl::not_null<db::Access*> box,                                          \
-      const std::pair<const TimeStepId,                                        \
+      const std::pair<TimeStepId,                                              \
                       DirectionalIdMap<                                        \
                           DIM(data), evolution::dg::BoundaryData<DIM(data)>>>& \
           received_temporal_id_and_data);

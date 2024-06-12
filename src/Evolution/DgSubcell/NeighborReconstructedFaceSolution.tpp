@@ -32,7 +32,7 @@ template <size_t VolumeDim, typename DgComputeSubcellNeighborPackagedData>
 void neighbor_reconstructed_face_solution(
     const gsl::not_null<db::Access*> box,
     const gsl::not_null<std::pair<
-        const TimeStepId,
+        TimeStepId,
         DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
         received_temporal_id_and_data) {
   db::mutate<subcell::Tags::GhostDataForReconstruction<VolumeDim>,
