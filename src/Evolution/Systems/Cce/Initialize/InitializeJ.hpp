@@ -201,9 +201,13 @@ double iteratively_adapt_angular_coordinates(
       ERROR(
           "Iterative solve for surface coordinates of initial data failed. The "
           "strain is too large to be fully eliminated by a well-behaved "
-          "alteration of the spherical mesh. For this data, please use an "
-          "alternative initial data generator such as "
-          "`InitializeJInverseCubic`.");
+          "alteration of the spherical mesh. This could be an indication that "
+          "there is an issue with the worldtube data. If you are confident "
+          "the worldtube data is correct, then please use an alternative "
+          "initial data generator such as `InverseCubic`. If that fails, "
+          "please double check that your spherical harmonic modes are decaying "
+          "correctly with increasing (l,m).\nError: "
+          << max_error << "\nError threshold: " << error_threshold);
     }
     ++number_of_steps;
     if (max_error < tolerance or number_of_steps > max_steps) {
