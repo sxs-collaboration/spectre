@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -88,6 +89,34 @@ struct InverseSpatialMetricOnExcisionSurface {
   using type = tnsr::II<DataVector, 3, Frame>;
 };
 
+/// \ingroup ControlSystemGroup
+/// Holds the spatial christoffel symbol on the `ExcisionSurface`
+template <typename Frame>
+struct SpatialChristoffelSecondKind {
+  using type = tnsr::Ijj<DataVector, 3, Frame>;
+};
+
+/// \ingroup ControlSystemGroup
+/// Holds the spatial derivative of the lapse on the `ExcisionSurface`
+template <typename Frame>
+struct DerivLapse {
+  using type = tnsr::i<DataVector, 3, Frame>;
+};
+
+/// \ingroup ControlSystemGroup
+/// Holds the spatial derivative of the `Frame` shift on the `ExcisionSurface`
+template <typename Frame>
+struct DerivShift {
+  using type = tnsr::iJ<DataVector, 3, Frame>;
+};
+
+/// \ingroup ControlSystemGroup
+/// Holds the inverse jacobian between frames on the `ExcisionSurface`
+template <typename SrcFrame, typename DestFrame>
+struct InverseJacobian {
+  using type = ::InverseJacobian<DataVector, 3, SrcFrame, DestFrame>;
+};
+
 /*!
  * \ingroup ControlSystemGroup
  * \brief A queue tag that holds a TaggedTuple of all quantities needed for the
@@ -100,14 +129,19 @@ struct InverseSpatialMetricOnExcisionSurface {
  * - `control_system::QueueTags::ShiftyQuantity`
  * - `control_system::QueueTags::SpatialMetricOnExcisionSurface`
  * - `control_system::QueueTags::InverseSpatialMetricOnExcisionSurface`
+ * - `control_system::QueueTags::SpatialChristoffelSecondKind`
+ * - `control_system::QueueTags::DerivLapse`
+ * - `control_system::QueueTags::DerivShift`
+ * - `control_system::QueueTags::InverseJacobian<::Frame::Grid, Frame>`
  */
 template <typename Frame>
 struct SizeExcisionQuantities {
-  using type =
-      tuples::TaggedTuple<ExcisionSurface<Frame>, LapseOnExcisionSurface,
-                          ShiftyQuantity<Frame>,
-                          SpatialMetricOnExcisionSurface<Frame>,
-                          InverseSpatialMetricOnExcisionSurface<Frame>>;
+  using type = tuples::TaggedTuple<
+      ExcisionSurface<Frame>, LapseOnExcisionSurface, ShiftyQuantity<Frame>,
+      SpatialMetricOnExcisionSurface<Frame>,
+      InverseSpatialMetricOnExcisionSurface<Frame>,
+      SpatialChristoffelSecondKind<Frame>, DerivLapse<Frame>, DerivShift<Frame>,
+      InverseJacobian<::Frame::Grid, Frame>>;
 };
 
 /*!

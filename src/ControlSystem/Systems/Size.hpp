@@ -19,11 +19,15 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -97,7 +101,14 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
             ylm::Tags::Strahlkorper<Frame::Grid>, gr::Tags::Lapse<DataVector>,
             gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
             gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
-            gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>>,
+            gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>,
+            gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                   Frame::Distorted>,
+            ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                          Frame::Distorted>,
+            ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+                          tmpl::size_t<3>, Frame::Distorted>,
+            domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Distorted>>,
         tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>,
                    ylm::Tags::TimeDerivStrahlkorper<Frame::Distorted>>>;
 
@@ -111,6 +122,11 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
             spatial_metric_on_excision_surface,
         const tnsr::II<DataVector, 3, Frame::Distorted>&
             inverse_spatial_metric_on_excision_surface,
+        const tnsr::Ijj<DataVector, 3, Frame::Distorted>& spatial_christoffel,
+        const tnsr::i<DataVector, 3, Frame::Distorted>& deriv_lapse,
+        const tnsr::iJ<DataVector, 3, Frame::Distorted>& deriv_shift,
+        const ::InverseJacobian<DataVector, 3, Frame::Grid, Frame::Distorted>&
+            inv_jac_grid_to_distorted,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
@@ -135,7 +151,8 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::SizeExcisionQuantities<Frame::Distorted>::type{
               std::move(distorted_excision_surface), lapse, shifty_quantity,
               spatial_metric_on_excision_surface,
-              inverse_spatial_metric_on_excision_surface});
+              inverse_spatial_metric_on_excision_surface, spatial_christoffel,
+              deriv_lapse, deriv_shift, inv_jac_grid_to_distorted});
     }
 
     template <typename Metavariables>

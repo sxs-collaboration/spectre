@@ -39,6 +39,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -47,7 +48,7 @@
 
 namespace Frame {
 struct Distorted;
-}
+}  // namespace Frame
 
 namespace {
 constexpr double Y00 = 0.25 * M_2_SQRTPI;
@@ -165,6 +166,21 @@ void test_size_error_one_step(
   const auto& inverse_spatial_metric =
       get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>>(
           vars);
+  const auto& spatial_christoffel = get<
+      gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, Frame::Distorted>>(
+      vars);
+  const auto& deriv_lapse =
+      get<gr::AnalyticSolution<3>::DerivLapse<DataVector, Frame::Distorted>>(
+          vars);
+  const auto& deriv_shift =
+      get<gr::AnalyticSolution<3>::DerivShift<DataVector, Frame::Distorted>>(
+          vars);
+  // Just make it identity for this test
+  InverseJacobian<DataVector, 3, Frame::Grid, Frame::Distorted>
+      invjac_grid_to_distorted{get(lapse)};
+  get<0, 0>(invjac_grid_to_distorted) = 1.0;
+  get<1, 1>(invjac_grid_to_distorted) = 1.0;
+  get<2, 2>(invjac_grid_to_distorted) = 1.0;
 
   // Now compute shifty quantity, which is distorted shift plus
   // grid-to-distorted frame-velocity.
@@ -258,7 +274,9 @@ void test_size_error_one_step(
         control_system::QueueTags::SizeHorizonQuantities<Frame::Distorted>;
     tuples::TaggedTuple<ExcisionQuantities, HorizonQuantities> measurements{
         ExcisionQuantities::type{excision_boundary, lapse, shifty_quantity,
-                                 spatial_metric, inverse_spatial_metric},
+                                 spatial_metric, inverse_spatial_metric,
+                                 spatial_christoffel, deriv_lapse, deriv_shift,
+                                 invjac_grid_to_distorted},
         HorizonQuantities::type{horizon, time_deriv_horizon}};
 
     const double control_error_from_class =

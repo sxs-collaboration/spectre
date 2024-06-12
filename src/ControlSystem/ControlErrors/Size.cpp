@@ -87,6 +87,28 @@ Size<DerivOrder, Horizon>::Size(
 }
 
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+Size<DerivOrder, Horizon>::Size(const Size<DerivOrder, Horizon>& rhs) {
+  *this = rhs;
+}
+
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+Size<DerivOrder, Horizon>& Size<DerivOrder, Horizon>::operator=(
+    const Size<DerivOrder, Horizon>& rhs) {
+  smoother_tuner_ = rhs.smoother_tuner_;
+  horizon_coef_averager_ = rhs.horizon_coef_averager_;
+  info_ = rhs.info_;
+  char_speed_predictor_ = rhs.char_speed_predictor_;
+  comoving_char_speed_predictor_ = rhs.comoving_char_speed_predictor_;
+  delta_radius_predictor_ = rhs.delta_radius_predictor_;
+  state_history_ = rhs.state_history_;
+  legend_ = rhs.legend_;
+  subfile_name_ = rhs.subfile_name_;
+  delta_r_drift_outward_options_ = rhs.delta_r_drift_outward_options_;
+
+  return *this;
+}
+
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
 std::optional<double> Size<DerivOrder, Horizon>::get_suggested_timescale()
     const {
   return info_.suggested_time_scale;
