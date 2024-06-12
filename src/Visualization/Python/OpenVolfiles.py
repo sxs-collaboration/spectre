@@ -13,6 +13,8 @@ import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.Visualization.ReadH5 import list_observations, select_observation
 
+logger = logging.getLogger(__name__)
+
 
 def open_volfiles(
     h5_files: Iterable[str], subfile_name: str, obs_id: Optional[int] = None
@@ -96,7 +98,8 @@ def open_volfiles_command(
             "--subfile-name",
             "-d",
             help=(
-                "Name of subfile within h5 file containing volume data to plot."
+                "Name of subfile within H5 file containing volume data to plot."
+                " Optional if the H5 files have only one subfile."
             ),
         )
         @click.option(
@@ -163,6 +166,10 @@ def open_volfiles_command(
                     available_subfiles = open_h5_file.all_vol_files()
                 if len(available_subfiles) == 1:
                     subfile_name = available_subfiles[0]
+                    logger.info(
+                        f"Selected subfile {subfile_name}"
+                        " (the only available one)."
+                    )
                 else:
                     rich.print(rich.columns.Columns(available_subfiles))
                     return
@@ -186,6 +193,10 @@ def open_volfiles_command(
                     )
                     if len(all_obs_ids) == 1:
                         obs_id, obs_time = all_obs_ids[0], all_obs_times[0]
+                        logger.info(
+                            f"Selected observation at t = {obs_time:g}"
+                            " (the only available one)."
+                        )
                     else:
                         raise click.UsageError(
                             "Specify '--step' or '--time' to select an"

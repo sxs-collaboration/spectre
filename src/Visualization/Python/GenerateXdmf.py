@@ -313,6 +313,9 @@ def generate_xdmf(
         )
         if len(subfiles) == 1:
             subfile_name = subfiles[0]
+            logger.info(
+                f"Selected subfile {subfile_name} (the only available one)."
+            )
         else:
             rich.print(rich.columns.Columns(subfiles))
             return

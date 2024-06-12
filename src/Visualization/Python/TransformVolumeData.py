@@ -791,6 +791,9 @@ def transform_volume_data_command(
         available_subfile_names = open_h5_files[0].all_vol_files()
         if len(available_subfile_names) == 1:
             subfile_name = available_subfile_names[0]
+            logger.info(
+                f"Selected subfile {subfile_name} (the only available one)."
+            )
         else:
             import rich.columns
 
