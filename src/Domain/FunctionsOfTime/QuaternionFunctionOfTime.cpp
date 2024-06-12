@@ -337,6 +337,26 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
 }
 
 template <size_t MaxDeriv>
+double QuaternionFunctionOfTime<MaxDeriv>::full_angle(const double t) const {
+  double angle = 0.0;
+  auto it = stored_quaternions_and_times_.begin();
+  if (it == stored_quaternions_and_times_.end()) {
+    return angle;
+  }
+  angle += std::abs(
+    2.0 * (acos(quat_func(t)[0][0]) - acos(it->data.R_component_1())));
+  auto it_2 = stored_quaternions_and_times_.begin();
+  it_2++;
+  while (it_2 != stored_quaternions_and_times_.end()) {
+    angle += std::abs(2.0 * (acos(it->data.R_component_1()) -
+                             acos(it_2->data.R_component_1())));
+    it++;
+    it_2++;
+  }
+  return angle;
+}
+
+template <size_t MaxDeriv>
 bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return lhs.stored_quaternions_and_times_ ==
