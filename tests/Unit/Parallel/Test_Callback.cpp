@@ -12,13 +12,16 @@
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmMain.tpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -49,6 +52,7 @@ struct InitializeValue {
 };
 
 struct IncrementValue {
+  // Simple action call
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
@@ -57,14 +61,39 @@ struct IncrementValue {
     db::mutate<Value>([](const gsl::not_null<double*> value) { *value += 1.0; },
                       make_not_null(&box));
   }
+
+  // Threaded action call
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagList>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) {
+    db::mutate<Value>([](const gsl::not_null<double*> value) { *value += 1.0; },
+                      make_not_null(&box));
+  }
 };
 
 struct MultiplyValueByFactor {
+  // Simple action call
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double factor) {
+    db::mutate<Value>(
+        [&factor](const gsl::not_null<double*> value) { *value *= factor; },
+        make_not_null(&box));
+  }
+
+  // Threaded action call
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagList>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const double factor) {
     db::mutate<Value>(
         [&factor](const gsl::not_null<double*> value) { *value *= factor; },
         make_not_null(&box));
@@ -89,7 +118,15 @@ struct DoubleValueOfElement0 {
           [](const gsl::not_null<double*> value) { *value *= 2.0; },
           make_not_null(&box));
       if (db::get<TimesIterableActionCalled>(box) < 5) {
-        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+        if constexpr (Parallel::is_array_v<ParallelComponent>) {
+          return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+        } else if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+          return {Parallel::AlgorithmExecution::Halt, std::nullopt};
+        } else {
+          ERROR(
+              "Only know how to handle arrays and nodegroups in "
+              "DoubleValueOfElement0");
+        }
       }
     }
     return {Parallel::AlgorithmExecution::Halt, std::nullopt};
@@ -104,9 +141,18 @@ struct CheckValue {
                     const ArrayIndex& array_index) {
     const double value = db::get<Value>(box);
     const int counter = db::get<TimesIterableActionCalled>(box);
+    CAPTURE_FOR_ERROR(value);
+    CAPTURE_FOR_ERROR(counter);
     if (array_index == 0) {
-      SPECTRE_PARALLEL_REQUIRE(value == 32.0);
-      SPECTRE_PARALLEL_REQUIRE(counter == 5);
+      if constexpr (Parallel::is_array_v<ParallelComponent>) {
+        SPECTRE_PARALLEL_REQUIRE(value == 32.0);
+        SPECTRE_PARALLEL_REQUIRE(counter == 5);
+      } else if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
+        SPECTRE_PARALLEL_REQUIRE(value == 14.0);
+        SPECTRE_PARALLEL_REQUIRE(counter == 1);
+      } else {
+        ERROR("Only know how to handle arrays and nodegroups in CheckValue");
+      }
     } else {
       SPECTRE_PARALLEL_REQUIRE(counter == 1);
       SPECTRE_PARALLEL_REQUIRE(value == (array_index == 1 ? 6.0 : 27.0));
@@ -158,11 +204,37 @@ struct TestArray {
   }
 };
 
+template <class Metavariables>
+struct TestNodegroup {
+  using chare_type = Parallel::Algorithms::Nodegroup;
+  using array_index = int;
+  using metavariables = Metavariables;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        tmpl::list<InitializeValue>>,
+                 Parallel::PhaseActions<Parallel::Phase::Execute,
+                                        tmpl::list<DoubleValueOfElement0>>>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const Parallel::Phase next_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *Parallel::local_branch(global_cache);
+    auto& my_proxy =
+        Parallel::get_parallel_component<TestNodegroup>(local_cache);
+    my_proxy.start_phase(next_phase);
+    if (next_phase == Parallel::Phase::Testing) {
+      Parallel::simple_action<CheckValue>(my_proxy);
+    }
+  }
+};
+
 struct RunCallbacks {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     auto& array_proxy =
         Parallel::get_parallel_component<TestArray<Metavariables>>(cache);
@@ -195,7 +267,19 @@ struct RunCallbacks {
     callbacks.emplace_back(
         std::make_unique<Parallel::SimpleActionCallback<
             MultiplyValueByFactor, decltype(proxy_2), double>>(proxy_2, 2.0));
+
+    auto& nodegroup_proxy =
+        Parallel::get_parallel_component<TestNodegroup<Metavariables>>(cache);
+    callbacks.emplace_back(
+        std::make_unique<Parallel::ThreadedActionCallback<
+            IncrementValue, std::decay_t<decltype(nodegroup_proxy)>>>(
+            nodegroup_proxy));
+    callbacks.emplace_back(
+        std::make_unique<Parallel::ThreadedActionCallback<
+            MultiplyValueByFactor, std::decay_t<decltype(nodegroup_proxy)>,
+            double>>(nodegroup_proxy, 2.0));
     for (const auto& callback : callbacks) {
+      callback->register_with_charm();
       callback->invoke();
     }
     auto pupped_callbacks = serialize_and_deserialize(callbacks);
@@ -230,6 +314,7 @@ struct TestSingleton {
 
 struct TestMetavariables {
   using component_list = tmpl::list<TestSingleton<TestMetavariables>,
+                                    TestNodegroup<TestMetavariables>,
                                     TestArray<TestMetavariables>>;
 
   static constexpr Options::String help =
@@ -242,23 +327,9 @@ struct TestMetavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };
-
-void register_callbacks() {
-  register_classes_with_charm(
-      tmpl::list<
-          Parallel::PerformAlgorithmCallback<
-              CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>>,
-          Parallel::SimpleActionCallback<
-              IncrementValue,
-              CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>>,
-          Parallel::SimpleActionCallback<
-              MultiplyValueByFactor,
-              CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>,
-              double>>{});
-}
 }  //  namespace
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<TestMetavariables>();
-  Parallel::charmxx::register_init_node_and_proc({&register_callbacks}, {});
+  Parallel::charmxx::register_init_node_and_proc({}, {});
 }
