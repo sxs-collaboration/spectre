@@ -46,9 +46,9 @@ def _parse_modes(ctx, param, all_modes):
     callback=_parse_modes,
     required=True,
     help=(
-        "Which mode to plot. Specified as 'l,m'. Will plot both real and"
-        " imaginary components unless '--real' or '--imag' are specified. Can"
-        " be specified multiple times."
+        "Which mode to plot. Specified as 'l,m' (e.g. '--modes 2,2'). Will plot"
+        " both real and imaginary components unless '--real' or '--imag' are"
+        " specified. Can be specified multiple times."
     ),
 )
 @click.option(
