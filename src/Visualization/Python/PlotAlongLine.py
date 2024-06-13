@@ -48,13 +48,16 @@ def points_on_line(
 
 @click.command(name="along-line")
 @open_volfiles_command(obs_id_required=False, multiple_vars=True)
+# Line options
+# These aren't marked "required" so the user can omit them when using options
+# like '--list-vars'.
 @click.option(
     "--line-start",
     "-A",
     callback=parse_point,
     help=(
         "Coordinates of the start of the line through the volume data. "
-        "Specify as comma-separated list, e.g. '0,0,0'."
+        "Specify as comma-separated list, e.g. '0,0,0'.  [required]"
     ),
 )
 @click.option(
@@ -63,7 +66,7 @@ def points_on_line(
     callback=parse_point,
     help=(
         "Coordinates of the end of the line through the volume data. "
-        "Specify as comma-separated list, e.g. '1,0,0'."
+        "Specify as comma-separated list, e.g. '1,0,0'.  [required]"
     ),
 )
 @click.option(

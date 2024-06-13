@@ -187,11 +187,12 @@ See \ref spectre_using_python "Using SpECTRE's Python"
   subdirectory structures. Passing many files to a script is easy for the user
   by using a glob (note: don't take the glob as a string argument, take the
   expanded list of files directly using `click.argument(..., nargs=-1,
-  type=click.Path(...))`).
+  type=click.Path(...), required=True)`).
+  Note that Click recommends to avoid `required=True` here but to [gracefully
+  degrade to a noop](https://click.palletsprojects.com/en/8.1.x/arguments/#variadic-arguments)
+  instead, but that's confusing for the user.
 - Never overwrite or delete files without prompting the user or asking them to
   run with `--force`.
-- When the input to a script is empty, [gracefully degrade to a
-  noop](https://click.palletsprojects.com/en/8.1.x/arguments/#variadic-arguments).
 - When the user did not specify an option, print possible values for it and
   return instead of raising an exception. For example, print the subfile names
   in an H5 file if no subfile name was specified. This allows the user to make

@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
     "reduction_files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 # Plotting options
 @click.option(
@@ -74,10 +76,12 @@ def plot_memory_monitors_command(
         h5file = h5py.File(h5_filename, "r")
         memory_monitor_dir = h5file.get("MemoryMonitors")
         if memory_monitor_dir is None:
-            raise click.UsageError(
-                "Unable to open group 'MemoryMonitors' from h5 file"
-                f" {h5_filename}. Available subfiles are:\n"
-                f" {available_subfiles(h5file, extension='.dat')}"
+            raise RequiredChoiceError(
+                (
+                    "Unable to open group 'MemoryMonitors' from h5 file"
+                    f" {h5_filename}."
+                ),
+                choices=available_subfiles(h5file, extension=".dat"),
             )
 
         return list(memory_monitor_dir.keys())
@@ -91,10 +95,12 @@ def plot_memory_monitors_command(
         subfile_path = f"/MemoryMonitors/{subfile_name}"
         subfile = h5file.get(subfile_path)
         if subfile_path is None:
-            raise click.UsageError(
-                f"Unable to open memory file '{subfile_path}'"
-                f" from h5 file {h5_filename}. Available subfiles are:\n"
-                f" {available_subfiles(h5file, extension='.dat')}"
+            raise RequiredChoiceError(
+                (
+                    f"Unable to open memory subfile '{subfile_path}'"
+                    f" from h5 file {h5_filename}."
+                ),
+                choices=available_subfiles(h5file, extension=".dat"),
             )
 
         return to_dataframe(subfile).set_index("Time")

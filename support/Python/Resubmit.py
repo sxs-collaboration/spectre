@@ -84,6 +84,7 @@ def resubmit(
         path_type=Path,
     ),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--submit/--no-submit",

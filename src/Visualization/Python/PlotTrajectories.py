@@ -131,6 +131,7 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
 @click.argument(
     "h5_files",
     nargs=-1,
+    required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
 @click.option(
@@ -167,17 +168,14 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
 @apply_stylesheet_command()
 @show_or_save_plot_command()
 def plot_trajectories_command(
-    h5_files, subfile_name_aha, subfile_name_ahb, sample_rate, figsize=(10, 10)
+    h5_files, subfile_name_aha, subfile_name_ahb, sample_rate, figsize
 ):
     """Plot trajectories in inspiral simulation
 
     Concatenates partial trajectories from each h5 reductions files and plots
     full trajectories.
     """
-    reductionfiles = h5_files
-    AhA, AhB = import_A_and_B(
-        reductionfiles, subfile_name_aha, subfile_name_ahb
-    )
+    AhA, AhB = import_A_and_B(h5_files, subfile_name_aha, subfile_name_ahb)
     plot_trajectory(AhA, AhB, sample_rate, figsize)
 
 

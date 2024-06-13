@@ -77,6 +77,9 @@ def points_on_slice(
 
 @click.command(name="slice")
 @open_volfiles_command(obs_id_required=False, multiple_vars=False)
+# Slice options
+# These aren't marked "required" so the user can omit them when using options
+# like '--list-vars'.
 @click.option(
     "--slice-origin",
     "--slice-center",
@@ -84,7 +87,7 @@ def points_on_slice(
     callback=parse_point,
     help=(
         "Coordinates of the center of the slice through the volume "
-        "data. Specify as comma-separated list, e.g. '0,0,0'."
+        "data. Specify as comma-separated list, e.g. '0,0,0'.  [required]"
     ),
 )
 @click.option(
@@ -95,6 +98,7 @@ def points_on_slice(
     help=(
         "Extent in both directions of the slice through the volume data, e.g. "
         "'-X 10 10' for a 10x10 slice in the coordinates of the volume data."
+        "  [required]"
     ),
 )
 @click.option(
@@ -104,7 +108,7 @@ def points_on_slice(
     help=(
         "Direction of the normal of the slice through the volume "
         "data. Specify as comma-separated list, e.g. '0,0,1' for a slice "
-        "in the xy-plane."
+        "in the xy-plane.  [required]"
     ),
 )
 @click.option(
@@ -114,7 +118,7 @@ def points_on_slice(
     help=(
         "Up-direction of the slice through the volume "
         "data. Specify as comma-separated list, e.g. '0,1,0' so the y-axis "
-        "is the vertical axis of the plot."
+        "is the vertical axis of the plot.  [required]"
     ),
 )
 @click.option(

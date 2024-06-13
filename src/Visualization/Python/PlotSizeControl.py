@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
     "reduction_files",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--object-label",
@@ -80,10 +82,13 @@ def plot_size_control_command(
             )
             diagnostics_data = h5file.get(diagnostics_file_name)
             if diagnostics_data is None:
-                raise click.UsageError(
-                    f"Unable to open diagnostic file '{diagnostics_file_name}'"
-                    f" from h5 file {h5_filename}. Available subfiles are:\n"
-                    f" {available_subfiles(h5file, extension='.dat')}"
+                raise RequiredChoiceError(
+                    (
+                        "Unable to open diagnostic file"
+                        f" '{diagnostics_file_name}' from h5 file"
+                        f" {h5_filename}."
+                    ),
+                    choices=available_subfiles(h5file, extension=".dat"),
                 )
 
             return to_dataframe(diagnostics_data)

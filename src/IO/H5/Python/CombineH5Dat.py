@@ -26,10 +26,6 @@ def combine_h5_dat(h5files, output, force):
       output: Output filename. An extension '.h5' will be added if not present.
       force: If specified, overwrite output file if it already exists
     """
-
-    if len(h5files) == 0:
-        return
-
     # Copy first input file to output file
     if not output.endswith(".h5"):
         output += ".h5"
@@ -72,6 +68,7 @@ def combine_h5_dat(h5files, output, force):
         readable=True,
     ),
     nargs=-1,
+    required=True,
 )
 @click.option(
     "--output",

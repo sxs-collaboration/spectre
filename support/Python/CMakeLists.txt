@@ -7,6 +7,7 @@ particular supercomputer" OFF)
 spectre_python_add_module(
   support
   PYTHON_FILES
+  CliExceptions.py
   DirectoryStructure.py
   Machines.py
   Resubmit.py

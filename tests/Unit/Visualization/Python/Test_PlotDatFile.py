@@ -32,7 +32,7 @@ class TestPlotDatFile(unittest.TestCase):
         result = self.runner.invoke(
             plot_dat_command, [self.filename], catch_exceptions=False
         )
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 2)
         self.assertIn("TimeSteps2.dat", result.output)
 
     def test_nonexistent_subfile(self):
@@ -42,7 +42,9 @@ class TestPlotDatFile(unittest.TestCase):
             catch_exceptions=False,
         )
         self.assertNotEqual(result.exit_code, 0)
-        self.assertIn("Unable to open dat file 'TimeSteps.dat'.", result.output)
+        self.assertIn(
+            "Unable to open dat subfile 'TimeSteps.dat'.", result.output
+        )
 
     def test_legend_only(self):
         # Invoke with the subfile name but no functions to plot

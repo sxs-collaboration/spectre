@@ -27,6 +27,7 @@ from spectre.DataStructures.Tensor import (
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
+from spectre.support.CliExceptions import RequiredChoiceError
 
 logger = logging.getLogger(__name__)
 
@@ -651,6 +652,7 @@ def parse_kernels(kernels, exec_files, map_input_names):
 @click.argument(
     "h5files",
     nargs=-1,
+    required=True,
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
 )
 @click.option(
@@ -780,10 +782,6 @@ def transform_volume_data_command(
     The output would be written to a dataset named 'ShiftMagnitude', which is
     the function name transformed to CamelCase.
     """
-    # Script should be a noop if input files are empty
-    if not h5files:
-        return
-
     open_h5_files = [
         spectre_h5.H5File(filename, "r" if integrate else "a")
         for filename in h5files
@@ -794,11 +792,17 @@ def transform_volume_data_command(
         available_subfile_names = open_h5_files[0].all_vol_files()
         if len(available_subfile_names) == 1:
             subfile_name = available_subfile_names[0]
+            logger.info(
+                f"Selected subfile {subfile_name} (the only available one)."
+            )
         else:
-            import rich.columns
-
-            rich.print(rich.columns.Columns())
-            return
+            raise RequiredChoiceError(
+                (
+                    "Specify '--subfile-name' / '-d' to select a"
+                    " subfile containing volume data."
+                ),
+                choices=available_subfile_names,
+            )
 
     volfiles = [h5file.get_vol(subfile_name) for h5file in open_h5_files]
 

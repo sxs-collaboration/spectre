@@ -11,6 +11,7 @@ import h5py
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -205,10 +206,12 @@ def plot_cce_command(
         )
         cce_subfile = h5file.get(cce_subfile_name)
         if cce_subfile is None:
-            raise click.UsageError(
-                f"Could not find Cce subfile {cce_subfile} in H5 file"
-                f" {h5_filename}. Available subfiles"
-                f" are:\n{available_subfiles(h5file, extension='cce')}"
+            raise RequiredChoiceError(
+                (
+                    f"Could not find Cce subfile {cce_subfile} in H5 file"
+                    f" {h5_filename}."
+                ),
+                choices=cce_subfiles,
             )
 
         suffix = ".dat" if backward_cce_group is not None else ""

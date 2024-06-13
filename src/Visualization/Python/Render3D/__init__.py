@@ -3,6 +3,8 @@
 
 import click
 
+from spectre.support.CliExceptions import RequiredChoiceError
+
 
 class Render3DCommands(click.MultiCommand):
     def list_commands(self, ctx):
@@ -24,9 +26,9 @@ class Render3DCommands(click.MultiCommand):
             return render_domain_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
-        raise click.UsageError(
-            f"The command '{name}' is not implemented. "
-            f"Available commands are:\n{available_commands}"
+        raise RequiredChoiceError(
+            f"The command '{name}' is not implemented.",
+            choices=available_commands,
         )
 
 
