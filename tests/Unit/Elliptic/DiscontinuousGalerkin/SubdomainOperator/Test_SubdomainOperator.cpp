@@ -847,7 +847,7 @@ struct InitializeConstitutiveRelation
 // the timeout for the test because going over so many elements is relatively
 // expensive but also very important to ensure that the subdomain operator
 // handles all of these geometries correctly.
-// [[TimeOut, 25]]
+// [[TimeOut, 40]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
   // Needed for Brick
   using VariantType = std::variant<
