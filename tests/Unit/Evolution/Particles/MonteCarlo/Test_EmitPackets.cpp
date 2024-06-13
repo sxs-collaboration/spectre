@@ -27,11 +27,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
   MAKE_GENERATOR(generator);
   const Mesh<3> mesh(3, Spectral::Basis::FiniteDifference,
                      Spectral::Quadrature::CellCentered);
+  const size_t num_ghost_zones = 0;
 
   // Zero vector for tensor creations
   DataVector zero_dv(27, 0.0);
 
-  std::array<std::array<DataVector, 2>, 2> emission_in_cells = {
+  std::array<std::array<DataVector, 2>, 2> emissivity_in_cells = {
       std::array<DataVector, 2>{{zero_dv, zero_dv}},
       std::array<DataVector, 2>{{zero_dv, zero_dv}}};
   std::array<DataVector, 2> single_packet_energy = {zero_dv, zero_dv};
@@ -43,6 +44,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
   Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid> jacobian =
       make_with_value<Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>>(
           zero_dv, 0.0);
+  Scalar<DataVector> cell_proper_volume =
+    make_with_value<Scalar<DataVector> >(zero_dv, 2.0);
 
   // Set data
   for (size_t s = 0; s < 2; s++) {
@@ -50,8 +53,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
       gsl::at(single_packet_energy, s)[i] = 2.0;
       for (size_t g = 0; g < 2; g++) {
         if (i == 25) {
-          gsl::at(gsl::at(emission_in_cells, s), g)[i] =
-              static_cast<double>(4 - 4 * s);
+          gsl::at(gsl::at(emissivity_in_cells, s), g)[i] =
+              static_cast<double>(2 - 2 * s);
         }
       }
     }
@@ -92,9 +95,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
 
   MonteCarloStruct.emit_packets(
       &all_packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, time, time_step, mesh, emission_in_cells,
-      single_packet_energy, energy_at_bin_center, lorentz_factor,
-      lower_spatial_four_velocity, jacobian, inverse_jacobian);
+      &coupling_rho_ye, time, time_step, mesh, num_ghost_zones,
+      emissivity_in_cells, single_packet_energy, energy_at_bin_center,
+      lorentz_factor, lower_spatial_four_velocity, jacobian, inverse_jacobian,
+      cell_proper_volume);
 
   // Check some things
   const size_t n_packets = all_packets.size();

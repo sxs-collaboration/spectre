@@ -195,15 +195,17 @@ void test_diffusion() {
     Particles::MonteCarlo::Packet packet(0, 1.0, 0, 0.0, 0.0, 0.0, 0.0, 1.0,
                                          1.0, 0.0, 0.0);
     double neutrino_energy = 1.0;
+    const size_t extended_idx = 0;
     Particles::MonteCarlo::diffuse_packet(
         &packet, &generator, &neutrino_energy, &coupling_tilde_tau,
-        &coupling_tilde_s, &coupling_rho_ye, time_step, diffusion_params,
-        absorption_opacity, scattering_opacity, lorentz_factor,
-        lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
-        d_inv_spatial_metric, spatial_metric, inv_spatial_metric, mesh_velocity,
-        inverse_jacobian_logical_to_inertial, jacobian_inertial_to_fluid,
-        inverse_jacobian_inertial_to_fluid, prefactor_diffusion_time_step,
-        prefactor_diffusion_four_velocity, prefactor_diffusion_time_vector);
+        &coupling_tilde_s, &coupling_rho_ye, extended_idx, time_step,
+        diffusion_params, absorption_opacity, scattering_opacity,
+        lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
+        d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
+        mesh_velocity, inverse_jacobian_logical_to_inertial,
+        jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid,
+        prefactor_diffusion_time_step, prefactor_diffusion_four_velocity,
+        prefactor_diffusion_time_vector);
 
     if (mesh_velocity.has_value()) {
       for (size_t d = 0; d < 3; d++) {
@@ -241,6 +243,7 @@ void test_diffusion() {
   for (size_t i = 0; i < 100000; i++) {
     Particles::MonteCarlo::Packet packet(0, 1.0, 0, 0.0, 0.0, 0.0, 0.0, 1.0,
                                          1.0, 0.0, 0.0);
+    const size_t extended_idx = 0;
     while (packet.time < time_step) {
       neutrino_energy = Particles::MonteCarlo::compute_fluid_frame_energy(
           packet, lorentz_factor, lower_spatial_four_velocity, lapse,
@@ -261,12 +264,11 @@ void test_diffusion() {
           lower_spatial_four_velocity.get(0)[0],
           lower_spatial_four_velocity.get(1)[0],
           lower_spatial_four_velocity.get(2)[0]};
-      Particles::MonteCarlo::AddCouplingTermsForPropagation
-        (&coupling_tilde_tau, &coupling_tilde_s,
-         &coupling_rho_ye, packet, dt_scattering,
-         absorption_opacity, 0.0, neutrino_energy,
-         get(lapse)[0], get(lorentz_factor)[0],
-         lower_spatial_four_velocity_packet);
+      Particles::MonteCarlo::AddCouplingTermsForPropagation(
+          &coupling_tilde_tau, &coupling_tilde_s, &coupling_rho_ye, packet,
+          extended_idx, dt_scattering, absorption_opacity, 0.0, neutrino_energy,
+          get(lapse)[0], get(lorentz_factor)[0],
+          lower_spatial_four_velocity_packet);
     }
 
     if (mesh_velocity.has_value()) {

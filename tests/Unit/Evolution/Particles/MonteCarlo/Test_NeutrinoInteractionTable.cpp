@@ -68,16 +68,15 @@ void test_explicit_interaction_table() {
   Scalar<DataVector> baryon_density(dv_size, exp(-5.0));
   Scalar<DataVector> temperature(dv_size, exp(-1.0));
   Scalar<DataVector> electron_fraction(dv_size, 0.055);
-  Scalar<DataVector> cell_proper_four_volume(dv_size, 1.5);
   interaction_table.get_neutrino_matter_interactions(
       &emission_in_cells, &absorption_opacity, &scattering_opacity,
-      electron_fraction, baryon_density, temperature, cell_proper_four_volume,
+      electron_fraction, baryon_density, temperature,
       minimum_temperature);
 
-  CHECK(gsl::at(gsl::at(emission_in_cells, 0), 0)[0] == 0.75);
-  CHECK(gsl::at(gsl::at(emission_in_cells, 0), 1)[0] == 6.75);
-  CHECK(gsl::at(gsl::at(emission_in_cells, 1), 0)[0] == 0.375);
-  CHECK(gsl::at(gsl::at(emission_in_cells, 1), 1)[0] == 3.375);
+  CHECK(gsl::at(gsl::at(emission_in_cells, 0), 0)[0] == 0.5);
+  CHECK(gsl::at(gsl::at(emission_in_cells, 0), 1)[0] == 4.5);
+  CHECK(gsl::at(gsl::at(emission_in_cells, 1), 0)[0] == 0.25);
+  CHECK(gsl::at(gsl::at(emission_in_cells, 1), 1)[0] == 2.25);
   CHECK(gsl::at(gsl::at(absorption_opacity, 0), 0)[0] == 0.5);
   CHECK(gsl::at(gsl::at(absorption_opacity, 0), 1)[0] == 4.5);
   CHECK(gsl::at(gsl::at(absorption_opacity, 1), 0)[0] == 0.25);
@@ -118,7 +117,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloInteractionTable",
   Scalar<DataVector> baryon_density(dv_size, 1.e-16);
   Scalar<DataVector> temperature(dv_size, 1.e-5);
   Scalar<DataVector> electron_fraction(dv_size, 0.0);
-  Scalar<DataVector> cell_proper_four_volume(dv_size, 1.5);
 
   // Point 1, 2 do not require interapolation, and are at points
   // (0,0,0) and (1,1,1) of the  table in rho x temp x ye
@@ -142,7 +140,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloInteractionTable",
 
   interaction_table.get_neutrino_matter_interactions(
       &emission_in_cells, &absorption_opacity, &scattering_opacity,
-      electron_fraction, baryon_density, temperature, cell_proper_four_volume,
+      electron_fraction, baryon_density, temperature,
       minimum_temperature);
 
   const std::array<double, 4>& table_neutrino_energies =

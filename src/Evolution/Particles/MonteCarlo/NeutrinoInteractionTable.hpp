@@ -35,9 +35,7 @@ class NeutrinoInteractionTable {
       std::vector<double> table_electron_fraction_);
 
   /// Interpolate interaction rates to given values of density,
-  /// temperature and electron fraction. We multiply the emissivity
-  /// by the cell's proper 4-volume to get the total energy emitted
-  /// per unit time in a cell.
+  /// temperature and electron fraction.
   void get_neutrino_matter_interactions(
       gsl::not_null<
           std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
@@ -51,7 +49,6 @@ class NeutrinoInteractionTable {
       const Scalar<DataVector>& electron_fraction,
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& temperature,
-      const Scalar<DataVector>& cell_proper_four_volume,
       const double& minimum_temperature) const;
 
   const std::array<double, EnergyBins>& get_neutrino_energies() const {

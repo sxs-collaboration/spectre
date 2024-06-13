@@ -76,14 +76,18 @@ std::array<double, 4> scatter_packet(
 
 /// Evolve a packet for dt = time_step, assuming that we can use
 /// the diffusion approximation.
+///
+/// The coupling terms include ghost zone information, while other
+/// tensors only include live points.
+/// extended_idx is the index of the packet in DataVectors including
+/// ghost zones.
 void diffuse_packet(
     gsl::not_null<Packet*> packet,
     gsl::not_null<std::mt19937*> random_number_generator,
     gsl::not_null<double*> neutrino_energy,
     gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-      coupling_tilde_s,
-    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> coupling_tilde_s,
+    gsl::not_null<Scalar<DataVector>*> coupling_rho_ye, size_t extended_idx,
     double time_step, const DiffusionMonteCarloParameters& diffusion_params,
     double absorption_opacity, double scattering_opacity,
     const Scalar<DataVector>& lorentz_factor,

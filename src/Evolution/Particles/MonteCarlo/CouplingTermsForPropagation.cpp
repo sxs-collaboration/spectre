@@ -12,18 +12,18 @@ using hydro::units::nuclear::proton_mass;
 
 namespace Particles::MonteCarlo {
 
-  void AddCouplingTermsForPropagation(
+void AddCouplingTermsForPropagation(
     const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         coupling_tilde_s,
     const gsl::not_null<Scalar<DataVector>*> coupling_rho_ye,
-    const Packet& packet, const double dt, const double absorption_opacity,
-    const double scattering_opacity, const double fluid_frame_energy,
-    const double lapse, const double lorentz_factor,
+    const Packet& packet, size_t extended_idx, const double dt,
+    const double absorption_opacity, const double scattering_opacity,
+    const double fluid_frame_energy, const double lapse,
+    const double lorentz_factor,
     const std::array<double, 3>& lower_spatial_four_velocity_packet) {
-  const size_t& idx = packet.index_of_closest_grid_point;
   // Energy coupling term.
-  coupling_tilde_tau->get()[idx] +=
+  coupling_tilde_tau->get()[extended_idx] +=
       dt * absorption_opacity * packet.number_of_neutrinos *
           fluid_frame_energy * lapse +
       dt * scattering_opacity * packet.number_of_neutrinos *
@@ -32,7 +32,7 @@ namespace Particles::MonteCarlo {
            fluid_frame_energy * lorentz_factor / packet.momentum_upper_t);
   // Momentum coupling term
   for (size_t d = 0; d < 3; d++) {
-    coupling_tilde_s->get(d)[idx] +=
+    coupling_tilde_s->get(d)[extended_idx] +=
         dt / packet.momentum_upper_t * packet.number_of_neutrinos *
         fluid_frame_energy *
         (packet.momentum.get(d) * (absorption_opacity + scattering_opacity) -
@@ -41,7 +41,7 @@ namespace Particles::MonteCarlo {
   }
   // Lepton number coupling term
   if (packet.species < 2) {
-    coupling_rho_ye->get()[idx] +=
+    coupling_rho_ye->get()[extended_idx] +=
         (packet.species == 0 ? 1.0 : -1.0) * proton_mass * dt /
         packet.momentum_upper_t * absorption_opacity * fluid_frame_energy *
         packet.number_of_neutrinos;
