@@ -10,7 +10,8 @@
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -639,8 +640,9 @@ void test_errors() {
 }  // namespace
 
 // [[TimeOut, 45]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObjectHelpers",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.Domain.Creators.TimeDependentOptions.BinaryCompactObject",
+    "[Domain][Unit]") {
   for (const auto& [include_expansion, include_rotation, include_translation,
                     include_shape_a, include_shape_b] :
        cartesian_product(make_array(true, false), make_array(true, false),

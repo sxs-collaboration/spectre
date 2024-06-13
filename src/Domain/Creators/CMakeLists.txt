@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   AlignedLattice.cpp
   BinaryCompactObject.cpp
-  BinaryCompactObjectHelpers.cpp
   BlockGroups.cpp
   Brick.cpp
   Cylinder.cpp
@@ -24,9 +23,7 @@ spectre_target_sources(
   RotatedBricks.cpp
   RotatedIntervals.cpp
   RotatedRectangles.cpp
-  ShapeMapOptions.cpp
   Sphere.cpp
-  SphereTimeDependentMaps.cpp
   )
 
 spectre_target_headers(
@@ -35,7 +32,6 @@ spectre_target_headers(
   HEADERS
   AlignedLattice.hpp
   BinaryCompactObject.hpp
-  BinaryCompactObjectHelpers.hpp
   BlockGroups.hpp
   Brick.hpp
   Cylinder.hpp
@@ -56,9 +52,7 @@ spectre_target_headers(
   RotatedBricks.hpp
   RotatedIntervals.hpp
   RotatedRectangles.hpp
-  ShapeMapOptions.hpp
   Sphere.hpp
-  SphereTimeDependentMaps.hpp
   )
 
 target_link_libraries(
@@ -82,3 +76,4 @@ target_link_libraries(
 add_subdirectory(Python)
 add_subdirectory(Tags)
 add_subdirectory(TimeDependence)
+add_subdirectory(TimeDependentOptions)

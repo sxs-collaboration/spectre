@@ -15,7 +15,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/Sphere.hpp"
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
 #include "Evolution/Ringdown/StrahlkorperCoefsInRingdownDistortedFrame.hpp"
 #include "Framework/TestHelpers.hpp"

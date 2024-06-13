@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 
 #include <array>
 #include <limits>
@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/Wedge.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -31,19 +31,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain::creators::bco {
-std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
-create_grid_anchors(const std::array<double, 3>& center_a,
-                    const std::array<double, 3>& center_b) {
-  std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>> result{};
-  result["Center" + get_output(ObjectLabel::A)] =
-      tnsr::I<double, 3, Frame::Grid>{center_a};
-  result["Center" + get_output(ObjectLabel::B)] =
-      tnsr::I<double, 3, Frame::Grid>{center_b};
-  result["Center"] = tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
-
-  return result;
-}
-
 template <bool IsCylindrical>
 TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     double initial_time,

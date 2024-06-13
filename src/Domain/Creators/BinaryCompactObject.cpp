@@ -32,9 +32,9 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/ExpandOverBlocks.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ExcisionSphere.hpp"
@@ -50,6 +50,20 @@ struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
+namespace bco {
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b) {
+  std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>> result{};
+  result["Center" + get_output(ObjectLabel::A)] =
+      tnsr::I<double, 3, Frame::Grid>{center_a};
+  result["Center" + get_output(ObjectLabel::B)] =
+      tnsr::I<double, 3, Frame::Grid>{center_b};
+  result["Center"] = tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
+
+  return result;
+}
+}  // namespace bco
 
 bool BinaryCompactObject::Object::is_excised() const {
   return inner_boundary_condition.has_value();
@@ -261,7 +275,7 @@ BinaryCompactObject::BinaryCompactObject(
     add_object_region("ObjectB", "Cube");   // 6 blocks
     first_outer_shell_block_ += 12;
   }
-  add_outer_region("Envelope");    // 10 blocks
+  add_outer_region("Envelope");  // 10 blocks
   first_outer_shell_block_ += 10;
   add_outer_region("OuterShell");  // 10 blocks
 

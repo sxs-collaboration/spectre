@@ -17,8 +17,8 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
@@ -39,22 +39,6 @@ struct Inertial;
 /// Namespace used to hold things used in both the BinaryCompactObject and
 /// CylindricalBinaryCompactObject domain creators.
 namespace domain::creators::bco {
-
-/*!
- * \brief Create a set of centers of objects for the binary domains.
- *
- * \details Will add the following centers to the set:
- *
- * - Center: The origin
- * - CenterA: Center of object A
- * - CenterB: Center of object B
- *
- * \return Object required by the DomainCreator%s
- */
-std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
-create_grid_anchors(const std::array<double, 3>& center_a,
-                    const std::array<double, 3>& center_b);
-
 namespace detail {
 // Convenience type alias
 template <typename... Maps>

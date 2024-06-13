@@ -10,7 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/Sphere.hpp"
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Domain/StrahlkorperTransformations.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
