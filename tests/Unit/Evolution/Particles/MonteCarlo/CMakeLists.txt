@@ -4,6 +4,7 @@
 set(LIBRARY "Test_MonteCarlo")
 
 set(LIBRARY_SOURCES
+  Test_CellCrossingTime.cpp
   Test_CellVolume.cpp
   Test_EmitPackets.cpp
   Test_EvolvePackets.cpp

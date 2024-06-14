@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CellCrossingTime.cpp
   CellVolume.cpp
   CouplingTermsForPropagation.cpp
   EvolvePackets.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CellCrossingTime.hpp
   CellVolume.hpp
   CouplingTermsForPropagation.hpp
   EmitPackets.tpp
