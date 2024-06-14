@@ -70,6 +70,11 @@ def _horizon_reduction_data(quantities):
     return legend, reduction_data
 
 
+def vec_to_string(vec):
+    """Convert a vector to a (readable) string."""
+    return f"[{', '.join(f'{v:g}' for v in vec)}]"
+
+
 def find_horizon(
     h5_files: Union[str, Sequence[str]],
     subfile_name: str,
@@ -177,7 +182,7 @@ def find_horizon(
         )
         logger.debug(
             f"Horizon finder iteration {iter_info.iteration}: {status}."
-            f" {iter_info.r_min:.3f} <= r <= {iter_info.r_max:.3f},"
+            f" {iter_info.r_min:g} <= r <= {iter_info.r_max:g},"
             f" {iter_info.min_residual:.2e} <= residual <="
             f" {iter_info.max_residual:.2e}"
         )
@@ -185,8 +190,9 @@ def find_horizon(
             continue
         elif int(status) > 0:
             logger.info(
-                f"Found horizon around {strahlkorper.expansion_center} with"
-                f" {iter_info.r_min:.3f} <= r <= {iter_info.r_max:.3f}."
+                "Found horizon around"
+                f" {vec_to_string(strahlkorper.expansion_center)} with"
+                f" {iter_info.r_min:g} <= r <= {iter_info.r_max:g}."
             )
             break
         else:
@@ -350,7 +356,7 @@ def find_horizon_command(l_max, initial_radius, center, vars, **kwargs):
             (
                 f"{value:g}"
                 if isinstance(value, float)
-                else "[" + ", ".join(f"{v:g}" for v in value) + "]"
+                else vec_to_string(value)
             ),
         )
     rich.print(table)
