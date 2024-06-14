@@ -59,6 +59,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainStructure
+  H5
   PUBLIC
   CoordinateMaps
   DataStructures
