@@ -62,6 +62,7 @@ spectre_target_headers(
   StaticVector.hpp
   StripeIterator.hpp
   TaggedContainers.hpp
+  TaggedVariant.hpp
   Tags.hpp
   TempBuffer.hpp
   Transpose.hpp
