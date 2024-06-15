@@ -133,12 +133,12 @@ class TestInitialData(unittest.TestCase):
         self.assertEqual(
             metadata["Next"],
             {
-                "Run": "spectre.Pipelines.Bbh.Inspiral:start_inspiral",
+                "Run": "spectre.Pipelines.Bbh.PostprocessId:postprocess_id",
                 "With": {
                     "id_input_file_path": "__file__",
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
-                    "continue_with_ringdown": True,
+                    "evolve": True,
                     "scheduler": "None",
                     "copy_executable": "None",
                     "submit_script_template": "None",
