@@ -94,6 +94,8 @@ struct FromVolumeFile<names::Expansion> : public detail::FromVolumeFileBase {
 
   std::array<DataVector, 3> expansion_values{};
   std::array<DataVector, 3> expansion_values_outer_boundary{};
+  double velocity_outer_boundary{};
+  double decay_timescale_outer_boundary{};
 };
 
 template <>
