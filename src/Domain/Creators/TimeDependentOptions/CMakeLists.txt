@@ -8,6 +8,7 @@ spectre_target_sources(
   FromVolumeFile.cpp
   ShapeMap.cpp
   Sphere.cpp
+  TranslationMap.cpp
 )
 
 spectre_target_headers(
@@ -18,4 +19,5 @@ spectre_target_headers(
   FromVolumeFile.hpp
   ShapeMap.hpp
   Sphere.hpp
+  TranslationMap.hpp
   )
