@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -419,6 +420,33 @@ std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
   return projection_matrices;
 }
 
+template <size_t DimMinusOne>
+size_t hash(const std::array<Spectral::ChildSize, DimMinusOne>& mortar_size) {
+  if constexpr (DimMinusOne == 2) {
+    ASSERT(mortar_size[0] != Spectral::ChildSize::Uninitialized and
+               mortar_size[1] != Spectral::ChildSize::Uninitialized,
+           "Cannot hash an uninitialized mortar_size: " << mortar_size[0] << " "
+                                                        << mortar_size[1]);
+    return (static_cast<size_t>(mortar_size[0]) - 1) % 2 +
+           2 * ((static_cast<size_t>(mortar_size[1]) - 1) % 2);
+  } else if constexpr (DimMinusOne == 1) {
+    ASSERT(mortar_size[0] != Spectral::ChildSize::Uninitialized,
+           "Cannot hash an uninitialized mortar_size: " << mortar_size[0]);
+    return (static_cast<size_t>(mortar_size[0]) - 1) % 2;
+  } else if constexpr (DimMinusOne == 0) {
+    (void)mortar_size;
+    return 0;
+  } else {
+    static_assert(DimMinusOne == 2 or DimMinusOne == 1 or DimMinusOne == 0);
+  }
+}
+
+template <size_t Dim>
+size_t MortarSizeHash<Dim>::operator()(
+    const std::array<Spectral::ChildSize, Dim - 1>& mortar_size) {
+  return hash(mortar_size);
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                 \
   template bool needs_projection(                                            \
@@ -438,8 +466,17 @@ std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
                         const Mesh<DIM(data)>& target_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
-
-#undef DIM
 #undef INSTANTIATE
 
+#define INSTANTIATE(r, data) template class MortarSizeHash<DIM(data)>;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+#undef INSTANTIATE
+
+#define INSTANTIATE(r, data)       \
+  template size_t hash<DIM(data)>( \
+      const std::array<Spectral::ChildSize, DIM(data)>& mortar_size);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
+#undef INSTANTIATE
+
+#undef DIM
 }  // namespace Spectral
