@@ -235,24 +235,44 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         0_st));
 
     const auto record_tensor_component_impl =
-        [&components, &interpolant](const auto& tensor,
-                                    const FloatingPointType floating_point_type,
-                                    const std::string& tag_name) {
+        [&components](DataVector&& tensor_component,
+                      const FloatingPointType floating_point_type,
+                      const std::string& component_name) {
+          if (floating_point_type == FloatingPointType::Float) {
+            components.emplace_back(component_name,
+                                    std::vector<float>{tensor_component.begin(),
+                                                       tensor_component.end()});
+          } else {
+            components.emplace_back(component_name,
+                                    std::move(tensor_component));
+          }
+        };
+
+    const auto record_tensor_components_impl =
+        [&record_tensor_component_impl, &interpolant](
+            const auto& tensor, const FloatingPointType floating_point_type,
+            const std::string& tag_name) {
+          using TensorType = std::decay_t<decltype(tensor)>;
+          using VectorType = typename TensorType::type;
           for (size_t i = 0; i < tensor.size(); ++i) {
-            const auto tensor_component = interpolant.interpolate(tensor[i]);
-            if (floating_point_type == FloatingPointType::Float) {
-              components.emplace_back(
-                  tag_name + tensor.component_suffix(i),
-                  std::vector<float>{tensor_component.begin(),
-                                     tensor_component.end()});
+            auto tensor_component = interpolant.interpolate(tensor[i]);
+            const std::string component_name =
+                tag_name + tensor.component_suffix(i);
+            if constexpr (std::is_same_v<VectorType, ComplexDataVector>) {
+              record_tensor_component_impl(real(tensor_component),
+                                           floating_point_type,
+                                           "Re(" + component_name + ")");
+              record_tensor_component_impl(imag(tensor_component),
+                                           floating_point_type,
+                                           "Im(" + component_name + ")");
             } else {
-              components.emplace_back(tag_name + tensor.component_suffix(i),
-                                      tensor_component);
+              record_tensor_component_impl(std::move(tensor_component),
+                                           floating_point_type, component_name);
             }
           }
         };
     const auto record_tensor_components =
-        [&box, &record_tensor_component_impl,
+        [&box, &record_tensor_components_impl,
          &variables_to_observe](const auto tensor_tag_v) {
           using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
           const std::string tag_name = db::tag_name<tensor_tag>();
@@ -267,8 +287,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
               return;
             }
             const auto floating_point_type = var_to_observe->second;
-            record_tensor_component_impl(value(tensor), floating_point_type,
-                                         tag_name);
+            record_tensor_components_impl(value(tensor), floating_point_type,
+                                          tag_name);
           }
         };
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(tmpl::type_<Tensors>{}));

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -121,37 +122,46 @@ struct Metavariables {
 
 // Helper tags
 namespace Tags {
+template <typename DataType>
 struct ScalarVarTimesTwo : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 
 template <typename ScalarVar>
-struct ScalarVarTimesTwoCompute : db::ComputeTag, ScalarVarTimesTwo {
-  using base = ScalarVarTimesTwo;
-  using return_type = Scalar<DataVector>;
+struct ScalarVarTimesTwoCompute
+    : db::ComputeTag,
+      ScalarVarTimesTwo<typename ScalarVar::type::type> {
+  using DataType = typename ScalarVar::type::type;
+  using base = ScalarVarTimesTwo<DataType>;
+  using return_type = Scalar<DataType>;
   using argument_tags = tmpl::list<ScalarVar>;
-  static void function(const gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& scalar_var) {
+  static void function(const gsl::not_null<Scalar<DataType>*> result,
+                       const Scalar<DataType>& scalar_var) {
     get(*result) = 2.0 * get(scalar_var);
   }
 };
 
+template <typename DataType>
 struct ScalarVarTimesThree : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 
 template <typename ScalarVar>
 struct ScalarVarTimesThreeCompute
     : db::ComputeTag,
-      ::Tags::Variables<tmpl::list<ScalarVarTimesThree>> {
-  using base = ScalarVarTimesThree;
+      ::Tags::Variables<
+          tmpl::list<ScalarVarTimesThree<typename ScalarVar::type::type>>> {
+  using DataType = typename ScalarVar::type::type;
+  using base = ScalarVarTimesThree<DataType>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<ScalarVar>;
   static void function(
-      const gsl::not_null<::Variables<tmpl::list<ScalarVarTimesThree>>*> result,
-      const Scalar<DataVector>& scalar_var) {
+      const gsl::not_null<
+          ::Variables<tmpl::list<ScalarVarTimesThree<DataType>>>*>
+          result,
+      const Scalar<DataType>& scalar_var) {
     result->initialize(get(scalar_var).size());
-    get(get<ScalarVarTimesThree>(*result)) = 3.0 * get(scalar_var);
+    get(get<ScalarVarTimesThree<DataType>>(*result)) = 3.0 * get(scalar_var);
   }
 };
 }  // namespace Tags
@@ -159,13 +169,14 @@ struct ScalarVarTimesThreeCompute
 // Test systems
 
 template <template <size_t, class...> class ObservationEvent,
-          typename ArraySectionId = void>
+          typename ArraySectionId = void, typename DataType = DataVector>
 struct ScalarSystem {
   using array_section_id = ArraySectionId;
+  using data_type = DataType;
 
   struct ScalarVar : db::SimpleTag {
     static std::string name() { return "Scalar"; }
-    using type = Scalar<DataVector>;
+    using type = Scalar<DataType>;
   };
 
   static constexpr size_t volume_dim = 1;
@@ -174,8 +185,9 @@ struct ScalarSystem {
   template <typename CheckComponent>
   static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
-    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo{});
-    check_component("ScalarVarTimesThree", Tags::ScalarVarTimesThree{});
+    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo<DataType>{});
+    check_component("ScalarVarTimesThree",
+                    Tags::ScalarVarTimesThree<DataType>{});
   }
 
   using all_vars_for_test = tmpl::list<ScalarVar>;
@@ -190,7 +202,7 @@ struct ScalarSystem {
 
         const tnsr::I<DataVector, 1>& x, const double t,
         const vars_for_test /*meta*/) {
-      return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
+      return {Scalar<DataType>{1.0 - t * get<0>(x)}};
     }
 
     void pup(PUP::er& /*p*/) {}  // NOLINT
@@ -200,7 +212,7 @@ struct ScalarSystem {
       volume_dim,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
-                      Tags::ScalarVarTimesThree,
+                      Tags::ScalarVarTimesThree<DataType>,
                       ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                       ::Tags::Error<ScalarVar>>,
       tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>,
@@ -225,38 +237,39 @@ struct ScalarSystem {
 };
 
 template <template <size_t, class...> class ObservationEvent,
-          typename ArraySectionId = void>
+          typename ArraySectionId = void, typename DataType = DataVector>
 struct ComplicatedSystem {
   using array_section_id = ArraySectionId;
+  using data_type = DataType;
 
   struct ScalarVar : db::SimpleTag {
     static std::string name() { return "Scalar"; }
-    using type = Scalar<DataVector>;
+    using type = Scalar<DataType>;
   };
 
   struct VectorVar : db::SimpleTag {
     static std::string name() { return "Vector"; }
-    using type = tnsr::I<DataVector, 2>;
+    using type = tnsr::I<DataType, 2>;
   };
 
   struct TensorVar : db::SimpleTag {
     static std::string name() { return "Tensor"; }
-    using type = tnsr::ii<DataVector, 2>;
+    using type = tnsr::ii<DataType, 2>;
   };
 
   struct TensorVar2 : db::SimpleTag {
     static std::string name() { return "Tensor2"; }
-    using type = tnsr::ii<DataVector, 2>;
+    using type = tnsr::ii<DataType, 2>;
   };
 
   struct UnobservedVar : db::SimpleTag {
     static std::string name() { return "Unobserved"; }
-    using type = Scalar<DataVector>;
+    using type = Scalar<DataType>;
   };
 
   struct UnobservedVar2 : db::SimpleTag {
     static std::string name() { return "Unobserved2"; }
-    using type = Scalar<DataVector>;
+    using type = Scalar<DataType>;
   };
 
   static constexpr size_t volume_dim = 2;
@@ -268,8 +281,9 @@ struct ComplicatedSystem {
   template <typename CheckComponent>
   static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
-    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo{});
-    check_component("ScalarVarTimesThree", Tags::ScalarVarTimesThree{});
+    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo<DataType>{});
+    check_component("ScalarVarTimesThree",
+                    Tags::ScalarVarTimesThree<DataType>{});
     check_component("Tensor_xx", TensorVar{}, 0, 0);
     check_component("Tensor_yx", TensorVar{}, 0, 1);
     check_component("Tensor_yy", TensorVar{}, 1, 1);
@@ -317,7 +331,7 @@ struct ComplicatedSystem {
       volume_dim,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
-                      Tags::ScalarVarTimesThree,
+                      Tags::ScalarVarTimesThree<DataType>,
                       ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                       ::Tags::Error<VectorVar>, ::Tags::Error<TensorVar2>>,
       tmpl::list<

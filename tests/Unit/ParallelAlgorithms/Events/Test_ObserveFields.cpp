@@ -101,6 +101,7 @@ void test_observe(
     const std::optional<std::string>& section = std::nullopt) {
   using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
+  using DataType = typename System::data_type;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   using coordinates_tag =
@@ -230,11 +231,11 @@ void test_observe(
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component = [&num_components_observed,
-                                tensor_data = &results.received_volume_data
-                                                   .tensor_components,
-                                &interpolant](const std::string& component,
-                                              const DataVector& expected) {
+  const auto check_component_impl = [&num_components_observed,
+                                     tensor_data = &results.received_volume_data
+                                                        .tensor_components,
+                                     &interpolant](const std::string& component,
+                                                   const DataVector& expected) {
     CAPTURE(*tensor_data);
     CAPTURE(component);
     const DataVector interpolated_expected = interpolant.interpolate(expected);
@@ -255,6 +256,17 @@ void test_observe(
     }
     ++num_components_observed;
   };
+  const auto check_component = [&check_component_impl](
+                                   const std::string& component,
+                                   const auto& expected) {
+    if constexpr (std::is_same_v<std::decay_t<decltype(expected)>,
+                                 ComplexDataVector>) {
+      check_component_impl("Re(" + component + ")", real(expected));
+      check_component_impl("Im(" + component + ")", imag(expected));
+    } else {
+      check_component_impl(component, expected);
+    }
+  };
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
@@ -265,14 +277,14 @@ void test_observe(
                          const auto... indices) {
     using tag = decltype(tag_v);
     if constexpr (std::is_same_v<tag, TestHelpers::dg::Events::ObserveFields::
-                                          Tags::ScalarVarTimesTwo>) {
+                                          Tags::ScalarVarTimesTwo<DataType>>) {
       check_component(
-          name, DataVector{2.0 * get<typename System::ScalarVar>(vars).get()});
-    } else if constexpr (std::is_same_v<tag,
-                                        TestHelpers::dg::Events::ObserveFields::
-                                            Tags::ScalarVarTimesThree>) {
+          name, DataType{2.0 * get<typename System::ScalarVar>(vars).get()});
+    } else if constexpr (std::is_same_v<
+                             tag, TestHelpers::dg::Events::ObserveFields::Tags::
+                                      ScalarVarTimesThree<DataType>>) {
       check_component(
-          name, DataVector{3.0 * get<typename System::ScalarVar>(vars).get()});
+          name, DataType{3.0 * get<typename System::ScalarVar>(vars).get()});
     } else {
       if constexpr (tmpl::list_contains_v<
                         typename std::decay_t<decltype(prim_vars)>::tags_list,
@@ -339,9 +351,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
     using system_no_section = ScalarSystem<dg::Events::ObserveFields, void>;
     using system_with_section =
         ScalarSystem<dg::Events::ObserveFields, TestSectionIdTag>;
+    using system_complex =
+        ScalarSystem<dg::Events::ObserveFields, void, ComplexDataVector>;
     INVOKE_TEST_FUNCTION(
         test_system, (interpolating_mesh_str, std::nullopt, true, std::nullopt),
-        (system_no_section, system_with_section,
+        (system_no_section, system_with_section, system_complex,
          ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(
         test_system, (interpolating_mesh_str, std::nullopt, true, "Section0"),
