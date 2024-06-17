@@ -10,7 +10,9 @@
 #include <variant>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
 #if (not defined(__clang__) and __GNUC__ < 12) or \
@@ -33,6 +35,40 @@ struct MoveOnly {
   using type = std::unique_ptr<int>;
 };
 }  // namespace Tags
+
+struct CreatedStruct {
+  struct Opt1 {
+    static constexpr Options::String help = "First option";
+    using type = int;
+  };
+  struct Opt2 {
+    static constexpr Options::String help = "Second option";
+    using type = int;
+  };
+  static constexpr Options::String help = "The struct";
+  using options = tmpl::list<Opt1, Opt2>;
+  CreatedStruct() = default;
+  CreatedStruct(const int opt1_in, const int opt2_in)
+      : opt1(opt1_in), opt2(opt2_in) {}
+  int opt1{};
+  int opt2{};
+};
+
+bool operator==(const CreatedStruct& a, const CreatedStruct& b) {
+  return a.opt1 == b.opt1 and a.opt2 == b.opt2;
+}
+
+namespace OptionTags {
+struct Integer {
+  static constexpr Options::String help = "An integer";
+  using type = int;
+};
+
+struct Struct {
+  static constexpr Options::String help = "A struct";
+  using type = CreatedStruct;
+};
+}  // namespace OptionTags
 
 constexpr variants::TaggedVariant<Tags::Int> simple_variant(
     std::in_place_type<Tags::Int>, 4);
@@ -490,6 +526,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.TaggedVariant",
   test_serialization(
       variants::TaggedVariant<Tags::Int, Tags::Templated<double>>(
           std::in_place_type<Tags::Templated<double>>, 1.23));
+
+  // parsing
+  {
+    using Variant =
+        variants::TaggedVariant<OptionTags::Integer, OptionTags::Struct>;
+    CHECK(TestHelpers::test_creation<Variant>("Integer: 5") ==
+          Variant(std::in_place_type<OptionTags::Integer>, 5));
+    CHECK(TestHelpers::test_creation<Variant>("Struct:\n"
+                                              "  Opt1: 1\n"
+                                              "  Opt2: 3\n") ==
+          Variant(std::in_place_type<OptionTags::Struct>, 1, 3));
+  }
 
 #ifdef LIMITED_CONSTEXPR
   // Tested in static_asserts for other compilers.

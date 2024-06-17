@@ -10,6 +10,7 @@
 #include <utility>
 #include <variant>
 
+#include "Options/String.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -17,6 +18,10 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Options {
+template <typename... AlternativeLists>
+struct Alternatives;
+}  // namespace Options
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -141,6 +146,15 @@ class TaggedVariant {
   }
 
   void pup(PUP::er& p) { p | data_; }
+
+  /// A TaggedVariant over option tags can be parsed as any of them.
+  /// @{
+  static constexpr Options::String help = "One of multiple options";
+  using options = tmpl::list<Options::Alternatives<tmpl::list<Tags>...>>;
+  template <typename Tag>
+  explicit TaggedVariant(tmpl::list<Tag> /*meta*/, typename Tag::type value)
+      : TaggedVariant(std::in_place_type<Tag>, std::move(value)) {}
+  /// @}
 
  private:
   template <typename R, typename Variant, typename Tag, typename Visitor>
