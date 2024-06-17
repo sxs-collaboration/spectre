@@ -4,7 +4,6 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
