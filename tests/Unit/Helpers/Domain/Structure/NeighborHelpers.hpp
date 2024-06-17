@@ -67,11 +67,14 @@ std::vector<SegmentId> valid_neighbor_segments(const SegmentId& segment_id);
 std::vector<SegmentId> valid_neighbor_segments(const SegmentId& segment_id,
                                                const FaceType face_type);
 
-/// Valid Neighbors for an Element with `element_id` in the given `direction`
-/// with the given `face_type`
+/// \brief All valid neighbor configurations for an Element with `element_id` in
+/// the given `direction` with the given `face_type`
 ///
 /// \details FaceType needs to be passed in only if the Element abuts a Block
-/// boundary in the given `direction`
+/// boundary in the given `direction`3
+///
+/// The `generator` is used to assign a random orientation if the neighbor is
+/// in a different block, i.e. `face_type == FaceType::Block`.
 template <size_t Dim>
 std::vector<Neighbors<Dim>> valid_neighbors(
     gsl::not_null<std::mt19937*> generator, const ElementId<Dim>& element_id,
