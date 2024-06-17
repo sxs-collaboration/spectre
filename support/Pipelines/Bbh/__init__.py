@@ -13,6 +13,7 @@ class Bbh(click.MultiCommand):
         return [
             "find-horizon",
             "generate-id",
+            "postprocess-id",
             "start-inspiral",
             "start-ringdown",
         ]
@@ -26,6 +27,10 @@ class Bbh(click.MultiCommand):
             from .InitialData import generate_id_command
 
             return generate_id_command
+        if name == "postprocess-id":
+            from .PostprocessId import postprocess_id_command
+
+            return postprocess_id_command
         elif name == "start-inspiral":
             from .Inspiral import start_inspiral_command
 

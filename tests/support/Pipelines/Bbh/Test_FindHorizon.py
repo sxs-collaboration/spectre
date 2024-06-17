@@ -52,7 +52,12 @@ class TestFindHorizon(unittest.TestCase):
             unit_test_build_path(), "Pipelines/Bbh/FindHorizon"
         )
         self.h5_filename = os.path.join(self.test_dir, "TestData.h5")
-        self.output_filename = os.path.join(self.test_dir, "Horizons.h5")
+        self.output_surfaces_filename = os.path.join(
+            self.test_dir, "Surfaces.h5"
+        )
+        self.output_reductions_filename = os.path.join(
+            self.test_dir, "Reductions.h5"
+        )
         shutil.rmtree(self.test_dir, ignore_errors=True)
         os.makedirs(self.test_dir, exist_ok=True)
 
@@ -119,7 +124,7 @@ class TestFindHorizon(unittest.TestCase):
             obs_id=0,
             obs_time=0.0,
             initial_guess=Strahlkorper(
-                l_max=12, m_max=12, radius=2.5, center=[0.0, 0.0, 0.0]
+                l_max=12, radius=2.5, center=[0.0, 0.0, 0.0]
             ),
         )
         # Horizon should be a sphere of coordinate radius 2.0
@@ -150,17 +155,22 @@ class TestFindHorizon(unittest.TestCase):
                 "0.0",
                 "0.0",
                 "0.0",
-                "-o",
-                self.output_filename,
+                "--output-surfaces-file",
+                self.output_surfaces_filename,
                 "--output-coeffs-subfile",
                 "HorizonCoeffs",
                 "--output-coords-subfile",
                 "HorizonCoords",
+                "--output-reductions-file",
+                self.output_reductions_filename,
+                "--output-quantities-subfile",
+                "HorizonQuantities",
             ],
             catch_exceptions=True,
         )
         self.assertEqual(result.exit_code, 0, result.output)
-        self.assertTrue(os.path.exists(self.output_filename))
+        self.assertTrue(os.path.exists(self.output_surfaces_filename))
+        self.assertTrue(os.path.exists(self.output_reductions_filename))
 
 
 if __name__ == "__main__":

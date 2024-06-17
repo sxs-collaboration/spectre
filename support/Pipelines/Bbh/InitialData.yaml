@@ -5,19 +5,17 @@ Executable: SolveXcts
 ExpectedOutput:
   - BbhReductions.h5
   - BbhVolume*.h5
-{% if evolve %}
 Next:
-  Run: spectre.Pipelines.Bbh.Inspiral:start_inspiral
+  Run: spectre.Pipelines.Bbh.PostprocessId:postprocess_id
   With:
     id_input_file_path: __file__
     id_run_dir: ./
-    pipeline_dir: {{ pipeline_dir }}
-    continue_with_ringdown: True
+    pipeline_dir: {{ pipeline_dir | default("None") }}
+    evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
     submit: True
-{% endif %}
 
 ---
 

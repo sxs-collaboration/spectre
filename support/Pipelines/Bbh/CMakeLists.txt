@@ -11,6 +11,7 @@ spectre_python_add_module(
   InitialData.yaml
   Inspiral.py
   Inspiral.yaml
+  PostprocessId.py
   Ringdown.py
   Ringdown.yaml
 )
