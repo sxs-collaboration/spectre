@@ -95,7 +95,7 @@ DomainCreator:
       Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
       OuterShell:     [{{ P + 2 }}, {{ P + 2 }}, {{ P + 4 }}]
     TimeDependentMaps:
-      InitialTime: 0.0
+      InitialTime: &InitialTime 0.0
       ExpansionMap:
         InitialValues: [1.0, {{ RadialExpansionVelocity }}]
         AsymptoticVelocityOuterBoundary: -1.0e-6
@@ -106,17 +106,37 @@ DomainCreator:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
       ShapeMapA:
         LMax: &LMax 10
+{% if SpecDataDirectory is defined %}
         InitialValues: Spherical
+{% else %}
+        InitialValues:
+          H5Filename: &HorizonsFile "{{ HorizonsFile }}"
+          SubfileNames: ["{{ AhASubfileName }}"]
+          MatchTime: *InitialTime
+          MatchTimeEpsilon: Auto
+          SetL1CoefsToZero: True
+          CheckFrame: False
+{% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
       ShapeMapB:
         LMax: *LMax
+{% if SpecDataDirectory is defined %}
         InitialValues: Spherical
+{% else %}
+        InitialValues:
+          H5Filename: *HorizonsFile
+          SubfileNames: ["{{ AhBSubfileName }}"]
+          MatchTime: *InitialTime
+          MatchTimeEpsilon: Auto
+          SetL1CoefsToZero: True
+          CheckFrame: False
+{% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
 
 Evolution:
-  InitialTime: 0.0
+  InitialTime: *InitialTime
   InitialTimeStep: 0.0002
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you need it smaller you can edit it, but make sure to change the slab

@@ -73,6 +73,11 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
+        self.assertEqual(
+            params["HorizonsFile"], str(self.horizons_filename.resolve())
+        )
+        self.assertEqual(params["AhASubfileName"], "AhA/Coefficients")
+        self.assertEqual(params["AhBSubfileName"], "AhB/Coefficients")
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # Control system
