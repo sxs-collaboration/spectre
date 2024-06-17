@@ -17,6 +17,11 @@ class er;
 /// \endcond
 
 namespace amr {
+/// \brief Information about an element that is communicated by AMR actions
+///
+/// \details amr::Actions::EvaluateRefinementCriteria and
+/// amr::Actions::UpdateAmrDecision communicate the desired
+/// amr::Flag%s and Mesh of an element.
 template <size_t VolumeDim>
 struct Info {
   std::array<Flag, VolumeDim> flags;
