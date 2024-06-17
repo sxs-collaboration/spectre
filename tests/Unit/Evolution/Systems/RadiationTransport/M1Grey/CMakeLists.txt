@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Actions.cpp
   Test_Fluxes.cpp
+  Test_InitialGuess.cpp
   Test_M1Closure.cpp
   Test_M1HydroCoupling.cpp
   Test_Sources.cpp
