@@ -11,20 +11,19 @@ def lorentz_boost_matrix(velocity):
 
     prefactor = lorentz_factor / (1 + np.sqrt(1.0 - velocity_squared))
 
-    boost_matrix.itemset((0, 0), lorentz_factor)
+    boost_matrix[0, 0] = lorentz_factor
 
     for i in np.arange(0, velocity.size, 1):
-        boost_matrix.itemset((0, i + 1), lorentz_factor * velocity[i])
-        boost_matrix.itemset((i + 1, 0), lorentz_factor * velocity[i])
+        boost_matrix[0, i + 1] = lorentz_factor * velocity[i]
+        boost_matrix[i + 1, 0] = lorentz_factor * velocity[i]
         for j in np.arange(0, velocity.size, 1):
             if i == j:
-                boost_matrix.itemset(
-                    (i + 1, j + 1),
-                    (velocity[i] * velocity[j] * prefactor) + 1.0,
-                )
+                boost_matrix[i + 1, j + 1] = (
+                    velocity[i] * velocity[j] * prefactor
+                ) + 1.0
             else:
-                boost_matrix.itemset(
-                    (i + 1, j + 1), (velocity[i] * velocity[j] * prefactor)
+                boost_matrix[i + 1, j + 1] = (
+                    velocity[i] * velocity[j] * prefactor
                 )
 
     return boost_matrix
