@@ -275,6 +275,11 @@ authors:
   family-names: Thomas
   given-names: Sierra
   orcid: https://orcid.org/0000-0003-3574-2090
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Tommasini
+  given-names: Vittoria
+  orcid: https://orcid.org/0009-0001-4440-9751
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA and I. Physikalisches Institut, Universität zu Köln,
     Zülpicher Straße 77, 50937, Köln, Germany
@@ -297,8 +302,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2024-06-05
-doi: 10.5281/zenodo.11494680
+date-released: 2024-06-18
+doi: 10.5281/zenodo.12098412
 keywords:
 - Software
 - Astrophysics
@@ -1016,4 +1021,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2024.06.05
+version: 2024.06.18
