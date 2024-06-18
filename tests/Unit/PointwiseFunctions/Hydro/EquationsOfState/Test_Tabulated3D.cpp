@@ -194,6 +194,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Tabulated3D",
             get(eos.sound_speed_squared_from_density_and_temperature(
                 state[1], state[0], state[2])) <
         1.e-12);
+  CHECK(not eos.is_barotropic());
+  CHECK(not eos.is_equilibrium());
 
   const auto eps_interp =
       eos.specific_internal_energy_from_density_and_temperature(

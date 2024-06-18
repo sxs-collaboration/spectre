@@ -46,6 +46,7 @@ void check_exact() {
         EquationsOfState::Barotropic3D<EquationsOfState::Spectral>(eos));
   CHECK(*eos.promote_to_2d_eos() ==
         EquationsOfState::Barotropic2D<EquationsOfState::Spectral>(eos));
+  CHECK(eos.is_barotropic());
   // Test DataVector functions
   {
     const Scalar<DataVector> rho{DataVector{

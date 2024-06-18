@@ -85,6 +85,9 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
   /// \brief Returns `true` if the EOS is barotropic
   bool is_barotropic() const override { return false; }
 
+  /// \brief Returns `true` if the EOS is in beta-equilibrium
+  bool is_equilibrium() const override { return true; }
+
   bool operator==(const Equilibrium3D<EquilEos>& rhs) const;
 
   bool operator!=(const Equilibrium3D<EquilEos>& rhs) const;

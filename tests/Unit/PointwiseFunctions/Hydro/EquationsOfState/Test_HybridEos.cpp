@@ -92,6 +92,7 @@ void check_exact_polytrope() {
   const auto p_kappa_over_rho_sq =
       eos.kappa_times_p_over_rho_squared_from_density_and_energy(rho, eps);
   CHECK(get(p_kappa_over_rho_sq) == 4.25);
+  CHECK(not eos.is_barotropic());
 }
 
 template <bool IsRelativistic>
