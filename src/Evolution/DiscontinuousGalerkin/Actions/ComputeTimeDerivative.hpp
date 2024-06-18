@@ -691,12 +691,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       const DirectionalId<Dim> mortar_id{direction, neighbor};
 
       std::pair<Mesh<Dim - 1>, DataVector> neighbor_boundary_data_on_mortar{};
-      ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
-             "The current time step id of the volume is "
-                 << time_step_id
-                 << "but the time step id on the mortar with mortar id "
-                 << mortar_id << " is "
-                 << all_mortar_data.at(mortar_id).time_step_id());
 
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =

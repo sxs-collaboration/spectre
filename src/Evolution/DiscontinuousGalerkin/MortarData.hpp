@@ -13,7 +13,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
@@ -47,34 +46,6 @@ class MortarData {
   using MortarType = std::optional<std::pair<Mesh<Dim - 1>, DataVector>>;
 
  public:
-  MortarData(size_t number_of_buffers = 1);
-
-  /*!
-   * \brief Insert data onto the mortar.
-   *
-   * Exactly one local and neighbor insert call must be made between calls to
-   * `extract()`.
-   *
-   * The insert functions require that:
-   * - the data is inserted only once
-   * - the `TimeStepId` of the local and neighbor data are the same (this is
-   *   only checked if the local/neighbor data was already inserted)
-   *
-   * \note it is not required that the number of grid points between the local
-   * and neighbor data be the same since one may be using FD/FV instead of DG
-   * and this switch is done locally in space and time in such a way that
-   * neighboring elements have no a priori knowledge about what well be
-   * received.
-   */
-  /// @{
-  void insert_local_mortar_data(TimeStepId time_step_id,
-                                Mesh<Dim - 1> local_interface_mesh,
-                                DataVector local_mortar_vars);
-  void insert_neighbor_mortar_data(TimeStepId time_step_id,
-                                   Mesh<Dim - 1> neighbor_interface_mesh,
-                                   DataVector neighbor_mortar_vars);
-  /// @}
-
   /*!
    * \brief Insert the magnitude of the local face normal, the determinant
    * of the volume inverse Jacobian, and the determinant of the face Jacobian.
@@ -141,53 +112,28 @@ class MortarData {
   void get_local_face_normal_magnitude(
       gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude) const;
 
-  /// Return the inserted data and reset the state to empty.
-  ///
-  /// The first element is the local data while the second element is the
-  /// neighbor data.
-  auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
-                              std::pair<Mesh<Dim - 1>, DataVector>>;
-
-  /// Move to the next internal mortar buffer
-  void next_buffer();
-
-  /// Return the current internal mortar index
-  size_t current_buffer_index() const;
-
-  /// Return the total number of buffers that this MortarData was constructed
-  /// with
-  size_t total_number_of_buffers() const;
-
-  const TimeStepId& time_step_id() const {
-    return time_step_id_[mortar_index_];
-  }
-
-  TimeStepId& time_step_id() { return time_step_id_[mortar_index_]; }
-
   auto local_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_[mortar_index_];
+    return local_mortar_data_;
   }
 
   auto neighbor_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_[mortar_index_];
+    return neighbor_mortar_data_;
   }
 
   auto local_mortar_data()
       -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_[mortar_index_];
+    return local_mortar_data_;
   }
 
   auto neighbor_mortar_data()
       -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_[mortar_index_];
+    return neighbor_mortar_data_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
-
-  std::string pretty_print_current_buffer_no_data(size_t padding_size) const;
 
  private:
   template <size_t LocalDim>
@@ -195,11 +141,8 @@ class MortarData {
   friend bool operator==(const MortarData<LocalDim>& lhs,
                          const MortarData<LocalDim>& rhs);
 
-  size_t number_of_buffers_{1};
-  std::vector<TimeStepId> time_step_id_{};
-  std::vector<MortarType> local_mortar_data_{};
-  std::vector<MortarType> neighbor_mortar_data_{};
-  size_t mortar_index_{0};
+  MortarType local_mortar_data_{};
+  MortarType neighbor_mortar_data_{};
   DataVector local_geometric_quantities_{};
   bool using_volume_and_face_jacobians_{false};
   bool using_only_face_normal_magnitude_{false};

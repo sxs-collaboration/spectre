@@ -231,15 +231,14 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            [&face_mesh, &mortar_id, &time_step_id,
+            [&face_mesh, &mortar_id,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
-              mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
-                  time_step_id, face_mesh,
-                  std::move(type_erased_boundary_data_on_mortar));
+              mortar_data_ptr->at(mortar_id).local_mortar_data() = std::pair{
+                  face_mesh, std::move(type_erased_boundary_data_on_mortar)};
             },
             make_not_null(&box));
         ++count;
@@ -267,9 +266,8 @@ struct SetLocalMortarData {
           count++;
           evolution::dg::MortarData<Metavariables::volume_dim>
               past_mortar_data{};
-          past_mortar_data.insert_local_mortar_data(
-              past_time_step_id, face_mesh,
-              std::move(type_erased_boundary_data_on_mortar));
+          past_mortar_data.local_mortar_data() = std::pair{
+              face_mesh, std::move(type_erased_boundary_data_on_mortar)};
           Scalar<DataVector> local_face_normal_magnitude{
               face_mesh.number_of_grid_points()};
           alg::iota(get(local_face_normal_magnitude),
@@ -693,15 +691,15 @@ void test_impl(const Spectral::Quadrature quadrature,
       if (UseLocalTimeStepping) {
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
-          nhbr_mortar_data.insert_neighbor_mortar_data(neighbor_time_step_id,
-                                                       face_mesh, flux_data);
+          nhbr_mortar_data.neighbor_mortar_data() =
+              std::pair{face_mesh, flux_data};
           mortar_data_history.at(mortar_id).remote().insert(
               neighbor_time_step_id, integration_order,
               std::move(nhbr_mortar_data));
         }
       } else {
-        all_mortar_data.at(mortar_id).insert_neighbor_mortar_data(
-            neighbor_time_step_id, face_mesh, flux_data);
+        all_mortar_data.at(mortar_id).neighbor_mortar_data() =
+            std::pair{face_mesh, flux_data};
       }
       ++count;
     };
@@ -970,16 +968,6 @@ void test_impl(const Spectral::Quadrature quadrature,
         });
     CHECK(expected_evolved_variables ==
           get_tag<variables_tag>(runner, self_id));
-  }
-
-  for (const auto& mortar_data :
-       get_tag<::evolution::dg::Tags::MortarData<Dim>>(runner, self_id)) {
-    // The MortarData currently requires there to be no data already inserted.
-    // In theory we could re-use the allocation, but that is a future
-    // optimization. For now, we require that there is nothing in the MortarData
-    // after `ApplyBoundaryCorrections` was called.
-    CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
-    CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
   }
 
   // Check neighbor meshes

@@ -342,7 +342,7 @@ struct ReceiveDataForReconstruction {
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
                domain::Tags::NeighborMesh<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
-        [&current_time_step_id, &element,
+        [&element,
          ghost_zone_size =
              db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
                  .ghost_zone_size(),
@@ -378,11 +378,10 @@ struct ReceiveDataForReconstruction {
             }
             if (received_mortar_data.second.boundary_correction_data
                     .has_value()) {
-              mortar_data->at(mortar_id).insert_neighbor_mortar_data(
-                  current_time_step_id,
+              mortar_data->at(mortar_id).neighbor_mortar_data() = std::pair{
                   received_mortar_data.second.interface_mesh,
                   std::move(
-                      *received_mortar_data.second.boundary_correction_data));
+                      *received_mortar_data.second.boundary_correction_data)};
             }
             // Set new neighbor mesh
             neighbor_mesh->insert_or_assign(

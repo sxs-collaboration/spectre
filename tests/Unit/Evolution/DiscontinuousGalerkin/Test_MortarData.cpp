@@ -27,39 +27,12 @@
 namespace evolution::dg {
 namespace {
 template <size_t Dim>
-void assign_with_insert(const gsl::not_null<MortarData<Dim>*> mortar_data,
-                        TimeStepId time_step_id, Mesh<Dim - 1> local_mesh,
-                        std::optional<DataVector> local_data,
-                        Mesh<Dim - 1> neighbor_mesh,
-                        std::optional<DataVector> neighbor_data,
-                        const std::string& expected_output) {
-  if (local_data.has_value()) {
-    mortar_data->insert_local_mortar_data(time_step_id, local_mesh,
-                                          *local_data);
-
-    CHECK(mortar_data->local_mortar_data().has_value());
-    CHECK_FALSE(mortar_data->neighbor_mortar_data().has_value());
-  }
-
-  if (neighbor_data.has_value()) {
-    mortar_data->insert_neighbor_mortar_data(time_step_id, neighbor_mesh,
-                                             *neighbor_data);
-    CHECK(mortar_data->local_mortar_data().has_value());
-    CHECK(mortar_data->neighbor_mortar_data().has_value());
-  }
-
-  CHECK(get_output(*mortar_data) == expected_output);
-}
-
-template <size_t Dim>
 void assign_with_reference(const gsl::not_null<MortarData<Dim>*> mortar_data,
-                           TimeStepId time_step_id, Mesh<Dim - 1> local_mesh,
+                           Mesh<Dim - 1> local_mesh,
                            std::optional<DataVector> local_data,
                            Mesh<Dim - 1> neighbor_mesh,
                            std::optional<DataVector> neighbor_data,
                            const std::string& expected_output) {
-  mortar_data->time_step_id() = time_step_id;
-
   if (local_data.has_value()) {
     mortar_data->local_mortar_data() = std::pair{local_mesh, *local_data};
 
@@ -100,11 +73,8 @@ void test_global_time_stepping_usage() {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
-  const size_t number_of_buffers = 2;
 
-  MortarData<Dim> mortar_data{number_of_buffers};
-  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
-  const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
+  MortarData<Dim> mortar_data{};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::Gauss};
@@ -124,7 +94,6 @@ void test_global_time_stepping_usage() {
                           make_not_null(&dist));
 
   std::string expected_output = MakeString{}
-                                << "TimeStepId: " << time_step_id << "\n"
                                 << "LocalMortarData: (" << local_mesh << ", "
                                 << local_data << ")\n"
                                 << "NeighborMortarData: (" << neighbor_mesh
@@ -133,42 +102,11 @@ void test_global_time_stepping_usage() {
   CHECK_FALSE(mortar_data.local_mortar_data().has_value());
   CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
 
-  // First use the insert functions
-  assign_with_insert(make_not_null(&mortar_data), time_step_id, local_mesh,
-                     std::optional{local_data}, neighbor_mesh,
-                     std::optional{neighbor_data}, expected_output);
-
-  check_serialization(make_not_null(&mortar_data));
-
-  std::string expected_pretty_output =
-      MakeString{} << " Current buffer: 0, time = " << std::scientific
-                   << std::setprecision(16) << time_step_id << "\n";
-  CHECK(mortar_data.pretty_print_current_buffer_no_data(1_st) ==
-        expected_pretty_output);
-
-  CHECK(mortar_data.current_buffer_index() == 0);
-  mortar_data.next_buffer();
-  CHECK(mortar_data.current_buffer_index() == 1);
-
-  // Then assign things with the local_mortar_data() non-const reference
-  // functions
-  assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
+  assign_with_reference(make_not_null(&mortar_data), local_mesh,
                         std::optional{local_data}, neighbor_mesh,
                         std::optional{neighbor_data}, expected_output);
 
-  expected_pretty_output = MakeString{}
-                           << "  Current buffer: 1, time = " << std::scientific
-                           << std::setprecision(16) << time_step_id << "\n";
-  CHECK(mortar_data.pretty_print_current_buffer_no_data(2_st) ==
-        expected_pretty_output);
-
   check_serialization(make_not_null(&mortar_data));
-
-  const auto second_index_mortar_data = mortar_data.extract();
-  mortar_data.next_buffer();
-  const auto first_index_mortar_data = mortar_data.extract();
-
-  CHECK(second_index_mortar_data == first_index_mortar_data);
 }
 
 template <size_t Dim>
@@ -178,12 +116,8 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
-  const size_t number_of_buffers = 1;
 
-  MortarData<Dim> mortar_data{1};
-  CHECK(mortar_data.total_number_of_buffers() == number_of_buffers);
-  const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 7.1}, {2, 51}}};
-
+  MortarData<Dim> mortar_data{};
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::Gauss};
 
@@ -194,21 +128,12 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  std::string expected_output = MakeString{}
-                                << "TimeStepId: " << time_step_id << "\n"
-                                << "LocalMortarData: (" << local_mesh << ", "
-                                << local_data << ")\n"
-                                << "NeighborMortarData: --\n";
+  std::string expected_output = MakeString{} << "LocalMortarData: ("
+                                             << local_mesh << ", " << local_data
+                                             << ")\n"
+                                             << "NeighborMortarData: --\n";
 
-  assign_with_insert(make_not_null(&mortar_data), time_step_id, local_mesh,
-                     std::optional{local_data}, local_mesh, std::nullopt,
-                     expected_output);
-
-  CHECK(mortar_data.current_buffer_index() == 0);
-  mortar_data.next_buffer();
-  CHECK(mortar_data.current_buffer_index() == 0);
-
-  assign_with_reference(make_not_null(&mortar_data), time_step_id, local_mesh,
+  assign_with_reference(make_not_null(&mortar_data), local_mesh,
                         std::optional{local_data}, local_mesh, std::nullopt,
                         expected_output);
 

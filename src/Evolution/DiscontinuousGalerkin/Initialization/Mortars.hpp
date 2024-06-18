@@ -214,7 +214,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       (*normal_covector_and_magnitude)[direction] = std::nullopt;
       for (const auto& neighbor : neighbors) {
         const DirectionalId<dim> mortar_id{direction, neighbor};
-        mortar_data->emplace(mortar_id, MortarData<dim>{1});
+        mortar_data->emplace(mortar_id, MortarData<dim>{});
         const auto new_neighbor_mesh = neighbors.orientation().inverse_map()(
             neighbor_info.at(neighbor).new_mesh);
         mortar_mesh->emplace(

@@ -320,13 +320,6 @@ bool receive_boundary_data_global_time_stepping(
         for (auto& received_mortar_data :
              received_temporal_id_and_data.second) {
           const auto& mortar_id = received_mortar_data.first;
-          ASSERT(received_temporal_id_and_data.first ==
-                     mortar_data->at(mortar_id).time_step_id(),
-                 "Expected to receive mortar data on mortar "
-                     << mortar_id << " at time "
-                     << mortar_next_time_step_id->at(mortar_id)
-                     << " but actually received at time "
-                     << received_temporal_id_and_data.first);
           neighbor_mesh->insert_or_assign(
               mortar_id,
               received_mortar_data.second.volume_mesh_ghost_cell_data);
@@ -342,11 +335,10 @@ bool receive_boundary_data_global_time_stepping(
                      << received_temporal_id_and_data.first);
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
-            mortar_data->at(mortar_id).insert_neighbor_mortar_data(
-                received_temporal_id_and_data.first,
-                received_mortar_data.second.interface_mesh,
-                std::move(received_mortar_data.second.boundary_correction_data
-                              .value()));
+            mortar_data->at(mortar_id).neighbor_mortar_data() =
+                std::pair{received_mortar_data.second.interface_mesh,
+                          std::move(received_mortar_data.second
+                                        .boundary_correction_data.value())};
           }
         }
       },
@@ -469,11 +461,10 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mesh->insert_or_assign(
                 mortar_id,
                 received_mortar_data->second.volume_mesh_ghost_cell_data);
-            neighbor_mortar_data.insert_neighbor_mortar_data(
-                mortar_next_time_step_id,
-                received_mortar_data->second.interface_mesh,
-                std::move(received_mortar_data->second.boundary_correction_data
-                              .value()));
+            neighbor_mortar_data.neighbor_mortar_data() =
+                std::pair{received_mortar_data->second.interface_mesh,
+                          std::move(received_mortar_data->second
+                                        .boundary_correction_data.value())};
             // We don't yet communicate the integration order, because
             // we don't have any variable-order methods.  The
             // fixed-order methods ignore the field.
@@ -957,10 +948,6 @@ struct ApplyBoundaryCorrections {
                                       : volume_dt_correction;
               lifted_data = compute_correction_coupling(
                   mortar_id_and_data.second, mortar_id_and_data.second);
-              // Remove data since it's tagged with the time. In the future we
-              // _might_ be able to reuse allocations, but this optimization
-              // should only be done after profiling.
-              mortar_id_and_data.second.extract();
 
               if (using_gauss_lobatto_points) {
                 // Add the flux contribution to the volume data
