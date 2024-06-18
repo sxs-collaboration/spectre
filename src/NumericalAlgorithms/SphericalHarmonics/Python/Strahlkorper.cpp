@@ -78,6 +78,6 @@ void bind_strahlkorper(pybind11::module& m) {  // NOLINT
   m.def("read_surface_ylm_single_time",
         &ylm::read_surface_ylm_single_time<Frame::Inertial>,
         py::arg("file_name"), py::arg("surface_subfile_name"), py::arg("time"),
-        py::arg("relative_epsilon"));
+        py::arg("relative_epsilon"), py::arg("check_frame"));
 }
 }  // namespace ylm::py_bindings

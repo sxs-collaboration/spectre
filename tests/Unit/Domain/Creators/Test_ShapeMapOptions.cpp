@@ -42,6 +42,7 @@ void test_ylms_from_file() {
       "  - dt_Ylm_coefs\n"
       "MatchTime: 1.7\n"
       "MatchTimeEpsilon: 1.0e-14\n"
+      "CheckFrame: True\n"
       "SetL1CoefsToZero: False");
   CHECK(ylms_from_file.h5_filename == "TotalEclipseOfTheHeart.h5");
   CHECK(ylms_from_file.subfile_names ==
@@ -111,6 +112,7 @@ void test_shape_map_options() {
         "  MatchTime: 1.7\n"
         "  MatchTimeEpsilon: Auto\n"
         "  SetL1CoefsToZero: True\n"
+        "  CheckFrame: True\n"
         "SizeInitialValues: Auto");
     CHECK(shape_map_options.name() == "ShapeMap");
     CHECK(shape_map_options.l_max == 8);
@@ -181,7 +183,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
     // Strahlkorpers will be restricted
     const size_t file_l_max = 10;
     std::uniform_real_distribution<double> distribution(0.1, 2.0);
-    using Frame = ::Frame::Distorted;
+    using Frame = ::Frame::Inertial;
     std::array<ylm::Strahlkorper<Frame>, 3> strahlkorpers{};
     std::vector<std::string> legend{};
     std::vector<double> data{};
@@ -228,6 +230,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           "  MatchTime: 1.7\n"
           "  MatchTimeEpsilon: Auto\n"
           "  SetL1CoefsToZero: True\n"
+          "  CheckFrame: False\n"
           "SizeInitialValues: [1.1, 2.2, 3.3]");
 
       const auto [shape_funcs, size_funcs] =
@@ -274,6 +277,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
           "  MatchTime: 1.7\n"
           "  MatchTimeEpsilon: Auto\n"
           "  SetL1CoefsToZero: True\n"
+          "  CheckFrame: False\n"
           "SizeInitialValues: Auto");
 
       const auto [shape_funcs, size_funcs] =
