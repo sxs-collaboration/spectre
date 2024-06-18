@@ -142,7 +142,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     const DirectionalId<Dim>& neighbor_id = data.first;
     // Note: This assumes the neighbor_id is oriented into our (the element
     // whose inbox this is) frame.
-    const size_t neighbor_index = hash_value(neighbor_id);
+    const size_t neighbor_index = inbox->index(neighbor_id);
     if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
                          .try_emplace(time_step_id, std::move(data.second),
                                       std::move(data.first)))) {
