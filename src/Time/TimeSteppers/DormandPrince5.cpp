@@ -22,7 +22,7 @@ double DormandPrince5::stable_step() const { return 1.6532839463174733; }
 
 const RungeKutta::ButcherTableau& DormandPrince5::butcher_tableau() const {
   // Coefficients from the Dormand-Prince 5 Butcher tableau
-  // (e.g. Sec. 7.2 of \cite NumericalRecipes).
+  // (e.g. Sec. 17.2 of \cite NumericalRecipes).
   static const ButcherTableau tableau{
       // Substep times
       {1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0},
