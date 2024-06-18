@@ -27,6 +27,20 @@ jobs:
     # deployment. On forks where you set your own secrets for authentication
     # with DockerHub you can choose not to protect this environment.
     environment: deploy-containers
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # Development container for building and testing
+          - ubuntu_version: "22.04"
+            platforms: >
+              ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
+              || 'linux/amd64' }}
+            tag: "dev"
+          # Container for deploying static execs
+          - ubuntu_version: "18.04"
+            platforms: "linux/amd64"
+            tag: "dev1804"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,53 +70,11 @@ jobs:
           context: .
           file: "./containers/Dockerfile.buildenv"
           target: dev
-          tags: ${{ inputs.image_name }}:dev
-          platforms: >
-            ${{ inputs.build_arm && 'linux/amd64,linux/arm64'
-            || 'linux/amd64' }}
-          build-args: PARALLEL_MAKE_ARG=-j4
-      - name: Build CI container
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          context: .
-          file: "./containers/Dockerfile.buildenv"
-          target: ci
-          tags: ${{ inputs.image_name }}:ci
-          # No ARM container for CI because GitHub doesn't host ARM runners yet
-          platforms: linux/amd64
-          build-args: PARALLEL_MAKE_ARG=-j4
-
-  build_1804_container:
-    # Note: this container is used for deploying static execs
-    name: Build and deploy Ubuntu 18.04 container
-    runs-on: ubuntu-latest
-    # This environment can be protected to require manual approval before
-    # deployment. On forks where you set your own secrets for authentication
-    # with DockerHub you can choose not to protect this environment.
-    environment: deploy-containers
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build dev container for Ubuntu 18.04
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          context: .
-          file: "./containers/Dockerfile.buildenv"
-          target: dev
-          tags: ${{ inputs.image_name }}:dev1804
-          platforms: linux/amd64
+          tags: ${{ inputs.image_name }}:${{ matrix.tag }}
+          platforms: ${{ matrix.platforms }}
           build-args: |
             PARALLEL_MAKE_ARG=-j4
-            UBUNTU_VERSION=18.04
+            UBUNTU_VERSION=${{ matrix.ubuntu_version}}
 
   run_tests:
     name: Test
@@ -110,4 +82,4 @@ jobs:
     needs: build_container
     secrets: inherit
     with:
-      container: ${{ inputs.image_name }}:ci
+      container: ${{ inputs.image_name }}:dev
