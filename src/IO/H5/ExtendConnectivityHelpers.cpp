@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -418,9 +419,11 @@ compute_index_and_refinement_for_element(const std::string& element_grid_name) {
   return std::pair{indices_of_element, h_ref_of_element};
 }
 
+// std::pair<std::vector<std::array<size_t, SpatialDim>>,
+//           std::vector<std::array<size_t, SpatialDim>>>
 template <size_t SpatialDim>
-std::pair<std::vector<std::array<size_t, SpatialDim>>,
-          std::vector<std::array<size_t, SpatialDim>>>
+std::vector<
+    std::pair<std::array<size_t, SpatialDim>, std::array<size_t, SpatialDim>>>
 compute_indices_and_refinements_for_elements(
     const std::vector<std::string>& block_grid_names) {
   // Computes the refinements and indieces for all the elements in a given block
@@ -430,37 +433,38 @@ compute_indices_and_refinements_for_elements(
   // all elements in a block and the second entry contains all the refinements
   // in every dimension of every element within the block.
 
-  std::vector<std::array<size_t, SpatialDim>> indices = {};
-  std::vector<std::array<size_t, SpatialDim>> h_ref = {};
+  std::vector<
+      std::pair<std::array<size_t, SpatialDim>, std::array<size_t, SpatialDim>>>
+      indices_and_h_refs = {};
+
+  // std::vector<std::array<size_t, SpatialDim>> indices = {};
+  // std::vector<std::array<size_t, SpatialDim>> h_ref = {};
 
   for (const auto& element_grid_name : block_grid_names) {
-    const auto& [index_of_elem, h_ref_of_elem] =
-        compute_index_and_refinement_for_element<SpatialDim>(element_grid_name);
-
     // pushes back the all indices for an element to the "indices" vector.
-    indices.push_back(index_of_elem);
-    h_ref.push_back(h_ref_of_elem);
+    indices_and_h_refs.push_back(
+        compute_index_and_refinement_for_element<SpatialDim>(
+            element_grid_name));
   }
 
-  return std::pair{indices, h_ref};
+  return indices_and_h_refs;
 }
 
 template <size_t SpatialDim>
 std::vector<std::array<SegmentId, SpatialDim>> compute_block_segment_ids(
-    const std::pair<std::vector<std::array<size_t, SpatialDim>>,
-                    std::vector<std::array<size_t, SpatialDim>>>&
+    const std::vector<std::pair<std::array<size_t, SpatialDim>,
+                                std::array<size_t, SpatialDim>>>&
         indices_and_refinements_for_elements) {
   // Creates a std::vector of the segmentIds of each element in the block that
   // is the same block as the block for which the refinement and indices are
   // calculated.
   std::vector<std::array<SegmentId, SpatialDim>> block_segment_ids = {};
   std::array<SegmentId, SpatialDim> segment_ids_of_current_element{};
-  for (size_t i = 0; i < indices_and_refinements_for_elements.first.size();
-       ++i) {
+  for (size_t i = 0; i < indices_and_refinements_for_elements.size(); ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       SegmentId current_segment_id(
-          indices_and_refinements_for_elements.second[i][j],
-          indices_and_refinements_for_elements.first[i][j]);
+          indices_and_refinements_for_elements[i].second[j],
+          indices_and_refinements_for_elements[i].first[j]);
       gsl::at(segment_ids_of_current_element, j) = current_segment_id;
     }
     block_segment_ids.push_back(segment_ids_of_current_element);
@@ -678,12 +682,13 @@ std::vector<std::array<double, SpatialDim>> compute_element_BLCs(
     const std::vector<std::vector<size_t>>& block_extents,
     const std::vector<std::vector<Spectral::Basis>>& block_bases,
     const std::vector<std::vector<Spectral::Quadrature>>& block_quadratures,
-    const std::pair<std::vector<std::array<size_t, SpatialDim>>,
-                    std::vector<std::array<size_t, SpatialDim>>>&
+    const std::vector<std::pair<std::array<size_t, SpatialDim>,
+                                std::array<size_t, SpatialDim>>>&
         indices_and_refinements_for_elements) {
   // grid_name_reconstruction requires block_grid_names for the block number.
   // This should be CHANGED!!! later when we loop over the blocks to take in
   // the index of the block.
+
   const std::string element_grid_name =
       grid_name_reconstruction<SpatialDim>(element, block_grid_names);
   // Find the index of the element of interest within grid_names so we can
@@ -709,8 +714,8 @@ std::vector<std::array<double, SpatialDim>> compute_element_BLCs(
   const std::pair<std::array<size_t, SpatialDim>,
                   std::array<size_t, SpatialDim>>&
       element_indices_and_refinements{
-          indices_and_refinements_for_elements.first[element_index],
-          indices_and_refinements_for_elements.second[element_index]};
+          indices_and_refinements_for_elements[element_index].first,
+          indices_and_refinements_for_elements[element_index].second};
 
   // Compute BLC for the element of interest
   const std::vector<std::array<double, SpatialDim>>& element_BLCs =
@@ -718,6 +723,38 @@ std::vector<std::array<double, SpatialDim>> compute_element_BLCs(
           element_ELCs, element_indices_and_refinements, true);
 
   return element_BLCs;
+}
+
+// Need offsets to determine how to index element for gridpoints
+template <size_t SpatialDim>
+std::pair<size_t, size_t> gridpoints_BLCs_dim_offsets(
+    const std::vector<std::array<double, SpatialDim>>&
+        element_gridpoints_BLCs) {
+  // Get initial y,x coordinates
+  int y_init = element_gridpoints_BLCs[0][1];
+  int x_init = element_gridpoints_BLCs[0][0];
+
+  // Comparison function to check if BLC at index dimension is equal
+  auto is_equal = [element_gridpoints_BLCs](
+                      std::array<double, SpatialDim> gridpoint_BLCs,
+                      size_t index) {
+    return gridpoint_BLCs[index] == element_gridpoints_BLCs[0][index];
+  };
+
+  // Find first value at which is_equal is not true in both dimensions
+  // Add check that iterator did not return last, i.e. couldn't determine offset
+  size_t y_offset_index = std::distance(
+      element_gridpoints_BLCs.begin(),
+      std::find_if_not(element_gridpoints_BLCs.begin(),
+                       element_gridpoints_BLCs.end(),
+                       std::bind(is_equal, std::placeholders::_1, 1)));
+  size_t x_offset_index = std::distance(
+      element_gridpoints_BLCs.begin(),
+      std::find_if_not(element_gridpoints_BLCs.begin(),
+                       element_gridpoints_BLCs.end(),
+                       std::bind(is_equal, std::placeholders::_1, 0)));
+
+  return std::make_pair(x_offset_index, y_offset_index);
 }
 
 // Returns the BLCs and directions of all the neighbors in
@@ -733,8 +770,8 @@ compute_neighbor_BLCs_and_directions(
     const std::vector<std::pair<std::array<SegmentId, SpatialDim>,
                                 std::array<int, SpatialDim>>>&
         neighbors_with_direction,
-    const std::pair<std::vector<std::array<size_t, SpatialDim>>,
-                    std::vector<std::array<size_t, SpatialDim>>>&
+    const std::vector<std::pair<std::array<size_t, SpatialDim>,
+                                std::array<size_t, SpatialDim>>>&
         indices_and_refinements_for_elements) {
   // Will store all neighbor BLC's and their direction vectors
   std::vector<std::pair<std::vector<std::array<double, SpatialDim>>,
@@ -780,8 +817,8 @@ compute_neighbor_info(
     const std::vector<std::vector<size_t>>& block_extents,
     const std::vector<std::vector<Spectral::Basis>>& block_bases,
     const std::vector<std::vector<Spectral::Quadrature>>& block_quadratures,
-    const std::pair<std::vector<std::array<size_t, SpatialDim>>,
-                    std::vector<std::array<size_t, SpatialDim>>>&
+    const std::vector<std::pair<std::array<size_t, SpatialDim>,
+                                std::array<size_t, SpatialDim>>>&
         indices_and_refinements_for_elements) {
   const std::vector<std::array<SegmentId, SpatialDim>> all_neighbors =
       find_neighbors(element_of_interest, neighbor_segment_ids);
@@ -802,7 +839,7 @@ compute_neighbor_info(
 
   return neighbor_BLCs_and_directions;
 }
-} // namespace
+}  // namespace
 
 namespace h5::detail {
 
@@ -939,15 +976,17 @@ std::vector<std::array<double, SpatialDim>> extend_connectivity_by_block(
 
   // std::pair of the indices(first entry) and refinements (second entry) for
   // the entire block.
-  const std::pair<std::vector<std::array<size_t, SpatialDim>>,
-                  std::vector<std::array<size_t, SpatialDim>>>
+  // const std::pair<std::vector<std::array<size_t, SpatialDim>>,
+  //                 std::vector<std::array<size_t, SpatialDim>>>&
+  const std::vector<std::pair<std::array<size_t, SpatialDim>,
+                              std::array<size_t, SpatialDim>>>&
       indices_and_refinements_for_elements =
           compute_indices_and_refinements_for_elements<SpatialDim>(
               block_grid_names);
 
   // Segment Ids for every element in the block. Each element has SpatialDim
   // SegmentIds, one for each dimension.
-  const std::vector<std::array<SegmentId, SpatialDim>> block_segment_ids =
+  const std::vector<std::array<SegmentId, SpatialDim>>& block_segment_ids =
       compute_block_segment_ids<SpatialDim>(
           indices_and_refinements_for_elements);
 
@@ -957,7 +996,7 @@ std::vector<std::array<double, SpatialDim>> extend_connectivity_by_block(
     std::vector<std::array<SegmentId, SpatialDim>> neighbor_segment_ids =
         block_segment_ids;
     // Identify the element I want to find the neighbors of.
-    const std::array<SegmentId, SpatialDim> element_of_interest =
+    const std::array<SegmentId, SpatialDim>& element_of_interest =
         gsl::at(block_segment_ids, i);
 
     // Need the grid name of the element of interest to reverse search it in the
@@ -1088,14 +1127,18 @@ std::vector<int> new_extend_connectivity(
   return new_connectivity;
 }
 
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template std::vector<int> h5::detail::extend_connectivity<DIM(data)>( \
-      std::vector<std::string> & grid_names,                            \
-      std::vector<std::vector<Spectral::Basis>> & bases,                \
-      std::vector<std::vector<Spectral::Quadrature>> & quadratures,     \
+#define INSTANTIATE(_, data)                                                \
+  template std::vector<int> h5::detail::extend_connectivity<DIM(data)>(     \
+      std::vector<std::string> & grid_names,                                \
+      std::vector<std::vector<Spectral::Basis>> & bases,                    \
+      std::vector<std::vector<Spectral::Quadrature>> & quadratures,         \
+      std::vector<std::vector<size_t>> & extents);                          \
+  template std::vector<int> h5::detail::new_extend_connectivity<DIM(data)>( \
+      std::vector<std::string> & grid_names,                                \
+      std::vector<std::vector<Spectral::Basis>> & bases,                    \
+      std::vector<std::vector<Spectral::Quadrature>> & quadratures,         \
       std::vector<std::vector<size_t>> & extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
