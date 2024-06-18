@@ -491,7 +491,6 @@ bool receive_boundary_data_local_time_stepping(
                     evolution::dg::AtomicInboxBoundaryData<Dim>,
                     typename evolution::dg::Tags::
                         BoundaryCorrectionAndGhostCellsInbox<Dim>::type>) {
-    ERROR("LTS does not yet work with nodegroups");
     // We only decrease the counter if we are done with the current time
     // and we only decrease it by the number of neighbors at the current
     // time.
