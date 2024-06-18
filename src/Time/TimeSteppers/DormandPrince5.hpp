@@ -19,7 +19,7 @@ namespace TimeSteppers {
  * \ingroup TimeSteppersGroup
  *
  * The standard 5th-order Dormand-Prince time stepping method, given e.g. in
- * Sec. 7.2 of \cite NumericalRecipes.
+ * Sec. 17.2 of \cite NumericalRecipes.
  *
  * \f{eqnarray}{
  * \frac{du}{dt} & = & \mathcal{L}(t,u).
@@ -36,7 +36,7 @@ namespace TimeSteppers {
  * \f}
  *
  * Here the coefficients \f$a_{ij}\f$, \f$b_i\f$, and \f$c_i\f$ are given
- * in e.g. Sec. 7.2 of \cite NumericalRecipes. Note that \f$c_1 = 0\f$.
+ * in e.g. Sec. 17.2 of \cite NumericalRecipes. Note that \f$c_1 = 0\f$.
  *
  * The CFL factor/stable step size is 1.6532839463174733.
  */
