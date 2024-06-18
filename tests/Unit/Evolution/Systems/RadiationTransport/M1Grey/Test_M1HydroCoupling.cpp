@@ -23,8 +23,20 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.M1HydroCoupling",
       typename RadiationTransport::M1Grey::ComputeM1HydroCoupling<
           neutrino_species>;
 
+  using CouplingJacobianClass =
+      typename RadiationTransport::M1Grey::ComputeM1HydroCouplingJacobian<
+          neutrino_species>;
+
   pypp::check_with_random_values<1>(
       &CouplingClass::apply, "M1HydroCoupling",
       {"hydro_coupling_tilde_e", "hydro_coupling_tilde_s"}, {{{0.0, 1.0}}},
       DataVector{5});
+
+  pypp::check_with_random_values<1>(
+      &CouplingJacobianClass::apply, "ComputeM1HydroCouplingJacobian",
+      {"hydro_coupling_jacobian_deriv_e_source_e",
+       "hydro_coupling_jacobian_deriv_e_source_s",
+       "hydro_coupling_jacobian_deriv_s_source_e",
+       "hydro_coupling_jacobian_deriv_s_source_s"},
+      {{{0.0, 1.0}}}, DataVector{5});
 }
