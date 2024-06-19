@@ -25,7 +25,6 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -62,8 +61,10 @@ void coords_to_different_frame(
 
     // If this doesn't have a value, then the point isn't in the domain which is
     // really bad.
-    ASSERT(block_logical_coords[s].has_value(),
-           "Source coordinates are not in the domain.");
+    if (UNLIKELY(not block_logical_coords[s].has_value())) {
+      ERROR("A point on the Strahlkorper in the "
+            << SrcFrame{} << " could not be mapped to a block: " << x_src);
+    }
 
     const auto& block_id_and_coords = block_logical_coords[s].value();
     const auto& block = domain.blocks()[block_id_and_coords.id.get_index()];
@@ -71,8 +72,7 @@ void coords_to_different_frame(
     if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted> and
                   std::is_same_v<SrcFrame, ::Frame::Grid>) {
       if (not block.has_distorted_frame()) {
-        throw std::runtime_error(
-            "Strahlkorper lies outside of distorted-frame region");
+        ERROR("Strahlkorper lies outside of distorted-frame region");
       }
       const auto& grid_to_distorted_map =
           block.moving_mesh_grid_to_distorted_map();
@@ -80,8 +80,7 @@ void coords_to_different_frame(
     } else if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted> and
                          std::is_same_v<SrcFrame, ::Frame::Inertial>) {
       if (not block.has_distorted_frame()) {
-        throw std::runtime_error(
-            "Strahlkorper lies outside of distorted-frame region");
+        ERROR("Strahlkorper lies outside of distorted-frame region");
       }
       const auto& distorted_to_inertial_map =
           block.moving_mesh_distorted_to_inertial_map();
@@ -90,8 +89,7 @@ void coords_to_different_frame(
       if (inv_point.has_value()) {
         x_dest = *inv_point;
       } else {
-        throw std::runtime_error(
-            "Map from Frame::Distorted to Frame::Inertial is not invertible");
+        ERROR("Map from Frame::Distorted to Frame::Inertial is not invertible");
       }
     } else {
       static_assert(std::is_same_v<DestFrame, ::Frame::Inertial> and
@@ -385,9 +383,10 @@ void strahlkorper_coords_in_different_frame(
     const tnsr::I<double, 3, SrcFrame> x_src{{get<0>(src_cartesian_coords)[s],
                                               get<1>(src_cartesian_coords)[s],
                                               get<2>(src_cartesian_coords)[s]}};
-    ASSERT(block_logical_coords[s].has_value(),
-           "Found a point (source coords " << x_src
-                                           << ") that is not in any Block.");
+    if (UNLIKELY(not block_logical_coords[s].has_value())) {
+      ERROR("A point on the Strahlkorper in the "
+            << SrcFrame{} << " could not be mapped to a block: " << x_src);
+    }
     const auto& block =
         domain.blocks()[block_logical_coords[s].value().id.get_index()];
     if (block.is_time_dependent()) {
