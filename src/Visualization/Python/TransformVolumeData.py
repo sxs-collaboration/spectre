@@ -137,8 +137,29 @@ class ElementArg(KernelArg):
         return getattr(element, self.element_attr)
 
 
+def _get_dataset_name(
+    arg: inspect.Parameter,
+    map_input_names: Dict[str, str],
+    interactive: bool,
+):
+    if arg.name in map_input_names:
+        return map_input_names[arg.name]
+    if interactive:
+        return click.prompt(
+            f"Dataset name for argument '{arg.name}'",
+            default=snake_case_to_camel_case(arg.name),
+        )
+    else:
+        raise ValueError(
+            f"Dataset name for argument '{arg.name}' is required. Add an"
+            " entry to 'map_input_names'."
+        )
+
+
 def parse_kernel_arg(
-    arg: inspect.Parameter, map_input_names: Dict[str, str]
+    arg: inspect.Parameter,
+    map_input_names: Dict[str, str],
+    interactive: bool = False,
 ) -> KernelArg:
     """Determine how data for a kernel function argument will be retrieved
 
@@ -150,10 +171,8 @@ def parse_kernel_arg(
         "logical_coords" / "logical_coordinates" or "inertial_coords" /
         "inertial_coordinates" / "x".
     - Jacobians: Annotate the argument with a 'Jacobian' or 'InverseJacobian'.
-    - Any tensor dataset: Annotate the argument with the tensor type. By
-        default, the argument name is transformed to CamelCase to determine the
-        dataset name in the volume data file. Specify a mapping in
-        'map_input_names' to override the default.
+    - Any tensor dataset: Annotate the argument with the tensor type, e.g.
+        'Scalar[DataVector]' or 'tnsr.ii[DataVector, 3]'.
 
     For example, the following function is a possible kernel:
 
@@ -175,10 +194,18 @@ def parse_kernel_arg(
             // ...
         }
 
+    The annotation of the 'psi' argument is 'Scalar[DataVector]', so a scalar
+    dataset will be read from the volume data. If 'interactive' is True, the
+    user will be prompted for the dataset name to read for 'psi', otherwise the
+    'map_input_names' must contain a dataset name for 'psi'. In addition, the
+    mesh and inverse Jacobian will be read from the volume data and passed to
+    the function.
+
     Arguments:
       arg: The function argument. Must have a type annotation.
-      map_input_names: A map of argument names to dataset names (optional).
-        By default the argument name is transformed to CamelCase.
+      map_input_names: A map of argument names to dataset names.
+      interactive: Optional (default is False). Prompt the user for missing
+        dataset names.
 
     Returns: A 'KernelArg' object that knows how to retrieve the data for the
       argument.
@@ -230,9 +257,7 @@ def parse_kernel_arg(
     elif arg.annotation == DataVector:
         return TensorArg(
             tensor_type=Scalar[DataVector],
-            dataset_name=map_input_names.get(
-                arg.name, snake_case_to_camel_case(arg.name)
-            ),
+            dataset_name=_get_dataset_name(arg, map_input_names, interactive),
             extract_single_component=True,
         )
     else:
@@ -247,21 +272,18 @@ def parse_kernel_arg(
             )
         return TensorArg(
             tensor_type=arg.annotation,
-            dataset_name=map_input_names.get(
-                arg.name, snake_case_to_camel_case(arg.name)
-            ),
+            dataset_name=_get_dataset_name(arg, map_input_names, interactive),
         )
 
 
 def parse_kernel_output(
-    output, output_name: str, num_points: int
+    output, output_name: Optional[str], num_points: int
 ) -> Dict[str, Tensor]:
     """Transform the return value of a kernel to a dict of tensor datasets
 
     The following return values of kernels are supported:
 
-    - Any Tensor. By default, the name of the kernel function transformed to
-      CamelCase will be used as dataset name.
+    - Any Tensor.
     - A DataVector: will be treated as a scalar.
     - A Numpy array: will be treated as a scalar or vector.
     - An int or float: will be expanded over the grid as a constant scalar.
@@ -351,9 +373,10 @@ class Kernel:
     def __init__(
         self,
         callable,
+        output_name: Optional[str],
         map_input_names: Dict[str, str] = {},
-        output_name: Optional[str] = None,
         elementwise: Optional[bool] = None,
+        interactive: bool = False,
     ):
         """Transforms volume data with a Python function
 
@@ -365,49 +388,58 @@ class Kernel:
             types. The function should return a single tensor, a dictionary that
             maps dataset names to tensors, or one of the other supported types
             listed in the 'parse_kernel_output' function.
-          map_input_names: A map of argument names to dataset names (optional).
-            By default the argument name is transformed to CamelCase.
-          output_name: Name of the output dataset (optional). By default the
-            function name is transformed to CamelCase. Output names for multiple
+          output_name: Name of the output dataset. Output names for multiple
             datasets can be specified by returning a 'Dict[str, Tensor]' from
-            the 'callable'.
+            the 'callable' and setting the 'output_name' to None.
+          map_input_names: A map of argument names to dataset names.
           elementwise: Call this kernel for each element. The default is to
             call the kernel with all data in the volume file at once, unless
             element-specific data such as a Mesh or Jacobian is requested.
+          interactive: Optional (default is False). Prompt the user for missing
+            dataset names and to select from multiple overloads of a pybind11
+            binding.
         """
         self.callable = callable
         # Parse function arguments
         try:
             # Try to parse as native Python function
             signature = inspect.signature(callable)
-            self.args = [
-                parse_kernel_arg(arg, map_input_names)
-                for arg in signature.parameters.values()
-            ]
         except ValueError:
             # Try to parse as pybind11 binding
-            signature = None
-            # The function may have multiple overloads. We select the first one
-            # that works.
             overloads = list(parse_pybind11_signatures(callable))
-            for overload in overloads:
-                try:
-                    self.args = [
-                        parse_kernel_arg(arg, map_input_names)
-                        for arg in overload.parameters.values()
-                    ]
-                    signature = overload
-                except ValueError:
-                    # Try the next signature
-                    continue
-            if signature is None:
-                raise ValueError(
-                    f"The function '{callable.__name__}' has no overload "
-                    "with supported arguments. See "
-                    "'TransformVolumeData.parse_kernel_arg' for a list of "
-                    "supported arguments. The overloads are: "
-                    + rich.pretty.pretty_repr(overloads)
+            # The function may have multiple overloads. Prompt the user to
+            # select one.
+            if len(overloads) == 1:
+                signature = overloads[0]
+            elif interactive:
+                rich.print(
+                    "Available overloads:\n"
+                    + "\n".join(
+                        [
+                            re.sub(
+                                r"spectre\.\S*\._Pybindings\.",
+                                "",
+                                f"{i + 1}. {callable.__name__}{overload}",
+                            )
+                            for i, overload in enumerate(overloads)
+                        ]
+                    )
                 )
+                signature = overloads[
+                    click.prompt(
+                        f"Select an overload (1 - {len(overloads)})", type=int
+                    )
+                    - 1
+                ]
+            else:
+                raise ValueError(
+                    f"Function '{callable.__name__}' has multiple overloads. "
+                    "Wrap it in a Python function to select an overload."
+                )
+        self.args = [
+            parse_kernel_arg(arg, map_input_names, interactive=interactive)
+            for arg in signature.parameters.values()
+        ]
         # If any argument is not a Tensor then we have to call the kernel
         # elementwise
         if elementwise:
@@ -420,10 +452,16 @@ class Kernel:
                 f"Kernel '{callable.__name__}' must be called elementwise "
                 "because an argument is not a pointwise tensor."
             )
-        # Use provided output name, or transform function name to CamelCase
-        self.output_name = output_name or snake_case_to_camel_case(
-            callable.__name__
-        )
+        # Use provided output name, or prompt the user for an output name
+        if output_name:
+            self.output_name = output_name
+        elif interactive:
+            self.output_name = click.prompt(
+                "Output dataset name",
+                default=snake_case_to_camel_case(callable.__name__),
+            )
+        else:
+            self.output_name = None
 
     def __call__(
         self, all_tensor_data: Dict[str, Tensor], element: Optional[Element]
@@ -630,7 +668,7 @@ def parse_input_names(ctx, param, all_values):
     return input_names
 
 
-def parse_kernels(kernels, exec_files, map_input_names):
+def parse_kernels(kernels, exec_files, map_input_names, interactive=False):
     # Load kernels from 'exec_files'
     for exec_file in exec_files:
         exec(exec_file.read(), globals(), globals())
@@ -641,11 +679,19 @@ def parse_kernels(kernels, exec_files, map_input_names):
             kernel_module_path, kernel_function = kernel.rsplit(".", maxsplit=1)
             kernel_module = importlib.import_module(kernel_module_path)
             yield Kernel(
-                getattr(kernel_module, kernel_function), map_input_names
+                getattr(kernel_module, kernel_function),
+                output_name=None,
+                map_input_names=map_input_names,
+                interactive=interactive,
             )
         else:
             # Only a function name was specified. Look up in 'globals()'.
-            yield Kernel(globals()[kernel], map_input_names)
+            yield Kernel(
+                globals()[kernel],
+                output_name=None,
+                map_input_names=map_input_names,
+                interactive=interactive,
+            )
 
 
 @click.command(name="transform-volume-data")
@@ -756,7 +802,7 @@ def transform_volume_data_command(
             # ...
 
     Any pybind11 binding of a C++ function will also work, as long as it takes
-    only supported types as arguments. Supported types are tensors, as well
+    only supported types as arguments. Supported types are tensors, as well as
     structural information such as the mesh, coordinates, and Jacobians. See the
     'parse_kernel_arg' function for all supported argument types, and
     'parse_kernel_output' for all supported return types.
@@ -771,16 +817,13 @@ def transform_volume_data_command(
     You can also execute a Python file that defines kernels with the '--exec' /
     '-e' option.
 
-    By default, the data for the input arguments are read from datasets in the
-    volume files with the same names, transformed to CamelCase. For example, the
-    input dataset names for the 'shift_magnitude' function above would be
-    'Shift(_x,_y,_z)' and 'SpatialMetric(_xx,_yy,_zz,_xy,_xz,_yz)'.
-    That is, the code uses the name 'shift' from the function argument, changes
-    it to CamelCase, then reads the 'Shift(_x,_y,_z)' datasets into a
-    'tnsr.I[DataVector, 3]' before passing it to the function.
-    You can override the input names with the '--input-name' / '-i' option.
-    The output would be written to a dataset named 'ShiftMagnitude', which is
-    the function name transformed to CamelCase.
+    ## Input and output dataset names
+
+    You will be prompted to specify dataset names for input and output tensors,
+    unless you specify them with '--input-name/-i'. For example, if you specify
+    '-i shift=Shift' for the kernel function above, the code will read the
+    datasets 'Shift(_x,_y,_z)' from the volume data and pass them to the kernel
+    function for the 'shift' argument.
     """
     open_h5_files = [
         spectre_h5.H5File(filename, "r" if integrate else "a")
@@ -809,7 +852,9 @@ def transform_volume_data_command(
     # Load kernels
     if not kernels:
         raise click.UsageError("No '--kernel' / '-k' specified.")
-    kernels = list(parse_kernels(kernels, exec_files, map_input_names))
+    kernels = list(
+        parse_kernels(kernels, exec_files, map_input_names, interactive=True)
+    )
 
     # Apply!
     import rich.progress
