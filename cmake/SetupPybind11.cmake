@@ -19,9 +19,10 @@ if(BUILD_PYTHON_BINDINGS)
       "determined CMake dir: ${PYBIND11_CMAKEDIR}")
   endif()
 
-  find_package(pybind11 2.6.0 REQUIRED
+  find_package(pybind11 2.7.0 REQUIRED
     HINTS
     ${PYBIND11_CMAKEDIR}
+    ${SPECTRE_PYTHON_SITE_PACKAGES}
     ${Python_SITEARCH}
     ${Python_SITELIB}
     ${Python_STDARCH}

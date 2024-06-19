@@ -3,6 +3,7 @@
 
 import os
 import unittest
+from pathlib import Path
 
 import h5py
 import numpy as np
@@ -49,6 +50,11 @@ class TestIOH5File(unittest.TestCase):
     # Test whether an H5 file is created correctly,
     def test_name(self):
         with spectre_h5.H5File(file_name=self.file_name, mode="a") as h5file:
+            self.assertEqual(self.file_name, h5file.name())
+        # Also test with pathlib.Path
+        with spectre_h5.H5File(
+            file_name=Path(self.file_name), mode="a"
+        ) as h5file:
             self.assertEqual(self.file_name, h5file.name())
 
     # Test whether a dat file can be added correctly

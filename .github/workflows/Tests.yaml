@@ -564,7 +564,6 @@ jobs:
       - name: Install Python dependencies
         if: matrix.PYTHON_VERSION
         run: |
-          python3 -m pip install pybind11~=2.6.1
           python3 -m pip install -r support/Python/requirements.txt \
             -r support/Python/dev_requirements.txt
           python3 -m pip list -v
@@ -879,7 +878,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # to create the cache.
       SPECTRE_SPACK_DEPS: >-
         blaze brigand charmpp gsl hdf5 libsharp libxsmm openblas
-        py-pybind11 yaml-cpp
+        yaml-cpp
       CCACHE_DIR: $HOME/ccache
       CCACHE_TEMPDIR: $HOME/ccache-tmp
       CCACHE_MAXSIZE: "2G"

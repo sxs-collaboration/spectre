@@ -72,7 +72,7 @@ run the following to install a fortran compiler and other dependencies:
 ```
 brew install gcc
 brew install boost gsl cmake doxygen catch2 openblas
-brew install ccache autoconf automake jemalloc hdf5 pybind11 yaml-cpp
+brew install ccache autoconf automake jemalloc hdf5 yaml-cpp
 ```
 
 ### 4. Install remaining dependencies
