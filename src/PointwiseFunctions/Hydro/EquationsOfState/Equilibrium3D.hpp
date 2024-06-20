@@ -15,6 +15,7 @@
 #include <memory>
 #include <pup.h>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -98,7 +99,7 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
    */
   Scalar<double> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<double>& rest_mass_density,
-      const Scalar<double>& temperature) const {
+      const Scalar<double>& temperature) const override{
     return underlying_eos_
         .equilibrium_electron_fraction_from_density_temperature(
             rest_mass_density, temperature);
@@ -106,7 +107,7 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
 
   Scalar<DataVector> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<DataVector>& rest_mass_density,
-      const Scalar<DataVector>& temperature) const {
+      const Scalar<DataVector>& temperature) const override {
     return underlying_eos_
         .equilibrium_electron_fraction_from_density_temperature(
             rest_mass_density, temperature);

@@ -581,6 +581,21 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
+   * the rest mass density \f$\rho\f$ and the temperature \f$T\f$.
+   */
+  virtual Scalar<double> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/) const = 0;
+
+  virtual Scalar<DataVector>
+  equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$, the
    * specific internal energy \f$\epsilon\f$ and electron fraction \f$Y_e\f$.
    */

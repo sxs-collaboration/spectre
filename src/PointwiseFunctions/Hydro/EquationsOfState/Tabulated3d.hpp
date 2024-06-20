@@ -13,6 +13,7 @@
 #include <limits>
 #include <pup.h>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/H5/EosTable.hpp"
 #include "IO/H5/File.hpp"
@@ -129,7 +130,7 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
   /// \brief Returns `true` if the EOS is barotropic
   bool is_barotropic() const override { return false; }
 
-  /// \breif Returns `true` if the EOS is in beta-equilibrium
+  /// \brief Returns `true` if the EOS is in beta-equilibrium
   bool is_equilibrium() const override { return false; }
 
   bool operator==(const Tabulated3D<IsRelativistic>& rhs) const;
@@ -148,14 +149,14 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
    */
   Scalar<double> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<double>& rest_mass_density,
-      const Scalar<double>& temperature) const {
+      const Scalar<double>& temperature) const override {
     return equilibrium_electron_fraction_from_density_temperature_impl<double>(
         rest_mass_density, temperature);
   }
 
   Scalar<DataVector> equilibrium_electron_fraction_from_density_temperature(
       const Scalar<DataVector>& rest_mass_density,
-      const Scalar<DataVector>& temperature) const {
+      const Scalar<DataVector>& temperature) const override {
     return equilibrium_electron_fraction_from_density_temperature_impl<
         DataVector>(rest_mass_density, temperature);
   }
