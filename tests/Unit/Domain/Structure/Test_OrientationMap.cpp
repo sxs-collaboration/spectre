@@ -30,6 +30,7 @@
 namespace {
 
 void test_1d() {
+  CHECK(sizeof(OrientationMap<1>) == 2);
   // Test constructors:
   OrientationMap<1> default_orientation{};
   CHECK(default_orientation.is_aligned());
@@ -42,8 +43,7 @@ void test_1d() {
   CHECK_FALSE(custom2.is_aligned());
 
   TestHelpers::serialization::test_versioning<OrientationMap<1>>(
-      "Domain/Structure/OrientationMap1d.serializations", "version 1", custom1,
-      {}, true);
+      "Domain/Structure/OrientationMap1d.serializations", "version 2", custom1);
 
   // Test if OrientationMap can encode a 1D parallel/antiparallel.
   std::array<Direction<1>, 1> block1_directions{{Direction<1>::upper_xi()}};
@@ -88,6 +88,7 @@ void test_1d() {
 }
 
 void test_2d() {
+  CHECK(sizeof(OrientationMap<2>) == 2);
   // Test constructors:
   OrientationMap<2> default_orientation{};
   CHECK(default_orientation.is_aligned());
@@ -100,8 +101,7 @@ void test_2d() {
   CHECK_FALSE(custom2.is_aligned());
 
   TestHelpers::serialization::test_versioning<OrientationMap<2>>(
-      "Domain/Structure/OrientationMap2d.serializations", "version 1", custom1,
-      {}, true);
+      "Domain/Structure/OrientationMap2d.serializations", "version 2", custom1);
 
   // Test if OrientationMap can encode a 2D rotated.
   const auto& upper_xi = Direction<2>::upper_xi();
@@ -239,6 +239,7 @@ void test_2d() {
 }
 
 void test_3d() {
+  CHECK(sizeof(OrientationMap<3>) == 2);
   // Test constructors:
   OrientationMap<3> default_orientation{};
   CHECK(default_orientation.is_aligned());
@@ -253,8 +254,7 @@ void test_3d() {
   CHECK_FALSE(custom2.is_aligned());
 
   TestHelpers::serialization::test_versioning<OrientationMap<3>>(
-      "Domain/Structure/OrientationMap3d.serializations", "version 1", custom1,
-      {}, true);
+      "Domain/Structure/OrientationMap3d.serializations", "version 2", custom1);
 
   // Test if OrientationMap can encode a 3D Flipped.
   const auto& upper_xi = Direction<3>::upper_xi();
