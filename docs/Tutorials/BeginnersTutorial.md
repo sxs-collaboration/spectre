@@ -120,6 +120,14 @@ command line right away:
 spectre --help
 ```
 
+If you are not in the container but instead on a desktop or cluster you can add
+the bin directory to your path by `cd`ing to the build directory and running
+```
+export PATH=$PATH:`pwd`/bin
+```
+If you log out and log back in you will need to set this again, unless you add
+it to your shell's init file.
+
 ## Running ExportCoordinates3D
 
 First we will run the `ExportCoordinates3D` executable to visualize
@@ -196,9 +204,14 @@ the Paraview server, run
 pvserver &
 ```
 
-The `&` is so that the server runs in the background. If you hit `Enter` a
-couple times you'll get back to being able to type commands. You should see some
-output similar to
+\note on compute clusters you should use the cluster-specific instructions for
+using ParaView since you may require MPI and specifying which port to use. For
+example, `mpirun -n 1 pvserver -p 11111` is likely more appropriate on a
+cluster.
+
+The `&` is so that the server runs in the background. If you hit `Enter`
+a couple times you'll get back to being able to type commands. You should see
+some output similar to
 
 ```
 Waiting for client...
