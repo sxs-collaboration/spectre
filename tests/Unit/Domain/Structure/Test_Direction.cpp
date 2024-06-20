@@ -17,6 +17,7 @@
 
 namespace {
 void test_construction_1d() {
+  CHECK(sizeof(Direction<1>) == 1);
   auto upper_xi_1 = Direction<1>::upper_xi();
   CHECK(upper_xi_1.opposite() == Direction<1>::lower_xi());
   CHECK(upper_xi_1.opposite().sign() == -1.0);
@@ -31,6 +32,7 @@ void test_construction_1d() {
 }
 
 void test_construction_2d() {
+  CHECK(sizeof(Direction<2>) == 1);
   auto upper_xi_2 = Direction<2>(0, Side::Upper);
   CHECK(upper_xi_2 == Direction<2>::upper_xi());
   CHECK(upper_xi_2.axis() == Direction<2>::Axis::Xi);
@@ -57,6 +59,7 @@ void test_construction_2d() {
 }
 
 void test_construction_3d() {
+  CHECK(sizeof(Direction<3>) == 1);
   auto upper_xi = Direction<3>(0, Side::Upper);
   CHECK(upper_xi == Direction<3>::upper_xi());
   CHECK(upper_xi.axis() == Direction<3>::Axis::Xi);
