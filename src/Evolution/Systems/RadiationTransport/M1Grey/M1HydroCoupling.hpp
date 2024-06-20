@@ -56,10 +56,10 @@ void compute_m1_hydro_coupling_impl(
     const Scalar<DataVector>& sqrt_det_spatial_metric);
 
 void compute_m1_hydro_coupling_jacobian_impl(
-    const gsl::not_null<Scalar<DataVector>*> deriv_e_e,
-    const gsl::not_null<tnsr::i<DataVector, 3>*> deriv_e_s,
-    const gsl::not_null<tnsr::I<DataVector, 3>*> deriv_s_e,
-    const gsl::not_null<tnsr::Ij<DataVector, 3>*> deriv_s_s,
+    gsl::not_null<Scalar<DataVector>*> deriv_e_source_e,
+    gsl::not_null<tnsr::i<DataVector, 3>*> deriv_e_source_s,
+    gsl::not_null<tnsr::I<DataVector, 3>*> deriv_s_source_e,
+    gsl::not_null<tnsr::Ij<DataVector, 3>*> deriv_s_source_s,
     const tnsr::i<DataVector, 3>& tilde_s, const Scalar<DataVector>& tilde_e,
     const Scalar<DataVector>& emissivity,
     const Scalar<DataVector>& absorption_opacity,
