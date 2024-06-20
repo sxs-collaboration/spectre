@@ -19,7 +19,8 @@ want to load the modules, source the shell file for your system and run
 ## General Instructions
 
 1. Run `export SPECTRE_HOME=/path/to/where/you/want/to/clone`
-2. Clone SpECTRE using `git clone SPECTRE_URL $SPECTRE_HOME`
+2. Clone SpECTRE using `git clone SPECTRE_URL $SPECTRE_HOME` where the
+   `SPECTRE_URL` is the GitHub url you want to use to clone the repo.
 3. Run `cd $SPECTRE_HOME && mkdir build && cd build`
 4. Run `. $SPECTRE_HOME/support/Environments/SYSTEM_TO_RUN_ON_gcc.sh`, where
    `SYSTEM_TO_RUN_ON` is replaced by the name of the system as described in the
@@ -114,15 +115,18 @@ you do not need to install any dependencies, so you can skip steps 5 and 6.
 
 ## Mbot at Cornell
 
-The only modules you need to load on `mbot` are `gcc/11.4.0 spectre-deps`. This
-will load everything you need, including LLVM/Clang. You can source the
-environment file by running `. $SPECTRE_HOME/support/Environments/mbot.sh` and
-load the modules using `spectre_load_modules`. This
-offers two functions, `spectre_run_cmake_gcc` and `spectre_run_cmake_clang` for
-the different compilers. These both default to `Release` mode. If you are
-developing code, please use either
-`spectre_run_cmake_clang -D CMAKE_BUILD_TYPE=Debug` or
-`spectre_run_cmake_clang -D SPECTRE_DEBUG=ON` (you can also use gcc). The second
-command with `SPECTRE_DEBUG=ON` enables sanity checks and optimizations. This
-means it can be used in production-level runs to ensure there aren't any subtle
-bugs that might only arise after a decently long simulation.
+Follow steps 1-3 of the general instructions.
+
+The only modules you need to load on `mbot` are `gcc/11.4.0 spectre-deps`.
+This  will load everything you need, including LLVM/Clang. You
+can source the environment file by running
+`. $SPECTRE_HOME/support/Environments/mbot.sh` and load the modules using
+`spectre_load_modules`. This offers two functions, `spectre_run_cmake_gcc`
+and `spectre_run_cmake_clang` for the different compilers.
+These both default to `Release` mode. If you are developing code, please use
+either `spectre_run_cmake_clang -D CMAKE_BUILD_TYPE=Debug` or
+`spectre_run_cmake_clang -D SPECTRE_DEBUG=ON` (you can also use gcc).
+The second command with `SPECTRE_DEBUG=ON` enables sanity checks and
+optimizations. This means it can be used in production-level runs to ensure
+there aren't any subtle bugs that might only arise after a decently
+long simulation.
