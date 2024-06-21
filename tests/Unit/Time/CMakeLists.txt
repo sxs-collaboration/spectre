@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_History.cpp
   Test_SelfStart.cpp
   Test_Slab.cpp
+  Test_StepperErrorTolerances.cpp
   Test_TakeStep.cpp
   Test_Time.cpp
   Test_TimeSequence.cpp

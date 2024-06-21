@@ -14,6 +14,7 @@ spectre_target_sources(
   History.cpp
   SelfStart.cpp
   Slab.cpp
+  StepperErrorTolerances.cpp
   Time.cpp
   TimeSequence.cpp
   TimeStepId.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   SelfStart.hpp
   Slab.hpp
   StepperErrorEstimate.hpp
+  StepperErrorTolerances.hpp
   TakeStep.hpp
   Time.hpp
   TimeSequence.hpp
