@@ -730,10 +730,6 @@ template <size_t SpatialDim>
 std::pair<size_t, size_t> gridpoints_BLCs_dim_offsets(
     const std::vector<std::array<double, SpatialDim>>&
         element_gridpoints_BLCs) {
-  // Get initial y,x coordinates
-  int y_init = element_gridpoints_BLCs[0][1];
-  int x_init = element_gridpoints_BLCs[0][0];
-
   // Comparison function to check if BLC at index dimension is equal
   auto is_equal = [element_gridpoints_BLCs](
                       std::array<double, SpatialDim> gridpoint_BLCs,
