@@ -86,7 +86,7 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 4; ++i) {
     gsl::at(initial_unit_quaternion, i) /= initial_unit_quaternion_magnitude;
   }
-  const std::array<std::array<double, 4>, 3> rot_func_and_2_derivs{
+  const std::vector<std::array<double, 4>> rot_func_and_2_derivs{
       initial_unit_quaternion,
       make_with_random_values<std::array<double, 4>>(make_not_null(&generator),
                                                      make_not_null(&fot_dist)),
@@ -99,11 +99,12 @@ SPECTRE_TEST_CASE(
   const domain::creators::sphere::TimeDependentMapOptions::ShapeMapOptions
       shape_map_options{l_max, std::nullopt};
   const domain::creators::sphere::TimeDependentMapOptions::ExpansionMapOptions
-      expansion_map_options{exp_func_and_2_derivs, settling_timescale,
-                            exp_outer_bdry_func_and_2_derivs,
-                            settling_timescale};
+      expansion_map_options{
+          exp_func_and_2_derivs, exp_outer_bdry_func_and_2_derivs,
+          settling_timescale, settling_timescale, std::nullopt};
   const domain::creators::sphere::TimeDependentMapOptions::RotationMapOptions
-      rotation_map_options{rot_func_and_2_derivs, settling_timescale};
+      rotation_map_options{rot_func_and_2_derivs, std::nullopt,
+                           settling_timescale};
   const domain::creators::sphere::TimeDependentMapOptions
       time_dependent_map_options{match_time, shape_map_options,
                                  rotation_map_options, expansion_map_options,

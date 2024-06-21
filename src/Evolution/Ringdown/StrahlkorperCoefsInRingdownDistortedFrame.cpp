@@ -26,7 +26,7 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
     const double settling_timescale,
     const std::array<double, 3>& exp_func_and_2_derivs,
     const std::array<double, 3>& exp_outer_bdry_func_and_2_derivs,
-    const std::array<std::array<double, 4>, 3>& rot_func_and_2_derivs) {
+    const std::vector<std::array<double, 4>>& rot_func_and_2_derivs) {
   // Read the AhC coefficients from the H5 file
   const std::vector<ylm::Strahlkorper<Frame::Inertial>>& ahc_inertial_h5 =
       ylm::read_surface_ylm<Frame::Inertial>(
@@ -52,11 +52,12 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
   const domain::creators::sphere::TimeDependentMapOptions::ShapeMapOptions
       shape_map_options{l_max, std::nullopt, std::nullopt};
   const domain::creators::sphere::TimeDependentMapOptions::ExpansionMapOptions
-      expansion_map_options{exp_func_and_2_derivs, settling_timescale,
-                            exp_outer_bdry_func_and_2_derivs,
-                            settling_timescale};
+      expansion_map_options{
+          exp_func_and_2_derivs, exp_outer_bdry_func_and_2_derivs,
+          settling_timescale, settling_timescale, std::nullopt};
   const domain::creators::sphere::TimeDependentMapOptions::RotationMapOptions
-      rotation_map_options{rot_func_and_2_derivs, settling_timescale};
+      rotation_map_options{rot_func_and_2_derivs, std::nullopt,
+                           settling_timescale};
   const domain::creators::sphere::TimeDependentMapOptions
       time_dependent_map_options{match_time, shape_map_options,
                                  rotation_map_options, expansion_map_options,
