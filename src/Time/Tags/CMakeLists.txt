@@ -9,6 +9,7 @@ spectre_target_headers(
   HistoryEvolvedVariables.hpp
   IsUsingTimeSteppingErrorControl.hpp
   StepChoosers.hpp
+  StepperErrorTolerances.hpp
   StepperErrors.hpp
   Time.hpp
   TimeAndPrevious.hpp
