@@ -42,9 +42,9 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B,
     const Options::Context& context)
     : initial_time_(initial_time),
-      expansion_map_options_(expansion_map_options),
-      rotation_map_options_(rotation_map_options),
-      translation_map_options_(translation_map_options),
+      expansion_map_options_(std::move(expansion_map_options)),
+      rotation_map_options_(std::move(rotation_map_options)),
+      translation_map_options_(std::move(translation_map_options)),
       shape_options_A_(shape_options_A),
       shape_options_B_(shape_options_B) {
   if (not(expansion_map_options_.has_value() or
@@ -82,37 +82,51 @@ TimeDependentMapOptions<IsCylindrical>::create_worldtube_functions_of_time()
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
+
   // The functions of time need to be valid only for the very first time step,
   // after that they need to be updated by the worldtube singleton.
   const double initial_expiration_time = initial_time_ + 1e-10;
   if (not expansion_map_options_.has_value()) {
     ERROR("Initial values for the expansion map need to be provided.");
   }
+  if (not expansion_map_options_->asymptotic_velocity_outer_boundary
+              .has_value()) {
+    ERROR(
+        "The BinaryCompactObject domains don't support using a "
+        "SettleToConstant function of time for the expansion map. Set the "
+        "asymptotic velocity to a value and set the decay timescale to "
+        "'None'");
+  }
   result[expansion_name] =
       std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
           initial_time_,
           std::array<double, 2>{
-              {{gsl::at(expansion_map_options_.value().initial_values, 0)},
-               {gsl::at(expansion_map_options_.value().initial_values, 1)}}},
+              expansion_map_options_.value().initial_values[0][0],
+              expansion_map_options_.value().initial_values[1][0]},
           initial_expiration_time, false);
   result[expansion_outer_boundary_name] =
       std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
           1.0, initial_time_,
-          expansion_map_options_.value().outer_boundary_velocity,
-          expansion_map_options_.value().outer_boundary_decay_time);
+          expansion_map_options_.value()
+              .asymptotic_velocity_outer_boundary.value(),
+          expansion_map_options_.value().decay_timescale_outer_boundary);
+
   if (not rotation_map_options_.has_value()) {
     ERROR(
         "Initial values for the rotation map need to be provided when using "
         "the worldtube.");
   }
+  if (rotation_map_options_->decay_timescale.has_value()) {
+    ERROR(
+        "The BinaryCompactObject domains don't support using a "
+        "SettleToConstant function of time for the rotation map. Set the "
+        "decay timescale to 'None'");
+  }
 
   result[rotation_name] =
       std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
           initial_time_,
-          std::array<double, 2>{
-              0.,
-              gsl::at(rotation_map_options_.value().initial_angular_velocity,
-                      2)},
+          std::array<double, 2>{0., rotation_map_options_.value().angles[1][2]},
           initial_expiration_time, true);
 
   // Size and Shape FunctionOfTime for objects A and B. Only spherical excision
@@ -189,64 +203,52 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
   // ExpansionMap FunctionOfTime for the function \f$a(t)\f$ in the
   // domain::CoordinateMaps::TimeDependent::RotScaleTrans map
   if (expansion_map_options_.has_value()) {
+    if (not expansion_map_options_->asymptotic_velocity_outer_boundary
+                .has_value()) {
+      ERROR(
+          "The BinaryCompactObject domains don't support using a "
+          "SettleToConstant function of time for the expansion map. Set the "
+          "asymptotic velocity to a value and set the decay timescale to "
+          "'None'");
+    }
+
     result[expansion_name] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{
-                {{gsl::at(expansion_map_options_.value().initial_values, 0)},
-                 {gsl::at(expansion_map_options_.value().initial_values, 1)},
-                 {0.0}}},
+            initial_time_, expansion_map_options_->initial_values,
             expiration_times.at(expansion_name));
 
     // ExpansionMap FunctionOfTime for the function \f$b(t)\f$ in the
     // domain::CoordinateMaps::TimeDependent::RotScaleTrans map
     result[expansion_outer_boundary_name] =
         std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
-            1.0, initial_time_,
-            expansion_map_options_.value().outer_boundary_velocity,
-            expansion_map_options_.value().outer_boundary_decay_time);
+            expansion_map_options_->initial_values_outer_boundary[0][0],
+            initial_time_,
+            expansion_map_options_->asymptotic_velocity_outer_boundary.value(),
+            expansion_map_options_->decay_timescale_outer_boundary);
   }
 
   // RotationMap FunctionOfTime for the rotation angles about each
-  // axis.  The initial rotation angles don't matter as we never
-  // actually use the angles themselves. We only use their derivatives
-  // (omega) to determine map parameters. In theory we could determine
-  // each initial angle from the input axis-angle representation, but
-  // we don't need to.
+  // axis.
   if (rotation_map_options_.has_value()) {
-    result[rotation_name] = std::make_unique<
-        FunctionsOfTime::QuaternionFunctionOfTime<3>>(
-        initial_time_,
-        std::array<DataVector, 1>{DataVector{1.0, 0.0, 0.0, 0.0}},
-        std::array<DataVector, 4>{
-            {{3, 0.0},
-             {gsl::at(rotation_map_options_.value().initial_angular_velocity,
-                      0),
-              gsl::at(rotation_map_options_.value().initial_angular_velocity,
-                      1),
-              gsl::at(rotation_map_options_.value().initial_angular_velocity,
-                      2)},
-             {3, 0.0},
-             {3, 0.0}}},
-        expiration_times.at(rotation_name));
+    if (rotation_map_options_->decay_timescale.has_value()) {
+      ERROR(
+          "The BinaryCompactObject domains don't support using a "
+          "SettleToConstant function of time for the rotation map. Set the "
+          "decay timescale to 'None'");
+    }
+
+    result[rotation_name] =
+        std::make_unique<FunctionsOfTime::QuaternionFunctionOfTime<3>>(
+            initial_time_, std::array{rotation_map_options_->quaternions[0]},
+            rotation_map_options_->angles, expiration_times.at(rotation_name));
   }
 
   // TranslationMap FunctionOfTime
   if (translation_map_options_.has_value()) {
-    result[translation_name] = std::make_unique<
-        FunctionsOfTime::PiecewisePolynomial<2>>(
-        initial_time_,
-        std::array<DataVector, 3>{
-            {{gsl::at(translation_map_options_.value().initial_values, 0)[0],
-              gsl::at(translation_map_options_.value().initial_values, 0)[1],
-              gsl::at(translation_map_options_.value().initial_values, 0)[2]},
-             {gsl::at(translation_map_options_.value().initial_values, 1)[0],
-              gsl::at(translation_map_options_.value().initial_values, 1)[1],
-              gsl::at(translation_map_options_.value().initial_values, 1)[2]},
-             {gsl::at(translation_map_options_.value().initial_values, 2)[0],
-              gsl::at(translation_map_options_.value().initial_values, 2)[1],
-              gsl::at(translation_map_options_.value().initial_values, 2)[2]}}},
-        expiration_times.at(translation_name));
+    result[translation_name] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_, translation_map_options_->initial_values,
+            expiration_times.at(translation_name));
   }
 
   // Size and Shape FunctionOfTime for objects A and B

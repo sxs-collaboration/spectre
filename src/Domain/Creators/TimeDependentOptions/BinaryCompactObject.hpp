@@ -17,8 +17,10 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
-#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
+#include "Domain/Creators/TimeDependentOptions/TranslationMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
@@ -146,101 +148,20 @@ struct TimeDependentMapOptions {
   /// The outer boundary radius of the map is always set to
   /// the outer boundary of the Domain, so there is no option
   /// here to set the outer boundary radius.
-  struct ExpansionMapOptions {
-    using type = Options::Auto<ExpansionMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "ExpansionMap"; }
-    static constexpr Options::String help = {
-        "Options for the expansion map. Specify 'None' to not use this map."};
-    struct InitialValues {
-      using type = std::array<double, 2>;
-      static constexpr Options::String help = {
-          "Initial value and deriv of expansion."};
-    };
-    struct AsymptoticVelocityOuterBoundary {
-      using type = double;
-      static constexpr Options::String help = {
-          "The asymptotic velocity of the outer boundary."};
-    };
-    struct DecayTimescaleOuterBoundaryVelocity {
-      using type = double;
-      static constexpr Options::String help = {
-          "The timescale for how fast the outer boundary velocity approaches "
-          "its asymptotic value."};
-    };
-    using options = tmpl::list<InitialValues, AsymptoticVelocityOuterBoundary,
-                               DecayTimescaleOuterBoundaryVelocity>;
-    ExpansionMapOptions() = default;
-    ExpansionMapOptions(std::array<double, 2> initial_values_in,
-                        double outer_boundary_velocity_in,
-                        double outer_boundary_decay_time_in)
-        : initial_values(initial_values_in),
-          outer_boundary_velocity(outer_boundary_velocity_in),
-          outer_boundary_decay_time(outer_boundary_decay_time_in) {}
+  using ExpansionMapOptions =
+      domain::creators::time_dependent_options::ExpansionMapOptions;
 
-    std::array<double, 2> initial_values{
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN()};
-    double outer_boundary_velocity{
-        std::numeric_limits<double>::signaling_NaN()};
-    double outer_boundary_decay_time{
-        std::numeric_limits<double>::signaling_NaN()};
-  };
-
-  struct RotationMapOptions {
-    using type = Options::Auto<RotationMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "RotationMap"; }
-    static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about an arbitrary axis. "
-        "Specify 'None' to not use this map."};
-
-    struct InitialAngularVelocity {
-      using type = std::array<double, 3>;
-      static constexpr Options::String help = {"The initial angular velocity."};
-    };
-
-    using options = tmpl::list<InitialAngularVelocity>;
-
-    RotationMapOptions() = default;
-    explicit RotationMapOptions(
-        std::array<double, 3> initial_angular_velocity_in)
-        : initial_angular_velocity(initial_angular_velocity_in) {}
-
-    std::array<double, 3> initial_angular_velocity{};
-  };
+  /// \brief Options for the rotation map
+  using RotationMapOptions =
+      domain::creators::time_dependent_options::RotationMapOptions<3>;
 
   /// \brief Options for the Translation Map, the outer radius is always set to
   /// the outer boundary of the Domain, so there's no option needed for outer
   /// boundary.
-  struct TranslationMapOptions {
-    using type = Options::Auto<TranslationMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "TranslationMap"; }
-    static constexpr Options::String help = {
-        "Options for a time-dependent translation map. Specify 'None' to not "
-        "use this map."};
+  using TranslationMapOptions =
+      domain::creators::time_dependent_options::TranslationMapOptions<3>;
 
-    struct InitialValues {
-      using type = std::array<std::array<double, 3>, 3>;
-      static constexpr Options::String help = {
-          "Initial position, velocity and acceleration."};
-    };
-
-    using options = tmpl::list<InitialValues>;
-    TranslationMapOptions() = default;
-    explicit TranslationMapOptions(
-        std::array<std::array<double, 3>, 3> initial_values_in)
-        : initial_values(initial_values_in) {}
-
-    std::array<std::array<double, 3>, 3> initial_values{};
-  };
-
-  // We use a type alias here instead of defining the ShapeMapOptions struct
-  // because there appears to be a bug in clang-10. If the definition of
-  // ShapeMapOptions is here inside TimeDependentMapOptions, on clang-10 there
-  // is a linking error that there is an undefined reference to
-  // Options::Option::parse_as<TimeDependentMapOptions<A>> (and B). This doesn't
-  // show up for GCC. If we put the definition of ShapeMapOptions outside of
-  // TimeDependentMapOptions and just use a type alias here, the linking error
-  // goes away.
+  /// \brief Options for the shape map
   template <domain::ObjectLabel Object>
   using ShapeMapOptions =
       domain::creators::time_dependent_options::ShapeMapOptions<
