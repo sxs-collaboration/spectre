@@ -11,6 +11,7 @@ Next:
     id_input_file_path: __file__
     id_run_dir: ./
     pipeline_dir: {{ pipeline_dir | default("None") }}
+    control: {{ control }}
     evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}

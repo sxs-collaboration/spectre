@@ -27,7 +27,8 @@ class TestInspiral(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.0, 0.0, 0.0],
             dimensionless_spin_b=[0.0, 0.0, 0.0],
             separation=20.0,
@@ -115,6 +116,9 @@ class TestInspiral(unittest.TestCase):
             str(self.horizons_filename),
             "-E",
             str(self.bin_dir / "EvolveGhBinaryBlackHole"),
+            "--no-schedule",
+            "--num-nodes",
+            "1",
         ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
