@@ -35,20 +35,21 @@ template <bool IsCylindrical>
 TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     double initial_time,
     std::optional<ExpansionMapOptions> expansion_map_options,
-    std::optional<RotationMapOptions> rotation_options,
+    std::optional<RotationMapOptions> rotation_map_options,
     std::optional<TranslationMapOptions> translation_map_options,
     std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A,
     std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B,
     const Options::Context& context)
     : initial_time_(initial_time),
       expansion_map_options_(expansion_map_options),
-      rotation_options_(rotation_options),
-      translation_options_(translation_map_options),
+      rotation_map_options_(rotation_map_options),
+      translation_map_options_(translation_map_options),
       shape_options_A_(shape_options_A),
       shape_options_B_(shape_options_B) {
-  if (not(expansion_map_options_.has_value() or rotation_options_.has_value() or
-          translation_options_.has_value() or shape_options_A_.has_value() or
-          shape_options_B_.has_value())) {
+  if (not(expansion_map_options_.has_value() or
+          rotation_map_options_.has_value() or
+          translation_map_options_.has_value() or
+          shape_options_A_.has_value() or shape_options_B_.has_value())) {
     PARSE_ERROR(context,
                 "Time dependent map options were specified, but all options "
                 "were 'None'. If you don't want time dependent maps, specify "
@@ -123,37 +124,40 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
   // (omega) to determine map parameters. In theory we could determine
   // each initial angle from the input axis-angle representation, but
   // we don't need to.
-  if (rotation_options_.has_value()) {
+  if (rotation_map_options_.has_value()) {
     result[rotation_name] = std::make_unique<
         FunctionsOfTime::QuaternionFunctionOfTime<3>>(
         initial_time_,
         std::array<DataVector, 1>{DataVector{1.0, 0.0, 0.0, 0.0}},
         std::array<DataVector, 4>{
             {{3, 0.0},
-             {gsl::at(rotation_options_.value().initial_angular_velocity, 0),
-              gsl::at(rotation_options_.value().initial_angular_velocity, 1),
-              gsl::at(rotation_options_.value().initial_angular_velocity, 2)},
+             {gsl::at(rotation_map_options_.value().initial_angular_velocity,
+                      0),
+              gsl::at(rotation_map_options_.value().initial_angular_velocity,
+                      1),
+              gsl::at(rotation_map_options_.value().initial_angular_velocity,
+                      2)},
              {3, 0.0},
              {3, 0.0}}},
         expiration_times.at(rotation_name));
   }
 
   // TranslationMap FunctionOfTime
-  if (translation_options_.has_value()) {
-    result[translation_name] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{
-                {{gsl::at(translation_options_.value().initial_values, 0)[0],
-                  gsl::at(translation_options_.value().initial_values, 0)[1],
-                  gsl::at(translation_options_.value().initial_values, 0)[2]},
-                 {gsl::at(translation_options_.value().initial_values, 1)[0],
-                  gsl::at(translation_options_.value().initial_values, 1)[1],
-                  gsl::at(translation_options_.value().initial_values, 1)[2]},
-                 {gsl::at(translation_options_.value().initial_values, 2)[0],
-                  gsl::at(translation_options_.value().initial_values, 2)[1],
-                  gsl::at(translation_options_.value().initial_values, 2)[2]}}},
-            expiration_times.at(translation_name));
+  if (translation_map_options_.has_value()) {
+    result[translation_name] = std::make_unique<
+        FunctionsOfTime::PiecewisePolynomial<2>>(
+        initial_time_,
+        std::array<DataVector, 3>{
+            {{gsl::at(translation_map_options_.value().initial_values, 0)[0],
+              gsl::at(translation_map_options_.value().initial_values, 0)[1],
+              gsl::at(translation_map_options_.value().initial_values, 0)[2]},
+             {gsl::at(translation_map_options_.value().initial_values, 1)[0],
+              gsl::at(translation_map_options_.value().initial_values, 1)[1],
+              gsl::at(translation_map_options_.value().initial_values, 1)[2]},
+             {gsl::at(translation_map_options_.value().initial_values, 2)[0],
+              gsl::at(translation_map_options_.value().initial_values, 2)[1],
+              gsl::at(translation_map_options_.value().initial_values, 2)[2]}}},
+        expiration_times.at(translation_name));
   }
 
   // Size and Shape FunctionOfTime for objects A and B
@@ -205,17 +209,17 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
         object_B_radii,
     const double envelope_radius, const double domain_outer_radius) {
-  if (expansion_map_options_.has_value() or rotation_options_.has_value() or
-      translation_options_.has_value()) {
+  if (expansion_map_options_.has_value() or rotation_map_options_.has_value() or
+      translation_map_options_.has_value()) {
     rot_scale_trans_map_ = std::make_pair(
         RotScaleTrans{
             expansion_map_options_.has_value()
                 ? std::make_pair(expansion_name, expansion_outer_boundary_name)
                 : std::optional<std::pair<std::string, std::string>>{},
-            rotation_options_.has_value() ? rotation_name
-                                          : std::optional<std::string>{},
-            translation_options_.has_value() ? translation_name
-                                             : std::optional<std::string>{},
+            rotation_map_options_.has_value() ? rotation_name
+                                              : std::optional<std::string>{},
+            translation_map_options_.has_value() ? translation_name
+                                                 : std::optional<std::string>{},
             envelope_radius, domain_outer_radius,
             domain::CoordinateMaps::TimeDependent::RotScaleTrans<
                 3>::BlockRegion::Inner},
@@ -223,10 +227,10 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
             expansion_map_options_.has_value()
                 ? std::make_pair(expansion_name, expansion_outer_boundary_name)
                 : std::optional<std::pair<std::string, std::string>>{},
-            rotation_options_.has_value() ? rotation_name
-                                          : std::optional<std::string>{},
-            translation_options_.has_value() ? translation_name
-                                             : std::optional<std::string>{},
+            rotation_map_options_.has_value() ? rotation_name
+                                              : std::optional<std::string>{},
+            translation_map_options_.has_value() ? translation_name
+                                                 : std::optional<std::string>{},
             envelope_radius, domain_outer_radius,
             domain::CoordinateMaps::TimeDependent::RotScaleTrans<
                 3>::BlockRegion::Transition});

@@ -243,8 +243,8 @@ struct TimeDependentMapOptions {
   TimeDependentMapOptions(
       double initial_time,
       std::optional<ExpansionMapOptions> expansion_map_options,
-      std::optional<RotationMapOptions> rotation_options,
-      std::optional<TranslationMapOptions> translation_options,
+      std::optional<RotationMapOptions> rotation_map_options,
+      std::optional<TranslationMapOptions> translation_map_options,
       std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A,
       std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B,
       const Options::Context& context = {});
@@ -368,8 +368,8 @@ struct TimeDependentMapOptions {
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<ExpansionMapOptions> expansion_map_options_{};
-  std::optional<RotationMapOptions> rotation_options_{};
-  std::optional<TranslationMapOptions> translation_options_{};
+  std::optional<RotationMapOptions> rotation_map_options_{};
+  std::optional<TranslationMapOptions> translation_map_options_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::A>> shape_options_A_{};
   std::optional<ShapeMapOptions<domain::ObjectLabel::B>> shape_options_B_{};
   std::array<std::optional<double>, 2> inner_radii_{};
