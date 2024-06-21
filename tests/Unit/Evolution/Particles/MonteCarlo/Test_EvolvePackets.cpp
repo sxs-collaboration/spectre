@@ -98,14 +98,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
       DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
   mesh_coordinates.get(2) =
       DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
-  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coordinates =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  inertial_coordinates.get(0) =
-      DataVector{-0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5};
-  inertial_coordinates.get(1) =
-      DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
-  inertial_coordinates.get(2) =
-      DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
+  Scalar<DataVector> cell_light_crossing_time =
+      make_with_value<Scalar<DataVector>>(zero_dv, 1.0);
 
   Particles::MonteCarlo::Packet packet(1, 1.0, 0, 0.0, -0.75, -1.0, -1.0, 1.0,
                                        1.0, 0.0, 0.0);
@@ -141,14 +135,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEvolution",
   Particles::MonteCarlo::TemplatedLocalFunctions<2, 2> MonteCarloStruct;
   MonteCarloStruct.evolve_packets(
       &packets, &generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, inertial_coordinates,
-      num_ghost_zones,
+      &coupling_rho_ye, 1.5, mesh, mesh_coordinates, num_ghost_zones,
       absorption_opacity, scattering_opacity, energy_at_bin_center,
-      lorentz_factor, lower_spatial_four_velocity, lapse, shift,
-      d_lapse, d_shift, d_inv_spatial_metric,
-      spatial_metric, inv_spatial_metric, mesh_velocity,
-      inverse_jacobian, jacobian_inertial_to_fluid,
-      inverse_jacobian_inertial_to_fluid);
+      lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
+      d_shift, d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
+      cell_light_crossing_time, mesh_velocity, inverse_jacobian,
+      jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid);
   CHECK(packets[0].species == 1);
   CHECK(packets[0].coordinates.get(0) == 0.75);
   CHECK(packets[0].coordinates.get(1) == -1.0);

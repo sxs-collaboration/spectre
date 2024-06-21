@@ -69,6 +69,7 @@ struct TemplatedLocalFunctions {
           single_packet_energy,
 
       double start_time, double target_end_time,
+      const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
       const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
           interaction_table,
       const Scalar<DataVector>& electron_fraction,
@@ -84,9 +85,9 @@ struct TemplatedLocalFunctions {
       const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& determinant_spatial_metric, const Mesh<3>& mesh,
+      const Scalar<DataVector>& determinant_spatial_metric,
+      const Scalar<DataVector>& cell_light_crossing_time, const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
       size_t num_ghost_zones,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
@@ -102,7 +103,9 @@ struct TemplatedLocalFunctions {
           electron_fraction_ghost,
       const DirectionalIdMap<3, std::optional<DataVector>>&
           baryon_density_ghost,
-      const DirectionalIdMap<3, std::optional<DataVector>>& temperature_ghost);
+      const DirectionalIdMap<3, std::optional<DataVector>>& temperature_ghost,
+      const DirectionalIdMap<3, std::optional<DataVector>>&
+          cell_light_crossing_time_ghost);
 
   /*!
    * \brief Function emitting Monte Carlo packets
@@ -184,7 +187,6 @@ struct TemplatedLocalFunctions {
       gsl::not_null<Scalar<DataVector>*> coupling_rho_ye, double final_time,
       const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coordinates,
       size_t num_ghost_zones,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           absorption_opacity_table,
@@ -201,6 +203,7 @@ struct TemplatedLocalFunctions {
       const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& cell_light_crossing_time,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
@@ -232,12 +235,6 @@ struct TemplatedLocalFunctions {
   /// fraction_ka_to_ks of the absorption opacity to scattering opacity,
   /// while multiplying the emissivity by ( 1 - fraction_ka_to_ks ) to
   /// keep the equilibrium energy density constant.
-  /// Note that to match SpEC, we would need to replace time_step by
-  /// the light crossing time of each cell (which requires GZ metric
-  /// information). The parameter max_opacity_for_implicit_mc is, in
-  /// SpEC,
-  /// std::min(MaxOpacity, MaxOpacityPerCrossingTime / light-crossing time)
-  /// with MaxOpacity, MaxOpacityPerCrossingTime input parameters.
   void implicit_monte_carlo_interaction_rates(
       gsl::not_null<
           std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
@@ -251,11 +248,10 @@ struct TemplatedLocalFunctions {
       gsl::not_null<
           std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
           fraction_ka_to_ks,
-      double time_step, double max_opacity_for_implicit_mc,
+      const Scalar<DataVector>& cell_light_crossing_time,
       const Scalar<DataVector>& electron_fraction,
       const Scalar<DataVector>& rest_mass_density,
-      const Scalar<DataVector>& temperature,
-      double minimum_temperature,
+      const Scalar<DataVector>& temperature, double minimum_temperature,
       const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
           interaction_table,
       const EquationsOfState::EquationOfState<true, 3>& equation_of_state);

@@ -30,7 +30,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         gsl::not_null<
             std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>*>
             fraction_ka_to_ks,
-        const double time_step, const double max_opacity_for_implicit_mc,
+        const Scalar<DataVector>& cell_light_crossing_time,
         const Scalar<DataVector>& electron_fraction,
         const Scalar<DataVector>& rest_mass_density,
         const Scalar<DataVector>& temperature,
@@ -170,6 +170,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
       electron_fraction, rest_mass_density, temperature,
       minimum_temperature);
   for (size_t i = 0; i < dv_size; i++) {
+    const double max_opacity_for_implicit_mc =
+      std::min(100.0 ,1.0/get(cell_light_crossing_time)[i]);
     for (size_t ns = 0; ns < NeutrinoSpecies; ns++) {
       for (size_t ng = 0; ng < EnergyBins; ng++) {
         const double ka = gsl::at(gsl::at(*absorption_opacity, ns), ng)[i];
@@ -178,17 +180,18 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         double frac_ka_to_ks = (ka > max_opacity_for_implicit_mc)
                                    ? 1.0 - max_opacity_for_implicit_mc / ka
                                    : 0.0;
-        // Note that in SpEC, we use the light-crossing time of the cell,
-        // not the time step. How do we handle ghost zones if we do that?
         const double frac_from_beta =
-            1.0 - 1.0 / ka / time_step / (1.0 + get(beta)[i]);
+            1.0 - 1.0 / ka / get(cell_light_crossing_time)[i] /
+              (1.0 + get(beta)[i]);
         frac_ka_to_ks = std::max(frac_ka_to_ks, frac_from_beta);
-        gsl::at(gsl::at(*scattering_opacity, ns), ng)[i] += frac_ka_to_ks * ka;
+        gsl::at(gsl::at(*scattering_opacity, ns), ng)[i] +=
+          frac_ka_to_ks * ka;
         gsl::at(gsl::at(*absorption_opacity, ns), ng)[i] *=
             (1.0 - frac_ka_to_ks);
         gsl::at(gsl::at(*emissivity_in_cell, ns), ng)[i] *=
             (1.0 - frac_ka_to_ks);
-        gsl::at(gsl::at(*fraction_ka_to_ks, ns), ng)[i] = frac_ka_to_ks;
+        gsl::at(gsl::at(*fraction_ka_to_ks, ns), ng)[i] =
+          frac_ka_to_ks;
       }
     }
   }

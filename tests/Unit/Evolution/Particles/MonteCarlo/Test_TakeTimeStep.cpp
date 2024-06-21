@@ -10,8 +10,12 @@
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
+#include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Tabulated3d.hpp"
 
 namespace{
 
@@ -33,6 +37,7 @@ void test_flat_space_time_step() {
   DataVector zero_dv_with_ghost(dv_size_with_ghost, 0.0);
   const size_t dv_size_in_ghost = square(size_1d) * num_ghost_zones;
   DataVector zero_dv_in_ghost(dv_size_in_ghost, 0.0);
+  DataVector one_dv_in_ghost(dv_size_in_ghost, 1.0);
 
   // Minkowski metric
   Scalar<DataVector> lapse{DataVector(dv_size, 1.0)};
@@ -95,14 +100,6 @@ void test_flat_space_time_step() {
   mesh_coordinates.get(1) =
       DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
   mesh_coordinates.get(2) =
-      DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
-  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coordinates =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  inertial_coordinates.get(0) =
-      DataVector{-0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5};
-  inertial_coordinates.get(1) =
-      DataVector{-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};
-  inertial_coordinates.get(2) =
       DataVector{-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5};
 
   const size_t species = 1;
@@ -186,6 +183,12 @@ void test_flat_space_time_step() {
       table_data, table_neutrino_energies, table_log_density,
       table_log_temperature, table_electron_fraction);
 
+  std::string h5_file_name_compose{
+    unit_test_src_path() +
+    "PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5"};
+  EquationsOfState::Tabulated3D<true> equation_of_state(h5_file_name_compose,
+                                                        "/dd2");
+
   // Currently we choose values leading to no interaction, for
   // predictability...
   Scalar<DataVector> baryon_density(dv_size, 1.e-10);
@@ -194,6 +197,7 @@ void test_flat_space_time_step() {
   Scalar<DataVector> lorentz_factor(dv_size, 1.0);
   tnsr::i<DataVector, 3, Frame::Inertial> lower_spatial_four_velocity =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  Scalar<DataVector> cell_light_crossing_time(dv_size, 0.6);
 
   // Ghost zone data (currently zero for all fluid variables on lower end of
   // element and nullopt on upper end of element)
@@ -201,6 +205,8 @@ void test_flat_space_time_step() {
   DirectionalIdMap<3, std::optional<DataVector>> temperature_ghost_zones{};
   DirectionalIdMap<3, std::optional<DataVector>>
       electron_fraction_ghost_zones{};
+  DirectionalIdMap<3, std::optional<DataVector>>
+      cell_light_crossing_time_ghost_zones{};
   for (size_t d = 0; d < 3; d++) {
     Direction<3> up(d, Side::Upper);
     Direction<3> down(d, Side::Lower);
@@ -217,22 +223,26 @@ void test_flat_space_time_step() {
         std::pair{DirectionalId<3>{up, dummy_neighbor_index}, std::nullopt});
     electron_fraction_ghost_zones.insert(std::pair{
         DirectionalId<3>{down, dummy_neighbor_index}, zero_dv_in_ghost});
+    cell_light_crossing_time_ghost_zones.insert(
+        std::pair{DirectionalId<3>{up, dummy_neighbor_index}, std::nullopt});
+    cell_light_crossing_time_ghost_zones.insert(std::pair{
+        DirectionalId<3>{down, dummy_neighbor_index}, one_dv_in_ghost});
   }
 
   double current_time = start_time;
   while (current_time < final_time) {
     MonteCarloStruct.take_time_step_on_element(
         &packets, &generator, &single_packet_energy, current_time,
-        current_time + time_step, interaction_table, electron_fraction,
-        baryon_density, temperature, lorentz_factor,
+        current_time + time_step, equation_of_state, interaction_table,
+        electron_fraction, baryon_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-        determinant_spatial_metric, mesh, mesh_coordinates,
-        inertial_coordinates, num_ghost_zones,
-        mesh_velocity, inverse_jacobian_logical_to_inertial,
-        det_jacobian_logical_to_inertial, jacobian_inertial_to_fluid,
-        inverse_jacobian_inertial_to_fluid, electron_fraction_ghost_zones,
-        baryon_density_ghost_zones, temperature_ghost_zones);
+        determinant_spatial_metric, cell_light_crossing_time, mesh,
+        mesh_coordinates, num_ghost_zones, mesh_velocity,
+        inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
+        jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid,
+        electron_fraction_ghost_zones, baryon_density_ghost_zones,
+        temperature_ghost_zones, cell_light_crossing_time_ghost_zones);
     current_time += time_step;
     const double expected_x0 = -0.5 + current_time;
     // Note that the index dv_size is used to represent all GZs
