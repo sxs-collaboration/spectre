@@ -7,9 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
-#include <optional>
 #include <pup.h>
-#include <pup_stl.h>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -18,20 +16,21 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
+#include "Time/LargestStepperError.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
-#include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/IsIterable.hpp"
 
 /// \cond
 namespace Tags {
+struct EventsAndTriggers;
 template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute;
 struct StepChoosers;
@@ -192,8 +191,10 @@ class ErrorControl : public StepChooser<StepChooserUse>,
     if (not errors[1].has_value()) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const double l_inf_error =
-        error_calc_impl(history.latest_value(), errors[1]->error);
+    const StepperErrorTolerances tolerances{.absolute = absolute_tolerance_,
+                                            .relative = relative_tolerance_};
+    const double l_inf_error = largest_stepper_error(
+        history.latest_value(), errors[1]->error, tolerances);
     double new_step;
     if (not errors[0].has_value()) {
       new_step =
@@ -202,8 +203,8 @@ class ErrorControl : public StepChooser<StepChooserUse>,
                                           1.0 / (errors[1]->order + 1)),
                      min_factor_, max_factor_);
     } else {
-      const double previous_l_inf_error =
-          error_calc_impl(history.latest_value(), errors[0]->error);
+      const double previous_l_inf_error = largest_stepper_error(
+          history.latest_value(), errors[0]->error, tolerances);
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       ASSERT(errors[0]->order == errors[1]->order,
@@ -237,50 +238,6 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   }
 
  private:
-  template <typename EvolvedType, typename ErrorType>
-  double error_calc_impl(const EvolvedType& values,
-                         const ErrorType& errors) const {
-    if constexpr (std::is_fundamental_v<std::remove_cv_t<EvolvedType>> or
-                  tt::is_complex_of_fundamental_v<
-                      std::remove_cv_t<EvolvedType>>) {
-      return std::abs(errors) /
-             (absolute_tolerance_ +
-              relative_tolerance_ *
-                  std::max(abs(values), abs(values + errors)));
-    } else if constexpr (tt::is_iterable_v<std::remove_cv_t<EvolvedType>>) {
-      double result = 0.0;
-      double recursive_call_result;
-      for (auto val_it = values.begin(), err_it = errors.begin();
-           val_it != values.end(); ++val_it, ++err_it) {
-        recursive_call_result = error_calc_impl(*val_it, *err_it);
-        if (recursive_call_result > result) {
-          result = recursive_call_result;
-        }
-      }
-      return result;
-    } else if constexpr (tt::is_a_v<Variables, std::remove_cv_t<EvolvedType>>) {
-      double result = 0.0;
-      double recursive_call_result;
-      tmpl::for_each<typename EvolvedType::tags_list>(
-          [this, &errors, &values, &recursive_call_result,
-           &result](auto tag_v) {
-            // clang erroneously warns that `this` is not used despite requiring
-            // it in the capture...
-            (void)this;
-            using tag = typename decltype(tag_v)::type;
-            recursive_call_result =
-                error_calc_impl(get<tag>(values), get<tag>(errors));
-            if (recursive_call_result > result) {
-              result = recursive_call_result;
-            }
-          });
-      return result;
-    } else if constexpr (is_any_spin_weighted_v<
-                             std::remove_cv_t<EvolvedType>>) {
-      return error_calc_impl(values.data(), errors.data());
-    }
-  }
-
   double absolute_tolerance_ = std::numeric_limits<double>::signaling_NaN();
   double relative_tolerance_ = std::numeric_limits<double>::signaling_NaN();
   double max_factor_ = std::numeric_limits<double>::signaling_NaN();
