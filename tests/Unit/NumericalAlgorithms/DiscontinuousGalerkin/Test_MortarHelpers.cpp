@@ -317,40 +317,10 @@ void test_projections() {
     }
   }
 }
-
-void test_hash() {
-  CHECK(dg::MortarSizeHash<1>{}({}) == 0);
-
-  CHECK(dg::MortarSizeHash<2>{}({Spectral::ChildSize::LowerHalf}) == 0);
-  CHECK(dg::MortarSizeHash<2>{}({Spectral::ChildSize::Full}) == 0);
-  CHECK(dg::MortarSizeHash<2>{}({Spectral::ChildSize::UpperHalf}) == 1);
-
-  CHECK(dg::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
-                                 Spectral::ChildSize::LowerHalf}) == 0);
-  CHECK(dg::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
-                                 Spectral::ChildSize::LowerHalf}) == 1);
-  CHECK(dg::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::LowerHalf}) == 0);
-
-  CHECK(dg::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
-                                 Spectral::ChildSize::UpperHalf}) == 2);
-  CHECK(dg::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
-                                 Spectral::ChildSize::UpperHalf}) == 3);
-  CHECK(dg::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::UpperHalf}) == 2);
-
-  CHECK(dg::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::LowerHalf, Spectral::ChildSize::Full}) == 0);
-  CHECK(dg::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::UpperHalf, Spectral::ChildSize::Full}) == 1);
-  CHECK(dg::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::Full}) == 0);
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DG.MortarHelpers", "[Unit][NumericalAlgorithms]") {
   test_mortar_mesh();
   test_mortar_size();
   test_projections();
-  test_hash();
 }

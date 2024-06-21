@@ -8,6 +8,8 @@
 #include <functional>
 #include <ostream>
 
+#include "Utilities/ConstantExpressions.hpp"
+
 /// \cond
 class Matrix;
 template <size_t Dim>
@@ -111,4 +113,23 @@ projection_matrix_parent_to_child(
 template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
     const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh);
+
+/// @{
+/// \brief Performs a perfect hash of the mortars into $2^{d-1}$ slots on the
+/// range $[0, 2^{d-1})$.
+///
+/// This is particularly useful when hashing into statically-sized maps based
+/// on the number of dimensions.
+template <size_t DimMinusOne>
+size_t hash(const std::array<Spectral::ChildSize, DimMinusOne>& mortar_size);
+
+template <size_t Dim>
+struct MortarSizeHash {
+  template <size_t MaxSize>
+  static constexpr bool is_perfect = MaxSize == two_to_the(Dim);
+
+  size_t operator()(
+      const std::array<Spectral::ChildSize, Dim - 1>& mortar_size);
+};
+/// @}
 }  // namespace Spectral

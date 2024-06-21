@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ChildSize.cpp
   Test_CreateInitialMesh.cpp
   Test_Direction.cpp
+  Test_DirectionalId.cpp
   Test_Element.cpp
   Test_ElementId.cpp
   Test_Hypercube.cpp

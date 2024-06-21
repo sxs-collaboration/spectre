@@ -532,6 +532,35 @@ void test_p_projection_matrices() {
     }
   }
 }
+
+void test_hash() {
+  CHECK(Spectral::MortarSizeHash<1>{}({}) == 0);
+
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::LowerHalf}) == 0);
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::Full}) == 0);
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::UpperHalf}) == 1);
+
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
+                                       Spectral::ChildSize::LowerHalf}) == 0);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
+                                       Spectral::ChildSize::LowerHalf}) == 1);
+  CHECK(Spectral::MortarSizeHash<3>{}(
+            {Spectral::ChildSize::Full, Spectral::ChildSize::LowerHalf}) == 0);
+
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
+                                       Spectral::ChildSize::UpperHalf}) == 2);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
+                                       Spectral::ChildSize::UpperHalf}) == 3);
+  CHECK(Spectral::MortarSizeHash<3>{}(
+            {Spectral::ChildSize::Full, Spectral::ChildSize::UpperHalf}) == 2);
+
+  CHECK(Spectral::MortarSizeHash<3>{}(
+            {Spectral::ChildSize::LowerHalf, Spectral::ChildSize::Full}) == 0);
+  CHECK(Spectral::MortarSizeHash<3>{}(
+            {Spectral::ChildSize::UpperHalf, Spectral::ChildSize::Full}) == 1);
+  CHECK(Spectral::MortarSizeHash<3>{}(
+            {Spectral::ChildSize::Full, Spectral::ChildSize::Full}) == 0);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
@@ -557,6 +586,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_p_projection_matrices<1>();
   test_p_projection_matrices<2>();
   test_p_projection_matrices<3>();
+  test_hash();
 }
 
 }  // namespace Spectral
