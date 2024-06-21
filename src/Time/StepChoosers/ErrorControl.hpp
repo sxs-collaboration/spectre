@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -22,6 +23,7 @@
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -40,6 +42,15 @@ struct StepChoosers;
 namespace StepChoosers {
 namespace ErrorControl_detail {
 struct IsAnErrorControl {};
+template <typename EvolvedVariableTag>
+struct ErrorControlBase : IsAnErrorControl {
+ public:
+  virtual StepperErrorTolerances tolerances() const = 0;
+
+ protected:
+  ErrorControlBase() = default;
+  ~ErrorControlBase() = default;
+};
 }  // namespace ErrorControl_detail
 
 /*!
@@ -106,8 +117,9 @@ struct IsAnErrorControl {};
  */
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse>,
-                     public ErrorControl_detail::IsAnErrorControl {
+class ErrorControl
+    : public StepChooser<StepChooserUse>,
+      public ErrorControl_detail::ErrorControlBase<EvolvedVariableTag> {
  public:
   /// \cond
   ErrorControl() = default;
@@ -191,10 +203,8 @@ class ErrorControl : public StepChooser<StepChooserUse>,
     if (not errors[1].has_value()) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const StepperErrorTolerances tolerances{.absolute = absolute_tolerance_,
-                                            .relative = relative_tolerance_};
     const double l_inf_error = largest_stepper_error(
-        history.latest_value(), errors[1]->error, tolerances);
+        history.latest_value(), errors[1]->error, tolerances());
     double new_step;
     if (not errors[0].has_value()) {
       new_step =
@@ -204,7 +214,7 @@ class ErrorControl : public StepChooser<StepChooserUse>,
                      min_factor_, max_factor_);
     } else {
       const double previous_l_inf_error = largest_stepper_error(
-          history.latest_value(), errors[0]->error, tolerances);
+          history.latest_value(), errors[0]->error, tolerances());
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       ASSERT(errors[0]->order == errors[1]->order,
@@ -228,6 +238,10 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   }
 
   bool uses_local_data() const override { return true; }
+
+  StepperErrorTolerances tolerances() const override {
+    return {.absolute = absolute_tolerance_, .relative = relative_tolerance_};
+  }
 
   void pup(PUP::er& p) override {  // NOLINT
     p | absolute_tolerance_;
@@ -261,6 +275,7 @@ struct IsUsingTimeSteppingErrorControlCompute
     : db::ComputeTag,
     IsUsingTimeSteppingErrorControl {
   using base = IsUsingTimeSteppingErrorControl;
+  using return_type = type;
   using argument_tags =
       tmpl::conditional_t<LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
                           tmpl::list<::Tags::EventsAndTriggers>>;
@@ -309,6 +324,72 @@ struct IsUsingTimeSteppingErrorControlCompute
             });
       }
     });
+  }
+};
+
+/// \ingroup TimeGroup
+/// \brief A tag that contains the error tolerances if the
+/// `ErrorControl` step chooser is one of the option-created `Event`s.
+template <typename EvolvedVariableTag, bool LocalTimeStepping>
+struct StepperErrorTolerancesCompute
+    : db::ComputeTag,
+      StepperErrorTolerances<EvolvedVariableTag> {
+  using base = StepperErrorTolerances<EvolvedVariableTag>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::conditional_t<LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
+                          tmpl::list<::Tags::EventsAndTriggers>>;
+
+  // local time stepping
+  static void function(
+      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const std::vector<
+          std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
+          step_choosers) {
+    tolerances->reset();
+    for (const auto& step_chooser : step_choosers) {
+      set_tolerances_if_error_control(tolerances, *step_chooser);
+    }
+  }
+
+  // global time stepping
+  static void function(
+      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const ::EventsAndTriggers& events_and_triggers) {
+    tolerances->reset();
+    // In principle the slab size could be changed based on a dense
+    // trigger, but it's not clear that there is ever a good reason to
+    // do so, and it wouldn't make sense to use error control in that
+    // context in any case.
+    events_and_triggers.for_each_event([&](const auto& event) {
+      if (const auto* const change_slab_size =
+              dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
+        change_slab_size->for_each_step_chooser(
+            [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
+              set_tolerances_if_error_control(tolerances, step_chooser);
+            });
+      }
+    });
+  }
+
+ private:
+  template <typename StepChooserUse>
+  static void set_tolerances_if_error_control(
+      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const StepChooser<StepChooserUse>& step_chooser) {
+    if (const auto* const error_control =
+            dynamic_cast<const ::StepChoosers::ErrorControl_detail::
+                             ErrorControlBase<EvolvedVariableTag>*>(
+                &step_chooser);
+        error_control != nullptr) {
+      const auto this_tolerances = error_control->tolerances();
+      if (tolerances->has_value() and tolerances->value() != this_tolerances) {
+        ERROR_NO_TRACE("All ErrorControl events for "
+                       << db::tag_name<EvolvedVariableTag>()
+                       << " must use the same tolerances.");
+      }
+      tolerances->emplace(this_tolerances);
+    }
   }
 };
 }  // namespace Tags
