@@ -425,14 +425,16 @@ RUN apt-get update -y \
 # Install bibtex for Doxygen bibliography management
 # We first install the TeXLive infrastructure according to the configuration in
 # support/TeXLive/texlive.profile and then use it to install the bibtex package.
-RUN mkdir /work/texlive && cd /work/texlive \
+RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
+    mkdir /work/texlive && cd /work/texlive \
     && wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && tar -xzf install-tl-unx.tar.gz \
     && rm install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
     && install-tl-*/install-tl -profile=texlive.profile \
     && rm -r install-tl-* texlive.profile install-tl.log \
-    && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex
+    && /work/texlive/bin/${TEX_ARCH}-linux/tlmgr install bibtex \
+    ; fi
 ENV PATH="${PATH}:/work/texlive/bin/${TEX_ARCH}-linux"
 
 # Remove the apt-get cache in order to reduce image size
