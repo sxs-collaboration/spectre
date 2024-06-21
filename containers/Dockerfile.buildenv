@@ -124,7 +124,7 @@ ARG TARGETARCH
 # Install add-apt-repository and basic tools
 RUN if [ ${UBUNTU_VERSION} = 18.04 ] && [ "$TARGETARCH" = "arm64" ]; then \
     echo "Cannot use Ubuntu 18.04 with ARM" && exit 1; fi && apt-get update -y \
-    && apt-get install -y software-properties-common wget git \
+    && apt-get install -y software-properties-common wget git file \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     add-apt-repository ppa:ubuntu-toolchain-r/test; fi
 
