@@ -7,12 +7,15 @@
 #include <cstddef>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -76,12 +79,33 @@ std::array<Matrix, Dim> exact_logical_mass_matrix(const Mesh<Dim>& mesh) {
 }
 
 template <size_t Dim>
+std::array<Matrix, Dim> diag_logical_mass_matrix(const Mesh<Dim>& mesh) {
+  std::array<Matrix, Dim> result{};
+  for (size_t d = 0; d < Dim; ++d) {
+    const size_t num_points = mesh.extents(d);
+    const auto& weights = Spectral::quadrature_weights(mesh.slice_through(d));
+    gsl::at(result, d) = Matrix(num_points, num_points, 0.);
+    for (size_t i = 0; i < num_points; ++i) {
+      gsl::at(result, d)(i, i) = weights[i];
+    }
+  }
+  return result;
+}
+
+template <typename DataType, size_t Dim>
 void test_apply_mass_matrix(
-    const Mesh<Dim>& mesh, const DataVector& scalar_field,
-    const DataVector& expected_mass_matrix_times_scalar_field) {
+    const Mesh<Dim>& mesh, const std::array<Matrix, Dim>& mass_matrix,
+    const gsl::not_null<std::mt19937*> gen,
+    const gsl::not_null<std::uniform_real_distribution<double>*> dist) {
+  CAPTURE(mesh);
   const size_t num_grid_points = mesh.number_of_grid_points();
+  const auto scalar_field =
+      make_with_random_values<DataType>(gen, dist, num_grid_points);
+  CAPTURE(scalar_field);
+  const auto expected_mass_matrix_times_scalar_field =
+      apply_matrices(mass_matrix, scalar_field, mesh.extents());
   {
-    INFO("Test with DataVector");
+    INFO("Test with scalar");
     auto result = scalar_field;
     apply_mass_matrix(make_not_null(&result), mesh);
     CHECK_ITERABLE_APPROX(result, expected_mass_matrix_times_scalar_field);
@@ -90,11 +114,11 @@ void test_apply_mass_matrix(
   }
   {
     INFO("Test with Variables");
-    using tag1 = ::Tags::TempScalar<0>;
-    using tag2 = ::Tags::TempScalar<1>;
+    using tag1 = ::Tags::TempScalar<0, DataType>;
+    using tag2 = ::Tags::TempScalar<1, DataType>;
     Variables<tmpl::list<tag1, tag2>> vars{num_grid_points};
-    get<tag1>(vars) = Scalar<DataVector>(scalar_field);
-    get<tag2>(vars) = Scalar<DataVector>(scalar_field);
+    get<tag1>(vars) = Scalar<DataType>(scalar_field);
+    get<tag2>(vars) = Scalar<DataType>(scalar_field);
     apply_mass_matrix(make_not_null(&vars), mesh);
     CHECK_ITERABLE_APPROX(get(get<tag1>(vars)),
                           expected_mass_matrix_times_scalar_field);
@@ -106,83 +130,78 @@ void test_apply_mass_matrix(
   }
 }
 
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
-                  "[NumericalAlgorithms][Unit]") {
+template <typename DataType>
+void test_apply_mass_matrix() {
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<double> dist(-1., 1.);
   {
     INFO("1D");
     {
       INFO("Gauss quadrature (exact)");
       const Mesh<1> mesh{
           {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
-      const DataVector data{1., 2., 3., 4.};
-      const auto mass_matrix = exact_logical_mass_matrix(mesh);
-      const auto massive_data =
-          apply_matrices(mass_matrix, data, mesh.extents());
-      test_apply_mass_matrix(mesh, data, massive_data);
+      test_apply_mass_matrix<DataType>(mesh, exact_logical_mass_matrix(mesh),
+                                       make_not_null(&gen),
+                                       make_not_null(&dist));
     }
     {
       INFO("Gauss-Lobatto quadrature");
       const Mesh<1> mesh{
           {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-      test_apply_mass_matrix(mesh, {1., 2., 3., 4.},
-                             // Data divided by LGL quadrature weights
-                             DataVector{1., 10., 15., 4.} / 6.);
+      test_apply_mass_matrix<DataType>(mesh, diag_logical_mass_matrix(mesh),
+                                       make_not_null(&gen),
+                                       make_not_null(&dist));
+    }
+    {
+      INFO("2D");
+      {
+        INFO("Gauss quadrature (exact)");
+        const Mesh<2> mesh{
+            {{4, 2}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
+        test_apply_mass_matrix<DataType>(mesh, exact_logical_mass_matrix(mesh),
+                                         make_not_null(&gen),
+                                         make_not_null(&dist));
+      }
+      {
+        INFO("Gauss-Lobatto quadrature");
+        const Mesh<2> mesh{{{4, 2}},
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto};
+        test_apply_mass_matrix<DataType>(mesh, diag_logical_mass_matrix(mesh),
+                                         make_not_null(&gen),
+                                         make_not_null(&dist));
+      }
+    }
+    {
+      INFO("3D");
+      {
+        INFO("Gauss quadrature (exact)");
+        const Mesh<3> mesh{{{4, 2, 3}},
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::Gauss};
+        test_apply_mass_matrix<DataType>(mesh, exact_logical_mass_matrix(mesh),
+                                         make_not_null(&gen),
+                                         make_not_null(&dist));
+      }
+      {
+        INFO("Gauss-Lobatto quadrature");
+        const Mesh<3> mesh{{{4, 2, 3}},
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto};
+        test_apply_mass_matrix<DataType>(mesh, diag_logical_mass_matrix(mesh),
+                                         make_not_null(&gen),
+                                         make_not_null(&dist));
+      }
     }
   }
-  {
-    INFO("2D");
-    {
-      INFO("Gauss quadrature (exact)");
-      const Mesh<2> mesh{
-          {{4, 2}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
-      const DataVector data{1., 2., 3., 4., 5., 6., 7., 8.};
-      const auto mass_matrix = exact_logical_mass_matrix(mesh);
-      const auto massive_data =
-          apply_matrices(mass_matrix, data, mesh.extents());
-      test_apply_mass_matrix(mesh, data, massive_data);
-    }
-    {
-      INFO("Gauss-Lobatto quadrature");
-      const Mesh<2> mesh{{{4, 2}},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
-      test_apply_mass_matrix(
-          mesh, {1., 2., 3., 4., 5., 6., 7., 8.},
-          // Data divided by LGL quadrature weights
-          DataVector{1., 10., 15., 4., 5., 30., 35., 8.} / 6.);
-    }
-  }
-  {
-    INFO("3D");
-    {
-      INFO("Gauss quadrature (exact)");
-      const Mesh<3> mesh{
-          {{4, 2, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
-      const DataVector data{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,
-                            9.,  10., 11., 12., 13., 14., 15., 16.,
-                            17., 18., 19., 20., 21., 22., 23., 24.};
-      const auto mass_matrix = exact_logical_mass_matrix(mesh);
-      const auto massive_data =
-          apply_matrices(mass_matrix, data, mesh.extents());
-      test_apply_mass_matrix(mesh, data, massive_data);
-    }
-    {
-      INFO("Gauss-Lobatto quadrature");
-      const Mesh<3> mesh{{{4, 2, 3}},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto};
-      test_apply_mass_matrix(
-          mesh, {1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.},
-          // Data divided by LGL quadrature weights
-          DataVector{1.,  10.,  15.,  4.,  5.,  30.,  35.,  8.,
-                     36., 200., 220., 48., 52., 280., 300., 64.,
-                     17., 90.,  95.,  20., 21., 110., 115., 24.} /
-              18.);
-    }
-  }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.DiscontinuousGalerkin.ApplyMassMatrix",
+                  "[NumericalAlgorithms][Unit]") {
+  test_apply_mass_matrix<DataVector>();
+  test_apply_mass_matrix<ComplexDataVector>();
 }
 
 }  // namespace dg
