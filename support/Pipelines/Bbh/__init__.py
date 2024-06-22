@@ -39,11 +39,9 @@ class Bbh(click.MultiCommand):
             from .Ringdown import start_ringdown_command
 
             return start_ringdown_command
-
-        available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise RequiredChoiceError(
             f"The command '{name}' is not implemented.",
-            choices=available_commands,
+            choices=self.list_commands(ctx),
         )
 
 
