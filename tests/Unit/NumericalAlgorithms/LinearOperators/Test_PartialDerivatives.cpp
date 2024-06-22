@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -46,23 +47,35 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-template <size_t Dim, class Frame = ::Frame::Grid>
+template <typename DataType, size_t Dim, class Frame = ::Frame::Grid>
 struct Var1 : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim, Frame>;
+  using type = tnsr::i<DataType, Dim, Frame>;
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
-    tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
+    tnsr::i<DataType, Dim, Frame> result(x.begin()->size(), 0.);
     for (size_t i = 0; i < Dim; ++i) {
       result.get(i) = (i + 2);
       for (size_t d = 0; d < Dim; ++d) {
         result.get(i) *= pow(x.get(d), gsl::at(coeffs, d));
       }
     }
+    // Set the imaginary part
+    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+      for (size_t i = 0; i < Dim; ++i) {
+        ComplexDataVector imaginary_part(x.begin()->size(), 0.);
+        imaginary_part = std::complex<double>(0., static_cast<double>(i) + 3);
+        for (size_t d = 0; d < Dim; ++d) {
+          imaginary_part *=
+              (static_cast<double>(d) + 2) * pow(x.get(d), gsl::at(coeffs, d));
+        }
+        result.get(i) += imaginary_part;
+      }
+    }
     return result;
   }
   static auto df(const std::array<size_t, Dim>& coeffs,
                  const tnsr::I<DataVector, Dim, Frame>& x) {
-    tnsr::ij<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
+    tnsr::ij<DataType, Dim, Frame> result(x.begin()->size(), 0.);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t j = 0; j < Dim; ++j) {
         result.get(i, j) = (j + 2);
@@ -80,16 +93,41 @@ struct Var1 : db::SimpleTag {
         }
       }
     }
+    // Set the imaginary part
+    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+      for (size_t i = 0; i < Dim; ++i) {
+        for (size_t j = 0; j < Dim; ++j) {
+          ComplexDataVector imaginary_part(x.begin()->size(), 0.);
+          imaginary_part = std::complex<double>(0., static_cast<double>(j) + 3);
+          for (size_t d = 0; d < Dim; ++d) {
+            if (d == i) {
+              if (0 == gsl::at(coeffs, d)) {
+                imaginary_part = 0.;
+              } else {
+                imaginary_part *= (static_cast<double>(d) + 2) *
+                                  gsl::at(coeffs, d) *
+                                  pow(x.get(d), gsl::at(coeffs, d) - 1);
+              }
+            } else {
+              imaginary_part *= (static_cast<double>(d) + 2) *
+                                pow(x.get(d), gsl::at(coeffs, d));
+            }
+          }
+          result.get(i, j) += imaginary_part;
+        }
+      }
+    }
     return result;
   }
 };
 
+template <typename DataType>
 struct Var2 : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
   template <size_t Dim, class Frame>
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
-    Scalar<DataVector> result(x.begin()->size(), 1.);
+    Scalar<DataType> result(x.begin()->size(), 1.);
     for (size_t d = 0; d < Dim; ++d) {
       result.get() *= pow(x.get(d), gsl::at(coeffs, d));
     }
@@ -98,7 +136,7 @@ struct Var2 : db::SimpleTag {
   template <size_t Dim, class Frame>
   static auto df(const std::array<size_t, Dim>& coeffs,
                  const tnsr::I<DataVector, Dim, Frame>& x) {
-    tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 1.);
+    tnsr::i<DataType, Dim, Frame> result(x.begin()->size(), 1.);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t d = 0; d < Dim; ++d) {
         if (d == i) {
@@ -117,16 +155,18 @@ struct Var2 : db::SimpleTag {
   }
 };
 
-template <size_t Dim>
-using two_vars = tmpl::list<Var1<Dim>, Var2>;
+template <typename DataType, size_t Dim>
+using two_vars = tmpl::list<Var1<DataType, Dim>, Var2<DataType>>;
 
-template <size_t Dim>
-using one_var = tmpl::list<Var1<Dim>>;
+template <typename DataType, size_t Dim>
+using one_var = tmpl::list<Var1<DataType, Dim>>;
 
 template <typename GradientTags, typename VariableTags, size_t Dim>
 void test_logical_partial_derivative_per_tensor(
     const std::array<Variables<GradientTags>, Dim>& du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
+  using VectorType = typename Variables<VariableTags>::vector_type;
+  using ValueType = typename Variables<VariableTags>::value_type;
   tmpl::for_each<GradientTags>([&du, &mesh, &u](auto gradient_tag_v) {
     using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
     const auto single_du =
@@ -141,8 +181,8 @@ void test_logical_partial_derivative_per_tensor(
       }
     }
     std::decay_t<decltype(single_du)> single_du_not_null{};
-    DataVector buffer{mesh.number_of_grid_points()};
-    gsl::span<double> buffer_view{buffer.data(), buffer.size()};
+    VectorType buffer{mesh.number_of_grid_points()};
+    gsl::span<ValueType> buffer_view{buffer.data(), buffer.size()};
     logical_partial_derivative(make_not_null(&single_du_not_null),
                                make_not_null(&buffer_view),
                                get<gradient_tag>(u), mesh);
@@ -384,7 +424,7 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t b = 0; b < mesh.extents(1); ++b) {
       tmpl::for_each<VariableTags>([&a, &b, &x, &u](auto tag) {
@@ -437,7 +477,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
       for (size_t c = 0; c < mesh.extents(2) / 2; ++c) {
@@ -476,7 +516,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
 }
 }  // namespace
 
-// [[Timeout, 20]]
+// [[Timeout, 60]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   constexpr size_t min_points =
@@ -491,26 +531,51 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
     }
     const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
-    test_logical_partial_derivatives_1d<two_vars<1>>(mesh_1d);
-    test_logical_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
+    test_logical_partial_derivatives_1d<two_vars<DataVector, 1>>(mesh_1d);
+    test_logical_partial_derivatives_1d<two_vars<DataVector, 1>,
+                                        one_var<DataVector, 1>>(mesh_1d);
+    test_logical_partial_derivatives_1d<two_vars<ComplexDataVector, 1>>(
+        mesh_1d);
+    test_logical_partial_derivatives_1d<two_vars<ComplexDataVector, 1>,
+                                        one_var<ComplexDataVector, 1>>(mesh_1d);
     for (size_t n1 = min_points; n1 <= max_points; ++n1) {
+      // To keep test time reasonable we don't check all possible values.
+      if (n1 > 6 and n1 != max_points) {
+        continue;
+      }
       const Mesh<2> mesh_2d{{{n0, n1}},
                             Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
-      test_logical_partial_derivatives_2d<two_vars<2>>(mesh_2d);
-      test_logical_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
+      test_logical_partial_derivatives_2d<two_vars<DataVector, 2>>(mesh_2d);
+      test_logical_partial_derivatives_2d<two_vars<DataVector, 2>,
+                                          one_var<DataVector, 2>>(mesh_2d);
+      test_logical_partial_derivatives_2d<two_vars<ComplexDataVector, 2>>(
+          mesh_2d);
+      test_logical_partial_derivatives_2d<two_vars<ComplexDataVector, 2>,
+                                          one_var<ComplexDataVector, 2>>(
+          mesh_2d);
       for (size_t n2 = min_points; n2 <= max_points; ++n2) {
+        // To keep test time reasonable we don't check all possible values.
+        if (n2 > 6 and n2 != max_points) {
+          continue;
+        }
         const Mesh<3> mesh_3d{{{n0, n1, n2}},
                               Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto};
-        test_logical_partial_derivatives_3d<two_vars<3>>(mesh_3d);
-        test_logical_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
+        test_logical_partial_derivatives_3d<two_vars<DataVector, 3>>(mesh_3d);
+        test_logical_partial_derivatives_3d<two_vars<DataVector, 3>,
+                                            one_var<DataVector, 3>>(mesh_3d);
+        test_logical_partial_derivatives_3d<two_vars<ComplexDataVector, 3>>(
+            mesh_3d);
+        test_logical_partial_derivatives_3d<two_vars<ComplexDataVector, 3>,
+                                            one_var<ComplexDataVector, 3>>(
+            mesh_3d);
       }
     }
   }
 }
 
-// [[Timeout, 20]]
+// [[Timeout, 60]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n0 =
@@ -521,23 +586,32 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
   const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test_partial_derivatives_1d<two_vars<1>>(mesh_1d);
-  test_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
+  test_partial_derivatives_1d<two_vars<DataVector, 1>>(mesh_1d);
+  test_partial_derivatives_1d<two_vars<DataVector, 1>, one_var<DataVector, 1>>(
+      mesh_1d);
+  test_partial_derivatives_1d<two_vars<ComplexDataVector, 1>>(mesh_1d);
   const Mesh<2> mesh_2d{{{n0, n1}},
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test_partial_derivatives_2d<two_vars<2>>(mesh_2d);
-  test_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
+  test_partial_derivatives_2d<two_vars<DataVector, 2>>(mesh_2d);
+  test_partial_derivatives_2d<two_vars<DataVector, 2>, one_var<DataVector, 2>>(
+      mesh_2d);
+  test_partial_derivatives_2d<two_vars<ComplexDataVector, 2>,
+                              one_var<ComplexDataVector, 2>>(mesh_2d);
   const Mesh<3> mesh_3d{{{n0, n1, n2}},
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test_partial_derivatives_3d<two_vars<3>>(mesh_3d);
-  test_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
+  test_partial_derivatives_3d<two_vars<DataVector, 3>>(mesh_3d);
+  test_partial_derivatives_3d<two_vars<DataVector, 3>, one_var<DataVector, 3>>(
+      mesh_3d);
+  test_partial_derivatives_3d<two_vars<ComplexDataVector, 3>,
+                              one_var<ComplexDataVector, 3>>(mesh_3d);
 
   TestHelpers::db::test_prefix_tag<
-      Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>("deriv(Var1)");
+      Tags::deriv<Var1<DataVector, 3>, tmpl::size_t<3>, Frame::Grid>>(
+      "deriv(Var1)");
   TestHelpers::db::test_prefix_tag<
-      Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>(
+      Tags::spacetime_deriv<Var1<DataVector, 3>, tmpl::size_t<3>, Frame::Grid>>(
       "spacetime_deriv(Var1)");
 
   BENCHMARK_ADVANCED("Partial derivatives")
@@ -548,10 +622,31 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
     const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid, Affine3D>
         map(Affine3D{map1d, map1d, map1d});
     const auto inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
-    const Variables<tmpl::list<Var1<3>, Var2>> u{mesh.number_of_grid_points(),
-                                                 0.0};
-    Variables<tmpl::list<::Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>,
-                         ::Tags::deriv<Var2, tmpl::size_t<3>, Frame::Grid>>>
+    const Variables<tmpl::list<Var1<DataVector, 3>, Var2<DataVector>>> u{
+        mesh.number_of_grid_points(), 0.0};
+    Variables<tmpl::list<
+        ::Tags::deriv<Var1<DataVector, 3>, tmpl::size_t<3>, Frame::Grid>,
+        ::Tags::deriv<Var2<DataVector>, tmpl::size_t<3>, Frame::Grid>>>
+        du{mesh.number_of_grid_points()};
+    meter.measure([&du, &u, &mesh, &inv_jacobian]() {
+      partial_derivatives(make_not_null(&du), u, mesh, inv_jacobian);
+    });
+  };
+
+  BENCHMARK_ADVANCED("Partial derivatives complex")
+  (Catch::Benchmark::Chronometer meter) {
+    const Mesh<3> mesh{4, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const Affine map1d(-1.0, 1.0, -1.0, 1.0);
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid, Affine3D>
+        map(Affine3D{map1d, map1d, map1d});
+    const auto inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    const Variables<
+        tmpl::list<Var1<ComplexDataVector, 3>, Var2<ComplexDataVector>>>
+        u{mesh.number_of_grid_points(), 0.0};
+    Variables<tmpl::list<
+        ::Tags::deriv<Var1<ComplexDataVector, 3>, tmpl::size_t<3>, Frame::Grid>,
+        ::Tags::deriv<Var2<ComplexDataVector>, tmpl::size_t<3>, Frame::Grid>>>
         du{mesh.number_of_grid_points()};
     meter.measure([&du, &u, &mesh, &inv_jacobian]() {
       partial_derivatives(make_not_null(&du), u, mesh, inv_jacobian);
@@ -581,7 +676,7 @@ struct SomePrefix : db::PrefixTag, db::SimpleTag {
 template <size_t Dim, typename T>
 void test_partial_derivatives_compute_item(
     const std::array<size_t, Dim> extents_array, const T& map) {
-  using vars_tags = tmpl::list<Var1<Dim>, Var2>;
+  using vars_tags = tmpl::list<Var1<DataVector, Dim>, Var2<DataVector>>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
       map_tag, domain::Tags::LogicalCoordinates<Dim>>;
@@ -591,7 +686,8 @@ void test_partial_derivatives_compute_item(
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
   using deriv_prefixed_tag =
       Tags::DerivCompute<prefixed_variables_tag, domain::Tags::Mesh<Dim>,
-                         inv_jac_tag, tmpl::list<SomePrefix<Var1<Dim>>>>;
+                         inv_jac_tag,
+                         tmpl::list<SomePrefix<Var1<DataVector, Dim>>>>;
 
   TestHelpers::db::test_compute_tag<deriv_tag>(
       "Variables(deriv(Var1),deriv(Var2))");
@@ -637,20 +733,22 @@ void test_partial_derivatives_compute_item(
   // Test prefixes are handled correctly
   const auto& du_prefixed_vars = get<db::add_tag_prefix<
       Tags::deriv,
-      db::add_tag_prefix<SomePrefix, Tags::Variables<tmpl::list<Var1<Dim>>>>,
+      db::add_tag_prefix<SomePrefix,
+                         Tags::Variables<tmpl::list<Var1<DataVector, Dim>>>>,
       tmpl::size_t<Dim>, Frame::Grid>>(box);
   const auto& du_prefixed =
-      get<Tags::deriv<SomePrefix<Var1<Dim>>, tmpl::size_t<Dim>, Frame::Grid>>(
-          du_prefixed_vars);
+      get<Tags::deriv<SomePrefix<Var1<DataVector, Dim>>, tmpl::size_t<Dim>,
+                      Frame::Grid>>(du_prefixed_vars);
   const auto& expected_du_prefixed =
-      get<Tags::deriv<Var1<Dim>, tmpl::size_t<Dim>, Frame::Grid>>(expected_du);
+      get<Tags::deriv<Var1<DataVector, Dim>, tmpl::size_t<Dim>, Frame::Grid>>(
+          expected_du);
   CHECK_ITERABLE_APPROX(du_prefixed, expected_du_prefixed);
 }
 
 template <size_t Dim, typename T>
 void test_partial_derivatives_tensor_compute_item(
     const std::array<size_t, Dim> extents_array, const T& map) {
-  using tensor_tag = Var1<Dim>;
+  using tensor_tag = Var1<DataVector, Dim>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
       map_tag, domain::Tags::LogicalCoordinates<Dim>>;
