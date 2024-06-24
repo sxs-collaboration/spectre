@@ -174,6 +174,7 @@
 #include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticRotor.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
@@ -614,6 +615,10 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         // Restrict to monotonic time steppers in LTS to avoid control

@@ -143,7 +143,11 @@ struct Metavariables {
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
-                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>>;
+                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>>;
   };
 
   // Collect all reduction tags for observers

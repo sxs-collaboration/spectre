@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Poloidal.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
@@ -27,6 +28,17 @@
 
 namespace grmhd::AnalyticData {
 namespace {
+
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<MagnetizedTovStar>>,
+                  tmpl::pair<InitialMagneticFields::InitialMagneticField,
+                             tmpl::list<InitialMagneticFields::Poloidal>>>;
+  };
+};
 
 static_assert(
     not is_analytic_solution_v<MagnetizedTovStar>,
@@ -181,14 +193,13 @@ void test_equality() {
 }
 
 void test_magnetized_tov_star(const TovCoordinates coord_system) {
-  register_derived_classes_with_charm<
-      grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField>();
+  register_factory_classes_with_charm<Metavariables>();
   register_classes_with_charm<grmhd::AnalyticData::MagnetizedTovStar>();
   register_classes_with_charm<EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
-      TestHelpers::test_option_tag_factory_creation<
+      TestHelpers::test_option_tag<
           evolution::initial_data::OptionTags::InitialData,
-          grmhd::AnalyticData::MagnetizedTovStar>(
+          Metavariables>(
           "MagnetizedTovStar:\n"
           "  CentralDensity: 1.28e-3\n"
           "  EquationOfState:\n"
