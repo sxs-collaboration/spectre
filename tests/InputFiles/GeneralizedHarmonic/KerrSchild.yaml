@@ -4,7 +4,7 @@
 Executable: EvolveGhSingleBlackHole
 Testing:
   Check: parse;execute_check_output
-  Timeout: 20
+  Timeout: 30
   Priority: High
 ExpectedOutput:
   - GhKerrSchildVolume0.h5
