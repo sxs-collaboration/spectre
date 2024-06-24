@@ -41,7 +41,8 @@ class TestInspiral(unittest.TestCase):
             executable=str(self.bin_dir / "SolveXcts"),
         )
         self.id_dir = self.test_dir / "ID"
-        self.horizons_filename = self.id_dir / "Horizons.h5"
+        # Purposefully not in the ID directory
+        self.horizons_filename = self.test_dir / "Horizons.h5"
         with spectre_h5.H5File(
             str(self.horizons_filename.resolve()), "a"
         ) as horizons_file:
@@ -60,6 +61,7 @@ class TestInspiral(unittest.TestCase):
         params = inspiral_parameters(
             id_input_file=id_input_file,
             id_run_dir=self.id_dir,
+            id_horizons_path=self.horizons_filename,
             refinement_level=1,
             polynomial_order=5,
         )
@@ -109,6 +111,8 @@ class TestInspiral(unittest.TestCase):
             "1",
             "--polynomial-order",
             "5",
+            "--id-horizons-path",
+            str(self.horizons_filename),
             "-E",
             str(self.bin_dir / "EvolveGhBinaryBlackHole"),
         ]
