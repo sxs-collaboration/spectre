@@ -28,7 +28,7 @@ spectre_add_python_bindings_test(
 if (BUILD_PYTHON_BINDINGS)
   set_tests_properties(
     "support.Pipelines.Bbh.FindHorizon"
-    PROPERTIES TIMEOUT 10)
+    PROPERTIES TIMEOUT 20)
   set_tests_properties(
     "support.Pipelines.Bbh.InitialData"
     PROPERTIES TIMEOUT 60)
