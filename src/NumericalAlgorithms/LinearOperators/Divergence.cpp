@@ -6,7 +6,9 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -17,35 +19,33 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <size_t Dim, typename DerivativeFrame>
+template <typename DataType, size_t Dim, typename DerivativeFrame>
 struct VectorTag : db::SimpleTag {
-  using type = tnsr::I<DataVector, Dim, DerivativeFrame>;
+  using type = tnsr::I<DataType, Dim, DerivativeFrame>;
 };
 }  // namespace
 
-template <size_t Dim, typename DerivativeFrame>
-Scalar<DataVector> divergence(
-    const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
-    const Mesh<Dim>& mesh,
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+Scalar<DataType> divergence(
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
-  Scalar<DataVector> div_input{mesh.number_of_grid_points()};
+  Scalar<DataType> div_input{mesh.number_of_grid_points()};
   divergence(make_not_null(&div_input), input, mesh, inverse_jacobian);
   return div_input;
 }
 
-template <size_t Dim, typename DerivativeFrame>
-void divergence(
-    const gsl::not_null<Scalar<DataVector>*> div_input,
-    const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
-    const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) {
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+void divergence(const gsl::not_null<Scalar<DataType>*> div_input,
+                const tnsr::I<DataType, Dim, DerivativeFrame>& input,
+                const Mesh<Dim>& mesh,
+                const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                      DerivativeFrame>& inverse_jacobian) {
   set_number_of_grid_points(div_input, mesh.number_of_grid_points());
 
   // We have to copy into a Variables because we don't currently have partial
   // derivative functions for anything other than Variables.
-  using VectorTag = VectorTag<Dim, DerivativeFrame>;
+  using VectorTag = VectorTag<DataType, Dim, DerivativeFrame>;
   Variables<tmpl::list<VectorTag>> vars{get<0>(input).size()};
   get<VectorTag>(vars) = input;
   const auto logical_derivs =
@@ -61,24 +61,27 @@ void divergence(
   }
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                              \
   template void divergence(                                               \
-    const gsl::not_null<Scalar<DataVector>*> div_input,                   \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,           \
+      const gsl::not_null<Scalar<DTYPE(data)>*> div_input,                \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& input,          \
       const Mesh<DIM(data)>& mesh,                                        \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
                             FRAME(data)>& inverse_jacobian);              \
-  template Scalar<DataVector> divergence(                                 \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,           \
+  template Scalar<DTYPE(data)> divergence(                                \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& input,          \
       const Mesh<DIM(data)>& mesh,                                        \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
                             FRAME(data)>& inverse_jacobian);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector, ComplexDataVector), (1, 2, 3),
+                        (Frame::Grid, Frame::Inertial))
 
+#undef DTYPE
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
