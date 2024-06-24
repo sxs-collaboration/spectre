@@ -67,7 +67,7 @@ initial_shape_and_size_funcs(
         const ylm::Strahlkorper<Frame::Distorted> file_strahlkorper =
             ylm::read_surface_ylm_single_time<Frame::Distorted>(
                 h5_filename, gsl::at(subfile_names, i), match_time,
-                match_time_epsilon);
+                match_time_epsilon, files.check_frame);
         const ylm::Strahlkorper<Frame::Distorted> this_strahlkorper{
             shape_options.l_max, 1.0, std::array{0.0, 0.0, 0.0}};
 

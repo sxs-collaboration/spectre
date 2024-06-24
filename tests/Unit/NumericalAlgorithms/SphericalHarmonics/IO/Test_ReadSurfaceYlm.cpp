@@ -327,6 +327,16 @@ void test_single_time(const std::string& test_filename) {
     CHECK(expected_strahlkorpers[2] == read_in_strahlkorper);
   }
 
+  {
+    const ylm::Strahlkorper<Frame::Grid> read_in_strahlkorper =
+        ylm::read_surface_ylm_single_time<Frame::Grid>(
+            test_filename, subfile_name, 0.2, 1e-2, false);
+
+    // Just check the coefficients since == won't work with different frames
+    CHECK(expected_strahlkorpers[2].coefficients() ==
+          read_in_strahlkorper.coefficients());
+  }
+
   CHECK_THROWS_WITH(
       ylm::read_surface_ylm_single_time<frame>(test_filename, subfile_name, 0.3,
                                                1e-12),

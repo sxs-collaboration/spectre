@@ -33,23 +33,25 @@ const size_t num_non_coef_headers = 5;
 
 // check that the headers of the legend are what we expect them to be
 template <typename Frame>
-void check_legend(const std::vector<std::string>& legend) {
+void check_legend(const std::vector<std::string>& legend,
+                  const bool check_frame = true) {
   const std::string expected_frame{get_output(Frame{})};
 
   // check format and ordering of non-coefficient headers
   const auto check_header = [&legend](const size_t column,
-                                      const std::string& expected_header) {
+                                      const std::string& expected_header,
+                                      const bool check = true) {
     const std::string& read_header = gsl::at(legend, column);
-    if (read_header != expected_header) {
+    if (check and read_header != expected_header) {
       ERROR("In column " << column << " of the Ylm legend, expected header "
                          << expected_header << " but got header " << read_header
                          << ".");
     }
   };
   check_header(0, "Time");
-  check_header(1, expected_frame + "ExpansionCenter_x");
-  check_header(2, expected_frame + "ExpansionCenter_y");
-  check_header(3, expected_frame + "ExpansionCenter_z");
+  check_header(1, expected_frame + "ExpansionCenter_x", check_frame);
+  check_header(2, expected_frame + "ExpansionCenter_y", check_frame);
+  check_header(3, expected_frame + "ExpansionCenter_z", check_frame);
   check_header(4, "Lmax");
 
   // check format and ordering of coefficient headers
@@ -157,12 +159,12 @@ Strahlkorper<Frame> read_surface_ylm_row(const Matrix& ylm_data,
 template <typename Frame>
 ylm::Strahlkorper<Frame> read_surface_ylm_single_time(
     const std::string& file_name, const std::string& surface_subfile_name,
-    const double time, const double relative_epsilon) {
+    const double time, const double relative_epsilon, const bool check_frame) {
   h5::H5File<h5::AccessType::ReadOnly> file{file_name};
   const std::string ylm_subfile_name{std::string{"/"} + surface_subfile_name};
   const auto& ylm_file = file.get<h5::Dat>(ylm_subfile_name);
   const auto& ylm_legend = ylm_file.get_legend();
-  check_legend<Frame>(ylm_legend);
+  check_legend<Frame>(ylm_legend, check_frame);
 
   std::vector<size_t> columns(ylm_legend.size());
   std::iota(std::begin(columns), std::end(columns), 0);
@@ -247,15 +249,15 @@ std::vector<Strahlkorper<Frame>> read_surface_ylm(
 
 #define FRAMETYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::vector<ylm::Strahlkorper<FRAMETYPE(data)>>                     \
-  ylm::read_surface_ylm<>(const std::string& file_name,                        \
-                          const std::string& surface_subfile_name,             \
-                          size_t requested_number_of_times_from_end);          \
-  template ylm::Strahlkorper<FRAMETYPE(data)>                                  \
-  ylm::read_surface_ylm_single_time<>(const std::string& file_name,            \
-                                      const std::string& surface_subfile_name, \
-                                      double time, double relative_epsilon);
+#define INSTANTIATE(_, data)                                                 \
+  template std::vector<ylm::Strahlkorper<FRAMETYPE(data)>>                   \
+  ylm::read_surface_ylm<>(const std::string& file_name,                      \
+                          const std::string& surface_subfile_name,           \
+                          size_t requested_number_of_times_from_end);        \
+  template ylm::Strahlkorper<FRAMETYPE(data)>                                \
+  ylm::read_surface_ylm_single_time<>(                                       \
+      const std::string& file_name, const std::string& surface_subfile_name, \
+      double time, double relative_epsilon, bool check_frame);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Inertial, Frame::Distorted))

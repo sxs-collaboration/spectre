@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
+import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import start_inspiral
@@ -41,6 +42,15 @@ class TestInitialData(unittest.TestCase):
             executable=str(self.bin_dir / "SolveXcts"),
         )
         self.id_dir = self.test_dir / "ID"
+        self.horizons_filename = self.id_dir / "Horizons.h5"
+        with spectre_h5.H5File(
+            str(self.horizons_filename.resolve()), "a"
+        ) as horizons_file:
+            legend = ["Time", "ChristodoulouMass", "DimensionlessSpinMagnitude"]
+            for subfile_name in ["AhA", "AhB"]:
+                horizons_file.close_current_object()
+                dat_file = horizons_file.try_insert_dat(subfile_name, legend, 0)
+                dat_file.append([[0.0, 1.0, 0.3]])
         start_inspiral(
             id_input_file_path=self.test_dir / "ID" / "InitialData.yaml",
             refinement_level=1,

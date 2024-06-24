@@ -99,8 +99,15 @@ struct YlmsFromFile {
         "because L=1 is degenerate with a translation of the BH.";
   };
 
+  struct CheckFrame {
+    using type = bool;
+    static constexpr Options::String help =
+        "Whether to check if the frame of the Strahlkorper in the file matches "
+        "the Distorted frame.";
+  };
+
   using options = tmpl::list<H5Filename, SubfileNames, MatchTime,
-                             MatchTimeEpsilon, SetL1CoefsToZero>;
+                             MatchTimeEpsilon, SetL1CoefsToZero, CheckFrame>;
 
   static constexpr Options::String help = {
       "Read the Y_lm coefficients of a Strahlkorper from file and use those to "
@@ -111,6 +118,7 @@ struct YlmsFromFile {
   double match_time{};
   std::optional<double> match_time_epsilon{};
   bool set_l1_coefs_to_zero{};
+  bool check_frame{true};
 };
 
 /*!

@@ -75,7 +75,7 @@ class TestStrahlkorper(unittest.TestCase):
         )
         self.assertEqual(
             read_surface_ylm_single_time(
-                self.filename, "Strahlkorper", 1.0, 0.0
+                self.filename, "Strahlkorper", 1.0, 0.0, True
             ),
             strahlkorper,
         )

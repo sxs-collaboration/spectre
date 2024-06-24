@@ -12,8 +12,10 @@ from typing import Optional, Sequence, Union
 import click
 import jinja2
 import jinja2.meta
+import numpy as np
 import yaml
 from rich.pretty import pretty_repr
+from yaml.representer import SafeRepresenter
 
 from spectre.support.DirectoryStructure import (
     Checkpoint,
@@ -650,6 +652,9 @@ def schedule(
         with open(run_dir / context_file_name, "w") as open_context_file:
             yaml_dumper = yaml.SafeDumper
             yaml_dumper.add_multi_representer(Path, _path_representer)
+            yaml_dumper.add_multi_representer(
+                np.float64, SafeRepresenter.represent_float
+            )
             yaml.dump(context, open_context_file, Dumper=yaml_dumper)
 
     # Submit
