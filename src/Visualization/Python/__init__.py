@@ -76,11 +76,9 @@ class PlotCommands(click.MultiCommand):
             )
 
             return plot_trajectories_command
-
-        available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise RequiredChoiceError(
             f"The command '{name}' is not implemented.",
-            choices=available_commands,
+            choices=self.list_commands(ctx),
         )
 
 

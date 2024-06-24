@@ -138,11 +138,9 @@ class Cli(click.MultiCommand):
             )
 
             return validate_input_file_command
-
-        available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise RequiredChoiceError(
             f"The command '{name}' is not implemented.",
-            choices=available_commands,
+            choices=self.list_commands(ctx),
         )
 
 
