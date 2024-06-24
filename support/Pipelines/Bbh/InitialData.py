@@ -317,7 +317,11 @@ def generate_id(
 @click.option(
     "--evolve",
     is_flag=True,
-    help="Evolve the initial data after generation.",
+    help=(
+        "Evolve the initial data after generation. When this flag"
+        "is specified, you must also specify a pipeline directory (-d),"
+        "instead of a run directory (-o)."
+    ),
 )
 @click.option(
     "--pipeline-dir",
