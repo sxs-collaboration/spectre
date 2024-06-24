@@ -27,6 +27,7 @@ target_link_libraries(
   ErrorHandling
   Evolution
   Framework
+  LinearOperators
   DiscontinuousGalerkin
   Domain
   DomainStructure

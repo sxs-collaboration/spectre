@@ -36,6 +36,7 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
+  LinearOperators
   Serialization
   Utilities
   INTERFACE
