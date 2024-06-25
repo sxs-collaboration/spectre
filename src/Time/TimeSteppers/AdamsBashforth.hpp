@@ -277,7 +277,12 @@ class AdamsBashforth : public LtsTimeStepper {
   template <typename T, typename Delta>
   void update_u_common(gsl::not_null<T*> u,
                        const ConstUntypedHistory<T>& history,
-                       const Delta& time_step, size_t order) const;
+                       const Delta& time_step) const;
+
+  template <typename T>
+  void step_error(gsl::not_null<T*> u_error,
+                  const ConstUntypedHistory<T>& history,
+                  const TimeDelta& time_step) const;
 
   template <typename T>
   bool can_change_step_size_impl(const TimeStepId& time_id,

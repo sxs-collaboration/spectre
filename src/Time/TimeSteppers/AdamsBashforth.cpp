@@ -124,7 +124,7 @@ void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
          << " step.  Have " << history.size() << " times, need "
          << history.integration_order());
   *u = *history.back().value;
-  update_u_common(u, history, time_step, history.integration_order());
+  update_u_common(u, history, time_step);
 }
 
 template <typename T>
@@ -137,12 +137,8 @@ bool AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
          << " step.  Have " << history.size() << " times, need "
          << history.integration_order());
   *u = *history.back().value;
-  update_u_common(u, history, time_step, history.integration_order());
-  // the error estimate is only useful once the history has enough elements to
-  // do more than one order of step
-  *u_error = *history.back().value;
-  update_u_common(u_error, history, time_step, history.integration_order() - 1);
-  *u_error = *u - *u_error;
+  update_u_common(u, history, time_step);
+  step_error(u_error, history, time_step);
   return true;
 }
 
@@ -163,18 +159,18 @@ bool AdamsBashforth::dense_update_u_impl(const gsl::not_null<T*> u,
                                          const double time) const {
   const ApproximateTimeDelta time_step{
       time - history.back().time_step_id.step_time().value()};
-  update_u_common(u, history, time_step, history.integration_order());
+  update_u_common(u, history, time_step);
   return true;
 }
 
 template <typename T, typename Delta>
 void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
                                      const ConstUntypedHistory<T>& history,
-                                     const Delta& time_step,
-                                     const size_t order) const {
+                                     const Delta& time_step) const {
   ASSERT(
       history.size() > 0,
       "Cannot meaningfully update the evolved variables with an empty history");
+  const auto order = history.integration_order();
   ASSERT(order <= order_,
          "Requested integration order higher than integrator order");
 
@@ -192,6 +188,47 @@ void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
        history_entry != history.end();
        ++history_entry, ++coefficient) {
     *u += *coefficient * history_entry->derivative;
+  }
+}
+
+template <typename T>
+void AdamsBashforth::step_error(const gsl::not_null<T*> u_error,
+                                const ConstUntypedHistory<T>& history,
+                                const TimeDelta& time_step) const {
+  ASSERT(
+      history.size() > 0,
+      "Cannot meaningfully update the evolved variables with an empty history");
+  const auto order = history.integration_order();
+  ASSERT(order <= order_,
+         "Requested integration order higher than integrator order");
+
+  const auto history_start =
+      history.end() -
+      static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
+  auto coefficients = adams_coefficients::coefficients(
+      history_time_iterator(history_start),
+      history_time_iterator(history.end()),
+      history.back().time_step_id.step_time(),
+      history.back().time_step_id.step_time() + time_step);
+  const auto lower_order_coefficients = adams_coefficients::coefficients(
+      history_time_iterator(history_start + 1),
+      history_time_iterator(history.end()),
+      history.back().time_step_id.step_time(),
+      history.back().time_step_id.step_time() + time_step);
+  for (size_t i = 0; i < lower_order_coefficients.size(); ++i) {
+    coefficients[i + 1] -= lower_order_coefficients[i];
+  }
+
+  auto coefficient = coefficients.begin();
+  auto history_entry = history_start;
+  *u_error = *coefficient * history_entry->derivative;
+  for (;;) {
+    ++history_entry;
+    ++coefficient;
+    if (history_entry == history.end()) {
+      return;
+    }
+    *u_error += *coefficient * history_entry->derivative;
   }
 }
 
