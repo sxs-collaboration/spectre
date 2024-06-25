@@ -25,6 +25,7 @@
 #include "Utilities/Registration.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 namespace LinearSolver {
 namespace gmres::detail {
@@ -34,11 +35,12 @@ namespace gmres::detail {
 // `orthogonalization_history` that holds the inner product of the intermediate
 // `operand` with each vector in the `basis_history` and itself.
 template <typename VarsType>
-void arnoldi_orthogonalize(const gsl::not_null<VarsType*> operand,
-                           const gsl::not_null<blaze::DynamicMatrix<double>*>
-                               orthogonalization_history,
-                           const std::vector<VarsType>& basis_history,
-                           const size_t iteration) {
+void arnoldi_orthogonalize(
+    const gsl::not_null<VarsType*> operand,
+    const gsl::not_null<
+        blaze::DynamicMatrix<tt::get_complex_or_fundamental_type_t<VarsType>>*>
+        orthogonalization_history,
+    const std::vector<VarsType>& basis_history, const size_t iteration) {
   // Resize matrix and make sure the new entries that are not being filled below
   // are zero.
   orthogonalization_history->resize(iteration + 2, iteration + 1);
@@ -47,38 +49,40 @@ void arnoldi_orthogonalize(const gsl::not_null<VarsType*> operand,
   }
   // Arnoldi orthogonalization
   for (size_t j = 0; j < iteration + 1; ++j) {
-    const double orthogonalization = inner_product(basis_history[j], *operand);
+    const auto orthogonalization = inner_product(basis_history[j], *operand);
     (*orthogonalization_history)(j, iteration) = orthogonalization;
     *operand -= orthogonalization * basis_history[j];
   }
-  (*orthogonalization_history)(iteration + 1, iteration) =
-      sqrt(inner_product(*operand, *operand));
+  const double normalization = sqrt(magnitude_square(*operand));
+  (*orthogonalization_history)(iteration + 1, iteration) = normalization;
   // Avoid an FPE if the new operand norm is exactly zero. In that case the
   // problem is solved and the algorithm will terminate (see Proposition 9.3 in
   // \cite Saad2003). Since there will be no next iteration we don't need to
   // normalize the operand.
-  if (UNLIKELY((*orthogonalization_history)(iteration + 1, iteration) == 0.)) {
+  if (UNLIKELY(normalization == 0.)) {
     return;
   }
-  *operand /= (*orthogonalization_history)(iteration + 1, iteration);
+  *operand /= normalization;
 }
 
 // Solve the linear least-squares problem `||beta - H * y||` for `y`, where `H`
 // is the Hessenberg matrix given by `orthogonalization_history` and `beta` is
 // the vector `(initial_residual, 0, 0, ...)` by updating the QR decomposition
 // of `H` from the previous iteration with a Givens rotation.
+template <typename ValueType>
 void solve_minimal_residual(
-    gsl::not_null<blaze::DynamicMatrix<double>*> orthogonalization_history,
-    gsl::not_null<blaze::DynamicVector<double>*> residual_history,
+    gsl::not_null<blaze::DynamicMatrix<ValueType>*> orthogonalization_history,
+    gsl::not_null<blaze::DynamicVector<ValueType>*> residual_history,
     gsl::not_null<blaze::DynamicVector<double>*> givens_sine_history,
-    gsl::not_null<blaze::DynamicVector<double>*> givens_cosine_history,
+    gsl::not_null<blaze::DynamicVector<ValueType>*> givens_cosine_history,
     size_t iteration);
 
 // Find the vector that minimizes the residual by inverting the upper
 // triangular matrix obtained above.
-blaze::DynamicVector<double> minimal_residual_vector(
-    const blaze::DynamicMatrix<double>& orthogonalization_history,
-    const blaze::DynamicVector<double>& residual_history);
+template <typename ValueType>
+blaze::DynamicVector<ValueType> minimal_residual_vector(
+    const blaze::DynamicMatrix<ValueType>& orthogonalization_history,
+    const blaze::DynamicVector<ValueType>& residual_history);
 
 }  // namespace gmres::detail
 
@@ -110,10 +114,11 @@ struct Gmres {
  *
  * This is an iterative algorithm to solve general linear equations \f$Ax=b\f$
  * where \f$A\f$ is a linear operator. See \cite Saad2003, chapter 6.5 for a
- * description of the GMRES algorithm and Algorithm 9.6 for this implementation.
- * It is matrix-free, which means the operator \f$A\f$ needs not be provided
- * explicity as a matrix but only the operator action \f$A(x)\f$ must be
- * provided for an argument \f$x\f$.
+ * description of the GMRES algorithm, Algorithm 9.6 for this implementation,
+ * and Sec. 6.5.9 for the extension to complex arithmetic.
+ * The GMRES method is matrix-free, which means the operator \f$A\f$ needs not
+ * be provided explicitly as a matrix but only the operator action \f$A(x)\f$
+ * must be provided for an argument \f$x\f$.
  *
  * The GMRES algorithm does not require the operator \f$A\f$ to be symmetric or
  * positive-definite. Note that other algorithms such as conjugate gradients may
@@ -156,6 +161,11 @@ struct Gmres {
  *
  * \example
  * \snippet NumericalAlgorithms/LinearSolver/Test_Gmres.cpp gmres_example
+ *
+ * \tparam VarsType The type of the vectors `x` and `b` in the linear equation
+ * $Ax=b$. This type must support addition, subtraction, scalar multiplication,
+ * and an inner product. It must expose an `ElementType` alias that is the type
+ * of the components of the vector, e.g. `double` or `std::complex<double>`.
  */
 template <typename VarsType, typename Preconditioner = NoPreconditioner,
           typename LinearSolverRegistrars =
@@ -165,6 +175,7 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
  private:
   using Base =
       PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>;
+  using ValueType = tt::get_complex_or_fundamental_type_t<VarsType>;
 
   struct ConvergenceCriteria {
     using type = Convergence::Criteria;
@@ -283,18 +294,18 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   // between existing and potential basis vectors and then Givens-rotated to
   // become upper-triangular.
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicMatrix<double> orthogonalization_history_{};
+  mutable blaze::DynamicMatrix<ValueType> orthogonalization_history_{};
   // The `residual_history_` holds the remaining residual in its last entry, and
   // the other entries `g` "source" the minimum residual vector `y` in
   // `R * y = g` where `R` is the upper-triangular `orthogonalization_history_`.
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicVector<double> residual_history_{};
+  mutable blaze::DynamicVector<ValueType> residual_history_{};
   // These represent the accumulated Givens rotations up to the current
   // iteration.
   // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicVector<double> givens_sine_history_{};
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicVector<double> givens_cosine_history_{};
+  mutable blaze::DynamicVector<ValueType> givens_cosine_history_{};
   // These represent the orthogonal Krylov-subspace basis that is constructed
   // iteratively by Arnoldi-orthogonalizing a new vector in each iteration and
   // appending it to the `basis_history_`.
@@ -402,7 +413,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
       initial_operand += source;
     }
     const double initial_residual_magnitude =
-        sqrt(inner_product(initial_operand, initial_operand));
+        sqrt(magnitude_square(initial_operand));
     has_converged = Convergence::HasConverged{convergence_criteria_, iteration,
                                               initial_residual_magnitude,
                                               initial_residual_magnitude};

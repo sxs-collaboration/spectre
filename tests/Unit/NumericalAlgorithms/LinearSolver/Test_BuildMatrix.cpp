@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
   {
     INFO("Build a simple dense matrix");
     const blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
-    const helpers::ApplyMatrix linear_operator{matrix};
+    const helpers::ApplyMatrix<double> linear_operator{matrix};
     blaze::DynamicMatrix<double> matrix_representation(2, 2);
     blaze::DynamicVector<double> operand_buffer(2, 0.);
     blaze::DynamicVector<double> result_buffer(2, 0.);

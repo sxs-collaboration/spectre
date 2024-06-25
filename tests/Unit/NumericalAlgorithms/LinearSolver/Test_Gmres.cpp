@@ -33,8 +33,9 @@ namespace helpers = TestHelpers::LinearSolver;
 namespace LinearSolver::Serial {
 
 namespace {
+template <typename DataType>
 struct ScalarField : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 template <typename Tag>
 struct SomePrefix : db::PrefixTag, db::SimpleTag {
@@ -49,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     // [gmres_example]
     INFO("Solve a symmetric 2x2 matrix");
     blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
-    const helpers::ApplyMatrix linear_operator{std::move(matrix)};
+    const helpers::ApplyMatrix<double> linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
     const blaze::DynamicVector<double> expected_solution{0.0909090909090909,
@@ -59,14 +60,14 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
                                                     ::Verbosity::Verbose};
     CHECK_FALSE(gmres.has_preconditioner());
     std::vector<double> recorded_residuals;
-    const auto has_converged = gmres.solve(
-        make_not_null(&initial_guess_in_solution_out), linear_operator, source,
-        std::tuple{},
-        [&recorded_residuals](
-            const Convergence::HasConverged& local_has_converged) {
-          recorded_residuals.push_back(
-              local_has_converged.residual_magnitude());
-        });
+    const auto has_converged =
+        gmres.solve(make_not_null(&initial_guess_in_solution_out),
+                    linear_operator, source, std::tuple{},
+                    [&recorded_residuals](
+                        const Convergence::HasConverged& local_has_converged) {
+                      recorded_residuals.push_back(
+                          local_has_converged.residual_magnitude());
+                    });
     REQUIRE(has_converged);
     CHECK(linear_operator.invocations == 3);
     CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
@@ -132,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   {
     INFO("Solve a non-symmetric 2x2 matrix");
     blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
-    const helpers::ApplyMatrix linear_operator{std::move(matrix)};
+    const helpers::ApplyMatrix<double> linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
     const blaze::DynamicVector<double> expected_solution{-1., 5.};
@@ -147,8 +148,31 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     CHECK_ITERABLE_APPROX(initial_guess_in_solution_out, expected_solution);
   }
   {
+    INFO("Solve a complex 2x2 matrix");
+    blaze::DynamicMatrix<std::complex<double>> matrix{
+        {std::complex<double>(1., 2.), std::complex<double>(2., -1.)},
+        {std::complex<double>(3., 4.), std::complex<double>(4., 1.)}};
+    const helpers::ApplyMatrix<std::complex<double>> linear_operator{
+        std::move(matrix)};
+    const blaze::DynamicVector<std::complex<double>> source{
+        std::complex<double>(1., 1.), std::complex<double>(2., -3.)};
+    blaze::DynamicVector<std::complex<double>> initial_guess_in_solution_out{
+        0., 0.};
+    const blaze::DynamicVector<std::complex<double>> expected_solution{
+        std::complex<double>(0.45, -1.4), std::complex<double>(-1.2, 0.15)};
+    const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
+    const Gmres<blaze::DynamicVector<std::complex<double>>> gmres{
+        convergence_criteria, ::Verbosity::Verbose};
+    const auto has_converged = gmres.solve(
+        make_not_null(&initial_guess_in_solution_out), linear_operator, source);
+    REQUIRE(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
+    CHECK(has_converged.num_iterations() == 2);
+    CHECK_ITERABLE_APPROX(initial_guess_in_solution_out, expected_solution);
+  }
+  {
     INFO("Solve a matrix-free linear operator with Variables");
-    using Vars = Variables<tmpl::list<ScalarField>>;
+    using Vars = Variables<tmpl::list<ScalarField<DataVector>>>;
     constexpr size_t num_points = 2;
     // This also tests that the linear operator can be a lambda
     const auto linear_operator = [](const gsl::not_null<Vars*> result,
@@ -156,15 +180,17 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       if (result->number_of_grid_points() != num_points) {
         result->initialize(num_points);
       }
-      const auto& data = get(get<ScalarField>(operand));
-      get(get<ScalarField>(*result)) =
+      const auto& data = get(get<ScalarField<DataVector>>(operand));
+      get(get<ScalarField<DataVector>>(*result)) =
           DataVector{data[0] * 4. + data[1], data[0] * 3. + data[1]};
     };
     // Adding a prefix to make sure prefixed sources work as well
-    Variables<tmpl::list<SomePrefix<ScalarField>>> source{num_points};
-    get(get<SomePrefix<ScalarField>>(source)) = DataVector{1., 2.};
+    Variables<tmpl::list<SomePrefix<ScalarField<DataVector>>>> source{
+        num_points};
+    get(get<SomePrefix<ScalarField<DataVector>>>(source)) = DataVector{1., 2.};
     Vars initial_guess_in_solution_out{num_points};
-    get(get<ScalarField>(initial_guess_in_solution_out)) = DataVector{2., 1.};
+    get(get<ScalarField<DataVector>>(initial_guess_in_solution_out)) =
+        DataVector{2., 1.};
     const DataVector expected_solution{-1., 5.};
     const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
     const Gmres<Vars> gmres{convergence_criteria, ::Verbosity::Verbose};
@@ -173,14 +199,53 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     REQUIRE(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
     CHECK(has_converged.num_iterations() == 2);
-    CHECK_ITERABLE_APPROX(get(get<ScalarField>(initial_guess_in_solution_out)),
-                          expected_solution);
+    CHECK_ITERABLE_APPROX(
+        get(get<ScalarField<DataVector>>(initial_guess_in_solution_out)),
+        expected_solution);
+  }
+  {
+    INFO("Solve a complex matrix-free linear operator with Variables");
+    using Vars = Variables<tmpl::list<ScalarField<ComplexDataVector>>>;
+    constexpr size_t num_points = 2;
+    const auto linear_operator = [](const gsl::not_null<Vars*> result,
+                                    const Vars& operand) {
+      if (result->number_of_grid_points() != num_points) {
+        result->initialize(num_points);
+      }
+      const auto& data = get(get<ScalarField<ComplexDataVector>>(operand));
+      get(get<ScalarField<ComplexDataVector>>(*result)) =
+          ComplexDataVector{data[0] * std::complex<double>(1., 2.) +
+                                data[1] * std::complex<double>(2., -1.),
+                            data[0] * std::complex<double>(3., 4.) +
+                                data[1] * std::complex<double>(4., 1.)};
+    };
+    Variables<tmpl::list<SomePrefix<ScalarField<ComplexDataVector>>>> source{
+        num_points};
+    get(get<SomePrefix<ScalarField<ComplexDataVector>>>(source)) =
+        ComplexDataVector{std::complex<double>(1., 1.),
+                          std::complex<double>(2., -3.)};
+    Vars initial_guess_in_solution_out{num_points};
+    get(get<ScalarField<ComplexDataVector>>(initial_guess_in_solution_out)) =
+        ComplexDataVector{std::complex<double>(0., 0.),
+                          std::complex<double>(0., 0.)};
+    const ComplexDataVector expected_solution{std::complex<double>(0.45, -1.4),
+                                              std::complex<double>(-1.2, 0.15)};
+    const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
+    const Gmres<Vars> gmres{convergence_criteria, ::Verbosity::Verbose};
+    const auto has_converged = gmres.solve(
+        make_not_null(&initial_guess_in_solution_out), linear_operator, source);
+    REQUIRE(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
+    CHECK(has_converged.num_iterations() == 2);
+    CHECK_ITERABLE_APPROX(
+        get(get<ScalarField<ComplexDataVector>>(initial_guess_in_solution_out)),
+        expected_solution);
   }
   {
     INFO("Restarting");
     blaze::DynamicMatrix<double> matrix{
         {4., 1., 1.}, {1., 1., 3.}, {0., 2., 0.}};
-    const helpers::ApplyMatrix linear_operator{std::move(matrix)};
+    const helpers::ApplyMatrix<double> linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2., 1.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1., 0.};
     const blaze::DynamicVector<double> expected_solution{0., 0.5, 0.5};
@@ -201,7 +266,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   {
     INFO("Preconditioning");
     blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
-    const helpers::ApplyMatrix linear_operator{std::move(matrix)};
+    const helpers::ApplyMatrix<double> linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     const blaze::DynamicVector<double> expected_solution{0.0909090909090909,
                                                          0.6363636363636364};

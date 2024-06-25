@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
   {
     INFO("Solve a simple matrix");
     const blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
-    const helpers::ApplyMatrix linear_operator{matrix};
+    const helpers::ApplyMatrix<double> linear_operator{matrix};
     const blaze::DynamicVector<double> source{1., 2.};
     const blaze::DynamicVector<double> expected_solution{-1., 5.};
     blaze::DynamicVector<double> solution(2);
@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
       // Solving a different operator after resetting should work
       resetting_solver.reset();
       const blaze::DynamicMatrix<double> matrix2{{4., 1.}, {1., 3.}};
-      const helpers::ApplyMatrix linear_operator2{matrix2};
+      const helpers::ApplyMatrix<double> linear_operator2{matrix2};
       const blaze::DynamicVector<double> expected_solution2{0.0909090909090909,
                                                             0.6363636363636364};
       resetting_solver.solve(make_not_null(&solution), linear_operator2,
