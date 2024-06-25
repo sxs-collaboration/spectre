@@ -118,8 +118,10 @@ split_complex_vector_of_data(
     const std::pair<std::vector<std::string>, std::vector<ComplexDataVector>>&
         names_and_components) {
   const auto& [names, components] = names_and_components;
-  std::vector<std::string> result_names{2 * names.size()};
-  std::vector<DataVector> result_components{2 * names.size()};
+  std::vector<std::string> result_names{};
+  std::vector<DataVector> result_components{};
+  result_names.reserve(2 * names.size());
+  result_components.reserve(2 * names.size());
   for (size_t i = 0; i < names.size(); ++i) {
     result_names.emplace_back("Re(" + names[i] + ")");
     result_components.emplace_back(real(components[i]));
