@@ -53,6 +53,21 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
     CHECK(linear_operator.invocations == 2);
   }
   {
+    INFO("Build a complex dense matrix");
+    const blaze::DynamicMatrix<std::complex<double>> matrix{
+        {std::complex(4., 2.), std::complex(1., -1.)},
+        {std::complex(3., 0.), std::complex(1., 3.)}};
+    const helpers::ApplyMatrix<std::complex<double>> linear_operator{matrix};
+    blaze::DynamicMatrix<std::complex<double>> matrix_representation(2, 2);
+    blaze::DynamicVector<std::complex<double>> operand_buffer(2, 0.);
+    blaze::DynamicVector<std::complex<double>> result_buffer(2, 0.);
+    build_matrix(make_not_null(&matrix_representation),
+                 make_not_null(&operand_buffer), make_not_null(&result_buffer),
+                 linear_operator);
+    CHECK_ITERABLE_APPROX(matrix_representation, matrix);
+    CHECK(linear_operator.invocations == 2);
+  }
+  {
     INFO("Build a simple sparse matrix");
     const blaze::StaticMatrix<double, 2, 2> matrix{{4., 0.}, {3., 0.}};
     size_t operator_invocations = 0;
