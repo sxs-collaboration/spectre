@@ -78,6 +78,7 @@ def _constraint_damping_params(
 def inspiral_parameters(
     id_input_file: dict,
     id_run_dir: Union[str, Path],
+    id_horizons_path: Optional[Union[str, Path]],
     refinement_level: int,
     polynomial_order: int,
 ) -> dict:
@@ -89,6 +90,10 @@ def inspiral_parameters(
       id_input_file: Initial data input file as a dictionary.
       id_run_dir: Directory of the initial data run. Paths in the input file
         are relative to this directory.
+      id_horizons_path: Path to H5 file containing information about the
+        horizons in the ID (e.g. mass, spin, spherical harmonic coefficients).
+        If this is 'None', the default is the 'Horizons.h5' file inside
+        'id_run_dir'.
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
@@ -96,7 +101,18 @@ def inspiral_parameters(
     id_binary = id_input_file["Background"]["Binary"]
 
     # ID parameters
-    horizons_filename = Path(id_run_dir) / "Horizons.h5"
+    horizons_filename = (
+        Path(id_horizons_path)
+        if id_horizons_path is not None
+        else Path(id_run_dir) / "Horizons.h5"
+    )
+    if not horizons_filename.is_file():
+        raise ValueError(
+            f"The ID horizons path ({str(horizons_filename.resolve())}) does"
+            " not exist. If there is no 'Horizons.h5' file in your ID"
+            " directory, run 'spectre bbh postprocess-id' on the ID to"
+            " generate it."
+        )
     initial_separation = (
         id_domain_creator["ObjectA"]["XCoord"]
         - id_domain_creator["ObjectB"]["XCoord"]
@@ -272,6 +288,7 @@ def start_inspiral(
     inspiral_input_file_template: Union[
         str, Path
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
+    id_horizons_path: Optional[Union[str, Path]] = None,
     continue_with_ringdown: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
@@ -316,6 +333,7 @@ def start_inspiral(
         inspiral_params = inspiral_parameters(
             id_input_file,
             id_run_dir,
+            id_horizons_path=id_horizons_path,
             refinement_level=refinement_level,
             polynomial_order=polynomial_order,
         )
@@ -401,6 +419,24 @@ def start_inspiral(
     default=INSPIRAL_INPUT_FILE_TEMPLATE,
     help="Input file template for the inspiral.",
     show_default=True,
+)
+@click.option(
+    "--id-horizons-path",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=Path,
+    ),
+    default=None,
+    show_default="Horizons.h5 inside 'id-run-dir'",
+    help=(
+        "H5 file that holds information of the horizons of the ID solve. If"
+        " this file does not exist in your ID directory, run 'spectre bbh"
+        " postprocess-id' in the ID directory to generate it. Note that this is"
+        " not needed if you are starting from a SpEC ID_Params.perl file."
+    ),
 )
 @click.option(
     "--refinement-level",
