@@ -63,10 +63,10 @@ void add_stress_energy_term_to_dt_pi(
  *
  * In terms of the evolved variables of the scalar,
  * \f{align*}{
-    T^{(\Psi), \text{TR}}_{00} &= \alpha^2 \Pi^2 ~, \\
-    T^{(\Psi), \text{TR}}_{j 0} &= T^{(\Psi), \text{TR}}_{0j}
-                                 = - \alpha \Pi \Phi_j ~, \\
-    T^{(\Psi), \text{TR}}_{ij} &= \Phi_i \Phi_j ~,
+    T_{00} &= \alpha^2 \Pi^{2} - 2 \alpha \Pi \beta^{i} \Phi_{i}
+     + \beta^{i} \beta^{j} \Phi_{i} \Phi{j}~,                     \\
+    T_{0k} &= - \alpha \Pi \Phi_{k} + \beta^{i} \Phi_{i} \Phi_{k}~,          \\
+    T_{ij} &= \Phi_{i} \Phi{j}~.
  * \f}
  *
  * where \f$\alpha\f$ is the lapse.
@@ -77,12 +77,13 @@ void add_stress_energy_term_to_dt_pi(
  * \param pi_scalar Scalar evolution variable $\Pi$.
  * \param phi_scalar Scalar evolution variable $\Phi_i$.
  * \param lapse Lapse $\alpha$.
+ * \param shift Shift $\beta^{i}$.
  */
 void trace_reversed_stress_energy(
     gsl::not_null<tnsr::aa<DataVector, 3_st>*> stress_energy,
     const Scalar<DataVector>& pi_scalar,
     const tnsr::i<DataVector, 3_st>& phi_scalar,
-    const Scalar<DataVector>& lapse);
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3_st>& shift);
 
 namespace Tags {
 
@@ -97,12 +98,14 @@ struct TraceReversedStressEnergyCompute
   static constexpr size_t Dim = 3;
   using argument_tags =
       tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<Dim>,
-                 gr::Tags::Lapse<DataVector>>;
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3, Frame::Inertial>>;
   using return_type = tnsr::aa<DataVector, Dim, Frame::Inertial>;
   static constexpr void (*function)(
       const gsl::not_null<tnsr::aa<DataVector, Dim>*> result,
       const Scalar<DataVector>&, const tnsr::i<DataVector, Dim>&,
-      const Scalar<DataVector>&) = &trace_reversed_stress_energy;
+      const Scalar<DataVector>&,
+      const tnsr::I<DataVector, Dim>&) = &trace_reversed_stress_energy;
   using base = TraceReversedStressEnergy<DataVector, Dim, Frame::Inertial>;
 };
 }  // namespace Tags
