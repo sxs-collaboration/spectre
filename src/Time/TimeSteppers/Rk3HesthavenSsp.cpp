@@ -93,8 +93,12 @@ bool Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
     return false;
   }
 
-  *u_error = *u - 0.5 * (*history.back().value + *history.substeps()[0].value +
-                         time_step.value() * history.substeps()[0].derivative);
+  *u_error =
+      -(1.0 / 6.0) * *history.back().value +
+      (2.0 / 3.0) * *history.substeps()[1].value +
+      (2.0 / 3.0) * time_step.value() * history.substeps()[1].derivative -
+      0.5 * *history.substeps()[0].value -
+      0.5 * time_step.value() * history.substeps()[0].derivative;
 
   return true;
 }
