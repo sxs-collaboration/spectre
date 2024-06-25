@@ -85,7 +85,7 @@ struct PrepareSolve {
         InitializeResidual<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
-            inner_product(residual, residual)},
+            magnitude_square(residual)},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
@@ -212,8 +212,7 @@ struct UpdateFieldValues {
 
     // Compute new residual norm in a second global reduction
     const auto& residual = get<residual_tag>(box);
-    const double local_residual_magnitude_square =
-        inner_product(residual, residual);
+    const double local_residual_magnitude_square = magnitude_square(residual);
 
     Parallel::contribute_to_reduction<
         UpdateResidual<FieldsTag, OptionsGroup, ParallelComponent>>(

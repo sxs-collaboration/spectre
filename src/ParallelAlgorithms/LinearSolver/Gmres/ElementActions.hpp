@@ -116,7 +116,7 @@ struct PrepareSolve {
         FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>{
-            inner_product(get<operand_tag>(box), get<operand_tag>(box))},
+            magnitude_square(get<operand_tag>(box))},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache),
