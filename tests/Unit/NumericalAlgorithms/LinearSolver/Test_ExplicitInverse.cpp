@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -26,8 +27,9 @@
 namespace helpers = TestHelpers::LinearSolver;
 
 namespace {
+template <typename DataType>
 struct ScalarFieldTag : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 }  // namespace
 
@@ -42,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     const blaze::DynamicVector<double> source{1., 2.};
     const blaze::DynamicVector<double> expected_solution{-1., 5.};
     blaze::DynamicVector<double> solution(2);
-    const ExplicitInverse<> solver{"Matrix"};
+    const ExplicitInverse<double> solver{"Matrix"};
     const auto has_converged =
         solver.solve(make_not_null(&solution), linear_operator, source);
     REQUIRE(has_converged);
@@ -54,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     CHECK(matrix_csv == "4 1\n3 1\n");
     {
       INFO("Resetting");
-      ExplicitInverse<> resetting_solver{};
+      ExplicitInverse<double> resetting_solver{};
       resetting_solver.solve(make_not_null(&solution), linear_operator, source);
       // Solving a different operator after resetting should work
       resetting_solver.reset();
@@ -76,9 +78,31 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     }
   }
   {
+    INFO("Solve a complex matrix");
+    const blaze::DynamicMatrix<std::complex<double>> matrix{
+        {std::complex<double>(1., 2.), std::complex<double>(2., -1.)},
+        {std::complex<double>(3., 4.), std::complex<double>(4., 1.)}};
+    const helpers::ApplyMatrix<std::complex<double>> linear_operator{matrix};
+    const blaze::DynamicVector<std::complex<double>> source{
+        std::complex<double>(1., 1.), std::complex<double>(2., -3.)};
+    const blaze::DynamicVector<std::complex<double>> expected_solution{
+        std::complex<double>(0.45, -1.4), std::complex<double>(-1.2, 0.15)};
+    blaze::DynamicVector<std::complex<double>> solution(2);
+    const ExplicitInverse<std::complex<double>> solver{"Matrix"};
+    const auto has_converged =
+        solver.solve(make_not_null(&solution), linear_operator, source);
+    REQUIRE(has_converged);
+    CHECK_ITERABLE_APPROX(solver.matrix_representation(), blaze::inv(matrix));
+    CHECK_ITERABLE_APPROX(solution, expected_solution);
+    std::ifstream matrix_file("Matrix.txt");
+    std::string matrix_csv((std::istreambuf_iterator<char>(matrix_file)),
+                           std::istreambuf_iterator<char>());
+    CHECK(matrix_csv == "(1,2) (2,-1)\n(3,4) (4,1)\n");
+  }
+  {
     INFO("Solve a heterogeneous data structure");
     using SubdomainData = ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-        1, tmpl::list<ScalarFieldTag>>;
+        1, tmpl::list<ScalarFieldTag<DataVector>>>;
 
     const Matrix matrix_element{{4., 1., 1.}, {1., 1., 3.}, {0., 2., 0.}};
     const Matrix matrix_overlap{{4., 1.}, {3., 1.}};
@@ -100,18 +124,19 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     };
 
     SubdomainData source{3};
-    get(get<ScalarFieldTag>(source.element_data)) = DataVector{1., 2., 1.};
+    get(get<ScalarFieldTag<DataVector>>(source.element_data)) =
+        DataVector{1., 2., 1.};
     source.overlap_data.emplace(overlap_id,
                                 typename SubdomainData::OverlapData{2});
-    get(get<ScalarFieldTag>(source.overlap_data.at(overlap_id))) =
+    get(get<ScalarFieldTag<DataVector>>(source.overlap_data.at(overlap_id))) =
         DataVector{1., 2.};
     auto expected_solution = make_with_value<SubdomainData>(source, 0.);
-    get(get<ScalarFieldTag>(expected_solution.element_data)) =
+    get(get<ScalarFieldTag<DataVector>>(expected_solution.element_data)) =
         DataVector{0., 0.5, 0.5};
-    get(get<ScalarFieldTag>(expected_solution.overlap_data.at(overlap_id))) =
-        DataVector{-1., 5.};
+    get(get<ScalarFieldTag<DataVector>>(
+        expected_solution.overlap_data.at(overlap_id))) = DataVector{-1., 5.};
 
-    const ExplicitInverse<> solver{};
+    const ExplicitInverse<double> solver{};
     auto solution = make_with_value<SubdomainData>(source, 0.);
     solver.solve(make_not_null(&solution), linear_operator, source);
     CHECK(solver.size() == 5);

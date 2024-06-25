@@ -30,13 +30,17 @@
 namespace LinearSolver::Serial {
 
 /// \cond
-template <typename LinearSolverRegistrars>
+template <typename ValueType, typename LinearSolverRegistrars>
 struct ExplicitInverse;
 /// \endcond
 
 namespace Registrars {
 /// Registers the `LinearSolver::Serial::ExplicitInverse` linear solver
-using ExplicitInverse = Registration::Registrar<Serial::ExplicitInverse>;
+template <typename ValueType>
+struct ExplicitInverse {
+  template <typename LinearSolverRegistrars>
+  using f = Serial::ExplicitInverse<ValueType, LinearSolverRegistrars>;
+};
 }  // namespace Registrars
 
 /*!
@@ -73,8 +77,9 @@ using ExplicitInverse = Registration::Registrar<Serial::ExplicitInverse>;
  *   subdomain problems only approximately, but possibly still sufficiently to
  *   provide effective preconditioning.
  */
-template <typename LinearSolverRegistrars =
-              tmpl::list<Registrars::ExplicitInverse>>
+template <typename ValueType,
+          typename LinearSolverRegistrars =
+              tmpl::list<Registrars::ExplicitInverse<ValueType>>>
 class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
  private:
   using Base = LinearSolver<LinearSolverRegistrars>;
@@ -143,7 +148,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 
   /// The matrix representation of the solver. This matrix approximates the
   /// inverse of the subdomain operator.
-  const blaze::DynamicMatrix<double, blaze::columnMajor>&
+  const blaze::DynamicMatrix<ValueType, blaze::columnMajor>&
   matrix_representation() const {
     return inverse_;
   }
@@ -171,19 +176,20 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   // We currently store the matrix representation in a dense matrix because
   // Blaze doesn't support the inversion of sparse matrices (yet).
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicMatrix<double, blaze::columnMajor> inverse_{};
+  mutable blaze::DynamicMatrix<ValueType, blaze::columnMajor> inverse_{};
 
   // Buffers to avoid re-allocating memory for applying the operator
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicVector<double> source_workspace_{};
+  mutable blaze::DynamicVector<ValueType> source_workspace_{};
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable blaze::DynamicVector<double> solution_workspace_{};
+  mutable blaze::DynamicVector<ValueType> solution_workspace_{};
 };
 
-template <typename LinearSolverRegistrars>
+template <typename ValueType, typename LinearSolverRegistrars>
 template <typename LinearOperator, typename VarsType, typename SourceType,
           typename... OperatorArgs>
-Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
+Convergence::HasConverged
+ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> solution,
     const LinearOperator& linear_operator, const SourceType& source,
     const std::tuple<OperatorArgs...>& operator_args) const {
@@ -245,9 +251,11 @@ Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
 }
 
 /// \cond
-template <typename LinearSolverRegistrars>
-// NOLINTNEXTLINE
-PUP::able::PUP_ID ExplicitInverse<LinearSolverRegistrars>::my_PUP_ID = 0;
+// NOLINTBEGIN
+template <typename ValueType, typename LinearSolverRegistrars>
+PUP::able::PUP_ID
+    ExplicitInverse<ValueType, LinearSolverRegistrars>::my_PUP_ID = 0;
+// NOLINTEND
 /// \endcond
 
 }  // namespace LinearSolver::Serial

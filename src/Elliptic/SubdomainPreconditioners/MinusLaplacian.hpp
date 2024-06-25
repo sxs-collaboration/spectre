@@ -55,7 +55,7 @@ template <size_t Dim, typename OptionsGroup,
               ::LinearSolver::Serial::Registrars::Gmres<
                   ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
                       Dim, tmpl::list<Poisson::Tags::Field>>>,
-              ::LinearSolver::Serial::Registrars::ExplicitInverse>>>
+              ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>>
 struct MinusLaplacian {
   template <typename LinearSolverRegistrars>
   using f = subdomain_preconditioners::MinusLaplacian<Dim, OptionsGroup, Solver,
@@ -97,7 +97,7 @@ template <size_t Dim, typename OptionsGroup,
               ::LinearSolver::Serial::Registrars::Gmres<
                   ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
                       Dim, tmpl::list<Poisson::Tags::Field>>>,
-              ::LinearSolver::Serial::Registrars::ExplicitInverse>>,
+              ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>,
           typename LinearSolverRegistrars =
               tmpl::list<Registrars::MinusLaplacian<Dim, OptionsGroup, Solver>>>
 class MinusLaplacian

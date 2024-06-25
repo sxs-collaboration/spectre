@@ -14,11 +14,12 @@
 namespace {
 template <size_t Dim>
 void register_derived_with_charm_impl() {
-  register_derived_classes_with_charm<LinearSolver::Serial::LinearSolver<
-      tmpl::list<::LinearSolver::Serial::Registrars::Gmres<
-                     ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-                         Dim, tmpl::list<Poisson::Tags::Field>>>,
-                 ::LinearSolver::Serial::Registrars::ExplicitInverse>>>();
+  register_derived_classes_with_charm<
+      LinearSolver::Serial::LinearSolver<tmpl::list<
+          ::LinearSolver::Serial::Registrars::Gmres<
+              ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
+                  Dim, tmpl::list<Poisson::Tags::Field>>>,
+          ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>>();
 }
 }  // namespace
 
