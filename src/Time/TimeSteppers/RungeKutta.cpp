@@ -78,6 +78,27 @@ void compute_substep(const gsl::not_null<T*> u,
 }
 
 template <typename T>
+void step_error(const gsl::not_null<T*> u_error,
+                const ConstUntypedHistory<T>& history, const double dt,
+                const RungeKutta::ButcherTableau& tableau) {
+  const auto& coefficients = tableau.result_coefficients;
+  const auto& error_coefficients = tableau.error_coefficients;
+
+  *u_error = (coefficients[0] - error_coefficients[0]) * dt *
+             history.back().derivative;
+  const size_t num_coefficients =
+      std::max(coefficients.size(), error_coefficients.size());
+  for (size_t i = 1; i < num_coefficients; ++i) {
+    const double coefficient =
+        (i < coefficients.size() ? coefficients[i] : 0.0) -
+        (i < error_coefficients.size() ? error_coefficients[i] : 0.0);
+    if (coefficient != 0.0) {
+      *u_error += coefficient * dt * history.substeps()[i - 1].derivative;
+    }
+  }
+}
+
+template <typename T>
 void update_u_impl_with_tableau(const gsl::not_null<T*> u,
                                 const ConstUntypedHistory<T>& history,
                                 const TimeDelta& time_step,
@@ -130,8 +151,7 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   }
 
   const double dt = time_step.value();
-  compute_substep(u_error, history, dt, tableau.error_coefficients);
-  *u_error = *u - *u_error;
+  step_error(u_error, history, dt, tableau);
 
   return true;
 }
