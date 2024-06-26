@@ -355,6 +355,8 @@ SPECTRE_TEST_CASE(
   const double poly_exponent_lo = 1.5;
   const double poly_constant_lo = 10.0;
   const double poly_exponent_hi = 2.0;
+  //Check if barotropic
+  CHECK(eos.is_barotropic());
 
   // Relativistic checks
   TestHelpers::EquationsOfState::check(

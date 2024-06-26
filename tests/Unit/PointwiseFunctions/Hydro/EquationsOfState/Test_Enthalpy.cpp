@@ -91,6 +91,7 @@ void check_exact() {
     CHECK(*eos.promote_to_2d_eos() == Barotropic2D<Enthalpy<Spectral>>(eos));
     CHECK(eos.baryon_mass() ==
           approx(hydro::units::geometric::default_baryon_mass));
+    CHECK(eos.is_barotropic());
   }
   // Test DataVector functions
   {

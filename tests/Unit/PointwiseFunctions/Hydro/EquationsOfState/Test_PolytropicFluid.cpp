@@ -83,6 +83,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
         EoS::Barotropic3D<EoS::PolytropicFluid<true>>(eos));
   CHECK(*eos.promote_to_2d_eos() ==
         EoS::Barotropic2D<EoS::PolytropicFluid<true>>(eos));
+  CHECK(eos.is_barotropic());
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   TestHelpers::EquationsOfState::check(EoS::PolytropicFluid<true>{100.0, 2.0},

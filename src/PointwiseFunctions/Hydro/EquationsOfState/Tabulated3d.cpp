@@ -660,3 +660,12 @@ Tabulated3D<IsRelativistic>::Tabulated3D(const std::string& filename,
 
 template class EquationsOfState::Tabulated3D<true>;
 template class EquationsOfState::Tabulated3D<false>;
+
+template Scalar<double> EquationsOfState::Tabulated3D<true>::
+    equilibrium_electron_fraction_from_density_temperature_impl(
+        Tensor<double, brigand::list<>, brigand::list<>> const&,
+        Tensor<double, brigand::list<>, brigand::list<>> const&) const;
+template Scalar<DataVector> EquationsOfState::Tabulated3D<true>::
+    equilibrium_electron_fraction_from_density_temperature_impl(
+        Tensor<DataVector, brigand::list<>, brigand::list<>> const&,
+        Tensor<DataVector, brigand::list<>, brigand::list<>> const&) const;

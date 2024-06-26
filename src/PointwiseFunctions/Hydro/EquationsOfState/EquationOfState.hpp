@@ -371,6 +371,11 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /// \brief Returns `true` if the EOS is barotropic
   virtual bool is_barotropic() const = 0;
 
+  /// \brief Returns `true` if the EOS is in beta-equilibrium
+  virtual bool is_equilibrium() const {
+    return true;
+  }
+
   /// @{
   /*!
    * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
@@ -570,6 +575,24 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
 
   /// \brief Returns `true` if the EOS is barotropic
   virtual bool is_barotropic() const = 0;
+
+  /// \brief Returns `true` if the EOS is in beta-equilibrium
+  virtual bool is_equilibrium() const = 0;
+
+  /// @{
+  /*!
+   * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
+   * the rest mass density \f$\rho\f$ and the temperature \f$T\f$.
+   */
+  virtual Scalar<double> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/) const = 0;
+
+  virtual Scalar<DataVector>
+  equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/) const = 0;
+  /// @}
 
   /// @{
   /*!
