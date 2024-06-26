@@ -58,8 +58,6 @@ class Rk3HesthavenSsp : public TimeStepper {
 
   size_t order() const override;
 
-  size_t error_estimate_order() const override;
-
   double stable_step() const override;
 
   bool monotonic() const override;

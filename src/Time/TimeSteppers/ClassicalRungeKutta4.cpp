@@ -9,8 +9,6 @@ namespace TimeSteppers {
 
 size_t ClassicalRungeKutta4::order() const { return 4; }
 
-size_t ClassicalRungeKutta4::error_estimate_order() const { return 3; }
-
 // The growth function for RK4 is (e.g. page 60 of
 // http://www.staff.science.uu.nl/~frank011/Classes/numwisk/ch10.pdf
 //

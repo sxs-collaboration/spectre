@@ -14,7 +14,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk4Owren", "[Unit][Time]") {
   const TimeSteppers::Rk4Owren stepper{};
 
   CHECK(stepper.order() == 4);
-  CHECK(stepper.error_estimate_order() == 3);
   CHECK(stepper.number_of_substeps() == 5);
   CHECK(stepper.number_of_substeps_for_error() == 5);
   TestHelpers::RungeKutta::check_tableau(stepper);

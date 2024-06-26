@@ -63,8 +63,6 @@ AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
 
 size_t AdamsBashforth::order() const { return order_; }
 
-size_t AdamsBashforth::error_estimate_order() const { return order_ - 1; }
-
 uint64_t AdamsBashforth::number_of_substeps() const { return 1; }
 
 uint64_t AdamsBashforth::number_of_substeps_for_error() const { return 1; }

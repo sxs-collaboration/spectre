@@ -124,11 +124,6 @@ size_t AdamsMoultonPc<Monotonic>::order() const {
 }
 
 template <bool Monotonic>
-size_t AdamsMoultonPc<Monotonic>::error_estimate_order() const {
-  return order_ - 1;
-}
-
-template <bool Monotonic>
 uint64_t AdamsMoultonPc<Monotonic>::number_of_substeps() const {
   return 2;
 }

@@ -123,8 +123,6 @@ class AdamsMoultonPc : public LtsTimeStepper {
 
   size_t order() const override;
 
-  size_t error_estimate_order() const override;
-
   uint64_t number_of_substeps() const override;
 
   uint64_t number_of_substeps_for_error() const override;

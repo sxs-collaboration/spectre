@@ -7,8 +7,6 @@ namespace TimeSteppers {
 
 size_t Heun2::order() const { return 2; }
 
-size_t Heun2::error_estimate_order() const { return 1; }
-
 // The stability polynomial is
 //
 //   p(z) = \sum_{n=0}^{stages-1} alpha_n z^n / n!,

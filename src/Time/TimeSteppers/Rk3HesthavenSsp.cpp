@@ -20,8 +20,6 @@ namespace TimeSteppers {
 
 size_t Rk3HesthavenSsp::order() const { return 3; }
 
-size_t Rk3HesthavenSsp::error_estimate_order() const { return 2; }
-
 double Rk3HesthavenSsp::stable_step() const {
   // This is the condition for  y' = -k y  to go to zero.
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
@@ -100,8 +98,7 @@ std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
          0.5 * *history.substeps()[0].value -
          0.5 * time_step.value() * history.substeps()[0].derivative;
     error.emplace(StepperErrorEstimate{
-        history.back().time_step_id.step_time(), time_step,
-        error_estimate_order(),
+        history.back().time_step_id.step_time(), time_step, 2,
         largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 

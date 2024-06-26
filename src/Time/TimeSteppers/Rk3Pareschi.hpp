@@ -49,8 +49,6 @@ class Rk3Pareschi : public ImexRungeKutta {
 
   size_t order() const override;
 
-  size_t error_estimate_order() const override;
-
   double stable_step() const override;
 
   size_t imex_order() const override;

@@ -7,8 +7,6 @@ namespace TimeSteppers {
 
 size_t DormandPrince5::order() const { return 5; }
 
-size_t DormandPrince5::error_estimate_order() const { return 4; }
-
 // The growth function for DP5 is
 //
 //   g = mu^6 / 600 + \sum_{n=0}^5 mu^n / n!,

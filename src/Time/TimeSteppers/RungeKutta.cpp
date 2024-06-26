@@ -151,8 +151,7 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
     const double dt = time_step.value();
     step_error(u, history, dt, tableau);
     error.emplace(StepperErrorEstimate{
-        history.back().time_step_id.step_time(), time_step,
-        error_estimate_order(),
+        history.back().time_step_id.step_time(), time_step, order() - 1,
         largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 
