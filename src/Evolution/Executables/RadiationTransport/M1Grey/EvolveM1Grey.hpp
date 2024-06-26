@@ -231,10 +231,9 @@ struct EvolutionMetavars {
       RadiationTransport::M1Grey::Actions::InitializeM1Tags<system>,
       Initialization::Actions::InitializeItems<imex::Initialize<system>>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
-                               ComputeM1Closure<neutrino_species>> /*,
-         Actions::MutateApply<typename RadiationTransport::M1Grey::
-                                  ComputeM1HydroCoupling<neutrino_species>>*/
-      ,
+                               ComputeM1Closure<neutrino_species>>,
+      Actions::MutateApply<typename RadiationTransport::M1Grey::
+                               ComputeM1HydroCoupling<neutrino_species>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,

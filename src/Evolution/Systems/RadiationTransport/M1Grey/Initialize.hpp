@@ -49,7 +49,13 @@ struct InitializeM1Tags {
   // evolved_variables_tag because the evolved variables
   // are created by the ConservativeSystem initialization.
   // sources <sector::tensors::>
-  using simple_tags = tmpl::list<hydro_variables_tag, m1_variables_tag>;
+  using simple_tags_no_source =
+      tmpl::list<hydro_variables_tag, m1_variables_tag>;
+  // These tags are needed because M1HydroCoupling contains return_tags that
+  // prepend Tags::Source to the evolved variables tags
+  using simple_tags_source =
+      db::add_tag_prefix<::Tags::Source, evolved_variables_tag>;
+  using simple_tags = tmpl::list<simple_tags_no_source, simple_tags_source>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -90,9 +96,9 @@ struct InitializeM1Tags {
 
     // gotcha warning here
     M1Vars m1_variables{num_grid_points, -1.};
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                               std::move(hydro_variables),
-                                               std::move(m1_variables));
+    Initialization::mutate_assign<simple_tags_no_source>(
+        make_not_null(&box), std::move(hydro_variables),
+        std::move(m1_variables));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
