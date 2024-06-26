@@ -24,6 +24,7 @@ target_link_libraries(
   GeneralRelativitySolutions
   Hydro
   Informer
+  Imex
   Limiters
   LinearOperators
   MathFunctions

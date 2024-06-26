@@ -48,6 +48,7 @@ struct InitializeM1Tags {
   // List of variables to be created... does NOT include
   // evolved_variables_tag because the evolved variables
   // are created by the ConservativeSystem initialization.
+  // sources <sector::tensors::>
   using simple_tags = tmpl::list<hydro_variables_tag, m1_variables_tag>;
   using compute_tags = tmpl::list<>;
 
@@ -87,6 +88,7 @@ struct InitializeM1Tags {
         Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
         initial_time, typename hydro_variables_tag::tags_list{}));
 
+    // gotcha warning here
     M1Vars m1_variables{num_grid_points, -1.};
     Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::move(hydro_variables),
