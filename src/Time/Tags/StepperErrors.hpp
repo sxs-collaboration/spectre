@@ -20,8 +20,7 @@ struct StepperErrors : db::PrefixTag, db::SimpleTag {
   static std::string name() {
     return "StepperErrors(" + db::tag_name<Tag>() + ")";
   }
-  using type =
-      std::array<std::optional<StepperErrorEstimate<typename Tag::type>>, 2>;
+  using type = std::array<std::optional<StepperErrorEstimate>, 2>;
   using tag = Tag;
 };
 }  // namespace Tags

@@ -4,9 +4,13 @@
 #include "Time/TimeSteppers/RungeKutta.hpp"
 
 #include <algorithm>
+#include <optional>
 
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -130,30 +134,31 @@ void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 }
 
 template <typename T>
-bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
-                               const gsl::not_null<T*> u_error,
-                               const ConstUntypedHistory<T>& history,
-                               const TimeDelta& time_step) const {
+std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
   const auto& tableau = butcher_tableau();
   const auto number_of_substeps = number_of_substeps_for_error();
-  update_u_impl_with_tableau(u, history, time_step, tableau,
-                             number_of_substeps);
-
   const size_t substep =
       history.at_step_start() ? 0 : history.substeps().size();
-
-  if (substep < number_of_substeps - 1) {
-    return false;
+  std::optional<StepperErrorEstimate> error{};
+  if (substep == number_of_substeps - 1 and tolerances.has_value()) {
+    const double dt = time_step.value();
+    step_error(u, history, dt, tableau);
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step,
+        error_estimate_order(),
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 
-  const double dt = time_step.value();
-  step_error(u_error, history, dt, tableau);
-
-  return true;
+  update_u_impl_with_tableau(u, history, time_step, tableau,
+                             number_of_substeps);
+  return error;
 }
 
 template <typename T>

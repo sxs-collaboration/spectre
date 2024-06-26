@@ -5,16 +5,19 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <pup.h>
 #include <string>
 
 #include "Options/String.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+struct StepperErrorTolerances;
 class TimeDelta;
 class TimeStepId;
 namespace PUP {
@@ -158,9 +161,10 @@ class AdamsMoultonPc : public LtsTimeStepper {
                      const TimeDelta& time_step) const;
 
   template <typename T>
-  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     const ConstUntypedHistory<T>& history,
-                     const TimeDelta& time_step) const;
+  std::optional<StepperErrorEstimate> update_u_impl(
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+      const TimeDelta& time_step,
+      const std::optional<StepperErrorTolerances>& tolerances) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;

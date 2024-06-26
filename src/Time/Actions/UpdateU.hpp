@@ -14,12 +14,12 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -31,6 +31,8 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct IsUsingTimeSteppingErrorControl;
+template <typename Tag>
+struct StepperErrorTolerances;
 struct TimeStep;
 struct TimeStepId;
 template <typename StepperInterface>
@@ -52,40 +54,25 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
     using error_tag = ::Tags::StepperErrors<VariablesTag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
       db::mutate<VariablesTag, error_tag>(
-          [](const gsl::not_null<typename VariablesTag::type*> vars,
-             const gsl::not_null<typename error_tag::type*> errors,
-             const typename history_tag::type& history,
-             const ::TimeDelta& time_step, const TimeStepper& time_stepper) {
-            using std::swap;
-            bool new_entry = false;
-            const auto current_step_time =
-                history.back().time_step_id.step_time();
-            if (not errors->back().has_value() or
-                errors->back()->step_time != current_step_time) {
-              swap((*errors)[0], (*errors)[1]);
-              if (not errors->back().has_value()) {
-                new_entry = true;
-                errors->back().emplace();
-                set_number_of_grid_points(make_not_null(&errors->back()->error),
-                                          *vars);
+          [&](const gsl::not_null<typename VariablesTag::type*> vars,
+              const gsl::not_null<typename error_tag::type*> errors,
+              const typename history_tag::type& history,
+              const ::TimeDelta& time_step, const TimeStepper& time_stepper,
+              const std::optional<StepperErrorTolerances>& tolerances) {
+            const auto error =
+                time_stepper.update_u(vars, history, time_step, tolerances);
+            if (error.has_value()) {
+              // Save the previous errors, but not if this is a retry
+              // of the same step.
+              if ((*errors)[1]->step_time != error->step_time) {
+                (*errors)[0] = (*errors)[1];
               }
-            }
-            const bool stepper_error_updated = time_stepper.update_u(
-                vars, make_not_null(&errors->back()->error), history,
-                time_step);
-            if (stepper_error_updated) {
-              errors->back()->step_time = current_step_time;
-              errors->back()->step_size = time_step;
-              errors->back()->order = time_stepper.error_estimate_order();
-            } else if (new_entry) {
-              errors->back().reset();
-              swap((*errors)[0], (*errors)[1]);
-            } else if (errors->back()->step_time != current_step_time) {
-              swap((*errors)[0], (*errors)[1]);
+              (*errors)[1].emplace(*error);
             }
           },
           box, db::get<history_tag>(*box), db::get<Tags::TimeStep>(*box),
-          db::get<Tags::TimeStepper<TimeStepper>>(*box));
+          db::get<Tags::TimeStepper<TimeStepper>>(*box),
+          db::get<Tags::StepperErrorTolerances<VariablesTag>>(*box));
     } else {
       ERROR(
           "Cannot update the stepper error measure -- "

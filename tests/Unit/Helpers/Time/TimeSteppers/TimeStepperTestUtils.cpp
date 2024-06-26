@@ -12,11 +12,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <utility>
 
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -56,17 +58,33 @@ void take_step_and_check_error(
     const gsl::not_null<double*> y_error,
     const gsl::not_null<TimeSteppers::History<double>*> history,
     const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) {
+  // Return the actual error, not a normalized version.
+  const StepperErrorTolerances tolerances{.absolute = 1.0, .relative = 0.0};
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
     CHECK(time_id.substep() == substep);
     history->insert(time_id, *y, rhs(*y, time_id.substep_time()));
     *y = std::numeric_limits<double>::signaling_NaN();
-    bool error_updated = stepper.update_u(y, y_error, *history, step_size);
+    const auto error = stepper.update_u(y, *history, step_size, tolerances);
+    {
+      auto y_without_tolerances = std::numeric_limits<double>::signaling_NaN();
+      const auto error_without_tolerances =
+          stepper.update_u(make_not_null(&y_without_tolerances), *history,
+                           step_size, std::nullopt);
+      CHECK(not error_without_tolerances.has_value());
+      CHECK(y_without_tolerances == *y);
+    }
     stepper.clean_history(history);
     CAPTURE(substep);
     REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
-            error_updated);
+            error.has_value());
+    if (error.has_value()) {
+      CHECK(error->step_time == time_id.step_time());
+      CHECK(error->step_size == step_size);
+      *y_error = error->error;
+      REQUIRE(*y_error >= 0.0);
+    }
     time_id = stepper.next_time_id_for_error(time_id, step_size);
   }
   CHECK(time_id.substep() == 0);
@@ -200,8 +218,8 @@ void integrate_error_test(const TimeStepper& stepper, const size_t order,
     if (i > num_steps / 2) {
       double local_error = abs((y - analytic(time.value())) -
                                (previous_y - analytic(previous_time)));
-      CHECK(local_error < std::max(abs(y_error), 1e-14));
-      CHECK(local_error > abs(error_factor * y_error));
+      CHECK(local_error < std::max(y_error, 1e-14));
+      CHECK(local_error > error_factor * y_error);
     }
     previous_y = y;
     previous_time = time.value();
@@ -372,9 +390,7 @@ void check_dense_output(
         }
         y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {
-          double error = 0.0;
-          stepper.update_u(make_not_null(&y), make_not_null(&error), history,
-                           step);
+          stepper.update_u(make_not_null(&y), history, step, std::nullopt);
         } else {
           stepper.update_u(make_not_null(&y), history, step);
         }
@@ -507,8 +523,7 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
         [&](const gsl::not_null<double*> u,
             const TimeSteppers::History<double>& history,
             const TimeDelta& time_step) {
-          double error;
-          stepper.update_u(u, make_not_null(&error), history, time_step);
+          stepper.update_u(u, history, time_step, std::nullopt);
         },
         [&](const TimeStepId& time_step_id, const TimeDelta& time_step) {
           return stepper.next_time_id_for_error(time_step_id, time_step);

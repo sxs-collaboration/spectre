@@ -4,13 +4,17 @@
 #pragma once
 
 #include <cstddef>
-#include <pup.h>
 
 #include "Time/Time.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 /// \ingroup TimeGroup
 /// Estimate of the TimeStepper truncation error.
-template <typename T>
 struct StepperErrorEstimate {
   /// Start of the step the estimate is for.
   Time step_time{};
@@ -19,17 +23,8 @@ struct StepperErrorEstimate {
   /// Order of accuracy of the estimate.  The estimated error should
   /// scale approximately as $(\Delta t)^{\text{order} + 1}$.
   size_t order{};
-  /// Error estimate, with the same structure as the evolved
-  /// variables.
-  T error{};
+  /// Error estimate.
+  double error{};
 
   void pup(PUP::er& p);
 };
-
-template <typename T>
-void StepperErrorEstimate<T>::pup(PUP::er& p) {
-  p | step_time;
-  p | step_size;
-  p | order;
-  p | error;
-}

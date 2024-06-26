@@ -18,10 +18,8 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
-#include "Time/LargestStepperError.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
@@ -36,6 +34,8 @@ struct EventsAndTriggers;
 template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute;
 struct StepChoosers;
+template <typename EvolvedVariableTag, bool LocalTimeStepping>
+struct StepperErrorTolerancesCompute;
 }  // namespace Tags
 /// \endcond
 
@@ -73,8 +73,11 @@ struct ErrorControlBase : IsAnErrorControl {
  * sc_i = Atol_i + \max(|y_i|,|y_i + E_i|) Rtol_i,
  * \f]
  *
- * and \f$y_i\f$ is the value of the function at the current step at grid point
- * \f$i\f$.
+ * and \f$y_i\f$ is the value of the function at the previous step at
+ * grid point \f$i\f$.  (The estimate is more commonly done comparing
+ * with the current step, but using the previous step avoids a memory
+ * allocation in the TimeStepper and should not have a major effect on
+ * the result.)
  *
  * When no previous record of previous error is available, the step has size:
  *
@@ -187,15 +190,16 @@ class ErrorControl
 
   using simple_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
-  using compute_tags = tmpl::list<Tags::IsUsingTimeSteppingErrorControlCompute<
-      std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
+  using compute_tags = tmpl::list<
+      Tags::IsUsingTimeSteppingErrorControlCompute<
+          std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>,
+      Tags::StepperErrorTolerancesCompute<
+          EvolvedVariableTag,
+          std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
 
-  using argument_tags =
-      tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
-                 ::Tags::StepperErrors<EvolvedVariableTag>>;
+  using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
   std::pair<double, bool> operator()(
-      const TimeSteppers::History<typename EvolvedVariableTag::type>& history,
       const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
       const double previous_step) const {
     // request that the step size not be changed if there isn't a new error
@@ -203,18 +207,14 @@ class ErrorControl
     if (not errors[1].has_value()) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const double l_inf_error = largest_stepper_error(
-        history.latest_value(), errors[1]->error, tolerances());
     double new_step;
     if (not errors[0].has_value()) {
-      new_step =
-          errors[1]->step_size.value() *
-          std::clamp(safety_factor_ * pow(1.0 / std::max(l_inf_error, 1e-14),
-                                          1.0 / (errors[1]->order + 1)),
-                     min_factor_, max_factor_);
+      new_step = errors[1]->step_size.value() *
+                 std::clamp(safety_factor_ *
+                                pow(1.0 / std::max(errors[1]->error, 1e-14),
+                                    1.0 / (errors[1]->order + 1)),
+                            min_factor_, max_factor_);
     } else {
-      const double previous_l_inf_error = largest_stepper_error(
-          history.latest_value(), errors[0]->error, tolerances());
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       ASSERT(errors[0]->order == errors[1]->order,
@@ -226,15 +226,15 @@ class ErrorControl
           errors[1]->step_size.value() *
           std::clamp(
               safety_factor_ *
-                  pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
-                  pow(std::max(previous_l_inf_error, 1e-14), beta_factor),
+                  pow(1.0 / std::max(errors[1]->error, 1e-14), alpha_factor) *
+                  pow(std::max(errors[0]->error, 1e-14), beta_factor),
               min_factor_, max_factor_);
     }
     // If the error is out-of-date we can still reject a step, but it
     // won't improve the reported error, so make sure to only do it
     // if we actually request a smaller step.
-    return std::make_pair(abs(new_step),
-                          abs(new_step) >= previous_step or l_inf_error <= 1.0);
+    return {abs(new_step),
+            abs(new_step) >= previous_step or errors[1]->error <= 1.0};
   }
 
   bool uses_local_data() const override { return true; }

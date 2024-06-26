@@ -6,12 +6,16 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <pup.h>
 
 #include "Time/ApproximateTime.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeSteppers/AdamsCoefficients.hpp"
 #include "Time/TimeSteppers/AdamsLts.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -247,18 +251,23 @@ void AdamsMoultonPc<Monotonic>::update_u_impl(
 
 template <bool Monotonic>
 template <typename T>
-bool AdamsMoultonPc<Monotonic>::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const ConstUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  const bool predictor = history.at_step_start();
+std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
+  const bool corrector = not history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
-  *u = *history.back().value;
-  update_u_common(u, history, next_time, not predictor);
-  if (predictor) {
-    return false;
+  std::optional<StepperErrorEstimate> error{};
+  if (corrector and tolerances.has_value()) {
+    step_error(u, history, next_time);
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step,
+        history.integration_order() - 1,
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
-  step_error(u_error, history, next_time);
-  return true;
+  *u = *history.back().value;
+  update_u_common(u, history, next_time, corrector);
+  return error;
 }
 
 template <bool Monotonic>

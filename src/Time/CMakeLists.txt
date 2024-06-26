@@ -14,6 +14,7 @@ spectre_target_sources(
   History.cpp
   SelfStart.cpp
   Slab.cpp
+  StepperErrorEstimate.cpp
   StepperErrorTolerances.cpp
   Time.cpp
   TimeSequence.cpp

@@ -4,9 +4,13 @@
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 
 #include <cmath>
+#include <optional>
 
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -79,28 +83,30 @@ void Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
 }
 
 template <typename T>
-bool Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
-                                    const gsl::not_null<T*> u_error,
-                                    const ConstUntypedHistory<T>& history,
-                                    const TimeDelta& time_step) const {
+std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
-  update_u_impl(u, history, time_step);
-
-  if (history.at_step_start() or history.substeps().size() < 2) {
-    return false;
+  std::optional<StepperErrorEstimate> error{};
+  if (not history.at_step_start() and history.substeps().size() == 2 and
+      tolerances.has_value()) {
+    *u = -(1.0 / 6.0) * *history.back().value +
+         (2.0 / 3.0) * *history.substeps()[1].value +
+         (2.0 / 3.0) * time_step.value() * history.substeps()[1].derivative -
+         0.5 * *history.substeps()[0].value -
+         0.5 * time_step.value() * history.substeps()[0].derivative;
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step,
+        error_estimate_order(),
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 
-  *u_error =
-      -(1.0 / 6.0) * *history.back().value +
-      (2.0 / 3.0) * *history.substeps()[1].value +
-      (2.0 / 3.0) * time_step.value() * history.substeps()[1].derivative -
-      0.5 * *history.substeps()[0].value -
-      0.5 * time_step.value() * history.substeps()[0].derivative;
-
-  return true;
+  update_u_impl(u, history, time_step);
+  return error;
 }
 
 template <typename T>

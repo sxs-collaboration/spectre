@@ -8,13 +8,17 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <optional>
 #include <pup.h>
 
 #include "Time/ApproximateTime.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsCoefficients.hpp"
@@ -128,18 +132,25 @@ void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
 }
 
 template <typename T>
-bool AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
-                                   const gsl::not_null<T*> u_error,
-                                   const ConstUntypedHistory<T>& history,
-                                   const TimeDelta& time_step) const {
+std::optional<StepperErrorEstimate> AdamsBashforth::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
   ASSERT(history.size() == history.integration_order(),
          "Incorrect data to take an order-" << history.integration_order()
          << " step.  Have " << history.size() << " times, need "
          << history.integration_order());
+  std::optional<StepperErrorEstimate> error{};
+  if (tolerances.has_value()) {
+    step_error(u, history, time_step);
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step,
+        history.integration_order() - 1,
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
+  }
   *u = *history.back().value;
   update_u_common(u, history, time_step);
-  step_error(u_error, history, time_step);
-  return true;
+  return error;
 }
 
 template <typename T>
