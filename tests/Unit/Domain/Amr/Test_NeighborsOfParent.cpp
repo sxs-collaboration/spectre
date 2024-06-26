@@ -35,7 +35,7 @@ SegmentId s_10{1, 0};
 SegmentId s_11{1, 1};
 
 void test_periodic_interval() {
-  OrientationMap<1> aligned{};
+  OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
   ElementId<1> parent_id{0, std::array{s_00}};
   ElementId<1> child_1_id{0, std::array{s_10}};
   ElementId<1> child_2_id{0, std::array{s_11}};
@@ -94,7 +94,7 @@ void test_periodic_interval() {
 }
 
 void test_interval() {
-  OrientationMap<1> aligned{};
+  OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
   OrientationMap<1> flipped{std::array{Direction<1>::lower_xi()}};
   ElementId<1> parent_id{0, std::array{s_00}};
   ElementId<1> child_1_id{0, std::array{s_10}};
@@ -163,7 +163,7 @@ void test_interval() {
 }
 
 void test_rectangle() {
-  OrientationMap<2> aligned{};
+  OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
   OrientationMap<2> rotated{
       std::array{Direction<2>::lower_eta(), Direction<2>::upper_xi()}};
   const Mesh<2> mesh;

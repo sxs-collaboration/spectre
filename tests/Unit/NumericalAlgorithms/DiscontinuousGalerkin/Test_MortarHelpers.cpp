@@ -48,19 +48,23 @@ void test_mortar_mesh() {
 
 void test_mortar_size() {
   CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
-                        ElementId<1>(0, {{{5, 2}}}), 0, {}) ==
+                        ElementId<1>(0, {{{5, 2}}}), 0,
+                        OrientationMap<1>::create_aligned()) ==
         std::array<Spectral::MortarSize, 0>{});
 
   // Check the root segment to make sure the code doesn't try to get
   // its parent.
   CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
+                        OrientationMap<2>::create_aligned()) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
   CHECK(dg::mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
+                        OrientationMap<2>::create_aligned()) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
   CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1, {}) ==
+                        ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1,
+                        OrientationMap<2>::create_aligned()) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::LowerHalf}});
 
   // Check all the aligned cases in 3D
@@ -115,7 +119,8 @@ void test_mortar_size() {
         CAPTURE(neighbor);
         const std::array<Spectral::MortarSize, 2> expected{
             {expected_size(test0), expected_size(test1)}};
-        CHECK(dg::mortar_size(self, neighbor, dimension, {}) == expected);
+        CHECK(dg::mortar_size(self, neighbor, dimension,
+                              OrientationMap<3>::create_aligned()) == expected);
       }
     }
   }

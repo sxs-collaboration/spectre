@@ -364,7 +364,8 @@ void test_wedge3d_large_radius() {
     for (const auto& which_wedges :
          {WedgeHalves::Both, WedgeHalves::UpperOnly, WedgeHalves::LowerOnly}) {
       const Wedge3D map(inner_radius, outer_radius, 1.0, 1.0,
-                        OrientationMap<3>{}, with_equiangular_map, which_wedges,
+                        OrientationMap<3>::create_aligned(),
+                        with_equiangular_map, which_wedges,
                         CoordinateMaps::Distribution::Inverse,
                         with_equiangular_map ? opening_angles : default_angles);
       const double cap_xi_one =
@@ -500,7 +501,8 @@ void test_wedge3d_large_radius() {
 
 void test_wedge3d_fail() {
   INFO("Wedge3d fail");
-  const Wedge3D map(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true);
+  const Wedge3D map(0.2, 4.0, 0.0, 1.0, OrientationMap<3>::create_aligned(),
+                    true);
   // Any point with z=0 should fail the inverse map.
   const std::array<double, 3> test_mapped_point1{{3.0, 3.0, 0.0}};
   const std::array<double, 3> test_mapped_point2{{-3.0, 3.0, 0.0}};
@@ -543,40 +545,42 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
-      Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
+      Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>::create_aligned(), true),
       Catch::Matchers::ContainsSubstring(
           "The radius of the inner surface must be greater than zero."));
   CHECK_THROWS_WITH(
-      Wedge3D(0.2, 4.0, -0.2, 1.0, OrientationMap<3>{}, true),
+      Wedge3D(0.2, 4.0, -0.2, 1.0, OrientationMap<3>::create_aligned(), true),
       Catch::Matchers::ContainsSubstring(
           "Sphericity of the inner surface must be between 0 and 1"));
   CHECK_THROWS_WITH(
-      Wedge3D(0.2, 4.0, 0.0, -0.2, OrientationMap<3>{}, true),
+      Wedge3D(0.2, 4.0, 0.0, -0.2, OrientationMap<3>::create_aligned(), true),
       Catch::Matchers::ContainsSubstring(
           "Sphericity of the outer surface must be between 0 and 1"));
   CHECK_THROWS_WITH(
-      Wedge3D(4.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
+      Wedge3D(4.2, 4.0, 0.0, 1.0, OrientationMap<3>::create_aligned(), true),
       Catch::Matchers::ContainsSubstring(
           "The radius of the outer surface must be greater than the "
           "radius of the inner surface."));
   CHECK_THROWS_WITH(
-      Wedge3D(3.0, 4.0, 1.0, 0.0, OrientationMap<3>{}, true),
+      Wedge3D(3.0, 4.0, 1.0, 0.0, OrientationMap<3>::create_aligned(), true),
       Catch::Matchers::ContainsSubstring(
           "The arguments passed into the constructor for Wedge result in an "
           "object where the outer surface is pierced by the inner surface."));
-  CHECK_THROWS_WITH(Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true,
-                            Wedge3D::WedgeHalves::Both,
-                            domain::CoordinateMaps::Distribution::Logarithmic),
-                    Catch::Matchers::ContainsSubstring(
-                        "Only the 'Linear' radial distribution is "
-                        "supported for non-spherical wedges."));
-  CHECK_THROWS_WITH(Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, false,
-                            Wedge3D::WedgeHalves::Both,
-                            domain::CoordinateMaps::Distribution::Linear,
-                            std::array<double, 2>{{M_PI_4 * 0.70, M_PI_4}}),
-                    Catch::Matchers::ContainsSubstring(
-                        "If using opening angles other than pi/2, then the "
-                        "equiangular map option must be turned on."));
+  CHECK_THROWS_WITH(
+      Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>::create_aligned(), true,
+              Wedge3D::WedgeHalves::Both,
+              domain::CoordinateMaps::Distribution::Logarithmic),
+      Catch::Matchers::ContainsSubstring(
+          "Only the 'Linear' radial distribution is "
+          "supported for non-spherical wedges."));
+  CHECK_THROWS_WITH(
+      Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>::create_aligned(), false,
+              Wedge3D::WedgeHalves::Both,
+              domain::CoordinateMaps::Distribution::Linear,
+              std::array<double, 2>{{M_PI_4 * 0.70, M_PI_4}}),
+      Catch::Matchers::ContainsSubstring(
+          "If using opening angles other than pi/2, then the "
+          "equiangular map option must be turned on."));
 #endif
 }
 }  // namespace domain

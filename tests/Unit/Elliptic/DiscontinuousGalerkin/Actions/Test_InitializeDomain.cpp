@@ -108,9 +108,11 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
     CHECK(get_tag(domain::Tags::Element<1>{}) ==
           Element<1>{element_id,
                      {{Direction<1>::lower_xi(),
-                       {{{ElementId<1>{0, {{SegmentId{2, 0}}}}}}, {}}},
+                       {{{ElementId<1>{0, {{SegmentId{2, 0}}}}}},
+                        OrientationMap<1>::create_aligned()}},
                       {Direction<1>::upper_xi(),
-                       {{{ElementId<1>{0, {{SegmentId{2, 2}}}}}}, {}}}}});
+                       {{{ElementId<1>{0, {{SegmentId{2, 2}}}}}},
+                        OrientationMap<1>::create_aligned()}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<1>{});
     const auto& functions_of_time = get_tag(domain::Tags::FunctionsOfTime{});
     const tnsr::I<DataVector, 1, Frame::ElementLogical>
@@ -180,13 +182,13 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
           Mesh<2>{{{4, 3}}, Spectral::Basis::Legendre, quadrature});
     CHECK(
         get_tag(domain::Tags::Element<2>{}) ==
-        Element<2>{
-            element_id,
-            {{Direction<2>::lower_xi(),
-              {{{ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{0, 0}}}}}}, {}}},
-             {Direction<2>::upper_xi(),
-              {{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{0, 0}}}}}},
-               {}}}}});
+        Element<2>{element_id,
+                   {{Direction<2>::lower_xi(),
+                     {{{ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{0, 0}}}}}},
+                      OrientationMap<2>::create_aligned()}},
+                    {Direction<2>::upper_xi(),
+                     {{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{0, 0}}}}}},
+                      OrientationMap<2>::create_aligned()}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<2>{});
     const tnsr::I<DataVector, 2, Frame::ElementLogical>
         logical_coords_for_element_map{
@@ -257,15 +259,15 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
             {{Direction<3>::lower_xi(),
               {{{ElementId<3>{
                    0, {{SegmentId{2, 0}, SegmentId{0, 0}, SegmentId{1, 1}}}}}},
-               {}}},
+               OrientationMap<3>::create_aligned()}},
              {Direction<3>::upper_xi(),
               {{{ElementId<3>{
                    0, {{SegmentId{2, 2}, SegmentId{0, 0}, SegmentId{1, 1}}}}}},
-               {}}},
+               OrientationMap<3>::create_aligned()}},
              {Direction<3>::lower_zeta(),
               {{{ElementId<3>{
                    0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 0}}}}}},
-               {}}}}});
+               OrientationMap<3>::create_aligned()}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<3>{});
     const tnsr::I<DataVector, 3, Frame::ElementLogical>
         logical_coords_for_element_map{{{{-1., -0.5, 0., 0.1, 1.},

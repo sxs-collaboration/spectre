@@ -331,7 +331,8 @@ class Frustum {
  private:
   friend bool operator==(const Frustum& lhs, const Frustum& rhs);
 
-  OrientationMap<3> orientation_of_frustum_{};
+  OrientationMap<3> orientation_of_frustum_ =
+      OrientationMap<3>::create_aligned();
   bool with_equiangular_map_{false};
   bool is_identity_{false};
   Distribution zeta_distribution_ = Distribution::Linear;

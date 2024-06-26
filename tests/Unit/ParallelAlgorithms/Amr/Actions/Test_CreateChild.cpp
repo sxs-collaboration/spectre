@@ -92,7 +92,7 @@ void test() {
   const ElementId<1> parent_lower_neighbor_id{0, std::array{SegmentId{2, 0}}};
   const ElementId<1> parent_upper_neighbor_id{0, std::array{SegmentId{2, 2}}};
   DirectionMap<1, Neighbors<1>> parent_neighbors{};
-  OrientationMap<1> aligned{};
+  OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
   parent_neighbors.emplace(
       Direction<1>::lower_xi(),
       Neighbors<1>{std::unordered_set{parent_lower_neighbor_id}, aligned});

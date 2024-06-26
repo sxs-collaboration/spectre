@@ -134,7 +134,6 @@ void test_rotated_bricks() {
   const std::array<double, 3> lower_bound{{-1.3, -3.0, 2.0}};
   const std::array<double, 3> midpoint{{-0.6, 0.3, 3.2}};
   const std::array<double, 3> upper_bound{{0.8, 3.0, 4.7}};
-  const OrientationMap<3> aligned{};
   const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
        Direction<3>::lower_xi()}}};
@@ -327,7 +326,6 @@ void test_rotated_bricks() {
 
 void test_rotated_bricks_factory() {
   INFO("Rotated bricks factory");
-  const OrientationMap<3> aligned{};
   const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
        Direction<3>::lower_xi()}}};

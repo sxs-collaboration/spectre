@@ -61,16 +61,17 @@ void test_1d_orient_variables() {
 
   // Check aligned case
   {
-    const auto oriented_vars = orient_variables(vars, extents, {});
+    const auto oriented_vars =
+        orient_variables(vars, extents, OrientationMap<1>::create_aligned());
     CHECK(oriented_vars == vars);
 
-    const std::vector<double> oriented_vars_vector =
-        orient_variables(vars_vector, extents, {});
+    const std::vector<double> oriented_vars_vector = orient_variables(
+        vars_vector, extents, OrientationMap<1>::create_aligned());
     CHECK(oriented_vars_vector == vars_vector);
 
     DataVector oriented_vars_datavector(vars_datavector.size());
     orient_variables(make_not_null(&oriented_vars_datavector), vars_datavector,
-                     extents, {});
+                     extents, OrientationMap<1>::create_aligned());
     CHECK(oriented_vars_datavector == vars_datavector);
   }
 
@@ -111,11 +112,13 @@ void test_1d_orient_variables() {
                          vars_datavector, extents, {}),
         Catch::Matchers::ContainsSubstring("Result should have size"));
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
     oriented_vars_datavector = DataVector{vars.size() - 1};
     CHECK_THROWS_WITH(orient_variables(make_not_null(&oriented_vars_datavector),
-                                       vars_datavector_bad_size, extents, {}),
+                                       vars_datavector_bad_size, extents,
+                                       OrientationMap<1>::create_aligned()),
                       Catch::Matchers::ContainsSubstring(
                           "The size of the variables must be divisible by the "
                           "number of grid points. Number of grid points: "));
@@ -214,6 +217,7 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
                          vars_datavector, extents, orientation_map),
         Catch::Matchers::ContainsSubstring("Result should have size"));
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
     oriented_vars_datavector = DataVector{vars.size() - 1};
@@ -332,6 +336,7 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
                          vars_datavector, extents, orientation_map),
         Catch::Matchers::ContainsSubstring("Result should have size"));
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
                                               vars.size() - 1);
     oriented_vars_datavector = DataVector{vars.size() - 1};

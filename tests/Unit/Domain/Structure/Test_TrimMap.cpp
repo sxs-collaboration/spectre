@@ -22,7 +22,7 @@ void test_remove_nonexistent_neighbors() {
   for (size_t i = 0; i < 2 * Dim; ++i) {
     ElementId<Dim> id{i + 1, {}};
     neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =
-        Neighbors<Dim>{{id}, {}};
+        Neighbors<Dim>{{id}, OrientationMap<Dim>::create_aligned()};
     map_to_trim[DirectionalId<Dim>{gsl::at(Direction<Dim>::all_directions(), i),
                                    id}] = i * i + 10;  // Assign some number
   }

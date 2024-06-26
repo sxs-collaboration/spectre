@@ -33,8 +33,8 @@ class DiscreteRotation {
  public:
   static constexpr size_t dim = VolumeDim;
 
-  explicit DiscreteRotation(
-      OrientationMap<VolumeDim> orientation = OrientationMap<VolumeDim>{});
+  explicit DiscreteRotation(OrientationMap<VolumeDim> orientation =
+                                OrientationMap<VolumeDim>::create_aligned());
   ~DiscreteRotation() = default;
   DiscreteRotation(const DiscreteRotation&) = default;
   DiscreteRotation(DiscreteRotation&&) = default;  // NOLINT
@@ -72,7 +72,8 @@ class DiscreteRotation {
            lhs.is_identity_ == rhs.is_identity_;
   }
 
-  OrientationMap<VolumeDim> orientation_{};
+  OrientationMap<VolumeDim> orientation_ =
+      OrientationMap<VolumeDim>::create_aligned();
   bool is_identity_ = false;
 };
 

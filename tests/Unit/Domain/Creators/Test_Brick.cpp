@@ -102,7 +102,8 @@ void test_brick() {
   const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}};
   const std::array<double, 3> upper_bound{{0.8, 5.0, 3.0}};
   // Default OrientationMap is aligned.
-  const OrientationMap<3> aligned_orientation{};
+  const OrientationMap<3> aligned_orientation =
+      OrientationMap<3>::create_aligned();
 
   const creators::Brick brick{lower_bound, upper_bound, refinement_level[0],
                               grid_points[0],
@@ -469,10 +470,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
   }
@@ -531,10 +536,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
         std::make_tuple(
@@ -551,10 +560,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
         std::make_tuple(

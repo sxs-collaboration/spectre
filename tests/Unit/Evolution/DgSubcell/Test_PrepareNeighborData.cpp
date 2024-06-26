@@ -95,8 +95,8 @@ Element<Dim> create_element() {
     // only populate some directions with neighbors to test that we can handle
     // that case correctly. This is needed for DG-subcell at external boundaries
     if (i % 2 == 0) {
-      neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =
-          Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}}, {}};
+      neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
+          {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
       if constexpr (Dim == 3) {
         if (i == 2) {
           neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =

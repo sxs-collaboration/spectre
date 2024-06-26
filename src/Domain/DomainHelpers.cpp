@@ -553,7 +553,7 @@ void set_identified_boundaries(
 std::array<OrientationMap<3>, 6> orientations_for_sphere_wrappings() {
   return {{
       // Upper Z
-      OrientationMap<3>{},
+      OrientationMap<3>::create_aligned(),
       // Lower Z
       OrientationMap<3>{std::array<Direction<3>, 3>{
           {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -1178,9 +1178,10 @@ corners_for_rectilinear_domains(
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 1>>
-product_of_1d_maps(std::array<Map, 1>& maps,
-                   const OrientationMap<1>& rotation = {}) {
-  if (rotation == OrientationMap<1>{}) {
+product_of_1d_maps(
+    std::array<Map, 1>& maps,
+    const OrientationMap<1>& rotation = OrientationMap<1>::create_aligned()) {
+  if (rotation.is_aligned()) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         maps[0]);
   }
@@ -1190,9 +1191,10 @@ product_of_1d_maps(std::array<Map, 1>& maps,
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 2>>
-product_of_1d_maps(std::array<Map, 2>& maps,
-                   const OrientationMap<2>& rotation = {}) {
-  if (rotation == OrientationMap<2>{}) {
+product_of_1d_maps(
+    std::array<Map, 2>& maps,
+    const OrientationMap<2>& rotation = OrientationMap<2>::create_aligned()) {
+  if (rotation.is_aligned()) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
   }
@@ -1203,9 +1205,10 @@ product_of_1d_maps(std::array<Map, 2>& maps,
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>
-product_of_1d_maps(std::array<Map, 3>& maps,
-                   const OrientationMap<3>& rotation = {}) {
-  if (rotation == OrientationMap<3>{}) {
+product_of_1d_maps(
+    std::array<Map, 3>& maps,
+    const OrientationMap<3>& rotation = OrientationMap<3>::create_aligned()) {
+  if (rotation.is_aligned()) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1],
                                                               maps[2]));
@@ -1335,7 +1338,8 @@ Domain<VolumeDim> rectilinear_domain(
   // If no OrientationMaps are provided - default to all aligned:
   if (orientations_of_all_blocks.empty()) {
     rotations_of_all_blocks = std::vector<OrientationMap<VolumeDim>>{
-        corners_of_all_blocks.size(), OrientationMap<VolumeDim>{}};
+        corners_of_all_blocks.size(),
+        OrientationMap<VolumeDim>::create_aligned()};
   }
   auto maps = maps_for_rectilinear_domains<Frame::Inertial>(
       domain_extents, block_demarcations, block_indices_to_exclude,

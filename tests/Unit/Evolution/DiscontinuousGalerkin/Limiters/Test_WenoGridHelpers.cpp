@@ -38,14 +38,16 @@ void test_check_element_no_href() {
   const ElementId<2> lower_eta_id_2(4, {{{3, 7}, {4, 2}}});
   const ElementId<2> upper_eta_id(5, {{{3, 7}, {3, 2}}});
 
-  const Neighbors<2> lower_xi_neighbors({lower_xi_id}, OrientationMap<2>{});
+  const Neighbors<2> lower_xi_neighbors({lower_xi_id},
+                                        OrientationMap<2>::create_aligned());
   const Neighbors<2> upper_xi_neighbors(
       {upper_xi_id},
       OrientationMap<2>(std::array<Direction<2>, 2>{
           {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}));
   const Neighbors<2> lower_eta_neighbors({lower_eta_id_1, lower_eta_id_2},
-                                         OrientationMap<2>{});
-  const Neighbors<2> upper_eta_neighbors({upper_eta_id}, OrientationMap<2>{});
+                                         OrientationMap<2>::create_aligned());
+  const Neighbors<2> upper_eta_neighbors({upper_eta_id},
+                                         OrientationMap<2>::create_aligned());
 
   const Element<2> element(
       self_id, Element<2>::Neighbors_t{

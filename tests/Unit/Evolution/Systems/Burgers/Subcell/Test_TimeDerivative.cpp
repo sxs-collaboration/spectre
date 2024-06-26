@@ -87,8 +87,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
 
   DirectionMap<1, Neighbors<1>> neighbors{};
   for (size_t i = 0; i < 2; ++i) {
-    neighbors[gsl::at(Direction<1>::all_directions(), i)] =
-        Neighbors<1>{{ElementId<1>{i + 1, {}}}, {}};
+    neighbors[gsl::at(Direction<1>::all_directions(), i)] = Neighbors<1>{
+        {ElementId<1>{i + 1, {}}}, OrientationMap<1>::create_aligned()};
   }
   const Element<1> element{ElementId<1>{0, {}}, neighbors};
 

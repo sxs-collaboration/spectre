@@ -17,7 +17,7 @@ template <size_t VolumeDim>
 DiscreteRotation<VolumeDim>::DiscreteRotation(
     OrientationMap<VolumeDim> orientation)
     : orientation_(std::move(orientation)),
-      is_identity_(orientation_ == OrientationMap<VolumeDim>{}) {
+      is_identity_(orientation_.is_aligned()) {
   if constexpr (VolumeDim > 1) {
     // We allow reversing the direction of the axes in 1d to make testing
     // non-aligned blocks possible in 1d, which is easier than testing them in

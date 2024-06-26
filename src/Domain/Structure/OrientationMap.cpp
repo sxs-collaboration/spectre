@@ -28,10 +28,15 @@ std::set<size_t> set_of_dimensions(
 }  // namespace
 
 template <size_t VolumeDim>
-OrientationMap<VolumeDim>::OrientationMap() {
+OrientationMap<VolumeDim>::OrientationMap() = default;
+
+template <size_t VolumeDim>
+OrientationMap<VolumeDim> OrientationMap<VolumeDim>::create_aligned() {
+  OrientationMap<VolumeDim> result{};
   for (size_t j = 0; j < VolumeDim; j++) {
-    set_direction(j, Direction<VolumeDim>(j, Side::Upper));
+    result.set_direction(j, Direction<VolumeDim>(j, Side::Upper));
   }
+  return result;
 }
 
 template <size_t VolumeDim>
@@ -72,6 +77,8 @@ OrientationMap<VolumeDim>::OrientationMap(
 template <size_t VolumeDim>
 std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
     const std::array<SegmentId, VolumeDim>& segmentIds) const {
+  ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+         "Cannot use a default-constructed OrientationMap");
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
     gsl::at(result, get_direction(d).dimension()) =
@@ -85,6 +92,8 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
 template <size_t VolumeDim>
 Mesh<VolumeDim> OrientationMap<VolumeDim>::operator()(
     const Mesh<VolumeDim>& mesh) const {
+  ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+         "Cannot use a default-constructed OrientationMap");
   return Mesh<VolumeDim>(this->permute_to_neighbor(mesh.extents().indices()),
                          this->permute_to_neighbor(mesh.basis()),
                          this->permute_to_neighbor(mesh.quadrature()));
@@ -92,6 +101,8 @@ Mesh<VolumeDim> OrientationMap<VolumeDim>::operator()(
 
 template <size_t VolumeDim>
 OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const {
+  ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+         "Cannot use a default-constructed OrientationMap");
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
     gsl::at(result, get_direction(i).dimension()) =
@@ -141,6 +152,8 @@ void OrientationMap<VolumeDim>::pup(PUP::er& p) {
 template <size_t VolumeDim>
 Direction<VolumeDim> OrientationMap<VolumeDim>::get_direction(
     const size_t dim) const {
+  ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+         "Cannot use a default-constructed OrientationMap");
   const uint16_t direction_mask =
       Direction<VolumeDim>::all_mask
       << (dim * Direction<VolumeDim>::number_of_bits);

@@ -928,12 +928,13 @@ void test_coordinate_maps_are_identity() {
       make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
-          CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
+          CoordinateMaps::DiscreteRotation<3>{
+              OrientationMap<3>::create_aligned()},
           CoordinateMaps::EquatorialCompression{1.0},
           CoordinateMaps::Frustum{
               std::array<std::array<double, 2>, 4>{
                   {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
-              -1.0, 1.0, OrientationMap<3>{}, false},
+              -1.0, 1.0, OrientationMap<3>::create_aligned(), false},
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Affine,
                                          CoordinateMaps::Affine>{
@@ -961,19 +962,21 @@ void test_coordinate_maps_are_identity() {
   CHECK(giant_identity_map_base->function_of_time_names().empty());
 
   const auto wedge = make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
-      CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true));
+      CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0,
+                               OrientationMap<3>::create_aligned(), true));
   const auto wedge_composed_with_giant_identity =
       make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
-          CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{},
-                                   true),
+          CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0,
+                                   OrientationMap<3>::create_aligned(), true),
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
-          CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
+          CoordinateMaps::DiscreteRotation<3>{
+              OrientationMap<3>::create_aligned()},
           CoordinateMaps::EquatorialCompression{1.0},
           CoordinateMaps::Frustum{
               std::array<std::array<double, 2>, 4>{
                   {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
-              -1.0, 1.0, OrientationMap<3>{}, false},
+              -1.0, 1.0, OrientationMap<3>::create_aligned(), false},
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Affine,
                                          CoordinateMaps::Affine>{

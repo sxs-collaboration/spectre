@@ -32,9 +32,10 @@ namespace {
 void test_1d() {
   CHECK(sizeof(OrientationMap<1>) == 2);
   // Test constructors:
-  OrientationMap<1> default_orientation{};
-  CHECK(default_orientation.is_aligned());
-  CHECK(get_output(default_orientation) == "(+0)");
+
+  OrientationMap<1> aligned_orientation = OrientationMap<1>::create_aligned();
+  CHECK(aligned_orientation.is_aligned());
+  CHECK(get_output(aligned_orientation) == "(+0)");
   OrientationMap<1> custom1(
       std::array<Direction<1>, 1>{{Direction<1>::upper_xi()}});
   CHECK(custom1.is_aligned());
@@ -83,16 +84,16 @@ void test_1d() {
   test_serialization(custom2);
 
   // Test inverse:
-  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(aligned_orientation.inverse_map() == aligned_orientation);
   CHECK(custom2.inverse_map() == custom2);
 }
 
 void test_2d() {
   CHECK(sizeof(OrientationMap<2>) == 2);
   // Test constructors:
-  OrientationMap<2> default_orientation{};
-  CHECK(default_orientation.is_aligned());
-  CHECK(get_output(default_orientation) == "(+0, +1)");
+  OrientationMap<2> aligned_orientation = OrientationMap<2>::create_aligned();
+  CHECK(aligned_orientation.is_aligned());
+  CHECK(get_output(aligned_orientation) == "(+0, +1)");
   OrientationMap<2> custom1(std::array<Direction<2>, 2>{
       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
   CHECK(custom1.is_aligned());
@@ -227,7 +228,7 @@ void test_2d() {
   test_serialization(rotated_copy);
 
   // Test inverse:
-  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(aligned_orientation.inverse_map() == aligned_orientation);
   CHECK(
       OrientationMap<2>(std::array<Direction<2>, 2>{{Direction<2>::lower_eta(),
                                                      Direction<2>::upper_xi()}})
@@ -241,9 +242,9 @@ void test_2d() {
 void test_3d() {
   CHECK(sizeof(OrientationMap<3>) == 2);
   // Test constructors:
-  OrientationMap<3> default_orientation{};
-  CHECK(default_orientation.is_aligned());
-  CHECK(get_output(default_orientation) == "(+0, +1, +2)");
+  OrientationMap<3> aligned_orientation = OrientationMap<3>::create_aligned();
+  CHECK(aligned_orientation.is_aligned());
+  CHECK(get_output(aligned_orientation) == "(+0, +1, +2)");
   OrientationMap<3> custom1(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
        Direction<3>::upper_zeta()}});
@@ -283,18 +284,19 @@ void test_3d() {
   CHECK(custom_orientation(direction) == direction.opposite());
   CHECK(custom_orientation(segment_ids) == flipped_ids);
   CHECK_FALSE(custom_orientation.is_aligned());
-  OrientationMap<3> aligned_orientation(block_directions1, block_directions1);
-  CHECK(aligned_orientation.is_aligned());
+  OrientationMap<3> second_aligned_orientation(block_directions1,
+                                               block_directions1);
+  CHECK(second_aligned_orientation.is_aligned());
   CHECK(get_output(custom_orientation) == "(-0, -1, -2)");
-  CHECK(get_output(aligned_orientation) == "(+0, +1, +2)");
+  CHECK(get_output(second_aligned_orientation) == "(+0, +1, +2)");
 
   // Test comparison operators:
-  CHECK(custom_orientation != aligned_orientation);
+  CHECK(custom_orientation != second_aligned_orientation);
   CHECK(custom_orientation == custom_orientation);
 
   // Test semantics:
   const auto custom_copy = custom_orientation;
-  test_copy_semantics(aligned_orientation);
+  test_copy_semantics(second_aligned_orientation);
   // clang-tidy: std::move of trivially-copyable type has no effect.
   test_move_semantics(std::move(custom_orientation), custom_copy);  // NOLINT
 
@@ -302,7 +304,7 @@ void test_3d() {
   test_serialization(custom2);
 
   // Test inverse:
-  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(aligned_orientation.inverse_map() == aligned_orientation);
   OrientationMap<3> custom3{std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
        Direction<3>::upper_xi()}}};
@@ -359,6 +361,26 @@ void test_errors() {
                                        Direction<3>::lower_eta()}}),
       Catch::Matchers::ContainsSubstring(
           "This OrientationMap fails to map Directions one-to-one."));
+
+  CHECK_THROWS_WITH(OrientationMap<3>{}.is_aligned(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+  CHECK_THROWS_WITH(OrientationMap<3>{}(0),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+  CHECK_THROWS_WITH(OrientationMap<3>{}(Direction<3>::lower_xi()),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+  CHECK_THROWS_WITH(OrientationMap<3>{}(std::array<SegmentId, 3>{}),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+  CHECK_THROWS_WITH(OrientationMap<3>{}(Mesh<3>{}),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+  CHECK_THROWS_WITH(OrientationMap<3>{}.inverse_map(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use a default-constructed OrientationMap"));
+
 #endif
 }
 

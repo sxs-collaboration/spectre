@@ -121,7 +121,7 @@ void test_frustum_fail() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(face_vertices, 2.0, 5.0,
-                                    OrientationMap<3>{});
+                                    OrientationMap<3>::create_aligned());
 
   // For the choice of params above, any point with z<=-1 should fail.
   const std::array<double, 3> test_mapped_point1{{3.0, 3.0, -1.0}};
@@ -285,7 +285,8 @@ void test_auto_projective_scale_factor() {
        {{upper_x_upper_base, upper_y_upper_base}}}};
 
   const CoordinateMaps::Frustum map(
-      face_vertices, lower_bound, upper_bound, {}, false,
+      face_vertices, lower_bound, upper_bound,
+      OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Projective);  // Upper Z frustum
   CHECK(map(logical_coord)[2] == approx(expected_physical_z));
 }
@@ -295,12 +296,12 @@ void test_is_identity() {
   check_if_map_is_identity(CoordinateMaps::Frustum{
       std::array<std::array<double, 2>, 4>{
           {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
-      -1.0, 1.0, OrientationMap<3>{}, false,
+      -1.0, 1.0, OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Linear});
   CHECK(not CoordinateMaps::Frustum{
       std::array<std::array<double, 2>, 4>{
           {{{-1.0, -1.0}}, {{2.0, 1.0}}, {{-1.0, -3.0}}, {{1.0, 1.0}}}},
-      -1.0, 1.0, OrientationMap<3>{}, false,
+      -1.0, 1.0, OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Linear}
                 .is_identity());
 }
@@ -310,7 +311,7 @@ void test_bulged_frustum_jacobian() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false,
+      face_vertices, 2.0, 5.0, OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Projective, std::nullopt, 1.0);
 
   const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
@@ -329,7 +330,7 @@ void test_bulged_frustum_inv_jacobian() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false,
+      face_vertices, 2.0, 5.0, OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Projective, std::nullopt, 1.0);
 
   const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
@@ -348,7 +349,7 @@ void test_bulged_frustum_inv_map() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false,
+      face_vertices, 2.0, 5.0, OrientationMap<3>::create_aligned(), false,
       CoordinateMaps::Distribution::Projective, std::nullopt, 1.0);
 
   const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
@@ -367,7 +368,7 @@ void test_bulged_frustum_equiangular_full() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 4.0, OrientationMap<3>{}, true,
+      face_vertices, 2.0, 4.0, OrientationMap<3>::create_aligned(), true,
       CoordinateMaps::Distribution::Projective, std::nullopt, 1.0, 0.0);
 
   // Points on the upper +zeta face:
@@ -417,7 +418,7 @@ void test_bulged_frustum_equiangular_upper() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{0.0, -2.0}}, {{2.0, 2.0}}, {{0.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 4.0, OrientationMap<3>{}, true,
+      face_vertices, 2.0, 4.0, OrientationMap<3>::create_aligned(), true,
       CoordinateMaps::Distribution::Linear, std::nullopt, 1.0, 1.0);
 
   const std::array<std::array<double, 3>, 4> cornerpts{{{{-1.0, -1.0, 1.0}},
@@ -477,7 +478,7 @@ void test_bulged_frustum_equiangular_lower() {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{0.0, 2.0}}, {{-4.0, -4.0}}, {{0.0, 4.0}}}};
   const CoordinateMaps::Frustum map(
-      face_vertices, 2.0, 4.0, OrientationMap<3>{}, true,
+      face_vertices, 2.0, 4.0, OrientationMap<3>::create_aligned(), true,
       CoordinateMaps::Distribution::Linear, std::nullopt, 1.0, -1.0);
 
   const std::array<std::array<double, 3>, 4> cornerpts{{{{-1.0, -1.0, 1.0}},
@@ -540,7 +541,7 @@ void test_frustum_fail_equiangular() {
   const std::array<double, 3> test_mapped_point2{{4.0, 4.0, 1.0}};
   const std::array<double, 3> test_mapped_point3{{3.0, 3.0, 1.99}};
   const CoordinateMaps::Frustum equiangular_map(
-      face_vertices, 2.0, 5.0, OrientationMap<3>{}, true,
+      face_vertices, 2.0, 5.0, OrientationMap<3>::create_aligned(), true,
       CoordinateMaps::Distribution::Linear, std::nullopt, 1.0, 1.0);
   CHECK(not equiangular_map.inverse(test_mapped_point1).has_value());
   CHECK(not equiangular_map.inverse(test_mapped_point2).has_value());
@@ -601,8 +602,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double lower_bound = 2.0;
         const double upper_bound = 5.0;
 
-        auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        auto failed_frustum =
+            CoordinateMaps::Frustum(face_vertices, lower_bound, upper_bound,
+                                    OrientationMap<3>::create_aligned());
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(
@@ -616,8 +618,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double lower_bound = 2.0;
         const double upper_bound = 5.0;
 
-        auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        auto failed_frustum =
+            CoordinateMaps::Frustum(face_vertices, lower_bound, upper_bound,
+                                    OrientationMap<3>::create_aligned());
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(
@@ -631,8 +634,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double lower_bound = 2.0;
         const double upper_bound = 5.0;
 
-        auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        auto failed_frustum =
+            CoordinateMaps::Frustum(face_vertices, lower_bound, upper_bound,
+                                    OrientationMap<3>::create_aligned());
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(
@@ -646,8 +650,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double lower_bound = 2.0;
         const double upper_bound = 5.0;
 
-        auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        auto failed_frustum =
+            CoordinateMaps::Frustum(face_vertices, lower_bound, upper_bound,
+                                    OrientationMap<3>::create_aligned());
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(
@@ -661,8 +666,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double lower_bound = 2.0;
         const double upper_bound = -2.0;
 
-        auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        auto failed_frustum =
+            CoordinateMaps::Frustum(face_vertices, lower_bound, upper_bound,
+                                    OrientationMap<3>::create_aligned());
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(
@@ -681,8 +687,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
         const double sphericity = 1.3;
 
         auto failed_frustum = CoordinateMaps::Frustum(
-            face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
-            with_equiangular_map, zeta_distribution, std::nullopt, sphericity);
+            face_vertices, lower_bound, upper_bound,
+            OrientationMap<3>::create_aligned(), with_equiangular_map,
+            zeta_distribution, std::nullopt, sphericity);
         static_cast<void>(failed_frustum);
       }()),
       Catch::Matchers::ContainsSubstring(

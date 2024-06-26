@@ -38,8 +38,10 @@ class OrientationMap {
   static constexpr uint16_t aligned_mask = 0b1000000000000000;
   static constexpr uint16_t version_mask = 0b0111000000000000;
 
-  /// The default orientation is the identity map on directions.
-  /// `is_aligned()` is `true` in this case.
+  /// \brief Creates an OrientationMap in an uninitialized state.
+  ///
+  /// This can be helpful for debugging code. If you would like the identity
+  /// map, please use `create_aligned()`.
   OrientationMap();
   /// Mapped directions relative to the positive (`Side::Upper`) direction in
   /// each logical direction.
@@ -55,18 +57,28 @@ class OrientationMap {
   OrientationMap(OrientationMap&& /*rhs*/) = default;
   OrientationMap& operator=(OrientationMap&& /*rhs*/) = default;
 
+  /// Creates an OrientationMap that is the identity map on directions.
+  /// `is_aligned()` is `true` in this case.
+  static OrientationMap<VolumeDim> create_aligned();
+
   /// True when mapped(Direction) == Direction
   bool is_aligned() const {
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
     return (bit_field_ bitand aligned_mask) == aligned_mask;
   }
 
   /// The corresponding dimension in the neighbor.
   size_t operator()(const size_t dim) const {
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
     return get_direction(dim).dimension();
   }
 
   /// The corresponding direction in the neighbor.
   Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const {
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
     return direction.side() == Side::Upper
                ? get_direction(direction.dimension())
                : get_direction(direction.dimension()).opposite();

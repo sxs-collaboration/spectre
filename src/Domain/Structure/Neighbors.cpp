@@ -21,6 +21,8 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
   ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
          "Can't have " << ids_.size() << " neighbors in " << VolumeDim
                        << " dimensions");
+  ASSERT(orientation_ != OrientationMap<VolumeDim>{},
+         "Cannot use a default-constructed OrientationMap in Neighbors.");
 }
 
 template <size_t VolumeDim>

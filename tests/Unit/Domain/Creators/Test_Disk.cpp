@@ -49,7 +49,8 @@ void test_disk_construction(
       disk, expect_boundary_conditions);
   CHECK(disk.grid_anchors().empty());
 
-  const OrientationMap<2> aligned_orientation{};
+  const OrientationMap<2> aligned_orientation =
+      OrientationMap<2>::create_aligned();
   const OrientationMap<2> quarter_turn_ccw(std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
   const OrientationMap<2> half_turn(std::array<Direction<2>, 2>{
