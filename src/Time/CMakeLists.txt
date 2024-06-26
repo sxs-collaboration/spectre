@@ -12,6 +12,7 @@ spectre_target_sources(
   ApproximateTime.cpp
   ChooseLtsStepSize.cpp
   History.cpp
+  LargestStepperError.cpp
   SelfStart.cpp
   Slab.cpp
   StepperErrorEstimate.cpp

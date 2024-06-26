@@ -5,13 +5,10 @@
 
 #include <complex>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/SpinWeighted.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Helpers/DataStructures/TestTags.hpp"
 #include "Time/LargestStepperError.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Utilities/TMPL.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.LargestStepperError", "[Unit][Time]") {
   CHECK(largest_stepper_error(20.0, 10.0, {.absolute = 2.0, .relative = 0.0}) ==
@@ -41,23 +38,15 @@ SPECTRE_TEST_CASE("Unit.Time.LargestStepperError", "[Unit][Time]") {
   }
 
   {
-    using Vars = Variables<
-        tmpl::list<TestHelpers::Tags::Scalar<>, TestHelpers::Tags::Vector<>>>;
-    Vars values(5, 0.0);
-    get<1>(get<TestHelpers::Tags::Vector<>>(values))[1] = 3.0;
-    Vars errors(5, 0.0);
-    get<1>(get<TestHelpers::Tags::Vector<>>(errors))[1] = 6.0;
-    const StepperErrorTolerances tolerances{.absolute = 2.0, .relative = 5.0};
-    CHECK(largest_stepper_error(values, errors, tolerances) ==
-          largest_stepper_error(3.0, 6.0, tolerances));
-  }
-
-  {
-    using Weighted = SpinWeighted<std::complex<double>, 2>;
-    const std::complex<double> value(3.0, 5.0);
-    const std::complex<double> error(2.0, 1.0);
-    const StepperErrorTolerances tolerances{.absolute = 2.0, .relative = 5.0};
-    CHECK(largest_stepper_error(Weighted(value), Weighted(error), tolerances) ==
-          largest_stepper_error(value, error, tolerances));
+    const ComplexDataVector values{std::complex<double>{10.0, 3.0},
+                                   std::complex<double>{0.0, 0.0}};
+    const ComplexDataVector errors{std::complex<double>{5.0, 1.0},
+                                   std::complex<double>{1.0, 3.0}};
+    const StepperErrorTolerances mostly_abs{.absolute = 2.0, .relative = 0.1};
+    const StepperErrorTolerances mostly_rel{.absolute = 0.1, .relative = 2.0};
+    CHECK(largest_stepper_error(values, errors, mostly_abs) ==
+          largest_stepper_error(values[0], errors[0], mostly_abs));
+    CHECK(largest_stepper_error(values, errors, mostly_rel) ==
+          largest_stepper_error(values[1], errors[1], mostly_rel));
   }
 }
