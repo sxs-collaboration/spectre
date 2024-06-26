@@ -110,12 +110,11 @@ DomainCreator:
         InitialValues: Spherical
 {% else %}
         InitialValues:
-          H5Filename: &HorizonsFile "{{ HorizonsFile }}"
-          SubfileNames: ["{{ AhASubfileName }}"]
-          MatchTime: *InitialTime
-          MatchTimeEpsilon: Auto
-          SetL1CoefsToZero: True
-          CheckFrame: False
+          Mass: {{ ExcisionAShapeMass }}
+          Spin:
+            - {{ ExcisionAShapeSpin_x }}
+            - {{ ExcisionAShapeSpin_y }}
+            - {{ ExcisionAShapeSpin_z }}
 {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
@@ -125,12 +124,11 @@ DomainCreator:
         InitialValues: Spherical
 {% else %}
         InitialValues:
-          H5Filename: *HorizonsFile
-          SubfileNames: ["{{ AhBSubfileName }}"]
-          MatchTime: *InitialTime
-          MatchTimeEpsilon: Auto
-          SetL1CoefsToZero: True
-          CheckFrame: False
+          Mass: {{ ExcisionBShapeMass }}
+          Spin:
+            - {{ ExcisionBShapeSpin_x }}
+            - {{ ExcisionBShapeSpin_y }}
+            - {{ ExcisionBShapeSpin_z }}
 {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true

@@ -98,6 +98,8 @@ def inspiral_parameters(
       polynomial_order: p-refinement level.
     """
     id_domain_creator = id_input_file["DomainCreator"]["BinaryCompactObject"]
+    id_shape_A = id_domain_creator["TimeDependentMaps"]["ShapeMapA"]
+    id_shape_B = id_domain_creator["TimeDependentMaps"]["ShapeMapB"]
     id_binary = id_input_file["Background"]["Binary"]
 
     # ID parameters
@@ -138,16 +140,6 @@ def inspiral_parameters(
     # if total_mass != 1.0:
     #     raise ValueError(f"Total mass must 1.0, not {total_mass}.")
 
-    # The excision surface in the ID grid is distorted to one of constant
-    # Boyer-Lindquist radius, meaning that it looks like a Kerr BH. It is not
-    # distorted to match the shape of the AH. However, in the Ev grid, we *do*
-    # want the excision to match the AH shape so that the control system has an
-    # easier time adjusting. Therefore, in order to ensure that the Ev grid lies
-    # entirely inside the ID grid regardless of the excision shapes, we make the
-    # Ev excision radius a tad larger than the ID excision radius to account for
-    # these different excision shapes. This factor was found empirically.
-    excision_factor = 1.02
-
     params = {
         # Initial data files
         "IdFileGlob": str(
@@ -155,12 +147,8 @@ def inspiral_parameters(
             / (id_input_file["Observers"]["VolumeFileName"] + "*.h5")
         ),
         # Domain geometry
-        "ExcisionRadiusA": (
-            excision_factor * id_domain_creator["ObjectA"]["InnerRadius"]
-        ),
-        "ExcisionRadiusB": (
-            excision_factor * id_domain_creator["ObjectB"]["InnerRadius"]
-        ),
+        "ExcisionRadiusA": id_domain_creator["ObjectA"]["InnerRadius"],
+        "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"],
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
         # Initial functions of time
@@ -169,6 +157,14 @@ def inspiral_parameters(
         "HorizonsFile": str(horizons_filename.resolve()),
         "AhASubfileName": "AhA/Coefficients",
         "AhBSubfileName": "AhB/Coefficients",
+        "ExcisionAShapeMass": id_shape_A["InitialValues"]["Mass"],
+        "ExcisionAShapeSpin_x": id_shape_A["InitialValues"]["Spin"][0],
+        "ExcisionAShapeSpin_y": id_shape_A["InitialValues"]["Spin"][1],
+        "ExcisionAShapeSpin_z": id_shape_A["InitialValues"]["Spin"][2],
+        "ExcisionBShapeMass": id_shape_B["InitialValues"]["Mass"],
+        "ExcisionBShapeSpin_x": id_shape_B["InitialValues"]["Spin"][0],
+        "ExcisionBShapeSpin_y": id_shape_B["InitialValues"]["Spin"][1],
+        "ExcisionBShapeSpin_z": id_shape_B["InitialValues"]["Spin"][2],
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,

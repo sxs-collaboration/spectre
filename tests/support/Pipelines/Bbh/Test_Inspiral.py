@@ -70,8 +70,8 @@ class TestInspiral(unittest.TestCase):
             params["IdFileGlob"],
             str((self.id_dir).resolve() / "BbhVolume*.h5"),
         )
-        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.08936)
-        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.72624)
+        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116)
+        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.744)
         self.assertEqual(params["XCoordA"], 8.0)
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
@@ -81,6 +81,14 @@ class TestInspiral(unittest.TestCase):
         )
         self.assertEqual(params["AhASubfileName"], "AhA/Coefficients")
         self.assertEqual(params["AhBSubfileName"], "AhB/Coefficients")
+        self.assertEqual(params["ExcisionAShapeMass"], 0.6)
+        self.assertEqual(params["ExcisionAShapeSpin_x"], 0.0)
+        self.assertEqual(params["ExcisionAShapeSpin_y"], 0.0)
+        self.assertEqual(params["ExcisionAShapeSpin_z"], 0.0)
+        self.assertEqual(params["ExcisionBShapeMass"], 0.4)
+        self.assertEqual(params["ExcisionBShapeSpin_x"], 0.0)
+        self.assertEqual(params["ExcisionBShapeSpin_y"], 0.0)
+        self.assertEqual(params["ExcisionBShapeSpin_z"], 0.0)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
         # Control system
