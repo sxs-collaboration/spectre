@@ -103,6 +103,19 @@ EvolutionSystem:
         Amplitude: 1.0
         Width: 11.313708499
         Center: [0.0, 0.0, 0.0]
+  ScalarTensor:
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: 0.0
+        Amplitude: 0.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 1.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
 
 Filtering:
   ExpFilter0:
