@@ -3,22 +3,32 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <memory>
-#include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/ElementId.hpp"
-#include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
-#include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"  // for MortarSize
-#include "Time/BoundaryHistory.hpp"
-#include "Time/TimeStepId.hpp"
+
+/// \cond
+template <size_t Dim, typename T>
+class DirectionalIdMap;
+template <size_t Dim>
+class Mesh;
+namespace evolution::dg {
+template <size_t Dim>
+class BoundaryMessage;
+template <size_t Dim>
+class MortarData;
+}  // namespace evolution::dg
+namespace Spectral {
+enum class ChildSize : uint8_t;
+using MortarSize = ChildSize;
+}  // namespace Spectral
+class TimeStepId;
+namespace TimeSteppers {
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+class BoundaryHistory;
+}  // namespace TimeSteppers
+/// \endcond
 
 /// %Tags used for DG evolution scheme.
 namespace evolution::dg::Tags {
