@@ -23,6 +23,7 @@ target_link_libraries(
   Evolution
   GeneralRelativitySolutions
   Hydro
+  Imex
   Informer
   Limiters
   LinearOperators
