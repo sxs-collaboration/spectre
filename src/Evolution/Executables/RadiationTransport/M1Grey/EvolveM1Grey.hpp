@@ -24,7 +24,7 @@
 #include "Evolution/Imex/Actions/RecordTimeStepperData.hpp"
 #include "Evolution/Imex/ImplicitDenseOutput.hpp"
 #include "Evolution/Imex/Initialize.hpp"
-// #include "Evolution/Imex/SolveImplicitSector.tpp"
+#include "Evolution/Imex/SolveImplicitSector.tpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -120,12 +120,11 @@ struct EvolutionMetavars {
       "initial_data must be either an analytic_data or an analytic_solution");
 
   // Set list of neutrino species to be used by M1 code
-  //   using electron = neutrinos::ElectronNeutrinos<1>
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>>;
 
   using system = RadiationTransport::M1Grey::System<neutrino_species>;
   using temporal_id = Tags::TimeStepId;
-  using TimeStepperBase = TimeStepper;
+  using TimeStepperBase = ImexTimeStepper;
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
@@ -166,7 +165,9 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
-        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+        // tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
+        tmpl::pair<ImexTimeStepper, TimeSteppers::imex_time_steppers>,
+
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<RadiationTransport::M1Grey::BoundaryConditions::
                        BoundaryCondition<neutrino_species>,
@@ -190,6 +191,7 @@ struct EvolutionMetavars {
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
+  static_assert(not local_time_stepping);
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars, false>>,
@@ -199,7 +201,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, system, volume_dim, true>,
+                             imex::ImplicitDenseOutput<system>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false>>,
           tmpl::list<
@@ -207,8 +210,12 @@ struct EvolutionMetavars {
                   system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              imex::Actions::RecordTimeStepperData<system>,
+              evolution::Actions::RunEventsAndDenseTriggers<
+                  tmpl::list<imex::ImplicitDenseOutput<system>>>,
               Actions::UpdateU<system>>>,
       Actions::CleanHistory<system, local_time_stepping>,
+      imex::Actions::DoImplicitStep<system>,  // FIXME at end?
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
@@ -235,9 +242,10 @@ struct EvolutionMetavars {
                                ComputeM1Closure<neutrino_species>>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>,
-      Actions::MutateApply<
-          typename RadiationTransport::M1Grey::ComputeM1HydroCouplingJacobian<
-              neutrinos::ElectronNeutrinos<1>>>,
+      //   Actions::MutateApply<
+      //       typename
+      //       RadiationTransport::M1Grey::ComputeM1HydroCouplingJacobian<
+      //           neutrinos::ElectronNeutrinos<1>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,

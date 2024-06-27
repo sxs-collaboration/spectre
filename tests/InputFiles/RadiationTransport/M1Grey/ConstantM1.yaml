@@ -20,11 +20,10 @@ Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01
   TimeStepper:
-    AdamsBashforth:
-      Order: 3
+    Rk3Kennedy:
   Imex:
     Mode: SemiImplicit
-    SolveTolerance: 1.0e-10
+    SolveTolerance: 1.0e-5
 
 PhaseChangeAndTriggers:
 

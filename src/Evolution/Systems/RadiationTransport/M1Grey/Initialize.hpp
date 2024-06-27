@@ -100,26 +100,6 @@ struct InitializeM1Tags {
     using HydroVars = typename hydro_variables_tag::type;
     using M1Vars = typename m1_variables_tag::type;
 
-    // // loop over dependent (top evolved vars)
-    // tmpl::for_each<typename evolved_variables_tag::tags_list>(
-    //     [&](auto var_tag_v) {
-    //       using var_tag = tmpl::type_from<decltype(var_tag_v)>;
-
-    //       // loop over indep. (bottom source vars)
-    //       tmpl::for_each<typename simple_tags_source::tags_list>(
-    //           [&](auto source_tag_v) {
-    //             using source_tag = tmpl::type_from<decltype(source_tag_v)>;
-    //             // construct d E / d S(E)
-    //             using jacobian_tag = imex::Tags::Jacobian<var_tag,
-    //             source_tag>;
-
-    //             // using simple_tags_jacobian_source =
-    //             // tmpl::list<simple_tags_jacobian_source, jacobian>;
-    //             // append to simple_tags_jacobian_source
-    //             // simple_tags_jacobian_source
-    //           });
-    //     });
-
     static constexpr size_t dim = System::volume_dim;
     const double initial_time = db::get<::Tags::Time>(box);
     const size_t num_grid_points =
@@ -144,14 +124,14 @@ struct InitializeM1Tags {
         initial_time, typename hydro_variables_tag::tags_list{}));
 
     // gotcha warning here
-    M1Vars m1_variables{num_grid_points};
+    M1Vars m1_variables{num_grid_points, -1.0};
     Initialization::mutate_assign<simple_tags_no_source>(
         make_not_null(&box), std::move(hydro_variables),
         std::move(m1_variables));
 
     // gotcha warning here
     typename simple_tags_jacobian_source::type jacobian_variables{
-        num_grid_points};
+        num_grid_points, -1.0};
     Initialization::mutate_assign<tmpl::list<simple_tags_jacobian_source>>(
         make_not_null(&box), std::move(jacobian_variables));
 
