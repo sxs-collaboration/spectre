@@ -60,14 +60,14 @@ class DampingFunction : public PUP::able {
   /// @{
   /// Returns the value of the function at the coordinate 'x'.
   virtual void operator()(
-      const gsl::not_null<Scalar<double>*> value_at_x,
+      gsl::not_null<Scalar<double>*> value_at_x,
       const tnsr::I<double, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const = 0;
   virtual void operator()(
-      const gsl::not_null<Scalar<DataVector>*> value_at_x,
+      gsl::not_null<Scalar<DataVector>*> value_at_x,
       const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,

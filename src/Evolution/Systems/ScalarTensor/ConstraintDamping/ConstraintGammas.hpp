@@ -24,12 +24,10 @@
 namespace Tags {
 struct Time;
 }  // namespace Tags
-namespace domain {
-namespace Tags {
+namespace domain::Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
-}  // namespace Tags
-}  // namespace domain
+}  // namespace domain::Tags
 class DataVector;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
@@ -53,7 +51,7 @@ struct ConstraintGamma1Compute : ::CurvedScalarWave::Tags::ConstraintGamma1,
   using return_type = Scalar<DataVector>;
 
   static constexpr void function(
-      const gsl::not_null<Scalar<DataVector>*> gamma1,
+      gsl::not_null<Scalar<DataVector>*> gamma1,
       const ::ScalarTensor::ConstraintDamping::DampingFunction<
           SpatialDim, Frame>& damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords, const double time,
@@ -84,7 +82,7 @@ struct ConstraintGamma2Compute : ::CurvedScalarWave::Tags::ConstraintGamma2,
   using return_type = Scalar<DataVector>;
 
   static constexpr void function(
-      const gsl::not_null<Scalar<DataVector>*> gamma,
+      gsl::not_null<Scalar<DataVector>*> gamma,
       const ::ScalarTensor::ConstraintDamping::DampingFunction<
           SpatialDim, Frame>& damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords, const double time,
