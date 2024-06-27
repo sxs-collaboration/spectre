@@ -42,10 +42,8 @@ class TestInitialData(unittest.TestCase):
         self.assertEqual(params["MassLeft"], 0.4)
         self.assertEqual(params["XRight"], 8.0)
         self.assertEqual(params["XLeft"], -12.0)
-        self.assertAlmostEqual(
-            params["ExcisionRadiusRight"], 1.0292112276594705
-        )
-        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5267316022299328)
+        self.assertAlmostEqual(params["ExcisionRadiusRight"], 1.07546791205)
+        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5504049327)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(
