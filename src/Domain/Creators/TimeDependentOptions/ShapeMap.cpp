@@ -17,6 +17,7 @@
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "FromVolumeFile.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
@@ -226,6 +227,14 @@ initial_shape_and_size_funcs(
           shape_funcs[0][iter.set(1_st, m)()] = 0.0;
         }
       }
+    } else if (std::holds_alternative<FromVolumeFile<names::ShapeSize<Object>>>(
+                   shape_options.initial_values.value())) {
+      const auto& volume_file_options =
+          std::get<FromVolumeFile<names::ShapeSize<Object>>>(
+              shape_options.initial_values.value());
+
+      shape_funcs = volume_file_options.shape_values;
+      size_funcs = volume_file_options.size_values;
     }
   }
 

@@ -11,6 +11,7 @@
 #include <variant>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/TimeDependentOptions/FromVolumeFile.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
@@ -203,7 +204,8 @@ struct ShapeMapOptions {
 
   struct InitialValues {
     using type = Options::Auto<
-        std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC>,
+        std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC,
+                     FromVolumeFile<names::ShapeSize<Object>>>,
         Spherical>;
     static constexpr Options::String help = {
         "Initial Ylm coefficients for the shape map. Specify 'Spherical' for "
@@ -233,13 +235,15 @@ struct ShapeMapOptions {
                           tmpl::push_back<common_options, TransitionEndsAtCube>,
                           common_options>;
   ShapeMapOptions() = default;
-  ShapeMapOptions(size_t l_max_in,
-                  std::optional<std::variant<KerrSchildFromBoyerLindquist,
-                                             YlmsFromFile, YlmsFromSpEC>>
-                      initial_values_in,
-                  std::optional<std::array<double, 3>> initial_size_values_in =
-                      std::nullopt,
-                  bool transition_ends_at_cube_in = false)
+  ShapeMapOptions(
+      size_t l_max_in,
+      std::optional<
+          std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC,
+                       FromVolumeFile<names::ShapeSize<Object>>>>
+          initial_values_in,
+      std::optional<std::array<double, 3>> initial_size_values_in =
+          std::nullopt,
+      bool transition_ends_at_cube_in = false)
       : l_max(l_max_in),
         initial_values(std::move(initial_values_in)),
         initial_size_values(initial_size_values_in),
@@ -247,7 +251,8 @@ struct ShapeMapOptions {
 
   size_t l_max{};
   std::optional<
-      std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC>>
+      std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile, YlmsFromSpEC,
+                   FromVolumeFile<names::ShapeSize<Object>>>>
       initial_values{};
   std::optional<std::array<double, 3>> initial_size_values{};
   bool transition_ends_at_cube{false};

@@ -9,11 +9,16 @@
 #include <fstream>
 #include <iomanip>
 #include <ios>
+#include <memory>
 #include <random>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -21,6 +26,8 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
+#include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -207,6 +214,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
       file_system::rm(test_filename, true);
     }
     const std::vector<std::string> subfile_names{"Ylm_coefs", "dt_Ylm_coefs"};
+    const std::string volume_subfile_name{"VolumeData"};
     const double time = 1.7;
     // Purposefully larger than the LMax in the options so that the
     // Strahlkorpers will be restricted
@@ -246,6 +254,12 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
       }
     }
 
+    // Take advantage of the funcs and write those to the volume file
+    const std::string shape_name{"ShapeB"};
+    const std::string size_name{"SizeB"};
+    std::unordered_map<std::string,
+                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+        functions_of_time{};
     {
       const auto shape_map_options = TestHelpers::test_creation<
           domain::creators::time_dependent_options::ShapeMapOptions<
@@ -289,6 +303,53 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
       }
       CHECK(size_funcs == std::array{DataVector{1.1}, DataVector{2.2},
                                      DataVector{3.3}, DataVector{0.0}});
+
+      functions_of_time[shape_name] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+              time, shape_funcs, 100.0);
+      functions_of_time[size_name] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+              time, size_funcs, 100.0);
+      {
+        h5::H5File<h5::AccessType::ReadWrite> test_file(test_filename, true);
+        auto& vol_file = test_file.insert<h5::VolumeData>(volume_subfile_name);
+
+        // We don't care about the volume data here, just the functions of time
+        vol_file.write_volume_data(
+            0, 0.0,
+            {ElementVolumeData{
+                "blah",
+                {TensorComponent{"RandomTensor", DataVector{3, 0.0}}},
+                {3},
+                {Spectral::Basis::Legendre},
+                {Spectral::Quadrature::GaussLobatto}}},
+            std::nullopt, serialize(functions_of_time));
+      }
+    }
+
+    {
+      const auto shape_map_options = TestHelpers::test_creation<
+          domain::creators::time_dependent_options::ShapeMapOptions<
+              false, domain::ObjectLabel::B>>(
+          "LMax: 8\n"
+          "InitialValues:\n"
+          "  H5Filename: TotalEclipseOfTheHeart.h5\n"
+          "  SubfileName: VolumeData\n"
+          "  Time: 1.7\n"
+          "SizeInitialValues: Auto");
+
+      const auto [shape_funcs, size_funcs] =
+          domain::creators::time_dependent_options::
+              initial_shape_and_size_funcs(shape_map_options, inner_radius);
+
+      CHECK(shape_funcs ==
+            functions_of_time.at(shape_name)->func_and_2_derivs(time));
+      auto all_size_funcs =
+          functions_of_time.at(size_name)->func_and_all_derivs(time);
+      CHECK(all_size_funcs.size() == size_funcs.size());
+      for (size_t i = 0; i < size_funcs.size(); i++) {
+        CHECK(all_size_funcs[i] == gsl::at(size_funcs, i));
+      }
     }
 
     // Already checked that shape funcs are correct. Here just check that size
@@ -465,6 +526,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependentOptions.ShapeMap",
                   "[Domain][Unit]") {
+  domain::FunctionsOfTime::register_derived_with_charm();
   MAKE_GENERATOR(generator);
   test_kerr_schild_boyer_lindquist();
   test_ylms_from_file();
