@@ -22,6 +22,9 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 3
+  Imex:
+    Mode: SemiImplicit
+    SolveTolerance: 1.0e-10
 
 PhaseChangeAndTriggers:
 
