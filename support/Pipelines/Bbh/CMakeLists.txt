@@ -6,6 +6,7 @@ spectre_python_add_module(
   MODULE_PATH Pipelines
   PYTHON_FILES
   __init__.py
+  ControlId.py
   FindHorizon.py
   InitialData.py
   InitialData.yaml

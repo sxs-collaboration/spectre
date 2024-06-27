@@ -9,6 +9,11 @@ from typing import Optional, Union
 import click
 import yaml
 
+from spectre.Pipelines.Bbh.ControlId import (
+    DEFAULT_MAX_ITERATIONS,
+    DEFAULT_RESIDUAL_TOLERANCE,
+    control_id,
+)
 from spectre.Pipelines.Bbh.FindHorizon import find_horizon, vec_to_string
 from spectre.SphericalHarmonics import Strahlkorper
 from spectre.support.Schedule import schedule, scheduler_options
@@ -24,6 +29,9 @@ def postprocess_id(
     id_run_dir: Optional[Union[str, Path]] = None,
     horizon_l_max: int = 12,
     horizons_file: Optional[Union[str, Path]] = None,
+    control: bool = True,
+    control_residual_tolerance: float = DEFAULT_RESIDUAL_TOLERANCE,
+    control_max_iterations: int = DEFAULT_MAX_ITERATIONS,
     evolve: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
@@ -44,6 +52,10 @@ def postprocess_id(
       surface coordinates and coefficients are written to the 'horizons_file' in
       subfiles 'Ah{A,B}/Coordinates' and 'Ah{A,B}/Coefficients'.
 
+    - If 'control' is set to True, run a control loop such that masses and
+      spins of the horizons match the input parameters. See ControlId.py for
+      details.
+
     - Start the inspiral if 'evolve' is set to True.
 
     Arguments:
@@ -54,6 +66,9 @@ def postprocess_id(
       horizon_l_max: Maximum l-mode for the horizon search.
       horizons_file: Path to the file where the horizon data is written to.
         Default is 'Horizons.h5' in the 'id_run_dir'.
+      control: Control BBH physical parameters (default: False).
+      control_residual_tolerance: Residual tolerance used for control.
+      control_max_iterations: Maximum of iterations allowed for control.
       evolve: Evolve the initial data after postprocessing (default: False).
       pipeline_dir: Directory where steps in the pipeline are created.
         Required if 'evolve' is set to True.
@@ -105,6 +120,16 @@ def postprocess_id(
         )
     logger.info(f"Horizons found and written to {horizons_file}.")
 
+    if control:
+        last_control_run_dir = control_id(
+            id_input_file_path,
+            id_run_dir=id_run_dir,
+            residual_tolerance=control_residual_tolerance,
+            max_iterations=control_max_iterations,
+        )
+        id_run_dir = last_control_run_dir
+        id_input_file_path = f"{last_control_run_dir}/InitialData.yaml"
+
     # Start the inspiral from the ID if requested
     if evolve:
         from spectre.Pipelines.Bbh.Inspiral import start_inspiral
@@ -144,6 +169,12 @@ def postprocess_id(
         " relative to this directory."
     ),
     show_default="directory of the ID_INPUT_FILE_PATH",
+)
+@click.option(
+    "--control",
+    default=True,
+    show_default=True,
+    help="Control BBH physical parameters during postprocessing.",
 )
 @click.option(
     "--evolve",

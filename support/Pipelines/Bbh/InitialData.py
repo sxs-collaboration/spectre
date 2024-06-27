@@ -25,7 +25,8 @@ def L1_distance(m1, m2, separation):
 
 
 def id_parameters(
-    mass_ratio: float,
+    mass_a: float,
+    mass_b: float,
     dimensionless_spin_a: Sequence[float],
     dimensionless_spin_b: Sequence[float],
     separation: float,
@@ -39,7 +40,8 @@ def id_parameters(
     These parameters fill the 'ID_INPUT_FILE_TEMPLATE'.
 
     Arguments:
-      mass_ratio: Defined as q = M_A / M_B >= 1.
+      mass_a: Mass of the larger black hole.
+      mass_b: Mass of the smaller black hole.
       dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
       dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
       separation: Coordinate separation D of the black holes.
@@ -49,12 +51,11 @@ def id_parameters(
       polynomial_order: p-refinement level.
     """
 
-    # Sanity checks
-    assert mass_ratio >= 1.0, "Mass ratio is defined to be >= 1.0."
+    mass_ratio = max(mass_a, mass_b) / min(mass_a, mass_b)
 
     # Determine initial data parameters from options
-    M_A = mass_ratio / (1.0 + mass_ratio)
-    M_B = 1.0 / (1.0 + mass_ratio)
+    M_A = mass_a
+    M_B = mass_b
     x_A = separation / (1.0 + mass_ratio)
     x_B = x_A - separation
     # Spins
@@ -72,8 +73,8 @@ def id_parameters(
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
     return {
-        "MassRight": M_A,
-        "MassLeft": M_B,
+        "MassRight": mass_a,
+        "MassLeft": mass_b,
         "XRight": x_A,
         "XLeft": x_B,
         "ExcisionRadiusRight": 0.89 * r_plus_A,
@@ -101,7 +102,8 @@ def id_parameters(
 
 
 def generate_id(
-    mass_ratio: float,
+    mass_a: float,
+    mass_b: float,
     dimensionless_spin_a: Sequence[float],
     dimensionless_spin_b: Sequence[float],
     # Orbital parameters
@@ -113,6 +115,7 @@ def generate_id(
     polynomial_order: int = 6,
     # Scheduling options
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
+    control: bool = False,
     evolve: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
@@ -130,7 +133,8 @@ def generate_id(
     'support.Pipelines.EccentricityControl.InitialOrbitalParameters'.
 
     Intrinsic parameters:
-      mass_ratio: Defined as q = M_A / M_B >= 1.
+      mass_a: Mass of the larger black hole.
+      mass_b: Mass of the smaller black hole.
       dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
       dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
 
@@ -141,6 +145,10 @@ def generate_id(
 
     Scheduling options:
       id_input_file_template: Input file template where parameters are inserted.
+      control: If set to True, a postprocessing control loop will adjust the
+        input parameters to drive the horizon masses and spins to the specified
+        values. If set to False, the horizon masses and spins in the generated
+        data will differ from the input parameters. (default: False)
       evolve: Set to True to evolve the initial data after generation.
       pipeline_dir: Directory where steps in the pipeline are created. Required
         when 'evolve' is set to True. The initial data will be created in a
@@ -177,7 +185,8 @@ def generate_id(
 
     # Determine initial data parameters from options
     id_params = id_parameters(
-        mass_ratio=mass_ratio,
+        mass_a=mass_a,
+        mass_b=mass_b,
         dimensionless_spin_a=dimensionless_spin_a,
         dimensionless_spin_b=dimensionless_spin_b,
         separation=separation,
@@ -193,6 +202,7 @@ def generate_id(
         id_input_file_template,
         **id_params,
         **scheduler_kwargs,
+        control=control,
         evolve=evolve,
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
@@ -315,6 +325,12 @@ def generate_id(
     show_default=True,
 )
 @click.option(
+    "--control",
+    default=True,
+    show_default=True,
+    help="Control BBH physical parameters.",
+)
+@click.option(
     "--evolve",
     is_flag=True,
     help=(
@@ -362,8 +378,13 @@ def generate_id_command(
             time_to_merger=time_to_merger,
         )
     )
+
+    mass_a = mass_ratio / (1.0 + mass_ratio)
+    mass_b = 1.0 / (1.0 + mass_ratio)
+
     generate_id(
-        mass_ratio=mass_ratio,
+        mass_a=mass_a,
+        mass_b=mass_b,
         dimensionless_spin_a=dimensionless_spin_a,
         dimensionless_spin_b=dimensionless_spin_b,
         separation=separation,

@@ -28,7 +28,8 @@ class TestInitialData(unittest.TestCase):
 
     def test_generate_id(self):
         params = id_parameters(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.1, 0.2, 0.3],
             dimensionless_spin_b=[0.4, 0.5, 0.6],
             separation=20.0,
@@ -98,6 +99,7 @@ class TestInitialData(unittest.TestCase):
             "5",
             "-E",
             str(self.bin_dir / "SolveXcts"),
+            "--no-schedule",
         ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
@@ -138,6 +140,7 @@ class TestInitialData(unittest.TestCase):
                     "id_input_file_path": "__file__",
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "control": True,
                     "evolve": True,
                     "scheduler": "None",
                     "copy_executable": "None",
