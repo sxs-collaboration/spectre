@@ -55,6 +55,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(ErrorHandling)
+add_subdirectory(Protocols)
 add_subdirectory(Serialization)
 add_subdirectory(StdHelpers)
 add_subdirectory(System)
