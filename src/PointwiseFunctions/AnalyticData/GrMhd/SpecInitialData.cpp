@@ -106,11 +106,15 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
       get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
   const auto& temperature =
       cache->get_var(*this, hydro::Tags::Temperature<DataType>{});
+  const auto& electron_fraction =
+      cache->get_var(*this, hydro::Tags::ElectronFraction<DataType>{});
   const size_t num_points = get_size(get(rest_mass_density));
   for (size_t i = 0; i < num_points; ++i) {
     const double local_rest_mass_density =
         get_element(get(rest_mass_density), i);
     const double local_temperature = get_element(get(temperature), i);
+    const double local_electron_fraction =
+        get_element(get(electron_fraction), i);
     if constexpr (ThermodynamicDim == 1) {
       get_element(get(*specific_internal_energy), i) =
           get(eos.specific_internal_energy_from_density(
@@ -121,7 +125,12 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
               Scalar<double>(local_rest_mass_density),
               Scalar<double>(local_temperature)));
     } else {
-      ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
+      static_assert(ThermodynamicDim == 3);
+      get_element(get(*specific_internal_energy), i) =
+          get(eos.specific_internal_energy_from_density_and_temperature(
+              Scalar<double>(local_rest_mass_density),
+              Scalar<double>(local_temperature),
+              Scalar<double>(local_electron_fraction)));
     }
   }
 }
@@ -136,11 +145,15 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
       get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
   const auto& temperature =
       cache->get_var(*this, hydro::Tags::Temperature<DataType>{});
+  const auto& electron_fraction =
+      cache->get_var(*this, hydro::Tags::ElectronFraction<DataType>{});
   const size_t num_points = get_size(get(rest_mass_density));
   for (size_t i = 0; i < num_points; ++i) {
     const double local_rest_mass_density =
         get_element(get(rest_mass_density), i);
     const double local_temperature = get_element(get(temperature), i);
+    const double local_electron_fraction =
+        get_element(get(electron_fraction), i);
     if constexpr (ThermodynamicDim == 1) {
       get_element(get(*pressure), i) = get(
           eos.pressure_from_density(Scalar<double>(local_rest_mass_density)));
@@ -152,7 +165,12 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
                   Scalar<double>(local_rest_mass_density),
                   Scalar<double>(local_temperature))))));
     } else {
-      ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
+      static_assert(ThermodynamicDim == 3);
+      get_element(get(*pressure), i) =
+          get(eos.pressure_from_density_and_temperature(
+              Scalar<double>(local_rest_mass_density),
+              Scalar<double>(local_temperature),
+              Scalar<double>(local_electron_fraction)));
     }
   }
 }
