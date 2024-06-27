@@ -48,6 +48,7 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -351,7 +352,7 @@ struct ReceiveDataForReconstruction {
                 ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
             const gsl::not_null<
-                DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
+                DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
             const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
                 mortar_next_time_step_id,
@@ -378,10 +379,10 @@ struct ReceiveDataForReconstruction {
             }
             if (received_mortar_data.second.boundary_correction_data
                     .has_value()) {
-              mortar_data->at(mortar_id).neighbor_mortar_data() = std::pair{
-                  received_mortar_data.second.interface_mesh,
-                  std::move(
-                      *received_mortar_data.second.boundary_correction_data)};
+              mortar_data->at(mortar_id).neighbor().neighbor_mortar_data() =
+                  std::pair{received_mortar_data.second.interface_mesh,
+                            std::move(*received_mortar_data.second
+                                           .boundary_correction_data)};
             }
             // Set new neighbor mesh
             neighbor_mesh->insert_or_assign(

@@ -26,6 +26,7 @@
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -60,7 +61,7 @@ class TaggedTuple;
 namespace evolution::dg::Initialization {
 namespace detail {
 template <size_t Dim>
-std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>,
+std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionalIdMap<Dim, Mesh<Dim - 1>>,
            DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>,
            DirectionalIdMap<Dim, TimeStepId>,
@@ -184,7 +185,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                  amr::Tags::NeighborInfo<dim>>;
 
   static void apply(
-      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+      const gsl::not_null<
+          ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
           mortar_data,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> mortar_mesh,
       const gsl::not_null<
@@ -215,7 +217,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       (*normal_covector_and_magnitude)[direction] = std::nullopt;
       for (const auto& neighbor : neighbors) {
         const DirectionalId<dim> mortar_id{direction, neighbor};
-        mortar_data->emplace(mortar_id, MortarData<dim>{});
+        mortar_data->emplace(mortar_id, MortarDataHolder<dim>{});
         const auto new_neighbor_mesh = neighbors.orientation().inverse_map()(
             neighbor_info.at(neighbor).new_mesh);
         mortar_mesh->emplace(
@@ -236,7 +238,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
 
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+      const gsl::not_null<
+          ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
       const gsl::not_null<
@@ -260,7 +263,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
 
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<::dg::MortarMap<dim, evolution::dg::MortarData<dim>>*>
+      const gsl::not_null<
+          ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
       const gsl::not_null<

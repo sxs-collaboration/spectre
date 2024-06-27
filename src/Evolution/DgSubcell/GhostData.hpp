@@ -17,7 +17,7 @@ namespace evolution::dg::subcell {
  * This class holds both the local ghost data on the local subcell mesh for a
  * given direction, as well as the neighbor's ghost data (on the neighbor's
  * mesh) in that same direction. This class is similar to
- * `evolution::dg::MortarData` in the sense that it holds both local and
+ * `evolution::dg::MortarDataHolder` in the sense that it holds both local and
  * neighbor data in a direction. However, it differs because the local ghost
  * data is not used in our own calculation when reconstructing the solution at
  * the face between the elements. This is because we already have our own data

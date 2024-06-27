@@ -19,6 +19,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -76,7 +77,8 @@ void correct_package_data(
     const gsl::not_null<Variables<DgPackageFieldTags>*> upper_packaged_data,
     const size_t logical_dimension_to_operate_in, const Element<Dim>& element,
     const Mesh<Dim>& subcell_volume_mesh,
-    const DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>& mortar_data,
+    const DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
+        mortar_data,
     const size_t variables_to_offset_in_dg_grid) {
   const Direction<Dim> upper_direction{logical_dimension_to_operate_in,
                                        Side::Upper};
@@ -158,37 +160,56 @@ void correct_package_data(
   // Project DG data to the subcells
   if (auto neighbor_mortar_data_it = mortar_data.find(upper_mortar_id);
       has_upper_neighbor and neighbor_mortar_data_it != mortar_data.end()) {
-    if (neighbor_mortar_data_it->second.neighbor_mortar_data().has_value()) {
+    if (neighbor_mortar_data_it->second.neighbor()
+            .neighbor_mortar_data()
+            .has_value()) {
       project_dg_data_to_subcells(
           upper_packaged_data,
           subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,
-          neighbor_mortar_data_it->second.neighbor_mortar_data()->first,
-          neighbor_mortar_data_it->second.neighbor_mortar_data()->second);
+          neighbor_mortar_data_it->second.neighbor()
+              .neighbor_mortar_data()
+              ->first,
+          neighbor_mortar_data_it->second.neighbor()
+              .neighbor_mortar_data()
+              ->second);
     }
     if constexpr (OverwriteInternalMortarData) {
-      if (neighbor_mortar_data_it->second.local_mortar_data().has_value()) {
+      if (neighbor_mortar_data_it->second.local()
+              .local_mortar_data()
+              .has_value()) {
         project_dg_data_to_subcells(
             lower_packaged_data,
             subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,
-            neighbor_mortar_data_it->second.local_mortar_data()->first,
-            neighbor_mortar_data_it->second.local_mortar_data()->second);
+            neighbor_mortar_data_it->second.local().local_mortar_data()->first,
+            neighbor_mortar_data_it->second.local()
+                .local_mortar_data()
+                ->second);
       }
     }
   }
   if (auto neighbor_mortar_data_it = mortar_data.find(lower_mortar_id);
       has_lower_neighbor and neighbor_mortar_data_it != mortar_data.end()) {
-    if (neighbor_mortar_data_it->second.neighbor_mortar_data().has_value()) {
-      project_dg_data_to_subcells(
-          lower_packaged_data, 0,
-          neighbor_mortar_data_it->second.neighbor_mortar_data()->first,
-          neighbor_mortar_data_it->second.neighbor_mortar_data()->second);
+    if (neighbor_mortar_data_it->second.neighbor()
+            .neighbor_mortar_data()
+            .has_value()) {
+      project_dg_data_to_subcells(lower_packaged_data, 0,
+                                  neighbor_mortar_data_it->second.neighbor()
+                                      .neighbor_mortar_data()
+                                      ->first,
+                                  neighbor_mortar_data_it->second.neighbor()
+                                      .neighbor_mortar_data()
+                                      ->second);
     }
     if constexpr (OverwriteInternalMortarData) {
-      if (neighbor_mortar_data_it->second.local_mortar_data().has_value()) {
+      if (neighbor_mortar_data_it->second.local()
+              .local_mortar_data()
+              .has_value()) {
         project_dg_data_to_subcells(
             upper_packaged_data, 0,
-            neighbor_mortar_data_it->second.local_mortar_data()->first,
-            neighbor_mortar_data_it->second.local_mortar_data()->second);
+            neighbor_mortar_data_it->second.local().local_mortar_data()->first,
+            neighbor_mortar_data_it->second.local()
+                .local_mortar_data()
+                ->second);
       }
     }
   }

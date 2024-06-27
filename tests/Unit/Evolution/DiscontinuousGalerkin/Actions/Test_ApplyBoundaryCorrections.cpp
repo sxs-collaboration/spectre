@@ -237,8 +237,9 @@ struct SetLocalMortarData {
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
-              mortar_data_ptr->at(mortar_id).local_mortar_data() = std::pair{
-                  face_mesh, std::move(type_erased_boundary_data_on_mortar)};
+              mortar_data_ptr->at(mortar_id).local().local_mortar_data() =
+                  std::pair{face_mesh,
+                            std::move(type_erased_boundary_data_on_mortar)};
             },
             make_not_null(&box));
         ++count;
@@ -317,7 +318,7 @@ struct SetLocalMortarData {
 
                 // Now add the current data into the history.
                 evolution::dg::MortarData<Metavariables::volume_dim>&
-                    local_mortar_data = mortar_data_ptr->at(mortar_id);
+                    local_mortar_data = mortar_data_ptr->at(mortar_id).local();
 
                 const Scalar<DataVector>& face_normal_magnitude =
                     get<evolution::dg::Tags::MagnitudeOfNormal>(
@@ -698,7 +699,7 @@ void test_impl(const Spectral::Quadrature quadrature,
               std::move(nhbr_mortar_data));
         }
       } else {
-        all_mortar_data.at(mortar_id).neighbor_mortar_data() =
+        all_mortar_data.at(mortar_id).neighbor().neighbor_mortar_data() =
             std::pair{face_mesh, flux_data};
       }
       ++count;
@@ -957,7 +958,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         continue;
       }
       mortar_id_ptr = &mortar_id;
-      compute_correction_coupling(mortar_data, mortar_data);
+      compute_correction_coupling(mortar_data.local(), mortar_data.neighbor());
     }
     tmpl::for_each<dt_variables_tags>(
         [&expected_dt_variables_volume, &runner, &self_id](auto tag_v) {

@@ -18,6 +18,8 @@ template <size_t Dim>
 class BoundaryMessage;
 template <size_t Dim>
 class MortarData;
+template <size_t Dim>
+class MortarDataHolder;
 }  // namespace evolution::dg
 namespace Spectral {
 enum class ChildSize : uint8_t;
@@ -37,7 +39,7 @@ namespace evolution::dg::Tags {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarData : db::SimpleTag {
-  using type = DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>;
+  using type = DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>;
 };
 
 /// History of the data on mortars, indexed by (Direction, ElementId) pairs, and

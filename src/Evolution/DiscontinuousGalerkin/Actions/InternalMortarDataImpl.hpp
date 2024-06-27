@@ -50,7 +50,8 @@ void internal_mortar_data_impl(
                               evolution::dg::Tags::MagnitudeOfNormal,
                               evolution::dg::Tags::NormalCovector<Dim>>>>>*>
         normal_covector_and_magnitude_ptr,
-    const gsl::not_null<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
+    const gsl::not_null<
+        DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
         mortar_data_ptr,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
@@ -251,7 +252,7 @@ void internal_mortar_data_impl(
       } else {
         // Can use the local_mortar_data
         auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local_mortar_data();
+            mortar_data_ptr->at(mortar_id).local().local_mortar_data();
         // If this isn't the first time, set the face mesh
         if (LIKELY(local_mortar_data_opt.has_value())) {
           local_mortar_data_opt->first = face_mesh;
@@ -296,7 +297,7 @@ void internal_mortar_data_impl(
 
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local_mortar_data();
+            mortar_data_ptr->at(mortar_id).local().local_mortar_data();
 
         // If this isn't the first time, set the face mesh
         if (LIKELY(local_mortar_data_opt.has_value())) {

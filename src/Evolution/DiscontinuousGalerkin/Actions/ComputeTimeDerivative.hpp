@@ -34,6 +34,7 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
@@ -694,13 +695,13 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =
-            *all_mortar_data.at(mortar_id).local_mortar_data();
+            *all_mortar_data.at(mortar_id).local().local_mortar_data();
       } else {
         const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
         neighbor_boundary_data_on_mortar.first =
-            all_mortar_data.at(mortar_id).local_mortar_data()->first;
+            all_mortar_data.at(mortar_id).local().local_mortar_data()->first;
         neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
-            all_mortar_data.at(mortar_id).local_mortar_data()->second,
+            all_mortar_data.at(mortar_id).local().local_mortar_data()->second,
             slice_extents, direction.dimension(), orientation);
       }
 
@@ -786,7 +787,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
         [&element, integration_order, &time_step_id, using_gauss_points,
          &volume_det_inv_jacobian](
             const gsl::not_null<
-                DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
+                DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
             const gsl::not_null<
                 DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
@@ -838,12 +839,15 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             for (const auto& neighbor : neighbors_in_direction) {
               const DirectionalId<Dim> mortar_id{direction, neighbor};
               if (using_gauss_points) {
-                mortar_data->at(mortar_id).insert_local_geometric_quantities(
-                    volume_det_inv_jacobian, face_det_jacobian,
-                    face_normal_magnitude);
+                mortar_data->at(mortar_id)
+                    .local()
+                    .insert_local_geometric_quantities(volume_det_inv_jacobian,
+                                                       face_det_jacobian,
+                                                       face_normal_magnitude);
               } else {
-                mortar_data->at(mortar_id).insert_local_face_normal_magnitude(
-                    face_normal_magnitude);
+                mortar_data->at(mortar_id)
+                    .local()
+                    .insert_local_face_normal_magnitude(face_normal_magnitude);
               }
               ASSERT(boundary_data_history->count(mortar_id) != 0,
                      "Could not insert the mortar data for "
@@ -853,8 +857,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                             "to have the mortar id.");
               boundary_data_history->at(mortar_id).local().insert(
                   time_step_id, integration_order,
-                  std::move(mortar_data->at(mortar_id)));
-              mortar_data->at(mortar_id) = MortarData<Dim>{};
+                  std::move(mortar_data->at(mortar_id).local()));
+              mortar_data->at(mortar_id) = MortarDataHolder<Dim>{};
             }
           }
         },

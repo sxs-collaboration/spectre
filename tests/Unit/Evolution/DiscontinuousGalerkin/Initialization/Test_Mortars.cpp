@@ -353,7 +353,7 @@ struct Test<3, LocalTimeStepping> {
 
 template <size_t Dim, bool UsingLts>
 void test_p_refine(
-    ::dg::MortarMap<Dim, evolution::dg::MortarData<Dim>>& mortar_data,
+    ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>& mortar_data,
     ::dg::MortarMap<Dim, Mesh<Dim - 1>>& mortar_mesh,
     ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         mortar_size,
@@ -367,7 +367,7 @@ void test_p_refine(
     const Element<Dim>& old_element, Element<Dim>& new_element,
     std::unordered_map<ElementId<Dim>, amr::Info<Dim>>& neighbor_info,
     const ::dg::MortarMap<
-        Dim, evolution::dg::MortarData<Dim>>& /*expected_mortar_data*/,
+        Dim, evolution::dg::MortarDataHolder<Dim>>& /*expected_mortar_data*/,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
     const ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         expected_mortar_size,
@@ -467,7 +467,7 @@ void test_p_refine_gts() {
 
   // These quantities are re-allocated after projection, so we can
   // just set them to empty maps...
-  ::dg::MortarMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
+  ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh{};
   ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>> mortar_size{};
   DirectionMap<Dim, std::optional<Variables<
@@ -488,7 +488,8 @@ void test_p_refine_gts() {
     }
   }
 
-  ::dg::MortarMap<Dim, evolution::dg::MortarData<Dim>> expected_mortar_data{};
+  ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
+      expected_mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
   ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>
       expected_mortar_size{};
@@ -502,7 +503,7 @@ void test_p_refine_gts() {
     expected_normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
-      expected_mortar_data.emplace(mortar_id, MortarData<Dim>{});
+      expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
       expected_mortar_mesh.emplace(
           mortar_id,
           ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),

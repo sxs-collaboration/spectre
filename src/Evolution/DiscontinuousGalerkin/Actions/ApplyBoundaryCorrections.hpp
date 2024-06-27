@@ -30,6 +30,7 @@
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
@@ -310,7 +311,7 @@ bool receive_boundary_data_global_time_stepping(
              domain::Tags::NeighborMesh<volume_dim>>(
       [&received_temporal_id_and_data](
           const gsl::not_null<DirectionalIdMap<
-              volume_dim, evolution::dg::MortarData<volume_dim>>*>
+              volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
               mortar_data,
           const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
               mortar_next_time_step_id,
@@ -335,7 +336,7 @@ bool receive_boundary_data_global_time_stepping(
                      << received_temporal_id_and_data.first);
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
-            mortar_data->at(mortar_id).neighbor_mortar_data() =
+            mortar_data->at(mortar_id).neighbor().neighbor_mortar_data() =
                 std::pair{received_mortar_data.second.interface_mesh,
                           std::move(received_mortar_data.second
                                         .boundary_correction_data.value())};
@@ -947,7 +948,8 @@ struct ApplyBoundaryCorrections {
                                       ? dt_boundary_correction_on_mortar
                                       : volume_dt_correction;
               lifted_data = compute_correction_coupling(
-                  mortar_id_and_data.second, mortar_id_and_data.second);
+                  mortar_id_and_data.second.local(),
+                  mortar_id_and_data.second.neighbor());
 
               if (using_gauss_lobatto_points) {
                 // Add the flux contribution to the volume data

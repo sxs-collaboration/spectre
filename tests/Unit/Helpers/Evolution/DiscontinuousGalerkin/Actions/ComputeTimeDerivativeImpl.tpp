@@ -43,6 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "Evolution/PassVariables.hpp"
@@ -1859,6 +1860,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     CHECK_ITERABLE_APPROX(
         get_tag(::evolution::dg::Tags::MortarData<Dim>{})
             .at(mortar_id_east)
+            .local()
             .local_mortar_data()
             ->second,
         compute_expected_mortar_data(mortar_id_east.direction(),
@@ -1925,6 +1927,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     } else {
       CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
                                 .at(mortar_id_south)
+                                .local()
                                 .local_mortar_data()
                                 ->second,
                             compute_expected_mortar_data(
@@ -1950,8 +1953,9 @@ void test_impl(const Spectral::Quadrature quadrature,
          get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
       // When doing local time stepping the MortarData should've been moved into
       // the MortarDataHistory.
-      CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
-      CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.local().local_mortar_data().has_value());
+      CHECK_FALSE(
+          mortar_data.second.neighbor().neighbor_mortar_data().has_value());
     }
   }
 }
