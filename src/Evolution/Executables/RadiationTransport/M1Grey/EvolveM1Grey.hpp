@@ -120,6 +120,7 @@ struct EvolutionMetavars {
       "initial_data must be either an analytic_data or an analytic_solution");
 
   // Set list of neutrino species to be used by M1 code
+  //   using electron = neutrinos::ElectronNeutrinos<1>
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>>;
 
   using system = RadiationTransport::M1Grey::System<neutrino_species>;
@@ -234,6 +235,9 @@ struct EvolutionMetavars {
                                ComputeM1Closure<neutrino_species>>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>,
+      Actions::MutateApply<
+          typename RadiationTransport::M1Grey::ComputeM1HydroCouplingJacobian<
+              neutrinos::ElectronNeutrinos<1>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
