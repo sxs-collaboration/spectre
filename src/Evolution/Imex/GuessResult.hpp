@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Utilities/TMPL.hpp"
+#include "Evolution/Imex/Protocols/ImplicitSourceJacobian.hpp"
 
 namespace imex {
 /// Type of guess returned from an implicit sector's `initial_guess`
@@ -33,7 +34,9 @@ struct GuessExplicitResult {
 ///
 /// \note The `source` mutator is always required, even if the
 /// implicit equation can be solved analytically.
-struct NoJacobianBecauseSolutionIsAnalytic {
+struct NoJacobianBecauseSolutionIsAnalytic
+    : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+      tt::ConformsTo<::protocols::StaticReturnApplyable> {
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<>;
   [[noreturn]] static void apply();

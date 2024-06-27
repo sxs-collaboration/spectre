@@ -49,7 +49,8 @@ struct Sector1 : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using initial_guess = imex::GuessExplicitResult;
 
   struct SolveAttempt {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var1>>;
       using argument_tags = tmpl::list<OtherVar>;
       static void apply(const gsl::not_null<Scalar<DataVector>*> source,
@@ -58,7 +59,8 @@ struct Sector1 : tt::ConformsTo<imex::protocols::ImplicitSector> {
       }
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();
@@ -78,7 +80,8 @@ struct Sector2 : tt::ConformsTo<imex::protocols::ImplicitSector> {
   using initial_guess = imex::GuessExplicitResult;
 
   struct InitialAttempt {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var3>, Tags::Source<Var2>>;
       using argument_tags = tmpl::list<Var1>;
       static void apply(const gsl::not_null<Scalar<DataVector>*> source3,
@@ -89,7 +92,8 @@ struct Sector2 : tt::ConformsTo<imex::protocols::ImplicitSector> {
       }
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();
@@ -103,7 +107,8 @@ struct Sector2 : tt::ConformsTo<imex::protocols::ImplicitSector> {
   };
 
   struct Fallback {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var3>, Tags::Source<Var2>>;
       using argument_tags = tmpl::list<>;
       static void apply(const gsl::not_null<Scalar<DataVector>*> /*source3*/,
@@ -112,7 +117,8 @@ struct Sector2 : tt::ConformsTo<imex::protocols::ImplicitSector> {
       }
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();

@@ -187,7 +187,8 @@ struct ImexSystem : tt::ConformsTo<imex::protocols::ImexSystem> {
       using tags_from_evolution = tmpl::list<>;
       using simple_tags = tmpl::list<>;
       using compute_tags = tmpl::list<>;
-      struct source {
+      struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
         using return_tags = tmpl::list<Tags::Source<FieldVar>>;
         using argument_tags = tmpl::list<>;
         static void apply(gsl::not_null<Scalar<DataVector>*> var_source);

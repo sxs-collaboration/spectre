@@ -5,6 +5,8 @@
 
 #include <type_traits>
 
+#include "ImplicitSource.hpp"
+#include "ImplicitSourceJacobian.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -66,12 +68,13 @@ namespace imex::protocols {
 ///     * `compute_tags`
 ///
 ///   * a `source` type to be passed to `db::mutate_apply` to compute
-///     the sources.
+///     the sources. It must conform to imex::protocols::ImplicitSource.
 ///
 ///   * a `jacobian` type to be passed to `db::mutate_apply` to
-///     compute the source jacobian.  If the implicit equation can
-///     always be solved analytically for the sector, the jacobian is
-///     not required and this may be the type
+///     compute the source jacobian.  It must conform to
+///     imex::protocols::ImplicitSourceJacobian. If the implicit equation can
+///     always be solved analytically for the sector, the jacobian is not
+///     required and this may be the type
 ///     `imex::NoJacobianBecauseSolutionIsAnalytic`.
 ///
 ///   * lists `source_prep` and `jacobian_prep` that will be called
@@ -93,7 +96,7 @@ namespace imex::protocols {
 /// jacobian:
 ///
 /// \snippet Test_SolveImplicitSector.cpp source
-/// \snippet Test_SolveImplicitSector.cpp jacobian
+/// \snippet Test_SolveImplicitSector.cpp Jacobian
 struct ImplicitSector {
   template <typename ConformingType>
   struct test {
@@ -129,6 +132,12 @@ struct ImplicitSector {
 
       using source_prep = typename SolveAttempt::source_prep;
       using jacobian_prep = typename SolveAttempt::jacobian_prep;
+
+      // check protocol conformity
+      static_assert(
+          tt::assert_conforms_to_v<source, imex::protocols::ImplicitSource>);
+      static_assert(tt::assert_conforms_to_v<
+                    jacobian, imex::protocols::ImplicitSourceJacobian>);
 
       static_assert(tt::is_a_v<tmpl::list, tags_from_evolution>);
       static_assert(tt::is_a_v<tmpl::list, simple_tags>);
