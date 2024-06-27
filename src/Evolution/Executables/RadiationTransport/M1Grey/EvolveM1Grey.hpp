@@ -165,7 +165,6 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
-        // tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<ImexTimeStepper, TimeSteppers::imex_time_steppers>,
 
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
