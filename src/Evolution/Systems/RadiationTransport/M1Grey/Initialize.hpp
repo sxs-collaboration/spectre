@@ -9,6 +9,7 @@
 #include <utility>  // IWYU pragma: keep  // for move
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Imex/Tags/Jacobian.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
