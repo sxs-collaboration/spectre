@@ -67,6 +67,9 @@ Affiliations:
   - &umiss
     Department of Physics and Astronomy, University of Mississippi,
     University, Mississippi 38677, USA
+  - &oberlin
+    Department of Physics and Astronomy, Oberlin College, Oberlin, Ohio 44074,
+    USA
 
 Authors:
   Description: |
@@ -323,6 +326,10 @@ Authors:
         Orcid: 0000-0002-7854-1953
         Affiliations: [*fullerton]
         GitHub: denyzamelchor
+      - Name: Mendes, Iago
+        Orcid: 0009-0007-9845-8448
+        Affiliations: [*caltech, *oberlin]
+        GitHub: iago-mendes
       - Name: Morales, Marlo
         Orcid: 0000-0002-0593-4318
         Affiliations: [*fullerton]
