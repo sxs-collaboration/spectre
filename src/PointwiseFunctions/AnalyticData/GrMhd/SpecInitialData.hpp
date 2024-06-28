@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Exporter.hpp>  // The SpEC Exporter
+#include <optional>
 #include <memory>
 
 #include "DataStructures/CachedTempBuffer.hpp"
@@ -50,6 +51,9 @@ template <size_t ThermodynamicDim>
 class SpecInitialData : public evolution::initial_data::InitialData,
                         public evolution::NumericInitialData,
                         public AnalyticDataBase {
+ private:
+  struct FromEos {};
+
  public:
   using equation_of_state_type =
       EquationsOfState::EquationOfState<true, ThermodynamicDim>;
@@ -82,8 +86,10 @@ class SpecInitialData : public evolution::initial_data::InitialData,
   };
 
   struct ElectronFraction {
-    using type = double;
-    static constexpr Options::String help = {"Constant electron fraction"};
+    using type = Options::Auto<double, FromEos>;
+    static constexpr Options::String help = {
+        "Constant electron fraction.\n"
+        "To calculate electron fraction from the Eos, set to 'FromEos'."};
   };
 
   using options = tmpl::list<
@@ -102,7 +108,8 @@ class SpecInitialData : public evolution::initial_data::InitialData,
 
   SpecInitialData(std::string data_directory,
                   std::unique_ptr<equation_of_state_type> equation_of_state,
-                  double density_cutoff, double electron_fraction);
+                  double density_cutoff,
+                  std::optional<double> electron_fraction);
 
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
@@ -191,7 +198,7 @@ class SpecInitialData : public evolution::initial_data::InitialData,
         interpolated_data;
     const equation_of_state_type& eos;
     const double density_cutoff;
-    const double constant_electron_fraction;
+    const std::optional<double>& electron_fraction_value;
 
     void operator()(
         gsl::not_null<Scalar<DataType>*> specific_internal_energy,
@@ -236,7 +243,7 @@ class SpecInitialData : public evolution::initial_data::InitialData,
   std::string data_directory_{};
   std::unique_ptr<equation_of_state_type> equation_of_state_{nullptr};
   double density_cutoff_ = std::numeric_limits<double>::signaling_NaN();
-  double electron_fraction_ = std::numeric_limits<double>::signaling_NaN();
+  std::optional<double> electron_fraction_ = std::nullopt;
 
   std::unique_ptr<spec::Exporter> spec_exporter_{nullptr};
 };

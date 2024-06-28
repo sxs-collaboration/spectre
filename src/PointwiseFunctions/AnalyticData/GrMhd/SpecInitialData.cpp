@@ -5,6 +5,7 @@
 
 #include <Exporter.hpp>  // The SpEC Exporter
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <utility>
@@ -21,6 +22,7 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -30,7 +32,7 @@ template <size_t ThermodynamicDim>
 SpecInitialData<ThermodynamicDim>::SpecInitialData(
     std::string data_directory,
     std::unique_ptr<equation_of_state_type> equation_of_state,
-    const double density_cutoff, const double electron_fraction)
+    const double density_cutoff, const std::optional<double> electron_fraction)
     : data_directory_(std::move(data_directory)),
       equation_of_state_(std::move(equation_of_state)),
       density_cutoff_(density_cutoff),
@@ -280,10 +282,27 @@ template <size_t ThermodynamicDim>
 template <typename DataType>
 void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> electron_fraction,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     hydro::Tags::ElectronFraction<DataType> /*meta*/) const {
-  std::fill(electron_fraction->begin(), electron_fraction->end(),
-            constant_electron_fraction);
+  const auto& temperature =
+      cache->get_var(*this, hydro::Tags::Temperature<DataType>{});
+  const auto& rest_mass_density =
+      get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
+  const size_t num_points = get_size(get(rest_mass_density));
+  if (electron_fraction_value.has_value()) {
+    std::fill(electron_fraction->begin(), electron_fraction->end(),
+              electron_fraction_value.value());
+  } else {
+    for (size_t i = 0; i < num_points; ++i) {
+      const double local_rest_mass_density =
+          get_element(get(rest_mass_density), i);
+      const double local_temperature = get_element(get(temperature), i);
+      get_element(get(*electron_fraction), i) =
+          get(eos.equilibrium_electron_fraction_from_density_temperature(
+              Scalar<double>(local_rest_mass_density),
+              Scalar<double>(local_temperature)));
+    }
+  }
 }
 
 template <size_t ThermodynamicDim>
