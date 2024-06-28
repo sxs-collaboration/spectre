@@ -253,7 +253,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
               DataVector, 3, ::Frame::Inertial>>(expected_temp_variables)),
       tuples::get<CurvedScalarWave::Tags::Pi>(arg_variables),
       tuples::get<CurvedScalarWave::Tags::Phi<3>>(arg_variables),
-      tuples::get<gr::Tags::Lapse<DataVector>>(arg_variables));
+      tuples::get<gr::Tags::Lapse<DataVector>>(arg_variables),
+      tuples::get<gr::Tags::Shift<DataVector, 3, ::Frame::Inertial>>(
+          arg_variables));
 
   // When we have backreaction we also need to compute and apply the correction
   // to dt pi for the expected variables
