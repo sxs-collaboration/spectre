@@ -100,28 +100,28 @@ template <size_t ThermodynamicDim>
 template <typename DataType>
 void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> specific_internal_energy,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     hydro::Tags::SpecificInternalEnergy<DataType> /*meta*/) const {
   const auto& rest_mass_density =
       get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
+  const auto& temperature =
+      cache->get_var(*this, hydro::Tags::Temperature<DataType>{});
   const size_t num_points = get_size(get(rest_mass_density));
   for (size_t i = 0; i < num_points; ++i) {
     const double local_rest_mass_density =
         get_element(get(rest_mass_density), i);
-    if (local_rest_mass_density <= density_cutoff) {
-      get_element(get(*specific_internal_energy), i) = 0.;
+    const double local_temperature = get_element(get(temperature), i);
+    if constexpr (ThermodynamicDim == 1) {
+      get_element(get(*specific_internal_energy), i) =
+          get(eos.specific_internal_energy_from_density(
+              Scalar<double>(local_rest_mass_density)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      get_element(get(*specific_internal_energy), i) =
+          get(eos.specific_internal_energy_from_density_and_temperature(
+              Scalar<double>(local_rest_mass_density),
+              Scalar<double>(local_temperature)));
     } else {
-      if constexpr (ThermodynamicDim == 1) {
-        get_element(get(*specific_internal_energy), i) =
-            get(eos.specific_internal_energy_from_density(
-                Scalar<double>(local_rest_mass_density)));
-      } else if constexpr (ThermodynamicDim == 2) {
-        get_element(get(*specific_internal_energy), i) =
-            get(eos.specific_internal_energy_from_density_and_temperature(
-                Scalar<double>(local_rest_mass_density), Scalar<double>(0.)));
-      } else {
-        ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
-      }
+      ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
     }
   }
 }
@@ -130,31 +130,29 @@ template <size_t ThermodynamicDim>
 template <typename DataType>
 void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> pressure,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     hydro::Tags::Pressure<DataType> /*meta*/) const {
   const auto& rest_mass_density =
       get<hydro::Tags::RestMassDensity<DataType>>(interpolated_data);
+  const auto& temperature =
+      cache->get_var(*this, hydro::Tags::Temperature<DataType>{});
   const size_t num_points = get_size(get(rest_mass_density));
   for (size_t i = 0; i < num_points; ++i) {
     const double local_rest_mass_density =
         get_element(get(rest_mass_density), i);
-    if (local_rest_mass_density <= density_cutoff) {
-      get_element(get(*pressure), i) = 0.;
+    const double local_temperature = get_element(get(temperature), i);
+    if constexpr (ThermodynamicDim == 1) {
+      get_element(get(*pressure), i) = get(
+          eos.pressure_from_density(Scalar<double>(local_rest_mass_density)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      get_element(get(*pressure), i) = get(eos.pressure_from_density_and_energy(
+          Scalar<double>(local_rest_mass_density),
+          Scalar<double>(
+              get(eos.specific_internal_energy_from_density_and_temperature(
+                  Scalar<double>(local_rest_mass_density),
+                  Scalar<double>(local_temperature))))));
     } else {
-      if constexpr (ThermodynamicDim == 1) {
-        get_element(get(*pressure), i) = get(
-            eos.pressure_from_density(Scalar<double>(local_rest_mass_density)));
-      } else if constexpr (ThermodynamicDim == 2) {
-        get_element(get(*pressure), i) =
-            get(eos.pressure_from_density_and_energy(
-                Scalar<double>(local_rest_mass_density),
-                Scalar<double>(get(
-                    eos.specific_internal_energy_from_density_and_temperature(
-                        Scalar<double>(local_rest_mass_density),
-                        Scalar<double>(0.))))));
-      } else {
-        ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
-      }
+      ERROR("Only 1d & 2d EOS is currently supported for SpEC ID");
     }
   }
 }
@@ -198,8 +196,8 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
   const size_t num_points = get_size(get(rest_mass_density));
   // Consistent with the use of temperature above we set T=0
   for (size_t i = 0; i < num_points; ++i) {
-      get_element(get(*temperature), i) = 0.;
-    }
+    get_element(get(*temperature), i) = eos.temperature_lower_bound();
+  }
 }
 
 template <size_t ThermodynamicDim>
@@ -242,7 +240,7 @@ void SpecInitialData<ThermodynamicDim>::VariablesComputer<DataType>::operator()(
   const auto& lorentz_factor_times_spatial_velocity = cache->get_var(
       *this, hydro::Tags::LorentzFactorTimesSpatialVelocity<DataType, 3>{});
   dot_product(lorentz_factor, u_i, lorentz_factor_times_spatial_velocity);
-  get(*lorentz_factor) = sqrt(1.0+get(*lorentz_factor));
+  get(*lorentz_factor) = sqrt(1.0 + get(*lorentz_factor));
 }
 
 template <size_t ThermodynamicDim>
