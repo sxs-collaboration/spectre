@@ -59,6 +59,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -207,7 +208,8 @@ struct EvolutionMetavars {
                     intrp::Events::InterpolateWithoutInterpComponent<
                         volume_dim, SphericalSurface, interpolator_source_vars>,
                     tmpl::list<>>,
-                Events::time_events<system>>>>,
+                Events::time_events<system>,
+                dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
