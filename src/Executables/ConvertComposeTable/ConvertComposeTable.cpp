@@ -116,6 +116,8 @@ int main(int argc, char** argv) {
         "T: log\n"
         "n_b: log\n"
         "Y_q: linear\n"
+        "You must enter the bounds as:\n"
+        "lower upper\n"
         "If successful, you should see new file 'eos.parameters' generated. "
         "Now rerun compose for Task3.\n\n"
         "Task 3\n"
@@ -137,7 +139,7 @@ int main(int argc, char** argv) {
          "HDF5 file.")
         ("output,o", bpo::value<std::string>(),
          "Path of the output HDF5 file to which the EOS subfile will be "
-         "written")
+         "written, including the .h5 extension.")
         ;
     // clang-format on
 
