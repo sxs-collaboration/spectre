@@ -66,6 +66,25 @@ class ExecutableStatus:
         """
         raise NotImplementedError
 
+    def render_dashboard(self, job: dict, input_file: dict):
+        """Render a dashboard for the job (experimental).
+
+        Arguments:
+          job: A dictionary of job information, including the input file and
+            working directory. See the 'spectre.tools.Status.fetch_status'
+            function for details.
+          input_file: The input file read in as a dictionary.
+
+        This method can be overridden by subclasses to provide a custom
+        dashboard for the job. The default implementation does nothing.
+        """
+        import streamlit as st
+
+        st.warning(
+            "No dashboard available for this executable. Add an implementation"
+            " to the 'ExecutableStatus' subclass."
+        )
+
 
 class EvolutionStatus(ExecutableStatus):
     """An 'ExecutableStatus' subclass that matches all evolution executables.
