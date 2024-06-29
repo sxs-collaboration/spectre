@@ -26,6 +26,7 @@ BackgroundSpacetime:
     Mass: 1.
     Center: [0., 0., 0.]
     Spin: [0., 0., 0.]
+    Velocity: [0., 0., 0.]
 
 ResourceInfo:
   AvoidGlobalProc0: false

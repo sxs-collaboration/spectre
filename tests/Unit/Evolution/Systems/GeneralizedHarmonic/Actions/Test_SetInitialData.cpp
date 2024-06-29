@@ -319,7 +319,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "GeneralizedHarmonic(KerrSchild):\n"
       "  Mass: 1.\n"
       "  Spin: [0, 0, 0]\n"
-      "  Center: [0, 0, 0]",
+      "  Center: [0, 0, 0]\n"
+      "  Velocity: [0, 0, 0]",
       false);
 }
 

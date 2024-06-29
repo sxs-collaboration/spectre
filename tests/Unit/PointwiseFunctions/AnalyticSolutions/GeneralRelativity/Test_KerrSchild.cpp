@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -307,39 +308,64 @@ void test_tag_retrieval(const DataType& used_for_size) {
   const double mass = 1.234;
   const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 2.0, 3.0}};
+  const std::array<double, 3> boost_velocity{{0.2, -0.3, 0.1}};
   const auto x = spatial_coords<Frame>(used_for_size);
   const double t = 1.3;
 
+  using all_tags = typename gr::Solutions::KerrSchild::tags<DataType, Frame>;
+
+  // We test gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>
+  // separately as it is not supported for the boosted solution.
+  using tags_for_zero_boost =
+      tmpl::list<gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>>;
+  using regular_tags = tmpl::remove<
+      all_tags, gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>>;
+
   // Evaluate solution
-  const gr::Solutions::KerrSchild solution(mass, spin, center);
-  TestHelpers::AnalyticSolutions::test_tag_retrieval(
-      solution, x, t,
-      typename gr::Solutions::KerrSchild::template tags<DataType, Frame>{});
+  const gr::Solutions::KerrSchild solution(mass, spin, center, boost_velocity);
+  TestHelpers::AnalyticSolutions::test_tag_retrieval(solution, x, t,
+                                                     regular_tags{});
+
+  const gr::Solutions::KerrSchild solution_zero_boost(mass, spin, center);
+  TestHelpers::AnalyticSolutions::test_tag_retrieval(solution_zero_boost, x, t,
+                                                     tags_for_zero_boost{});
 }
 
 template <typename Frame>
-void test_einstein_solution() {
+void test_einstein_solution(const bool use_non_zero_velocity) {
+  INFO("Verify KerrSchild solution satisfies Einstein equations");
   // Parameters
   //   ...for KerrSchild solution
   const double mass = 1.7;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
+   const std::array<double, 3> boost_velocity{{0.4, -0.51, -0.5}};
   //   ...for grid
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const double time = -2.8;
 
-  gr::Solutions::KerrSchild solution(mass, spin, center);
-  TestHelpers::VerifyGrSolution::verify_consistency(
-      solution, time, tnsr::I<double, 3, Frame>{lower_bound}, 0.01, 1.0e-10);
-  if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
-    // Don't look at time-independent solution in other than the inertial
-    // frame.
-    const size_t grid_size = 8;
-    const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
-    TestHelpers::VerifyGrSolution::verify_time_independent_einstein_solution(
-        solution, grid_size, lower_bound, upper_bound,
-        std::numeric_limits<double>::epsilon() * 1.e5);
+  if (use_non_zero_velocity) {
+    gr::Solutions::KerrSchild solution(mass, spin, center, boost_velocity);
+    // Time derivatives are non zero. However we do not code up the time
+    // dependence of the boosted solution for simplicity. Hence we only check
+    // consistency in the spatial derivatives.
+    TestHelpers::VerifyGrSolution::verify_spatial_consistency(
+        solution, time, tnsr::I<double, 3, Frame>{lower_bound}, 0.01, 1.0e-10);
+  } else {
+    gr::Solutions::KerrSchild solution(mass, spin, center);
+    TestHelpers::VerifyGrSolution::verify_consistency(
+        solution, time, tnsr::I<double, 3, Frame>{lower_bound}, 0.01, 1.0e-10);
+    if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+      // Don't look at time-independent solution in other than the inertial
+      // frame.
+      const size_t grid_size = 8;
+      const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
+      TestHelpers::VerifyGrSolution::verify_time_independent_einstein_solution(
+          solution, grid_size, lower_bound, upper_bound,
+          std::numeric_limits<double>::epsilon() * 1.e5);
+    }
   }
+
 }
 
 template <typename Frame, typename DataType>
@@ -366,13 +392,127 @@ void test_zero_spin_optimization(const DataType& used_for_size) {
       });
 }
 
+template <typename Frame, typename DataType>
+void test_boosted_for_zero_velocity(const DataType& used_for_size) {
+  const double epsilon = std::numeric_limits<double>::epsilon();
+  const std::array<double, 3> boost_velocity{{0.0, 0.0, epsilon}};
+
+  gr::Solutions::KerrSchild solution_zero_velocity(
+      3.0, {{0., 0., 0.}}, {{0.2, 0.3, 0.2}});
+  gr::Solutions::KerrSchild solution_tiny_velocity(
+      3.0, {{0., 0., 1e-50}}, {{0.2, 0.3, 0.2}}, boost_velocity);
+  CHECK(solution_zero_velocity.zero_velocity());
+  CHECK(not solution_tiny_velocity.zero_velocity());
+  const auto x = spatial_coords<Frame>(used_for_size);
+
+  // We do not test gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>
+  // as it is not supported for the boosted solution.
+  using all_tags = typename gr::Solutions::KerrSchild::tags<DataType, Frame>;
+  using tags_to_test = tmpl::remove<
+      all_tags, gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>>;
+
+  const auto all_tags_zero_velocity =
+      solution_zero_velocity.variables(x, 0., tags_to_test{});
+  const auto all_tags_tiny_velocity =
+      solution_tiny_velocity.variables(x, 0., tags_to_test{});
+  tmpl::for_each<tags_to_test>(
+      [&all_tags_zero_velocity, &all_tags_tiny_velocity](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        CHECK_ITERABLE_APPROX(get<tag>(all_tags_zero_velocity),
+                              get<tag>(all_tags_tiny_velocity));
+      });
+}
+
+template <typename Frame, typename DataType>
+void test_boosted_spacetime_metric(const DataType& used_for_size) {
+  // Test that the spacetime metric of the boosted solution indeed
+  // corresponds to the boosted spacetime metric tensor
+
+  const auto x = spatial_coords<Frame>(used_for_size);
+  const double t = 0.0;
+
+  // KerrSchild solution
+  const double mass = 1.0;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  gr::Solutions::KerrSchild solution(mass, spin, center);
+
+  // Boosted KerrSchild solution
+  const std::array<double, 3> velocity{{0.5, 0.0, 0.0}};
+  gr::Solutions::KerrSchild boosted_solution(mass, spin, center, velocity);
+
+  // Need to evaluate at the boosted coordinates
+  // Boost coordinates
+  tnsr::I<DataType, 3, Frame> x_boosted;
+  sr::lorentz_boost(make_not_null(&x_boosted), x, 0., -velocity);
+
+  // We do not test gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>
+  // as it is not supported for the boosted solution.
+  using all_tags = typename gr::Solutions::KerrSchild::tags<DataType, Frame>;
+  using tags_to_test = tmpl::remove<
+      all_tags, gr::Tags::SpacetimeChristoffelSecondKind<DataType, 3, Frame>>;
+
+  const auto vars = solution.variables(x_boosted, t, tags_to_test{});
+  const auto& lapse = get<typename gr::Tags::Lapse<DataType>>(vars);
+  const auto& shift = get<typename gr::Tags::Shift<DataType, 3, Frame>>(vars);
+  const auto& spatial_metric =
+      get<typename gr::Tags::SpatialMetric<DataType, 3, Frame>>(vars);
+
+  // Compute spacetime metric
+  tnsr::aa<DataType, 3, Frame> spacetime_metric;
+  gr::spacetime_metric(make_not_null(&spacetime_metric), lapse, shift,
+                       spatial_metric);
+
+  auto spacetime_metric_as_asymmetric_tensor =
+      make_with_value<tnsr::ab<DataType, 3, Frame>>(x, 0.0);
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      spacetime_metric_as_asymmetric_tensor.get(a, b) =
+          spacetime_metric.get(a, b);
+    }
+  }
+
+  tnsr::ab<DataType, 3, Frame> expected_boosted_spacetime_metric;
+  sr::lorentz_boost(make_not_null(&expected_boosted_spacetime_metric),
+                    spacetime_metric_as_asymmetric_tensor, -velocity);
+
+  // Boosted metric quantities
+  const auto boosted_vars = boosted_solution.variables(x, t, tags_to_test{});
+  const auto& lapse_from_boosted_solution =
+      get<typename gr::Tags::Lapse<DataType>>(boosted_vars);
+  const auto& shift_from_boosted_solution =
+      get<typename gr::Tags::Shift<DataType, 3, Frame>>(boosted_vars);
+  const auto& spatial_metric_from_boosted_solution =
+      get<typename gr::Tags::SpatialMetric<DataType, 3, Frame>>(boosted_vars);
+
+  tnsr::aa<DataType, 3, Frame> spacetime_metric_from_boosted_solution;
+  gr::spacetime_metric(make_not_null(&spacetime_metric_from_boosted_solution),
+                       lapse_from_boosted_solution, shift_from_boosted_solution,
+                       spatial_metric_from_boosted_solution);
+
+  auto spacetime_metric_from_boosted_solution_as_asymmetric_tensor =
+      make_with_value<tnsr::ab<DataType, 3, Frame>>(x, 0.0);
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      spacetime_metric_from_boosted_solution_as_asymmetric_tensor.get(a, b) =
+          spacetime_metric_from_boosted_solution.get(a, b);
+    }
+  }
+
+  CHECK_ITERABLE_APPROX(
+      expected_boosted_spacetime_metric,
+      spacetime_metric_from_boosted_solution_as_asymmetric_tensor);
+}
+
 void test_serialize() {
-  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
+  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}},
+                                     {{0.1, 0.2, 0.3}});
   test_serialization(solution);
 }
 
 void test_copy_and_move() {
-  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
+  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}},
+                                     {{0.1, 0.2, 0.3}});
   test_copy_semantics(solution);
   auto solution_copy = solution;
   // clang-tidy: std::move of trivially copyable type
@@ -383,9 +523,11 @@ void test_construct_from_options() {
   const auto created = TestHelpers::test_creation<gr::Solutions::KerrSchild>(
       "Mass: 0.5\n"
       "Spin: [0.1,0.2,0.3]\n"
-      "Center: [1.0,3.0,2.0]");
-  CHECK(created ==
-        gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}}));
+      "Center: [1.0,3.0,2.0]\n"
+      "Velocity: [0.5,0.4,0.3]");
+  CHECK(created == gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}},
+                                             {{1.0, 3.0, 2.0}},
+                                             {{0.5, 0.4, 0.3}}));
 }
 
 }  // namespace
@@ -401,18 +543,26 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_numerical_deriv_det_spatial_metric<Frame::Inertial>(DataVector(5));
   test_tag_retrieval<Frame::Inertial>(DataVector(5));
   test_tag_retrieval<Frame::Inertial>(0.0);
-  test_einstein_solution<Frame::Inertial>();
+  test_einstein_solution<Frame::Inertial>(true);
+  test_einstein_solution<Frame::Inertial>(false);
   test_zero_spin_optimization<Frame::Inertial>(DataVector(5));
   test_zero_spin_optimization<Frame::Inertial>(0.0);
+  test_boosted_for_zero_velocity<Frame::Inertial>(DataVector(5));
+  test_boosted_for_zero_velocity<Frame::Inertial>(0.0);
+  test_boosted_spacetime_metric<Frame::Inertial, double>(0.0);
 
   test_schwarzschild<Frame::Grid>(DataVector(5));
   test_schwarzschild<Frame::Grid>(0.0);
   test_numerical_deriv_det_spatial_metric<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(0.0);
-  test_einstein_solution<Frame::Grid>();
+  test_einstein_solution<Frame::Grid>(true);
+  test_einstein_solution<Frame::Grid>(false);
   test_zero_spin_optimization<Frame::Grid>(DataVector(5));
   test_zero_spin_optimization<Frame::Grid>(0.0);
+  test_boosted_for_zero_velocity<Frame::Grid>(DataVector(5));
+  test_boosted_for_zero_velocity<Frame::Grid>(0.0);
+  test_boosted_spacetime_metric<Frame::Grid, double>(0.0);
 
   CHECK_THROWS_WITH(
       []() {
@@ -429,13 +579,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   CHECK_THROWS_WITH(TestHelpers::test_creation<gr::Solutions::KerrSchild>(
                         "Mass: -0.5\n"
                         "Spin: [0.1,0.2,0.3]\n"
-                        "Center: [1.0,3.0,2.0]"),
+                        "Center: [1.0,3.0,2.0]\n"
+                        "Velocity: [0,0,0]"),
                     Catch::Matchers::ContainsSubstring(
                         "Value -0.5 is below the lower bound of 0"));
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<gr::Solutions::KerrSchild>(
           "Mass: 0.5\n"
           "Spin: [1.1,0.9,0.3]\n"
-          "Center: [1.0,3.0,2.0]"),
+          "Center: [1.0,3.0,2.0]\n"
+          "Velocity: [0,0,0]"),
       Catch::Matchers::ContainsSubstring("Spin magnitude must be < 1"));
 }
