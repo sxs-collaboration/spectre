@@ -9,10 +9,22 @@ import h5py
 import numpy as np
 import pandas as pd
 
+from spectre.support.DirectoryStructure import list_segments
 from spectre.Visualization.ReadH5 import to_dataframe
 from spectre.Visualization.ReadInputFile import find_event
 
 logger = logging.getLogger(__name__)
+
+
+def list_reduction_files(job: dict, input_file: dict):
+    reductions_file_name = input_file["Observers"]["ReductionFileName"] + ".h5"
+    if job["SegmentsDir"]:
+        return [
+            segment_dir.path / reductions_file_name
+            for segment_dir in list_segments(job["SegmentsDir"])
+        ]
+    else:
+        return [Path(job["WorkDir"]) / reductions_file_name]
 
 
 class ExecutableStatus:
@@ -189,6 +201,71 @@ class EvolutionStatus(ExecutableStatus):
         if field in ["Time", "Speed"]:
             return f"{value:g}"
         raise ValueError
+
+    def render_time_steps(self, input_file: dict, reduction_files: list):
+        import plotly.express as px
+        import streamlit as st
+
+        observe_time_event = find_event("ObserveTimeStep", input_file)
+        if observe_time_event is None:
+            st.warning("No 'ObserveTimeStep' event found in input file.")
+            return
+        subfile_name = observe_time_event["SubfileName"] + ".dat"
+        logger.debug(f"Reading time steps from subfile: '{subfile_name}'")
+
+        def get_time_steps(reductions_file):
+            with h5py.File(reductions_file, "r") as open_h5file:
+                return to_dataframe(open_h5file[subfile_name]).set_index("Time")
+
+        # Plot style
+        legend_layout = dict(
+            title=None,
+            orientation="h",
+            yanchor="bottom",
+            y=1,
+            xanchor="left",
+            x=0,
+        )
+
+        st.subheader("Time steps")
+        time_steps = pd.concat(map(get_time_steps, reduction_files))
+        fig = px.line(
+            time_steps,
+            y=[
+                "Effective time step",
+                "Minimum time step",
+                "Maximum time step",
+                "Slab size",
+            ],
+            log_y=True,
+        )
+        fig.update_layout(
+            legend=legend_layout,
+            xaxis=dict(title="Time [M]"),
+            yaxis=dict(exponentformat="e", title=None),
+        )
+        st.plotly_chart(fig)
+        run_speed = (
+            (
+                time_steps.index.diff() / time_steps["Maximum Walltime"].diff()
+                + time_steps.index.diff()
+                / time_steps["Minimum Walltime"].diff()
+            )
+            / 2
+            * 3600
+        )
+        fig = px.line(run_speed.rolling(30, min_periods=1).mean())
+        fig.update_layout(
+            xaxis_title="Time [M]",
+            yaxis_title="Simulation speed [M/h]",
+            showlegend=False,
+        )
+        st.plotly_chart(fig)
+
+    def render_dashboard(self, job: dict, input_file: dict):
+        return self.render_time_steps(
+            input_file, list_reduction_files(job, input_file)
+        )
 
 
 class EllipticStatus(ExecutableStatus):
