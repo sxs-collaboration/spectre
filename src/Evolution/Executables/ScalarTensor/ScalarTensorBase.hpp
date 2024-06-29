@@ -47,6 +47,7 @@
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/ProductOfConditions.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
+#include "Evolution/Systems/ScalarTensor/Constraints.hpp"
 #include "Evolution/Systems/ScalarTensor/Initialize.hpp"
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
@@ -267,7 +268,7 @@ struct ObserverTags {
       // The 4-index constraint is only implemented in 3d
       tmpl::list<
           gh::Tags::FourIndexConstraintCompute<volume_dim, Frame::Inertial>,
-          gh::Tags::FConstraintCompute<volume_dim, Frame::Inertial>,
+          ScalarTensor::Tags::FConstraintCompute<volume_dim, Frame::Inertial>,
           ::Tags::PointwiseL2NormCompute<
               gh::Tags::FConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
