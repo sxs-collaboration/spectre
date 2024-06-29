@@ -34,97 +34,18 @@ def _parse_modes(ctx, param, all_modes):
     return result
 
 
-@click.command(name="cce")
-@click.argument(
-    "h5_filename",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    nargs=1,
-)
-@click.option(
-    "--modes",
-    "-m",
-    multiple=True,
-    callback=_parse_modes,
-    required=True,
-    help=(
-        "Which mode to plot. Specified as 'l,m' (e.g. '--modes 2,2'). Will plot"
-        " both real and imaginary components unless '--real' or '--imag' are"
-        " specified. Can be specified multiple times."
-    ),
-)
-@click.option(
-    "--real",
-    is_flag=True,
-    default=False,
-    help="Plot only real modes. Mutually exclusive with '--imag'.",
-)
-@click.option(
-    "--imag",
-    is_flag=True,
-    default=False,
-    help="Plot only imaginary modes. Mutually exclusive with '--real'.",
-)
-@click.option(
-    "--extraction-radius",
-    "-r",
-    type=int,
-    help=(
-        "Extraction radius of data to plot as an int. If there is only one Cce"
-        " subfile, that one will be used and this option does not need to be"
-        " specified. The expected form of the Cce subfile is 'SpectreRXXXX.cce'"
-        " where XXXX is the zero-padded integer extraction radius. This option"
-        " is ignored if the backwards compatibility option '--cce-group'/'-d'"
-        " is specified."
-    ),
-)
-@click.option(
-    "--list-extraction-radii",
-    "-l",
-    is_flag=True,
-    default=False,
-    help="List Cce subfiles in the 'h5_filename' and exit.",
-)
-@click.option(
-    "--cce-group",
-    "-d",
-    "backward_cce_group",
-    help=(
-        "Option for backwards compatibility with an old version of CCE data."
-        " This is the group name of the CCE data in the 'h5_filename'"
-        " (typically Cce). This option should only be used if your CCE data was"
-        " produced with a version of SpECTRE prior to this Pull Request:"
-        " https://github.com/sxs-collaboration/spectre/pull/5985."
-    ),
-)
-# Plotting options
-@click.option(
-    "--x-bounds",
-    type=float,
-    nargs=2,
-    help="The lower and upper bounds of the x-axis.",
-)
-@click.option(
-    "--x-label",
-    help="The label on the x-axis.",
-)
-@click.option(
-    "--title",
-    "-t",
-    help="Title of the graph.",
-)
-@apply_stylesheet_command()
-@show_or_save_plot_command()
-def plot_cce_command(
+def plot_cce(
     h5_filename: str,
     modes: Sequence[str],
-    real: bool,
-    imag: bool,
-    extraction_radius: Optional[int],
-    list_extraction_radii: bool,
-    backward_cce_group: Optional[str],
-    x_bounds: Optional[Sequence[float]],
-    x_label: Optional[str],
-    title: Optional[str],
+    real: bool = False,
+    imag: bool = False,
+    extraction_radius: Optional[int] = None,
+    list_extraction_radii: bool = False,
+    backward_cce_group: Optional[str] = None,
+    x_bounds: Optional[Sequence[float]] = None,
+    x_label: Optional[str] = None,
+    title: Optional[str] = None,
+    fig: Optional[plt.Figure] = None,
 ):
     """
     Plot the Strain, News, and Psi0-Psi4 from the output of a SpECTRE CCE run.
@@ -233,8 +154,9 @@ def plot_cce_command(
         data = data[(data.index >= x_bounds[0]) & (data.index <= x_bounds[1])]
 
     # Set up the plots
-    fig, axes = plt.subplots(len(plot_quantities), 1, sharex=True)
-    axes = list(axes)
+    if fig is None:
+        fig = plt.figure(figsize=(8, 2 * len(plot_quantities)))
+    axes = list(fig.subplots(len(plot_quantities), 1, sharex=True))
     # Make the legend look a bit nicer
     divisor = 1 if (real or imag) else 2
     num_col = min(4, len(modes) / divisor)
@@ -276,9 +198,94 @@ def plot_cce_command(
         axes[-1].set_xlabel(x_label)
 
     # Plot needs to be fairly big
-    fig.set_size_inches(8, 2 * len(plot_quantities))
     if title:
         plt.suptitle(title)
+    return fig
+
+
+@click.command(name="cce", help=plot_cce.__doc__)
+@click.argument(
+    "h5_filename",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+    nargs=1,
+)
+@click.option(
+    "--modes",
+    "-m",
+    multiple=True,
+    callback=_parse_modes,
+    required=True,
+    help=(
+        "Which mode to plot. Specified as 'l,m' (e.g. '--modes 2,2'). Will plot"
+        " both real and imaginary components unless '--real' or '--imag' are"
+        " specified. Can be specified multiple times."
+    ),
+)
+@click.option(
+    "--real",
+    is_flag=True,
+    default=False,
+    help="Plot only real modes. Mutually exclusive with '--imag'.",
+)
+@click.option(
+    "--imag",
+    is_flag=True,
+    default=False,
+    help="Plot only imaginary modes. Mutually exclusive with '--real'.",
+)
+@click.option(
+    "--extraction-radius",
+    "-r",
+    type=int,
+    help=(
+        "Extraction radius of data to plot as an int. If there is only one Cce"
+        " subfile, that one will be used and this option does not need to be"
+        " specified. The expected form of the Cce subfile is 'SpectreRXXXX.cce'"
+        " where XXXX is the zero-padded integer extraction radius. This option"
+        " is ignored if the backwards compatibility option '--cce-group'/'-d'"
+        " is specified."
+    ),
+)
+@click.option(
+    "--list-extraction-radii",
+    "-l",
+    is_flag=True,
+    default=False,
+    help="List Cce subfiles in the 'h5_filename' and exit.",
+)
+@click.option(
+    "--cce-group",
+    "-d",
+    "backward_cce_group",
+    help=(
+        "Option for backwards compatibility with an old version of CCE data."
+        " This is the group name of the CCE data in the 'h5_filename'"
+        " (typically Cce). This option should only be used if your CCE data was"
+        " produced with a version of SpECTRE prior to this Pull Request:"
+        " https://github.com/sxs-collaboration/spectre/pull/5985."
+    ),
+)
+# Plotting options
+@click.option(
+    "--x-bounds",
+    type=float,
+    nargs=2,
+    help="The lower and upper bounds of the x-axis.",
+)
+@click.option(
+    "--x-label",
+    help="The label on the x-axis.",
+)
+@click.option(
+    "--title",
+    "-t",
+    help="Title of the graph.",
+)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
+def plot_cce_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    plot_cce(**kwargs)
 
 
 if __name__ == "__main__":

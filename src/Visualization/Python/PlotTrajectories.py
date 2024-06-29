@@ -114,6 +114,7 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
     ax4.grid(True)  # Add gridlines
 
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
+    return fig
 
 
 @click.command(name="trajectories")
@@ -169,7 +170,7 @@ def plot_trajectories_command(
     """
     AhA, AhB = import_A_and_B(h5_files, subfile_name_aha, subfile_name_ahb)
     fig = plt.figure(figsize=figsize)
-    plot_trajectory(AhA[::sample_rate], AhB[::sample_rate], fig)
+    return plot_trajectory(AhA[::sample_rate], AhB[::sample_rate], fig)
 
 
 if __name__ == "__main__":

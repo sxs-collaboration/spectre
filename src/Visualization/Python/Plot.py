@@ -12,6 +12,10 @@ import rich.progress
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_MPL_STYLESHEET = os.path.join(
+    os.path.dirname(__file__), "plots.mplstyle"
+)
+
 
 def apply_stylesheet_command():
     """Add a CLI option to apply a stylesheet for plotting"""
@@ -35,9 +39,7 @@ def apply_stylesheet_command():
         @functools.wraps(f)
         def command(stylesheet, **kwargs):
             # Apply the default stylesheet and the user-provided one
-            stylesheets = [
-                os.path.join(os.path.dirname(__file__), "plots.mplstyle")
-            ]
+            stylesheets = [DEFAULT_MPL_STYLESHEET]
             if stylesheet is not None:
                 stylesheets.append(stylesheet)
             plt.style.use(stylesheets)
