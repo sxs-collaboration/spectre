@@ -121,8 +121,7 @@ void compute_closure_impl(
         for (size_t j = i; j < spatial_dim; j++) {
           pressure_tensor->get(i, j)[s] =
               d_thick_e_pt_over_3 * inv_spatial_metric.get(i, j)[s] +
-              d_thin_e_pt_over_s_sqr * momentum_density.get(i)[s] *
-                  momentum_density.get(j)[s];
+              d_thin_e_pt_over_s_sqr * s_M.get(i)[s] * s_M.get(j)[s];
         }
       }
     }
@@ -216,9 +215,6 @@ void compute_closure_impl(
       } else if (fabs(zeta_j_sqr_minus_h_sqr(1.)) < root_find_tolerance) {
         get(*closure_factor)[s] = 1.;
       } else {
-        ERROR(
-            "This function is broken and effectively untested.  It will be "
-            "fixed later.");
         get(*closure_factor)[s] = RootFinder::toms748(
             zeta_j_sqr_minus_h_sqr, 1.e-15, 1., root_find_tolerance, 1.0e-15);
       }
@@ -233,15 +229,14 @@ void compute_closure_impl(
       get(*comoving_momentum_density_normal)[s] =
           h_0_t + h_thin_t * d_thin + h_thick_t * d_thick;
       for (size_t i = 0; i < spatial_dim; i++) {
-        comoving_momentum_density_spatial->get(i) =
+        comoving_momentum_density_spatial->get(i)[s] =
             -(h_0_v + h_thin_v * d_thin + h_thick_v * d_thick) * v_m.get(i)[s] -
             (h_0_f + h_thin_f * d_thin + h_thick_f * d_thick) *
                 momentum_density.get(i)[s];
         for (size_t j = i; j < spatial_dim; j++) {
           // Optically thin part of pressure tensor
-          pressure_tensor->get(i, j) = d_thin * e_pt *
-                                       momentum_density.get(i)[s] *
-                                       momentum_density.get(j)[s] / s_sqr_pt;
+          pressure_tensor->get(i, j)[s] =
+              d_thin * e_pt * s_M.get(i)[s] * s_M.get(j)[s] / s_sqr_pt;
         }
       }
       // Optically thick limit
@@ -256,7 +251,7 @@ void compute_closure_impl(
           ((2. * w_sqr_pt - 1.) * e_pt - 2. * w_sqr_pt * v_dot_f_pt);
       for (size_t i = 0; i < spatial_dim; i++) {
         for (size_t j = i; j < spatial_dim; j++) {
-          pressure_tensor->get(i, j) +=
+          pressure_tensor->get(i, j)[s] +=
               d_thick * (J_over_3 * (4. * w_sqr_pt * fluid_velocity.get(i)[s] *
                                          fluid_velocity.get(j)[s] +
                                      inv_spatial_metric.get(i, j)[s]) +
