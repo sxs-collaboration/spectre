@@ -695,13 +695,13 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =
-            *all_mortar_data.at(mortar_id).local().local_mortar_data();
+            *all_mortar_data.at(mortar_id).local().mortar_data();
       } else {
         const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
         neighbor_boundary_data_on_mortar.first =
-            all_mortar_data.at(mortar_id).local().local_mortar_data()->first;
+            all_mortar_data.at(mortar_id).local().mortar_data()->first;
         neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
-            all_mortar_data.at(mortar_id).local().local_mortar_data()->second,
+            all_mortar_data.at(mortar_id).local().mortar_data()->second,
             slice_extents, direction.dimension(), orientation);
       }
 

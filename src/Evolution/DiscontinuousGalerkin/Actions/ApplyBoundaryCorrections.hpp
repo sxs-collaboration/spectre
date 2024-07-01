@@ -336,7 +336,7 @@ bool receive_boundary_data_global_time_stepping(
                      << received_temporal_id_and_data.first);
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
-            mortar_data->at(mortar_id).neighbor().neighbor_mortar_data() =
+            mortar_data->at(mortar_id).neighbor().mortar_data() =
                 std::pair{received_mortar_data.second.interface_mesh,
                           std::move(received_mortar_data.second
                                         .boundary_correction_data.value())};
@@ -462,7 +462,7 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mesh->insert_or_assign(
                 mortar_id,
                 received_mortar_data->second.volume_mesh_ghost_cell_data);
-            neighbor_mortar_data.neighbor_mortar_data() =
+            neighbor_mortar_data.mortar_data() =
                 std::pair{received_mortar_data->second.interface_mesh,
                           std::move(received_mortar_data->second
                                         .boundary_correction_data.value())};
@@ -773,10 +773,9 @@ struct ApplyBoundaryCorrections {
               // Extract local and neighbor data, copy into Variables because
               // we store them in a std::vector for type erasure.
               const std::pair<Mesh<volume_dim - 1>, DataVector>&
-                  local_mesh_and_data = *local_mortar_data.local_mortar_data();
+                  local_mesh_and_data = *local_mortar_data.mortar_data();
               const std::pair<Mesh<volume_dim - 1>, DataVector>&
-                  neighbor_mesh_and_data =
-                      *neighbor_mortar_data.neighbor_mortar_data();
+                  neighbor_mesh_and_data = *neighbor_mortar_data.mortar_data();
               local_data_on_mortar.set_data_ref(
                   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                   const_cast<double*>(std::get<1>(local_mesh_and_data).data()),

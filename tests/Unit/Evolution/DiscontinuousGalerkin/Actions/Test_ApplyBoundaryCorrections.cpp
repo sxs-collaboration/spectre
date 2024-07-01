@@ -237,9 +237,8 @@ struct SetLocalMortarData {
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
-              mortar_data_ptr->at(mortar_id).local().local_mortar_data() =
-                  std::pair{face_mesh,
-                            std::move(type_erased_boundary_data_on_mortar)};
+              mortar_data_ptr->at(mortar_id).local().mortar_data() = std::pair{
+                  face_mesh, std::move(type_erased_boundary_data_on_mortar)};
             },
             make_not_null(&box));
         ++count;
@@ -267,7 +266,7 @@ struct SetLocalMortarData {
           count++;
           evolution::dg::MortarData<Metavariables::volume_dim>
               past_mortar_data{};
-          past_mortar_data.local_mortar_data() = std::pair{
+          past_mortar_data.mortar_data() = std::pair{
               face_mesh, std::move(type_erased_boundary_data_on_mortar)};
           Scalar<DataVector> local_face_normal_magnitude{
               face_mesh.number_of_grid_points()};
@@ -692,14 +691,13 @@ void test_impl(const Spectral::Quadrature quadrature,
       if (UseLocalTimeStepping) {
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
-          nhbr_mortar_data.neighbor_mortar_data() =
-              std::pair{face_mesh, flux_data};
+          nhbr_mortar_data.mortar_data() = std::pair{face_mesh, flux_data};
           mortar_data_history.at(mortar_id).remote().insert(
               neighbor_time_step_id, integration_order,
               std::move(nhbr_mortar_data));
         }
       } else {
-        all_mortar_data.at(mortar_id).neighbor().neighbor_mortar_data() =
+        all_mortar_data.at(mortar_id).neighbor().mortar_data() =
             std::pair{face_mesh, flux_data};
       }
       ++count;
@@ -799,9 +797,9 @@ void test_impl(const Spectral::Quadrature quadrature,
     Variables<mortar_tags_list> neighbor_data_on_mortar{
         mortar_mesh.number_of_grid_points()};
     const std::pair<Mesh<Dim - 1>, DataVector>& local_mesh_and_data =
-        *local_mortar_data.local_mortar_data();
+        *local_mortar_data.mortar_data();
     const std::pair<Mesh<Dim - 1>, DataVector>& neighbor_mesh_and_data =
-        *neighbor_mortar_data.neighbor_mortar_data();
+        *neighbor_mortar_data.mortar_data();
     std::copy(std::get<1>(local_mesh_and_data).begin(),
               std::get<1>(local_mesh_and_data).end(),
               local_data_on_mortar.data());

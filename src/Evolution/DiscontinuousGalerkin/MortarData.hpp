@@ -21,14 +21,15 @@ namespace evolution::dg {
  * \brief Data on the mortar used to compute the boundary correction for the
  * DG scheme.
  *
- * The class holds the local data that has been projected to the mortar as well
- * as the neighbor data that has been projected to the mortar. The local and
- * neighbor data is later used to compute the same unique boundary correction on
- * the mortar for both elements. That is, the final boundary correction
+ * The class holds the data that has been projected to one side of the mortar.
+ * It is meant to be used in a container (either MortarDataHolder or
+ * TimeSteppers::BoundaryHistory) that holds MortarData on each side of the
+ * mortar. The data is later used to compute the same unique boundary correction
+ * on the mortar for both elements. That is, the final boundary correction
  * computation is done twice: once on each element touching the mortar. However,
  * the computation is done in such a way that the results agree.
  *
- * In addition to the (type-erased) fields on both sides of the mortar, the face
+ * In addition to the (type-erased) fields on the mortar, the face
  * (not mortar!) mesh of the neighbor is stored. The mesh will be necessary
  * when hybridizing DG with finite difference or finite volume schemes
  * (DG-subcell).
@@ -112,25 +113,17 @@ class MortarData {
   void get_local_face_normal_magnitude(
       gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude) const;
 
-  auto local_mortar_data() const
+  /// @{
+  /// Data on the mortar
+  auto mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_;
+    return mortar_data_;
   }
 
-  auto neighbor_mortar_data() const
-      -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_;
+  auto mortar_data() -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
+    return mortar_data_;
   }
-
-  auto local_mortar_data()
-      -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return local_mortar_data_;
-  }
-
-  auto neighbor_mortar_data()
-      -> std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
-    return neighbor_mortar_data_;
-  }
+  /// @}
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -141,8 +134,7 @@ class MortarData {
   friend bool operator==(const MortarData<LocalDim>& lhs,
                          const MortarData<LocalDim>& rhs);
 
-  MortarType local_mortar_data_{};
-  MortarType neighbor_mortar_data_{};
+  MortarType mortar_data_{};
   DataVector local_geometric_quantities_{};
   bool using_volume_and_face_jacobians_{false};
   bool using_only_face_normal_magnitude_{false};

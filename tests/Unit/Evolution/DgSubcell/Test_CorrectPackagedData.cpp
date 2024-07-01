@@ -118,9 +118,9 @@ void test() {
     }();
 
     // Insert neighbor DG data.
-    upper_mortar_data.neighbor().neighbor_mortar_data() =
+    upper_mortar_data.neighbor().mortar_data() =
         std::pair{dg_face_mesh, upper_neighbor_data};
-    lower_mortar_data.neighbor().neighbor_mortar_data() =
+    lower_mortar_data.neighbor().mortar_data() =
         std::pair{dg_face_mesh, lower_neighbor_data};
 
     const Mesh<Dim - 1> subcell_face_mesh =
@@ -224,9 +224,9 @@ void test() {
       DataVector lower_local_data{dg_number_of_independent_components *
                                   dg_face_mesh.number_of_grid_points()};
       std::iota(lower_local_data.begin(), lower_local_data.end(), 1.0e7);
-      upper_mortar_data.local().local_mortar_data() =
+      upper_mortar_data.local().mortar_data() =
           std::pair{dg_face_mesh, upper_local_data};
-      lower_mortar_data.local().local_mortar_data() =
+      lower_mortar_data.local().mortar_data() =
           std::pair{dg_face_mesh, lower_local_data};
 
       evolution::dg::subcell::correct_package_data<true>(

@@ -1800,7 +1800,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                   &det_inv_jacobian, &get_tag, &mesh,
                                   &quadrature](const auto& mortar_data,
                                                const auto& mortar_id) {
-    CHECK_ITERABLE_APPROX(mortar_data.local_mortar_data()->second,
+    CHECK_ITERABLE_APPROX(mortar_data.mortar_data()->second,
                           compute_expected_mortar_data(mortar_id.direction(),
                                                        mortar_id.id(), true));
 
@@ -1861,7 +1861,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         get_tag(::evolution::dg::Tags::MortarData<Dim>{})
             .at(mortar_id_east)
             .local()
-            .local_mortar_data()
+            .mortar_data()
             ->second,
         compute_expected_mortar_data(mortar_id_east.direction(),
                                      mortar_id_east.id(), true));
@@ -1928,7 +1928,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
                                 .at(mortar_id_south)
                                 .local()
-                                .local_mortar_data()
+                                .mortar_data()
                                 ->second,
                             compute_expected_mortar_data(
                                 Direction<Dim>::lower_eta(), south_id, true));
@@ -1953,9 +1953,8 @@ void test_impl(const Spectral::Quadrature quadrature,
          get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
       // When doing local time stepping the MortarData should've been moved into
       // the MortarDataHistory.
-      CHECK_FALSE(mortar_data.second.local().local_mortar_data().has_value());
-      CHECK_FALSE(
-          mortar_data.second.neighbor().neighbor_mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.local().mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.neighbor().mortar_data().has_value());
     }
   }
 }

@@ -584,10 +584,10 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
     auto& the_mortar_data = mortar_data[DirectionalId<3>{
         direction, *element.neighbors().at(direction).begin()}];
     if (local_data) {
-      the_mortar_data.local().local_mortar_data() =
+      the_mortar_data.local().mortar_data() =
           std::pair{interface_mesh, std::move(interface_data)};
     } else {
-      the_mortar_data.neighbor().neighbor_mortar_data() =
+      the_mortar_data.neighbor().mortar_data() =
           std::pair{interface_mesh, std::move(interface_data)};
     }
   };

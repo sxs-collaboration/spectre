@@ -252,7 +252,7 @@ void internal_mortar_data_impl(
       } else {
         // Can use the local_mortar_data
         auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local().local_mortar_data();
+            mortar_data_ptr->at(mortar_id).local().mortar_data();
         // If this isn't the first time, set the face mesh
         if (LIKELY(local_mortar_data_opt.has_value())) {
           local_mortar_data_opt->first = face_mesh;
@@ -297,7 +297,7 @@ void internal_mortar_data_impl(
 
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local().local_mortar_data();
+            mortar_data_ptr->at(mortar_id).local().mortar_data();
 
         // If this isn't the first time, set the face mesh
         if (LIKELY(local_mortar_data_opt.has_value())) {

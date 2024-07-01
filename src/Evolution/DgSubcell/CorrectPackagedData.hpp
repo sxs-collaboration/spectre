@@ -160,56 +160,37 @@ void correct_package_data(
   // Project DG data to the subcells
   if (auto neighbor_mortar_data_it = mortar_data.find(upper_mortar_id);
       has_upper_neighbor and neighbor_mortar_data_it != mortar_data.end()) {
-    if (neighbor_mortar_data_it->second.neighbor()
-            .neighbor_mortar_data()
-            .has_value()) {
+    if (neighbor_mortar_data_it->second.neighbor().mortar_data().has_value()) {
       project_dg_data_to_subcells(
           upper_packaged_data,
           subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,
-          neighbor_mortar_data_it->second.neighbor()
-              .neighbor_mortar_data()
-              ->first,
-          neighbor_mortar_data_it->second.neighbor()
-              .neighbor_mortar_data()
-              ->second);
+          neighbor_mortar_data_it->second.neighbor().mortar_data()->first,
+          neighbor_mortar_data_it->second.neighbor().mortar_data()->second);
     }
     if constexpr (OverwriteInternalMortarData) {
-      if (neighbor_mortar_data_it->second.local()
-              .local_mortar_data()
-              .has_value()) {
+      if (neighbor_mortar_data_it->second.local().mortar_data().has_value()) {
         project_dg_data_to_subcells(
             lower_packaged_data,
             subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,
-            neighbor_mortar_data_it->second.local().local_mortar_data()->first,
-            neighbor_mortar_data_it->second.local()
-                .local_mortar_data()
-                ->second);
+            neighbor_mortar_data_it->second.local().mortar_data()->first,
+            neighbor_mortar_data_it->second.local().mortar_data()->second);
       }
     }
   }
   if (auto neighbor_mortar_data_it = mortar_data.find(lower_mortar_id);
       has_lower_neighbor and neighbor_mortar_data_it != mortar_data.end()) {
-    if (neighbor_mortar_data_it->second.neighbor()
-            .neighbor_mortar_data()
-            .has_value()) {
-      project_dg_data_to_subcells(lower_packaged_data, 0,
-                                  neighbor_mortar_data_it->second.neighbor()
-                                      .neighbor_mortar_data()
-                                      ->first,
-                                  neighbor_mortar_data_it->second.neighbor()
-                                      .neighbor_mortar_data()
-                                      ->second);
+    if (neighbor_mortar_data_it->second.neighbor().mortar_data().has_value()) {
+      project_dg_data_to_subcells(
+          lower_packaged_data, 0,
+          neighbor_mortar_data_it->second.neighbor().mortar_data()->first,
+          neighbor_mortar_data_it->second.neighbor().mortar_data()->second);
     }
     if constexpr (OverwriteInternalMortarData) {
-      if (neighbor_mortar_data_it->second.local()
-              .local_mortar_data()
-              .has_value()) {
+      if (neighbor_mortar_data_it->second.local().mortar_data().has_value()) {
         project_dg_data_to_subcells(
             upper_packaged_data, 0,
-            neighbor_mortar_data_it->second.local().local_mortar_data()->first,
-            neighbor_mortar_data_it->second.local()
-                .local_mortar_data()
-                ->second);
+            neighbor_mortar_data_it->second.local().mortar_data()->first,
+            neighbor_mortar_data_it->second.local().mortar_data()->second);
       }
     }
   }

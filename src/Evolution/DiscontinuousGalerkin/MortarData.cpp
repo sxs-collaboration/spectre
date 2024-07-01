@@ -25,8 +25,8 @@ void MortarData<Dim>::insert_local_geometric_quantities(
     const Scalar<DataVector>& local_volume_det_inv_jacobian,
     const Scalar<DataVector>& local_face_det_jacobian,
     const Scalar<DataVector>& local_face_normal_magnitude) {
-  ASSERT(local_mortar_data_.has_value(),
-         "Must set local mortar data before setting the geometric quantities.");
+  ASSERT(mortar_data_.has_value(),
+         "Must set mortar data before setting the geometric quantities.");
   ASSERT(local_face_det_jacobian[0].size() ==
              local_face_normal_magnitude[0].size(),
          "The determinant of the local face Jacobian has "
@@ -35,9 +35,9 @@ void MortarData<Dim>::insert_local_geometric_quantities(
              << local_face_normal_magnitude[0].size()
              << " but they must be the same");
   ASSERT(local_face_det_jacobian[0].size() ==
-             std::get<0>(*local_mortar_data()).number_of_grid_points(),
+             std::get<0>(*mortar_data()).number_of_grid_points(),
          "The number of grid points ("
-             << std::get<0>(*local_mortar_data()).number_of_grid_points()
+             << std::get<0>(*mortar_data()).number_of_grid_points()
              << ") on the local face must match the number of grid points "
                 "passed in for the face Jacobian determinant and normal vector "
                 "magnitude ("
@@ -69,8 +69,8 @@ void MortarData<Dim>::insert_local_geometric_quantities(
 template <size_t Dim>
 void MortarData<Dim>::insert_local_face_normal_magnitude(
     const Scalar<DataVector>& local_face_normal_magnitude) {
-  ASSERT(local_mortar_data_.has_value(),
-         "Must set local mortar data before setting the local face normal.");
+  ASSERT(mortar_data_.has_value(),
+         "Must set mortar data before setting the local face normal.");
   ASSERT(not using_volume_and_face_jacobians_,
          "The face normal magnitude cannot be inserted if the face normal, "
          "volume inverse Jacobian determinant, and face Jacobian determinant "
@@ -88,12 +88,12 @@ template <size_t Dim>
 void MortarData<Dim>::get_local_volume_det_inv_jacobian(
     const gsl::not_null<Scalar<DataVector>*> local_volume_det_inv_jacobian)
     const {
-  ASSERT(local_mortar_data_.has_value(),
-         "Must set local mortar data before getting the local volume inverse "
+  ASSERT(mortar_data_.has_value(),
+         "Must set mortar data before getting the local volume inverse "
          "Jacobian determinant.");
   ASSERT(
       local_geometric_quantities_.size() >
-          2 * std::get<0>(*local_mortar_data()).number_of_grid_points(),
+          2 * std::get<0>(*mortar_data()).number_of_grid_points(),
       "Cannot retrieve the volume inverse Jacobian determinant because it was "
       "not inserted.");
   ASSERT(
@@ -104,7 +104,7 @@ void MortarData<Dim>::get_local_volume_det_inv_jacobian(
          "Inconsistent internal state: we are apparently using both the volume "
          "and face Jacobians, as well as only the face normal.");
   const size_t num_face_points =
-      std::get<0>(*local_mortar_data()).number_of_grid_points();
+      std::get<0>(*mortar_data()).number_of_grid_points();
   const size_t num_volume_points =
       local_geometric_quantities_.size() - 2 * num_face_points;
   get(*local_volume_det_inv_jacobian)
@@ -116,11 +116,11 @@ void MortarData<Dim>::get_local_volume_det_inv_jacobian(
 template <size_t Dim>
 void MortarData<Dim>::get_local_face_det_jacobian(
     const gsl::not_null<Scalar<DataVector>*> local_face_det_jacobian) const {
-  ASSERT(local_mortar_data_.has_value(),
-         "Must set local mortar data before getting the local face Jacobian "
+  ASSERT(mortar_data_.has_value(),
+         "Must set mortar data before getting the local face Jacobian "
          "determinant.");
   ASSERT(local_geometric_quantities_.size() >
-             2 * std::get<0>(*local_mortar_data()).number_of_grid_points(),
+             2 * std::get<0>(*mortar_data()).number_of_grid_points(),
          "Cannot retrieve the face Jacobian determinant because it was not "
          "inserted.");
   ASSERT(using_volume_and_face_jacobians_,
@@ -130,7 +130,7 @@ void MortarData<Dim>::get_local_face_det_jacobian(
          "Inconsistent internal state: we are apparently using both the volume "
          "and face Jacobians, as well as only the face normal.");
   const size_t num_face_points =
-      std::get<0>(*local_mortar_data()).number_of_grid_points();
+      std::get<0>(*mortar_data()).number_of_grid_points();
   const size_t offset =
       local_geometric_quantities_.size() - 2 * num_face_points;
   get(*local_face_det_jacobian)
@@ -145,11 +145,11 @@ template <size_t Dim>
 void MortarData<Dim>::get_local_face_normal_magnitude(
     const gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude)
     const {
-  ASSERT(local_mortar_data_.has_value(),
+  ASSERT(mortar_data_.has_value(),
          "Must set local mortar data before getting the local face normal "
          "magnitude.");
   const size_t num_face_points =
-      std::get<0>(*local_mortar_data()).number_of_grid_points();
+      std::get<0>(*mortar_data()).number_of_grid_points();
   ASSERT(local_geometric_quantities_.size() == num_face_points or
              local_geometric_quantities_.size() > 2 * num_face_points,
          "Cannot retrieve the face normal magnitude because it was not "
@@ -165,8 +165,7 @@ void MortarData<Dim>::get_local_face_normal_magnitude(
 
 template <size_t Dim>
 void MortarData<Dim>::pup(PUP::er& p) {
-  p | local_mortar_data_;
-  p | neighbor_mortar_data_;
+  p | mortar_data_;
   p | local_geometric_quantities_;
   p | using_volume_and_face_jacobians_;
   p | using_only_face_normal_magnitude_;
@@ -174,8 +173,7 @@ void MortarData<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 bool operator==(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
-  return lhs.local_mortar_data() == rhs.local_mortar_data() and
-         lhs.neighbor_mortar_data() == rhs.neighbor_mortar_data() and
+  return lhs.mortar_data() == rhs.mortar_data() and
          lhs.local_geometric_quantities_ == rhs.local_geometric_quantities_ and
          lhs.using_volume_and_face_jacobians_ ==
              rhs.using_volume_and_face_jacobians_ and
@@ -190,8 +188,7 @@ bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
 
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data) {
-  os << "LocalMortarData: " << mortar_data.local_mortar_data() << "\n";
-  os << "NeighborMortarData: " << mortar_data.neighbor_mortar_data() << "\n";
+  os << "MortarData: " << mortar_data.mortar_data() << "\n";
   return os;
 }
 
