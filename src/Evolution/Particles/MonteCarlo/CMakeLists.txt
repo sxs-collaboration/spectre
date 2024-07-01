@@ -29,11 +29,16 @@ spectre_target_headers(
   EmitPackets.tpp
   EvolvePackets.hpp
   EvolvePacketsInElement.tpp
+  GhostZoneCommunication.hpp
+  GhostZoneCommunicationStep.hpp
+  GhostZoneCommunicationTags.hpp
   ImplicitMonteCarloCorrections.tpp
   InverseJacobianInertialToFluidCompute.hpp
+  MortarData.hpp
   NeutrinoInteractionTable.hpp
   Packet.hpp
   Scattering.hpp
+  Tags.hpp
   TakeTimeStep.tpp
   TemplatedLocalFunctions.hpp
   )

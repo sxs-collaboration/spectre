@@ -35,25 +35,42 @@ struct Packet {
     momentum[2] = p_z_;
   }
 
+  /// Default constructor needed to make Packet puppable
+  /// For the same reason, we have default initialization
+  /// for a number of member variables to unphysical values.
+  Packet()
+      : species{0},
+        number_of_neutrinos{0},
+        index_of_closest_grid_point{0},
+        time{-1.0},
+        momentum_upper_t{0.0} {
+    coordinates[0] = 0.0;
+    coordinates[1] = 0.0;
+    coordinates[2] = 0.0;
+    momentum[0] = 0.0;
+    momentum[1] = 0.0;
+    momentum[2] = 0.0;
+  }
+
   /// Species of neutrinos (in the code, just an index used to access the
   /// right interaction rates; typically \f$0=\nu_e, 1=\nu_a, 2=\nu_x\f$)
-  size_t species;
+  size_t species = std::numeric_limits<size_t>::max();
 
   /// Number of neutrinos represented by current packet
   /// Note that this number is rescaled so that
   /// `Energy_of_packet = N * Energy_of_neutrinos`
   /// with the packet energy in G=Msun=c=1 units but
   /// the neutrino energy in MeV!
-  double number_of_neutrinos;
+  double number_of_neutrinos = std::numeric_limits<double>::signaling_NaN();
 
   /// Index of the closest point on the FD grid.
-  size_t index_of_closest_grid_point;
+  size_t index_of_closest_grid_point = std::numeric_limits<size_t>::max();
 
   /// Current time
-  double time;
+  double time = std::numeric_limits<double>::signaling_NaN();
 
   /// Stores \f$p^t\f$
-  double momentum_upper_t;
+  double momentum_upper_t = std::numeric_limits<double>::signaling_NaN();
 
   /// Coordinates of the packet, in element logical coordinates
   tnsr::I<double, 3, Frame::ElementLogical> coordinates;
@@ -70,6 +87,22 @@ struct Packet {
   void renormalize_momentum(
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& lapse);
+
+  void pup(PUP::er& p);
+
+  /// Overloaded comparison operator. Useful for test; in an actual simulation
+  /// two distinct packets are not truly "identical" as they represent different
+  /// particles.
+  bool operator==(const Packet& rhs) const {
+    return (this->species == rhs.species) and
+           (this->number_of_neutrinos == rhs.number_of_neutrinos) and
+           (this->index_of_closest_grid_point ==
+            rhs.index_of_closest_grid_point) and
+           (this->time == rhs.time) and
+           (this->momentum_upper_t == rhs.momentum_upper_t) and
+           (this->coordinates == rhs.coordinates) and
+           (this->momentum == rhs.momentum);
+  };
 };
 
 /*!

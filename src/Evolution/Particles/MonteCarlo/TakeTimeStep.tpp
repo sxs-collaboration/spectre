@@ -37,7 +37,7 @@ void combine_ghost_data(
       }
     }
   }
-  // Loop over each direction. We assume at most one neighber in each
+  // Loop over each direction. We assume at most one neighbor in each
   // direction.
   for (auto& [direction_id, ghost_data_dir] : ghost_data) {
     if (ghost_data_dir) {
