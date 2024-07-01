@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AdmLinearMomentum.cpp
   ExtrinsicCurvature.cpp
   LongitudinalOperator.cpp
   SpacetimeQuantities.cpp
@@ -17,6 +18,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AdmLinearMomentum.hpp
   ExtrinsicCurvature.hpp
   LongitudinalOperator.hpp
   SpacetimeQuantities.hpp
