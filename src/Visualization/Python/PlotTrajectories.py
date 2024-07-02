@@ -17,7 +17,11 @@ from spectre.Visualization.Plot import (
 )
 
 
-def import_A_and_B(filenames, subfile_name_aha, subfile_name_ahb):
+def import_A_and_B(
+    filenames,
+    subfile_name_aha="ApparentHorizons/ControlSystemAhA_Centers.dat",
+    subfile_name_ahb="ApparentHorizons/ControlSystemAhB_Centers.dat",
+):
     A_data = []
     B_data = []
 
@@ -25,12 +29,12 @@ def import_A_and_B(filenames, subfile_name_aha, subfile_name_ahb):
         with h5py.File(filename, "r") as file:
             A_data.append(
                 np.array(
-                    file[subfile_name_aha][:, [4, 5, 6]]
+                    file[subfile_name_aha][:, [0, 4, 5, 6]]
                 )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
             )
             B_data.append(
                 np.array(
-                    file[subfile_name_ahb][:, [4, 5, 6]]
+                    file[subfile_name_ahb][:, [0, 4, 5, 6]]
                 )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
             )
 
@@ -54,10 +58,10 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
     value of 15, to speed up the plots and avoid memory error.
 
     Arguments:
-    AhA: Array of shape (num_points, 3) with the coordinates of
-    the first object.
-    AhB: Array of shape (num_points, 3) with the coordinates of
-    the second object.
+    AhA: Array of shape (num_points, 4) with the time and coordinates of
+      the first object.
+    AhB: Array of shape (num_points, 4) with the time and coordinates of
+      the second object.
     fig: Matplotlib figure object used for plotting. Subplots will be added to
       this figure. If None, a new figure will be created.
     """
@@ -66,10 +70,10 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
 
     # Plot 3D trajectories
     ax1 = fig.add_subplot(2, 2, 1, projection="3d")
-    ax1.plot(*AhA.T, color="C0", label="AhA")
-    ax1.scatter(*AhA[-1], color="C0")
-    ax1.plot(*AhB.T, color="C1", label="AhB")
-    ax1.scatter(*AhB[-1], color="C1")
+    ax1.plot(*AhA[:, 1:].T, color="C0", label="AhA")
+    ax1.scatter(*AhA[-1, 1:], color="C0")
+    ax1.plot(*AhB[:, 1:].T, color="C1", label="AhB")
+    ax1.scatter(*AhB[-1, 1:], color="C1")
     ax1.set_xlabel("X")
     ax1.set_ylabel("Y")
     ax1.set_zlabel("Z")
@@ -77,7 +81,7 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
     ax1.legend()
 
     # Calculate coordinate separation in 3D
-    separation_3d = AhA - AhB
+    separation_3d = AhA[:, 1:] - AhB[:, 1:]
 
     # Plot 3D coordinate separation
     ax2 = fig.add_subplot(2, 2, 2, projection="3d")
@@ -90,10 +94,10 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
 
     # Plot 2D trajectories
     ax3 = fig.add_subplot(2, 2, 3)
-    ax3.plot(*AhA[:, 0:2].T, label="AhA", color="C0")
-    ax3.scatter(*AhA[-1, 0:2], color="C0")
-    ax3.plot(*AhB[:, 0:2].T, label="AhB", color="C1")
-    ax3.scatter(*AhB[-1, 0:2], color="C1")
+    ax3.plot(*AhA[:, 1:3].T, label="AhA", color="C0")
+    ax3.scatter(*AhA[-1, 1:3], color="C0")
+    ax3.plot(*AhB[:, 1:3].T, label="AhB", color="C1")
+    ax3.scatter(*AhB[-1, 1:3], color="C1")
     ax3.set_xlabel("x")
     ax3.set_ylabel("y")
     ax3.legend()
@@ -102,7 +106,7 @@ def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
     ax3.grid(True)  # Add gridlines
 
     # Calculate coordinate separation in 2D
-    separation_2d = AhA[:, 0:2] - AhB[:, 0:2]
+    separation_2d = AhA[:, 1:3] - AhB[:, 1:3]
     # Plot coordinate separation in 2D
     ax4 = fig.add_subplot(2, 2, 4)
     ax4.plot(*separation_2d.T, color="black")
