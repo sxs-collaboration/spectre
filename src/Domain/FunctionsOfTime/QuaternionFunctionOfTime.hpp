@@ -25,7 +25,7 @@ namespace domain::FunctionsOfTime {
  *
  * \details This FunctionOfTime stores quaternions that will be used in the
  * time-dependent rotation map as well as the orbital angular velocity that
- * will be controlled by the rotation control sytem. To get the quaternion, an
+ * will be controlled by the rotation control system. To get the quaternion, an
  * ODE is solved of the form \f$ \dot{q} = \frac{1}{2} q \times \omega \f$
  * where \f$ \omega \f$ is the orbital angular velocity which is stored
  * internally as the derivative of an angle `PiecewisePolynomial`, and
@@ -144,6 +144,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   std::array<DataVector, 3> angle_func_and_2_derivs(const double t) const {
     return angle_f_of_t_.func_and_2_derivs(t);
   }
+
+  /// Returns the full angle the quaternion has rotated through at an arbitrary
+  /// time `t`.
+  double full_angle(const double t) const;
 
  private:
   template <size_t LocalMaxDeriv>

@@ -4,7 +4,9 @@
 set(LIBRARY "Test_EvolutionTriggers")
 
 set(LIBRARY_SOURCES
+  Test_FractionOfOrbit.cpp
   Test_SeparationLessThan.cpp
+  Test_NumberOfOrbits.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
