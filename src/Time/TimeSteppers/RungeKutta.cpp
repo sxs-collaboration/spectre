@@ -4,9 +4,13 @@
 #include "Time/TimeSteppers/RungeKutta.hpp"
 
 #include <algorithm>
+#include <optional>
 
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -78,6 +82,27 @@ void compute_substep(const gsl::not_null<T*> u,
 }
 
 template <typename T>
+void step_error(const gsl::not_null<T*> u_error,
+                const ConstUntypedHistory<T>& history, const double dt,
+                const RungeKutta::ButcherTableau& tableau) {
+  const auto& coefficients = tableau.result_coefficients;
+  const auto& error_coefficients = tableau.error_coefficients;
+
+  *u_error = (coefficients[0] - error_coefficients[0]) * dt *
+             history.back().derivative;
+  const size_t num_coefficients =
+      std::max(coefficients.size(), error_coefficients.size());
+  for (size_t i = 1; i < num_coefficients; ++i) {
+    const double coefficient =
+        (i < coefficients.size() ? coefficients[i] : 0.0) -
+        (i < error_coefficients.size() ? error_coefficients[i] : 0.0);
+    if (coefficient != 0.0) {
+      *u_error += coefficient * dt * history.substeps()[i - 1].derivative;
+    }
+  }
+}
+
+template <typename T>
 void update_u_impl_with_tableau(const gsl::not_null<T*> u,
                                 const ConstUntypedHistory<T>& history,
                                 const TimeDelta& time_step,
@@ -109,31 +134,30 @@ void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 }
 
 template <typename T>
-bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
-                               const gsl::not_null<T*> u_error,
-                               const ConstUntypedHistory<T>& history,
-                               const TimeDelta& time_step) const {
+std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
   ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
   const auto& tableau = butcher_tableau();
   const auto number_of_substeps = number_of_substeps_for_error();
-  update_u_impl_with_tableau(u, history, time_step, tableau,
-                             number_of_substeps);
-
   const size_t substep =
       history.at_step_start() ? 0 : history.substeps().size();
-
-  if (substep < number_of_substeps - 1) {
-    return false;
+  std::optional<StepperErrorEstimate> error{};
+  if (substep == number_of_substeps - 1 and tolerances.has_value()) {
+    const double dt = time_step.value();
+    step_error(u, history, dt, tableau);
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step, order() - 1,
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 
-  const double dt = time_step.value();
-  compute_substep(u_error, history, dt, tableau.error_coefficients);
-  *u_error = *u - *u_error;
-
-  return true;
+  update_u_impl_with_tableau(u, history, time_step, tableau,
+                             number_of_substeps);
+  return error;
 }
 
 template <typename T>

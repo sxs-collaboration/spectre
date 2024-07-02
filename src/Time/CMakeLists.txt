@@ -12,8 +12,11 @@ spectre_target_sources(
   ApproximateTime.cpp
   ChooseLtsStepSize.cpp
   History.cpp
+  LargestStepperError.cpp
   SelfStart.cpp
   Slab.cpp
+  StepperErrorEstimate.cpp
+  StepperErrorTolerances.cpp
   Time.cpp
   TimeSequence.cpp
   TimeStepId.cpp
@@ -30,9 +33,11 @@ spectre_target_headers(
   ChooseLtsStepSize.hpp
   EvolutionOrdering.hpp
   History.hpp
+  LargestStepperError.hpp
   SelfStart.hpp
   Slab.hpp
   StepperErrorEstimate.hpp
+  StepperErrorTolerances.hpp
   TakeStep.hpp
   Time.hpp
   TimeSequence.hpp

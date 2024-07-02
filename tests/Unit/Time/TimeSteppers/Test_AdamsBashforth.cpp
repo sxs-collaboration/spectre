@@ -51,7 +51,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
     TimeStepperTestUtils::check_dense_output(stepper, {10, 30}, 1, true);
 
     CHECK(stepper.order() == order);
-    CHECK(stepper.error_estimate_order() == order - 1);
 
     TimeStepperTestUtils::stability_test(stepper);
   }

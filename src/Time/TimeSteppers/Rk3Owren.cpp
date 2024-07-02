@@ -7,8 +7,6 @@ namespace TimeSteppers {
 
 size_t Rk3Owren::order() const { return 3; }
 
-size_t Rk3Owren::error_estimate_order() const { return 2; }
-
 // The stability polynomial is
 //
 //   p(z) = \sum_{n=0}^{stages-1} alpha_n z^n / n!,

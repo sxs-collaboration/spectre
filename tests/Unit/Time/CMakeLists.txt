@@ -10,8 +10,10 @@ set(LIBRARY_SOURCES
   Test_ChooseLtsStepSize.cpp
   Test_EvolutionOrdering.cpp
   Test_History.cpp
+  Test_LargestStepperError.cpp
   Test_SelfStart.cpp
   Test_Slab.cpp
+  Test_StepperErrorTolerances.cpp
   Test_TakeStep.cpp
   Test_Time.cpp
   Test_TimeSequence.cpp

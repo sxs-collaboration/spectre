@@ -16,7 +16,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.ClassicalRungeKutta4",
   const TimeSteppers::ClassicalRungeKutta4 stepper{};
 
   CHECK(stepper.order() == 4);
-  CHECK(stepper.error_estimate_order() == 3);
   CHECK(stepper.number_of_substeps() == 4);
   CHECK(stepper.number_of_substeps_for_error() == 5);
   TestHelpers::RungeKutta::check_tableau(stepper);

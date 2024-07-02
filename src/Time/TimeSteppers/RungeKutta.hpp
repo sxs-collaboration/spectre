@@ -5,13 +5,16 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+struct StepperErrorTolerances;
 class TimeDelta;
 namespace TimeSteppers {
 template <typename T>
@@ -28,10 +31,10 @@ namespace TimeSteppers {
  *
  * Implements most of the virtual methods of TimeStepper for a generic
  * Runge-Kutta method.  From the TimeStepper interface, derived
- * classes need only implement `order`, `error_estimate_order`, and
- * `stable_step`, and should not include the `TIME_STEPPER_*` macros.
- * All other methods are implemented in terms of a Butcher tableau
- * returned by the `butcher_tableau` function.
+ * classes need only implement `order` and `stable_step`, and should
+ * not include the `TIME_STEPPER_*` macros.  All other methods are
+ * implemented in terms of a Butcher tableau returned by the
+ * `butcher_tableau` function.
  */
 class RungeKutta : public virtual TimeStepper {
  public:
@@ -58,7 +61,8 @@ class RungeKutta : public virtual TimeStepper {
     std::vector<double> result_coefficients;
     /*!
      * The coefficients for an error estimate.  Often called
-     * \f$b^*\f$ or \f$\hat{b}\f$ in the literature.
+     * \f$b^*\f$ or \f$\hat{b}\f$ in the literature.  This is assumed
+     * to be one order less accurate than the main method.
      */
     std::vector<double> error_coefficients;
     /*!
@@ -100,9 +104,10 @@ class RungeKutta : public virtual TimeStepper {
                      const TimeDelta& time_step) const;
 
   template <typename T>
-  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     const ConstUntypedHistory<T>& history,
-                     const TimeDelta& time_step) const;
+  std::optional<StepperErrorEstimate> update_u_impl(
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+      const TimeDelta& time_step,
+      const std::optional<StepperErrorTolerances>& tolerances) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;

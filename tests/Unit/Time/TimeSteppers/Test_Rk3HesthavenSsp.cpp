@@ -15,7 +15,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3HesthavenSsp", "[Unit][Time]") {
   const TimeSteppers::Rk3HesthavenSsp stepper{};
 
   CHECK(stepper.order() == 3);
-  CHECK(stepper.error_estimate_order() == 2);
   CHECK(stepper.number_of_substeps() == 3);
   CHECK(stepper.number_of_substeps_for_error() == 3);
 

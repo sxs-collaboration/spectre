@@ -7,8 +7,6 @@ namespace TimeSteppers {
 
 size_t Rk3Kennedy::order() const { return 3; }
 
-size_t Rk3Kennedy::error_estimate_order() const { return 2; }
-
 double Rk3Kennedy::stable_step() const { return 1.832102281377816; }
 
 size_t Rk3Kennedy::imex_order() const { return 3; }

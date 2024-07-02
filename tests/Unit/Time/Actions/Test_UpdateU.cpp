@@ -20,8 +20,10 @@
 #include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -201,25 +203,31 @@ void test_stepper_error() {
   std::unique_ptr<TimeStepper> time_stepper =
       std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
 
-  auto box =
-      db::create<db::AddSimpleTags<
-                     Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-                     Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                     ::Tags::IsUsingTimeSteppingErrorControl, variables_tag,
-                     history_tag, Tags::StepperErrors<variables_tag>>,
-                 time_stepper_ref_tags<TimeStepper>>(
-          std::move(time_stepper), initial_id,
-          time_stepper->next_time_id(initial_id, initial_time_step),
-          initial_time_step, true, 1., history_tag::type{3},
-          Tags::StepperErrors<variables_tag>::type{});
+  auto box = db::create<
+      db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>,
+                        Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                        Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl,
+                        ::Tags::StepperErrorTolerances<variables_tag>,
+                        variables_tag, history_tag,
+                        Tags::StepperErrors<variables_tag>>,
+      time_stepper_ref_tags<TimeStepper>>(
+      std::move(time_stepper), initial_id,
+      time_stepper->next_time_id(initial_id, initial_time_step),
+      initial_time_step, true,
+      std::optional<StepperErrorTolerances>{{.absolute = 1.0, .relative = 0.0}},
+      1., history_tag::type{3}, Tags::StepperErrors<variables_tag>::type{});
 
-  const auto do_substep = [&box]() {
+  const auto do_substep = [&box](const bool repeat_substep = false) {
     db::mutate<history_tag>(
         [](const gsl::not_null<typename history_tag::type*> history,
            const TimeStepId& time_step_id,
            const double vars) { history->insert(time_step_id, vars, vars); },
         make_not_null(&box), db::get<Tags::TimeStepId>(box),
         db::get<variables_tag>(box));
+
+    if (repeat_substep) {
+      update_u<SingleVariableSystem>(make_not_null(&box));
+    }
 
     update_u<SingleVariableSystem>(make_not_null(&box));
 
@@ -260,7 +268,7 @@ void test_stepper_error() {
   CHECK(not db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
-  do_substep();
+  do_substep(true);
   REQUIRE(db::get<error_tag>(box)[0].has_value());
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());

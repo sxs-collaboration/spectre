@@ -6,12 +6,16 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <pup.h>
 
 #include "Time/ApproximateTime.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
+#include "Time/LargestStepperError.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeSteppers/AdamsCoefficients.hpp"
 #include "Time/TimeSteppers/AdamsLts.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -31,8 +35,8 @@ namespace {
 template <typename T, typename TimeType>
 void update_u_common(const gsl::not_null<T*> u,
                      const ConstUntypedHistory<T>& history,
-                     const TimeType& step_end, const size_t method_order,
-                     const bool corrector) {
+                     const TimeType& step_end, const bool corrector) {
+  const auto method_order = history.integration_order();
   ASSERT(history.size() >= method_order - 1, "Insufficient history");
   // Pass in whether to run the predictor or corrector even though we
   // can compute it as a sanity check.
@@ -67,6 +71,45 @@ void update_u_common(const gsl::not_null<T*> u,
     *u += coefficients.back() * history.substeps().front().derivative;
   }
 }
+
+template <typename T>
+void step_error(const gsl::not_null<T*> u_error,
+                const ConstUntypedHistory<T>& history, const Time& step_end) {
+  const auto method_order = history.integration_order();
+  ASSERT(history.size() >= method_order - 1, "Insufficient history");
+  ASSERT(not history.substeps().empty(),
+         "step_error called without substep data.");
+  ASSERT(not history.at_step_start(), "Unexpected new data");
+
+  const auto used_history_begin =
+      history.end() -
+      static_cast<typename ConstUntypedHistory<T>::difference_type>(
+          method_order - 1);
+  adams_coefficients::OrderVector<Time> control_times{};
+  std::transform(used_history_begin, history.end(),
+                 std::back_inserter(control_times),
+                 [](const auto& r) { return r.time_step_id.step_time(); });
+  control_times.push_back(history.back().time_step_id.step_time() +
+                          history.substeps().front().time_step_id.step_size());
+  auto coefficients = adams_coefficients::coefficients(
+      control_times.begin(), control_times.end(),
+      history.back().time_step_id.step_time(), step_end);
+  control_times.erase(control_times.begin());
+  const auto lower_order_coefficients = adams_coefficients::coefficients(
+      control_times.begin(), control_times.end(),
+      history.back().time_step_id.step_time(), step_end);
+  for (size_t i = 0; i < lower_order_coefficients.size(); ++i) {
+    coefficients[i + 1] -= lower_order_coefficients[i];
+  }
+
+  *u_error = coefficients.back() * history.substeps().front().derivative;
+  auto coefficient = coefficients.begin();
+  for (auto history_entry = used_history_begin;
+       history_entry != history.end();
+       ++history_entry, ++coefficient) {
+    *u_error += *coefficient * history_entry->derivative;
+  }
+}
 }  // namespace
 
 template <bool Monotonic>
@@ -78,11 +121,6 @@ AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const size_t order) : order_(order) {
 template <bool Monotonic>
 size_t AdamsMoultonPc<Monotonic>::order() const {
   return order_;
-}
-
-template <bool Monotonic>
-size_t AdamsMoultonPc<Monotonic>::error_estimate_order() const {
-  return order_ - 1;
 }
 
 template <bool Monotonic>
@@ -203,28 +241,28 @@ void AdamsMoultonPc<Monotonic>::update_u_impl(
     const TimeDelta& time_step) const {
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   *u = *history.back().value;
-  update_u_common(u, history, next_time, history.integration_order(),
-                  not history.at_step_start());
+  update_u_common(u, history, next_time, not history.at_step_start());
 }
 
 template <bool Monotonic>
 template <typename T>
-bool AdamsMoultonPc<Monotonic>::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const ConstUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  const bool predictor = history.at_step_start();
+std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
+  const bool corrector = not history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
-  *u = *history.back().value;
-  update_u_common(u, history, next_time, history.integration_order(),
-                  not predictor);
-  if (predictor) {
-    return false;
+  std::optional<StepperErrorEstimate> error{};
+  if (corrector and tolerances.has_value()) {
+    step_error(u, history, next_time);
+    error.emplace(StepperErrorEstimate{
+        history.back().time_step_id.step_time(), time_step,
+        history.integration_order() - 1,
+        largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
-  *u_error = *history.back().value;
-  update_u_common(u_error, history, next_time, history.integration_order() - 1,
-                  true);
-  *u_error = *u - *u_error;
-  return true;
+  *u = *history.back().value;
+  update_u_common(u, history, next_time, corrector);
+  return error;
 }
 
 template <bool Monotonic>
@@ -257,15 +295,13 @@ bool AdamsMoultonPc<Monotonic>::dense_update_u_impl(
     if (not history.at_step_start()) {
       return false;
     }
-    update_u_common(u, history, ApproximateTime{time},
-                    history.integration_order(), false);
+    update_u_common(u, history, ApproximateTime{time}, false);
     return true;
   } else {
     if (history.at_step_start()) {
       return false;
     }
-    update_u_common(u, history, ApproximateTime{time},
-                    history.integration_order(), true);
+    update_u_common(u, history, ApproximateTime{time}, true);
     return true;
   }
 }
