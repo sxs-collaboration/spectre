@@ -81,6 +81,19 @@ class FunctionOfTime : public PUP::able {
   /// The DataVector can be of any size
   virtual std::array<DataVector, 3> func_and_2_derivs(double t) const = 0;
 
+  /// \brief All derivatives a function of time has to offer (because it can be
+  /// more than 2)
+  ///
+  /// \details Defaults to the return values from `func_and_2_derivs` since some
+  /// functions of time only go up to 2 derivatives by design
+  virtual std::vector<DataVector> func_and_all_derivs(double t) const {
+    std::array<DataVector, 3> tmp_func_and_2_derivs = func_and_2_derivs(t);
+
+    return std::vector{std::move(tmp_func_and_2_derivs[0]),
+                       std::move(tmp_func_and_2_derivs[1]),
+                       std::move(tmp_func_and_2_derivs[2])};
+  }
+
   WRAPPED_PUPable_abstract(FunctionOfTime);  // NOLINT
 };
 }  // namespace FunctionsOfTime

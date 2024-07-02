@@ -337,6 +337,42 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
 }
 
 template <size_t MaxDeriv>
+std::array<DataVector, 4>
+QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_3_derivs(
+    const double t) const {
+  boost::math::quaternion<double> quat = setup_func(t);
+
+  // Get angle and however many derivatives we need
+  std::vector<DataVector> angle_and_all_derivs =
+      angle_f_of_t_.func_and_all_derivs(t);
+
+  if (angle_and_all_derivs.size() < 4) {
+    ERROR(
+        "Need more angle derivs to compute the third derivative of the "
+        "quaternion. Currently only have "
+        << MaxDeriv);
+  }
+
+  boost::math::quaternion<double> omega =
+      datavector_to_quaternion(angle_and_all_derivs[1]);
+  boost::math::quaternion<double> dtomega =
+      datavector_to_quaternion(angle_and_all_derivs[2]);
+
+  boost::math::quaternion<double> dt2omega =
+      datavector_to_quaternion(angle_and_all_derivs[3]);
+
+  boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
+  boost::math::quaternion<double> dt2quat =
+      0.5 * (dtquat * omega + quat * dtomega);
+  boost::math::quaternion<double> dt3quat =
+      0.5 * (dt2quat * omega + 2.0 * dtquat * dtomega + quat * dt2omega);
+
+  return std::array<DataVector, 4>{
+      quaternion_to_datavector(quat), quaternion_to_datavector(dtquat),
+      quaternion_to_datavector(dt2quat), quaternion_to_datavector(dt3quat)};
+}
+
+template <size_t MaxDeriv>
 bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return lhs.stored_quaternions_and_times_ ==
@@ -384,7 +420,7 @@ std::ostream& operator<<(
   return os;
 }
 
-// do explicit instantiation of MaxDeriv = {2,3,4}
+// do explicit instantiation of MaxDeriv = {2,3}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                   \
@@ -398,7 +434,7 @@ std::ostream& operator<<(
   template std::ostream& operator<<(                           \
       std::ostream& os, const QuaternionFunctionOfTime<DIM(data)>&);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef DIM
 #undef INSTANTIATE
