@@ -3,9 +3,11 @@
 
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -334,3 +336,23 @@ class EllipticStatus(ExecutableStatus):
         elif field in ["Residual"]:
             return f"{value:.1e}"
         raise ValueError
+
+    def render_solver_convergence(self, job: dict, input_file: dict):
+        import plotly.express as px
+        import streamlit as st
+
+        from spectre.Visualization.PlotEllipticConvergence import (
+            plot_elliptic_convergence,
+        )
+
+        st.subheader("Elliptic solver convergence")
+        fig = plt.figure(figsize=(8, 6), layout="tight")
+        plot_elliptic_convergence(
+            Path(job["WorkDir"])
+            / (input_file["Observers"]["ReductionFileName"] + ".h5"),
+            fig=fig,
+        )
+        st.pyplot(fig)
+
+    def render_dashboard(self, job: dict, input_file: dict):
+        return self.render_solver_convergence(job, input_file)

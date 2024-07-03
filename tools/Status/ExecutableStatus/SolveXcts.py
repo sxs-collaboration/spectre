@@ -3,8 +3,12 @@
 
 import logging
 import os
+from pathlib import Path
 
 import h5py
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from .ExecutableStatus import EllipticStatus
 
@@ -49,3 +53,58 @@ class SolveXcts(EllipticStatus):
             return super().format("Iteration", value)
         elif "residual" in field:
             return super().format("Residual", value)
+
+    def render_dashboard(self, job: dict, input_file: dict):
+        import plotly.express as px
+        import streamlit as st
+
+        super().render_solver_convergence(job, input_file)
+
+        # Parameter control
+        control_outfile = Path(job["WorkDir"]) / "ControlParamsData.txt"
+        if control_outfile.exists():
+            st.subheader("Parameter control")
+            control_data = np.loadtxt(control_outfile, delimiter=",")
+            df = pd.DataFrame(
+                control_data,
+                columns=[
+                    "Iteration",
+                    "Mass A",
+                    "Mass B",
+                    "Spin A x",
+                    "Spin A y",
+                    "Spin A z",
+                    "Spin B x",
+                    "Spin B y",
+                    "Spin B z",
+                    "Residual Mass A",
+                    "Residual Mass B",
+                    "Residual Spin A x",
+                    "Residual Spin A y",
+                    "Residual Spin A z",
+                    "Residual Spin B x",
+                    "Residual Spin B y",
+                    "Residual Spin B z",
+                ],
+            ).set_index("Iteration")
+            # Print current params
+            params = df.iloc[-1]
+            mass_A, mass_B = params["Mass A"], params["Mass B"]
+            spin_A, spin_B = [
+                np.linalg.norm(params[[f"Spin {AB} {xyz}" for xyz in "xyz"]])
+                for AB in "AB"
+            ]
+            for label, val, col in zip(
+                ["Mass A", "Mass B", "Spin A", "Spin B"],
+                [mass_A, mass_B, spin_A, spin_B],
+                st.columns(4),
+            ):
+                col.metric(label, f"{val:.4g}")
+            # Plot convergence
+            fig = px.line(
+                np.abs(df[[col for col in df.columns if "Residual" in col]]),
+                log_y=True,
+                markers=True,
+            )
+            fig.update_yaxes(exponentformat="e", title=None)
+            st.plotly_chart(fig)
