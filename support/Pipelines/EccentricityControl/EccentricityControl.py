@@ -120,10 +120,7 @@ def compute_separation(h5_file, subfile_name_aha, subfile_name_ahb):
         )
 
     # Compute separation
-    num_obs = len(ObjectA_centers[:, 0])
-
-    if len(ObjectB_centers[:, 0]) < num_obs:
-        num_obs = len(ObjectB_centers[:, 0])
+    num_obs = min(len(ObjectA_centers[:, 0]), len(ObjectB_centers[:, 0]))
 
     # Separation vector
     separation_vec = (
@@ -132,7 +129,7 @@ def compute_separation(h5_file, subfile_name_aha, subfile_name_ahb):
 
     # Compute separation norm
     separation_norm = np.zeros((num_obs, 2))
-    separation_norm[:, 0] = ObjectA_centers[:, 0]
+    separation_norm[:, 0] = ObjectA_centers[:num_obs, 0]
     separation_norm[:, 1] = np.linalg.norm(separation_vec, axis=1)
 
     return separation_norm
@@ -221,16 +218,15 @@ def compute_coord_sep_updates(
 
 
 def coordinate_separation_eccentricity_control_digest(
-    h5_file, x, y, data, functions, output=None
+    h5_file, x, y, data, functions, fig=None
 ):
-    """Print and output for eccentricity control"""
+    """Print and plot for eccentricity control"""
 
-    if output is not None:
+    if fig is not None:
         traw = data[:, 0]
         sraw = data[:, 1]
         # Plot coordinate separation
-        fig, axes = plt.subplots(2, 2)
-        ((ax1, ax2), (ax3, ax4)) = axes
+        ((ax1, ax2), (ax3, ax4)) = fig.subplots(2, 2)
         fig.suptitle(
             h5_file,
             color="b",
@@ -256,7 +252,6 @@ def coordinate_separation_eccentricity_control_digest(
             f" {rms:4.3g}  ===="
         )
 
-        style = "--"
         F = func["function"]
         eccentricity = func["fit result"]["eccentricity"]
 
@@ -300,13 +295,12 @@ def coordinate_separation_eccentricity_control_digest(
             )
 
         # Plot
-        if output is not None:
+        if fig is not None:
             errfunc = lambda p, x, y: F(p, x) - y
             # Plot dD/dt
             ax1.plot(
                 x,
                 F(p, x),
-                style,
                 label=(
                     f"{expression:s} \n rms = {rms:2.1e}, ecc ="
                     f" {eccentricity:4.5f}"
@@ -315,17 +309,10 @@ def coordinate_separation_eccentricity_control_digest(
             ax_handles, ax_labels = ax1.get_legend_handles_labels()
 
             # Plot residual
-            ax3.plot(x, errfunc(p, x, y), style, label=expression)
+            ax3.plot(x, errfunc(p, x, y), label=expression)
             ax3.set_title("Residual")
 
             ax4.legend(ax_handles, ax_labels)
-
-            plt.tight_layout()
-
-    if output is not None:
-        plt.savefig(output, format="pdf")
-
-    return
 
 
 def coordinate_separation_eccentricity_control(
@@ -336,7 +323,7 @@ def coordinate_separation_eccentricity_control(
     tmax,
     angular_velocity_from_xcts,
     expansion_from_xcts,
-    output=None,
+    fig: plt.Figure = None,
 ):
     """Compute updates based on fits to the coordinate separation for manual
     eccentricity control
@@ -357,8 +344,8 @@ def coordinate_separation_eccentricity_control(
     The updates are computed using Newtonian estimates.
     See ArXiv:gr-qc/0702106 and ArXiv:0710.0158 for more details.
 
-    A summary is printed to screen and if an output file is provided, a plot
-    is generated. The latter is useful to decide between the updates of
+    A summary is printed to screen and if a matplotlib figure is provided, a
+    plot is generated. The latter is useful to decide between the updates of
     different models (look for small residuals at early times).
 
     See OmegaDoEccRemoval.py in SpEC for improved eccentricity control.
@@ -497,7 +484,7 @@ def coordinate_separation_eccentricity_control(
         y=dsdt,
         data=data,
         functions=functions,
-        output=output,
+        fig=fig,
     )
 
     return functions
@@ -553,13 +540,8 @@ def coordinate_separation_eccentricity_control(
     nargs=1,
     help="Value of the expansion velocity (adot) used in the Xcts file.",
 )
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(file_okay=True, dir_okay=False, writable=True),
-    help="Name of the output plot file in pdf.",
-)
 @apply_stylesheet_command()
+@show_or_save_plot_command()
 def eccentricity_control_command(
     h5_file,
     subfile_name_aha,
@@ -568,7 +550,6 @@ def eccentricity_control_command(
     tmax,
     angular_velocity_from_xcts,
     expansion_from_xcts,
-    output,
 ):
     """Compute updates based on fits to the coordinate separation for manual
     eccentricity control
@@ -603,6 +584,7 @@ def eccentricity_control_command(
     See OmegaDoEccRemoval.py in SpEC for improved eccentricity control.
 
     """
+    fig = plt.figure()
     functions = coordinate_separation_eccentricity_control(
         h5_file=h5_file,
         subfile_name_aha=subfile_name_aha,
@@ -611,7 +593,6 @@ def eccentricity_control_command(
         tmax=tmax,
         angular_velocity_from_xcts=angular_velocity_from_xcts,
         expansion_from_xcts=expansion_from_xcts,
-        output=output,
+        fig=fig,
     )
-
-    return
+    return fig
