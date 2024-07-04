@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/RotScaleTrans.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"

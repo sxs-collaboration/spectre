@@ -11,8 +11,8 @@
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -188,7 +188,7 @@ void test(const std::optional<bool> use_non_zero_shape) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.SphereTimeDependentMaps",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependentOptions.Sphere",
                   "[Domain][Unit]") {
   test({true});
   test({false});

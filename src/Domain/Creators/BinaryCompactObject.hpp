@@ -20,8 +20,8 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Auto.hpp"
@@ -66,6 +66,22 @@ struct BlockLogical;
 
 namespace domain {
 namespace creators {
+namespace bco {
+/*!
+ * \brief Create a set of centers of objects for the binary domains.
+ *
+ * \details Will add the following centers to the set:
+ *
+ * - Center: The origin
+ * - CenterA: Center of object A
+ * - CenterB: Center of object B
+ *
+ * \return Object required by the DomainCreator%s
+ */
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b);
+}  // namespace bco
 
 /*!
  * \ingroup ComputationalDomainGroup

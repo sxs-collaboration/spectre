@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 
 #include <array>
 #include <cmath>
@@ -17,7 +17,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"

@@ -101,6 +101,19 @@ PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const {
 }
 
 template <size_t MaxDeriv>
+std::vector<DataVector> PiecewisePolynomial<MaxDeriv>::func_and_all_derivs(
+    double t) const {
+  auto tmp_func_and_max_deriv = func_and_derivs(t);
+  std::vector<DataVector> result{};
+  result.resize(tmp_func_and_max_deriv.size());
+  for (size_t i = 0; i < tmp_func_and_max_deriv.size(); i++) {
+    result[i] = std::move(gsl::at(tmp_func_and_max_deriv, i));
+  }
+
+  return result;
+}
+
+template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::store_entry(
     const double time_of_update,
     std::array<DataVector, MaxDeriv + 1> func_and_derivs,

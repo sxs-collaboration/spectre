@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "Domain/Creators/ShapeMapOptions.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -302,7 +302,8 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.ShapeMapOptions", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependentOptions.ShapeMap",
+                  "[Domain][Unit]") {
   MAKE_GENERATOR(generator);
   test_kerr_schild_boyer_lindquist();
   test_ylms_from_file();

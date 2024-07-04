@@ -29,7 +29,6 @@ void register_derived_with_charm() {
                               FunctionsOfTime::PiecewisePolynomial<4>,
                               FunctionsOfTime::QuaternionFunctionOfTime<2>,
                               FunctionsOfTime::QuaternionFunctionOfTime<3>,
-                              FunctionsOfTime::QuaternionFunctionOfTime<4>,
                               FunctionsOfTime::SettleToConstant,
                               FunctionsOfTime::SettleToConstantQuaternion>();
 }
