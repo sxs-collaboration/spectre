@@ -11,6 +11,7 @@ spectre_target_sources(
   ObserveAdaptiveSteppingDiagnostics.cpp
   ObserveDataBox.cpp
   ObserveNorms.cpp
+  ObserveTimeStepVolume.cpp
   )
 
 spectre_target_headers(
@@ -26,6 +27,7 @@ spectre_target_headers(
   ObserveFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp
+  ObserveTimeStepVolume.hpp
   Tags.hpp
   )
 

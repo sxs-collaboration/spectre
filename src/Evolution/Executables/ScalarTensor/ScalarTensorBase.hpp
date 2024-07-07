@@ -89,6 +89,7 @@
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -351,7 +352,8 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                  tmpl::flatten<tmpl::list<
                      Events::Completion, Events::MonitorMemory<volume_dim>,
                      typename detail::ObserverTags::field_observations,
-                     Events::time_events<system>>>>,
+                     Events::time_events<system>,
+                     dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
       tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,

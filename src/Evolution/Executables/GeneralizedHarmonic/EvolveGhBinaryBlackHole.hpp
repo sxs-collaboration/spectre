@@ -121,6 +121,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -476,7 +477,8 @@ struct EvolutionMetavars {
                                                non_tensor_compute_tags>,
                 control_system::metafunctions::control_system_events<
                     control_systems>,
-                Events::time_events<system>>>>,
+                Events::time_events<system>,
+                dg::Events::ObserveTimeStepVolume<3>>>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<
