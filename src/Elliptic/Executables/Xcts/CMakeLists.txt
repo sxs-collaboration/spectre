@@ -45,5 +45,6 @@ target_link_libraries(
   Xcts
   XctsAnalyticData
   XctsBoundaryConditions
+  XctsEvents
   XctsSolutions
   )

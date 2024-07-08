@@ -15,6 +15,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Factory.hpp"
+#include "Elliptic/Systems/Xcts/Events/ObserveAdmIntegrals.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/HydroQuantities.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
@@ -131,7 +132,7 @@ struct Metavariables {
                        volume_dim, typename system::primal_fields>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion,
+                       Events::Completion, Events::ObserveAdmIntegrals,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,

@@ -1,45 +1,32 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Xcts)
+set(LIBRARY XctsEvents)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Equations.cpp
-  FluxesAndSources.cpp
+  ObserveAdmIntegrals.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Equations.hpp
-  FirstOrderSystem.hpp
-  FluxesAndSources.hpp
-  Geometry.hpp
-  HydroQuantities.hpp
-  Tags.hpp
-  Xcts.hpp
+  ObserveAdmIntegrals.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  GeneralRelativity
-  Hydro
-  Utilities
-  PRIVATE
-  Elasticity
-  ErrorHandling
-  LinearOperators
-  Poisson
+  Domain
+  Elliptic
+  Xcts
+  Options
+  Serialization
   Utilities
   XctsPointwiseFunctions
   )
-
-add_subdirectory(BoundaryConditions)
-add_subdirectory(Events)
