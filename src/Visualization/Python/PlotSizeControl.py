@@ -128,7 +128,8 @@ def plot_size_control_command(
         top3 = axes[-1].plot(
             times,
             data["SmootherTimescale"],
-            color="C2",
+            color="C1",
+            linestyle="dashed",
             label="Smooth damping time",
         )
         top_lines = top1 + top2 + top3
@@ -137,16 +138,38 @@ def plot_size_control_command(
 
     top_labels = [l.get_label() for l in top_lines]
     axes[0].tick_params(axis="y", labelcolor="C0")
+    axes[-1].tick_params(axis="y", labelcolor="C1")
 
-    # State, and delta R
+    # State
     axes[1].plot(times, data["StateNumber"], label="State")
-    axes[1].plot(times, data["MinDeltaR"], label="Min Delta R")
-    axes[1].plot(times, data["AvgDeltaR"], label="Average Delta R")
+    axes[1].set_ylim(0, 5)
 
-    # Relative delta R
-    axes[2].plot(times, data["MinRelativeDeltaR"], label="Min relative Delta R")
+    # All delta R's
     axes[2].plot(
-        times, data["AvgRelativeDeltaR"], label="Average relative Delta R"
+        times,
+        data["MinRelativeDeltaR"],
+        label="Min relative Delta R",
+        color="C0",
+    )
+    axes[2].plot(
+        times,
+        data["AvgRelativeDeltaR"],
+        label="Average relative Delta R",
+        color="C1",
+    )
+    axes[2].plot(
+        times,
+        data["MinDeltaR"],
+        label="Min Delta R",
+        color="C0",
+        linestyle="dashed",
+    )
+    axes[2].plot(
+        times,
+        data["AvgDeltaR"],
+        label="Average Delta R",
+        color="C1",
+        linestyle="dashed",
     )
 
     # Char speeds
