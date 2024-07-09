@@ -148,8 +148,8 @@ void test() {
   // cleared.
   DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
   evolution::dg::MortarDataHolder<Dim> lower_xi_data{};
-  lower_xi_data.local().mortar_data() =
-      std::pair{subcell_mesh.slice_away(0), DataVector{1.1, 2.43, 7.8}};
+  lower_xi_data.local().face_mesh = subcell_mesh.slice_away(0);
+  lower_xi_data.local().mortar_data = DataVector{1.1, 2.43, 7.8};
   const DirectionalId<Dim> lower_id{Direction<Dim>::lower_xi(),
                                     ElementId<Dim>{1}};
   mortar_data[lower_id] = lower_xi_data;
@@ -165,8 +165,7 @@ void test() {
             runner, 0)
             .at(lower_id)
             .local()
-            .mortar_data()
-            .has_value());
+            .mortar_data.has_value());
 
   // Invoke the TakeTimeStep action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -175,8 +174,7 @@ void test() {
                   comp, evolution::dg::Tags::MortarData<Dim>>(runner, 0)
                   .at(lower_id)
                   .local()
-                  .mortar_data()
-                  .has_value());
+                  .mortar_data.has_value());
   CHECK(metavars::time_derivative_invoked);
 }
 

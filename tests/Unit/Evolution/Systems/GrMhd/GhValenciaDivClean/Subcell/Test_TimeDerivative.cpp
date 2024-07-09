@@ -584,11 +584,11 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
     auto& the_mortar_data = mortar_data[DirectionalId<3>{
         direction, *element.neighbors().at(direction).begin()}];
     if (local_data) {
-      the_mortar_data.local().mortar_data() =
-          std::pair{interface_mesh, std::move(interface_data)};
+      the_mortar_data.local().face_mesh = interface_mesh;
+      the_mortar_data.local().mortar_data = std::move(interface_data);
     } else {
-      the_mortar_data.neighbor().mortar_data() =
-          std::pair{interface_mesh, std::move(interface_data)};
+      the_mortar_data.neighbor().face_mesh = interface_mesh;
+      the_mortar_data.neighbor().mortar_data = std::move(interface_data);
     }
   };
   insert_dg_data(Direction<3>::lower_zeta(), true);

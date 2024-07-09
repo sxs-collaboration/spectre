@@ -336,10 +336,10 @@ bool receive_boundary_data_global_time_stepping(
                      << received_temporal_id_and_data.first);
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
-            mortar_data->at(mortar_id).neighbor().mortar_data() =
-                std::pair{received_mortar_data.second.interface_mesh,
-                          std::move(received_mortar_data.second
-                                        .boundary_correction_data.value())};
+            mortar_data->at(mortar_id).neighbor().face_mesh =
+                received_mortar_data.second.interface_mesh;
+            mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
+                received_mortar_data.second.boundary_correction_data.value());
           }
         }
       },
@@ -462,10 +462,10 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mesh->insert_or_assign(
                 mortar_id,
                 received_mortar_data->second.volume_mesh_ghost_cell_data);
-            neighbor_mortar_data.mortar_data() =
-                std::pair{received_mortar_data->second.interface_mesh,
-                          std::move(received_mortar_data->second
-                                        .boundary_correction_data.value())};
+            neighbor_mortar_data.face_mesh =
+                received_mortar_data->second.interface_mesh;
+            neighbor_mortar_data.mortar_data = std::move(
+                received_mortar_data->second.boundary_correction_data.value());
             // We don't yet communicate the integration order, because
             // we don't have any variable-order methods.  The
             // fixed-order methods ignore the field.
@@ -764,27 +764,24 @@ struct ApplyBoundaryCorrections {
                 // and local time stepping we could first perform the integral
                 // on the boundaries, and then lift to the volume. This is
                 // left as a future optimization.
-                local_mortar_data.get_local_volume_det_inv_jacobian(
-                    make_not_null(&volume_det_inv_jacobian));
+                volume_det_inv_jacobian =
+                    local_mortar_data.volume_det_inv_jacobian.value();
                 get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
               }
               const auto& mortar_mesh = mortar_meshes.at(mortar_id);
 
               // Extract local and neighbor data, copy into Variables because
               // we store them in a std::vector for type erasure.
-              const std::pair<Mesh<volume_dim - 1>, DataVector>&
-                  local_mesh_and_data = *local_mortar_data.mortar_data();
-              const std::pair<Mesh<volume_dim - 1>, DataVector>&
-                  neighbor_mesh_and_data = *neighbor_mortar_data.mortar_data();
+              const DataVector& local_data = *local_mortar_data.mortar_data;
+              const DataVector& neighbor_data =
+                  *neighbor_mortar_data.mortar_data;
               local_data_on_mortar.set_data_ref(
                   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-                  const_cast<double*>(std::get<1>(local_mesh_and_data).data()),
-                  std::get<1>(local_mesh_and_data).size());
+                  const_cast<double*>(local_data.data()), local_data.size());
               neighbor_data_on_mortar.set_data_ref(
                   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-                  const_cast<double*>(
-                      std::get<1>(neighbor_mesh_and_data).data()),
-                  std::get<1>(neighbor_mesh_and_data).size());
+                  const_cast<double*>(neighbor_data.data()),
+                  neighbor_data.size());
 
               // The boundary computations and lifting can be further
               // optimized by in the h-refinement case having only one
@@ -827,8 +824,9 @@ struct ApplyBoundaryCorrections {
               Scalar<DataVector> magnitude_of_face_normal{};
               if constexpr (local_time_stepping) {
                 (void)face_normal_covector_and_magnitude;
-                local_mortar_data.get_local_face_normal_magnitude(
-                    &magnitude_of_face_normal);
+                get(magnitude_of_face_normal)
+                    .set_data_ref(make_not_null(&const_cast<DataVector&>(
+                        get(local_mortar_data.face_normal_magnitude.value()))));
               } else {
                 ASSERT(
                     face_normal_covector_and_magnitude.count(direction) == 1 and
@@ -869,8 +867,9 @@ struct ApplyBoundaryCorrections {
                          "For local time stepping the volume determinant of "
                          "the inverse Jacobian has not been set.");
 
-                  local_mortar_data.get_local_face_det_jacobian(
-                      make_not_null(&face_det_jacobian));
+                  get(face_det_jacobian)
+                      .set_data_ref(make_not_null(&const_cast<DataVector&>(
+                          get(local_mortar_data.face_det_jacobian.value()))));
                 } else {
                   // Project the determinant of the Jacobian to the face. This
                   // could be optimized by caching in the time-independent case.

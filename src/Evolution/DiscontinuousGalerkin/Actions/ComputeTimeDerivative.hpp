@@ -691,17 +691,18 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
 
-      std::pair<Mesh<Dim - 1>, DataVector> neighbor_boundary_data_on_mortar{};
+      Mesh<Dim - 1> face_mesh_for_neighbor =
+          all_mortar_data.at(mortar_id).local().face_mesh.value();
+      DataVector neighbor_boundary_data_on_mortar{};
 
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =
-            *all_mortar_data.at(mortar_id).local().mortar_data();
+            *all_mortar_data.at(mortar_id).local().mortar_data.value();
       } else {
         const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
-        neighbor_boundary_data_on_mortar.first =
-            all_mortar_data.at(mortar_id).local().mortar_data()->first;
-        neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
-            all_mortar_data.at(mortar_id).local().mortar_data()->second,
+        // LK: Why isn't the face mesh reoriented?
+        neighbor_boundary_data_on_mortar = orient_variables_on_slice(
+            all_mortar_data.at(mortar_id).local().mortar_data.value(),
             slice_extents, direction.dimension(), orientation);
       }
 
@@ -718,16 +719,16 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
       if (neighbor_count == total_neighbors) {
         data = SendData{ghost_data_mesh,
-                        neighbor_boundary_data_on_mortar.first,
+                        face_mesh_for_neighbor,
                         std::move(ghost_and_subcell_data),
-                        {std::move(neighbor_boundary_data_on_mortar.second)},
+                        {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
                         tci_decision};
       } else {
         data = SendData{ghost_data_mesh,
-                        neighbor_boundary_data_on_mortar.first,
+                        face_mesh_for_neighbor,
                         ghost_and_subcell_data,
-                        {std::move(neighbor_boundary_data_on_mortar.second)},
+                        {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
                         tci_decision};
       }
@@ -838,16 +839,12 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
             for (const auto& neighbor : neighbors_in_direction) {
               const DirectionalId<Dim> mortar_id{direction, neighbor};
+              auto& local_mortar_data = mortar_data->at(mortar_id).local();
+              local_mortar_data.face_normal_magnitude = face_normal_magnitude;
               if (using_gauss_points) {
-                mortar_data->at(mortar_id)
-                    .local()
-                    .insert_local_geometric_quantities(volume_det_inv_jacobian,
-                                                       face_det_jacobian,
-                                                       face_normal_magnitude);
-              } else {
-                mortar_data->at(mortar_id)
-                    .local()
-                    .insert_local_face_normal_magnitude(face_normal_magnitude);
+                local_mortar_data.volume_det_inv_jacobian =
+                    volume_det_inv_jacobian;
+                local_mortar_data.face_det_jacobian = face_det_jacobian;
               }
               ASSERT(boundary_data_history->count(mortar_id) != 0,
                      "Could not insert the mortar data for "
