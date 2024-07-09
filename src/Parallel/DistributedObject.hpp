@@ -68,7 +68,7 @@ class ElementId;
 
 template <size_t Dim>
 bool is_zeroth_element(const ElementId<Dim>&, const std::optional<size_t>&);
-/// \cond
+/// \endcond
 
 namespace Parallel {
 /// \cond

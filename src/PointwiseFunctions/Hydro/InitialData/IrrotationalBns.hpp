@@ -7,7 +7,6 @@
 #include "Utilities/Gsl.hpp"
 
 /*!
- * \ingroup HydroInitialDataGroup
  * \brief Items related to solving for irrotational bns initial data
  * See e.g. \cite BaumgarteShapiro Ch. 15 (P. 523)
  */

@@ -196,8 +196,8 @@ struct CheckFunctionsOfTimeAreReady {
 };
 }  // namespace Actions
 
-/// \ingroup ComputationalDomainGroup Dense-output postprocessor to
-/// check that functions of time are up-to-date.
+/// \ingroup ComputationalDomainGroup
+/// Dense-output postprocessor to check that functions of time are up-to-date.
 ///
 /// Check that all functions of time in
 /// `domain::Tags::FunctionsOfTime` are ready at `::Tags::Time`.  This

@@ -172,7 +172,6 @@ DgElementArrayMember<
     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
     SimpleTagsFromOptions>::DgElementArrayMember(CkMigrateMessage* msg)
     : DgElementArrayMemberBase<Dim>(msg) {}
-/// \endcond
 
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
@@ -525,7 +524,6 @@ void DgElementArrayMember<Dim, Metavariables,
   }
 }
 
-/// \cond
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 PUP::able::PUP_ID DgElementArrayMember<
