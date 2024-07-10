@@ -45,7 +45,8 @@ void bind_partial_derivatives(py::module& m) {
 
   GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR, (1, 2, 3), (Frame::Inertial))
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (1, 2, 3), (Frame::Inertial),
-                          (tnsr::I, tnsr::ii, tnsr::Ijj))
+                          (tnsr::I, tnsr::ii, tnsr::Ijj, tnsr::a, tnsr::A,
+                           tnsr::aa, tnsr::AA, tnsr::iaa, tnsr::ia, tnsr::iA))
 
 #undef INSTANTIATE_SCALAR
 #undef INSTANTIATE_TNSR
