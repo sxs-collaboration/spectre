@@ -74,6 +74,11 @@ struct GetImpl<TensorType, std::integer_sequence<size_t, Is...>> {
       const TensorType& tensor, typename make_size_t<Is>::type... args) {
     return tensor.get(args...);
   }
+
+  static constexpr size_t get_storage_index(
+      const TensorType& tensor, typename make_size_t<Is>::type... args) {
+    return tensor.get_storage_index(args...);
+  }
 };
 
 template <typename TensorType, TensorKind Kind>
@@ -132,6 +137,7 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
               },
               py::arg("storage_index"))
           .def("get", &GetImpl<TensorType>::get)
+          .def("get_storage_index", &GetImpl<TensorType>::get_storage_index)
           // NOLINTNEXTLINE(misc-redundant-expression)
           .def(py::self == py::self)
           // NOLINTNEXTLINE(misc-redundant-expression)
