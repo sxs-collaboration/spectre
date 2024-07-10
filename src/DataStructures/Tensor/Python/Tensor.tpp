@@ -238,6 +238,13 @@ void bind_tensor(py::module& m) {
   bind_tensor_impl<                                                          \
       InverseJacobian<DTYPE(data), Dim, Frame::ElementLogical, FRAME(data)>, \
       TensorKind::Jacobian>(m, "Jacobian");
+#define INSTANTIATE_LOGICAL_DERIV(_, data)                                  \
+  bind_tensor_impl<TensorMetafunctions::prepend_spatial_index<              \
+                       tnsr::TENSOR(data) < DTYPE(data), Dim, FRAME(data)>, \
+                   Dim, UpLo::Lo, Frame::ElementLogical>,                   \
+      TensorKind::Tnsr >                                                    \
+          (m, std::string{std::string{"ELi"} +                              \
+                          std::string{BOOST_PP_STRINGIZE(TENSOR(data))}});
 
   // Only tnsr::I and tnsr::i need to be instantiated for all frames currently,
   // so to reduce compile time and library size, we're choosing to only
@@ -255,6 +262,11 @@ void bind_tensor(py::module& m) {
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector),
                           (Frame::Grid, Frame::Inertial))
 
+  GENERATE_INSTANTIATIONS(INSTANTIATE_LOGICAL_DERIV, (double, DataVector),
+                          (Frame::Inertial),
+                          (i, I, a, A, ii, II, aa, AA))
+
+#undef INSTANTIATE_LOGICAL_DERIV
 #undef INSTANTIATE_TNSR
 #undef INSTANTIATE_JAC
 #undef DTYPE
