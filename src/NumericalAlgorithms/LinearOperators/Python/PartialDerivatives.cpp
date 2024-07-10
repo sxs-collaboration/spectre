@@ -29,6 +29,14 @@ void bind_partial_derivatives_impl(py::module& m) {  // NOLINT
         return partial_derivative(tensor, mesh, inv_jacobian);
       },
       py::arg("tensor"), py::arg("mesh"), py::arg("inv_jacobian"));
+  m.def(
+      "logical_partial_derivative",
+      // Wrap in a lambda so the template parameters and the correct overload
+      // get inferred
+      [](const TensorType& tensor, const Mesh<Dim>& mesh) {
+        return logical_partial_derivative(tensor, mesh);
+      },
+      py::arg("tensor"), py::arg("mesh"));
 }
 }  // namespace
 
