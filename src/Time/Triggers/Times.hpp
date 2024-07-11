@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <cmath>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 #include <utility>
@@ -13,15 +13,12 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/TimeSequence.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Time/Utilities.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
 struct Time;
-struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 
@@ -47,16 +44,10 @@ class Times : public Trigger {
   explicit Times(std::unique_ptr<TimeSequence<double>> times)
       : times_(std::move(times)) {}
 
-  using argument_tags = tmpl::list<Tags::Time, Tags::TimeStepId>;
+  using argument_tags = tmpl::list<Tags::Time>;
 
-  bool operator()(const double now, const TimeStepId& time_id) const {
-    const auto& step_time = time_id.step_time();
-    // Trying to step to a given time might not get us exactly there
-    // because of rounding errors.
-    const double sloppiness = slab_rounding_error(step_time);
-
-    const auto nearby_time = times_->times_near(now)[1];
-    return nearby_time and std::abs(*nearby_time - now) < sloppiness;
+  bool operator()(const double now) const {
+    return times_->times_near(now)[1] == std::optional(now);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

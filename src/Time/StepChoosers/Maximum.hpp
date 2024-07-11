@@ -17,25 +17,25 @@
 
 namespace StepChoosers {
 
-/// Sets a constant goal.
+/// Limits the step size to a constant.
 template <typename StepChooserUse>
-class Constant : public StepChooser<StepChooserUse> {
+class Maximum : public StepChooser<StepChooserUse> {
  public:
   /// \cond
-  Constant() = default;
-  explicit Constant(CkMigrateMessage* /*unused*/) {}
+  Maximum() = default;
+  explicit Maximum(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(Constant);  // NOLINT
+  WRAPPED_PUPable_decl_template(Maximum);  // NOLINT
   /// \endcond
 
-  static constexpr Options::String help{"Sets a constant goal."};
+  static constexpr Options::String help{"Limits the step size to a constant."};
 
-  explicit Constant(const double value) : value_(value) {}
+  explicit Maximum(const double value) : value_(value) {}
 
   using argument_tags = tmpl::list<>;
 
   std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
-    return {{.size_goal = std::copysign(value_, last_step)}, true};
+    return {{.size = std::copysign(value_, last_step)}, true};
   }
 
   bool uses_local_data() const override { return false; }
@@ -50,21 +50,20 @@ class Constant : public StepChooser<StepChooserUse> {
 
 /// \cond
 template <typename StepChooserUse>
-PUP::able::PUP_ID Constant<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID Maximum<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-namespace Constant_detail {
+namespace Maximum_detail {
 double parse_options(const Options::Option& options);
-}  // namespace Constant_detail
+}  // namespace Maximum_detail
 }  // namespace StepChoosers
 
 template <typename StepChooserUse>
-struct Options::create_from_yaml<
-    StepChoosers::Constant<StepChooserUse>> {
+struct Options::create_from_yaml<StepChoosers::Maximum<StepChooserUse>> {
   template <typename Metavariables>
-  static StepChoosers::Constant<StepChooserUse> create(
+  static StepChoosers::Maximum<StepChooserUse> create(
       const Options::Option& options) {
-    return StepChoosers::Constant<StepChooserUse>(
-        StepChoosers::Constant_detail::parse_options(options));
+    return StepChoosers::Maximum<StepChooserUse>(
+        StepChoosers::Maximum_detail::parse_options(options));
   }
 };

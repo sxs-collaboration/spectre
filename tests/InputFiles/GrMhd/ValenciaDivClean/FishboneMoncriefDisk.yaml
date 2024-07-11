@@ -27,9 +27,9 @@ Evolution:
       Order: 3
   # StepChoosers are needed only for local time stepping
   # StepChoosers:
-  #   - Constant: 0.05
-  #   - Increase:
+  #   - LimitIncrease:
   #       Factor: 2
+  #   - PreventRapidIncrease
   #   - Cfl:
   #       SafetyFactor: 0.2
   # InitialSlabSize is only needed for local time stepping
@@ -157,8 +157,8 @@ EventsAndTriggers:
           # testing.
           DelayChange: 0
           StepChoosers:
-            - Constant: 0.05
-            - Increase:
+            - Maximum: 0.05
+            - LimitIncrease:
                 Factor: 2
             - Cfl:
                 SafetyFactor: 0.2

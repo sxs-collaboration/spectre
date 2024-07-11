@@ -141,8 +141,9 @@ Evolution:
   # intervals in the EventsAndTriggers
   InitialSlabSize: 0.5
   StepChoosers:
-    - Increase:
+    - LimitIncrease:
         Factor: 2
+    - PreventRapidIncrease
     - ElementSizeCfl:
         SafetyFactor: 0.5
     - ErrorControl:

@@ -5,10 +5,10 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -26,6 +26,8 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
+#include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -63,7 +65,8 @@ struct Component {
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                  Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>,
-                 Tags::AdaptiveSteppingDiagnostics>;
+                 Tags::AdaptiveSteppingDiagnostics,
+                 ::Tags::ChangeSlabSize::SlabSizeGoal>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -86,6 +89,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
   auto& box = ActionTesting::get_databox<Component>(make_not_null(&runner), 0);
 
   for (const bool time_runs_forward : {true, false}) {
+    const double unit_step = time_runs_forward ? 1.0 : -1.0;
     Slab slab(1.5, 2.0);
     Time start_time;
 
@@ -108,19 +112,23 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     };
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics>(
+               Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+               ::Tags::ChangeSlabSize::SlabSizeGoal>(
         [&get_step, &start_time, &time_runs_forward](
             const gsl::not_null<TimeStepId*> id,
             const gsl::not_null<TimeStepId*> next_id,
             const gsl::not_null<TimeDelta*> step,
             const gsl::not_null<TimeDelta*> next_step,
             const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
+            const gsl::not_null<double*> slab_size_goal,
             const TimeStepper& stepper) {
           *id = TimeStepId(time_runs_forward, 3, start_time);
           *step = get_step(*id);
           *next_step = get_step(*id);
           *next_id = stepper.next_time_id(*id, *step);
           *diags = AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5};
+          // Step is slab/2 for test
+          *slab_size_goal = (2 * *step).value();
         },
         make_not_null(&box), db::get<Tags::TimeStepper<TimeStepper>>(box));
 
@@ -128,7 +136,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     using NewSize = ::Tags::ChangeSlabSize::NewSlabSize;
 
     const auto check_box = [&box, &get_step](const TimeStepId& id,
-                                             const uint64_t changes) {
+                                             const uint64_t changes,
+                                             const double expected_goal) {
       CHECK(db::get<Tags::TimeStepId>(box) == id);
       CHECK(db::get<Tags::TimeStep>(box) == get_step(id));
       CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
@@ -136,12 +145,28 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
                 db::get<Tags::TimeStepId>(box), db::get<Tags::TimeStep>(box)));
       CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
             AdaptiveSteppingDiagnostics{1, 2 + changes, 3, 4, 5});
+      CHECK(db::get<::Tags::ChangeSlabSize::SlabSizeGoal>(box) ==
+            expected_goal);
     };
 
     // Nothing to do
     {
       runner.next_action<Component>(0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time), 0);
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 0,
+                ((time_runs_forward ? 1 : -1) * slab.duration()).value());
+    }
+
+    // Nothing to do, but not at the goal.
+    {
+      db::mutate<::Tags::ChangeSlabSize::SlabSizeGoal>(
+          [&unit_step](const gsl::not_null<double*> slab_size_goal) {
+            *slab_size_goal = 2.0 * unit_step;
+          },
+          make_not_null(&box));
+      runner.next_action<Component>(0);
+      resize_slab(2.0);
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 1,
+                2.0 * unit_step);
     }
 
     // Simple case
@@ -155,19 +180,24 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&runner), 0));
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
-                  sizes) { (*sizes)[3].insert(1.0); },
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                  sizes) {
+            (*sizes)[3]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size = unit_step});
+          },
           make_not_null(&box));
 
       runner.next_action<Component>(0);
       resize_slab(1.0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time), 1);
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 2,
+                2.0 * unit_step);
       CHECK(db::get<ExpectedMessages>(box).empty());
       CHECK(db::get<NewSize>(box).empty());
       db::mutate<ExpectedMessages, NewSize>(
           [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
               const gsl::not_null<
-                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
             expected->clear();
             sizes->clear();
@@ -187,15 +217,23 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&runner), 0));
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
-                  sizes) { (*sizes)[3].insert(2.0); },
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                  sizes) {
+            (*sizes)[3]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 2.0 * unit_step});
+          },
           make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
-                  sizes) { (*sizes)[4].insert(0.5); },
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                  sizes) {
+            (*sizes)[4]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 0.5 * unit_step});
+          },
           make_not_null(&box));
       REQUIRE_FALSE(ActionTesting::next_action_if_ready<Component>(
           make_not_null(&runner), 0));
@@ -206,12 +244,17 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&box));
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
-                  sizes) { (*sizes)[3].insert(3.0); },
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                  sizes) {
+            (*sizes)[3]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 3.0 * unit_step});
+          },
           make_not_null(&box));
       runner.next_action<Component>(0);
       resize_slab(2.0);
-      check_box(TimeStepId(time_runs_forward, 3, start_time), 2);
+      check_box(TimeStepId(time_runs_forward, 3, start_time), 3,
+                2.0 * unit_step);
       CHECK(db::get<ExpectedMessages>(box).size() == 1);
       CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
       CHECK(db::get<NewSize>(box).size() == 1);
@@ -219,7 +262,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       db::mutate<ExpectedMessages, NewSize>(
           [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
               const gsl::not_null<
-                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
             expected->clear();
             sizes->clear();
@@ -247,25 +290,29 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           },
           make_not_null(&box));
       runner.next_action<Component>(0);
-      check_box(initial_id, 2);
+      check_box(initial_id, 3, 2.0 * unit_step);
       CHECK(db::get<ExpectedMessages>(box).size() == 2);
       CHECK(db::get<ExpectedMessages>(box).count(3) == 1);
       CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
       CHECK(db::get<NewSize>(box).empty());
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
-            (*sizes)[3].insert(0.1);
-            (*sizes)[4].insert(0.1);
+            (*sizes)[3]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 0.1 * unit_step});
+            (*sizes)[4]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 0.1 * unit_step});
           },
           make_not_null(&box));
       runner.next_action<Component>(0);
-      check_box(initial_id, 2);
+      check_box(initial_id, 3, 2.0 * unit_step);
       db::mutate<ExpectedMessages, NewSize>(
           [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
               const gsl::not_null<
-                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
             expected->clear();
             sizes->clear();
@@ -297,25 +344,29 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           },
           make_not_null(&box));
       runner.next_action<Component>(0);
-      check_box(initial_id, 2);
+      check_box(initial_id, 3, 2.0 * unit_step);
       CHECK(db::get<ExpectedMessages>(box).size() == 2);
       CHECK(db::get<ExpectedMessages>(box).count(3) == 1);
       CHECK(db::get<ExpectedMessages>(box).count(4) == 1);
       CHECK(db::get<NewSize>(box).empty());
       db::mutate<NewSize>(
           [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
+              std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
-            (*sizes)[3].insert(0.1);
-            (*sizes)[4].insert(0.1);
+            (*sizes)[3]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 0.1 * unit_step});
+            (*sizes)[4]
+                .emplace_back(time_runs_forward)
+                .process(TimeStepRequest{.size_goal = 0.1 * unit_step});
           },
           make_not_null(&box));
       runner.next_action<Component>(0);
-      check_box(initial_id, 2);
+      check_box(initial_id, 3, 2.0 * unit_step);
       db::mutate<ExpectedMessages, NewSize>(
           [&](const gsl::not_null<std::map<int64_t, size_t>*> expected,
               const gsl::not_null<
-                  std::map<int64_t, std::unordered_multiset<double>>*>
+                  std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
                   sizes) {
             expected->clear();
             sizes->clear();

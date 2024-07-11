@@ -21,7 +21,7 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
@@ -68,12 +68,11 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Increase<StepChooserUse::LtsStep>,
-                              StepChoosers::Cfl<
-                                  StepChooserUse::LtsStep, Frame::Inertial,
-                                  typename Metavariables::system>>>>;
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>,
+                   StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,
+                                     typename Metavariables::system>>>>;
   };
 
   using component_list = tmpl::list<>;
@@ -140,7 +139,8 @@ void test_lts() {
   std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
       step_choosers;
   step_choosers.emplace_back(
-      std::make_unique<StepChoosers::Increase<StepChooserUse::LtsStep>>(2.0));
+      std::make_unique<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>(
+          2.0));
   step_choosers.emplace_back(
       std::make_unique<
           StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,

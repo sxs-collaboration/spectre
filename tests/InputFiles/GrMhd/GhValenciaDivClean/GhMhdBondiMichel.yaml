@@ -147,7 +147,7 @@ EventsAndTriggers:
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.6
-            - Increase:
+            - LimitIncrease:
                 Factor: 1.5
   - Trigger:
       Slabs:

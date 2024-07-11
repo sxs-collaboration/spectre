@@ -30,6 +30,7 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -57,11 +58,12 @@ struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
   explicit StepRejector(CkMigrateMessage* /*unused*/) {}
   StepRejector() = default;
 
-  std::pair<double, bool> operator()(const double last_step_magnitude) const {
-    return {last_step_magnitude, false};
+  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
+    return {{.size_goal = last_step}, false};
   }
 
   bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 
   void pup(PUP::er& /*p*/) override {}
 };

@@ -15,6 +15,7 @@
 #include "Options/ParseError.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace StepChoosers {
@@ -37,9 +38,9 @@ Random<StepChooserUse, VolumeDim>::Random(const double minimum,
 }
 
 template <typename StepChooserUse, size_t VolumeDim>
-std::pair<double, bool> Random<StepChooserUse, VolumeDim>::operator()(
+std::pair<TimeStepRequest, bool> Random<StepChooserUse, VolumeDim>::operator()(
     const Element<VolumeDim>& element, const TimeStepId& time_step_id,
-    const double /*last_step_magnitude*/) const {
+    const double last_step) const {
   size_t local_seed = seed_;
   boost::hash_combine(local_seed, element.id());
   boost::hash_combine(local_seed, time_step_id);
@@ -49,13 +50,18 @@ std::pair<double, bool> Random<StepChooserUse, VolumeDim>::operator()(
     const double step = exp(dist(rng));
     // Don't produce out-of-range values because of roundoff.
     if (step >= minimum_ and step <= maximum_) {
-      return {step, true};
+      return {{.size_goal = std::copysign(step, last_step)}, true};
     }
   }
 }
 
 template <typename StepChooserUse, size_t VolumeDim>
 bool Random<StepChooserUse, VolumeDim>::uses_local_data() const {
+  return true;
+}
+
+template <typename StepChooserUse, size_t VolumeDim>
+bool Random<StepChooserUse, VolumeDim>::can_be_delayed() const {
   return true;
 }
 

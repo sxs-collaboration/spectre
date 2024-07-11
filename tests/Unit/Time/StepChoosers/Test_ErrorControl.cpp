@@ -6,7 +6,6 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -31,7 +30,7 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -39,6 +38,7 @@
 #include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -75,7 +75,7 @@ template <bool WithErrorControl, bool WithAltErrorControl = false>
 struct Metavariables {
   template <typename Use>
   using step_choosers_without_error_control =
-      tmpl::list<StepChoosers::Increase<Use>, StepChoosers::Constant<Use>>;
+      tmpl::list<StepChoosers::LimitIncrease<Use>, StepChoosers::Constant<Use>>;
   template <typename Use>
   using step_choosers = tmpl::append<
       step_choosers_without_error_control<Use>,
@@ -107,7 +107,7 @@ struct Metavariables {
 using LtsErrorControl =
     StepChoosers::ErrorControl<StepChooserUse::LtsStep, EvolvedVariablesTag>;
 
-std::pair<double, bool> get_suggestion(
+std::pair<std::optional<double>, bool> get_suggestion(
     const LtsErrorControl& error_control,
     const std::optional<StepperErrorEstimate>& error,
     const std::optional<StepperErrorEstimate>& previous_error,
@@ -120,14 +120,15 @@ std::pair<double, bool> get_suggestion(
   const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
       error_control_base = std::make_unique<LtsErrorControl>(error_control);
 
-  const std::pair<double, bool> result =
+  const auto result =
       error_control(std::array{previous_error, error}, previous_step);
+  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
   CHECK(error_control_base->desired_step(previous_step, box) == result);
   CHECK(serialize_and_deserialize(error_control)(
             std::array{previous_error, error}, previous_step) == result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(previous_step, box) == result);
-  return result;
+  return {result.first.size_goal, result.second};
 }
 }  // namespace
 
@@ -136,6 +137,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
 
   const std::vector<size_t> stepper_orders{2_st, 5_st};
   for (const bool time_runs_forward : {true, false}) {
+    const double unit_step = time_runs_forward ? 1.0 : -1.0;
     for (size_t stepper_order : stepper_orders) {
       CAPTURE(stepper_order);
       const auto step_errors = [&](const double error_time, const double error,
@@ -152,8 +154,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       {
         INFO("No data available");
         const LtsErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
-        const auto result = get_suggestion(error_control, {}, {}, 1.0);
-        CHECK(result.first == std::numeric_limits<double>::infinity());
+        const auto result = get_suggestion(error_control, {}, {}, unit_step);
+        CHECK(not result.first.has_value());
         CHECK(result.second);
       }
       {
@@ -161,37 +163,43 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
         const LtsErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
         CHECK(error_control.tolerances() ==
               StepperErrorTolerances{.absolute = 5.0e-4, .relative = 1.0e-3});
-        const auto first_result =
-            get_suggestion(error_control, {step_errors(0.0, 0.3)}, {}, 1.0);
-        CHECK(approx(first_result.first) ==
-              0.95 / pow(0.3, 1.0 / stepper_order));
+        const auto first_result = get_suggestion(
+            error_control, {step_errors(0.0, 0.3)}, {}, unit_step);
+        REQUIRE(first_result.first.has_value());
+        CHECK(approx(*first_result.first) ==
+              0.95 * unit_step / pow(0.3, 1.0 / stepper_order));
         CHECK(first_result.second);
         const auto second_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.31, first_result.first)},
-            {step_errors(-1.0, 0.3)}, first_result.first);
-        CHECK(approx(second_result.first) ==
-              0.95 * first_result.first /
+            error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
+            {step_errors(-1.0, 0.3)}, *first_result.first);
+        REQUIRE(second_result.first.has_value());
+        CHECK(approx(*second_result.first) ==
+              0.95 * *first_result.first /
                   (pow(0.3, -0.4 / stepper_order) *
                    pow(0.31, 0.7 / stepper_order)));
         CHECK(second_result.second);
         // Check that the suggested step size is smaller if the error in
         // increasing faster.
         const auto adjusted_second_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.31, first_result.first)},
-            {step_errors(-1.0, 0.1)}, first_result.first);
-        CHECK(adjusted_second_result.first < second_result.first);
+            error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
+            {step_errors(-1.0, 0.1)}, *first_result.first);
+        REQUIRE(adjusted_second_result.first.has_value());
+        CHECK(abs(*adjusted_second_result.first) < abs(*second_result.first));
       }
       {
         INFO("Test error control step failure");
         const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
-        const auto result_start =
-            get_suggestion(error_control, {step_errors(0.0, 1.2)}, {}, 1.0);
-        const auto result_end =
-            get_suggestion(error_control, {step_errors(-1.0, 1.2)}, {}, 1.0);
+        const auto result_start = get_suggestion(
+            error_control, {step_errors(0.0, 1.2)}, {}, unit_step);
+        REQUIRE(result_start.first.has_value());
+        const auto result_end = get_suggestion(
+            error_control, {step_errors(-1.0, 1.2)}, {}, unit_step);
+        REQUIRE(result_end.first.has_value());
         const auto result_end2 = get_suggestion(
-            error_control, {step_errors(-1.0, 1.2)}, {}, result_end.first);
-        CHECK(approx(result_start.first) ==
-              0.95 / pow(1.2, 1.0 / stepper_order));
+            error_control, {step_errors(-1.0, 1.2)}, {}, *result_end.first);
+        REQUIRE(result_end2.first.has_value());
+        CHECK(approx(*result_start.first) ==
+              0.95 * unit_step / pow(1.2, 1.0 / stepper_order));
         CHECK(result_end.first == result_start.first);
         CHECK(result_end2.first == result_start.first);
         CHECK_FALSE(result_start.second);
@@ -201,16 +209,16 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       {
         INFO("Test error control clamped minimum");
         const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
-        const auto first_result =
-            get_suggestion(error_control, {step_errors(0.0, 10.0)}, {}, 1.0);
-        CHECK(first_result.first == 0.9);
+        const auto first_result = get_suggestion(
+            error_control, {step_errors(0.0, 10.0)}, {}, unit_step);
+        CHECK(first_result.first == std::optional(0.9 * unit_step));
       }
       {
         INFO("Test error control clamped maximum");
         const LtsErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
-        const auto first_result =
-            get_suggestion(error_control, {step_errors(0.0, 0.01)}, {}, 1.0);
-        CHECK(first_result == std::make_pair(2.0, true));
+        const auto first_result = get_suggestion(
+            error_control, {step_errors(0.0, 0.01)}, {}, unit_step);
+        CHECK(first_result == std::pair(std::optional(2.0 * unit_step), true));
       }
     }
   }
@@ -267,7 +275,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-4\n"
                   "    MaxFactor: 2.1\n"
                   "    MinFactor: 0.5\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -283,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
           *choosers =
               TestHelpers::test_creation<typename Tags::StepChoosers::type,
                                          Metavariables<true, true>>(
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -324,7 +332,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-4\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -352,7 +360,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-8\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -380,7 +388,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   "    RelativeTolerance: 1.0e-8\n"
                   "    MaxFactor: 1.1\n"
                   "    MinFactor: 0.1\n"
-                  "- Increase:\n"
+                  "- LimitIncrease:\n"
                   "    Factor: 2\n"
                   "- Constant: 0.5");
         },
@@ -415,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
-              "          - Increase:\n"
+              "          - LimitIncrease:\n"
               "              Factor: 2\n"
               "          - ErrorControl:\n"
               "              SafetyFactor: 0.95\n"
@@ -445,7 +453,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               "    - ChangeSlabSize:\n"
               "        DelayChange: 0\n"
               "        StepChoosers:\n"
-              "          - Increase:\n"
+              "          - LimitIncrease:\n"
               "              Factor: 2\n"
               "          - Constant: 0.5");
         },

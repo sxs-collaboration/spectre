@@ -50,7 +50,7 @@ Evolution:
   # you would like more frequent output, consider using dense output.
   InitialSlabSize: 0.1
   StepChoosers:
-    - Increase:
+    - LimitIncrease:
         Factor: 2
     - ElementSizeCfl:
         SafetyFactor: 0.5

@@ -14,4 +14,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize.Tags", "[Unit][Time]") {
   TestHelpers::db::test_simple_tag<
       Tags::ChangeSlabSize::NumberOfExpectedMessages>(
       "NumberOfExpectedMessages");
+  TestHelpers::db::test_simple_tag<Tags::ChangeSlabSize::SlabSizeGoal>(
+      "SlabSizeGoal");
 }

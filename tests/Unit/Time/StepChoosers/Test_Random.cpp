@@ -22,6 +22,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -69,13 +70,15 @@ double get_suggestion(const double min, const double max, const size_t seed,
   CHECK(random.uses_local_data());
 
   const auto result = random(element, time_step_id, current_step);
+  REQUIRE(result.first.size_goal.has_value());
+  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
   // Should be deterministic
   CHECK(result == random(element, time_step_id, current_step));
 
   CHECK(result.second);
 
-  CHECK(result.first >= min);
-  CHECK(result.first <= max);
+  CHECK(*result.first.size_goal >= min);
+  CHECK(*result.first.size_goal <= max);
 
   CHECK(serialize_and_deserialize(random)(element, time_step_id,
                                           current_step) == result);
@@ -84,7 +87,7 @@ double get_suggestion(const double min, const double max, const size_t seed,
       serialize_and_deserialize(random_base)->desired_step(current_step, box) ==
       result);
 
-  return result.first;
+  return *result.first.size_goal;
 }
 
 template <typename Use>

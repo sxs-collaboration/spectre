@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -67,12 +68,13 @@ struct AllStepChoosers {};
 
 /// \ingroup TimeGroup
 ///
-/// \brief StepChoosers suggest upper bounds on step sizes.
+/// \brief StepChoosers suggest upper bounds on step sizes.  See
+/// `TimeStepRequest` for details on how the results are used.
 ///
 /// Concrete StepChoosers should define `operator()` returning the
 /// information described as the return type of `desired_step` and
-/// taking the `last_step_magnitude` and arguments specified by the
-/// class's `argument_tags` type alias.
+/// taking the `last_step` and arguments specified by the class's
+/// `argument_tags` type alias.
 ///
 /// Derived classes must indicate whether the chooser is usable as a
 /// step chooser, slab chooser, or both by inheriting from StepChooser
@@ -100,11 +102,17 @@ class StepChooser : public PUP::able {
   /// domain.  This is ignored for LTS step changing.
   ///
   /// \note As this is only used for slab-size changing, the
-  /// `last_step_magnitude` passed to the call operator is *not*
-  /// considered local data.
+  /// `last_step` passed to the call operator is *not* considered
+  /// local data.
   virtual bool uses_local_data() const = 0;
 
-  /// The `last_step_magnitude` parameter describes the step size to be
+  /// Whether the result can be applied with a delay.
+  ///
+  /// StepChoosers setting the `.end` or `.end_hard_limit` fields of
+  /// `TimeStepRequest` must return false here.
+  virtual bool can_be_delayed() const = 0;
+
+  /// The `last_step` parameter describes the step size to be
   /// adjusted.  It may be the step size or the slab size, or may be
   /// infinite if the appropriate size cannot be determined.
   ///
@@ -118,8 +126,8 @@ class StepChooser : public PUP::able {
   ///
   /// The implementations of the call operator in derived classes
   /// should always return a strictly smaller step than the
-  /// `last_step_magnitude` when they return `false` for the second
-  /// member of the pair (indicating step rejection).
+  /// `last_step` when they return `false` for the second member of
+  /// the pair (indicating step rejection).
   ///
   /// The optional template parameter `StepChoosersToUse` may be used to
   /// indicate a subset of the constructable step choosers to use for the
@@ -128,10 +136,8 @@ class StepChooser : public PUP::able {
   /// option is used when multiple components need to invoke `ChangeStepSize`
   /// with step choosers that may not be compatible with all components.
   template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
-  std::pair<double, bool> desired_step(const double last_step_magnitude,
-                                       const db::DataBox<DbTags>& box) const {
-    ASSERT(last_step_magnitude > 0.,
-           "Passed non-positive step magnitude: " << last_step_magnitude);
+  std::pair<TimeStepRequest, bool> desired_step(
+      const double last_step, const db::DataBox<DbTags>& box) const {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
@@ -140,13 +146,23 @@ class StepChooser : public PUP::able {
                             tmpl::at<factory_classes, StepChooser>,
                             StepChoosersToUse>;
     const auto result =
-        call_with_dynamic_type<std::pair<double, bool>, step_choosers>(
-            this, [&last_step_magnitude, &box](const auto* const chooser) {
-              return db::apply(*chooser, box, last_step_magnitude);
+        call_with_dynamic_type<std::pair<TimeStepRequest, bool>, step_choosers>(
+            this, [&last_step, &box](const auto* const chooser) {
+              return db::apply(*chooser, box, last_step);
             });
-    ASSERT(
-        result.first > 0.,
-        "StepChoosers should always return positive values.  Got " << result);
+    ASSERT(not result.first.size_goal.has_value() or
+               (*result.first.size_goal > 0.) == (last_step > 0.),
+           "Step size changed sign: " << *result.first.size_goal);
+    ASSERT(not result.first.size.has_value() or
+               (*result.first.size > 0.) == (last_step > 0.),
+           "Step size changed sign: " << *result.first.size);
+    ASSERT(not result.first.size_hard_limit.has_value() or
+               (*result.first.size_hard_limit > 0.) == (last_step > 0.),
+           "Step size changed sign: " << *result.first.size_hard_limit);
+    ASSERT(not(result.first.end.has_value() and can_be_delayed()),
+           "Delayable end limits are not allowed.");
+    ASSERT(not(result.first.end_hard_limit.has_value() and can_be_delayed()),
+           "Delayable end limits are not allowed.");
     return result;
   }
 };

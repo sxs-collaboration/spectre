@@ -221,13 +221,8 @@
 #include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
-#include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"

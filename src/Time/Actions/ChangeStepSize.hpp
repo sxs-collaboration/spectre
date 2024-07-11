@@ -15,6 +15,7 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -61,6 +62,20 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
 
   const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
   ASSERT(time_step_id.substep() == 0, "Can't change step size on a substep.");
+
+  const auto& current_step = db::get<Tags::TimeStep>(*box);
+  const double last_step_size = current_step.value();
+
+  TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
+  bool step_accepted = true;
+  for (const auto& step_chooser : step_choosers) {
+    const auto [step_request, step_choice_accepted] =
+        step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
+                                                               *box);
+    step_requests.process(step_request);
+    step_accepted = step_accepted and step_choice_accepted;
+  }
+
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
   tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
@@ -74,28 +89,14 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
         time_stepper.can_change_step_size(time_step_id, history);
   });
   if (not can_change_step_size) {
+    step_requests.error_on_hard_limit(
+        current_step.value(),
+        (time_step_id.step_time() + current_step).value());
     return true;
   }
 
-  const auto& current_step = db::get<Tags::TimeStep>(*box);
-
-  const double last_step_size = std::abs(db::get<Tags::TimeStep>(*box).value());
-
-  // The step choosers return the magnitude of the desired step, so
-  // we always want the minimum requirement, but we have to negate
-  // the final answer if time is running backwards.
-  double desired_step = std::numeric_limits<double>::infinity();
-  bool step_accepted = true;
-  for (const auto& step_chooser : step_choosers) {
-    const auto [step_choice, step_choice_accepted] =
-        step_chooser->template desired_step<StepChoosersToUse>(
-            last_step_size, *box);
-    desired_step = std::min(desired_step, step_choice);
-    step_accepted = step_accepted and step_choice_accepted;
-  }
-  if (not current_step.is_positive()) {
-    desired_step = -desired_step;
-  }
+  const double desired_step = step_requests.step_size(
+      time_step_id.step_time().value(), current_step.value());
 
   constexpr double smallest_relative_step_size = 1.0e-9;
   if (abs(desired_step / current_step.slab().duration().value()) <
@@ -124,6 +125,9 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   // if step accepted, just proceed. Otherwise, change Time::Next and jump
   // back to the first instance of `UpdateU`.
   if (step_accepted) {
+    step_requests.error_on_hard_limit(
+        current_step.value(),
+        (time_step_id.step_time() + current_step).value());
     return true;
   } else {
     db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(

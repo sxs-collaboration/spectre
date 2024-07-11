@@ -20,6 +20,8 @@ spectre_target_sources(
   Time.cpp
   TimeSequence.cpp
   TimeStepId.cpp
+  TimeStepRequest.cpp
+  TimeStepRequestProcessor.cpp
   Utilities.cpp
   )
 
@@ -42,6 +44,8 @@ spectre_target_headers(
   Time.hpp
   TimeSequence.hpp
   TimeStepId.hpp
+  TimeStepRequest.hpp
+  TimeStepRequestProcessor.hpp
   Utilities.hpp
   )
 

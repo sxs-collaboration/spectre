@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <pup.h>
 #include <pup_stl.h>  // IWYU pragma: keep
@@ -10,7 +11,8 @@
 #include <vector>
 
 #include "Options/String.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,7 +29,7 @@ struct Element;
 /// \endcond
 
 namespace StepChoosers {
-/// Suggests specified step sizes in each block
+/// Sets a goal specified per-block.
 template <typename StepChooserUse, size_t Dim>
 class ByBlock : public StepChooser<StepChooserUse> {
  public:
@@ -44,25 +46,24 @@ class ByBlock : public StepChooser<StepChooserUse> {
         "Step sizes, indexed by block number"};
   };
 
-  static constexpr Options::String help{
-      "Suggests specified step sizes in each block"};
+  static constexpr Options::String help{"Sets a goal specified per-block."};
   using options = tmpl::list<Sizes>;
 
   explicit ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
-  std::pair<double, bool> operator()(
-      const Element<Dim>& element,
-      const double /*last_step_magnitude*/) const {
+  std::pair<TimeStepRequest, bool> operator()(const Element<Dim>& element,
+                                              const double last_step) const {
     const size_t block = element.id().block_id();
     if (block >= sizes_.size()) {
       ERROR("Step size not specified for block " << block);
     }
-    return std::make_pair(sizes_[block], true);
+    return {{.size_goal = std::copysign(sizes_[block], last_step)}, true};
   }
 
   bool uses_local_data() const override { return true; }
+  bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | sizes_; }

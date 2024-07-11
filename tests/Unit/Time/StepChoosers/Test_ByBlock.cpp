@@ -18,6 +18,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -56,7 +57,8 @@ void test_by_block() {
         db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                           domain::Tags::Element<volume_dim>>>(Metavariables{},
                                                               element);
-    const double expected = 0.5 * static_cast<double>(block + 5);
+    const TimeStepRequest expected{.size_goal =
+                                       0.5 * static_cast<double>(block + 5)};
 
     CHECK(by_block(element, current_step) == std::make_pair(expected, true));
     CHECK(serialize_and_deserialize(by_block)(element, current_step) ==

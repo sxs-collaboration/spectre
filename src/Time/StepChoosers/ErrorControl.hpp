@@ -23,6 +23,7 @@
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -54,8 +55,7 @@ struct ErrorControlBase : IsAnErrorControl {
 }  // namespace ErrorControl_detail
 
 /*!
- * \brief Suggests a step size based on a target absolute and/or relative error
- * measure.
+ * \brief Sets a goal based on time-stepper truncation error.
  *
  * \details The suggested step is calculated via a simple specialization of the
  * scheme suggested in \cite Hairer1993. We first compute the aggregated error
@@ -175,7 +175,7 @@ class ErrorControl
   };
 
   static constexpr Options::String help{
-      "Chooses a step based on a target relative and absolute error tolerance"};
+      "Sets a goal based on time-stepper truncation error."};
   using options = tmpl::list<AbsoluteTolerance, RelativeTolerance, MaxFactor,
                              MinFactor, SafetyFactor>;
 
@@ -199,16 +199,16 @@ class ErrorControl
 
   using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
-  std::pair<double, bool> operator()(
+  std::pair<TimeStepRequest, bool> operator()(
       const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
       const double previous_step) const {
-    // request that the step size not be changed if there isn't a new error
+    // Do not request that the step size be changed if there isn't a new error
     // estimate
     if (not errors[1].has_value()) {
-      return std::make_pair(std::numeric_limits<double>::infinity(), true);
+      return {{}, true};
     }
     double new_step;
-    if (not errors[0].has_value()) {
+    if (not errors[0].has_value() or errors[0]->order != errors[1]->order) {
       new_step = errors[1]->step_size.value() *
                  std::clamp(safety_factor_ *
                                 pow(1.0 / std::max(errors[1]->error, 1e-14),
@@ -217,9 +217,6 @@ class ErrorControl
     } else {
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
-      ASSERT(errors[0]->order == errors[1]->order,
-             "Error estimates are different orders.  Need to figure our what "
-             "to do in this case.");
       const double alpha_factor = 0.7 / (errors[1]->order + 1);
       const double beta_factor = 0.4 / (errors[0]->order + 1);
       new_step =
@@ -233,11 +230,12 @@ class ErrorControl
     // If the error is out-of-date we can still reject a step, but it
     // won't improve the reported error, so make sure to only do it
     // if we actually request a smaller step.
-    return {abs(new_step),
-            abs(new_step) >= previous_step or errors[1]->error <= 1.0};
+    return {{.size_goal = new_step},
+            abs(new_step) >= abs(previous_step) or errors[1]->error <= 1.0};
   }
 
   bool uses_local_data() const override { return true; }
+  bool can_be_delayed() const override { return true; }
 
   StepperErrorTolerances tolerances() const override {
     return {.absolute = absolute_tolerance_, .relative = relative_tolerance_};
