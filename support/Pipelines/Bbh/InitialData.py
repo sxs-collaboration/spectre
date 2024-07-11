@@ -325,7 +325,7 @@ def generate_id(
     show_default=True,
 )
 @click.option(
-    "--control",
+    "--control/--no-control",
     default=True,
     show_default=True,
     help="Control BBH physical parameters.",
