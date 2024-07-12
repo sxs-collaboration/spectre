@@ -132,6 +132,33 @@ class DgElementArrayMember<Dim, Metavariables,
   template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
   bool invoke_iterable_action();
 
+  /*!
+   * \brief Invokes a simple action on the element.
+   *
+   * \note This does not lock the element. It is up to the calling action to
+   * lock the element if needed.
+   */
+  template <typename Action, typename... Args>
+  void simple_action(Args&&... args) {
+    try {
+      if (this->performing_action_) {
+        ERROR(
+            "Already performing an Action and cannot execute additional "
+            "Actions from inside of an Action. This is only possible if the "
+            "simple_action function is not invoked via a proxy, which "
+            "we do not allow.");
+      }
+      this->performing_action_ = true;
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_), this->element_id_,
+          std::forward<Args>(args)...);
+      this->performing_action_ = false;
+      perform_algorithm();
+    } catch (const std::exception& exception) {
+      initiate_shutdown(exception);
+    }
+  }
+
   /// Print the expanded type aliases
   std::string print_types() const override;
 
