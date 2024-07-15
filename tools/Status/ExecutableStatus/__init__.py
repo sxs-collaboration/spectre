@@ -4,6 +4,7 @@
 import logging
 import re
 
+from .CharacteristicExtract import CharacteristicExtract
 from .EvolveGhBinaryBlackHole import EvolveGhBinaryBlackHole
 from .EvolveGhSingleBlackHole import EvolveGhSingleBlackHole
 from .ExecutableStatus import EllipticStatus, EvolutionStatus, ExecutableStatus
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Subclasses are matched in this order. Add new subclasses here.
 executable_status_subclasses = [
+    CharacteristicExtract,
     EvolveGhBinaryBlackHole,
     EvolveGhSingleBlackHole,
     EvolutionStatus,
