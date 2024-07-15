@@ -19,3 +19,4 @@ preview = true
 profile = "black"
 line_length = 80
 skip_gitignore = true
+known_first_party = ["spectre"]
