@@ -186,7 +186,7 @@ class TestEccentricityControl(unittest.TestCase):
             tmax=1200.0,
             angular_velocity_from_xcts=mock_angular_velocity_from_xcts,
             expansion_from_xcts=mock_expansion_from_xcts,
-            output=None,
+            fig=None,
         )
 
         for name, func in functions.items():

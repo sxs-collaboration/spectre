@@ -36,7 +36,7 @@ def split_iteration_sequence(data: pd.DataFrame) -> List[pd.DataFrame]:
 
 def plot_elliptic_convergence(
     h5_file,
-    axes=None,
+    fig=None,
     linear_residuals_subfile_name="GmresResiduals.dat",
     nonlinear_residuals_subfile_name="NewtonRaphsonResiduals.dat",
 ):
@@ -44,8 +44,7 @@ def plot_elliptic_convergence(
 
     Arguments:
       h5_file: The H5 reductions file.
-      axes: Optional. The matplotlib axes to plot on. Should be a tuple of two
-        axes, the first for the residuals and the second for the walltime.
+      fig: Optional. The matplotlib figure to plot in.
       linear_residuals_subfile_name: The name of the subfile containing the
         linear solver residuals.
       nonlinear_residuals_subfile_name: The name of the subfile containing the
@@ -82,12 +81,11 @@ def plot_elliptic_convergence(
         else linear_residuals
     )[0]["Residual"].iloc[0]
     # Plot nonlinear solver residuals
-    if axes is None:
-        fig, (ax_residual, ax_time) = plt.subplots(
-            nrows=2, ncols=1, sharex=True, gridspec_kw={"height_ratios": [3, 1]}
-        )
-    else:
-        ax_residual, ax_time = axes
+    if fig is None:
+        fig = plt.figure()
+    ax_residual, ax_time = fig.subplots(
+        nrows=2, ncols=1, sharex=True, gridspec_kw={"height_ratios": [3, 1]}
+    )
     if nonlinear_residuals is not None:
         m = 0
         for i, residuals in enumerate(nonlinear_residuals):
@@ -150,7 +148,6 @@ def plot_elliptic_convergence(
         )
 
     # Configure the axes
-    ax_residual.set_title("Elliptic solver convergence")
     ax_residual.set_yscale("log")
     ax_residual.grid()
     ax_residual.legend()
@@ -161,6 +158,7 @@ def plot_elliptic_convergence(
     ax_time.set_xlabel("Cumulative linear solver iteration")
     # Allow only integer ticks for the x-axis
     ax_time.xaxis.set_major_locator(MaxNLocator(integer=True))
+    return fig
 
 
 @click.command(name="elliptic-convergence")
@@ -185,7 +183,7 @@ def plot_elliptic_convergence(
 def plot_elliptic_convergence_command(**kwargs):
     """Plot elliptic solver convergence"""
     _rich_traceback_guard = True  # Hide traceback until here
-    plot_elliptic_convergence(**kwargs)
+    return plot_elliptic_convergence(**kwargs)
 
 
 if __name__ == "__main__":
