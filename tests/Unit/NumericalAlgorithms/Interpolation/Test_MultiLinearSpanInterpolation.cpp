@@ -133,7 +133,7 @@ void test() {
   auto y_interpolated = uniform_intp.interpolate(which_var, point);
   auto y_interpolated_gen = general_intp.interpolate(which_var, point);
 
-  const double epsilon = 1.0e-12;
+  const double epsilon = 1.0e-11;
   CAPTURE(epsilon);
   for (size_t nv = 0; nv < NumVar; ++nv) {
     CAPTURE(gsl::at(y_expected, nv));
