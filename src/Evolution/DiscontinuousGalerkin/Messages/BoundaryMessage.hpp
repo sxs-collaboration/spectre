@@ -45,6 +45,7 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
   size_t sender_node;
   size_t sender_core;
   int tci_status;
+  size_t integration_order;
   ::TimeStepId current_time_step_id;
   ::TimeStepId next_time_step_id;
   Direction<Dim> neighbor_direction;
@@ -58,10 +59,11 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
 
   BoundaryMessage() = default;
 
-  BoundaryMessage(const size_t subcell_ghost_data_size_in,
-                  const size_t dg_flux_data_size_in, const bool owning_in,
-                  const bool enable_if_disabled_in, const size_t sender_node_in,
-                  const size_t sender_core_in, const int tci_status_in,
+  BoundaryMessage(size_t subcell_ghost_data_size_in,
+                  size_t dg_flux_data_size_in, bool owning_in,
+                  bool enable_if_disabled_in, size_t sender_node_in,
+                  size_t sender_core_in, int tci_status_in,
+                  size_t integration_order_in,
                   const ::TimeStepId& current_time_step_id_in,
                   const ::TimeStepId& next_time_step_id_in,
                   const Direction<Dim>& neighbor_direction_in,
@@ -77,8 +79,7 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
    * This will add `(subcell_size + dg_size) * sizeof(double)` number of bytes
    * to `sizeof(BoundaryMessage<Dim>)`.
    */
-  static size_t total_bytes_with_data(const size_t subcell_size,
-                                      const size_t dg_size);
+  static size_t total_bytes_with_data(size_t subcell_size, size_t dg_size);
 
   static void* pack(BoundaryMessage*);
   static BoundaryMessage* unpack(void*);

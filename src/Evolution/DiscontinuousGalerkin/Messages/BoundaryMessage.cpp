@@ -16,7 +16,8 @@ BoundaryMessage<Dim>::BoundaryMessage(
     const size_t subcell_ghost_data_size_in, const size_t dg_flux_data_size_in,
     const bool owning_in, const bool enable_if_disabled_in,
     const size_t sender_node_in, const size_t sender_core_in,
-    const int tci_status_in, const ::TimeStepId& current_time_step_id_in,
+    const int tci_status_in, const size_t integration_order_in,
+    const ::TimeStepId& current_time_step_id_in,
     const ::TimeStepId& next_time_step_id_in,
     const Direction<Dim>& neighbor_direction_in,
     const ElementId<Dim>& element_id_in,
@@ -30,6 +31,7 @@ BoundaryMessage<Dim>::BoundaryMessage(
       sender_node(sender_node_in),
       sender_core(sender_core_in),
       tci_status(tci_status_in),
+      integration_order(integration_order_in),
       current_time_step_id(current_time_step_id_in),
       next_time_step_id(next_time_step_id_in),
       neighbor_direction(neighbor_direction_in),
@@ -156,6 +158,7 @@ bool operator==(const BoundaryMessage<Dim>& lhs,
          lhs.sender_node == rhs.sender_node and
          lhs.sender_core == rhs.sender_core and
          lhs.tci_status == rhs.tci_status and
+         lhs.integration_order == rhs.integration_order and
          lhs.current_time_step_id == rhs.current_time_step_id and
          lhs.next_time_step_id == rhs.next_time_step_id and
          lhs.neighbor_direction == rhs.neighbor_direction and
@@ -193,6 +196,7 @@ std::ostream& operator<<(std::ostream& os,
   os << "sender_node = " << message.sender_node << "\n";
   os << "sender_core = " << message.sender_core << "\n";
   os << "tci_status = " << message.tci_status << "\n";
+  os << "integration_order = " << message.integration_order << "\n";
   os << "current_time_ste_id = " << message.current_time_step_id << "\n";
   os << "next_time_ste_id = " << message.next_time_step_id << "\n";
   os << "neighbor_direction = " << message.neighbor_direction << "\n";
