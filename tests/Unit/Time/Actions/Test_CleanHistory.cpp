@@ -15,6 +15,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"

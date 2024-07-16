@@ -28,23 +28,13 @@ namespace evolution::dg {
 namespace {
 template <size_t Dim>
 void assign_with_reference(const gsl::not_null<MortarData<Dim>*> mortar_data,
-                           Mesh<Dim - 1> local_mesh,
-                           std::optional<DataVector> local_data,
-                           Mesh<Dim - 1> neighbor_mesh,
-                           std::optional<DataVector> neighbor_data,
+                           const Mesh<Dim - 1>& face_mesh,
+                           const std::optional<DataVector>& data,
                            const std::string& expected_output) {
-  if (local_data.has_value()) {
-    mortar_data->local_mortar_data() = std::pair{local_mesh, *local_data};
-
-    CHECK(mortar_data->local_mortar_data().has_value());
-    CHECK_FALSE(mortar_data->neighbor_mortar_data().has_value());
-  }
-
-  if (neighbor_data.has_value()) {
-    mortar_data->neighbor_mortar_data() =
-        std::pair{neighbor_mesh, *neighbor_data};
-    CHECK(mortar_data->local_mortar_data().has_value());
-    CHECK(mortar_data->neighbor_mortar_data().has_value());
+  if (data.has_value()) {
+    mortar_data->face_mesh = face_mesh;
+    mortar_data->mortar_data = *data;
+    CHECK(mortar_data->mortar_data.has_value());
   }
 
   CHECK(get_output(*mortar_data) == expected_output);
@@ -54,18 +44,12 @@ template <size_t Dim>
 void check_serialization(const gsl::not_null<MortarData<Dim>*> mortar_data) {
   const auto deserialized_mortar_data = serialize_and_deserialize(*mortar_data);
 
-  CHECK(*mortar_data->local_mortar_data() ==
-        *deserialized_mortar_data.local_mortar_data());
-  CHECK(*mortar_data->neighbor_mortar_data() ==
-        *deserialized_mortar_data.neighbor_mortar_data());
+  CHECK(*mortar_data->mortar_data == *deserialized_mortar_data.mortar_data);
 
   CHECK(*mortar_data == deserialized_mortar_data);
   CHECK_FALSE(*mortar_data != deserialized_mortar_data);
 
-  CHECK(*mortar_data->local_mortar_data() ==
-        *deserialized_mortar_data.local_mortar_data());
-  CHECK(*mortar_data->neighbor_mortar_data() ==
-        *deserialized_mortar_data.neighbor_mortar_data());
+  CHECK(*mortar_data->mortar_data == *deserialized_mortar_data.mortar_data);
 }
 
 template <size_t Dim>
@@ -74,7 +58,7 @@ void test_global_time_stepping_usage() {
   MAKE_GENERATOR(gen);
   constexpr size_t number_of_components = 1 + Dim;
 
-  MortarData<Dim> mortar_data{};
+  MortarData<Dim> local_mortar_data{};
 
   const Mesh<Dim - 1> mortar_mesh{4, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::Gauss};
@@ -86,27 +70,42 @@ void test_global_time_stepping_usage() {
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
+  MortarData<Dim> neighbor_mortar_data{};
+
   const Mesh<Dim - 1> neighbor_mesh{3, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::Gauss};
   DataVector neighbor_data{
       mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
-  fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
+  fill_with_random_values(make_not_null(&neighbor_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  std::string expected_output = MakeString{}
-                                << "LocalMortarData: (" << local_mesh << ", "
-                                << local_data << ")\n"
-                                << "NeighborMortarData: (" << neighbor_mesh
-                                << ", " << neighbor_data << ")\n";
+  std::string local_expected_output = MakeString{}
+                                      << "Mortar data: " << local_data << "\n"
+                                      << "Face normal magnitude: --\n"
+                                      << "Face det(J): --\n"
+                                      << "Face mesh: " << local_mesh << "\n"
+                                      << "Volume det(invJ): --\n";
 
-  CHECK_FALSE(mortar_data.local_mortar_data().has_value());
-  CHECK_FALSE(mortar_data.neighbor_mortar_data().has_value());
+  std::string neighbor_expected_output =
+      MakeString{} << "Mortar data: " << neighbor_data << "\n"
+                   << "Face normal magnitude: --\n"
+                   << "Face det(J): --\n"
+                   << "Face mesh: " << neighbor_mesh << "\n"
+                   << "Volume det(invJ): --\n";
 
-  assign_with_reference(make_not_null(&mortar_data), local_mesh,
-                        std::optional{local_data}, neighbor_mesh,
-                        std::optional{neighbor_data}, expected_output);
+  CHECK_FALSE(local_mortar_data.mortar_data.has_value());
+  CHECK_FALSE(neighbor_mortar_data.mortar_data.has_value());
 
-  check_serialization(make_not_null(&mortar_data));
+  assign_with_reference(make_not_null(&local_mortar_data),
+                        local_mesh, std::optional{local_data},
+                        local_expected_output);
+
+  assign_with_reference(make_not_null(&neighbor_mortar_data),
+                        neighbor_mesh, std::optional{neighbor_data},
+                        neighbor_expected_output);
+
+  check_serialization(make_not_null(&local_mortar_data));
+  check_serialization(make_not_null(&neighbor_mortar_data));
 }
 
 template <size_t Dim>
@@ -128,14 +127,15 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
-  std::string expected_output = MakeString{} << "LocalMortarData: ("
-                                             << local_mesh << ", " << local_data
-                                             << ")\n"
-                                             << "NeighborMortarData: --\n";
+  std::string expected_output = MakeString{}
+                                << "Mortar data: " << local_data << "\n"
+                                << "Face normal magnitude: --\n"
+                                << "Face det(J): --\n"
+                                << "Face mesh: " << local_mesh << "\n"
+                                << "Volume det(invJ): --\n";
 
   assign_with_reference(make_not_null(&mortar_data), local_mesh,
-                        std::optional{local_data}, local_mesh, std::nullopt,
-                        expected_output);
+                        std::optional{local_data}, expected_output);
 
   const auto local_volume_det_inv_jacobian =
       make_with_random_values<Scalar<DataVector>>(
@@ -150,12 +150,10 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
           make_not_null(&gen), make_not_null(&dist),
           mortar_mesh.number_of_grid_points());
 
+  mortar_data.face_normal_magnitude = local_face_normal_magnitude;
   if (use_gauss_points) {
-    mortar_data.insert_local_geometric_quantities(local_volume_det_inv_jacobian,
-                                                  local_face_det_jacobian,
-                                                  local_face_normal_magnitude);
-  } else {
-    mortar_data.insert_local_face_normal_magnitude(local_face_normal_magnitude);
+    mortar_data.volume_det_inv_jacobian = local_volume_det_inv_jacobian;
+    mortar_data.face_det_jacobian = local_face_det_jacobian;
   }
 
   const auto check_geometric_quantities = [&local_face_det_jacobian,
@@ -164,20 +162,12 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
                                            use_gauss_points](
                                               const auto& mortar_data_local) {
     if (use_gauss_points) {
-      Scalar<DataVector> retrieved_local_face_det_jacobian{};
-      Scalar<DataVector> retrieved_local_volume_det_inv_jacobian{};
-      mortar_data_local.get_local_face_det_jacobian(
-          &retrieved_local_face_det_jacobian);
-      mortar_data_local.get_local_volume_det_inv_jacobian(
-          &retrieved_local_volume_det_inv_jacobian);
-      CHECK(retrieved_local_face_det_jacobian == local_face_det_jacobian);
-      CHECK(retrieved_local_volume_det_inv_jacobian ==
+      CHECK(mortar_data_local.face_det_jacobian == local_face_det_jacobian);
+      CHECK(mortar_data_local.volume_det_inv_jacobian ==
             local_volume_det_inv_jacobian);
     }
-    Scalar<DataVector> retrieved_local_face_normal_magnitude{};
-    mortar_data_local.get_local_face_normal_magnitude(
-        &retrieved_local_face_normal_magnitude);
-    CHECK(retrieved_local_face_normal_magnitude == local_face_normal_magnitude);
+    CHECK(mortar_data_local.face_normal_magnitude ==
+          local_face_normal_magnitude);
   };
 
   check_geometric_quantities(mortar_data);
@@ -186,9 +176,7 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   // insert neighbor data here
   const auto deserialized_mortar_data = serialize_and_deserialize(mortar_data);
 
-  CHECK(*mortar_data.local_mortar_data() ==
-        *deserialized_mortar_data.local_mortar_data());
-  CHECK_FALSE(deserialized_mortar_data.neighbor_mortar_data().has_value());
+  CHECK(*mortar_data.mortar_data == *deserialized_mortar_data.mortar_data);
   check_geometric_quantities(deserialized_mortar_data);
 
   CHECK(mortar_data == deserialized_mortar_data);
