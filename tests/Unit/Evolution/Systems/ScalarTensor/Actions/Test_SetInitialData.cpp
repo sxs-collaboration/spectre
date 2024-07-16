@@ -1,0 +1,399 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "Framework/TestingFramework.hpp"
+
+#include <cstddef>
+#include <limits>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <variant>
+
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/ScalarTensor/Actions/SetInitialData.hpp"
+#include "Evolution/Systems/ScalarTensor/System.hpp"
+#include "Framework/ActionTesting.hpp"
+#include "Framework/TestCreation.hpp"
+#include "IO/Importers/Actions/ReadVolumeData.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
+#include "IO/Importers/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
+#include "PointwiseFunctions/AnalyticData/ScalarTensor/KerrSphericalHarmonic.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.tpp"
+#include "Time/Tags/Time.hpp"
+#include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeString.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+namespace ScalarTensor {
+namespace {
+
+using st_system_vars = ScalarTensor::System::variables_tag::tags_list;
+
+template <typename Metavariables>
+struct MockElementArray {
+  using component_being_mocked = void;  // Not needed
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementId<3>;
+  using mutable_global_cache_tags =
+      tmpl::list<gh::Tags::SetPiAndPhiFromConstraints>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::append<
+              st_system_vars,
+              tmpl::list<domain::Tags::Mesh<3>,
+                         domain::Tags::Coordinates<3, Frame::Inertial>,
+                         domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                                       Frame::Inertial>,
+                         ::Tags::Time>>>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<ScalarTensor::Actions::SetInitialData,
+                     ScalarTensor::Actions::ReceiveNumericInitialData>>>;
+};
+
+struct MockReadVolumeData {
+  template <typename ParallelComponent, typename DataBox,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(
+      DataBox& /*box*/, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const importers::ImporterOptions& options, const size_t volume_data_id,
+      tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
+          importers::Tags::Selected, NumericInitialData::all_vars>>
+          selected_fields) {
+    const auto& initial_data = dynamic_cast<const NumericInitialData&>(
+        get<evolution::initial_data::Tags::InitialData>(cache));
+    CHECK(options == initial_data.importer_options());
+    CHECK(volume_data_id == initial_data.volume_data_id());
+    const auto gh_selected_vars =
+        initial_data.gh_numeric_id().selected_variables();
+    if (std::holds_alternative<gh::NumericInitialData::GhVars>(
+            gh_selected_vars)) {
+      CHECK(get<importers::Tags::Selected<
+                gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields) ==
+            "CustomSpacetimeMetric");
+      CHECK(get<importers::Tags::Selected<gh::Tags::Pi<DataVector, 3>>>(
+                selected_fields) == "CustomPi");
+      CHECK(get<importers::Tags::Selected<gh::Tags::Phi<DataVector, 3>>>(
+                selected_fields) == "CustomPhi");
+      CHECK_FALSE(
+          get<importers::Tags::Selected<
+              gr::Tags::SpatialMetric<DataVector, 3>>>(selected_fields));
+      CHECK_FALSE(get<importers::Tags::Selected<gr::Tags::Lapse<DataVector>>>(
+          selected_fields));
+      CHECK_FALSE(
+          get<importers::Tags::Selected<gr::Tags::Shift<DataVector, 3>>>(
+              selected_fields));
+    } else if (std::holds_alternative<gh::NumericInitialData::AdmVars>(
+                   gh_selected_vars)) {
+      CHECK(get<importers::Tags::Selected<
+                gr::Tags::SpatialMetric<DataVector, 3>>>(selected_fields) ==
+            "CustomSpatialMetric");
+      CHECK(get<importers::Tags::Selected<gr::Tags::Lapse<DataVector>>>(
+                selected_fields) == "CustomLapse");
+      CHECK(get<importers::Tags::Selected<gr::Tags::Shift<DataVector, 3>>>(
+                selected_fields) == "CustomShift");
+      CHECK(get<importers::Tags::Selected<
+                gr::Tags::ExtrinsicCurvature<DataVector, 3>>>(
+                selected_fields) == "CustomExtrinsicCurvature");
+      CHECK_FALSE(
+          get<importers::Tags::Selected<
+              gr::Tags::SpacetimeMetric<DataVector, 3>>>(selected_fields));
+      CHECK_FALSE(get<importers::Tags::Selected<gh::Tags::Pi<DataVector, 3>>>(
+          selected_fields));
+      CHECK_FALSE(get<importers::Tags::Selected<gh::Tags::Phi<DataVector, 3>>>(
+          selected_fields));
+    } else {
+      REQUIRE(false);
+    }
+    CHECK(get<importers::Tags::Selected<CurvedScalarWave::Tags::Psi>>(
+              selected_fields) == "CustomPsi");
+    CHECK(get<importers::Tags::Selected<CurvedScalarWave::Tags::Pi>>(
+              selected_fields) == "CustomScalarPi");
+    CHECK(get<importers::Tags::Selected<CurvedScalarWave::Tags::Phi<3>>>(
+              selected_fields) == "CustomScalarPhi");
+  }
+};
+
+template <typename Metavariables>
+struct MockVolumeDataReader {
+  using component_being_mocked = importers::ElementDataReader<Metavariables>;
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using array_index = size_t;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+  using replace_these_simple_actions =
+      tmpl::list<importers::Actions::ReadAllVolumeDataAndDistribute<
+          metavariables::volume_dim, NumericInitialData::all_vars,
+          MockElementArray<Metavariables>>>;
+  using with_these_simple_actions = tmpl::list<MockReadVolumeData>;
+};
+
+struct Metavariables {
+  static constexpr size_t volume_dim = 3;
+  using component_list = tmpl::list<MockElementArray<Metavariables>,
+                                    MockVolumeDataReader<Metavariables>>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        evolution::initial_data::InitialData,
+        tmpl::list<NumericInitialData,
+                   gh::Solutions::WrappedGr<
+                       ::ScalarTensor::AnalyticData::KerrSphericalHarmonic>>>>;
+  };
+};
+
+void test_set_initial_data(
+    const evolution::initial_data::InitialData& initial_data,
+    const std::string& option_string, const bool is_numeric) {
+  {
+    INFO("Factory creation");
+    const auto created = TestHelpers::test_creation<
+        std::unique_ptr<evolution::initial_data::InitialData>, Metavariables>(
+        option_string);
+    if (is_numeric) {
+      CHECK(dynamic_cast<const NumericInitialData&>(*created) ==
+            dynamic_cast<const NumericInitialData&>(initial_data));
+    } else {
+      CHECK(dynamic_cast<const gh::Solutions::WrappedGr<
+                ::ScalarTensor::AnalyticData::KerrSphericalHarmonic>&>(
+                *created) ==
+            dynamic_cast<const gh::Solutions::WrappedGr<
+                ::ScalarTensor::AnalyticData::KerrSphericalHarmonic>&>(
+                initial_data));
+    }
+  }
+
+  using reader_component = MockVolumeDataReader<Metavariables>;
+  using element_array = MockElementArray<Metavariables>;
+
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {initial_data.get_clone()}, {true}};
+
+  // Setup mock data file reader
+  ActionTesting::emplace_nodegroup_component<reader_component>(
+      make_not_null(&runner));
+
+  // Setup element
+  const ElementId<3> element_id{0};
+  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto map =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          domain::CoordinateMaps::Wedge<3>{
+              2., 4., 1., 1., OrientationMap<3>::create_aligned(), true});
+  const auto logical_coords = logical_coordinates(mesh);
+  const auto coords = map(logical_coords);
+  const auto inv_jacobian = map.inv_jacobian(logical_coords);
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      make_not_null(&runner), element_id,
+      {tnsr::aa<DataVector, 3>{}, tnsr::aa<DataVector, 3>{},
+       tnsr::iaa<DataVector, 3>{}, Scalar<DataVector>{}, Scalar<DataVector>{},
+       tnsr::i<DataVector, 3>{}, mesh, coords, inv_jacobian, 0.});
+
+  const auto get_element_tag = [&runner,
+                                &element_id](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<element_array, tag>(runner,
+                                                              element_id);
+  };
+
+  // We use a Kerr solution to generate data
+  const gh::Solutions::WrappedGr<
+      ::ScalarTensor::AnalyticData::KerrSphericalHarmonic>
+      kerr{1., {{0., 0., 0.}}, 2.0, 1.0, 1.0, std::pair<size_t, int>{1, 0}};
+  const auto kerr_gh_vars = kerr.variables(coords, st_system_vars{});
+
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  const auto& cache = ActionTesting::cache<element_array>(runner, element_id);
+
+  // SetInitialData
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+
+  if (is_numeric) {
+    INFO("Numeric initial data");
+    const auto& numeric_id =
+        dynamic_cast<const NumericInitialData&>(initial_data);
+
+    CHECK(Parallel::get<gh::Tags::SetPiAndPhiFromConstraints>(cache) ==
+          std::holds_alternative<gh::NumericInitialData::AdmVars>(
+              numeric_id.gh_numeric_id().selected_variables()));
+
+    REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
+        make_not_null(&runner), element_id));
+
+    // MockReadVolumeData
+    ActionTesting::invoke_queued_simple_action<reader_component>(
+        make_not_null(&runner), 0);
+
+    // Insert KerrSchild data into the inbox
+    using inbox_tag = importers::Tags::VolumeData<NumericInitialData::all_vars>;
+    auto& inboxes =
+        ActionTesting::get_inbox_tag<element_array, inbox_tag, Metavariables>(
+            make_not_null(&runner), element_id);
+    auto& inbox = inboxes[numeric_id.volume_data_id()];
+    const auto& gh_selected_vars =
+        numeric_id.gh_numeric_id().selected_variables();
+    if (std::holds_alternative<gh::NumericInitialData::GhVars>(
+            gh_selected_vars)) {
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(inbox) =
+          get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars);
+      get<gh::Tags::Pi<DataVector, 3>>(inbox) =
+          get<gh::Tags::Pi<DataVector, 3>>(kerr_gh_vars);
+      get<gh::Tags::Phi<DataVector, 3>>(inbox) =
+          get<gh::Tags::Phi<DataVector, 3>>(kerr_gh_vars);
+    } else if (std::holds_alternative<gh::NumericInitialData::AdmVars>(
+                   gh_selected_vars)) {
+      const auto kerr_adm_vars = kerr.variables(
+          coords, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                             gr::Tags::Lapse<DataVector>,
+                             gr::Tags::Shift<DataVector, 3>,
+                             gr::Tags::ExtrinsicCurvature<DataVector, 3>>{});
+      get<gr::Tags::SpatialMetric<DataVector, 3>>(inbox) =
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(kerr_adm_vars);
+      get<gr::Tags::Lapse<DataVector>>(inbox) =
+          get<gr::Tags::Lapse<DataVector>>(kerr_adm_vars);
+      get<gr::Tags::Shift<DataVector, 3>>(inbox) =
+          get<gr::Tags::Shift<DataVector, 3>>(kerr_adm_vars);
+      get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(inbox) =
+          get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(kerr_adm_vars);
+    } else {
+      REQUIRE(false);
+    }
+    get<CurvedScalarWave::Tags::Psi>(inbox) =
+        get<CurvedScalarWave::Tags::Psi>(kerr_gh_vars);
+    get<CurvedScalarWave::Tags::Pi>(inbox) =
+        get<CurvedScalarWave::Tags::Pi>(kerr_gh_vars);
+    get<CurvedScalarWave::Tags::Phi<3>>(inbox) =
+        get<CurvedScalarWave::Tags::Phi<3>>(kerr_gh_vars);
+
+    const std::string inbox_output = inbox_tag::output_inbox(inboxes, 1_st);
+    const std::string expected_inbox_output =
+        MakeString{} << " VolumeDataInbox:\n"
+                     << "  Index: " << numeric_id.volume_data_id() << "\n";
+    CHECK(inbox_output == expected_inbox_output);
+
+    // ReceiveNumericInitialData
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  } else {
+    CHECK(Parallel::get<gh::Tags::SetPiAndPhiFromConstraints>(cache));
+  }
+
+  // Check result. These variables are not particularly precise because we are
+  // taking numerical derivatives on a fairly coarse wedge-shaped grid.
+  const Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(gr::Tags::SpacetimeMetric<DataVector, 3>{}),
+      (get<gr::Tags::SpacetimeMetric<DataVector, 3>>(kerr_gh_vars)),
+      custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(gh::Tags::Pi<DataVector, 3>{}),
+                               (get<gh::Tags::Pi<DataVector, 3>>(kerr_gh_vars)),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(gh::Tags::Phi<DataVector, 3>{}),
+      (get<gh::Tags::Phi<DataVector, 3>>(kerr_gh_vars)), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(CurvedScalarWave::Tags::Psi{}),
+                               (get<CurvedScalarWave::Tags::Psi>(kerr_gh_vars)),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get_element_tag(CurvedScalarWave::Tags::Pi{}),
+                               (get<CurvedScalarWave::Tags::Pi>(kerr_gh_vars)),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get_element_tag(CurvedScalarWave::Tags::Phi<3>{}),
+      (get<CurvedScalarWave::Tags::Phi<3>>(kerr_gh_vars)), custom_approx);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.NumericInitialData",
+                  "[Unit][Evolution]") {
+  register_factory_classes_with_charm<Metavariables>();
+  test_set_initial_data(
+      NumericInitialData{"TestInitialData.h5",
+                         "VolumeData",
+                         0.,
+                         {1.0e-9},
+                         false,
+                         gh::NumericInitialData::GhVars{
+                             "CustomSpacetimeMetric", "CustomPi", "CustomPhi"},
+                         CurvedScalarWave::NumericInitialData::ScalarVars{
+                             "CustomPsi", "CustomScalarPi", "CustomScalarPhi"}},
+      "NumericInitialData:\n"
+      "  FileGlob: TestInitialData.h5\n"
+      "  Subgroup: VolumeData\n"
+      "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: 1e-9\n"
+      "  ElementsAreIdentical: False\n"
+      "  GhVariables:\n"
+      "    SpacetimeMetric: CustomSpacetimeMetric\n"
+      "    Pi: CustomPi\n"
+      "    Phi: CustomPhi\n"
+      "  ScalarVariables:\n"
+      "    Psi: CustomPsi\n"
+      "    Pi: CustomScalarPi\n"
+      "    Phi: CustomScalarPhi\n",
+      true);
+  test_set_initial_data(
+      NumericInitialData{
+          "TestInitialData.h5", "VolumeData", 0., std::nullopt, false,
+          gh::NumericInitialData::AdmVars{"CustomSpatialMetric", "CustomLapse",
+                                          "CustomShift",
+                                          "CustomExtrinsicCurvature"},
+          CurvedScalarWave::NumericInitialData::ScalarVars{
+              "CustomPsi", "CustomScalarPi", "CustomScalarPhi"}},
+      "NumericInitialData:\n"
+      "  FileGlob: TestInitialData.h5\n"
+      "  Subgroup: VolumeData\n"
+      "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: Auto\n"
+      "  ElementsAreIdentical: False\n"
+      "  GhVariables:\n"
+      "    SpatialMetric: CustomSpatialMetric\n"
+      "    Lapse: CustomLapse\n"
+      "    Shift: CustomShift\n"
+      "    ExtrinsicCurvature: CustomExtrinsicCurvature\n"
+      "  ScalarVariables:\n"
+      "    Psi: CustomPsi\n"
+      "    Pi: CustomScalarPi\n"
+      "    Phi: CustomScalarPhi\n",
+      true);
+  test_set_initial_data(
+      gh::Solutions::WrappedGr<
+          ::ScalarTensor::AnalyticData::KerrSphericalHarmonic>{
+          1., {{0., 0., 0.}}, 2.0, 1.0, 1.0, std::pair<size_t, int>{1, 0}},
+      "GeneralizedHarmonic(KerrSphericalHarmonic):\n"
+      " Mass: 1.0 \n"
+      " Spin: [0.0, 0.0, 0.0] \n"
+      " Amplitude: 2.0 \n"
+      " Radius: 1.0 \n"
+      " Width: 1.0 \n"
+      " Mode: [1, 0]",
+      false);
+}
+
+}  // namespace ScalarTensor
