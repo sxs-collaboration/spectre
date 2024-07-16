@@ -291,6 +291,7 @@ long_lines() {
               'eos.*' \
               'external/Licenses/.*License.txt' \
               'RotatingStarId.dat$' \
+              'support/Environments/setup/mbot_install.sh' \
               'tools/CheckFiles.sh$' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
