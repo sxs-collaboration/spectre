@@ -22,19 +22,20 @@ struct InitialOrthogonalization
       std::map<temporal_id, std::tuple<double, Convergence::HasConverged>>;
 };
 
-template <typename OptionsGroup>
-struct Orthogonalization
-    : Parallel::InboxInserters::Value<Orthogonalization<OptionsGroup>> {
+template <typename OptionsGroup, typename ValueType>
+struct Orthogonalization : Parallel::InboxInserters::Value<
+                               Orthogonalization<OptionsGroup, ValueType>> {
   using temporal_id = size_t;
-  using type = std::map<temporal_id, double>;
+  using type = std::map<temporal_id, ValueType>;
 };
 
-template <typename OptionsGroup>
+template <typename OptionsGroup, typename ValueType>
 struct FinalOrthogonalization
-    : Parallel::InboxInserters::Value<FinalOrthogonalization<OptionsGroup>> {
+    : Parallel::InboxInserters::Value<
+          FinalOrthogonalization<OptionsGroup, ValueType>> {
   using temporal_id = size_t;
   using type =
-      std::map<temporal_id, std::tuple<double, blaze::DynamicVector<double>,
+      std::map<temporal_id, std::tuple<double, blaze::DynamicVector<ValueType>,
                                        Convergence::HasConverged>>;
 };
 

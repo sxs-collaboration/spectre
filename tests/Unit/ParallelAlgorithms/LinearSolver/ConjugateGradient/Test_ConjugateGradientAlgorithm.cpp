@@ -25,9 +25,8 @@ struct Metavariables {
   static constexpr const char* const help{
       "Test the conjugate gradient linear solver algorithm"};
 
-  using linear_solver =
-      LinearSolver::cg::ConjugateGradient<Metavariables, helpers::fields_tag,
-                                          SerialCg>;
+  using linear_solver = LinearSolver::cg::ConjugateGradient<
+      Metavariables, helpers::fields_tag<double>, SerialCg>;
   using preconditioner = void;
 
   using component_list = helpers::component_list<Metavariables>;

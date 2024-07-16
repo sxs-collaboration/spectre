@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 /*!
  * \ingroup LinearSolverGroup
@@ -137,11 +138,12 @@ struct Orthogonalization : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
+  using ValueType = tt::get_complex_or_fundamental_type_t<typename Tag::type>;
   static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOrthogonalizationHistory(" + db::tag_name<Tag>() + ")";
   }
-  using type = blaze::DynamicMatrix<double>;
+  using type = blaze::DynamicMatrix<ValueType>;
   using tag = Tag;
 };
 

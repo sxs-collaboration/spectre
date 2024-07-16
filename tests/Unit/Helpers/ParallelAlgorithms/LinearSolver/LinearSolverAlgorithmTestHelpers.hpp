@@ -46,25 +46,30 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 namespace LinearSolverAlgorithmTestHelpers {
 
 namespace OptionTags {
+template <typename ValueType>
 struct LinearOperator {
   static constexpr Options::String help = "The linear operator A to invert.";
-  using type = blaze::DynamicMatrix<double>;
+  using type = blaze::DynamicMatrix<ValueType>;
 };
+template <typename ValueType>
 struct Source {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
-  using type = blaze::DynamicVector<double>;
+  using type = blaze::DynamicVector<ValueType>;
 };
+template <typename ValueType>
 struct InitialGuess {
   static constexpr Options::String help = "The initial guess for the vector x.";
-  using type = blaze::DynamicVector<double>;
+  using type = blaze::DynamicVector<ValueType>;
 };
+template <typename ValueType>
 struct ExpectedResult {
   static constexpr Options::String help = "The solution x in the equation Ax=b";
-  using type = blaze::DynamicVector<double>;
+  using type = blaze::DynamicVector<ValueType>;
 };
 struct ExpectedConvergenceReason {
   static std::string name() { return "ConvergenceReason"; }
@@ -73,9 +78,10 @@ struct ExpectedConvergenceReason {
 };
 }  // namespace OptionTags
 
+template <typename ValueType>
 struct LinearOperator : db::SimpleTag {
-  using type = blaze::DynamicMatrix<double>;
-  using option_tags = tmpl::list<OptionTags::LinearOperator>;
+  using type = blaze::DynamicMatrix<ValueType>;
+  using option_tags = tmpl::list<OptionTags::LinearOperator<ValueType>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& linear_operator) {
@@ -83,17 +89,19 @@ struct LinearOperator : db::SimpleTag {
   }
 };
 
+template <typename ValueType>
 struct Source : db::SimpleTag {
-  using type = blaze::DynamicVector<double>;
-  using option_tags = tmpl::list<OptionTags::Source>;
+  using type = blaze::DynamicVector<ValueType>;
+  using option_tags = tmpl::list<OptionTags::Source<ValueType>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& source) { return source; }
 };
 
+template <typename ValueType>
 struct InitialGuess : db::SimpleTag {
-  using type = blaze::DynamicVector<double>;
-  using option_tags = tmpl::list<OptionTags::InitialGuess>;
+  using type = blaze::DynamicVector<ValueType>;
+  using option_tags = tmpl::list<OptionTags::InitialGuess<ValueType>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& initial_guess) {
@@ -101,9 +109,10 @@ struct InitialGuess : db::SimpleTag {
   }
 };
 
+template <typename ValueType>
 struct ExpectedResult : db::SimpleTag {
-  using type = blaze::DynamicVector<double>;
-  using option_tags = tmpl::list<OptionTags::ExpectedResult>;
+  using type = blaze::DynamicVector<ValueType>;
+  using option_tags = tmpl::list<OptionTags::ExpectedResult<ValueType>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& expected_result) {
@@ -122,11 +131,13 @@ struct ExpectedConvergenceReason : db::SimpleTag {
 };
 
 // The vector `x` we want to solve for
+template <typename ValueType>
 struct VectorTag : db::SimpleTag {
-  using type = blaze::DynamicVector<double>;
+  using type = blaze::DynamicVector<ValueType>;
 };
 
-using fields_tag = VectorTag;
+template <typename ValueType>
+using fields_tag = VectorTag<ValueType>;
 
 template <typename OperandTag>
 struct ComputeOperatorAction {
@@ -142,23 +153,26 @@ struct ComputeOperatorAction {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) {
+    using ValueType =
+        tt::get_complex_or_fundamental_type_t<typename OperandTag::type>;
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
-        [](const gsl::not_null<blaze::DynamicVector<double>*>
+        [](const gsl::not_null<blaze::DynamicVector<ValueType>*>
                operator_applied_to_operand,
-           const blaze::DynamicMatrix<double>& linear_operator,
-           const blaze::DynamicVector<double>& operand) {
+           const blaze::DynamicMatrix<ValueType>& linear_operator,
+           const blaze::DynamicVector<ValueType>& operand) {
           *operator_applied_to_operand = linear_operator * operand;
         },
-        make_not_null(&box), get<LinearOperator>(box), get<OperandTag>(box));
+        make_not_null(&box), get<LinearOperator<ValueType>>(box),
+        get<OperandTag>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
 // Checks for the correct solution after the algorithm has terminated.
-template <typename OptionsGroup>
+template <typename ValueType, typename OptionsGroup>
 struct TestResult {
   using const_global_cache_tags =
-      tmpl::list<ExpectedResult, ExpectedConvergenceReason>;
+      tmpl::list<ExpectedResult<ValueType>, ExpectedConvergenceReason>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -177,17 +191,26 @@ struct TestResult {
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              get<ExpectedConvergenceReason>(box));
-    const auto& result = get<VectorTag>(box);
-    const auto& expected_result = get<ExpectedResult>(box);
+    const auto& result = get<VectorTag<ValueType>>(box);
+    const auto& expected_result = get<ExpectedResult<ValueType>>(box);
     for (size_t i = 0; i < expected_result.size(); i++) {
-      SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
+      if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+        SPECTRE_PARALLEL_REQUIRE(real(result[i]) ==
+                                 approx(real(expected_result[i])));
+        SPECTRE_PARALLEL_REQUIRE(imag(result[i]) ==
+                                 approx(imag(expected_result[i])));
+      } else {
+        SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
+      }
     }
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
+template <typename ValueType>
 struct InitializeElement {
-  using simple_tags = tmpl::list<VectorTag, ::Tags::FixedSource<VectorTag>>;
+  using simple_tags = tmpl::list<VectorTag<ValueType>,
+                                 ::Tags::FixedSource<VectorTag<ValueType>>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
@@ -197,7 +220,8 @@ struct InitializeElement {
       const int /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), get<InitialGuess>(box), get<Source>(box));
+        make_not_null(&box), get<InitialGuess<ValueType>>(box),
+        get<Source<ValueType>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -262,6 +286,8 @@ struct ElementArray {
   using metavariables = Metavariables;
   using linear_solver = typename Metavariables::linear_solver;
   using preconditioner = typename Metavariables::preconditioner;
+  using ValueType = tt::get_complex_or_fundamental_type_t<
+      typename linear_solver::fields_tag::type>;
 
   // In each step of the algorithm we must provide A(p). The linear solver then
   // takes care of updating x and p, as well as the internal variables r, its
@@ -270,9 +296,9 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<InitializeElement,
+          tmpl::list<InitializeElement<ValueType>,
                      typename linear_solver::initialize_element,
-                     ComputeOperatorAction<fields_tag>,
+                     ComputeOperatorAction<fields_tag<ValueType>>,
                      detail::init_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
@@ -289,12 +315,14 @@ struct ElementArray {
               Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<TestResult<typename linear_solver::options_group>>>>;
+          tmpl::list<
+              TestResult<ValueType, typename linear_solver::options_group>>>>;
   /// [action_list]
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tags =
-      tmpl::list<LinearOperator, Source, InitialGuess, ExpectedResult>;
+      tmpl::list<LinearOperator<ValueType>, Source<ValueType>,
+                 InitialGuess<ValueType>, ExpectedResult<ValueType>>;
   using array_allocation_tags = tmpl::list<>;
 
   static void allocate_array(

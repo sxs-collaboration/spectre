@@ -33,6 +33,7 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 /// \cond
 namespace tuples {
@@ -300,6 +301,8 @@ struct PerformStep {
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using preconditioned_operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+  using ValueType =
+      tt::get_complex_or_fundamental_type_t<typename fields_tag::type>;
 
  public:
   using const_global_cache_tags =
@@ -374,7 +377,7 @@ struct PerformStep {
         Parallel::ReductionData<
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
-            Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            Parallel::ReductionDatum<ValueType, funcl::Plus<>>>{
             get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             get<orthogonalization_iteration_id_tag>(box),
             inner_product(get<basis_history_tag>(box)[0],
@@ -400,9 +403,12 @@ struct OrthogonalizeOperand {
           Convergence::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
+  using ValueType =
+      tt::get_complex_or_fundamental_type_t<typename fields_tag::type>;
 
  public:
-  using inbox_tags = tmpl::list<Tags::Orthogonalization<OptionsGroup>>;
+  using inbox_tags =
+      tmpl::list<Tags::Orthogonalization<OptionsGroup, ValueType>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -414,12 +420,13 @@ struct OrthogonalizeOperand {
       const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
-    auto& inbox = get<Tags::Orthogonalization<OptionsGroup>>(inboxes);
+    auto& inbox =
+        get<Tags::Orthogonalization<OptionsGroup, ValueType>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    const double orthogonalization =
+    const ValueType orthogonalization =
         std::move(inbox.extract(iteration_id).mapped());
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
@@ -437,7 +444,7 @@ struct OrthogonalizeOperand {
         get<orthogonalization_iteration_id_tag>(box);
     const bool orthogonalization_complete =
         next_orthogonalization_iteration_id == iteration_id;
-    const double local_orthogonalization =
+    const ValueType local_orthogonalization =
         inner_product(orthogonalization_complete
                           ? get<operand_tag>(box)
                           : gsl::at(get<basis_history_tag>(box),
@@ -451,7 +458,7 @@ struct OrthogonalizeOperand {
         Parallel::ReductionData<
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
-            Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            Parallel::ReductionDatum<ValueType, funcl::Plus<>>>{
             iteration_id, next_orthogonalization_iteration_id,
             local_orthogonalization},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
@@ -483,11 +490,14 @@ struct NormalizeOperandAndUpdateField {
   using preconditioned_basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<std::conditional_t<
           Preconditioned, preconditioned_operand_tag, operand_tag>>;
+  using ValueType =
+      tt::get_complex_or_fundamental_type_t<typename fields_tag::type>;
 
  public:
   using const_global_cache_tags =
       tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
-  using inbox_tags = tmpl::list<Tags::FinalOrthogonalization<OptionsGroup>>;
+  using inbox_tags =
+      tmpl::list<Tags::FinalOrthogonalization<OptionsGroup, ValueType>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -499,7 +509,8 @@ struct NormalizeOperandAndUpdateField {
       const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
-    auto& inbox = get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes);
+    auto& inbox =
+        get<Tags::FinalOrthogonalization<OptionsGroup, ValueType>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }

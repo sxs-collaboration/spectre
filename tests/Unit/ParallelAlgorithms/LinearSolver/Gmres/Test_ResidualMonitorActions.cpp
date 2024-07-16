@@ -79,12 +79,13 @@ struct MockElementArray {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using inbox_tags = tmpl::list<
-      LinearSolver::gmres::detail::Tags::InitialOrthogonalization<
-          TestLinearSolver>,
-      LinearSolver::gmres::detail::Tags::Orthogonalization<TestLinearSolver>,
-      LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-          TestLinearSolver>>;
+  using inbox_tags =
+      tmpl::list<LinearSolver::gmres::detail::Tags::InitialOrthogonalization<
+                     TestLinearSolver>,
+                 LinearSolver::gmres::detail::Tags::Orthogonalization<
+                     TestLinearSolver, double>,
+                 LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
+                     TestLinearSolver, double>>;
 };
 
 struct Metavariables {
@@ -206,7 +207,7 @@ SPECTRE_TEST_CASE(
     // Test element state
     CHECK(get_element_inbox_tag(
               LinearSolver::gmres::detail::Tags::Orthogonalization<
-                  TestLinearSolver>{})
+                  TestLinearSolver, double>{})
               .at(1) == 2.);
   }
 
@@ -239,7 +240,7 @@ SPECTRE_TEST_CASE(
     const auto& element_inbox =
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-                TestLinearSolver>{})
+                TestLinearSolver, double>{})
             .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.4615384615384615]
@@ -286,7 +287,7 @@ SPECTRE_TEST_CASE(
     const auto& element_inbox =
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-                TestLinearSolver>{})
+                TestLinearSolver, double>{})
             .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [2.]
@@ -335,7 +336,7 @@ SPECTRE_TEST_CASE(
     const auto& element_inbox =
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-                TestLinearSolver>{})
+                TestLinearSolver, double>{})
             .at(2);
     // beta = [1., 0., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.13178295, 0.03100775]
@@ -373,7 +374,7 @@ SPECTRE_TEST_CASE(
     const auto& element_inbox =
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-                TestLinearSolver>{})
+                TestLinearSolver, double>{})
             .at(1);
     // beta = [2., 0.]
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.6]
@@ -411,7 +412,7 @@ SPECTRE_TEST_CASE(
     const auto& element_inbox =
         get_element_inbox_tag(
             LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
-                TestLinearSolver>{})
+                TestLinearSolver, double>{})
             .at(1);
     const auto& minres = get<1>(element_inbox);
     CHECK(minres.size() == 1);

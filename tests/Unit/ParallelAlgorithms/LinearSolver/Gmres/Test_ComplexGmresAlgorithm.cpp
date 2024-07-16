@@ -6,7 +6,6 @@
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/CharmMain.tpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
-#include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace PUP {
@@ -22,20 +21,15 @@ struct SerialGmres {
       "Options for the iterative linear solver";
 };
 
-struct Preconditioner {
-  static constexpr Options::String help = "Options for the preconditioner";
-};
-
 struct Metavariables {
   static constexpr const char* const help{
-      "Test the preconditioned GMRES linear solver algorithm"};
+      "Test the GMRES linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag<double>,
-                                 SerialGmres, true>;
-  using preconditioner = LinearSolver::Richardson::Richardson<
-      typename linear_solver::operand_tag, Preconditioner,
-      typename linear_solver::preconditioner_source_tag>;
+      LinearSolver::gmres::Gmres<Metavariables,
+                                 helpers::fields_tag<std::complex<double>>,
+                                 SerialGmres, false>;
+  using preconditioner = void;
 
   using component_list = helpers::component_list<Metavariables>;
   using observed_reduction_data_tags =
