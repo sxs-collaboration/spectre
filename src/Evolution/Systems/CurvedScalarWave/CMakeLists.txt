@@ -38,12 +38,15 @@ target_link_libraries(
   Domain
   ErrorHandling
   LinearOperators
+  IO
+  Importers
   Serialization
   Utilities
   INTERFACE
   GeneralRelativity
   )
 
+add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(Worldtube)
