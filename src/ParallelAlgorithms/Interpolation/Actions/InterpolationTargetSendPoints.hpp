@@ -7,6 +7,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
@@ -54,11 +56,20 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
         "time-dependent by definition.");
     auto coords = InterpolationTargetTag::compute_target_points::points(
         box, tmpl::type_<Metavariables>{});
-    auto& receiver_proxy = Parallel::get_parallel_component<
+    using ReceiverProxy =
         typename InterpolationTargetTag::template interpolating_component<
-            Metavariables>>(cache);
-    Parallel::simple_action<ElementReceiveInterpPoints<InterpolationTargetTag>>(
-        receiver_proxy, std::move(coords));
+            Metavariables>;
+    auto& receiver_proxy =
+        Parallel::get_parallel_component<ReceiverProxy>(cache);
+    if constexpr (Parallel::is_dg_element_collection_v<ReceiverProxy>) {
+      Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+          ElementReceiveInterpPoints<InterpolationTargetTag>, true>>(
+          receiver_proxy, std::move(coords));
+    } else {
+      Parallel::simple_action<
+          ElementReceiveInterpPoints<InterpolationTargetTag>>(
+          receiver_proxy, std::move(coords));
+    }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
