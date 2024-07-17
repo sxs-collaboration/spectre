@@ -19,10 +19,13 @@ class RequiredChoiceError(click.UsageError):
         import rich.columns
         import rich.console
 
-        # Format available choices as columns for better readability
+        # Format available choices as rows for better readability
         console = rich.console.Console()
         with console.capture() as capture:
-            console.print(rich.columns.Columns(self.choices))
+            table = rich.table.Table(box=None, show_header=False)
+            for choice in self.choices:
+                table.add_row(choice)
+            console.print(table)
         choices_cols = capture.get()
 
-        return f"{self.message} Available choices:\n{choices_cols.strip()}"
+        return f"{self.message} Available choices:\n\n{choices_cols.strip()}"

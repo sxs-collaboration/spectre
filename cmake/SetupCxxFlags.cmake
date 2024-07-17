@@ -103,6 +103,16 @@ set_property(TARGET SpectreFlags
   INTERFACE_COMPILE_OPTIONS
   $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
 
+# The whole point of using hardware specific values is to take advantage of the
+# hardware
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 11.0)
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY
+    INTERFACE_COMPILE_OPTIONS
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-interference-size>)
+endif()
+
 # Increase bracket depth for fold expressions
 # (see also https://github.com/llvm/llvm-project/issues/48973)
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang"
