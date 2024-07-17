@@ -99,9 +99,7 @@ void test_initialization() {
   DtVariablesType dt_vars{};
   DtVariablesType expected_dt_vars{mesh.number_of_grid_points()};
   TimeSteppers::History<VariablesType> history{};
-  TimeSteppers::History<VariablesType> expected_history{};
-  const size_t starting_order = ab2.order() - ab2.number_of_past_steps();
-  expected_history.integration_order(starting_order);
+  TimeSteppers::History<VariablesType> expected_history{1};
   Initialization::TimeStepperHistory<TestMetavariables<Dim>>::apply(
       make_not_null(&dt_vars), make_not_null(&history), ab2, mesh);
   CHECK(dt_vars.size() == expected_dt_vars.size());

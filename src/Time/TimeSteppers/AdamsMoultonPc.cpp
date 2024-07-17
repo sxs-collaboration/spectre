@@ -9,6 +9,7 @@
 #include <optional>
 #include <pup.h>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Time/ApproximateTime.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
@@ -38,8 +39,9 @@ AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const size_t order) : order_(order) {
 }
 
 template <bool Monotonic>
-size_t AdamsMoultonPc<Monotonic>::order() const {
-  return order_;
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+AdamsMoultonPc<Monotonic>::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(order_);
 }
 
 template <bool Monotonic>

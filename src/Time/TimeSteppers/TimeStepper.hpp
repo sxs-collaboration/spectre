@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "DataStructures/MathWrapper.hpp"
+#include "DataStructures/TaggedVariant.hpp"
 #include "Time/History.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -32,6 +33,29 @@ namespace TimeSteppers {}
 #define TIME_STEPPER_DERIVED_CLASS(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data) BOOST_PP_TUPLE_ELEM(2, data)
 /// \endcond
+
+namespace TimeSteppers {
+/// Minimum and maximum orders of a variable-order TimeStepper.
+struct VariableOrder {
+  size_t minimum;
+  size_t maximum;
+};
+
+bool operator==(const VariableOrder& a, const VariableOrder& b);
+bool operator!=(const VariableOrder& a, const VariableOrder& b);
+
+namespace Tags {
+/// Order of a fixed-order TimeStepper.
+struct FixedOrder {
+  using type = size_t;
+};
+
+/// Minimum and maximum orders of a variable-order TimeStepper.
+struct VariableOrder {
+  using type = TimeSteppers::VariableOrder;
+};
+}  // namespace Tags
+}  // namespace TimeSteppers
 
 /// \ingroup TimeSteppersGroup
 ///
@@ -181,7 +205,9 @@ class TimeStepper : public PUP::able {
   }
 
   /// The convergence order of the stepper
-  virtual size_t order() const = 0;
+  virtual variants::TaggedVariant<TimeSteppers::Tags::FixedOrder,
+                                  TimeSteppers::Tags::VariableOrder>
+  order() const = 0;
 
   /// Number of substeps in this TimeStepper
   virtual uint64_t number_of_substeps() const = 0;

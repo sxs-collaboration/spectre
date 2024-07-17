@@ -126,7 +126,7 @@ template <typename T>
 void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
                                const ConstUntypedHistory<T>& history,
                                const TimeDelta& time_step) const {
-  ASSERT(history.integration_order() == order(),
+  ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
   return update_u_impl_with_tableau(u, history, time_step, butcher_tableau(),
@@ -138,7 +138,7 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
     gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
     const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(history.integration_order() == order(),
+  ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
@@ -151,7 +151,8 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
     const double dt = time_step.value();
     step_error(u, history, dt, tableau);
     error.emplace(StepperErrorEstimate{
-        history.back().time_step_id.step_time(), time_step, order() - 1,
+        history.back().time_step_id.step_time(), time_step,
+        get<Tags::FixedOrder>(order()) - 1,
         largest_stepper_error(*history.back().value, *u, *tolerances)});
   }
 

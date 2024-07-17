@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/TimeSteppers/RungeKutta.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -49,7 +50,8 @@ class Rk3Owren : public RungeKutta {
   Rk3Owren& operator=(Rk3Owren&&) = default;
   ~Rk3Owren() override = default;
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   double stable_step() const override;
 

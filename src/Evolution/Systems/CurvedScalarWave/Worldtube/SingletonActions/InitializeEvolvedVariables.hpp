@@ -68,7 +68,18 @@ struct InitializeEvolvedVariables {
     *worldtube_radius = excision_sphere.radius();
 
     const size_t starting_order =
-        time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
+        visit(
+            []<typename Tag>(
+                const std::pair<tmpl::type_<Tag>, typename Tag::type&&> order) {
+              if constexpr (std::is_same_v<Tag,
+                                           TimeSteppers::Tags::FixedOrder>) {
+                return order.second;
+              } else {
+                return order.second.minimum;
+              }
+            },
+            time_stepper.order()) -
+        time_stepper.number_of_past_steps();
     *time_stepper_history =
         typename ::Tags::HistoryEvolvedVariables<variables_tag>::type{
             starting_order};

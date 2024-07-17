@@ -26,6 +26,7 @@ SPECTRE_TEST_CASE("Unit.Time.OptionTags.TimeStepper", "[Unit][Time]") {
                                    Metavariables>(
           "AdamsBashforth:\n"
           "  Order: 7\n");
-  CHECK(stepper->order() == 7);
+  CHECK(stepper->order() ==
+        variants::TaggedVariant<TimeSteppers::Tags::FixedOrder>(7));
 }
 }  // namespace

@@ -27,8 +27,9 @@ void check_convergence_order(const ImexTimeStepper& stepper,
 
     TimeStepId time_step_id(true, 0, slab.start());
     double y = 1.;
-    TimeSteppers::History<double> history{stepper.order()};
-    TimeSteppers::History<double> implicit_history{stepper.order()};
+    TimeSteppers::History<double> history{
+        get<TimeSteppers::Tags::FixedOrder>(stepper.order())};
+    TimeSteppers::History<double> implicit_history{history.integration_order()};
     const auto rhs = [](const double v, const double /*t*/) { return 3.0 * v; };
     const auto implicit_rhs = [](const double v, const double /*t*/) {
       return -2.0 * v;
@@ -89,7 +90,8 @@ void check_bounded_dense_output(const ImexTimeStepper& stepper) {
 
   TimeStepId time_step_id(true, 0, slab.start());
   double y = 1.0;
-  TimeSteppers::History<double> history{stepper.order()};
+  TimeSteppers::History<double> history{
+      get<TimeSteppers::Tags::FixedOrder>(stepper.order())};
   initialize_history(
       time_step_id.step_time(), make_not_null(&history),
       [&](const double t) { return exp(-decay_constant * t); }, rhs, time_step,

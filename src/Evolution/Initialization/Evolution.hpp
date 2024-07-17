@@ -316,7 +316,18 @@ struct TimeStepperHistory {
     // one additional point per order, so this is the order that
     // requires no initial past steps.
     const size_t starting_order =
-        time_stepper.order() - time_stepper.number_of_past_steps();
+        visit(
+            []<typename Tag>(
+                const std::pair<tmpl::type_<Tag>, typename Tag::type&&> order) {
+              if constexpr (std::is_same_v<Tag,
+                                           TimeSteppers::Tags::FixedOrder>) {
+                return order.second;
+              } else {
+                return order.second.minimum;
+              }
+            },
+            time_stepper.order()) -
+        time_stepper.number_of_past_steps();
     history->integration_order(starting_order);
   }
 };

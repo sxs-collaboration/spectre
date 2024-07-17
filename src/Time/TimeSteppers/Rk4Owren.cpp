@@ -3,10 +3,15 @@
 
 #include "Time/TimeSteppers/Rk4Owren.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 Rk4Owren::Rk4Owren(CkMigrateMessage* /*msg*/) {}
 
-size_t Rk4Owren::order() const { return 4; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> Rk4Owren::order()
+    const {
+  return variants::TaggedVariant<Tags::FixedOrder>(4);
+}
 
 // The stability polynomial is
 //

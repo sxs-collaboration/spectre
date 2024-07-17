@@ -6,6 +6,7 @@
 #include <cmath>
 #include <optional>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/LargestStepperError.hpp"
@@ -18,7 +19,10 @@
 
 namespace TimeSteppers {
 
-size_t Rk3HesthavenSsp::order() const { return 3; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+Rk3HesthavenSsp::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(3);
+}
 
 double Rk3HesthavenSsp::stable_step() const {
   // This is the condition for  y' = -k y  to go to zero.
@@ -56,7 +60,7 @@ template <typename T>
 void Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
                                     const ConstUntypedHistory<T>& history,
                                     const TimeDelta& time_step) const {
-  ASSERT(history.integration_order() == order(),
+  ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
@@ -85,7 +89,7 @@ std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
     gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
     const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(history.integration_order() == order(),
+  ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 

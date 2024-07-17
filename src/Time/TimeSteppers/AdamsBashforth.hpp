@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <optional>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeStepId.hpp"
@@ -217,7 +218,8 @@ class AdamsBashforth : public LtsTimeStepper {
   AdamsBashforth& operator=(AdamsBashforth&&) = default;
   ~AdamsBashforth() override = default;
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   uint64_t number_of_substeps() const override;
 

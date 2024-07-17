@@ -56,7 +56,7 @@ using Row = std::tuple<std::string, size_t, size_t, size_t, double, double,
 template <typename Stepper>
 Row generate_row(const Stepper& stepper, std::string name) {
   return {std::move(name),
-          stepper.order(),
+          get<TimeSteppers::Tags::FixedOrder>(stepper.order()),
           stepper.number_of_substeps(),
           stepper.number_of_substeps_for_error(),
           stepper.stable_step(),

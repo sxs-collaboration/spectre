@@ -3,9 +3,14 @@
 
 #include "Time/TimeSteppers/Rk3Owren.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t Rk3Owren::order() const { return 3; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> Rk3Owren::order()
+    const {
+  return variants::TaggedVariant<Tags::FixedOrder>(3);
+}
 
 // The stability polynomial is
 //

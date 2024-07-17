@@ -10,6 +10,7 @@
 #include <optional>
 #include <pup.h>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Time/ApproximateTime.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
@@ -41,7 +42,10 @@ AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
   }
 }
 
-size_t AdamsBashforth::order() const { return order_; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+AdamsBashforth::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(order_);
+}
 
 uint64_t AdamsBashforth::number_of_substeps() const { return 1; }
 

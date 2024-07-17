@@ -118,7 +118,18 @@ struct InitializeCharacteristicEvolutionTime {
     const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
 
     const size_t starting_order =
-        time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
+        visit(
+            []<typename Tag>(
+                const std::pair<tmpl::type_<Tag>, typename Tag::type&&> order) {
+              if constexpr (std::is_same_v<Tag,
+                                           TimeSteppers::Tags::FixedOrder>) {
+                return order.second;
+              } else {
+                return order.second.minimum;
+              }
+            },
+            time_stepper.order()) -
+        time_stepper.number_of_past_steps();
 
     typename ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>::
         type coordinate_history(starting_order);

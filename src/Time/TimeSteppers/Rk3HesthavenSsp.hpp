@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <optional>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeStepId.hpp"
@@ -56,7 +57,8 @@ class Rk3HesthavenSsp : public TimeStepper {
 
   explicit Rk3HesthavenSsp(CkMigrateMessage* /*unused*/) {}
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   double stable_step() const override;
 
