@@ -172,6 +172,7 @@ class DgElementArrayMember<Dim, Metavariables,
   /// Get read access to all the inboxes
   auto& inboxes() { return inboxes_; }
   const auto& inboxes() const { return inboxes_; }
+  const auto& get_inboxes() const { return inboxes(); }
   /// @}
 
   void pup(PUP::er& p) override;
