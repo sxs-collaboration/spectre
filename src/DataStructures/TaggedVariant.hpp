@@ -407,6 +407,39 @@ constexpr bool operator>=(const TaggedVariant<Tags...>& a,
   return not(a < b);
 }
 
+/// Comparison operators against single-tag variants.  Primarily useful
+/// in tests.
+/// @{
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator==(const TaggedVariant<Tags...>& a,
+                          const TaggedVariant<Tag>& b) {
+  return holds_alternative<Tag>(a) and get<Tag>(a) == get<Tag>(b);
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator==(const TaggedVariant<Tag>& a,
+                          const TaggedVariant<Tags...>& b) {
+  return b == a;
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator!=(const TaggedVariant<Tags...>& a,
+                          const TaggedVariant<Tag>& b) {
+  return not(a == b);
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator!=(const TaggedVariant<Tag>& a,
+                          const TaggedVariant<Tags...>& b) {
+  return not(a == b);
+}
+/// @}
+
 template <
     typename... Tags,
     Requires<(... and (std::is_move_constructible_v<typename Tags::type> and
