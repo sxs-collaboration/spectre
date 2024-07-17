@@ -16,10 +16,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/PerformAlgorithmOnElement.hpp"
+#include "Parallel/ArrayCollection/Tags/ElementLocations.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -50,7 +54,27 @@ bool functions_of_time_are_ready_impl(
     const auto& proxy =
         ::Parallel::get_parallel_component<Component>(cache)[array_index];
     const Parallel::ArrayComponentId array_component_id =
-        Parallel::make_array_component_id<Component>(array_index);
+        [&]() -> Parallel::ArrayComponentId {
+      if constexpr (Parallel::is_dg_element_collection_v<Component>) {
+        static_assert(
+            sizeof...(args) == 1,
+            "This currently assumes the only argument is the ElementId. If you "
+            "need extra arguments, this can be generalized. We need the "
+            "ElementId instead of the array_index (which is the nodegroup ID) "
+            "since each ArrayComponentId is only allowed to register one "
+            "callback, additional ones are ignored. This means of a "
+            "DgElementCollection only 1 callback _per node_ would be "
+            "registered, while we need 1 callback for each element. An "
+            "alternative approach would be to have the callback be a broadcast "
+            "to all elements instead of one specific one.");
+        static_assert((std::is_same_v<ElementId<Metavariables::volume_dim>,
+                                      std::decay_t<Args>> and
+                       ...));
+        return Parallel::make_array_component_id<Component>(args...);
+      } else {
+        return Parallel::make_array_component_id<Component>(array_index);
+      }
+    }();
 
     return Parallel::mutable_cache_item_is_ready<CacheTag>(
         cache, array_component_id,
@@ -177,6 +201,7 @@ namespace Actions {
 /// to be ready at `::Tags::Time`.  This ensures that the coordinates
 /// can be safely accessed in later actions without first verifying
 /// the state of the time-dependent maps.
+template <size_t Dim>
 struct CheckFunctionsOfTimeAreReady {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -186,9 +211,26 @@ struct CheckFunctionsOfTimeAreReady {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* component) {
-    const bool ready = functions_of_time_are_ready_algorithm_callback<
-        domain::Tags::FunctionsOfTime>(cache, array_index, component,
-                                       db::get<::Tags::Time>(box));
+    bool ready = false;
+
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      const auto element_location = static_cast<int>(
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  Parallel::Tags::ElementLocations<Dim>>>(
+              Parallel::get_parallel_component<ParallelComponent>(cache))
+              ->at(array_index));
+      ready = domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime,
+          Parallel::Actions::PerformAlgorithmOnElement<false>>(
+          cache, element_location, component, db::get<::Tags::Time>(box),
+          std::nullopt, array_index);
+    } else {
+      ready = functions_of_time_are_ready_algorithm_callback<
+          domain::Tags::FunctionsOfTime>(cache, array_index, component,
+                                         db::get<::Tags::Time>(box));
+    }
+
     return {ready ? Parallel::AlgorithmExecution::Continue
                   : Parallel::AlgorithmExecution::Retry,
             std::nullopt};
@@ -204,6 +246,7 @@ struct CheckFunctionsOfTimeAreReady {
 /// ensures that the coordinates can be safely accessed in later
 /// actions without first verifying the state of the time-dependent
 /// maps.  This postprocessor does not actually modify anything.
+template <size_t Dim>
 struct CheckFunctionsOfTimeAreReadyPostprocessor {
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<>;
@@ -216,9 +259,23 @@ struct CheckFunctionsOfTimeAreReadyPostprocessor {
       const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ParallelComponent* component) {
-    return functions_of_time_are_ready_algorithm_callback<
-        domain::Tags::FunctionsOfTime>(cache, array_index, component,
-                                       db::get<::Tags::Time>(*box));
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      const auto element_location = static_cast<int>(
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  Parallel::Tags::ElementLocations<Dim>>>(
+              Parallel::get_parallel_component<ParallelComponent>(cache))
+              ->at(array_index));
+      return domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime,
+          Parallel::Actions::PerformAlgorithmOnElement<false>>(
+          cache, element_location, component, db::get<::Tags::Time>(*box),
+          std::nullopt, array_index);
+    } else {
+      return functions_of_time_are_ready_algorithm_callback<
+          domain::Tags::FunctionsOfTime>(cache, array_index, component,
+                                         db::get<::Tags::Time>(*box));
+    }
   }
 };
 }  // namespace domain

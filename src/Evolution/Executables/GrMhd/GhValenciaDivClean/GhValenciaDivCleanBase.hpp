@@ -700,7 +700,7 @@ struct GhValenciaDivCleanTemplateBase<
   };
 
   using events_and_dense_triggers_subcell_postprocessors = tmpl::list<
-      ::domain::CheckFunctionsOfTimeAreReadyPostprocessor,
+      ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
       AlwaysReadyPostprocessor<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>>;
@@ -851,16 +851,16 @@ struct GhValenciaDivCleanTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         VariableFixing::Actions::FixVariables<
-                             VariableFixing::FixToAtmosphere<volume_dim>>,
-                         VariableFixing::Actions::FixVariables<
-                             VariableFixing::LimitLorentzFactor>,
-                         Actions::UpdateConservatives,
-                         evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>,
+              tmpl::list<
+                  ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
+                  VariableFixing::Actions::FixVariables<
+                      VariableFixing::FixToAtmosphere<volume_dim>>,
+                  VariableFixing::Actions::FixVariables<
+                      VariableFixing::LimitLorentzFactor>,
+                  Actions::UpdateConservatives,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
               tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
