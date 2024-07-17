@@ -100,7 +100,7 @@ void test_gradient() {
     const Wedge wedge = make_wedge(inner_sphericity, outer_sphericity);
     // Corners will always be at sphere radius
     for (const double radius :
-         {inner_radius, outer_radius, 0.5 * (outer_radius + outer_radius)}) {
+         {inner_radius, outer_radius, 0.5 * (inner_radius + outer_radius)}) {
       for (const double phi :
            {M_PI_4, 3.0 * M_PI_4, 5.0 * M_PI_4, 7.0 * M_PI_4}) {
         CAPTURE(radius);
