@@ -12,9 +12,11 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/OutputInbox.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -49,11 +51,31 @@ struct PrintElementInfo {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
-    auto& local_object =
-        *Parallel::local(Parallel::get_parallel_component<ParallelComponent>(
-            cache)[array_index]);
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      auto& element =
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  typename ParallelComponent::element_collection_tag>>(
+              Parallel::get_parallel_component<ParallelComponent>(cache))
+              ->at(array_index);
+      apply<ParallelComponent>(box, cache, array_index, &element);
+    } else {
+      apply<ParallelComponent>(
+          box, cache, array_index,
+          Parallel::local(Parallel::get_parallel_component<ParallelComponent>(
+              cache)[array_index]));
+    }
+  }
+
+ private:
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, typename T>
+  static void apply(db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& array_index, T* local_object_ptr) {
+    auto& local_object = *local_object_ptr;
 
     const bool terminated = local_object.get_terminate();
 
