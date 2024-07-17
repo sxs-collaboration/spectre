@@ -282,7 +282,7 @@ class DataBox<tmpl::list<Tags...>> : public Access,
       tmpl::filter<reference_item_tags,
                    tmpl::bind<detail::has_subitems, tmpl::_1>>;
 
-  /// \cond HIDDEN_SYMBOLS
+  /// \cond
   /*!
    * \note the default constructor is only used for serialization
    */
@@ -505,7 +505,6 @@ template <typename... Tags>
 const typename DataBox<tmpl::list<Tags...>>::TagGraphs
     DataBox<tmpl::list<Tags...>>::tag_graphs_ =
         DataBox<tmpl::list<Tags...>>::compute_tag_graphs();
-/// \endcond
 
 template <typename... Tags>
 std::string DataBox<tmpl::list<Tags...>>::print_types() const {
@@ -689,7 +688,6 @@ constexpr int check_initialization_argument_type() {
 }
 }  // namespace detail
 
-/// \cond
 template <typename... Tags>
 template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
           typename... Args>
@@ -715,7 +713,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
                    std::make_index_sequence<sizeof...(AddMutableItemTags)>{},
                    AddImmutableItemTagsList{});
 }
-/// \endcond
 
 ////////////////////////////////////////////////////////////////
 // Serialization of DataBox
@@ -1101,6 +1098,7 @@ db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
     this->mutate_mutable_subitems<Tag>(typename Subitems<Tag>::type{});
   });
 }
+/// \endcond
 
 /*!
  * \ingroup DataBoxGroup
@@ -1306,6 +1304,7 @@ SPECTRE_ALWAYS_INLINE auto copy_items(const DataBox<DbTagList>& box) {
 
 ////////////////////////////////////////////////////////////////
 // Get mutable reference from the DataBox
+/// \cond
 template <typename... Tags>
 template <typename Tag>
 auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
@@ -1386,6 +1385,7 @@ constexpr bool DataBox<tmpl::list<Tags...>>::tag_depends_on() {
                                     tmpl::type_from<decltype(aliases)>{}));
   });
 }
+/// \endcond
 
 /*!
  * \ingroup DataBoxGroup

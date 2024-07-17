@@ -38,7 +38,7 @@ struct Verbosity;
 /// \endcond
 
 namespace control_system {
-/// \ingroup ControlSystemsGroup
+/// \ingroup ControlSystemGroup
 /// \ingroup EventsAndTriggersGroup
 /// Trigger for control system measurements.
 ///

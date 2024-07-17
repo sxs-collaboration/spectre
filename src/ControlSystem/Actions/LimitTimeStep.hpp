@@ -44,7 +44,7 @@ class TaggedTuple;
 /// \endcond
 
 namespace control_system::Actions {
-/// \ingroup ControlSystemsGroup
+/// \ingroup ControlSystemGroup
 /// \brief Limit the step size in a GTS evolution to prevent deadlocks from
 /// control system measurements.
 ///

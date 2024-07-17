@@ -46,7 +46,7 @@ class TaggedTuple;
 /// \endcond
 
 namespace control_system::Actions {
-/// \ingroup ControlSystemsGroup
+/// \ingroup ControlSystemGroup
 /// \brief Set up the element component for control-system measurements.
 ///
 /// DataBox changes:
