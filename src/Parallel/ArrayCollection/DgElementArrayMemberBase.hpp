@@ -105,6 +105,12 @@ class DgElementArrayMemberBase : PUP::able {
   /// \brief Get which core this element should pretend to be bound to.
   size_t get_core() const;
 
+  /// Returns the name of the last "next iterable action" to be run before a
+  /// deadlock occurred.
+  const std::string& deadlock_analysis_next_iterable_action() const {
+    return deadlock_analysis_next_iterable_action_;
+  }
+
   void pup(PUP::er& p) override;
 
  protected:
