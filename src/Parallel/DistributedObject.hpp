@@ -821,10 +821,17 @@ void DistributedObject<
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                     Action>::registrar;
-    Action::template apply<ParallelComponent>(
-        box_, *Parallel::local_branch(global_cache_proxy_),
-        static_cast<const array_index&>(array_index_),
-        make_not_null(&node_lock_));
+    if constexpr (Parallel::is_dg_element_collection_v<parallel_component>) {
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_),
+          static_cast<const array_index&>(array_index_),
+          make_not_null(&node_lock_), this);
+    } else {
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_),
+          static_cast<const array_index&>(array_index_),
+          make_not_null(&node_lock_));
+    }
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }
