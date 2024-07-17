@@ -3,6 +3,7 @@
 
 add_subdirectory(brigand)
 add_subdirectory(EffectiveSource)
+add_subdirectory(GravitationalEffectiveSource)
 add_subdirectory(SPHEREPACK)
 
 set(LIBRARY Libsharp)
