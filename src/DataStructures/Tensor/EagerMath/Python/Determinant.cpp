@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -21,6 +22,10 @@ void bind_determinant_impl(py::module& m) {  // NOLINT
   m.def(
       "determinant",
       [](const TensorType& tensor) { return determinant(tensor); },
+      py::arg("tensor"));
+  m.def(
+      "determinant_and_inverse",
+      [](const TensorType& tensor) { return determinant_and_inverse(tensor); },
       py::arg("tensor"));
 }
 }  // namespace

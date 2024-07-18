@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace py = pybind11;
 
@@ -20,6 +21,13 @@ template <size_t Dim>
 void bind_mesh_impl(py::module& m) {  // NOLINT
   // the bindings here are not complete
   py::class_<Mesh<Dim>>(m, ("Mesh" + std::to_string(Dim) + "D").c_str())
+      // Need __str__ for converting to string/printing
+      .def(
+          "__str__", +[](const Mesh<Dim>& t) { return get_output(t); })
+      // repr allows you to output the object in an interactive python terminal
+      // using obj to get the "string REPResenting the object".
+      .def(
+          "__repr__", +[](const Mesh<Dim>& t) { return get_output(t); })
       .def_property_readonly_static(
           "dim", [](const py::object& /*self */) { return Dim; })
       .def(py::init<const size_t, const Spectral::Basis,

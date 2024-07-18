@@ -29,6 +29,14 @@ void bind_partial_derivatives_impl(py::module& m) {  // NOLINT
         return partial_derivative(tensor, mesh, inv_jacobian);
       },
       py::arg("tensor"), py::arg("mesh"), py::arg("inv_jacobian"));
+  m.def(
+      "logical_partial_derivative",
+      // Wrap in a lambda so the template parameters and the correct overload
+      // get inferred
+      [](const TensorType& tensor, const Mesh<Dim>& mesh) {
+        return logical_partial_derivative(tensor, mesh);
+      },
+      py::arg("tensor"), py::arg("mesh"));
 }
 }  // namespace
 
@@ -45,7 +53,8 @@ void bind_partial_derivatives(py::module& m) {
 
   GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR, (1, 2, 3), (Frame::Inertial))
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (1, 2, 3), (Frame::Inertial),
-                          (tnsr::I, tnsr::ii, tnsr::Ijj))
+                          (tnsr::I, tnsr::ii, tnsr::Ijj, tnsr::a, tnsr::A,
+                           tnsr::aa, tnsr::AA, tnsr::iaa, tnsr::ia, tnsr::iA))
 
 #undef INSTANTIATE_SCALAR
 #undef INSTANTIATE_TNSR

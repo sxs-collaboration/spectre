@@ -8,7 +8,10 @@ import numpy.testing as npt
 
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import InverseJacobian, Scalar
-from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
+from spectre.NumericalAlgorithms.LinearOperators import (
+    logical_partial_derivative,
+    partial_derivative,
+)
 from spectre.Spectral import Basis, Mesh, Quadrature, collocation_points
 
 
@@ -28,6 +31,8 @@ class TestPartialDerivatives(unittest.TestCase):
         scalar = Scalar[DataVector]([polynomial(x)])
         deriv = partial_derivative(scalar, mesh, inv_jacobian)
         npt.assert_allclose(np.array(deriv), [deriv_polynomial(x)])
+        logical_deriv = logical_partial_derivative(scalar, mesh)
+        npt.assert_allclose(np.array(logical_deriv), [deriv_polynomial(x)])
 
 
 if __name__ == "__main__":
