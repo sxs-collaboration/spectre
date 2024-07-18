@@ -228,7 +228,26 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     return current_inbox.size();
   }
 
-  static std::string output_inbox(const type& inbox,
+  static std::string output_inbox(const type_spsc& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
+    ss << pad
+       << "Warning: Printing atomic state is not possible in general so data "
+          "printed is limited.\n";
+    for (size_t i = 0; i < inbox.boundary_data_in_directions.size(); ++i) {
+      const auto& data_in_direction =
+          gsl::at(inbox.boundary_data_in_directions, i);
+      ss << pad << "Id: "
+         << "Approximate size: " << data_in_direction.size() << "\n";
+    }
+
+    return ss.str();
+  }
+
+  static std::string output_inbox(const type_map& inbox,
                                   const size_t padding_size) {
     std::stringstream ss{};
     const std::string pad(padding_size, ' ');
