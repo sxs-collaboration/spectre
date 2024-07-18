@@ -13,6 +13,7 @@ spectre_target_headers(
   DgElementCollection.hpp
   IsDgElementArrayMember.hpp
   IsDgElementCollection.hpp
+  PerformAlgorithmOnElement.hpp
   ReceiveDataForElement.hpp
   SendDataToElement.hpp
   SetTerminateOnElement.hpp
