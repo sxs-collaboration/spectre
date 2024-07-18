@@ -248,7 +248,7 @@ struct SendMessage {
     BoundaryMessage<3>* message = new BoundaryMessage<3>(
         0, static_cast<size_t>(array_index + 1), false, true,
         static_cast<size_t>(my_node), static_cast<size_t>(my_node),
-        element_to_send_to, {}, {}, {}, {}, {}, {}, nullptr,
+        element_to_send_to, 3, {}, {}, {}, {}, {}, {}, nullptr,
         const_cast<double*>(db::get<Tags::Vector0>(box).data()));
 
     std::stringstream ss{};

@@ -28,6 +28,7 @@ namespace evolution::dg {
  *    using local time stepping.
  * 6. the troubled cell indicator status used for determining halos around
  *    troubled cells.
+ * 7. the integration order of the time-stepper
  */
 template <size_t Dim>
 struct BoundaryData {
@@ -40,6 +41,7 @@ struct BoundaryData {
   std::optional<DataVector> boundary_correction_data{};
   ::TimeStepId validity_range{};
   int tci_status{};
+  size_t integration_order{std::numeric_limits<size_t>::max()};
 };
 
 template <size_t Dim>

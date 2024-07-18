@@ -466,11 +466,9 @@ bool receive_boundary_data_local_time_stepping(
                 received_mortar_data->second.interface_mesh;
             neighbor_mortar_data.mortar_data = std::move(
                 received_mortar_data->second.boundary_correction_data.value());
-            // We don't yet communicate the integration order, because
-            // we don't have any variable-order methods.  The
-            // fixed-order methods ignore the field.
             boundary_data_history->at(mortar_id).remote().insert(
-                mortar_next_time_step_id, std::numeric_limits<size_t>::max(),
+                mortar_next_time_step_id,
+                received_mortar_data->second.integration_order,
                 std::move(neighbor_mortar_data));
             mortar_next_time_step_id =
                 received_mortar_data->second.validity_range;

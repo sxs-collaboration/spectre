@@ -652,6 +652,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
 
   const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
+  const auto integration_order =
+      db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
   const auto& all_mortar_data =
       db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
   const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
@@ -723,14 +725,16 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         std::move(ghost_and_subcell_data),
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
-                        tci_decision};
+                        tci_decision,
+                        integration_order};
       } else {
         data = SendData{ghost_data_mesh,
                         face_mesh_for_neighbor,
                         ghost_and_subcell_data,
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
-                        tci_decision};
+                        tci_decision,
+                        integration_order};
       }
 
       // Send mortar data (the `std::tuple` named `data`) to neighbor
@@ -780,8 +784,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     // using the `NormalDotNumericalFlux` prefix tag. This is because the
     // returned quantity is more a `dt` quantity than a
     // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-    const auto integration_order =
-        db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarDataHistory<
                    Dim, typename dt_variables_tag::type>>(
