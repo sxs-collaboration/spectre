@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -26,7 +26,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
-#include "Domain/SizeOfElement.hpp"  // IWYU pragma: keep
+#include "Domain/SizeOfElement.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -38,13 +38,11 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"          // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 struct TemporalId : db::SimpleTag {

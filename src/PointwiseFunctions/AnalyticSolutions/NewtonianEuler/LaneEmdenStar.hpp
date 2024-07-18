@@ -18,11 +18,9 @@
 
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 /// \endcond
-
-// IWYU pragma: no_include <pup.h>
 
 namespace NewtonianEuler::Solutions {
 

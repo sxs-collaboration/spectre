@@ -7,15 +7,12 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/SpinWeighted.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"       // IWYU pragma: keep
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-// IWYU pragma: no_forward_declare SpinWeighted
-// IWYU pragma: no_forward_declare Tensor
 
 class ComplexDataVector;
 class ComplexModalVector;

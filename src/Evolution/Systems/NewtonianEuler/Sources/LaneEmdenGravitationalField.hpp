@@ -40,10 +40,6 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// IWYU pragma: no_include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-
 namespace NewtonianEuler::Sources {
 
 /*!

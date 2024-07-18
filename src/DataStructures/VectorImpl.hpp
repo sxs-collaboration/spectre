@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <algorithm>  // IWYU pragma: keep  // for std::fill
+#include <algorithm>
 #include <array>
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/CustomVector.h>
@@ -13,7 +13,7 @@
 #include <blaze/math/TransposeFlag.h>
 #include <cstddef>
 #include <cstring>
-#include <functional>  // IWYU pragma: keep  // for std::plus, etc.
+#include <functional>
 #include <initializer_list>
 #include <limits>
 #include <memory>
@@ -26,7 +26,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
-#include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"

@@ -27,7 +27,6 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-// IWYU pragma: no_forward_declare Tensor
 
 // [change_up_lo]
 using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;

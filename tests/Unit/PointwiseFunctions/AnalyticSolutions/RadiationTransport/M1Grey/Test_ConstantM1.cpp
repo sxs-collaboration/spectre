@@ -9,11 +9,11 @@
 #include <tuple>
 #include <utility>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
@@ -24,12 +24,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include <vector>
-// IWYU pragma: no_include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-
-// IWYU pragma: no_forward_declare Tags::dt
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/Domain.hpp"  // IWYU pragma: keep
+#include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"

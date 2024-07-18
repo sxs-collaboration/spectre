@@ -18,8 +18,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
-// IWYU pragma: no_forward_declare SpinWeighted
-
 namespace Spectral::Swsh {
 
 CoefficientsMetadata::CoefficientsMetadata(const size_t l_max) : l_max_(l_max) {

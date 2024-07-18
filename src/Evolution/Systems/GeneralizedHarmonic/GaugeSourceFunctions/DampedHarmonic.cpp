@@ -34,8 +34,6 @@
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace gh::gauges {
 namespace DampedHarmonicGauge_detail {
 // Roll-on function for the damped harmonic gauge.

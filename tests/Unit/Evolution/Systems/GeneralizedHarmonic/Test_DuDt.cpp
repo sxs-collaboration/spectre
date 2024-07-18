@@ -43,8 +43,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 // Since repeatedly generating new numbers to compare to SpEC when the function
 // signature of the GH time derivative changes is difficult, we use a reference

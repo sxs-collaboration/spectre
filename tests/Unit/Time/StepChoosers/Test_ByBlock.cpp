@@ -23,8 +23,6 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 namespace {
 constexpr size_t volume_dim = 2;
 

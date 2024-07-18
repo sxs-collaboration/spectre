@@ -11,18 +11,6 @@
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-// IWYU pragma: no_forward_declare Cce::Tags::BondiBeta
-// IWYU pragma: no_forward_declare Cce::Tags::BondiH
-// IWYU pragma: no_forward_declare Cce::Tags::BondiQ
-// IWYU pragma: no_forward_declare Cce::Tags::BondiU
-// IWYU pragma: no_forward_declare Cce::Tags::BondiW
-// IWYU pragma: no_forward_declare Cce::Tags::Integrand
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactor
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactorForConjugate
-// IWYU pragma: no_forward_declare Cce::Tags::PoleOfIntegrand
-// IWYU pragma: no_forward_declare Cce::Tags::RegularIntegrand
-// IWYU pragma: no_forward_declare SpinWeighted
-
 namespace Cce {
 
 namespace detail {

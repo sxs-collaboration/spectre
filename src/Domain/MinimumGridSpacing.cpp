@@ -4,15 +4,15 @@
 #include "Domain/MinimumGridSpacing.hpp"
 
 // For std::min
-#include <algorithm>  // IWYU pragma: keep
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <limits>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"

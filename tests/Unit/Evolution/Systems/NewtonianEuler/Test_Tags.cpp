@@ -7,7 +7,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 

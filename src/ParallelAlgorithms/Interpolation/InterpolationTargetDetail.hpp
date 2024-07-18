@@ -36,7 +36,7 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare db::DataBox
+
 namespace intrp {
 template <class Metavariables>
 struct Interpolator;

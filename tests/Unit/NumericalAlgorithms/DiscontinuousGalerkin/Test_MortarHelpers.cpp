@@ -5,7 +5,7 @@
 
 #include <array>
 #include <cstddef>
-#include <initializer_list>  // IWYU pragma: keep
+#include <initializer_list>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -30,8 +30,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <size_t Dim>

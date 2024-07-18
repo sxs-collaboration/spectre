@@ -24,11 +24,11 @@
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
-#include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"

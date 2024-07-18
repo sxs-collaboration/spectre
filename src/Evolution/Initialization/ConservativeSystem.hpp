@@ -41,7 +41,6 @@ template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
 }  // namespace domain
-// IWYU pragma: no_forward_declare db::DataBox
 
 namespace tuples {
 template <class... Tags>

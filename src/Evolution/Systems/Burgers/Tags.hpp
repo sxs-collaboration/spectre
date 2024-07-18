@@ -6,7 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 namespace Burgers {

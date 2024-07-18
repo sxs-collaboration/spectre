@@ -24,8 +24,6 @@ struct Normalized;
 }  // namespace Tags
 /// \endcond
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace RelativisticEuler {
 namespace Valencia {
 

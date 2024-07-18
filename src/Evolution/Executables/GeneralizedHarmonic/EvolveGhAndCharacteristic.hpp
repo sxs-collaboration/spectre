@@ -57,7 +57,7 @@
 
 /// \cond
 namespace Frame {
-// IWYU pragma: no_forward_declare MathFunction
+
 struct Inertial;
 }  // namespace Frame
 namespace Parallel {

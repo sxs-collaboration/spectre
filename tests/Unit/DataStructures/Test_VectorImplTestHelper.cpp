@@ -7,7 +7,7 @@
 #include <complex>
 
 #include "DataStructures/ComplexDataVector.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Serialization/Serialize.hpp"

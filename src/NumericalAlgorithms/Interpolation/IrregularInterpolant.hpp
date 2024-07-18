@@ -19,7 +19,7 @@ class Mesh;
 namespace PUP {
 class er;
 }  // namespace PUP
-// IWYU pragma: no_forward_declare Variables
+
 /// \endcond
 
 namespace intrp {

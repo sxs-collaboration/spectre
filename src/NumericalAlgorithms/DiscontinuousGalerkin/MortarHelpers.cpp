@@ -3,11 +3,11 @@
 
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 
-#include <algorithm>  // IWYU pragma: keep // for std::max
+#include <algorithm>
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
-#include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"

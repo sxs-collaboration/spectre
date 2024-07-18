@@ -9,7 +9,7 @@
 #include <functional>
 #include <tuple>
 #include <type_traits>
-#include <utility>  // IWYU pragma: keep // for std::forward
+#include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -34,7 +34,7 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class OrientationMap;
-// IWYU pragma: no_forward_declare Variables
+
 /// \endcond
 
 namespace dg {

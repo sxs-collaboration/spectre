@@ -5,7 +5,7 @@
 
 #include <memory>
 #include <optional>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"

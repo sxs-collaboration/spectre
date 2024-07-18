@@ -4,26 +4,23 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/variant/get.hpp> // IWYU pragma: keep
+#include <boost/variant/get.hpp>
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 

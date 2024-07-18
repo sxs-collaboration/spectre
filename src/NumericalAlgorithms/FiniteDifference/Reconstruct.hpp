@@ -5,7 +5,7 @@
 
 #include <array>
 #include <cstddef>
-#include <utility>  // for std::pair
+#include <utility>
 
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Gsl.hpp"

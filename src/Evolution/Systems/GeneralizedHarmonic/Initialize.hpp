@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <optional>
 #include <tuple>
-#include <utility>  // IWYU pragma: keep
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"

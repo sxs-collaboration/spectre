@@ -4,7 +4,7 @@
 #include "Evolution/Systems/NewtonianEuler/Limiters/CharacteristicHelpers.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <limits>
 #include <string>
@@ -16,8 +16,8 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Tags.hpp"               // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"

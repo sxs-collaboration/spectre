@@ -30,10 +30,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
-// IWYU pragma: no_include <vector>
-
 namespace {
 
 struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {

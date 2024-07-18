@@ -3,18 +3,12 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
-
-// IWYU pragma: no_forward_declare Tags::Flux
 
 /// \cond
 namespace gsl {
@@ -24,8 +18,6 @@ class not_null;
 
 class DataVector;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace grmhd {
 namespace ValenciaDivClean {

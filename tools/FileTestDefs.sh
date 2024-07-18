@@ -252,7 +252,6 @@ standard_checks=()
 long_lines_exclude() {
     grep -Ev 'https?://' | \
         grep -v 'mailto:' | \
-        grep -v '// IWYU pragma:' | \
         grep -v '// NOLINT' | \
         grep -v '\\snippet' | \
         grep -v '\\image' | \
@@ -292,8 +291,7 @@ long_lines() {
               'external/Licenses/.*License.txt' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
-              'tools/CheckFiles.sh$' \
-              'tools/Iwyu/boost-all.imp$' && \
+              'tools/CheckFiles.sh$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
 long_lines_report() {
@@ -310,7 +308,6 @@ long_lines_test() {
     test_check fail foo.yaml "${eighty}x"$'\n'
     test_check pass foo.cmake "${eighty}x"$'\n'
     test_check pass foo.cpp "#include ${eighty}x"$'\n'
-    test_check pass foo.cpp "// IWYU pragma: no_include ${eighty}x"$'\n'
     test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
     test_check pass foo.cpp "xxx https://${eighty}x"$'\n'
     test_check pass foo.cpp "linted;  // NOLINT(${eighty})"$'\n'
@@ -452,8 +449,7 @@ license() {
               'eos.*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
-              'support/TeXLive/texlive.profile' \
-              'tools/Iwyu/boost-all.imp$' && \
+              'support/TeXLive/texlive.profile' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {

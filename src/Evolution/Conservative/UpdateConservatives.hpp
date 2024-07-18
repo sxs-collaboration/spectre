@@ -17,7 +17,7 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 namespace Actions {

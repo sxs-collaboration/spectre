@@ -5,7 +5,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-// IWYU pragma: begin_exports
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/comparison/not_equal.hpp>
@@ -36,7 +35,6 @@
 #include <boost/preprocessor/variadic/to_list.hpp>
 #include <boost/preprocessor/variadic/to_tuple.hpp>
 #include <boost/vmd/is_empty.hpp>
-// IWYU pragma: end_exports
 
 #include <limits>
 #include <random>

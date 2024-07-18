@@ -11,10 +11,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
-
 namespace RelativisticEuler::Valencia {
 namespace detail {
 template <size_t Dim>

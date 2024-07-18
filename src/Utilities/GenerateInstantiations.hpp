@@ -3,7 +3,6 @@
 
 #pragma once
 
-// IWYU pragma: begin_exports
 #include <boost/parameter/name.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/control/expr_iif.hpp>
@@ -26,7 +25,6 @@
 #include <boost/preprocessor/tuple/to_list.hpp>
 #include <boost/preprocessor/variadic/elem.hpp>
 #include <boost/preprocessor/variadic/to_list.hpp>
-// IWYU pragma: end_exports
 
 /// \cond
 #define GENERATE_INSTANTIATIONS_DO_PRODUCT(INSTANTIATION_MACRO, LIST_OF_LISTS) \

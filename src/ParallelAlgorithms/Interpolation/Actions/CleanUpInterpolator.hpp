@@ -17,7 +17,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare db::DataBox
+
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;

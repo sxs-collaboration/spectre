@@ -4,11 +4,11 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 
 // Need Boost MultiArray because it is used internally by ODEINT
-#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"
 
 #include <algorithm>
 #include <array>
-#include <boost/numeric/odeint.hpp>  // IWYU pragma: keep
+#include <boost/numeric/odeint.hpp>
 #include <cmath>
 #include <cstddef>
 #include <functional>

@@ -7,8 +7,8 @@
 #include <optional>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"

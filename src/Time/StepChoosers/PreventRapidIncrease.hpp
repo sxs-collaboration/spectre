@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include <cmath>  // IWYU pragma: keep  // for abs
+#include <cmath>
 #include <pup.h>
 #include <utility>
 
 #include "Options/String.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Time/Utilities.hpp"

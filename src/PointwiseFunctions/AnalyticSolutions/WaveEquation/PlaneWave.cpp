@@ -5,9 +5,9 @@
 
 #include <algorithm>
 
-#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
-#include "DataStructures/Variables.hpp"           // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

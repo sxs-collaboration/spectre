@@ -29,8 +29,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 // [convert_arbitrary_a]
 struct ClassForConversionTest {

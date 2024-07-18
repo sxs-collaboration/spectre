@@ -32,7 +32,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare db::DataBox
+
 namespace PUP {
 class er;
 }  // namespace PUP

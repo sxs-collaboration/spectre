@@ -8,7 +8,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/IndexIterator.hpp"  // IWYU pragma: keep
+#include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"

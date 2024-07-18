@@ -3,27 +3,25 @@
 
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <cstddef>
 #include <ostream>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/ParseError.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
+#include "Utilities/Math.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
-
-// IWYU pragma: no_include <complex>
 
 namespace grmhd::AnalyticData {
 

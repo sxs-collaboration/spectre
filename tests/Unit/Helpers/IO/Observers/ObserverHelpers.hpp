@@ -11,9 +11,9 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/Helpers.hpp"
-#include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
-#include "IO/Observer/ObservationId.hpp"      // IWYU pragma: keep
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObservationId.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayIndex.hpp"

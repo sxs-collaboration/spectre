@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
-#include <memory>  // IWYU pragma: keep
+#include <memory>
 #include <random>
 #include <sstream>
 #include <tuple>
@@ -21,9 +21,9 @@
 #include "Framework/TestingFramework.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
+#include "Utilities/Math.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"

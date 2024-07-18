@@ -168,7 +168,6 @@ include(UpdateAddExecutables)
 # dependencies on the PCH if necessary.
 include(SetupClangFormat)
 include(SetupClangTidy)
-include(SetupIwyu)
 if(BUILD_DOCS)
   include(SetupDoxygen)
   include(SetupSphinx)

@@ -8,10 +8,6 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
-// IWYU pragma: no_include "Utilities/Gsl.hpp"
-// IWYU pragma: no_include <string>
-
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Sources", "[Unit][GrMhd]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean"};

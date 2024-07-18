@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "Utilities/Array.hpp"  // IWYU pragma: associated
+#include "Utilities/Array.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 

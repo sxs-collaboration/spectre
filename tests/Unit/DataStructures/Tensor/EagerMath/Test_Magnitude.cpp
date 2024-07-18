@@ -17,8 +17,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 void test_euclidean_magnitude() {
   // Check for DataVectors

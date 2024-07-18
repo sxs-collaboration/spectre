@@ -15,11 +15,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::FixToAtmosphere
-
 namespace {
 
 void test_variable_fixer(

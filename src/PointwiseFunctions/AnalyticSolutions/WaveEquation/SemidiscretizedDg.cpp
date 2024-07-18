@@ -16,8 +16,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace ScalarWave::Solutions {
 SemidiscretizedDg::SemidiscretizedDg(const int harmonic,
                                      const std::array<double, 4>& amplitudes)

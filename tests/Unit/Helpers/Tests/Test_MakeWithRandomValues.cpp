@@ -19,9 +19,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
-
 namespace {
 template <size_t Dim>
 struct Var1 : db::SimpleTag {

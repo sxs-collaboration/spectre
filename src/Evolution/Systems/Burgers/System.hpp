@@ -9,7 +9,7 @@
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
-#include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Evolution/Systems/Burgers/TimeDerivativeTerms.hpp"
 #include "Utilities/TMPL.hpp"
 

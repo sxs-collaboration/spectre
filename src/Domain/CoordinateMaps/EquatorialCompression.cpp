@@ -3,7 +3,7 @@
 
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"

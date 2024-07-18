@@ -16,7 +16,7 @@
 /// \cond
 template <size_t Dim>
 class Index;
-// IWYU pragma: no_forward_declare Variables
+
 /// \endcond
 
 namespace apply_matrices_detail {

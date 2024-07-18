@@ -33,8 +33,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 
 template <size_t Dim>

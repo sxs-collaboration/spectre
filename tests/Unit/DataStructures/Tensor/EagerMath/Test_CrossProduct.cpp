@@ -13,8 +13,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 template <typename DataType>
 void check_cross_product(const DataType& used_for_size) {
   // Make constants used to create vectors and one_forms

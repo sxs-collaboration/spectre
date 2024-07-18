@@ -38,8 +38,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Tags {
 template <typename Tag, typename Dim, typename Frame, typename>
 struct deriv;

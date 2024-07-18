@@ -27,10 +27,10 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/MathWrapper.hpp"
 #include "Helpers/DataStructures/TestTags.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"  // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -38,12 +38,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
-
-// IWYU pragma: no_include <boost/tuple/tuple.hpp>
-
-// IWYU pragma: no_include "DataStructures/VariablesForwardDecl.hpp"
-
-// IWYU pragma: no_forward_declare Variables
 
 static_assert(
     std::is_move_constructible<

@@ -31,8 +31,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Limiters {
 
 // The overall way of testing the Krivodonova limiter is to set the modal

@@ -11,7 +11,7 @@
 #include <pup.h>
 
 #include "Options/String.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -3,12 +3,12 @@
 
 #include "Domain/FaceNormal.hpp"
 
-#include "DataStructures/DataVector.hpp"            // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"         // IWYU pragma: keep
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/ElementMap.hpp"                    // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

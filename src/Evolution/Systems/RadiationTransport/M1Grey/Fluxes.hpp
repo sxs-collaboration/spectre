@@ -5,19 +5,14 @@
 
 #include <array>
 
-#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "Utilities/Gsl.hpp"   // for not_null
-#include "Utilities/TMPL.hpp"  // for EXPAND_PACK_LEFT_TO...
-
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-
-// IWYU pragma: no_forward_declare Tags::Flux
-// IWYU pragma: no_forward_declare Tensor
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace RadiationTransport {
 namespace M1Grey {

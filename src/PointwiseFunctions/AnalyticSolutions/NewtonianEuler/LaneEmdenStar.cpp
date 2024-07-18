@@ -6,16 +6,14 @@
 #include <cmath>
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"                  // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/TypeAliases.hpp"          // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler::Solutions {
 

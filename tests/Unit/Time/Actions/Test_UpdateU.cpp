@@ -16,8 +16,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -36,10 +36,6 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "Time/History.hpp"
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace PUP {
 struct er;

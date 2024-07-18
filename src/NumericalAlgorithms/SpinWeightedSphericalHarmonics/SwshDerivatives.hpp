@@ -6,13 +6,13 @@
 #include <complex>
 #include <cstddef>
 
-#include "DataStructures/ComplexDataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexDiagonalModalOperator.hpp"
-#include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
-#include "DataStructures/TempBuffer.hpp"  // IWYU pragma: keep
+#include "DataStructures/TempBuffer.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
@@ -22,9 +22,6 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare ComplexDataVector
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral {
 namespace Swsh {

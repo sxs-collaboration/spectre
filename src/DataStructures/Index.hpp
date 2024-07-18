@@ -16,7 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
 namespace PUP {

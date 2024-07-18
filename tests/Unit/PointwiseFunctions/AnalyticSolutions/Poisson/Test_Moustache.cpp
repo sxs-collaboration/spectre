@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <tuple>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
-#include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
+#include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"

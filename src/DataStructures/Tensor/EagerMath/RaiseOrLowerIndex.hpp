@@ -8,8 +8,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup

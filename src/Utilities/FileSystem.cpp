@@ -21,9 +21,6 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-// IWYU asks to add <fcntl.h> when it's not there and remove it when it's there.
-// IWYU pragma: no_include <fcntl.h>
-
 namespace file_system {
 
 void copy(const std::string& from, const std::string& to) {

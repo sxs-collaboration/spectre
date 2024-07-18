@@ -14,10 +14,10 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "ParallelAlgorithms/Actions/Goto.hpp"     // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -27,8 +27,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
-
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 
 /// \cond
 namespace Parallel {

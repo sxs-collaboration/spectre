@@ -18,8 +18,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tags::deriv
-
 /// \cond
 namespace Tags {
 struct Time;

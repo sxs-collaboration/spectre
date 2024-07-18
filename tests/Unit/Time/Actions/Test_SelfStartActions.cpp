@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <initializer_list>  // IWYU pragma: keep
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -19,16 +19,16 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
+#include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -47,14 +47,7 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
-// IWYU pragma: no_include <unordered_map>
-
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
-// IWYU pragma: no_include "Time/History.hpp"
-
 class TimeStepper;
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct TemporalId {
@@ -126,7 +119,7 @@ using history_tag = Tags::HistoryEvolvedVariables<Var>;
 using additional_history_tag = Tags::HistoryEvolvedVariables<ComplexVar>;
 
 template <typename Metavariables>
-struct Component;  // IWYU pragma: keep
+struct Component;
 
 template <bool HasPrimitives = false, bool MultipleHistories = false>
 struct Metavariables {

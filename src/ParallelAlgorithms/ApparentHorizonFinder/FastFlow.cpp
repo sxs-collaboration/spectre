@@ -12,7 +12,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -29,9 +29,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-// IWYU pragma: no_forward_declare Tensor
-
-// IWYU pragma: no_include <complex>
 
 FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
                    FastFlow::Beta::type beta, FastFlow::AbsTol::type abs_tol,

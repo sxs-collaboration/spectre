@@ -5,7 +5,7 @@
 
 #include <array>
 #include <functional>
-#include <initializer_list>  // IWYU pragma: keep
+#include <initializer_list>
 #include <string>
 
 #include "Framework/TestHelpers.hpp"

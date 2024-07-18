@@ -16,7 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

@@ -6,7 +6,7 @@
 #include <functional>
 #include <numeric>
 
-#include "DataStructures/Index.hpp"  // IWYU pragma: keep
+#include "DataStructures/Index.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 

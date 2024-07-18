@@ -5,14 +5,10 @@
 
 #include <cstddef>
 
-#include "DataStructures/ComplexDataVector.hpp"   // IWYU pragma: keep
-#include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/SpinWeighted.hpp"        // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare ComplexDataVector
-// IWYU pragma: no_forward_declare ComplexModalVector
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral {
 namespace Swsh {

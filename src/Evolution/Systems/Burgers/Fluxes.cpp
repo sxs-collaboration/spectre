@@ -11,8 +11,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Burgers {
 void Fluxes::apply(const gsl::not_null<tnsr::I<DataVector, 1>*> flux,
                    const Scalar<DataVector>& u) {

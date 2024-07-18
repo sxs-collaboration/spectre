@@ -46,9 +46,6 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
-// IWYU pragma: no_forward_declare MakeWithValueImpl
-// IWYU pragma: no_forward_declare Variables
-
 /// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;

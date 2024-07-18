@@ -7,16 +7,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp" // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp" // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare gr::Tags::Lapse
-// IWYU pragma: no_forward_declare gr::Tags::Shift
-// IWYU pragma: no_forward_declare gr::Tags::SqrtDetSpatialMetric
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
-// IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
 
 /// \cond
 namespace gsl {

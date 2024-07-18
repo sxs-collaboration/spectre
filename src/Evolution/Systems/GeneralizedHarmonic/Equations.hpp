@@ -21,8 +21,6 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// IWYU pragma: no_forward_declare Tags::deriv
-
 namespace gh {
 /*!
  * \brief Set the normal dot the flux to zero since the generalized harmonic

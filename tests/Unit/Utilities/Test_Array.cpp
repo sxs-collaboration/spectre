@@ -7,7 +7,7 @@
 #include <string>
 
 #include "Framework/TestHelpers.hpp"
-#include "Utilities/Array.hpp"  // IWYU pragma: associated
+#include "Utilities/Array.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 

@@ -6,19 +6,12 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/H5/Header.hpp"  // IWYU pragma: keep
+#include "IO/H5/Header.hpp"
 #include "IO/H5/StellarCollapseEos.hpp"
 #include "Informer/InfoFromBuild.hpp"
-
-// IWYU pragma: no_include <boost/iterator/iterator_facade.hpp>
-// IWYU pragma: no_include <boost/multi_array.hpp>
-// IWYU pragma: no_include <boost/multi_array/base.hpp>
-// IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
-// IWYU pragma: no_include <boost/multi_array/multi_array_ref.hpp>
-// IWYU pragma: no_include <boost/multi_array/subarray.hpp>
 
 namespace {
 

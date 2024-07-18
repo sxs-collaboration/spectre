@@ -21,8 +21,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 struct MomentumUp : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;

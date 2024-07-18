@@ -17,9 +17,6 @@ class ComplexDataVector;
 class DataVector;
 class ModalVector;
 
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare SpinWeighted
-
 namespace {
 struct ComplexScalarTag : db::SimpleTag {
   using type = Scalar<ComplexDataVector>;

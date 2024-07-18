@@ -12,12 +12,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <boost/preprocessor/arithmetic/dec.hpp>
-// IWYU pragma: no_include <boost/preprocessor/repetition/enum.hpp>
-// IWYU pragma: no_include <boost/preprocessor/tuple/reverse.hpp>
-
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 template <size_t Dim, UpLo UpOrLo, IndexType Index, typename DataType>
 void test_raise_or_lower_first_index(const DataType& used_for_size) {

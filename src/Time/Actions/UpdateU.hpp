@@ -8,7 +8,7 @@
 
 #include <optional>
 #include <tuple>
-#include <utility>  // IWYU pragma: keep // for std::move
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"

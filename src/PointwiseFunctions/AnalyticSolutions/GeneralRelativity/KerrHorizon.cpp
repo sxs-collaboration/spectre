@@ -5,8 +5,8 @@
 
 #include <cmath>
 
-#include "DataStructures/DataVector.hpp"                 // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp" // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"

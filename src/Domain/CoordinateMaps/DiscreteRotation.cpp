@@ -4,7 +4,7 @@
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"

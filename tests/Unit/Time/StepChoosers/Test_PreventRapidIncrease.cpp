@@ -31,10 +31,6 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
-// IWYU pragma: no_include "Utilities/Rational.hpp"
-
 namespace {
 using Frac = Time::rational_t;
 

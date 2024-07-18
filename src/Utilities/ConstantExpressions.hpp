@@ -24,8 +24,6 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
-// IWYU pragma: no_include "DataStructures/DataVector.hpp"
-
 /// \ingroup ConstantExpressionsGroup
 /// Compute 2 to the n for integral types.
 ///

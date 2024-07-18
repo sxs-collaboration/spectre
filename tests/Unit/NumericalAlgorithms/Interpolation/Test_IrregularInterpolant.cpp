@@ -15,7 +15,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -38,17 +38,14 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/MathFunctions/PowX.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-// IWYU pragma: no_forward_declare MathFunction
-// IWYU pragma: no_forward_declare PowX
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <random>
@@ -14,16 +14,14 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
+#include "Utilities/Math.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
-
-// IWYU pragma: no_include <algorithm>
 
 namespace funcl {
 using std::imag;

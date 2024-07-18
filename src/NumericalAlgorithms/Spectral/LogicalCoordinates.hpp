@@ -18,7 +18,7 @@ namespace Tags {
 template<size_t Dim>
 struct Mesh;
 template <size_t, typename>
-struct Coordinates;  // IWYU pragma: keep
+struct Coordinates;
 }  // namespace Tags
 }  // namespace domain
 

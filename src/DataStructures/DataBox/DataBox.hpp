@@ -45,9 +45,6 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsCallable.hpp"
 
-// IWYU pragma: no_forward_declare brigand::get_destination
-// IWYU pragma: no_forward_declare brigand::get_source
-
 /*!
  * \ingroup DataBoxGroup
  * \brief Namespace for DataBox related things
