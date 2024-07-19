@@ -27,6 +27,7 @@
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -413,9 +414,7 @@ struct ReadAllVolumeDataAndDistribute {
         continue;
       }
       const auto target_element_id =
-          Parallel::ArrayIndex<typename ReceiveComponent::array_index>(
-              raw_element_index)
-              .get_index();
+          Parallel::ArrayIndex<ElementId<Dim>>(raw_element_index).get_index();
       target_element_ids.insert(target_element_id);
     }
     if (UNLIKELY(target_element_ids.empty())) {
@@ -656,10 +655,15 @@ struct ReadAllVolumeDataAndDistribute {
               // Pass the (interpolated) data to the element. Now it can proceed
               // in parallel with transforming the data, taking derivatives on
               // the grid, etc.
-              Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
-                  Parallel::get_parallel_component<ReceiveComponent>(
-                      cache)[target_element_id],
-                  volume_data_id, std::move(target_element_data));
+              if constexpr (Parallel::is_dg_element_collection_v<
+                                ReceiveComponent>) {
+                ERROR("Can't yet do numerical initial data with nodegroups");
+              } else {
+                Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
+                    Parallel::get_parallel_component<ReceiveComponent>(
+                        cache)[target_element_id],
+                    volume_data_id, std::move(target_element_data));
+              }
               completed_target_elements.insert(target_element_id);
               target_element_data_buffer.erase(target_element_id);
               all_indices_of_filled_interp_points.erase(target_element_id);
@@ -682,10 +686,15 @@ struct ReadAllVolumeDataAndDistribute {
                 element_data_offset_and_length, *source_inertial_coords,
                 target_points, source_grid_name);
             // Pass data directly to the element when interpolation is disabled
-            Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
-                Parallel::get_parallel_component<ReceiveComponent>(
-                    cache)[target_element_id],
-                volume_data_id, std::move(source_element_data));
+            if constexpr (Parallel::is_dg_element_collection_v<
+                              ReceiveComponent>) {
+              ERROR("Can't yet do numerical initial data with nodegroups");
+            } else {
+              Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
+                  Parallel::get_parallel_component<ReceiveComponent>(
+                      cache)[target_element_id],
+                  volume_data_id, std::move(source_element_data));
+            }
             completed_target_elements.insert(target_element_id);
           }
         }  // loop over overlapping source elements
