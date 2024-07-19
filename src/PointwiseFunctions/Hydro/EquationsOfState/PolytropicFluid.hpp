@@ -35,6 +35,14 @@ namespace EquationsOfState {
  * polytropic constant and \f$\Gamma\f$ is the polytropic exponent. The
  * polytropic exponent is related to the polytropic index \f$N_p\f$ by
  * \f$N_p=1/(\Gamma-1)\f$.
+ *
+ * \f{align}
+ * \epsilon&=\frac{K}{\Gamma-1}\rho^{\Gamma-1} \\
+ * h&=1+\epsilon+\frac{p}{\rho}=1+\frac{K\Gamma}{\Gamma-1}\rho^{\Gamma-1} \\
+ * c_s^2&=\frac{\Gamma p}{\rho h}
+ *       =\frac{\Gamma(\Gamma-1)p}{\rho(\Gamma-1)+\Gamma p}
+ *       =\left(\frac{1}{K\Gamma\rho^{\Gamma-1}}+\frac{1}{\Gamma-1}\right)^{-1}
+ * \f}
  */
 template <bool IsRelativistic>
 class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
