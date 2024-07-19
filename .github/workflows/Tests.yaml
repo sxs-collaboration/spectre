@@ -221,6 +221,16 @@ jobs:
       - name: Trust checkout
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      # Some cpp20 features aren't supported until clang-tidy-16. See:
+      # https://stackoverflow.com/questions/46114214/lambda-implicit-capture-fails-with-variable-declared-from-structured-binding#comment135007519_46115028
+      - name: Install clang-tidy-16
+        run: |
+          apt-get update -y
+          apt-get remove -y clang-tidy clang-tidy-14
+          apt-get install -y clang-tidy-16
+          ln -s /usr/bin/clang-tidy-16 /usr/bin/clang-tidy
+          ln -s /usr/bin/clang-tidy-diff-16.py /usr/bin/clang-tidy-diff.py
+          ln -s /usr/bin/clang-tidy-diff.py /usr/bin/clang-tidy-diff
       - name: Configure annotations
         # Has to be accessible outside the container, see issue:
         # https://github.com/actions/toolkit/issues/305
@@ -242,8 +252,8 @@ jobs:
           mkdir build && cd build
 
           cmake
-          -D CMAKE_C_COMPILER=clang
-          -D CMAKE_CXX_COMPILER=clang++
+          -D CMAKE_C_COMPILER=clang-14
+          -D CMAKE_CXX_COMPILER=clang++-14
           -D CMAKE_Fortran_COMPILER=gfortran
           -D CHARM_ROOT=${CHARM_ROOT}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -255,14 +265,6 @@ jobs:
           $GITHUB_WORKSPACE
 
           make -j4 module_All
-      - name: Use new clang-tidy-diff
-        # The clang-tidy-diff tool shipped with clang 14 doesn't report exit
-        # codes, so we grab the version that does:
-        # https://github.com/llvm/llvm-project/commit/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47
-        run: |
-          wget https://raw.githubusercontent.com/llvm/llvm-project/4294bca5e4f6e6e8cfdbd9fbe8751c5e5415fd47/clang-tools-extra/clang-tidy/tool/clang-tidy-diff.py
-          chmod +x clang-tidy-diff.py
-          mv clang-tidy-diff.py /usr/bin/clang-tidy-diff
       - name: Check clang-tidy
         run: >
           UPSTREAM_HASH=$(git merge-base HEAD upstream/develop)
