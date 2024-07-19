@@ -70,6 +70,16 @@ def points_on_line(
     ),
 )
 @click.option(
+    "--extrapolate-into-excisions",
+    is_flag=True,
+    help=(
+        "Enables extrapolation into excision regions of the domain. "
+        "This can be useful to fill the excision region with "
+        "(constraint-violating but smooth) data so it can be imported into "
+        "moving puncture codes."
+    ),
+)
+@click.option(
     "--num-samples",
     "-N",
     type=int,
@@ -117,6 +127,7 @@ def plot_along_line_command(
     vars,
     line_start,
     line_end,
+    extrapolate_into_excisions,
     num_samples,
     num_threads,
     x_logscale,
@@ -210,6 +221,7 @@ def plot_along_line_command(
             observation_id=obs_id,
             tensor_components=vars,
             target_points=target_coords,
+            extrapolate_into_excisions=extrapolate_into_excisions,
             num_threads=num_threads,
         )
         for y, var_name, line in zip(vars_on_line, vars, lines):
