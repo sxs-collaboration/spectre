@@ -14,6 +14,7 @@ from spectre import Spectral
 from spectre.DataStructures import DataVector
 from spectre.Informer import unit_test_build_path
 from spectre.IO.H5 import ElementVolumeData, TensorComponent
+from spectre.support.Logging import configure_logging
 from spectre.Visualization.InterpolateToMesh import (
     interpolate_to_mesh,
     interpolate_to_mesh_command,
@@ -408,5 +409,5 @@ class TestInterpolateToMesh(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

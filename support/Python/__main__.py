@@ -5,12 +5,12 @@ import logging
 import os
 
 import click
-import rich.logging
 import rich.traceback
 import yaml
 
 import spectre
 from spectre.support.CliExceptions import RequiredChoiceError
+from spectre.support.Logging import configure_logging
 from spectre.support.Machines import UnknownMachineError, this_machine
 
 logger = logging.getLogger(__name__)
@@ -267,20 +267,14 @@ def read_config_file(ctx, param, config_file):
     ),
 )
 def cli(log_level, build_dir, profile, output_profile):
-    if log_level is None:
-        log_level = logging.INFO
-    # Configure logging
-    logging.basicConfig(
-        level=log_level,
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[rich.logging.RichHandler()],
-    )
+    configure_logging(log_level=log_level)
     # Format tracebacks with rich
     # - Suppress traceback entries from modules that we don't care about
     rich.traceback.install(
-        show_locals=log_level <= logging.DEBUG,
-        extra_lines=(3 if log_level <= logging.DEBUG else 0),
+        show_locals=log_level is None or log_level <= logging.DEBUG,
+        extra_lines=(
+            3 if log_level is None or log_level <= logging.DEBUG else 0
+        ),
         suppress=[click],
     )
     # Add the build directory to the PATH so subprocesses can find executables.

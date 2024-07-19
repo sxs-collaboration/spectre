@@ -11,6 +11,7 @@ import yaml
 from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.support.Logging import configure_logging
 from spectre.support.Resubmit import resubmit, resubmit_command
 from spectre.support.Schedule import (
     Checkpoint,
@@ -344,5 +345,5 @@ NUM_NODES=1
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

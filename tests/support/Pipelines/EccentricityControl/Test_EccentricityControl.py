@@ -16,6 +16,7 @@ from spectre.Pipelines.EccentricityControl import eccentricity_control_command
 from spectre.Pipelines.EccentricityControl.EccentricityControl import (
     coordinate_separation_eccentricity_control,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestEccentricityControl(unittest.TestCase):
@@ -257,5 +258,5 @@ class TestEccentricityControl(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

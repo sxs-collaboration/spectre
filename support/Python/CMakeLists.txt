@@ -9,6 +9,7 @@ spectre_python_add_module(
   PYTHON_FILES
   CliExceptions.py
   DirectoryStructure.py
+  Logging.py
   Machines.py
   Resubmit.py
   RunNext.py

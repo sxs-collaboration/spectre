@@ -11,6 +11,7 @@ from click.testing import CliRunner
 
 import spectre
 from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.support.Logging import configure_logging
 from spectre.support.RunNext import run_next, run_next_command
 
 
@@ -60,5 +61,5 @@ class TestRunNext(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)
