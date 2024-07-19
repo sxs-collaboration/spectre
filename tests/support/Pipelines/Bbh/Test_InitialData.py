@@ -139,6 +139,8 @@ class TestInitialData(unittest.TestCase):
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
                     "control": True,
+                    "control_refinement_level": 1,
+                    "control_polynomial_order": 5,
                     "evolve": True,
                     "scheduler": "None",
                     "copy_executable": "None",

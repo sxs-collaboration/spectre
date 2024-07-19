@@ -32,6 +32,8 @@ def postprocess_id(
     control: bool = True,
     control_residual_tolerance: float = DEFAULT_RESIDUAL_TOLERANCE,
     control_max_iterations: int = DEFAULT_MAX_ITERATIONS,
+    control_refinement_level: int = 1,
+    control_polynomial_order: int = 6,
     evolve: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
@@ -69,6 +71,8 @@ def postprocess_id(
       control: Control BBH physical parameters (default: False).
       control_residual_tolerance: Residual tolerance used for control.
       control_max_iterations: Maximum of iterations allowed for control.
+      control_refinement_level: h-refinement used for control.
+      control_polynomial_order: p-refinement used for control.
       evolve: Evolve the initial data after postprocessing (default: False).
       pipeline_dir: Directory where steps in the pipeline are created.
         Required if 'evolve' is set to True.
@@ -126,6 +130,8 @@ def postprocess_id(
             id_run_dir=id_run_dir,
             residual_tolerance=control_residual_tolerance,
             max_iterations=control_max_iterations,
+            refinement_level=control_refinement_level,
+            polynomial_order=control_polynomial_order,
         )
         id_run_dir = last_control_run_dir
         id_input_file_path = f"{last_control_run_dir}/InitialData.yaml"

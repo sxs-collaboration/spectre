@@ -24,6 +24,8 @@ def control_id(
     id_run_dir: Optional[Union[str, Path]] = None,
     residual_tolerance: float = DEFAULT_RESIDUAL_TOLERANCE,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
+    refinement_level: int = 1,
+    polynomial_order: int = 6,
 ):
     """Control BBH physical parameters.
 
@@ -52,6 +54,8 @@ def control_id(
       max_iterations: Maximum of iterations allowed. Note: each iteration is
         very expensive as it needs to solve an entire initial data problem.
         (Default: 30)
+      refinement_level: h-refinement used in control loop.
+      polynomial_order: p-refinement used in control loop.
     """
 
     # Read input file
@@ -111,6 +115,8 @@ def control_id(
                 control=False,
                 evolve=False,
                 scheduler=None,
+                refinement_level=refinement_level,
+                polynomial_order=polynomial_order,
             )
 
         # Get black hole physical parameters

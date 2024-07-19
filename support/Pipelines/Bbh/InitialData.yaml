@@ -12,6 +12,8 @@ Next:
     id_run_dir: ./
     pipeline_dir: {{ pipeline_dir | default("None") }}
     control: {{ control }}
+    control_refinement_level: {{ L }}
+    control_polynomial_order: {{ P }}
     evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
