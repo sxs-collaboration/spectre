@@ -48,7 +48,7 @@ working development environment, a good place to start is our
 \subpage dev_guide_quick_start_docker_vscode. If you prefer setting up your
 development environment differently, read on!
 
-### Dependencies
+### Dependencies {#build_dependencies}
 
 **Note**: You don't need to install any of these dependencies by hand,
 or by using yum, apt, or other package managers; it is much easier

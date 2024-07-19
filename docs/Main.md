@@ -80,7 +80,8 @@ accessed by links in the menu bar at the top.
 
 - For instructions on **installing SpECTRE** on personal computers and clusters
   consult the \ref installation "Installation" and \ref installation_on_clusters
-  "Installation on clusters" pages, respectively.
+  "Installation on clusters" pages, respectively. See the
+  \ref spectre_build_system "build system" page for how to configure SpECTRE.
 - If you are looking to **run simulations with SpECTRE** we recommend starting
   with the \ref tutorials "User Tutorials". The tutorials are designed to get
   users up and running with a simulation, as well as analyzing and visualizing
