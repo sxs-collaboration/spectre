@@ -263,6 +263,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::append<
           typename system::variables_tag::tags_list,
           typename system::primitive_variables_tag::tags_list,
+          typename system::flux_spacetime_variables_tag::tags_list,
           tmpl::list<
               grmhd::ValenciaDivClean::Tags::
                   ComovingMagneticFieldMagnitudeCompute,
