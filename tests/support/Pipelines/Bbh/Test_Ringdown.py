@@ -17,6 +17,7 @@ from spectre.Pipelines.Bbh.Ringdown import (
     ringdown_parameters,
     start_ringdown_command,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestInitialData(unittest.TestCase):
@@ -108,5 +109,5 @@ class TestInitialData(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

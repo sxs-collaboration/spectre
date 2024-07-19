@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path, unit_test_src_path
+from spectre.support.Logging import configure_logging
 from spectre.Visualization.PlotTrajectories import plot_trajectories_command
 
 
@@ -133,5 +134,5 @@ class TestPlotTrajectories(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

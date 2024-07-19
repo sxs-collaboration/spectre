@@ -13,6 +13,7 @@ import h5py
 from click.testing import CliRunner
 
 import spectre.Informer as spectre_informer
+from spectre.support.Logging import configure_logging
 from spectre.Visualization.GenerateXdmf import (
     generate_xdmf,
     generate_xdmf_command,
@@ -139,5 +140,5 @@ class TestGenerateXdmf(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

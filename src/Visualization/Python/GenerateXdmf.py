@@ -21,6 +21,7 @@ import numpy as np
 import rich
 
 from spectre.support.CliExceptions import RequiredChoiceError
+from spectre.support.Logging import configure_logging
 from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
@@ -506,5 +507,5 @@ def generate_xdmf_command(**kwargs):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    configure_logging(log_level=logging.INFO)
     generate_xdmf_command(help_option_names=["-h", "--help"])

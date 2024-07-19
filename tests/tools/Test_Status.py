@@ -11,6 +11,7 @@ import yaml
 
 import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
+from spectre.support.Logging import configure_logging
 from spectre.tools.Status.ExecutableStatus import match_executable_status
 from spectre.tools.Status.Status import get_executable_name, get_input_file
 
@@ -211,5 +212,5 @@ class TestStatus(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)
