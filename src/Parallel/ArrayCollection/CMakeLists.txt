@@ -17,6 +17,7 @@ spectre_target_headers(
   ReceiveDataForElement.hpp
   SendDataToElement.hpp
   SetTerminateOnElement.hpp
+  SimpleActionOnElement.hpp
   SpawnInitializeElementsInCollection.hpp
   StartPhaseOnNodegroup.hpp
   TransformPdalForNodegroup.hpp
