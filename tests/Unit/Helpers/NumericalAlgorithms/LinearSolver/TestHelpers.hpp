@@ -17,8 +17,9 @@
 
 namespace TestHelpers::LinearSolver {
 
+template <typename ValueType>
 struct ApplyMatrix {
-  blaze::DynamicMatrix<double> matrix;
+  blaze::DynamicMatrix<ValueType> matrix;
   // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t invocations = 0;
   template <typename ResultVectorType, typename OperandVectorType>
@@ -32,9 +33,11 @@ struct ApplyMatrix {
 // Use the exact inverse of the matrix as preconditioner. This should solve
 // problems in 1 iteration.
 struct ExactInversePreconditioner {
-  template <typename SolutionVectorType, typename SourceVectorType>
+  template <typename ValueType, typename SolutionVectorType,
+            typename SourceVectorType>
   void solve(const gsl::not_null<SolutionVectorType*> solution,
-             const ApplyMatrix& linear_operator, const SourceVectorType& source,
+             const ApplyMatrix<ValueType>& linear_operator,
+             const SourceVectorType& source,
              const std::tuple<>& /*operator_args*/) const {
     if (not inv_matrix_.has_value()) {
       inv_matrix_ = blaze::inv(linear_operator.matrix);
@@ -57,9 +60,11 @@ struct ExactInversePreconditioner {
 
 // Use the inverse of the diagonal as preconditioner.
 struct JacobiPreconditioner {
-  template <typename SolutionVectorType, typename SourceVectorType>
+  template <typename ValueType, typename SolutionVectorType,
+            typename SourceVectorType>
   void solve(const gsl::not_null<SolutionVectorType*> solution,
-             const ApplyMatrix& linear_operator, const SourceVectorType& source,
+             const ApplyMatrix<ValueType>& linear_operator,
+             const SourceVectorType& source,
              const std::tuple<>& /*operator_args*/) const {
     if (not inv_diagonal_.has_value()) {
       inv_diagonal_ = blaze::DynamicVector<double>(source.size(), 1.);
@@ -90,10 +95,12 @@ struct RichardsonPreconditioner {
       : relaxation_parameter_(relaxation_parameter),
         num_iterations_(num_iterations) {}
 
-  template <typename SolutionVectorType, typename SourceVectorType>
+  template <typename ValueType, typename SolutionVectorType,
+            typename SourceVectorType>
   void solve(
       const gsl::not_null<SolutionVectorType*> initial_guess_in_solution_out,
-      const ApplyMatrix& linear_operator, const SourceVectorType& source,
+      const ApplyMatrix<ValueType>& linear_operator,
+      const SourceVectorType& source,
       const std::tuple<>& /*operator_args*/) const {
     for (size_t i = 0; i < num_iterations_; ++i) {
       linear_operator(make_not_null(&correction_buffer_),

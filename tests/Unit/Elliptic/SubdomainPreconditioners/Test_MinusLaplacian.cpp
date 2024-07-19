@@ -433,11 +433,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     const auto& minus_laplacian =
         dynamic_cast<const MinusLaplacian<Dim, OptionsGroup>&>(*cloned);
     const auto& solver = minus_laplacian.solver();
-    REQUIRE(
-        dynamic_cast<
-            const LinearSolver::Serial::ExplicitInverse<typename MinusLaplacian<
-                Dim, OptionsGroup>::solver_type::registrars>*>(&solver) !=
-        nullptr);
+    REQUIRE(dynamic_cast<const LinearSolver::Serial::ExplicitInverse<
+                double, typename MinusLaplacian<
+                            Dim, OptionsGroup>::solver_type::registrars>*>(
+                &solver) != nullptr);
   }
   {
     INFO("Resetting");

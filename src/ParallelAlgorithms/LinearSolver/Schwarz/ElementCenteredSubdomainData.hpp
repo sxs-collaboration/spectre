@@ -63,6 +63,7 @@ struct ElementCenteredSubdomainData {
   using iterator = ElementCenteredSubdomainDataIterator<false, Dim, TagsList>;
   using const_iterator =
       ElementCenteredSubdomainDataIterator<true, Dim, TagsList>;
+  using value_type = typename ElementData::value_type;
 
   ElementCenteredSubdomainData() = default;
   ElementCenteredSubdomainData(const ElementCenteredSubdomainData&) = default;

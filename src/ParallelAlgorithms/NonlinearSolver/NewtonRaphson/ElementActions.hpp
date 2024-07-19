@@ -200,7 +200,7 @@ struct SendInitialResidualMagnitude {
     // Perform a global reduction to compute the initial residual magnitude
     const auto& residual = db::get<nonlinear_residual_tag>(box);
     const double local_residual_magnitude_square =
-        LinearSolver::inner_product(residual, residual);
+        LinearSolver::magnitude_square(residual);
     ResidualReductionData reduction_data{0, 0, local_residual_magnitude_square,
                                          1.};
     auto& section = Parallel::get_section<ParallelComponent, ArraySectionIdTag>(
@@ -458,7 +458,7 @@ struct ContributeToResidualMagnitudeReduction {
       const ParallelComponent* const /*meta*/) {
     const auto& residual = db::get<nonlinear_residual_tag>(box);
     const double local_residual_magnitude_square =
-        LinearSolver::inner_product(residual, residual);
+        LinearSolver::magnitude_square(residual);
     ResidualReductionData reduction_data{
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
         db::get<NonlinearSolver::Tags::Globalization<

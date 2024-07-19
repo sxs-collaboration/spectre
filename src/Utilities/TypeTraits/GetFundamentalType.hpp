@@ -3,11 +3,13 @@
 
 #pragma once
 
+#include <complex>
 #include <type_traits>
 
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
 namespace tt {
 namespace detail {
@@ -52,4 +54,34 @@ struct get_fundamental_type<T, Requires<detail::has_value_type_v<T> and
 template <typename T>
 using get_fundamental_type_t = typename get_fundamental_type<T>::type;
 /// @}
+
+template <typename T, typename = std::nullptr_t>
+struct get_complex_or_fundamental_type {
+  using type =
+      std::conditional_t<tt::is_complex_or_fundamental_v<T>, T, NoSuchType>;
+};
+
+/// \cond
+// Specialization for Blaze expressions
+template <typename T>
+struct get_complex_or_fundamental_type<T,
+                                       Requires<detail::has_ElementType_v<T>>> {
+  using type =
+      typename get_complex_or_fundamental_type<typename T::ElementType>::type;
+};
+// Specialization for containers
+template <typename T>
+struct get_complex_or_fundamental_type<
+    T, Requires<detail::has_value_type_v<T> and
+                not detail::has_ElementType_v<T> and
+                not tt::is_complex_or_fundamental_v<T>>> {
+  using type =
+      typename get_complex_or_fundamental_type<typename T::value_type>::type;
+};
+/// \endcond
+
+template <typename T>
+using get_complex_or_fundamental_type_t =
+    typename get_complex_or_fundamental_type<T>::type;
+
 }  // namespace tt

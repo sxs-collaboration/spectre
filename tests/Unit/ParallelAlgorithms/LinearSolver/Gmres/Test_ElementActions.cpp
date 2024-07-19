@@ -206,9 +206,9 @@ void test_element_actions() {
         REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
             make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<
-            element_array, LinearSolver::gmres::detail::Tags::
-                               FinalOrthogonalization<DummyOptionsGroup>>(
-            make_not_null(&runner), 0);
+            element_array,
+            LinearSolver::gmres::detail::Tags::FinalOrthogonalization<
+                DummyOptionsGroup, double>>(make_not_null(&runner), 0);
         const double normalization = 4.;
         const blaze::DynamicVector<double> minres{2., 4.};
         CAPTURE(has_converged);

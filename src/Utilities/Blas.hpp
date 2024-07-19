@@ -9,9 +9,12 @@
 
 #pragma once
 
+#include <complex>
+
 #ifndef SPECTRE_DEBUG
 #include <libxsmm.h>
 #endif  // ifndef SPECTRE_DEBUG
+#include <gsl/gsl_cblas.h>
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -47,6 +50,7 @@ void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
  */
 void disable_openblas_multithreading();
 
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * The dot product of two vectors.
@@ -68,6 +72,36 @@ inline double ddot_(const size_t& N, const double* X, const size_t& INCX,
                             gsl::narrow_cast<int>(INCX), Y,
                             gsl::narrow_cast<int>(INCY));
 }
+/// The unconjugated complex dot product $x \cdot y$. See `zdotc_` for the
+/// conjugated complex dot product, which is the standard dot product on the
+/// vector space of complex numbers.
+inline std::complex<double> zdotu_(const size_t& N,
+                                   const std::complex<double>* X,
+                                   const size_t& INCX,
+                                   const std::complex<double>* Y,
+                                   const size_t& INCY) {
+  // The complex result of the BLAS zdot* functions is sometimes returned by
+  // value and sometimes returned by reference, depending on the Fortran
+  // compiler settings. By using the cblas interface we ensure a consistent
+  // behavior.
+  std::complex<double> result;
+  cblas_zdotu_sub(gsl::narrow_cast<int>(N), X, gsl::narrow_cast<int>(INCX), Y,
+                  gsl::narrow_cast<int>(INCY), &result);
+  return result;
+}
+/// The conjugated complex dot product $\bar{x} \cdot y$. This is the standard
+/// dot product on the vector space of complex numbers.
+inline std::complex<double> zdotc_(const size_t& N,
+                                   const std::complex<double>* X,
+                                   const size_t& INCX,
+                                   const std::complex<double>* Y,
+                                   const size_t& INCY) {
+  std::complex<double> result;
+  cblas_zdotc_sub(gsl::narrow_cast<int>(N), X, gsl::narrow_cast<int>(INCX), Y,
+                  gsl::narrow_cast<int>(INCY), &result);
+  return result;
+}
+/// @}
 
 /// @{
 /*!

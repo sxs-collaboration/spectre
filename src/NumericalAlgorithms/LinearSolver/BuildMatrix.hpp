@@ -56,7 +56,7 @@ void build_matrix(const gsl::not_null<MatrixType*> matrix,
   // Re-using the iterators for all operator invocations
   auto result_iterator_begin = result_buffer->begin();
   auto result_iterator_end = result_buffer->end();
-  for (double& unit_vector_data : *operand_buffer) {
+  for (auto& unit_vector_data : *operand_buffer) {
     // Set a 1 at the unit vector location i
     unit_vector_data = 1.;
     // Invoke the operator on the unit vector

@@ -26,7 +26,7 @@ struct Metavariables {
       "Test the Richardson linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::Richardson::Richardson<helpers::fields_tag,
+      LinearSolver::Richardson::Richardson<helpers::fields_tag<double>,
                                            SerialRichardson>;
   using preconditioner = void;
 
