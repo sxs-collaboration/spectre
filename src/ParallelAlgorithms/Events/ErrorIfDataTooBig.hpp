@@ -20,6 +20,7 @@
 #include "DataStructures/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -119,10 +120,12 @@ class ErrorIfDataTooBig : public Event {
           for (const auto& component : tensor) {
             for (size_t point = 0; point < component.size(); ++point) {
               if (std::abs(component[point]) > threshold_) {
-                ERROR_NO_TRACE(tag_name << " too big with value "
-                                        << extract_point(tensor, point)
-                                        << " at position "
-                                        << extract_point(coordinates, point));
+                ERROR_NO_TRACE(
+                    tag_name
+                    << " too big with value " << extract_point(tensor, point)
+                    << " at position\n"
+                    << extract_point(coordinates, point) << "\nwith ElementId: "
+                    << get<::domain::Tags::Element<Dim>>(box).id());
               }
             }
           }
