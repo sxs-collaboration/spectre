@@ -5,6 +5,7 @@ set(LIBRARY Test_XctsPointwiseFunctions)
 
 set(LIBRARY_SOURCES
   Test_AdmLinearMomentum.cpp
+  Test_AdmMass.cpp
   Test_ExtrinsicCurvature.cpp
   Test_LongitudinalOperator.cpp
   Test_SpacetimeQuantities.cpp
