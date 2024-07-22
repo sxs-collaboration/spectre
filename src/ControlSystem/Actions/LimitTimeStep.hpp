@@ -11,9 +11,13 @@
 #include "ControlSystem/Metafunctions.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/PerformAlgorithmOnElement.hpp"
+#include "Parallel/ArrayCollection/Tags/ElementLocations.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "Time/ChangeSlabSize/ChangeSlabSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -79,13 +83,12 @@ struct LimitTimeStep {
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+            size_t Dim, typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, ActionList /*meta*/,
+      const ElementId<Dim>& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     static_assert(not Metavariables::local_time_stepping,
                   "The control system LimitTimeStep action is only for global "
@@ -102,9 +105,7 @@ struct LimitTimeStep {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    const auto& this_proxy =
-        ::Parallel::get_parallel_component<ParallelComponent>(
-            cache)[array_index];
+    auto& proxy = ::Parallel::get_parallel_component<ParallelComponent>(cache);
 
     // Minimum expiration time for any FoT in the measurement group.
     tmpl::wrap<tmpl::transform<control_system_groups,
@@ -136,10 +137,33 @@ struct LimitTimeStep {
               future_measurements.update(group_timescale);
               group_update = future_measurements.next_update();
               ready = group_update.has_value();
-              return ready ? std::unique_ptr<Parallel::Callback>{}
-                           : std::unique_ptr<Parallel::Callback>(
-                                 new Parallel::PerformAlgorithmCallback(
-                                     this_proxy));
+              if constexpr (Parallel::is_dg_element_collection_v<
+                                ParallelComponent>) {
+                // Note: The ArrayComponentId is still created with the
+                // array_index (ElementId) because we only support 1 callback
+                // per ArrayComponentId. This would mean for nodegroups we would
+                // discard a lot of callbacks that we need. Alternatively, the
+                // callback could do a broadcast to all elements on the
+                // nodegroup.
+                const auto element_location = static_cast<int>(
+                    Parallel::local_synchronous_action<
+                        ::Parallel::Actions::GetItemFromDistributedOject<
+                            Parallel::Tags::ElementLocations<Dim>>>(proxy)
+                        ->at(array_index));
+                return ready ? std::unique_ptr<Parallel::Callback>{}
+                             : std::unique_ptr<Parallel::Callback>(
+                                   new Parallel::ThreadedActionCallback<
+                                       Parallel::Actions::
+                                           PerformAlgorithmOnElement<false>,
+                                       decltype(proxy[element_location]),
+                                       std::decay_t<decltype(array_index)>>{
+                                       proxy[element_location], array_index});
+              } else {
+                return ready ? std::unique_ptr<Parallel::Callback>{}
+                             : std::unique_ptr<Parallel::Callback>(
+                                   new Parallel::PerformAlgorithmCallback(
+                                       proxy[array_index]));
+              }
             });
         if (not ready) {
           return;
@@ -172,10 +196,34 @@ struct LimitTimeStep {
                     group_expiration, fot.expiration_after(*group_update));
               }
             });
-            return ready ? std::unique_ptr<Parallel::Callback>{}
+            if constexpr (Parallel::is_dg_element_collection_v<
+                              ParallelComponent>) {
+              // Note: The ArrayComponentId is still created with the
+              // array_index (ElementId) because we only support 1 callback
+              // per ArrayComponentId. This would mean for nodegroups we would
+              // discard a lot of callbacks that we need. Alternatively, the
+              // callback could do a broadcast to all elements on the
+              // nodegroup.
+              const auto element_location = static_cast<int>(
+                  Parallel::local_synchronous_action<
+                      ::Parallel::Actions::GetItemFromDistributedOject<
+                          Parallel::Tags::ElementLocations<Dim>>>(proxy)
+                      ->at(array_index));
+              return ready
+                         ? std::unique_ptr<Parallel::Callback>{}
                          : std::unique_ptr<Parallel::Callback>(
-                               new Parallel::PerformAlgorithmCallback(
-                                   this_proxy));
+                               new Parallel::ThreadedActionCallback<
+                                   Parallel::Actions::PerformAlgorithmOnElement<
+                                       false>,
+                                   decltype(proxy[element_location]),
+                                   std::decay_t<decltype(array_index)>>{
+                                   proxy[element_location], array_index});
+            } else {
+              return ready ? std::unique_ptr<Parallel::Callback>{}
+                           : std::unique_ptr<Parallel::Callback>(
+                                 new Parallel::PerformAlgorithmCallback(
+                                     proxy[array_index]));
+            }
           });
     });
     if (not ready) {
