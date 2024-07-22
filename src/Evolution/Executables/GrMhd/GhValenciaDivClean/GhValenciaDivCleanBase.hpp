@@ -670,10 +670,10 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr auto default_phase_order = std::array<Parallel::Phase, 8>{
       {Parallel::Phase::Initialization,
        Parallel::Phase::RegisterWithElementDataReader,
-       Parallel::Phase::ImportInitialData,
+       Parallel::Phase::Register, Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   struct SubcellOptions {
     using evolved_vars_tags = typename system::variables_tag::tags_list;
