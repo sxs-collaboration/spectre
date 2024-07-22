@@ -54,6 +54,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -108,10 +109,12 @@ namespace evolution::dg::subcell::Actions {
  * - Modifies:
  *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  */
-template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping>
+template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping,
+          bool UseNodegroupDgElements>
 struct SendDataForReconstruction {
-  using inbox_tags = tmpl::list<
-      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Dim, UseNodegroupDgElements>>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -127,6 +130,14 @@ struct SendDataForReconstruction {
         "reconstruction data must be sent using dense output sometimes, and "
         "not at all other times. However, the data for the RDMP TCI should be "
         "sent along with the data for reconstruction each time.");
+    static_assert(UseNodegroupDgElements ==
+                      Parallel::is_dg_element_collection_v<ParallelComponent>,
+                  "The action SendDataForReconstruction is told by the "
+                  "template parameter UseNodegroupDgElements that it is being "
+                  "used with a DgElementCollection, but the ParallelComponent "
+                  "is not a DgElementCollection. You need to change the "
+                  "template parameter on the SendDataForReconstruction action "
+                  "in your action list.");
 
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "The SendDataForReconstruction action can only be called when "
@@ -254,7 +265,8 @@ struct SendDataForReconstruction {
             tci_decision};
 
         Parallel::receive_data<
-            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                Dim, Parallel::is_dg_element_collection_v<ParallelComponent>>>(
             receiver_proxy[neighbor], time_step_id,
             std::pair{DirectionalId<Dim>{direction_from_neighbor, element.id()},
                       std::move(data)});
@@ -322,7 +334,8 @@ struct ReceiveDataForReconstruction {
     std::map<TimeStepId,
              DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-            Metavariables::volume_dim>>(inboxes);
+            Metavariables::volume_dim,
+            Parallel::is_dg_element_collection_v<ParallelComponent>>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
     // Check we have at least some data from correct time, and then check that
     // we have received all data

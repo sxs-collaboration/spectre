@@ -119,8 +119,13 @@ namespace evolution::dg::Tags {
  *   be sent to the element to have it continue the algorithm. This is so as
  *   to minimize the number of communications made through Charm++ and instead
  *   to move data atomically between neighbors whenever possible.
+ *
+ * #### DG Element Nodegroup Support
+ * If you are using the `DgElementCollection` then you must set
+ * `UseNodegroupDgElements` to `true`. The actions that use this tag check
+ * that the parallel component and the `UseNodegroupDgElements` is consistent.
  */
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type = evolution::dg::BoundaryData<Dim>;
 
@@ -133,7 +138,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   using type_spsc = evolution::dg::AtomicInboxBoundaryData<Dim>;
 
   // The actual type being used.
-  using type = type_map;
+  using type = tmpl::conditional_t<UseNodegroupDgElements, type_spsc, type_map>;
   using value_type = type;
 
   template <typename ReceiveDataType>
@@ -280,7 +285,8 @@ struct BoundaryCorrectionAndGhostCellsInbox {
  */
 template <size_t Dim>
 struct BoundaryData : db::SimpleTag {
-  using type = typename BoundaryCorrectionAndGhostCellsInbox<Dim>::type_map;
+  using type =
+      typename BoundaryCorrectionAndGhostCellsInbox<Dim, false>::type_map;
 };
 
 /*!
