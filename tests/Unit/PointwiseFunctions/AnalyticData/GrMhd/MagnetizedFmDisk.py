@@ -14,6 +14,7 @@ def rest_mass_density(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -27,6 +28,7 @@ def rest_mass_density(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
 
 
@@ -38,6 +40,7 @@ def spatial_velocity(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -51,6 +54,7 @@ def spatial_velocity(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
 
 
@@ -62,6 +66,7 @@ def specific_internal_energy(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -75,6 +80,7 @@ def specific_internal_energy(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
 
 
@@ -86,6 +92,7 @@ def pressure(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -99,6 +106,7 @@ def pressure(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
 
 
@@ -111,6 +119,7 @@ def magnetic_potential(
     rmax,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_rest_mass_density,
 ):
     l = fm_disk.angular_momentum(m, a, rmax)
@@ -135,6 +144,7 @@ def magnetic_field(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -152,6 +162,7 @@ def magnetic_field(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
     x_max = np.array([r_max, 0.0, 0.0])
     threshold_rho = threshold_density * (
@@ -164,6 +175,7 @@ def magnetic_field(
             dimless_r_max,
             polytropic_constant,
             polytropic_exponent,
+            noise,
         )
     )
     x_ks = [0.0, 0.0, 0.0]
@@ -191,6 +203,7 @@ def magnetic_field(
                     r_max,
                     polytropic_constant,
                     polytropic_exponent,
+                    noise,
                     threshold_rho,
                 )
                 - magnetic_potential(
@@ -202,6 +215,7 @@ def magnetic_field(
                     r_max,
                     polytropic_constant,
                     polytropic_exponent,
+                    noise,
                     threshold_rho,
                 )
             )
@@ -220,6 +234,7 @@ def magnetic_field(
                 r_max,
                 polytropic_constant,
                 polytropic_exponent,
+                noise,
                 threshold_rho,
             )
             - magnetic_potential(
@@ -231,6 +246,7 @@ def magnetic_field(
                 r_max,
                 polytropic_constant,
                 polytropic_exponent,
+                noise,
                 threshold_rho,
             )
         ) * prefactor
@@ -242,7 +258,7 @@ def magnetic_field(
         # in test_variables function of Test_MagnetizedFmDisk.cpp.
         # Note: we are using lower (than default)
         # b_field_normalization for a faster testing time.
-        normalization = 2.077412435947072
+        normalization = 8.49943510498341
         result = normalization * ks_coords.cartesian_from_spherical_ks(
             result, x_ks, bh_mass, bh_dimless_spin
         )
@@ -259,6 +275,7 @@ def divergence_cleaning_field(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -273,6 +290,7 @@ def lorentz_factor(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -286,6 +304,7 @@ def lorentz_factor(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
 
 
@@ -297,6 +316,7 @@ def specific_enthalpy(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
     threshold_density,
     plasma_beta,
 ):
@@ -310,4 +330,5 @@ def specific_enthalpy(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )

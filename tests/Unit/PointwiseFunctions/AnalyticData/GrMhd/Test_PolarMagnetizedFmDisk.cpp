@@ -47,6 +47,7 @@ void test_create_from_options() {
           "    MaxPressureRadius: 14.2\n"
           "    PolytropicConstant: 0.065\n"
           "    PolytropicExponent: 1.654\n"
+          "    Noise: 0.0\n"
           "    ThresholdDensity: 0.42\n"
           "    InversePlasmaBeta: 85.0\n"
           "    BFieldNormGridRes: 4\n"
@@ -63,19 +64,19 @@ void test_create_from_options() {
           *deserialized_option_solution);
   CHECK(disk ==
         grmhd::AnalyticData::PolarMagnetizedFmDisk(
-            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
-                                                  0.065, 1.654, 0.42, 85.0, 4),
+            grmhd::AnalyticData::MagnetizedFmDisk(
+                1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.0, 0.42, 85.0, 4),
             grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0)));
 }
 
 void test_move() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 4),
+                                            1.654, 0.0, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk_copy(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 4),
+                                            1.654, 0.0, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   test_move_semantics(std::move(disk), disk_copy);
 }
@@ -83,7 +84,7 @@ void test_move() {
 void test_serialize() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
-                                            1.654, 0.42, 85.0, 4),
+                                            1.654, 0.0, 0.42, 85.0, 4),
       grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   test_serialization(disk);
 }
@@ -100,11 +101,12 @@ struct Wrapper {
 template <typename DataType>
 void test_variables(const DataType& used_for_size) {
   const double bh_mass = 1.12;
-  const double bh_dimless_spin = 0.97;
+  const double bh_dimless_spin = 0.9375;
   const double inner_edge_radius = 6.2;
   const double max_pressure_radius = 11.6;
   const double polytropic_constant = 0.034;
   const double polytropic_exponent = 1.65;
+  const double noise = 0.0;
   const double threshold_density = 0.14;
   const double inverse_plasma_beta = 0.023;
   const size_t b_field_normalization = 51;
@@ -112,7 +114,7 @@ void test_variables(const DataType& used_for_size) {
   const grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(
           bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-          polytropic_constant, polytropic_exponent, threshold_density,
+          polytropic_constant, polytropic_exponent, noise, threshold_density,
           inverse_plasma_beta, b_field_normalization),
       grmhd::AnalyticData::SphericalTorus(3.0, 20.0, 1.0, 0.3, 0.0));
 

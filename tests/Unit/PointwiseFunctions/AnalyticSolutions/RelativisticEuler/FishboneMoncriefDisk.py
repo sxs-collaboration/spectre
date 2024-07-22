@@ -4,6 +4,31 @@
 import numpy as np
 
 
+def rho_max(
+    bh_mass,
+    bh_dimless_a,
+    dimless_r_in,
+    dimless_r_max,
+    polytropic_constant,
+    polytropic_exponent,
+):
+    r_in = bh_mass * dimless_r_in
+    r_max = bh_mass * dimless_r_max
+    bh_spin_a = bh_mass * bh_dimless_a
+    l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
+    Win = potential(l, r_in * r_in, 1.0, bh_mass, bh_spin_a)
+    Wmax = potential(l, r_max * r_max, 1.0, bh_mass, bh_spin_a)
+    h_max = np.exp(Win - Wmax)
+    return np.power(
+        (
+            (polytropic_exponent - 1.0)
+            * (h_max - 1.0)
+            / (polytropic_constant * polytropic_exponent)
+        ),
+        1.0 / (polytropic_exponent - 1.0),
+    )
+
+
 def delta(r_sqrd, m, a):
     return r_sqrd - 2.0 * m * np.sqrt(r_sqrd) + a**2
 
@@ -201,6 +226,7 @@ def specific_enthalpy(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
     r_in = bh_mass * dimless_r_in
     bh_spin_a = bh_mass * bh_dimless_a
@@ -226,8 +252,17 @@ def rest_mass_density(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
-    return np.power(
+    rho_max_ = rho_max(
+        bh_mass,
+        bh_dimless_a,
+        dimless_r_in,
+        dimless_r_max,
+        polytropic_constant,
+        polytropic_exponent,
+    )
+    return (1 / rho_max_) * np.power(
         (polytropic_exponent - 1.0)
         * (
             specific_enthalpy(
@@ -239,6 +274,7 @@ def rest_mass_density(
                 dimless_r_max,
                 polytropic_constant,
                 polytropic_exponent,
+                noise,
             )
             - 1.0
         )
@@ -256,11 +292,21 @@ def specific_internal_energy(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
+    rho_max_ = rho_max(
+        bh_mass,
+        bh_dimless_a,
+        dimless_r_in,
+        dimless_r_max,
+        polytropic_constant,
+        polytropic_exponent,
+    )
     return (
         polytropic_constant
         * np.power(
-            rest_mass_density(
+            rho_max_
+            * rest_mass_density(
                 x,
                 t,
                 bh_mass,
@@ -269,6 +315,7 @@ def specific_internal_energy(
                 dimless_r_max,
                 polytropic_constant,
                 polytropic_exponent,
+                noise,
             ),
             polytropic_exponent - 1.0,
         )
@@ -285,19 +332,34 @@ def pressure(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
-    return polytropic_constant * np.power(
-        rest_mass_density(
-            x,
-            t,
-            bh_mass,
-            bh_dimless_a,
-            dimless_r_in,
-            dimless_r_max,
-            polytropic_constant,
-            polytropic_exponent,
-        ),
+    rho_max_ = rho_max(
+        bh_mass,
+        bh_dimless_a,
+        dimless_r_in,
+        dimless_r_max,
+        polytropic_constant,
         polytropic_exponent,
+    )
+    return (
+        (1 / rho_max_)
+        * polytropic_constant
+        * np.power(
+            rho_max_
+            * rest_mass_density(
+                x,
+                t,
+                bh_mass,
+                bh_dimless_a,
+                dimless_r_in,
+                dimless_r_max,
+                polytropic_constant,
+                polytropic_exponent,
+                noise,
+            ),
+            polytropic_exponent,
+        )
     )
 
 
@@ -310,6 +372,7 @@ def spatial_velocity(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
     r_in = bh_mass * dimless_r_in
     bh_spin_a = bh_mass * bh_dimless_a
@@ -349,6 +412,7 @@ def lorentz_factor(
     dimless_r_max,
     polytropic_constant,
     polytropic_exponent,
+    noise,
 ):
     bh_spin_a = bh_mass * bh_dimless_a
     spatial_metric = sph_kerr_schild_spatial_metric(x, bh_mass, bh_spin_a)
@@ -361,6 +425,7 @@ def lorentz_factor(
         dimless_r_max,
         polytropic_constant,
         polytropic_exponent,
+        noise,
     )
     return 1.0 / np.sqrt(
         1.0 - np.einsum("i,j,ij", velocity, velocity, spatial_metric)
