@@ -19,8 +19,11 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/Amr/Actions/UpdateAmrDecision.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
@@ -152,8 +155,20 @@ struct EvaluateRefinementCriteria {
     for (const auto& [direction, neighbors] : my_element.neighbors()) {
       (void)direction;
       for (const auto& neighbor_id : neighbors.ids()) {
-        Parallel::simple_action<UpdateAmrDecision>(
-            amr_element_array[neighbor_id], element_id, my_info);
+        if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+          const auto neighbor_location = static_cast<int>(
+              Parallel::local_synchronous_action<
+                  Parallel::Actions::GetItemFromDistributedOject<
+                      Parallel::Tags::ElementLocations<volume_dim>>>(
+                  Parallel::get_parallel_component<ParallelComponent>(cache))
+                  ->at(neighbor_id));
+          Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+              UpdateAmrDecision, true>>(amr_element_array[neighbor_location],
+                                        neighbor_id, element_id, my_info);
+        } else {
+          Parallel::simple_action<UpdateAmrDecision>(
+              amr_element_array[neighbor_id], element_id, my_info);
+        }
       }
     }
   }

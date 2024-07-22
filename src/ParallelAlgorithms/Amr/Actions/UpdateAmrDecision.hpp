@@ -17,8 +17,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
+#include "Parallel/ArrayCollection/Tags/ElementLocations.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
@@ -111,8 +115,21 @@ struct UpdateAmrDecision {
           Parallel::get_parallel_component<ParallelComponent>(cache);
       for (const auto& direction_neighbors : element.neighbors()) {
         for (const auto& id : direction_neighbors.second.ids()) {
-          Parallel::simple_action<UpdateAmrDecision>(amr_element_array[id],
-                                                     element.id(), my_amr_info);
+          if constexpr (Parallel::is_dg_element_collection_v<
+                            ParallelComponent>) {
+            const auto neighbor_location = static_cast<int>(
+                Parallel::local_synchronous_action<
+                    Parallel::Actions::GetItemFromDistributedOject<
+                        Parallel::Tags::ElementLocations<volume_dim>>>(
+                    Parallel::get_parallel_component<ParallelComponent>(cache))
+                    ->at(id));
+            Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+                UpdateAmrDecision, true>>(amr_element_array[neighbor_location],
+                                          id, element.id(), my_amr_info);
+          } else {
+            Parallel::simple_action<UpdateAmrDecision>(
+                amr_element_array[id], element.id(), my_amr_info);
+          }
         }
       }
     }

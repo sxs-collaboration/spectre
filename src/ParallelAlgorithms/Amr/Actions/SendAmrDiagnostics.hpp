@@ -13,6 +13,7 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
@@ -66,29 +67,35 @@ struct SendAmrDiagnostics {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* /*meta*/) {
-    const auto& mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
-    const auto& my_proxy =
-        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id];
-    const auto& target_proxy =
-        Parallel::get_parallel_component<amr::Component<Metavariables>>(cache);
-    std::vector<double> refinement_levels_by_dim(Dim);
-    std::vector<double> extents_by_dim(Dim);
-    const auto refinement_levels = element_id.refinement_levels();
-    for (size_t d = 0; d < Dim; ++d) {
-      refinement_levels_by_dim[d] = gsl::at(refinement_levels, d);
-      extents_by_dim[d] = mesh.extents(d);
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      ERROR("Reductions are not yet implemented for nodegroup arrays.");
+    } else {
+      const auto& mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
+      const auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(
+              cache)[element_id];
+      const auto& target_proxy =
+          Parallel::get_parallel_component<amr::Component<Metavariables>>(
+              cache);
+      std::vector<double> refinement_levels_by_dim(Dim);
+      std::vector<double> extents_by_dim(Dim);
+      const auto refinement_levels = element_id.refinement_levels();
+      for (size_t d = 0; d < Dim; ++d) {
+        refinement_levels_by_dim[d] = gsl::at(refinement_levels, d);
+        extents_by_dim[d] = mesh.extents(d);
+      }
+      if (db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box) >=
+          Verbosity::Debug) {
+        Parallel::printf("%s h-refinement %s, p-refinement %s\n",
+                         get_output(element_id), get_output(refinement_levels),
+                         get_output(mesh.extents()));
+      }
+      Parallel::contribute_to_reduction<amr::Actions::RunAmrDiagnostics>(
+          ReductionData{amr::fraction_of_block_volume(element_id), 1,
+                        mesh.number_of_grid_points(), refinement_levels_by_dim,
+                        extents_by_dim},
+          my_proxy, target_proxy);
     }
-    if (db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box) >=
-        Verbosity::Debug) {
-      Parallel::printf("%s h-refinement %s, p-refinement %s\n",
-                       get_output(element_id), get_output(refinement_levels),
-                       get_output(mesh.extents()));
-    }
-    Parallel::contribute_to_reduction<amr::Actions::RunAmrDiagnostics>(
-        ReductionData{amr::fraction_of_block_volume(element_id), 1,
-                      mesh.number_of_grid_points(), refinement_levels_by_dim,
-                      extents_by_dim},
-        my_proxy, target_proxy);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

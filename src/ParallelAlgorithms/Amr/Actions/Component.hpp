@@ -4,6 +4,8 @@
 #pragma once
 
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -47,14 +49,30 @@ struct Component {
     Parallel::get_parallel_component<Component>(local_cache)
         .start_phase(next_phase);
     if (Parallel::Phase::EvaluateAmrCriteria == next_phase) {
-      Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
-          Parallel::get_parallel_component<
-              typename metavariables::amr::element_array>(local_cache));
+      if constexpr (Parallel::is_dg_element_collection_v<
+                        typename metavariables::amr::element_array>) {
+        Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+            ::amr::Actions::EvaluateRefinementCriteria, true>>(
+            Parallel::get_parallel_component<
+                typename metavariables::amr::element_array>(local_cache));
+      } else {
+        Parallel::simple_action<::amr::Actions::EvaluateRefinementCriteria>(
+            Parallel::get_parallel_component<
+                typename metavariables::amr::element_array>(local_cache));
+      }
     }
     if (Parallel::Phase::AdjustDomain == next_phase) {
-      Parallel::simple_action<::amr::Actions::AdjustDomain>(
-          Parallel::get_parallel_component<
-              typename metavariables::amr::element_array>(local_cache));
+      if constexpr (Parallel::is_dg_element_collection_v<
+                        typename metavariables::amr::element_array>) {
+        Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+            ::amr::Actions::AdjustDomain, true>>(
+            Parallel::get_parallel_component<
+                typename metavariables::amr::element_array>(local_cache));
+      } else {
+        Parallel::simple_action<::amr::Actions::AdjustDomain>(
+            Parallel::get_parallel_component<
+                typename metavariables::amr::element_array>(local_cache));
+      }
     }
   }
 };
