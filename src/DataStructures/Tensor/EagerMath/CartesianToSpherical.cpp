@@ -85,7 +85,7 @@ tnsr::I<DataType, Dim, CoordsFrame> spherical_to_cartesian(
                                        Frame::Spherical<FRAME(data)>>& x);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3),
-                        (Frame::Grid, Frame::Inertial))
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial))
 
 #undef DTYPE
 #undef DIM

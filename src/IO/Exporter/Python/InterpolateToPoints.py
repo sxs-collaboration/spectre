@@ -42,6 +42,16 @@ logger = logging.getLogger(__name__)
     ),
 )
 @click.option(
+    "--extrapolate-into-excisions",
+    is_flag=True,
+    help=(
+        "Enables extrapolation into excision regions of the domain. "
+        "This can be useful to fill the excision region with "
+        "(constraint-violating but smooth) data so it can be imported into "
+        "moving puncture codes."
+    ),
+)
+@click.option(
     "--output", "-o", type=click.Path(writable=True), help="Output text file"
 )
 @click.option(
@@ -74,7 +84,7 @@ def interpolate_to_points_command(
     target_coords_file,
     output,
     delimiter,
-    num_threads,
+    **kwargs,
 ):
     """Interpolate volume data to target coordinates."""
     # Load target coords from file
@@ -97,7 +107,7 @@ def interpolate_to_points_command(
             observation_id=obs_id,
             tensor_components=vars,
             target_points=target_coords.T,
-            num_threads=num_threads,
+            **kwargs,
         )
     )
 
