@@ -45,8 +45,10 @@ namespace evolution::dg {
  * In addition, for local time stepping with Gauss points, the determinants of
  * the volume inverse Jacobian and the face Jacobian are stored.
  *
- * In addition to the (type-erased) fields on the mortar, the face mesh is
- * stored
+ * In addition to the (type-erased) fields on the mortar, the appropriate meshes
+ * are stored.  When setting the mortar data and mortar mesh, the face mesh
+ * should also be set as it is used when hybridizing DG with finite difference
+ * or finite volume schemes (DG-subcell).
  *
  * If the element and its neighbor have unaligned logical coordinate
  * systems then the data and meshes are stored in the local logical
@@ -62,7 +64,9 @@ struct MortarData {
   std::optional<Scalar<DataVector>> face_normal_magnitude{std::nullopt};
   std::optional<Scalar<DataVector>> face_det_jacobian{std::nullopt};
   std::optional<Scalar<DataVector>> volume_det_inv_jacobian{std::nullopt};
+  std::optional<Mesh<Dim - 1>> mortar_mesh{std::nullopt};
   std::optional<Mesh<Dim - 1>> face_mesh{std::nullopt};
+  std::optional<Mesh<Dim>> volume_mesh{std::nullopt};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);

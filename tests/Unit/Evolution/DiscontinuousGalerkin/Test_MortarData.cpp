@@ -28,10 +28,12 @@ namespace evolution::dg {
 namespace {
 template <size_t Dim>
 void assign_with_reference(const gsl::not_null<MortarData<Dim>*> mortar_data,
+                           const Mesh<Dim - 1>& mortar_mesh,
                            const Mesh<Dim - 1>& face_mesh,
                            const std::optional<DataVector>& data,
                            const std::string& expected_output) {
   if (data.has_value()) {
+    mortar_data->mortar_mesh = mortar_mesh;
     mortar_data->face_mesh = face_mesh;
     mortar_data->mortar_data = *data;
     CHECK(mortar_data->mortar_data.has_value());
@@ -81,26 +83,30 @@ void test_global_time_stepping_usage() {
 
   std::string local_expected_output = MakeString{}
                                       << "Mortar data: " << local_data << "\n"
+                                      << "Mortar mesh: " << mortar_mesh << "\n"
                                       << "Face normal magnitude: --\n"
                                       << "Face det(J): --\n"
                                       << "Face mesh: " << local_mesh << "\n"
-                                      << "Volume det(invJ): --\n";
+                                      << "Volume det(invJ): --\n"
+                                      << "Volume mesh: --\n";
 
   std::string neighbor_expected_output =
       MakeString{} << "Mortar data: " << neighbor_data << "\n"
+                   << "Mortar mesh: " << mortar_mesh << "\n"
                    << "Face normal magnitude: --\n"
                    << "Face det(J): --\n"
                    << "Face mesh: " << neighbor_mesh << "\n"
-                   << "Volume det(invJ): --\n";
+                   << "Volume det(invJ): --\n"
+                   << "Volume mesh: --\n";
 
   CHECK_FALSE(local_mortar_data.mortar_data.has_value());
   CHECK_FALSE(neighbor_mortar_data.mortar_data.has_value());
 
-  assign_with_reference(make_not_null(&local_mortar_data),
+  assign_with_reference(make_not_null(&local_mortar_data), mortar_mesh,
                         local_mesh, std::optional{local_data},
                         local_expected_output);
 
-  assign_with_reference(make_not_null(&neighbor_mortar_data),
+  assign_with_reference(make_not_null(&neighbor_mortar_data), mortar_mesh,
                         neighbor_mesh, std::optional{neighbor_data},
                         neighbor_expected_output);
 
@@ -129,12 +135,14 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
 
   std::string expected_output = MakeString{}
                                 << "Mortar data: " << local_data << "\n"
+                                << "Mortar mesh: " << mortar_mesh << "\n"
                                 << "Face normal magnitude: --\n"
                                 << "Face det(J): --\n"
                                 << "Face mesh: " << local_mesh << "\n"
-                                << "Volume det(invJ): --\n";
+                                << "Volume det(invJ): --\n"
+                                << "Volume mesh: --\n";
 
-  assign_with_reference(make_not_null(&mortar_data), local_mesh,
+  assign_with_reference(make_not_null(&mortar_data), mortar_mesh, local_mesh,
                         std::optional{local_data}, expected_output);
 
   const auto local_volume_det_inv_jacobian =

@@ -26,7 +26,9 @@ void MortarData<Dim>::pup(PUP::er& p) {
   p | face_normal_magnitude;
   p | face_det_jacobian;
   p | volume_det_inv_jacobian;
+  p | mortar_mesh;
   p | face_mesh;
+  p | volume_mesh;
 }
 
 template <size_t Dim>
@@ -35,7 +37,8 @@ bool operator==(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
          lhs.face_normal_magnitude == rhs.face_normal_magnitude and
          lhs.face_det_jacobian == rhs.face_det_jacobian and
          lhs.volume_det_inv_jacobian == rhs.volume_det_inv_jacobian and
-         lhs.face_mesh == rhs.face_mesh;
+         lhs.mortar_mesh == rhs.mortar_mesh and
+         lhs.face_mesh == rhs.face_mesh and lhs.volume_mesh == rhs.volume_mesh;
 }
 
 template <size_t Dim>
@@ -46,10 +49,12 @@ bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data) {
   os << "Mortar data: " << mortar_data.mortar_data << "\n";
+  os << "Mortar mesh: " << mortar_data.mortar_mesh << "\n";
   os << "Face normal magnitude: " << mortar_data.face_normal_magnitude << "\n";
   os << "Face det(J): " << mortar_data.face_det_jacobian << "\n";
   os << "Face mesh: " << mortar_data.face_mesh << "\n";
   os << "Volume det(invJ): " << mortar_data.volume_det_inv_jacobian << "\n";
+  os << "Volume mesh: " << mortar_data.volume_mesh << "\n";
   return os;
 }
 
