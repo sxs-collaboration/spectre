@@ -228,6 +228,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+      - ObserveAdmIntegrals
 
 RandomizeInitialGuess: None
 
