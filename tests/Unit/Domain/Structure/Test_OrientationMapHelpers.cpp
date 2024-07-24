@@ -25,6 +25,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -401,10 +402,13 @@ void test_0d_orient_variables_on_slice() {
   Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(slice_extents.product());
   get(get<ScalarTensor>(vars)) = DataVector{{-0.5}};
   get<0>(get<Coords<1>>(vars)) = DataVector{{1.0}};
+  const auto slice_mesh = Mesh<0>{};
   for (const auto& side : {Side::Lower, Side::Upper}) {
     CAPTURE(side);
     const OrientationMap<1> orientation_map(
         std::array<Direction<1>, 1>{{Direction<1>(0, side)}});
+    CHECK(slice_mesh ==
+          orient_mesh_on_slice(slice_mesh, 0_st, orientation_map));
     const auto oriented_vars =
         orient_variables_on_slice(vars, slice_extents, 0, orientation_map);
     // 1D boundary is a point, so no change expected
@@ -425,6 +429,8 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
 
   for (const size_t sliced_dim : {0_st, 1_st}) {
     CAPTURE(sliced_dim);
+    CHECK(slice_mesh ==
+          orient_mesh_on_slice(slice_mesh, sliced_dim, orientation_map));
     // Because `orientation_map` transforms between directions in the volume, we
     // make a new OrientationMap that transforms between directions on the
     // slices. In the case of a 1D slice, this is a 1D OrientationMap.
@@ -506,10 +512,14 @@ void test_1d_orient_variables_on_slice() {
 }
 
 void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
-  const auto slice_extents = Index<2>{3, 4};
-  const auto slice_mesh =
-      Mesh<2>(slice_extents.indices(), Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+  const auto volume_extents = Index<3>{3, 4, 5};
+  const auto volume_mesh =
+      Mesh<3>(volume_extents.indices(),
+              {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre,
+                Spectral::Basis::FiniteDifference}},
+              {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+                Spectral::Quadrature::CellCentered}});
+  const auto oriented_mesh = orientation_map(volume_mesh);
   const auto affine =
       Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
   const auto map =
@@ -518,6 +528,14 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
 
   for (const size_t sliced_dim : {0_st, 1_st, 2_st}) {
     CAPTURE(sliced_dim);
+    const auto slice_mesh = volume_mesh.slice_away(sliced_dim);
+    const auto& slice_extents = slice_mesh.extents();
+    CAPTURE(slice_mesh);
+    CAPTURE(slice_extents);
+    const auto oriented_sliced_dim = orientation_map(sliced_dim);
+    const auto expected_mesh = oriented_mesh.slice_away(oriented_sliced_dim);
+    CHECK(expected_mesh ==
+          orient_mesh_on_slice(slice_mesh, sliced_dim, orientation_map));
 
     // Because `orientation_map` transforms between directions in the volume, we
     // make a new OrientationMap that transforms between directions on the
@@ -567,7 +585,7 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
     get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
     get<0>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[0];
     get<1>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[1];
-    CHECK(oriented_vars == expected_vars);
+    CHECK_VARIABLES_APPROX(oriented_vars, expected_vars);
 
     check_vector(vars, oriented_vars, slice_extents, sliced_dim,
                  orientation_map);

@@ -13,12 +13,22 @@
 
 /// \cond
 template <size_t VolumeDim>
+class Mesh;
+template <size_t VolumeDim>
 class OrientationMap;
 template <size_t>
 class Index;
 template <typename TagsList>
 class Variables;
 /// \endcond
+
+/// \ingroup ComputationalDomainGroup
+/// \brief Orient a sliced Mesh to the logical frame of  a neighbor element with
+/// the given orientation.
+template <size_t VolumeDim>
+Mesh<VolumeDim - 1> orient_mesh_on_slice(
+    const Mesh<VolumeDim - 1>& mesh_on_slice, size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
 
 /// @{
 /// \ingroup ComputationalDomainGroup
