@@ -70,6 +70,8 @@ struct Metavariables {
   using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
       tmpl::list<Xcts::Tags::ConformalFactor<DataVector>,
                  Xcts::Tags::LapseTimesConformalFactor<DataVector>,
+                 ::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>,
+                               tmpl::size_t<3>, Frame::Inertial>,
                  gr::Tags::HamiltonianConstraint<DataVector>,
                  gr::Tags::MomentumConstraint<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,

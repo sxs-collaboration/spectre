@@ -71,9 +71,11 @@ void test_local_adm_integrals(const double distance,
                           Spectral::Quadrature::GaussLobatto};
 
   // Initialize "reduced" integral
-  tnsr::I<double, 3> reduced_integral;
+  Scalar<double> total_adm_mass;
+  total_adm_mass.get() = 0.;
+  tnsr::I<double, 3> total_adm_linear_momentum;
   for (int I = 0; I < 3; I++) {
-    reduced_integral.get(I) = 0.;
+    total_adm_linear_momentum.get(I) = 0.;
   }
 
   // Compute integral by summing over each element
@@ -96,21 +98,42 @@ void test_local_adm_integrals(const double distance,
         inertial_coords,
         tmpl::list<
             Xcts::Tags::ConformalFactor<DataVector>,
+            ::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataVector>,
+                          tmpl::size_t<3>, Frame::Inertial>,
+            Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
+            Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
+            Xcts::Tags::ConformalChristoffelSecondKind<DataVector, 3,
+                                                       Frame::Inertial>,
+            Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
+                                                       Frame::Inertial>,
             gr::Tags::SpatialMetric<DataVector, 3, Frame::Inertial>,
             gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>,
-            Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
             gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame::Inertial>,
             gr::Tags::TraceExtrinsicCurvature<DataVector>>{});
     const auto& conformal_factor =
         get<Xcts::Tags::ConformalFactor<DataVector>>(background_fields);
+    const auto& deriv_conformal_factor =
+        get<::Tags::deriv<Xcts::Tags::ConformalFactorMinusOne<DataVector>,
+                          tmpl::size_t<3>, Frame::Inertial>>(background_fields);
+    const auto& conformal_metric =
+        get<Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>>(
+            background_fields);
+    const auto& inv_conformal_metric =
+        get<Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
+            background_fields);
+    const auto& conformal_christoffel_second_kind =
+        get<Xcts::Tags::ConformalChristoffelSecondKind<DataVector, 3,
+                                                       Frame::Inertial>>(
+            background_fields);
+    const auto& conformal_christoffel_contracted =
+        get<Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
+                                                       Frame::Inertial>>(
+            background_fields);
     const auto& spatial_metric =
         get<gr::Tags::SpatialMetric<DataVector, 3, Frame::Inertial>>(
             background_fields);
     const auto& inv_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>>(
-            background_fields);
-    const auto& inv_conformal_metric =
-        get<Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
             background_fields);
     const auto& extrinsic_curvature =
         get<gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame::Inertial>>(
@@ -133,21 +156,28 @@ void test_local_adm_integrals(const double distance,
         {std::make_pair(direction, face_normal)});
 
     // Compute integral
-    tnsr::I<double, 3> element_integral;
+    Scalar<double> local_adm_mass;
+    tnsr::I<double, 3> local_adm_linear_momentum;
     Events::local_adm_integrals(
-        make_not_null(&element_integral), conformal_factor, spatial_metric,
-        inv_spatial_metric, extrinsic_curvature, trace_extrinsic_curvature,
-        inv_jacobian, mesh, current_element, faces_map_normal);
+        make_not_null(&local_adm_mass),
+        make_not_null(&local_adm_linear_momentum), conformal_factor,
+        deriv_conformal_factor, conformal_metric, inv_conformal_metric,
+        conformal_christoffel_second_kind, conformal_christoffel_contracted,
+        spatial_metric, inv_spatial_metric, extrinsic_curvature,
+        trace_extrinsic_curvature, inv_jacobian, mesh, current_element,
+        faces_map_normal);
+    total_adm_mass.get() += get(local_adm_mass);
     for (int I = 0; I < 3; I++) {
-      reduced_integral.get(I) += element_integral.get(I);
+      total_adm_linear_momentum.get(I) += local_adm_linear_momentum.get(I);
     }
   }
 
   // Check result
   auto custom_approx = Approx::custom().epsilon(10. / distance).scale(1.0);
-  CHECK(reduced_integral.get(0) == custom_approx(0.));
-  CHECK(reduced_integral.get(1) == custom_approx(0.));
-  CHECK(reduced_integral.get(2) ==
+  CHECK(get(total_adm_mass) == custom_approx(lorentz_factor * mass));
+  CHECK(get<0>(total_adm_linear_momentum) == custom_approx(0.));
+  CHECK(get<1>(total_adm_linear_momentum) == custom_approx(0.));
+  CHECK(get<2>(total_adm_linear_momentum) ==
         custom_approx(lorentz_factor * mass * boost_speed));
 }
 
