@@ -97,7 +97,8 @@ struct component {
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciDecision,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-      ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
+      ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarMesh<Dim>,
+      evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>,
@@ -258,16 +259,20 @@ void test(const bool use_cell_centered_flux) {
   }
 
   using MortarData = typename evolution::dg::Tags::MortarData<Dim>::type;
+  using MortarMesh = typename evolution::dg::Tags::MortarMesh<Dim>::type;
   using MortarNextId =
       typename evolution::dg::Tags::MortarNextTemporalId<Dim>::type;
   MortarData mortar_data{};
+  MortarMesh mortar_mesh{};
   MortarNextId mortar_next_id{};
   mortar_data[east_neighbor_id] = {};
+  mortar_mesh[east_neighbor_id] = {};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
                                                south_id};
     mortar_data[south_neighbor_id] = {};
+    mortar_mesh[south_neighbor_id] = {};
     mortar_next_id[south_neighbor_id] = {};
   }
 
@@ -291,9 +296,9 @@ void test(const bool use_cell_centered_flux) {
            evolution::dg::subcell::RdmpTciData{}, neighbor_tci_decision,
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
-           Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{},
-           typename domain::Tags::NeighborMesh<Dim>::type{}, cell_centered_flux,
-           Interps{}, Interps{}});
+           Variables<evolved_vars_tags>{}, MortarMesh{}, MortarData{},
+           MortarNextId{}, typename domain::Tags::NeighborMesh<Dim>::type{},
+           cell_centered_flux, Interps{}, Interps{}});
       ++neighbor_tci_decision;
     }
   }
@@ -307,10 +312,10 @@ void test(const bool use_cell_centered_flux) {
        // Explicitly set RDMP data since this would be set previously by the TCI
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
-       self_tci_decision, neighbor_decision, evolved_vars, mortar_data,
-       mortar_next_id, typename domain::Tags::NeighborMesh<Dim>::type{},
-       cell_centered_flux, fd_to_neighbor_fd_interpolants,
-       neighbor_dg_to_fd_interpolants});
+       self_tci_decision, neighbor_decision, evolved_vars, mortar_mesh,
+       mortar_data, mortar_next_id,
+       typename domain::Tags::NeighborMesh<Dim>::type{}, cell_centered_flux,
+       fd_to_neighbor_fd_interpolants, neighbor_dg_to_fd_interpolants});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;

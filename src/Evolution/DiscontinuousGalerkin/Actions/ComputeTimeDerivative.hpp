@@ -844,6 +844,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
               auto& local_mortar_data = mortar_data->at(mortar_id).local();
               local_mortar_data.face_normal_magnitude = face_normal_magnitude;
               if (using_gauss_points) {
+                local_mortar_data.volume_mesh = volume_mesh;
                 local_mortar_data.volume_det_inv_jacobian =
                     volume_det_inv_jacobian;
                 local_mortar_data.face_det_jacobian = face_det_jacobian;

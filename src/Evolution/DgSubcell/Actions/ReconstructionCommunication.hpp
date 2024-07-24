@@ -337,6 +337,7 @@ struct ReceiveDataForReconstruction {
     inbox.erase(current_time_step_id);
 
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
+    const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(box);
 
     db::mutate<Tags::GhostDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
@@ -347,7 +348,7 @@ struct ReceiveDataForReconstruction {
          ghost_zone_size =
              db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
                  .ghost_zone_size(),
-         &received_data, &subcell_mesh](
+         &received_data, &subcell_mesh, &mortar_meshes](
             const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
@@ -381,6 +382,8 @@ struct ReceiveDataForReconstruction {
                     .has_value()) {
               mortar_data->at(mortar_id).neighbor().face_mesh =
                   received_mortar_data.second.interface_mesh;
+              mortar_data->at(mortar_id).neighbor().mortar_mesh =
+                  mortar_meshes.at(mortar_id);
               mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
                   *received_mortar_data.second.boundary_correction_data);
             }

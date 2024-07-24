@@ -231,13 +231,14 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            [&face_mesh, &mortar_id,
+            [&face_mesh, &mortar_id, &mortar_mesh,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
               mortar_data_ptr->at(mortar_id).local().face_mesh = face_mesh;
+              mortar_data_ptr->at(mortar_id).local().mortar_mesh = mortar_mesh;
               mortar_data_ptr->at(mortar_id).local().mortar_data =
                   std::move(type_erased_boundary_data_on_mortar);
             },
@@ -268,6 +269,7 @@ struct SetLocalMortarData {
           evolution::dg::MortarData<Metavariables::volume_dim>
               past_mortar_data{};
           past_mortar_data.face_mesh = face_mesh;
+          past_mortar_data.mortar_mesh = mortar_mesh;
           past_mortar_data.mortar_data =
               std::move(type_erased_boundary_data_on_mortar);
           Scalar<DataVector> local_face_normal_magnitude{
@@ -292,6 +294,7 @@ struct SetLocalMortarData {
                           100 * count + 300000);
             past_mortar_data.volume_det_inv_jacobian =
                 local_volume_det_inv_jacobian;
+            past_mortar_data.volume_mesh = volume_mesh;
             past_mortar_data.face_det_jacobian = local_face_det_jacobian;
           }
           using dt_variables_tag =
@@ -301,7 +304,7 @@ struct SetLocalMortarData {
               evolution::dg::Tags::MortarData<Metavariables::volume_dim>,
               evolution::dg::Tags::MortarDataHistory<
                   Metavariables::volume_dim, typename dt_variables_tag::type>>(
-              [&det_inv_jacobian, &mortar_id, &past_mortar_data,
+              [&det_inv_jacobian, &mortar_id, &volume_mesh, &past_mortar_data,
                &past_time_step_id, &time_step_id](
                   const auto mortar_data_ptr,
                   const auto mortar_data_history_ptr,
@@ -351,6 +354,7 @@ struct SetLocalMortarData {
                                  interpolation_matrices, get(det_jacobian),
                                  mesh.extents());
                   local_mortar_data.volume_det_inv_jacobian = det_inv_jacobian;
+                  local_mortar_data.volume_mesh = volume_mesh;
                   local_mortar_data.face_det_jacobian = face_det_jacobian;
                 }
                 mortar_data_history_ptr->at(mortar_id).local().insert(
@@ -694,6 +698,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
           nhbr_mortar_data.face_mesh = face_mesh;
+          nhbr_mortar_data.mortar_mesh = mortar_mesh;
           nhbr_mortar_data.mortar_data = flux_data;
           mortar_data_history.at(mortar_id).remote().insert(
               neighbor_time_step_id, integration_order,
@@ -701,6 +706,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         }
       } else {
         all_mortar_data.at(mortar_id).neighbor().face_mesh = face_mesh;
+        all_mortar_data.at(mortar_id).neighbor().mortar_mesh = mortar_mesh;
         all_mortar_data.at(mortar_id).neighbor().mortar_data = flux_data;
       }
       ++count;
