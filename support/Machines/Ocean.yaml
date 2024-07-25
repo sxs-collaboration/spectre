@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Ocean
+  Description: |
+    Supercomputer at Cal State Fullerton hosted by Geoffrey Lovelace.
+  DefaultTasksPerNode: 1
+  DefaultProcsPerTasks: 20
+  DefaultQueue: "orca-1"
+  DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: []
