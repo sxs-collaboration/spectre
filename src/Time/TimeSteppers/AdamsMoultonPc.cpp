@@ -337,6 +337,19 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
     const TimeDelta& time_step) const {
   ASSERT(not local_times.empty(), "No local data provided.");
   ASSERT(not remote_times.empty(), "No remote data provided.");
+  for (size_t i = 0; i < local_times.size(); ++i) {
+    ASSERT(local_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(local_times[i]),
+           "Incorrect local order " << local_times.integration_order(i)
+           << " at time " << local_times[i]);
+  }
+  for (size_t i = 0; i < remote_times.size(); ++i) {
+    ASSERT(remote_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(remote_times[i]),
+           "Incorrect remote order " << remote_times.integration_order(i)
+           << " at time " << remote_times[i]);
+  }
+
   const auto current_order =
       local_times.integration_order(local_times.size() - 1);
   if constexpr (Monotonic) {
@@ -432,10 +445,10 @@ void AdamsMoultonPc<Monotonic>::clean_boundary_history_impl(
     return;
   }
 
-  const auto required_points =
+  const auto required_local_points =
       local_times.integration_order(local_times.size() - 1) - 2;
 
-  while (local_times.size() > required_points) {
+  while (local_times.size() > required_local_points) {
     local_times.pop_front();
   }
   for (size_t i = 0; i < local_times.size(); ++i) {
@@ -445,7 +458,9 @@ void AdamsMoultonPc<Monotonic>::clean_boundary_history_impl(
   // If the sides are not aligned, then we are in the middle of the
   // remote step, so still need its data.
   if (synchronized) {
-    while (remote_times.size() > required_points) {
+    const auto required_remote_points =
+        remote_times.integration_order(remote_times.size() - 1) - 2;
+    while (remote_times.size() > required_remote_points) {
       remote_times.pop_front();
     }
     for (size_t i = 0; i < remote_times.size(); ++i) {
@@ -462,6 +477,19 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
+  for (size_t i = 0; i < local_times.size(); ++i) {
+    ASSERT(local_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(local_times[i]),
+           "Incorrect local order " << local_times.integration_order(i)
+           << " at time " << local_times[i]);
+  }
+  for (size_t i = 0; i < remote_times.size(); ++i) {
+    ASSERT(remote_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(remote_times[i]),
+           "Incorrect remote order " << remote_times.integration_order(i)
+           << " at time " << remote_times[i]);
+  }
+
   if constexpr (Monotonic) {
     ASSERT(local_times.number_of_substeps(local_times.size() - 1) == 1,
            "Dense output must be done before predictor evaluation.");
