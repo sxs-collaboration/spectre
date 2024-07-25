@@ -38,8 +38,7 @@ PhaseChangeAndTriggers:
 
 Evolution:
   InitialTime: 0.0
-  # Test backwards evolution in an integration test
-  InitialTimeStep: -0.001
+  InitialTimeStep: 0.001
   TimeStepper:
     AdamsBashforth:
       Order: 3
@@ -74,7 +73,7 @@ EventsAndTriggers:
   - Trigger:
       Times:
         Specified:
-          Values: [&final_time -0.05]
+          Values: [&final_time 0.05]
     Events:
       - Completion
   - Trigger: Always
