@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Executables/Examples/ParallelTutorial/MinimalExecutable.hpp"
-
 #include <array>
 
 #include "Options/String.hpp"
