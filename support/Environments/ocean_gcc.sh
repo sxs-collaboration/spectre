@@ -92,7 +92,9 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           -D USE_PCH=ON \
           -D BUILD_PYTHON_BINDINGS=ON \
+          -D MACHINE=Ocean \
           -D BOOTSTRAP_PY_DEPS=ON \
+          -D DEBUG_SYMBOLS=OFF \
           "$@" \
           $SPECTRE_HOME
 }
