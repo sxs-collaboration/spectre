@@ -358,6 +358,38 @@ struct Test<3, LocalTimeStepping> {
   }
 };
 
+template <size_t Dim>
+void check_mortar_data(const MortarData<Dim>& projected,
+                       const MortarData<Dim>& expected) {
+  CHECK(projected.mortar_mesh == expected.mortar_mesh);
+  CHECK(projected.face_mesh == expected.face_mesh);
+  CHECK(projected.volume_mesh == expected.volume_mesh);
+  if (projected.mortar_data.has_value()) {
+    CHECK_ITERABLE_APPROX(projected.mortar_data.value(),
+                          expected.mortar_data.value());
+  } else {
+    CHECK_FALSE(expected.mortar_data.has_value());
+  }
+  if (projected.face_normal_magnitude.has_value()) {
+    CHECK_ITERABLE_APPROX(projected.face_normal_magnitude.value(),
+                          expected.face_normal_magnitude.value());
+  } else {
+    CHECK_FALSE(expected.face_normal_magnitude.has_value());
+  }
+  if (projected.face_det_jacobian.has_value()) {
+    CHECK_ITERABLE_APPROX(projected.face_det_jacobian.value(),
+                          expected.face_det_jacobian.value());
+  } else {
+    CHECK_FALSE(expected.face_det_jacobian.has_value());
+  }
+  if (projected.volume_det_inv_jacobian.has_value()) {
+    CHECK_ITERABLE_APPROX(projected.volume_det_inv_jacobian.value(),
+                          expected.volume_det_inv_jacobian.value());
+  } else {
+    CHECK_FALSE(expected.volume_det_inv_jacobian.has_value());
+  }
+}
+
 template <size_t Dim, bool UsingLts>
 void test_p_refine(
     ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>& mortar_data,
@@ -373,8 +405,8 @@ void test_p_refine(
     const Mesh<Dim>& old_mesh, Mesh<Dim>& new_mesh,
     const Element<Dim>& old_element, Element<Dim>& new_element,
     std::unordered_map<ElementId<Dim>, amr::Info<Dim>>& neighbor_info,
-    const ::dg::MortarMap<
-        Dim, evolution::dg::MortarDataHolder<Dim>>& /*expected_mortar_data*/,
+    const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
+        expected_mortar_data,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
     const ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         expected_mortar_size,
@@ -400,16 +432,30 @@ void test_p_refine(
       Metavariables<Dim, UsingLts>>>(make_not_null(&box),
                                      std::make_pair(old_mesh, old_element));
 
-  // Can't check the state as a default constructed MortarData has a default
-  // constructed TimeStepId which has nans which always compare as unequal
-  // CHECK(db::get<Tags::MortarData<Dim>>(box) == expected_mortar_data);
+  CHECK(db::get<Tags::MortarData<Dim>>(box) == expected_mortar_data);
   CHECK(db::get<Tags::MortarMesh<Dim>>(box) == expected_mortar_mesh);
   CHECK(db::get<Tags::MortarSize<Dim>>(box) == expected_mortar_size);
   CHECK(db::get<Tags::MortarNextTemporalId<Dim>>(box) ==
         expected_mortar_next_temporal_id);
   CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box) ==
         expected_normal_covector_and_magnitude);
-  if (not UsingLts) {
+  if (UsingLts) {
+    const auto& projected_mortar_data_history = db::get<
+        Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>(
+        box);
+    for (const auto& [mortar_id, history] : projected_mortar_data_history) {
+      for (size_t i = 0; i < 3; ++i) {
+        check_mortar_data(
+            history.local().data(i),
+            expected_mortar_data_history.at(mortar_id).local().data(i));
+      }
+      for (size_t i = 0; i < 2; ++i) {
+        check_mortar_data(
+            history.remote().data(i),
+            expected_mortar_data_history.at(mortar_id).remote().data(i));
+      }
+    }
+  } else {
     (void)(expected_mortar_data_history);
     CHECK(
         db::get<
@@ -478,8 +524,6 @@ void test_p_refine_gts() {
   auto new_element = make_element<Dim>();
   const TimeStepId next_temporal_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
 
-  // These quantities are re-allocated after projection, so we can
-  // just set them to empty maps...
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh{};
   ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>> mortar_size{};
@@ -492,8 +536,18 @@ void test_p_refine_gts() {
   ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
   std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
   for (const auto& [direction, neighbors] : old_element.neighbors()) {
+    normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
+      mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(old_mesh.slice_away(direction.dimension()),
+                            neighbor_mesh.slice_away(direction.dimension())));
+      mortar_size.emplace(
+          mortar_id,
+          ::dg::mortar_size(old_element.id(), neighbor, direction.dimension(),
+                            neighbors.orientation()));
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_info.emplace(
           neighbor,
@@ -530,10 +584,163 @@ void test_p_refine_gts() {
     }
   }
   for (const auto& direction : new_element.external_boundaries()) {
+    normal_covector_and_magnitude[direction] = std::nullopt;
     expected_normal_covector_and_magnitude[direction] = std::nullopt;
   }
 
   test_p_refine<Dim, false>(
+      mortar_data, mortar_mesh, mortar_size, mortar_next_temporal_ids,
+      normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
+      old_element, new_element, neighbor_info, expected_mortar_data,
+      expected_mortar_mesh, expected_mortar_size,
+      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
+      expected_mortar_data_history);
+}
+
+template <size_t Dim>
+MortarData<Dim> make_mortar_data(const Mesh<Dim - 1>& mortar_mesh,
+                                 const Mesh<Dim - 1>& face_mesh,
+                                 const Mesh<Dim>& volume_mesh,
+                                 const bool is_local_side, const double value) {
+  constexpr size_t number_of_components = 1 + Dim;
+  MortarData<Dim> mortar_data;
+  mortar_data.mortar_data = DataVector{
+      mortar_mesh.number_of_grid_points() * number_of_components, value};
+  mortar_data.mortar_mesh = mortar_mesh;
+  if (is_local_side) {
+    mortar_data.face_normal_magnitude = Scalar<DataVector>{
+        DataVector{face_mesh.number_of_grid_points(), 2.0 * value}};
+    mortar_data.face_det_jacobian = Scalar<DataVector>{
+        DataVector{face_mesh.number_of_grid_points(), 3.0 * value}};
+    mortar_data.face_mesh = face_mesh;
+    mortar_data.volume_det_inv_jacobian = Scalar<DataVector>{
+        DataVector{volume_mesh.number_of_grid_points(), 4.0 * value}};
+    mortar_data.volume_mesh = volume_mesh;
+  }
+  return mortar_data;
+}
+
+template <size_t Dim>
+using boundary_history_type =
+    typename mortar_data_history_type<Dim>::mapped_type;
+
+template <size_t Dim>
+void test_p_refine_lts() {
+  const Mesh<Dim> old_mesh{4, Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto};
+  Mesh<Dim> new_mesh{5, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> neighbor_mesh{3, Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
+
+  const auto old_element = make_element<Dim>();
+  auto new_element = make_element<Dim>();
+  const TimeStepId next_temporal_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
+  const std::vector<TimeStepId> local_past_ids{
+      TimeStepId{true, 3, Time{Slab{0.2, 3.4}, {0, 100}}},
+      TimeStepId{true, 3, Time{Slab{0.2, 3.4}, {2, 100}}},
+      TimeStepId{true, 3, Time{Slab{0.2, 3.4}, {4, 100}}}};
+  const std::vector<TimeStepId> remote_past_ids{
+      TimeStepId{true, 3, Time{Slab{0.2, 3.4}, {0, 100}}},
+      TimeStepId{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}}};
+
+  ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
+  ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh{};
+  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>> mortar_size{};
+  DirectionMap<Dim, std::optional<Variables<
+                        tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>
+      normal_covector_and_magnitude{};
+  mortar_data_history_type<Dim> mortar_data_history{};
+  ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
+  std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
+  for (const auto& [direction, neighbors] : old_element.neighbors()) {
+    normal_covector_and_magnitude[direction] = std::nullopt;
+    for (const auto& neighbor : neighbors) {
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
+      mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(old_mesh.slice_away(direction.dimension()),
+                            neighbor_mesh.slice_away(direction.dimension())));
+      mortar_size.emplace(
+          mortar_id,
+          ::dg::mortar_size(old_element.id(), neighbor, direction.dimension(),
+                            neighbors.orientation()));
+      mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
+      neighbor_info.emplace(
+          neighbor,
+          amr::Info<Dim>{std::array<amr::Flag, Dim>{}, neighbor_mesh});
+      mortar_data_history.emplace(mortar_id, boundary_history_type<Dim>{});
+      for (size_t i = 0; i < 3; ++i) {
+        mortar_data_history.at(mortar_id).local().insert(
+            local_past_ids[i], 3,
+            make_mortar_data(mortar_mesh.at(mortar_id),
+                             old_mesh.slice_away(direction.dimension()),
+                             old_mesh, true, 5.0 + static_cast<double>(i)));
+      }
+      for (size_t i = 0; i < 2; ++i) {
+        mortar_data_history.at(mortar_id).remote().insert(
+            local_past_ids[i], 3,
+            make_mortar_data(mortar_mesh.at(mortar_id),
+                             neighbor_mesh.slice_away(direction.dimension()),
+                             neighbor_mesh, false,
+                             5.0 + static_cast<double>(i)));
+      }
+    }
+  }
+
+  ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
+      expected_mortar_data{};
+  ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
+  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>
+      expected_mortar_size{};
+  ::dg::MortarMap<Dim, TimeStepId> expected_mortar_next_temporal_ids{};
+  DirectionMap<Dim, std::optional<Variables<
+                        tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>
+      expected_normal_covector_and_magnitude{};
+  mortar_data_history_type<Dim> expected_mortar_data_history{};
+  for (const auto& [direction, neighbors] : new_element.neighbors()) {
+    expected_normal_covector_and_magnitude[direction] = std::nullopt;
+    for (const auto& neighbor : neighbors) {
+      const DirectionalId<Dim> mortar_id{direction, neighbor};
+      expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      expected_mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
+                            neighbor_info.at(neighbor).new_mesh.slice_away(
+                                direction.dimension())));
+      expected_mortar_size.emplace(
+          mortar_id,
+          ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
+                            neighbors.orientation()));
+      expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
+      expected_mortar_data_history.emplace(mortar_id,
+                                           boundary_history_type<Dim>{});
+      for (size_t i = 0; i < 3; ++i) {
+        expected_mortar_data_history.at(mortar_id).local().insert(
+            local_past_ids[i], 3,
+            make_mortar_data(expected_mortar_mesh.at(mortar_id),
+                             new_mesh.slice_away(direction.dimension()),
+                             new_mesh, true, 5.0 + static_cast<double>(i)));
+      }
+      for (size_t i = 0; i < 2; ++i) {
+        expected_mortar_data_history.at(mortar_id).remote().insert(
+            local_past_ids[i], 3,
+            make_mortar_data(expected_mortar_mesh.at(mortar_id),
+                             neighbor_mesh.slice_away(direction.dimension()),
+                             neighbor_mesh, false,
+                             5.0 + static_cast<double>(i)));
+      }
+    }
+  }
+  for (const auto& direction : new_element.external_boundaries()) {
+    normal_covector_and_magnitude[direction] = std::nullopt;
+    expected_normal_covector_and_magnitude[direction] = std::nullopt;
+  }
+
+  test_p_refine<Dim, true>(
       mortar_data, mortar_mesh, mortar_size, mortar_next_temporal_ids,
       normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
       old_element, new_element, neighbor_info, expected_mortar_data,
@@ -563,5 +770,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
   test_p_refine_gts<1>();
   test_p_refine_gts<2>();
   test_p_refine_gts<3>();
+  test_p_refine_lts<1>();
+  test_p_refine_lts<2>();
+  test_p_refine_lts<3>();
 }
 }  // namespace evolution::dg
