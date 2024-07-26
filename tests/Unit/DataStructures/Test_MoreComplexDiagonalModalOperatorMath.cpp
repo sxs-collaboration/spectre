@@ -12,14 +12,12 @@
 #include "DataStructures/ComplexDiagonalModalOperator.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DiagonalModalOperator.hpp"
-#include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ModalVector.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-
-// IWYU pragma: no_include <algorithm>
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace {
 void test_additional_complex_diagonal_modal_operator_math() {

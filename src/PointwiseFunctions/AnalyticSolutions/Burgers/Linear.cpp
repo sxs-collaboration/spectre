@@ -5,12 +5,10 @@
 
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace Burgers::Solutions {
 

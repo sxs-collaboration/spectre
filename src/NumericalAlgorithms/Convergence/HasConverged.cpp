@@ -5,7 +5,7 @@
 
 #include <optional>
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <string>
 
 #include "Utilities/ErrorHandling/Assert.hpp"

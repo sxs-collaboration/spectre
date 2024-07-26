@@ -25,8 +25,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-
 namespace {
 
 template <size_t Dim, size_t ThermodynamicDim>

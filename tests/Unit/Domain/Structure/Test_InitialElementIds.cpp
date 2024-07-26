@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"

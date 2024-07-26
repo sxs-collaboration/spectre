@@ -70,7 +70,7 @@
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
-#include "ParallelAlgorithms/Events/Factory.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -112,7 +112,7 @@
 
 /// \cond
 namespace Frame {
-// IWYU pragma: no_forward_declare MathFunction
+
 struct Inertial;
 }  // namespace Frame
 namespace Parallel {

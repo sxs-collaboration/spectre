@@ -5,17 +5,15 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

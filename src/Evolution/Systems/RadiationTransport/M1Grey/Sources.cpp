@@ -11,9 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-
-// IWYU pragma: no_forward_declare Tensor
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 namespace {
 struct AlphaTildeP : db::SimpleTag {

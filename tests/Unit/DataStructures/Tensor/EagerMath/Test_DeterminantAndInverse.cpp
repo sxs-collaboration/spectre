@@ -17,8 +17,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 // In the spirit of the Tensor type aliases, but for a rank-2 Tensor with each
 // index in a different frame. If Fr1 == Fr2, then this reduces to tnsr::iJ.

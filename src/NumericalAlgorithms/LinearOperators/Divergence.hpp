@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond

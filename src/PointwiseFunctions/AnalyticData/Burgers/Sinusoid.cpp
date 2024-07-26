@@ -6,13 +6,11 @@
 #include <array>
 #include <cmath>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
-
-// IWYU pragma: no_forward_declare Tensor
+#include "Utilities/Math.hpp"
 
 namespace Burgers::AnalyticData {
 template <typename T>

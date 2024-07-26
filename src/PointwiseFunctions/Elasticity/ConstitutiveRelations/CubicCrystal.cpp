@@ -14,8 +14,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Elasticity::ConstitutiveRelations {
 
 CubicCrystal::CubicCrystal(const double c_11, const double c_12,

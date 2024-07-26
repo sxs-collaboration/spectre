@@ -15,7 +15,7 @@
 
 /// \cond
 class DataVector;
-// IWYU pragma: no_forward_declare Tensor
+
 namespace Burgers {
 namespace Tags {
 struct U;

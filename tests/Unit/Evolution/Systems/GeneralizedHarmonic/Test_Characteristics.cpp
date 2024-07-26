@@ -13,8 +13,8 @@
 #include <pup.h>
 #include <random>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
@@ -27,7 +27,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  //IWYU pragma: keep
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -49,16 +49,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare gh::Tags::Pi
-// IWYU pragma: no_forward_declare gh::Tags::Phi
-// IWYU pragma: no_forward_declare gh::Tags::VSpacetimeMetric
-// IWYU pragma: no_forward_declare gh::Tags::VZero
-// IWYU pragma: no_forward_declare gh::Tags::VMinus
-// IWYU pragma: no_forward_declare gh::Tags::VPlus
-// IWYU pragma: no_forward_declare Tags::dt
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
 
 namespace {
 template <size_t Index, size_t Dim, typename Frame>

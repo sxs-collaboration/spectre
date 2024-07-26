@@ -21,8 +21,6 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-
 namespace RelativisticEuler {
 namespace Valencia {
 

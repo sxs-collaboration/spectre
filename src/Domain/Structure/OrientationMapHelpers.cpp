@@ -11,7 +11,7 @@
 #include "DataStructures/Index.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Literals.hpp"

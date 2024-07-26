@@ -8,11 +8,11 @@
 #include <cstddef>
 #include <memory>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"           // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -27,9 +27,6 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare MathFunction
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <size_t Dim>

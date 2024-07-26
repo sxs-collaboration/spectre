@@ -4,7 +4,7 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -13,7 +13,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/SizeOfElement.hpp"
-#include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"

@@ -15,8 +15,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 /// \cond
 class DataVector;
 

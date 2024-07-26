@@ -8,7 +8,7 @@
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"

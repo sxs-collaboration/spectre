@@ -5,47 +5,14 @@
 
 #include <type_traits>
 
-#include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/Cce/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Cce::Tags::BondiBeta
-// IWYU pragma: no_forward_declare Cce::Tags::DuRDividedByR
-// IWYU pragma: no_forward_declare Cce::Tags::EthRDividedByR
-// IWYU pragma: no_forward_declare Cce::Tags::Exp2Beta
-// IWYU pragma: no_forward_declare Cce::Tags::BondiH
-// IWYU pragma: no_forward_declare Cce::Tags::BondiJ
-// IWYU pragma: no_forward_declare Cce::Tags::BondiJbar
-// IWYU pragma: no_forward_declare Cce::Tags::JbarQMinus2EthBeta
-// IWYU pragma: no_forward_declare Cce::Tags::BondiK
-// IWYU pragma: no_forward_declare Cce::Tags::OneMinusY
-// IWYU pragma: no_forward_declare Cce::Tags::BondiQ
-// IWYU pragma: no_forward_declare Cce::Tags::BondiR
-// IWYU pragma: no_forward_declare Cce::Tags::BondiU
-// IWYU pragma: no_forward_declare Cce::Tags::BondiUbar
-// IWYU pragma: no_forward_declare Cce::Tags::BondiW
-// IWYU pragma: no_forward_declare ::Tags::Multiplies
-// IWYU pragma: no_forward_declare Cce::Tags::Dy
-// IWYU pragma: no_forward_declare Cce::Tags::Integrand
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactor
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactorForConjugate
-// IWYU pragma: no_forward_declare Cce::Tags::PoleOfIntegrand
-// IWYU pragma: no_forward_declare Cce::Tags::RegularIntegrand
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::Eth
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::EthEth
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::EthEthbar
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::Ethbar
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::EthbarEthbar
-// IWYU pragma: no_forward_declare Spectral::Swsh::Tags::Derivative
-// IWYU pragma: no_forward_declare Tags::TempTensor
-// IWYU pragma: no_forward_declare Tags::SpinWeighted
-// IWYU pragma: no_forward_declare SpinWeighted
-// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 class ComplexDataVector;

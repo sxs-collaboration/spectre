@@ -3,7 +3,7 @@
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

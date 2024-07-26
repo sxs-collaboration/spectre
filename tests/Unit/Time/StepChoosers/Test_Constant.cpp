@@ -18,8 +18,6 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 namespace {
 struct Metavariables {
   struct factory_creation

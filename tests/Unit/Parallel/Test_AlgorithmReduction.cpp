@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -24,7 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"

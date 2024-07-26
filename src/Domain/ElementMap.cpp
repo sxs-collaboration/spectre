@@ -4,7 +4,7 @@
 #include "Domain/ElementMap.hpp"
 
 #include "Domain/CoordinateMaps/Composition.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

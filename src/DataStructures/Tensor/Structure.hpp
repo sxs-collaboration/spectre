@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
-#include "Utilities/Array.hpp"  // IWYU pragma: export
+#include "Utilities/Array.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"

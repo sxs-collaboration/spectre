@@ -19,8 +19,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Domain/Block.hpp"                       // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
@@ -32,7 +32,7 @@
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"

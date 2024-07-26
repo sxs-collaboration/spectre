@@ -218,7 +218,6 @@
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -238,7 +237,7 @@
 
 /// \cond
 namespace Frame {
-// IWYU pragma: no_forward_declare MathFunction
+
 struct Inertial;
 }  // namespace Frame
 namespace PUP {

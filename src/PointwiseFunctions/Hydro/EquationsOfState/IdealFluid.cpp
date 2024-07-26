@@ -5,12 +5,10 @@
 
 #include <limits>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Equilibrium3D.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace EquationsOfState {
 template <bool IsRelativistic>

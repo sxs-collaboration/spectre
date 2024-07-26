@@ -7,7 +7,7 @@
 #include <cmath>
 #include <complex>
 
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 
 namespace Spectral {
 namespace Swsh {

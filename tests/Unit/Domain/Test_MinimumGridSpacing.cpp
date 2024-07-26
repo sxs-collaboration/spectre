@@ -6,15 +6,13 @@
 #include <cmath>
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-
-// IWYU pragma: no_include "Utilities/Array.hpp"
 
 namespace {
 template <size_t Dim, typename Frame>

@@ -19,8 +19,6 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace ScalarWave {
 /*!
  * \brief A relic of an old incorrect way of handling boundaries for

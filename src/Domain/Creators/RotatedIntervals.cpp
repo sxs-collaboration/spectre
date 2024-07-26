@@ -10,15 +10,15 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"

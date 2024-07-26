@@ -24,8 +24,6 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-// IWYU pragma: no_forward_declare boost::hash
-
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   NonStreamable ns{2};
   NonStreamable another_ns{4};

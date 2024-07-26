@@ -12,8 +12,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace VariableFixing {
 LimitLorentzFactor::LimitLorentzFactor(const double max_density_cutoff,
                                        const double lorentz_factor_cap,

@@ -11,7 +11,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/Temperature.hpp"
@@ -24,14 +24,12 @@
 
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 namespace grmhd::AnalyticData {
 class MagnetizedFmDisk;
 }  // namespace grmhd::AnalyticData
 /// \endcond
-
-// IWYU pragma: no_include <pup.h>
 
 namespace RelativisticEuler {
 namespace Solutions {

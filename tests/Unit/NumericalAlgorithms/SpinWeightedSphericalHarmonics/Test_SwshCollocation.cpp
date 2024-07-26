@@ -17,9 +17,6 @@
 namespace Spectral::Swsh {
 namespace {
 
-// IWYU pragma: no_include <sharp_geomhelpers.h>
-// IWYU pragma: no_include <sharp_lowlevel.h>
-
 template <ComplexRepresentation Representation>
 void test_spherical_harmonic_collocation() {
   MAKE_GENERATOR(gen);

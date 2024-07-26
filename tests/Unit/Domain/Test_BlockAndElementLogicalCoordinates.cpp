@@ -14,13 +14,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Brick.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
@@ -36,8 +36,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

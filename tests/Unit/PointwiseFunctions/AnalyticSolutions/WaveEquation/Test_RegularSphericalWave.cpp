@@ -6,10 +6,10 @@
 #include <array>
 #include <memory>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"

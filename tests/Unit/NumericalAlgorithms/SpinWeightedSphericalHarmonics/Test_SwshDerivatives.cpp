@@ -8,8 +8,8 @@
 #include <random>
 #include <string>
 
-#include "DataStructures/ComplexDataVector.hpp"   // IWYU pragma: keep
-#include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -28,10 +28,6 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare ComplexDataVector
-// IWYU pragma: no_forward_declare ComplexModalVector
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral::Swsh {
 namespace {

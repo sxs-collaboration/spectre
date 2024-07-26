@@ -18,7 +18,7 @@
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"

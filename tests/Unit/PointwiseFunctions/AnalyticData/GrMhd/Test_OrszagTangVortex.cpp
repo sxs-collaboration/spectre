@@ -24,8 +24,6 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 namespace {
 using grmhd::AnalyticData::OrszagTangVortex;
 

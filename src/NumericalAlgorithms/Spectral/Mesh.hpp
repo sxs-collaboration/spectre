@@ -16,7 +16,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
 /// \cond

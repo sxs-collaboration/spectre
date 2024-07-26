@@ -3,15 +3,11 @@
 
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler {
 

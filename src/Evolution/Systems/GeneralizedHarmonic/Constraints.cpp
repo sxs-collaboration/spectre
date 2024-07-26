@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/LeviCivitaIterator.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "Utilities/ConstantExpressions.hpp"

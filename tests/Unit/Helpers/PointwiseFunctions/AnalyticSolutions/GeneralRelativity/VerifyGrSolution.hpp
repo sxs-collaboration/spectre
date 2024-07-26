@@ -9,8 +9,8 @@
 #include <cstddef>
 #include <optional>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -52,8 +52,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Tags::deriv
+
 /// \endcond
 
 namespace TestHelpers {

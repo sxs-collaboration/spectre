@@ -17,7 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Framework/TestHelpers.hpp"

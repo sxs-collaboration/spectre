@@ -48,9 +48,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Limiters::Minmod
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 
 struct ScalarTag : db::SimpleTag {

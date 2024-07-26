@@ -30,10 +30,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tags::dt
-
-// IWYU pragma: no_include <vector>
-
 namespace {
 
 struct BondiMichelProxy : grmhd::Solutions::BondiMichel {

@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
@@ -35,7 +35,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 namespace Tags {
 template <typename Tag>
 struct Next;

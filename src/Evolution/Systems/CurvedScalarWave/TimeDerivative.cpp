@@ -67,7 +67,7 @@ void TimeDerivative<Dim>::apply(
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 
 template <size_t Dim>
 using derivative_tags = typename CurvedScalarWave::System<Dim>::gradients_tags;

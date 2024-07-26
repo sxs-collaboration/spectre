@@ -18,7 +18,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 // The `static_assert`s verify that `ElementId` satisfies the constraints
 // imposed by Charm++ to make `ElementId` able to act as an index into Charm++'s

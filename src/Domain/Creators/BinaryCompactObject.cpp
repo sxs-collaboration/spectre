@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -32,7 +32,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
@@ -41,7 +41,7 @@
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/MakeArray.hpp"
 

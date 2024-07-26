@@ -6,7 +6,7 @@
 #include <blaze/math/GroupTag.h>
 #include <complex>
 #include <cstddef>
-#include <functional>  // for std::reference_wrapper
+#include <functional>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/VectorImpl.hpp"

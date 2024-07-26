@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/MinimumGridSpacing.hpp"  // IWYU pragma: keep
+#include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -32,8 +32,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <pup.h>
 
 namespace {
 constexpr size_t dim = 1;

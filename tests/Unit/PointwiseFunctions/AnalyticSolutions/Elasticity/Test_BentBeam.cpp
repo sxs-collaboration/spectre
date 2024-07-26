@@ -7,7 +7,7 @@
 #include <string>
 #include <tuple>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
-#include "Elliptic/Systems/Elasticity/Tags.hpp"  // IWYU pragma: keep
+#include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
@@ -33,8 +33,6 @@
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

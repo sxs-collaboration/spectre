@@ -365,18 +365,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     also run automatically on \ref github_actions_guide "CI" and must pass
     before pull requests are merged.
     (default is `ON`)
-- USE_IWYU
-  - Enable [include-what-you-use (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
-    tools. (default is `OFF`)
 - USE_LD
   - Override the automatically chosen linker. The options are `ld`, `gold`, and
     `lld`.
     (default is `OFF`)
 - USE_PCH
   - Whether or not to use pre-compiled headers (default is `ON`)
-  - This needs to be turned `OFF` in order to use
-    [include-what-you-use
-    (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
 - USE_SLEEF
   - Whether to use [Sleef](https://github.com/shibatch/sleef) with Blaze to
     vectorize addition math functions like `sin`, `cos`, and `exp`.

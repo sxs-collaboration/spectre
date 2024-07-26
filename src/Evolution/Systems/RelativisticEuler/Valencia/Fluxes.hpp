@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -20,8 +20,6 @@ class not_null;
 
 class DataVector;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace RelativisticEuler {
 namespace Valencia {

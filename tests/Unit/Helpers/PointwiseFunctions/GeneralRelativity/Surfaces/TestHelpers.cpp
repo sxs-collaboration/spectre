@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"                  // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -16,7 +16,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
 namespace TestHelpers {
 namespace Schwarzschild {
 

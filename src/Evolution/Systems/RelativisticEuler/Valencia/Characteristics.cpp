@@ -16,8 +16,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>

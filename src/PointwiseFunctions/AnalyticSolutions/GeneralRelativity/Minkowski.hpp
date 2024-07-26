@@ -6,15 +6,13 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // for tags
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
 namespace PUP {

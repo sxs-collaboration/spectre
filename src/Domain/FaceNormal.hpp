@@ -17,7 +17,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
-#include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

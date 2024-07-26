@@ -8,9 +8,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"               // for get
-#include "DataStructures/Tensor/TypeAliases.hpp"          // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -20,8 +20,6 @@
 /// \cond
 class DataVector;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler {
 

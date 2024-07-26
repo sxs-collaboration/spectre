@@ -3,14 +3,14 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <numeric>
 #include <ostream>
 #include <typeinfo>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/CrossProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"

@@ -35,12 +35,12 @@
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
-#include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "IO/Observer/VolumeActions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"

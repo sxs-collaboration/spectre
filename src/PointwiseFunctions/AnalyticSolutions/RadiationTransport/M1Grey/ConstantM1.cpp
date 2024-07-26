@@ -9,15 +9,12 @@
 #include <cmath>
 #include <numeric>
 
-#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
-// IWYU pragma: no_forward_declare Tensor
 
 namespace RadiationTransport::M1Grey::Solutions {
 

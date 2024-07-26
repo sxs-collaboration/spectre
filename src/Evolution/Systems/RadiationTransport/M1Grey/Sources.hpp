@@ -4,21 +4,16 @@
 #pragma once
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"  // for EXPAND_PACK_LEFT_TO...
-
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Tags::deriv
 
 namespace RadiationTransport::M1Grey {
 

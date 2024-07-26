@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
-#include <initializer_list>  // IWYU pragma: keep
+#include <initializer_list>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"

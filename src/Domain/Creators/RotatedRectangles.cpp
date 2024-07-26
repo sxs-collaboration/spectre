@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/Index.hpp"  // for Index
+#include "DataStructures/Index.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"

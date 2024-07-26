@@ -11,7 +11,7 @@
 #include <string>
 #include <tuple>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Brick.hpp"
@@ -35,8 +35,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include <vector>
 
 namespace {
 struct FishboneMoncriefDiskProxy

@@ -12,11 +12,11 @@
 
 #include "DataStructures/IndexIterator.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

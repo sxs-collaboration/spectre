@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"

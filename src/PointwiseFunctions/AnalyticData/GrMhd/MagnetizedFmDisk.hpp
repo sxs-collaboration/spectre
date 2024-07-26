@@ -12,18 +12,16 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma:  no_include <pup.h>
-
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 /// \endcond
 

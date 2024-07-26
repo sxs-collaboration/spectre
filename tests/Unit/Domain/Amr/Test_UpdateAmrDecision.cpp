@@ -22,7 +22,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 

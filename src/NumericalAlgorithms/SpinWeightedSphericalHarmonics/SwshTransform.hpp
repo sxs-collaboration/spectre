@@ -15,14 +15,11 @@
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Coefficients
-// IWYU pragma: no_forward_declare SpinWeighted
 
 class ComplexDataVector;
 class ComplexModalVector;

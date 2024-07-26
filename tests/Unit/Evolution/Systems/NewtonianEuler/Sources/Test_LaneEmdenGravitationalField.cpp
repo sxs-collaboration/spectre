@@ -14,8 +14,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 // Need this proxy in order for pypp to evaluate function whose arguments
 // include a variable of type `NewtonianEuler::Solutions::LaneEmdenStar`

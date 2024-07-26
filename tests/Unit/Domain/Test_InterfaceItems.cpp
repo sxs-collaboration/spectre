@@ -37,7 +37,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -50,8 +50,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace domain {
 namespace {

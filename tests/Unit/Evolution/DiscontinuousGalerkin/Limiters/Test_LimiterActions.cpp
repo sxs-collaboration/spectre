@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
 #include <map>
@@ -38,14 +38,11 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"          // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/LimiterActions.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 struct TemporalId : db::SimpleTag {

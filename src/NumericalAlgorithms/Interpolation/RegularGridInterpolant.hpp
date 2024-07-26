@@ -9,11 +9,9 @@
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare Variables
 
 /// \cond
 template <size_t Dim>

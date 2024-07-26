@@ -22,9 +22,6 @@ class not_null;
 class DataVector;
 /// \endcond
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
-
 namespace grmhd {
 namespace ValenciaDivClean {
 /*!

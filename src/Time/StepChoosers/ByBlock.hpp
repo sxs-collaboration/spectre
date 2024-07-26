@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
-#include <pup_stl.h>  // IWYU pragma: keep
+#include <pup_stl.h>
 #include <utility>
 #include <vector>
 

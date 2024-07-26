@@ -4,30 +4,30 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <type_traits>
 #include <unordered_map>
-#include <utility>  // for pair
+#include <utility>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tags.hpp"
-#include "DataStructures/Tensor/Metafunctions.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"         // IWYU pragma: keep
-#include "DataStructures/Variables.hpp"             // IWYU pragma: keep
+#include "DataStructures/Tensor/Metafunctions.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/Element.hpp"         // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
-#include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
-#include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -40,9 +40,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <algorithm>
-// IWYU pragma: no_forward_declare Variables
 
 /// \cond
 namespace Limiters {

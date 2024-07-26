@@ -7,11 +7,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
-// IWYU pragma:  no_include <pup.h>
-
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 /// \endcond
 

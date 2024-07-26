@@ -10,15 +10,13 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 class DataVector;
@@ -26,7 +24,7 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 namespace RadiationTransport {

@@ -17,18 +17,14 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "Time/History.hpp"
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 struct Var : db::SimpleTag {

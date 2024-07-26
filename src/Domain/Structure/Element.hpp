@@ -10,10 +10,10 @@
 #include <iosfwd>
 #include <unordered_set>
 
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Neighbors.hpp"
 
 /// \cond
 namespace PUP {

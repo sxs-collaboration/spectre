@@ -11,7 +11,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Protocols/ElementRegistrar.hpp"
-#include "ParallelAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"

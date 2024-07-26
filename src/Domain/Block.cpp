@@ -7,7 +7,7 @@
 #include <ios>
 #include <memory>
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <typeinfo>
 #include <utility>
 

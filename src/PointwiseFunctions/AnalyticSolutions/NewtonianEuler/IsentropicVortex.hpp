@@ -25,8 +25,6 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-// IWYU pragma: no_forward_declare NewtonianEuler::Solutions::IsentropicVortex::IntermediateVariables
-
 namespace NewtonianEuler::Solutions {
 
 /*!

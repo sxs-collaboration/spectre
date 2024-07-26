@@ -10,7 +10,7 @@
 #include <tuple>
 #include <utility>
 
-#include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep  // for pow<>
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"

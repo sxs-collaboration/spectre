@@ -11,7 +11,7 @@
 #include <string>
 #include <type_traits>
 
-#include "Utilities/Literals.hpp"  // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup TensorGroup

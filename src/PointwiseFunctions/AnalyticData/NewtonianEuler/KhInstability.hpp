@@ -19,7 +19,7 @@
 
 /// \cond
 namespace PUP {
-class er;  // IWYU pragma: keep
+class er;
 }  // namespace PUP
 /// \endcond
 

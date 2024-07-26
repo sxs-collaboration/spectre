@@ -29,7 +29,7 @@ template <size_t Dim, typename Frame>
 struct MinimumGridSpacing;
 }  // namespace Tags
 }  // namespace domain
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 namespace StepChoosers {

@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -15,8 +15,6 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 namespace RelativisticEuler::Valencia {
 

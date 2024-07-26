@@ -18,7 +18,7 @@
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 

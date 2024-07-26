@@ -28,12 +28,12 @@
 // circumstances that cannot be guaranteed to be caught and so all throw's
 // are replaced by hard errors (ERROR).
 
-#include <algorithm>  // for lexicographical_compare
-#include <array>      // for array
-#include <cstddef>    // for ptrdiff_t, size_t, nullptr_t
-#include <iterator>   // for reverse_iterator, distance, random_access_...
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <iterator>
 #include <limits>
-#include <memory>  // for std::addressof
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>

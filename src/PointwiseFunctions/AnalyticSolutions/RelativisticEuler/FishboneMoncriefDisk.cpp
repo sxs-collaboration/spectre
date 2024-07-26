@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
@@ -20,10 +20,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// We don't do anything complex, but IWYU thinks it's needed for some math
-// functions
-// IWYU pragma: no_include <complex>
 
 namespace RelativisticEuler::Solutions {
 

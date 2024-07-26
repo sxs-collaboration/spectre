@@ -19,8 +19,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
-// IWYU pragma: no_forward_declare SpinWeighted
-
 namespace Spectral::Swsh {
 
 template <int Spin>

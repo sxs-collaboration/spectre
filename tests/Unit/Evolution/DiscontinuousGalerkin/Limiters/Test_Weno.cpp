@@ -17,7 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
@@ -40,14 +40,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include "DataStructures/DataBox/Prefixes.hpp"
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
-// IWYU pragma: no_forward_declare Limiters::Weno
-// IWYU pragma: no_forward_declare Tags::Mean
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
-// IWYU pragma: no_forward_declare intrp::RegularGrid
 
 namespace {
 

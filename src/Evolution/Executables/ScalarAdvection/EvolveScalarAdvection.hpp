@@ -29,7 +29,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
-#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
@@ -79,20 +79,20 @@
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -105,8 +105,6 @@
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <pup.h>
 
 /// \cond
 namespace PUP {

@@ -15,8 +15,6 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare SpinWeighted
-
 namespace Spectral {
 namespace Swsh {
 

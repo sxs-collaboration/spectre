@@ -12,16 +12,12 @@
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 void densitized_stress(

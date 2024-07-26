@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"               // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Options/ParseError.hpp"
@@ -20,8 +20,6 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

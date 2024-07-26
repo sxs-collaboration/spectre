@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <random>
 
-#include "DataStructures/ComplexDataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"         // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -19,10 +19,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
-
-// IWYU pragma: no_forward_declare ComplexDataVector
-// IWYU pragma: no_forward_declare DataVector
-// IWYU pragma: no_forward_declare SpinWeighted
 
 // tests for is_any_spin_weighted
 static_assert(is_any_spin_weighted_v<SpinWeighted<int, 3>>,

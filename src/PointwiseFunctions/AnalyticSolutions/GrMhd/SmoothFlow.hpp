@@ -11,7 +11,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

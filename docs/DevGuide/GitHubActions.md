@@ -124,20 +124,6 @@ is useful to perform at least the following tests locally:
   `index.html` file in the `html` subdirectory in a browser. Some functionality
   requires a web server (e.g. citation popovers), so just run a
   `python3 -m http.server` in the `html` directory to enable this.
-- **IWYU:** We experimented for a time using IWYU (include what you
-  use) as an automated check for correct includes and forward
-  declarations.  Unfortunately it gave many incorrect suggestions.  We
-  have decided to no longer have a IWYU check with GitHub Actions, but have
-  left support for IWYU so that it can be used locally.  To do so just
-  for the changed files in a pull request run `make iwyu-hash
-  HASH=UPSTREAM_HEAD`. Since IWYU requires `USE_PCH=OFF` you can
-  create a separate build directory and append `-D USE_PCH=OFF` to the
-  usual `cmake` call. Note that it is very easy to incorrectly install
-  IWYU (if not using the Docker container) and generate nonsense
-  errors.  Note that we have left IWYU pragmas in the code, but no
-  longer require they be added so that IWYU gives no errors when run.
-  As IWYU is still under development, we plan to investigate using it
-  again in the future.
 - The `gcc Debug` build runs code coverage for each GitHub Actions build.
 
 ## Troubleshooting {#github-actions-troubleshooting}

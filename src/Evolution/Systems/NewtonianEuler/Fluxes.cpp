@@ -10,8 +10,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace NewtonianEuler {
 namespace detail {
 template <size_t Dim>

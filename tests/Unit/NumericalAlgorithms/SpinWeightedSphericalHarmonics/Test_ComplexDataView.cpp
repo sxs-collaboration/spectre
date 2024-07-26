@@ -13,7 +13,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 

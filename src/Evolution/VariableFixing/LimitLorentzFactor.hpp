@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -16,11 +16,6 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \endcond
-
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
-// IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
-// IWYU pragma: no_forward_declare Tensor
 
 namespace VariableFixing {
 /*!

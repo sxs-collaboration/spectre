@@ -8,7 +8,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"

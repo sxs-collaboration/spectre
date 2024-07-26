@@ -17,7 +17,7 @@
 
 /// \cond
 template <class>
-class Variables;  // IWYU pragma: keep
+class Variables;
 /// \endcond
 
 namespace Tags {

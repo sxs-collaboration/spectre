@@ -12,10 +12,10 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
-#include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/ConstantExpressions.hpp"

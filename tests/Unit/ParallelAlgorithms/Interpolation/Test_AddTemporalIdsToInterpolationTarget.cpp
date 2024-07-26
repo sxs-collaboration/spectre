@@ -24,8 +24,8 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
@@ -40,9 +40,6 @@
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-// IWYU pragma: no_forward_declare db::DataBox
-
-// IWYU pragma: no_include <boost/variant/get.hpp>
 
 class DataVector;
 namespace intrp::Tags {

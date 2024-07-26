@@ -4,13 +4,13 @@
 #include "Domain/Domain.hpp"
 
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/Direction.hpp"      // IWYU pragma: keep
-#include "Domain/Structure/DirectionMap.hpp"   // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

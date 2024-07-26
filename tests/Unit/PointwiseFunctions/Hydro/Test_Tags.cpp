@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 

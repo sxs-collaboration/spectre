@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <optional>
 #include <tuple>
-#include <utility>  // IWYU pragma: keep  // for move
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
@@ -23,7 +23,7 @@ template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
 }  // namespace domain
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 namespace Initialization {

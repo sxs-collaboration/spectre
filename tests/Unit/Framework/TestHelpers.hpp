@@ -32,7 +32,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
 #include "Utilities/TypeTraits.hpp"

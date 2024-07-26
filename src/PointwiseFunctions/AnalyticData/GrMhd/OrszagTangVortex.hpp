@@ -8,7 +8,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -17,7 +17,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // for IdealFluid
+// for IdealFluid
 
 /// \cond
 namespace PUP {

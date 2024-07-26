@@ -37,29 +37,27 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_include "DataStructures/DataBox/Prefixes.hpp"  // for Variables
+// for Variables
 
 template <size_t>
 class Index;
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
+
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -67,7 +65,7 @@ namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
+
 namespace observers::Actions {
 struct ContributeVolumeData;
 }  // namespace observers::Actions

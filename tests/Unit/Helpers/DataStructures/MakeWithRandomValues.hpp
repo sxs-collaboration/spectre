@@ -7,7 +7,7 @@
 #pragma once
 
 #include <complex>
-#include <cstddef>  // for std::nullptr_t
+#include <cstddef>
 #include <limits>
 #include <random>
 

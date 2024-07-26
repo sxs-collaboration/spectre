@@ -3,13 +3,13 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <numeric>
 #include <ostream>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/TempBuffer.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"

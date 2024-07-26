@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/TMPL.hpp"
 

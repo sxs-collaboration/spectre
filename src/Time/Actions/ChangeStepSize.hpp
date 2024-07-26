@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
@@ -42,7 +42,7 @@ struct TimeStepId;
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 /// \brief Adjust the step size for local time stepping, returning true if the

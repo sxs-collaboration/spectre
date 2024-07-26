@@ -7,9 +7,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "Utilities/Gsl.hpp"
 

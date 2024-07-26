@@ -7,7 +7,7 @@
 #include <ostream>
 #include <utility>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -22,7 +22,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Numeric.hpp"  // IWYU pragma: keep
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace evolution::dg::subcell::fd {

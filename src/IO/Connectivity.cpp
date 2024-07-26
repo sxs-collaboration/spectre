@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-#include "DataStructures/Index.hpp"  // IWYU pragma: keep
+#include "DataStructures/Index.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace vis::detail {

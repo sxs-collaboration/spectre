@@ -19,8 +19,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Linear",
                   "[PointwiseFunctions][Unit]") {
   const double shock_time = 1.5;

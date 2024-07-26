@@ -3,21 +3,13 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
-// IWYU pragma: no_include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
 class DataVector;

@@ -19,13 +19,10 @@
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

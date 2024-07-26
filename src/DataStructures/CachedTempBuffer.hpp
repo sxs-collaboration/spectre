@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cstddef>
-#include <utility>  // IWYU pragma: keep  // for std::move
+#include <utility>
 
 #include "DataStructures/TempBuffer.hpp"
 #include "Utilities/Gsl.hpp"

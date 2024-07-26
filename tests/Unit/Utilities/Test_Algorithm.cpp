@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/Array.hpp"  // IWYU pragma: associated
+#include "Utilities/Array.hpp"
 #include "Utilities/Numeric.hpp"
 
 namespace {

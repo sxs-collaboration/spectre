@@ -5,17 +5,15 @@
 
 #include <string>
 
-#include "DataStructures/ComplexDataVector.hpp"   // IWYU pragma: keep
-#include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/SpinWeighted.hpp"        // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"       // IWYU pragma: keep
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral {
 namespace Swsh {
