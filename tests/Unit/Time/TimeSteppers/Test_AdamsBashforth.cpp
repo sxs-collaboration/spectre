@@ -25,6 +25,18 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 
+namespace {
+void test_variable_order() {
+  for (size_t order = 1; order <= 8; ++order) {
+    TimeStepperTestUtils::lts::test_variable_order_consistency(
+        TimeSteppers::AdamsBashforth(std::nullopt),
+        TimeSteppers::AdamsBashforth(order));
+  }
+
+  TimeStepperTestUtils::lts::test_variable_order_boundary_consistency(
+      TimeSteppers::AdamsBashforth(std::nullopt));
+}
+
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     CAPTURE(order);
@@ -95,6 +107,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
 
   TimeStepperTestUtils::check_strong_stability_preservation(
       TimeSteppers::AdamsBashforth(1), 1.0);
+
+  test_variable_order();
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Variable",
@@ -168,7 +182,7 @@ void test_neighbor_data_required() {
 }
 }  // namespace
 
-// [[Timeout, 10]]
+// [[Timeout, 30]]
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
                   "[Unit][Time]") {
   test_neighbor_data_required();
@@ -187,6 +201,32 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
       TimeStepperTestUtils::lts::test_dense_convergence(stepper, {40, 200}, 40);
     }
   }
+
+  const TimeSteppers::AdamsBashforth variable_order_stepper(std::nullopt);
+  for (size_t local_order = 1; local_order < 9; ++local_order) {
+    for (size_t remote_order = 1; remote_order < 9; ++remote_order) {
+      const TimeStepperTestUtils::lts::VariableOrderChoice variable_order{
+          local_order, local_order - 1, remote_order, remote_order - 1};
+      TimeStepperTestUtils::lts::test_uncoupled(variable_order_stepper, 1e-12,
+                                                {variable_order});
+      TimeStepperTestUtils::lts::test_conservation(variable_order_stepper,
+                                                   {variable_order});
+    }
+  }
+
+  // These are slow, so just test a few of them.
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{4, 3, 4, 3}});
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{6, 5, 3, 2}});
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{3, 2, 6, 5}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {40, 200}, 40, {{4, 3, 4, 3}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {40, 200}, 40, {{6, 5, 3, 2}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {40, 200}, 40, {{3, 2, 6, 5}});
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Reversal",
@@ -238,3 +278,4 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary.Reversal",
       [](const double local, const double /*remote*/) { return local; });
   CHECK(y == approx(f(2. / 3.)));
 }
+}  // namespace

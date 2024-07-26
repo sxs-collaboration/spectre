@@ -11,6 +11,8 @@
 #include <pup.h>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
 #include "Time/ApproximateTime.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
@@ -35,26 +37,41 @@ namespace TimeSteppers {
 static_assert(adams_coefficients::maximum_order ==
               AdamsBashforth::maximum_order);
 
-AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
-  if (order_ < 1 or order_ > maximum_order) {
-    ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
-          << maximum_order);
+AdamsBashforth::AdamsBashforth(const std::optional<size_t>& order,
+                               const Options::Context& context)
+    : order_(order) {
+  if (order_.has_value() and (*order_ < 1 or *order_ > maximum_order)) {
+    PARSE_ERROR(context,
+                "The order for Adams-Bashforth Nth order must be 1 <= order <= "
+                << maximum_order);
   }
 }
 
 variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
 AdamsBashforth::order() const {
-  return variants::TaggedVariant<Tags::FixedOrder>(order_);
+  if (order_.has_value()) {
+    return variants::TaggedVariant<Tags::FixedOrder>(*order_);
+  } else {
+    return variants::TaggedVariant<Tags::VariableOrder>(minimum_order,
+                                                        maximum_order);
+  }
 }
 
 uint64_t AdamsBashforth::number_of_substeps() const { return 1; }
 
 uint64_t AdamsBashforth::number_of_substeps_for_error() const { return 1; }
 
-size_t AdamsBashforth::number_of_past_steps() const { return order_ - 1; }
+size_t AdamsBashforth::number_of_past_steps() const {
+  return order_.value_or(1) - 1;
+}
 
 double AdamsBashforth::stable_step() const {
-  if (order_ == 1) {
+  if (not order_.has_value()) {
+    ERROR_NO_TRACE(
+        "Variable-order time stepper does not have well-defined stable step.");
+  }
+
+  if (*order_ == 1) {
     return 1.;
   }
 
@@ -63,7 +80,7 @@ double AdamsBashforth::stable_step() const {
   // -1.  It is not clear whether this is sufficient for all orders,
   // but it is for the ones we support.
   const auto& coefficients =
-      adams_coefficients::constant_adams_bashforth_coefficients(order_);
+      adams_coefficients::constant_adams_bashforth_coefficients(*order_);
   double invstep = 0.;
   for (const auto coef : coefficients) {
     invstep = coef - invstep;
@@ -136,9 +153,9 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
     const std::optional<StepperErrorTolerances>& tolerances) const {
   ASSERT(not(DenseOutput and tolerances.has_value()),
          "Can't compute errors in dense output.");
-  ASSERT(history.size() == history.integration_order(),
+  ASSERT(history.size() >= history.integration_order(),
          "Incorrect data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
+         << " step.  Have " << history.size() << " times, need at least "
          << history.integration_order());
 
   const auto& step_start = history.back().time_step_id.step_time();
@@ -240,13 +257,15 @@ void AdamsBashforth::add_boundary_delta_impl(
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const TimeDelta& time_step) const {
   for (size_t i = 0; i < local_times.size(); ++i) {
-    ASSERT(local_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               local_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(local_times[i]),
            "Incorrect local order " << local_times.integration_order(i)
            << " at time " << local_times[i]);
   }
   for (size_t i = 0; i < remote_times.size(); ++i) {
-    ASSERT(remote_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               remote_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(remote_times[i]),
            "Incorrect remote order " << remote_times.integration_order(i)
            << " at time " << remote_times[i]);
@@ -262,18 +281,30 @@ void AdamsBashforth::add_boundary_delta_impl(
 void AdamsBashforth::clean_boundary_history_impl(
     const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
     const TimeSteppers::MutableBoundaryHistoryTimes& remote_times) const {
+  // Unlike for the volume terms, we need to keep an extra point in
+  // case the order changes.  This is because the order stored in the
+  // volume history represents, when the cleanup is run, the order of
+  // the next step, while the orders in the boundary history are
+  // stored per-step, so we have the order for the step we've just
+  // taken, which may be one lower than what we need.
   const size_t local_order =
       local_times.integration_order(local_times.size() - 1);
-  while (local_times.size() >= local_order) {
+  size_t needed_local_values = local_order - 1;
+  if (local_order < maximum_order and not order_.has_value()) {
+    ++needed_local_values;
+  }
+  while (local_times.size() > needed_local_values) {
     local_times.pop_front();
   }
 
-  const size_t remote_order =
+  const size_t needed_remote_values =
       remote_times.integration_order(remote_times.size() - 1);
   // We're guaranteed to have a new local value inserted before the
   // next use, but not a new remote value, so we need to keep one more
-  // of these.
-  while (remote_times.size() > remote_order) {
+  // of these.  This also takes care of the extra point needed for
+  // variable-order, since the order can't change unless we get a new
+  // value.
+  while (remote_times.size() > needed_remote_values) {
     remote_times.pop_front();
   }
 }
@@ -286,13 +317,15 @@ void AdamsBashforth::boundary_dense_output_impl(
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
   for (size_t i = 0; i < local_times.size(); ++i) {
-    ASSERT(local_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               local_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(local_times[i]),
            "Incorrect local order " << local_times.integration_order(i)
            << " at time " << local_times[i]);
   }
   for (size_t i = 0; i < remote_times.size(); ++i) {
-    ASSERT(remote_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               remote_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(remote_times[i]),
            "Incorrect remote order " << remote_times.integration_order(i)
            << " at time " << remote_times[i]);

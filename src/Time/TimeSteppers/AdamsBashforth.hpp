@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeStepId.hpp"
@@ -211,7 +212,8 @@ class AdamsBashforth : public LtsTimeStepper {
       "An Adams-Bashforth Nth order time-stepper."};
 
   AdamsBashforth() = default;
-  explicit AdamsBashforth(size_t order);
+  explicit AdamsBashforth(const std::optional<size_t>& order,
+                          const Options::Context& context = {});
   AdamsBashforth(const AdamsBashforth&) = default;
   AdamsBashforth& operator=(const AdamsBashforth&) = default;
   AdamsBashforth(AdamsBashforth&&) = default;
@@ -307,7 +309,7 @@ class AdamsBashforth : public LtsTimeStepper {
   TIME_STEPPER_DECLARE_OVERLOADS
   LTS_TIME_STEPPER_DECLARE_OVERLOADS
 
-  size_t order_ = 3;
+  std::optional<size_t> order_{};
 };
 
 bool operator!=(const AdamsBashforth& lhs, const AdamsBashforth& rhs);
