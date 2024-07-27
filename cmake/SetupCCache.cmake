@@ -18,6 +18,8 @@
 
 option(USE_CCACHE "Use CCache if available to speed up builds" ON)
 
+set(CCACHE_LAUNCHER_EXTRA_ENV_VARS "" CACHE STRING "Env vars for ccache")
+
 if(NOT USE_CCACHE)
   return()
 endif()
@@ -31,6 +33,7 @@ endif()
 
 # Invoke compiler through ccache
 set(CMAKE_CXX_COMPILER_LAUNCHER
+  ${CCACHE_LAUNCHER_EXTRA_ENV_VARS}
   "CCACHE_SLOPPINESS=pch_defines,time_macros,include_file_mtime,\
 include_file_ctime"
   ${CCACHE_EXEC}
