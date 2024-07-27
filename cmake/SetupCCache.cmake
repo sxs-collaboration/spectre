@@ -31,12 +31,16 @@ if (NOT CCACHE_EXEC)
   return()
 endif()
 
+execute_process(COMMAND realpath ${CCACHE_EXEC}
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                OUTPUT_VARIABLE REAL_CCACHE_EXEC)
+
 # Invoke compiler through ccache
 set(CMAKE_CXX_COMPILER_LAUNCHER
   ${CCACHE_LAUNCHER_EXTRA_ENV_VARS}
   "CCACHE_SLOPPINESS=pch_defines,time_macros,include_file_mtime,\
-include_file_ctime"
-  ${CCACHE_EXEC}
+include_file_ctime,locale"
+  ${REAL_CCACHE_EXEC}
 )
 set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_CXX_COMPILER_LAUNCHER})
 message(STATUS "Using ccache for compilation. It is invoked as: "
