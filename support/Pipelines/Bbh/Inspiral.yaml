@@ -301,6 +301,8 @@ EventsAndTriggers:
           Interval: 100
           Offset: 0
     Events:
+      # SpatialRicciScalar is output for visualizations with Render3D/Bbh.py
+      # script
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
@@ -309,6 +311,7 @@ EventsAndTriggers:
             - Phi
             - Lapse
             - Shift
+            - SpatialRicciScalar
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
             - PointwiseL2Norm(FourIndexConstraint)

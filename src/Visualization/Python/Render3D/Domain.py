@@ -112,6 +112,10 @@ def render_domain(
     pv.ResetCamera()
     camera.Zoom(zoom_factor)
 
+    # Capture all frames
+    animation_scene = pv.GetAnimationScene()
+    animation_scene.PlayMode = "Snap To TimeSteps"
+
     if animate:
         pv.SaveAnimation(output, render_view)
     else:
