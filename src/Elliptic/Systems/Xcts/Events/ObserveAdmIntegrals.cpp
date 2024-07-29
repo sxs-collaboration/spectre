@@ -13,12 +13,14 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Xcts/AdmLinearMomentum.hpp"
 #include "PointwiseFunctions/Xcts/AdmMass.hpp"
+#include "PointwiseFunctions/Xcts/CenterOfMass.hpp"
 
 namespace Events {
 
 void local_adm_integrals(
     gsl::not_null<Scalar<double>*> adm_mass,
     gsl::not_null<tnsr::I<double, 3>*> adm_linear_momentum,
+    gsl::not_null<tnsr::I<double, 3>*> center_of_mass,
     const Scalar<DataVector>& conformal_factor,
     const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
@@ -32,11 +34,14 @@ void local_adm_integrals(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const Mesh<3>& mesh, const Element<3>& element,
-    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals) {
+    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
+    const DirectionMap<3, tnsr::I<DataVector, 3>>&
+        conformal_face_normal_vectors) {
   // Initialize integrals to 0
   adm_mass->get() = 0;
   for (int I = 0; I < 3; I++) {
     adm_linear_momentum->get(I) = 0;
+    center_of_mass->get(I) = 0;
   }
 
   // Skip elements not at the outer boundary
@@ -94,17 +99,19 @@ void local_adm_integrals(
                                       face_inv_spatial_metric(ti::J, ti::L) *
                                       face_extrinsic_curvature(ti::k, ti::l));
 
+    // Get interface mesh and normal
+    const auto& face_mesh = mesh.slice_away(boundary_direction.dimension());
+    const auto& conformal_face_normal =
+        conformal_face_normals.at(boundary_direction);
+    const auto& conformal_face_normal_vector =
+        conformal_face_normal_vectors.at(boundary_direction);
+
     // Compute curved area element
     const auto face_sqrt_det_conformal_metric =
         Scalar<DataVector>(sqrt(get(determinant(face_conformal_metric))));
     const auto conformal_area_element =
         area_element(face_inv_jacobian, boundary_direction,
                      face_inv_conformal_metric, face_sqrt_det_conformal_metric);
-
-    // Get face mesh and face normal from data box
-    const auto& face_mesh = mesh.slice_away(boundary_direction.dimension());
-    const auto& conformal_face_normal =
-        conformal_face_normals.at(boundary_direction);
 
     // Compute surface integrands
     const auto mass_integrand = Xcts::adm_mass_surface_integrand(
@@ -115,6 +122,9 @@ void local_adm_integrals(
         Xcts::adm_linear_momentum_surface_integrand(
             face_conformal_factor, face_inv_spatial_metric,
             face_inv_extrinsic_curvature, face_trace_extrinsic_curvature);
+    const auto center_of_mass_integrand =
+        Xcts::center_of_mass_surface_integrand(face_conformal_factor,
+                                               conformal_face_normal_vector);
 
     // Contract surface integrands with face normal
     const auto contracted_mass_integrand =
@@ -131,6 +141,9 @@ void local_adm_integrals(
           definite_integral(contracted_linear_momentum_integrand.get(I) *
                                 get(conformal_area_element),
                             face_mesh);
+      center_of_mass->get(I) += definite_integral(
+          center_of_mass_integrand.get(I) * get(conformal_area_element),
+          face_mesh);
     }
   }
 }

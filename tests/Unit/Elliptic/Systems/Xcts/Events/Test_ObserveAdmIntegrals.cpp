@@ -92,8 +92,10 @@ void test_local_adm_integrals(const double& distance,
   Scalar<double> total_adm_mass;
   total_adm_mass.get() = 0.;
   tnsr::I<double, 3> total_adm_linear_momentum;
+  tnsr::I<double, 3> total_center_of_mass;
   for (int I = 0; I < 3; I++) {
     total_adm_linear_momentum.get(I) = 0.;
+    total_center_of_mass.get(I) = 0.;
   }
 
   // Compute integral by summing over each element.
@@ -240,20 +242,29 @@ void test_local_adm_integrals(const double& distance,
     const DirectionMap<3, tnsr::i<DataVector, 3>> conformal_face_normals(
         {std::make_pair(direction, conformal_face_normal)});
 
+    // Compute face normal vector.
+    const auto conformal_face_normal_vector = tenex::evaluate<ti::I>(
+        face_inv_conformal_metric(ti::I, ti::J) * conformal_face_normal(ti::j));
+    const DirectionMap<3, tnsr::I<DataVector, 3>> conformal_face_normal_vectors(
+        {std::make_pair(direction, conformal_face_normal_vector)});
+
     // Compute local integrals.
     Scalar<double> local_adm_mass;
     tnsr::I<double, 3> local_adm_linear_momentum;
+    tnsr::I<double, 3> local_center_of_mass;
     Events::local_adm_integrals(
         make_not_null(&local_adm_mass),
-        make_not_null(&local_adm_linear_momentum), conformal_factor,
+        make_not_null(&local_adm_linear_momentum),
+        make_not_null(&local_center_of_mass), conformal_factor,
         deriv_conformal_factor, conformal_metric, inv_conformal_metric,
         conformal_christoffel_second_kind, conformal_christoffel_contracted,
         spatial_metric, inv_spatial_metric, extrinsic_curvature,
         trace_extrinsic_curvature, inv_jacobian, mesh, current_element,
-        conformal_face_normals);
+        conformal_face_normals, conformal_face_normal_vectors);
     total_adm_mass.get() += get(local_adm_mass);
     for (int I = 0; I < 3; I++) {
       total_adm_linear_momentum.get(I) += local_adm_linear_momentum.get(I);
+      total_center_of_mass.get(I) += local_center_of_mass.get(I);
     }
   }
 
@@ -264,6 +275,9 @@ void test_local_adm_integrals(const double& distance,
   CHECK(get<1>(total_adm_linear_momentum) == custom_approx(0.));
   CHECK(get<2>(total_adm_linear_momentum) ==
         custom_approx(lorentz_factor * mass * boost_speed));
+  CHECK(get<0>(total_center_of_mass) == custom_approx(0.));
+  CHECK(get<1>(total_center_of_mass) == custom_approx(0.));
+  CHECK(get<2>(total_center_of_mass) == custom_approx(0.));
 }
 
 }  // namespace

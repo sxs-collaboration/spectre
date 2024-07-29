@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AdmLinearMomentum.cpp
   AdmMass.cpp
+  CenterOfMass.cpp
   ExtrinsicCurvature.cpp
   LongitudinalOperator.cpp
   SpacetimeQuantities.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   HEADERS
   AdmLinearMomentum.hpp
   AdmMass.hpp
+  CenterOfMass.hpp
   ExtrinsicCurvature.hpp
   LongitudinalOperator.hpp
   SpacetimeQuantities.hpp
