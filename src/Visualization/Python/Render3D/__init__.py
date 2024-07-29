@@ -9,6 +9,7 @@ from spectre.support.CliExceptions import RequiredChoiceError
 class Render3DCommands(click.MultiCommand):
     def list_commands(self, ctx):
         return [
+            "bbh",
             "clip",
             "domain",
         ]
@@ -24,6 +25,10 @@ class Render3DCommands(click.MultiCommand):
             )
 
             return render_domain_command
+        elif name == "bbh":
+            from spectre.Visualization.Render3D.Bbh import render_bbh_command
+
+            return render_bbh_command
         raise RequiredChoiceError(
             f"The command '{name}' is not implemented.",
             choices=self.list_commands(ctx),

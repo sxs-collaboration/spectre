@@ -8,4 +8,5 @@ spectre_python_add_module(
   __init__.py
   Clip.py
   Domain.py
+  Bbh.py
 )
