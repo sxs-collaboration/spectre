@@ -230,6 +230,7 @@ NUM_NODES={{ num_nodes | default(1) }}
                 extra_option="TestOpt",
                 metadata_option="MetaOpt",
                 force=False,
+                no_validate=False,
                 input_file="InputFile.yaml",
                 input_file_name="InputFile.yaml",
                 input_file_template=str(self.test_dir / "InputFile.yaml"),
