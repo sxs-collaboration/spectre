@@ -3,6 +3,7 @@
 
 import functools
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -41,7 +42,13 @@ def _resolve_executable(executable: Union[str, Path]) -> Path:
     Raises 'ValueError' if the executable is not found.
     """
     logger.debug(f"Resolving executable: {executable}")
-    which_exec = shutil.which(executable)
+    # This default bin dir is already added in spectre.__main__.py, but only
+    # when running the CLI. It is the bin dir of the build directory that
+    # contains this script. When running Python code outside the CLI this should
+    # also be the default bin dir.
+    default_bin_dir = Path(__file__).parent.parent.parent.parent.resolve()
+    path = os.environ["PATH"] + ":" + str(default_bin_dir)
+    which_exec = shutil.which(executable, path=path)
     if not which_exec:
         raise ValueError(
             f"Executable not found: {executable}. Make sure it is compiled. To"
