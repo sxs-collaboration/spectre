@@ -55,6 +55,8 @@ add_dependencies(
   module_GlobalCache
   )
 
+add_subdirectory(Python)
+
 add_subdirectory(Actions)
 add_subdirectory(Ader)
 add_subdirectory(BoundaryConditions)
