@@ -10,17 +10,25 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 
 namespace hydro {
 
-std::string name(const HalfPlaneIntegralMask mask){
-  switch(mask){
-    case HalfPlaneIntegralMask::None: return "None"; break;
-    case HalfPlaneIntegralMask::PositiveXOnly: return "PositiveXOnly"; break;
-    case HalfPlaneIntegralMask::NegativeXOnly: return "NegativeXOnly"; break;
+std::ostream& operator<<(std::ostream& os, HalfPlaneIntegralMask mask) {
+  switch (mask) {
+    case HalfPlaneIntegralMask::None:
+      return os << "None";
+    case HalfPlaneIntegralMask::PositiveXOnly:
+      return os << "PositiveXOnly";
+    case HalfPlaneIntegralMask::NegativeXOnly:
+      return os << "NegativeXOnly";
     default:
       ERROR("Unknown HalfPlaneIntegralMask!");
   }
+}
+
+std::string name(const HalfPlaneIntegralMask mask){
+  return MakeString{} << mask;
 }
 
 template <typename DataType, size_t Dim, typename Frame>

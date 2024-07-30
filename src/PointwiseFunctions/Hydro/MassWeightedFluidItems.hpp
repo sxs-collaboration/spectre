@@ -21,10 +21,11 @@ struct not_null;
 
 namespace hydro {
 
+enum class HalfPlaneIntegralMask { None, PositiveXOnly, NegativeXOnly };
 
-enum class HalfPlaneIntegralMask {None, PositiveXOnly, NegativeXOnly};
+std::ostream& operator<<(std::ostream& os, HalfPlaneIntegralMask mask);
 
-std::string name(const HalfPlaneIntegralMask mask);
+std::string name(HalfPlaneIntegralMask mask);
 
 /// Tag containing TildeD * SpecificInternalEnergy
 /// Useful as a diagnostics tool, as input to volume
