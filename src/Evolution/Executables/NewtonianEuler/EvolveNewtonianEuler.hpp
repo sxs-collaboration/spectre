@@ -264,6 +264,8 @@ struct EvolutionMetavars {
                   NewtonianEuler::subcell::TciOnFdGrid<volume_dim>>,
               evolution::dg::subcell::Actions::SetInitialGridFromTciData<
                   volume_dim, system>,
+              Actions::MutateApply<
+                  NewtonianEuler::subcell::ResizeAndComputePrims<volume_dim>>,
               Actions::UpdateConservatives>,
           tmpl::list<evolution::Initialization::Actions::SetVariables<
                          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
