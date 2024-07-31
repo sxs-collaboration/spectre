@@ -20,9 +20,10 @@ spectre_load_modules() {
     module load paraview/5.10
     # Load Spack environment
     source /u/guilara/repos/spack/share/spack/setup-env.sh
-    spack env activate env3_spectre_impi
+    source /urania/u/guilara/repos/spack/var/spack/environments\
+/env3_spectre_impi/loads
     # Load python environment
-    source $SPECTRE_HOME/env/bin/activate
+    source /u/guilara/envs/spectre_env
 }
 
 spectre_unload_modules() {
@@ -57,8 +58,7 @@ spectre_run_cmake() {
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=Urania \
-          -D Python_EXECUTABLE=${SPECTRE_HOME}/env/bin/python \
-          -D Catch2_DIR=/u/guilara/repos/Catch2/install_dir/lib64/cmake/Catch2 \
+          -D Catch2_DIR=/u/guilara/repos/Catch2/install_dir/lib64/cmake/Catch2
           -D MPI_C_COMPILER=/mpcdf/soft/SLE_15/packages/skylake\
 /impi/gcc_11-11.2.0/2021.7.1/bin/mpigcc \
           -D MPI_CXX_COMPILER=/mpcdf/soft/SLE_15/packages/skylake\
