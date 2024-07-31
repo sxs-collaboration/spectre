@@ -42,7 +42,7 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
            py::arg("extents"), py::arg("bases"), py::arg("quadratures"))
       .def(
           "extents",
-          [](const Mesh<Dim>& mesh) { return mesh.extents().indices(); },
+          [](const Mesh<Dim>& mesh) { return mesh.extents(); },
           "The number of grid points in each dimension of the grid.")
       .def(
           "extents",
