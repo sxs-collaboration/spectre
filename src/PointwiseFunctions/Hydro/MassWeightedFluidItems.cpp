@@ -11,6 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace hydro {
 
@@ -42,6 +43,18 @@ void u_lower_t(const gsl::not_null<Scalar<DataType>*> result,
   result->get() = get(lorentz_factor) * (get(lapse) * (-1.0) + result->get());
 }
 
+template <typename DataType, size_t Dim, typename Frame>
+Scalar<DataType> u_lower_t(
+    const Scalar<DataType>& lorentz_factor,
+    const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift) {
+  auto result = make_with_value<Scalar<DataType>>(lorentz_factor, 0.0);
+  u_lower_t(make_not_null(&result), lorentz_factor, spatial_velocity,
+            spatial_metric, lapse, shift);
+  return result;
+}
+
 template <typename DataType>
 void mass_weighted_internal_energy(
     const gsl::not_null<Scalar<DataType>*> result,
@@ -51,10 +64,28 @@ void mass_weighted_internal_energy(
 }
 
 template <typename DataType>
+Scalar<DataType> mass_weighted_internal_energy(
+    const Scalar<DataType>& tilde_d,
+    const Scalar<DataType>& specific_internal_energy) {
+  auto result = make_with_value<Scalar<DataType>>(tilde_d, 0.0);
+  mass_weighted_internal_energy(make_not_null(&result), tilde_d,
+                                specific_internal_energy);
+  return result;
+}
+
+template <typename DataType>
 void mass_weighted_kinetic_energy(const gsl::not_null<Scalar<DataType>*> result,
                                   const Scalar<DataType>& tilde_d,
                                   const Scalar<DataType>& lorentz_factor) {
   result->get() = get(tilde_d) * (get(lorentz_factor) - 1.0);
+}
+
+template <typename DataType>
+Scalar<DataType> mass_weighted_kinetic_energy(
+    const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor) {
+  auto result = make_with_value<Scalar<DataType>>(tilde_d, 0.0);
+  mass_weighted_kinetic_energy(make_not_null(&result), tilde_d, lorentz_factor);
+  return result;
 }
 
 template <typename DataType, size_t Dim, typename Fr>
@@ -67,6 +98,18 @@ void tilde_d_unbound_ut_criterion(
   u_lower_t(result, lorentz_factor, spatial_velocity, spatial_metric, lapse,
             shift);
   result->get() = get(tilde_d) * step_function(-1.0 - result->get());
+}
+
+template <typename DataType, size_t Dim, typename Fr>
+Scalar<DataType> tilde_d_unbound_ut_criterion(
+    const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor,
+    const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+    const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift) {
+  auto result = make_with_value<Scalar<DataType>>(tilde_d, 0.0);
+  tilde_d_unbound_ut_criterion(make_not_null(&result), tilde_d, lorentz_factor,
+                               spatial_velocity, spatial_metric, lapse, shift);
+  return result;
 }
 
 template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
@@ -85,6 +128,16 @@ void tilde_d_in_half_plane(
     default:
       break;
   }
+}
+
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
+Scalar<DataType> tilde_d_in_half_plane(
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords) {
+  auto result = make_with_value<Scalar<DataType>>(tilde_d, 0.0);
+  tilde_d_in_half_plane<IntegralMask>(make_not_null(&result), tilde_d,
+                                      grid_coords);
+  return result;
 }
 
 template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
@@ -109,6 +162,18 @@ void mass_weighted_coords(
   }
 }
 
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
+          typename Fr>
+tnsr::I<DataType, Dim, Fr> mass_weighted_coords(
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
+    const tnsr::I<DataType, Dim, Fr>& compute_coords) {
+  auto result = make_with_value<tnsr::I<DataType, Dim, Fr>>(tilde_d, 0.0);
+  mass_weighted_coords<IntegralMask>(make_not_null(&result), tilde_d,
+                                     grid_coords, compute_coords);
+  return result;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -119,8 +184,21 @@ void mass_weighted_coords(
       const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric,  \
       const Scalar<DataVector>& lapse,                                         \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift);           \
+  template Scalar<DataVector> u_lower_t(                                       \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
+      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric,  \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift);           \
   template void tilde_d_unbound_ut_criterion(                                  \
       const gsl::not_null<Scalar<DataVector>*> result,                         \
+      const Scalar<DataVector>& tilde_d,                                       \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
+      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric,  \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift);           \
+  template Scalar<DataVector> tilde_d_unbound_ut_criterion(                    \
       const Scalar<DataVector>& tilde_d,                                       \
       const Scalar<DataVector>& lorentz_factor,                                \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
@@ -142,6 +220,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
           result,                                                           \
       const Scalar<DataVector>& tilde_d,                                    \
       const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords,    \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& dg_coords);    \
+  template tnsr::I<DataVector, DIM(data), Frame::Inertial>                  \
+  mass_weighted_coords<HALFPLANE(data)>(                                    \
+      const Scalar<DataVector>& tilde_d,                                    \
+      const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords,    \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& dg_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
@@ -158,10 +241,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define HALFPLANE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template void tilde_d_in_half_plane<HALFPLANE(data)>(                     \
-      const gsl::not_null<Scalar<DataVector>*> result,                      \
-      const Scalar<DataVector>& tilde_d,                                    \
+#define INSTANTIATE(_, data)                                              \
+  template void tilde_d_in_half_plane<HALFPLANE(data)>(                   \
+      const gsl::not_null<Scalar<DataVector>*> result,                    \
+      const Scalar<DataVector>& tilde_d,                                  \
+      const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords); \
+  template Scalar<DataVector> tilde_d_in_half_plane<HALFPLANE(data)>(     \
+      const Scalar<DataVector>& tilde_d,                                  \
       const tnsr::I<DataVector, DIM(data), Frame::Grid>& dg_grid_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
@@ -176,8 +262,14 @@ template void mass_weighted_internal_energy(
     const gsl::not_null<Scalar<DataVector>*> result,
     const Scalar<DataVector>& tilde_d,
     const Scalar<DataVector>& specific_internal_energy);
+template Scalar<DataVector> mass_weighted_internal_energy(
+    const Scalar<DataVector>& tilde_d,
+    const Scalar<DataVector>& specific_internal_energy);
 template void mass_weighted_kinetic_energy(
     const gsl::not_null<Scalar<DataVector>*> result,
+    const Scalar<DataVector>& tilde_d,
+    const Scalar<DataVector>& lorentz_factor);
+template Scalar<DataVector> mass_weighted_kinetic_energy(
     const Scalar<DataVector>& tilde_d,
     const Scalar<DataVector>& lorentz_factor);
 
