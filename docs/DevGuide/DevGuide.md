@@ -19,8 +19,6 @@ Methods for creating custom coordinate maps are discussed here.
 - \subpage redistributing_gridpoints "Methods for redistributing gridpoints"
 
 ### Developing and Improving Executables
-- \subpage spectre_build_system "Build system" and how to add dependencies, unit
-  tests, and executables.
 - \subpage dev_guide_creating_executables "Executables and how to add them"
 - \subpage tutorials_parallel - A series of tutorials demonstrating how to write
   a parallel executable, and explaining some of the metaprogramming that turns

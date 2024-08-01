@@ -7,9 +7,10 @@ See LICENSE.txt for details.
 \tableofcontents
 
 This page details the installation procedure for SpECTRE on personal computers
-using x86-64 processors. For instructions on installing SpECTRE on clusters
-please refer to the \subpage installation_on_clusters page. For instructions on
-installing SpECTRE on Apple Silicon Macs, please refer to the
+using x86-64 processors. For configuring SpECTRE, please refer to the
+\subpage spectre_build_system page. For instructions on installing SpECTRE on
+clusters please refer to the \subpage installation_on_clusters page. For
+instructions on installing SpECTRE on Apple Silicon Macs, please refer to the
 \subpage installation_on_apple_silicon page. Refer to the
 \subpage versioning_and_releases page for information on specific versions
 to install.
@@ -47,7 +48,7 @@ working development environment, a good place to start is our
 \subpage dev_guide_quick_start_docker_vscode. If you prefer setting up your
 development environment differently, read on!
 
-### Dependencies
+### Dependencies {#build_dependencies}
 
 **Note**: You don't need to install any of these dependencies by hand,
 or by using yum, apt, or other package managers; it is much easier

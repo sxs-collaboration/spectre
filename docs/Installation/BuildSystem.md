@@ -2,163 +2,57 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Build System {#spectre_build_system}
+# Build System - CMake {#spectre_build_system}
 
 \tableofcontents
 
-# CMake {#cmake}
-
 SpECTRE uses [CMake](https://cmake.org/) for the build system. In this
-section of the guide we outline how to [add new source
-files](#adding_source_files), [libraries](#adding_libraries), [unit
-tests](#adding_unit_tests), [executables](#adding_executables), and
-[external dependencies](#adding_external_dependencies).  We also
-describe [commonly used CMake flags](#common_cmake_flags).
+guide we'll outline how to configure SpECTRE and
+describe some [commonly used CMake flags](#common_cmake_flags).
+We'll also go over how to
+[add new source files](#adding_source_files),
+[libraries](#adding_libraries),
+[unit tests](#adding_unit_tests), [executables](#adding_executables), and
+[external dependencies](#adding_external_dependencies).
 
-Note that in editing `CMakeLists.txt` files, it is conventional to
-indent multiline commands by two spaces (except for the first line),
-and to separate most commands by blank lines.
+# Configuring
 
-## Adding Source Files {#adding_source_files}
+The command to configure SpECTRE will look like this
 
-SpECTRE organizes source files into subdirectories of `src` that are
-compiled into libraries.  To add a new source file `FILE.cpp` to an
-existing library in `src/PATH/DIR`, just edit
-`src/PATH/DIR/CMakeLists.txt` and add `FILE.cpp` to the list of files
-in
-```
-set(LIBRARY_SOURCES
-  <list_of_files>
-  )
-```
-such that the resulting `<list_of_files>` is in alphabetical order.
-
-### Adding Libraries {#adding_libraries}
-
-To add a source file `FILE.cpp` that is compiled into a new library `LIB` in a
-directory `src/PATH/DIR` (either in a new directory, or in an existing
-directory that either does not have a `CMakeLists.txt` file, or does
-not create a library in the existing `CMakeLists.txt`):
-- Create (if necessary) a `CMakeLists.txt` file in `DIR`, with the following
-two lines at the top:
-```
-# Distributed under the MIT License.
-# See LICENSE.txt for details.
-```
-- In the parent directory (i.e. `src/PATH`), (if necessary) add the
-following line to its `CMakeLists.txt` file (if necessary, recursively
-do the previous step and this one until you reach a `CMakeLists.txt` that
-adds the appropriate subdirectory):
-```
-add_subdirectory(DIR)
-```
-If there are already other `add_subdirectory()` lines in the file, place
-the new one so that the subdirectories are in alphabetical order.
-- Add the line:
-```
-set(LIBRARY LIB)
-```
-where convention is that `LIB` = `DIR`.  As library names must be
-unique, this is not always possible, in which case the convention is to
-prepend the parent directory to `DIR`.
-- Add the lines
-```
-set(LIBRARY_SOURCES
-  FILE.cpp
-  )
-
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
-
-target_link_libraries(
-  ${LIBRARY}
-  PUBLIC
-  <list_of_public_libraries>
-  PRIVATE
-  <list_of_private_libraries>
-  INTERFACE
-  <list_of_interface_libraries>
-  )
-```
-where each `<list_of_X_libraries>` is an alphabetized list
-of libraries of the form
-```
-  SomeLibrary
-  SomeOtherLibrary
-  YetAnotherLibrary
-```
-The libraries listed under `INTERFACE` are those included in at
-least one `.hpp` file in `LIB` but never used in any `.cpp` files
-in `LIB`.  The libraries listed under `PRIVATE` are used in
-at least one `.cpp` file in `LIB` but not in any `.hpp` file
-in `LIB`.  The libraries listed under `PUBLIC` are used in at
-least one `.hpp` file and at least one `.cpp` file in `LIB`.
-Note that a library counts as being used in a `.cpp` file if the
-corresponding `.hpp` file includes it. In other words, list a dependency
-as `PRIVATE` if it is needed only to compile the library, but not for
-including headers. List a dependency as `INTERFACE` if it is not needed
-to compile the library, but is needed for including headers. List a
-dependency as `PUBLIC` if it is needed for both.
-
-## Adding Unit Tests {#adding_unit_tests}
-
-We use the [Catch](https://github.com/philsquared/Catch) testing
-framework for unit tests. All unit tests are housed in `tests/Unit`
-with subdirectories for each subdirectory of `src`. Add the `cpp` file
-to the appropriate subdirectory and also to the `CMakeLists.txt` in
-that subdirectory. Inside the source file you can create a new test by
-adding a `SPECTRE_TEST_CASE("Unit.Dir.Component",
-"[Unit][Dir][Tag]")`. The `[Tag]` is optional and you can have more
-than one, but the tags should be used quite sparingly.  The purpose of
-the tags is to be able to run all unit tests or all tests of a
-particular set of components, e.g. `ctest -L Data` to run all tests
-inside the `Data` directory. Please see \ref writing_unit_tests
-"writing unit tests", other unit tests and the [Catch
-documentation](https://github.com/philsquared/Catch) for more help on
-writing tests. Unit tests should take as short a time as possible,
-with a goal of less than two seconds.  Please also limit the number of
-distinct cases (by using `SECTION`s).
-
-You can check the unit test coverage of your code by installing all the optional
-components and then running `make unit-test-coverage` (after re-running CMake).
-This will create the
-directory `BUILD_DIR/docs/html/unit-test-coverage/` which is where the coverage
-information is located. Open the `index.html` file in your browser and make
-sure that your tests are indeed checking all lines of your code. Your pull
-requests might not be merged until your line coverage is over 90% (we are aiming
-for 100% line coverage wherever possible). Unreachable lines of code can be
-excluded from coverage analysis by adding the inline comment `LCOV_EXCL_LINE`
-or a block can be excluded using `LCOV_EXCL_START` and `LCOV_EXCL_STOP`.
-However, this should be used extremely sparingly since unreachable code paths
-should be removed from the code base altogether.
-
-## Adding Executables {#adding_executables}
-
-All general executables are found in `src/Executables`, while those
-for specific evolution (elliptic) systems are found in
-`src/Evolution/Executables` (`src/Elliptic/Executables`).  See \ref
-dev_guide_creating_executables "how to create executables".
-
-## Adding External Dependencies {#adding_external_dependencies}
-
-To add an external dependency, first add a `SetupDEPENDENCY.cmake`
-file to the `cmake` directory. You should model this after the
-existing one for `Brigand` if you're adding a header-only
-library and `yaml-cpp` if the library is not header-only. If CMake
-does not already support `find_package` for the library you're adding
-you can write your own. These should be modeled after `FindBrigand`
-for header-only libraries, and `FindYAMLCPP` for compiled
-libraries. The `SetupDEPENDENCY.cmake` file must then be included in
-the root `spectre/CMakeLists.txt`. Be sure to test both that setting
-`LIBRARY_ROOT` works correctly for your library, and also that if the
-library is required that CMake fails gracefully if the library is not
-found.
-
-## Commonly Used CMake flags {#common_cmake_flags}
-The following are the most common flags used to control building with
-`CMake`. They are used by
 ```
 cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 ```
+
+where `FLAG{1..N}` are CMake flags that are detailed in the section on
+[commonly used CMake flags](#common_cmake_flags).
+
+CMake will look in your `$PATH` environment variable for all of the
+[build dependencies](installation.html#build_dependencies) and will use the
+first one it finds that satisfies the requirements. However, if a dependency is
+not in your `$PATH`, there are multiple versions of a dependency, or you just
+want to customize your configuration, you'll have to tell CMake which dependency
+you want to use and where it is using CMake flags. To that end, even though the
+[commonly used CMake flags](#common_cmake_flags) section has a more detailed
+list of the flags available, the following list has the *most common* CMake
+flags you'll need to customize your configuration (e.g. compilers, charm, build
+type, and library types):
+
+- CMAKE_C_COMPILER
+- CMAKE_CXX_COMPILER
+- CMAKE_Fortran_COMPILER
+- CHARM_ROOT
+- CMAKE_BUILD_TYPE
+- BUILD_SHARED_LIBS
+
+\note If you are on a cluster, take a look at the
+[installation on clusters](installation_on_clusters.html)
+instructions. If you are on a cluster we support, we will already have an
+environment setup and an easy way for you to configure the build without having
+to specify flags yourself.
+
+## Commonly Used CMake flags {#common_cmake_flags}
+The following are common flags used to control building SpECTRE with CMake (in
+alphabetical order):
 - ASAN
   - Whether or not to turn on the address sanitizer compile flags
     (`-fsanitize=address`) (default is `OFF`)
@@ -186,6 +80,8 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     like h5py, numpy or scipy you can/should still install them yourself to make
     sure they use the correct HDF5, BLAS, etc.
     (default is `OFF`)
+- BUILD_DOCS
+  - Enable building documentation. (default is `ON`)
 - BUILD_PYTHON_BINDINGS
   - Build python libraries to call SpECTRE C++ code from python
     (default is `ON`)
@@ -194,10 +90,6 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     (default is `OFF`)
 - BUILD_TESTING
   - Enable building tests. (default is `ON`)
-- BUILD_DOCS
-  - Enable building documentation. (default is `ON`)
-- DOCS_ONLY
-  - Build _only_ documentation (default is `OFF`). Requires `BUILD_DOCS=ON`.
 - CHARM_ROOT
   - The path to the build directory of `Charm++`
 - CHARM_TRACE_PROJECTIONS
@@ -214,32 +106,34 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - CMAKE_C_COMPILER
   - The `C` compiler used (defaults to whatever is determined by
     `CMake/Modules/CMakeDetermineCCompiler.cmake`, usually `cc`)
+- CMAKE_C_FLAGS
+  - Additional flags passed to the `C` compiler.
 - CMAKE_CXX_COMPILER
   - The `C++` compiler used (defaults to whatever is determined by
     `CMake/Modules/CMakeDetermineCXXCompiler.cmake`, usually `c++`)
+- CMAKE_CXX_FLAGS
+  - Additional flags passed to the `C++` compiler.
 - CMAKE_Fortran_COMPILER
   - The `Fortran` compiler used (defaults to whatever is determined by
     `CMake/Modules/CMakeDetermineFortranCompiler.cmake`)
-- CMAKE_C_FLAGS
-  - Additional flags passed to the `C` compiler.
-- CMAKE_CXX_FLAGS
-  - Additional flags passed to the `C++` compiler.
 - CMAKE_Fortran_FLAGS
   - Additional flags passed to the `Fortran` compiler.
-- CMAKE_RUNTIME_OUTPUT_DIRECTORY
-  - Sets the directory where the library and executables are placed.
-    By default libraries end up in `<BUILD_DIR>/lib` and executables
-    in `<BUILD_DIR>/bin`.
 - CMAKE_INSTALL_PREFIX
   - Location where the `install` target copies executables, libraries, etc. Make
     sure to set this variable before you `install`, or a default location such
     as `/usr/local` is used.
+- CMAKE_RUNTIME_OUTPUT_DIRECTORY
+  - Sets the directory where the library and executables are placed.
+    By default libraries end up in `<BUILD_DIR>/lib` and executables
+    in `<BUILD_DIR>/bin`.
 - COVERAGE
   - Enable code coverage with GCOV and LCOV (default `OFF`)
 - DEBUG_SYMBOLS
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
     directory.
+- DOCS_ONLY
+  - Build _only_ documentation (default is `OFF`). Requires `BUILD_DOCS=ON`.
 - ENABLE_OPENMP
   - Enable OpenMP parallelization in some parts of the code, such as Python
     bindings and interpolating volume data files. Note that simulations do not
@@ -249,12 +143,6 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)
-- SPECTRE_DEBUG
-  - Defines `SPECTRE_DEBUG` macro to enable `ASSERT`s and other debug
-    checks so they can be used in Release builds. That is, you get sanity checks
-    and compiler optimizations. You cannot disable the checks in Debug builds,
-    so this option has no effect in Debug builds.
-    (default is `OFF` in release)
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
 - FUKA_ROOT
@@ -290,6 +178,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Set to a path to a SpEC installation (the SpEC repository root) to link in
     SpEC libraries. In particular, the SpEC::Exporter library is linked in and
     enables loading SpEC data into SpECTRE. See \ref installation for details.
+- SPECTRE_DEBUG
+  - Defines `SPECTRE_DEBUG` macro to enable `ASSERT`s and other debug
+    checks so they can be used in Release builds. That is, you get sanity checks
+    and compiler optimizations. You cannot disable the checks in Debug builds,
+    so this option has no effect in Debug builds.
+    (default is `OFF` in release)
 - SPECTRE_Fortran_STATIC_LIBS (default: `OFF`)
   - Use static version of `libgfortran` and `libquadmath`.
 - SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY
@@ -386,8 +280,15 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 
 ## CMake targets
 
-In addition to individual simulation executables, the following targets are
-available to build with `make` or `ninja`:
+To see all possible build targets, once you configure SpECTRE run
+
+```
+make list
+```
+
+This will be a long list of all libraries, test executables, simulation
+executables, and custom build targets. The custom targets that are
+available to build with `make` or `ninja` are:
 
 - unit-tests
   - Build unit tests, which you can run with `ctest -L unit`. Available if
@@ -405,6 +306,179 @@ available to build with `make` or `ninja`:
   - Install targets that have been built to the `CMAKE_INSTALL_PREFIX`. Doesn't
     try to build anything else.
 
+# Editing the build system
+
+\note When editing `CMakeLists.txt` files, it is conventional to
+indent multiline commands by two spaces (except for the first line),
+and to separate most commands by blank lines.
+
+## Adding Source Files {#adding_source_files}
+
+SpECTRE organizes source files into subdirectories of `src` that are
+compiled into libraries.  To add a new source file `FILE.cpp` to an
+existing library in `src/PATH/DIR`, just edit
+`src/PATH/DIR/CMakeLists.txt` and add `FILE.cpp` to the list of files
+in
+```
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  <list_of_files>
+  )
+```
+such that the resulting `<list_of_files>` is in alphabetical order.
+
+## Adding Header Files {#adding_header_files}
+
+Similarly to [adding new source files](#adding_source_files), you can add a new
+header file `FILE.hpp` to a library by editing the `CMakeLists.txt` in that
+directory and adding `FILE.hpp` to the list of files in
+```
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  <list_of_files>
+)
+```
+
+\note Any `.tpp` files also go in this list of header files.
+
+## Adding Libraries {#adding_libraries}
+
+To add a source file `FILE.cpp` that is compiled into a new library `LIB` in a
+directory `src/PATH/DIR` (either in a new directory, or in an existing
+directory that either does not have a `CMakeLists.txt` file, or does
+not create a library in the existing `CMakeLists.txt`):
+- Create (if necessary) a `CMakeLists.txt` file in `DIR`, with the following
+two lines at the top:
+```
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+```
+- In the parent directory (i.e. `src/PATH`), (if necessary) add the
+following line to its `CMakeLists.txt` file (if necessary, recursively
+do the previous step and this one until you reach a `CMakeLists.txt` that
+adds the appropriate subdirectory):
+```
+add_subdirectory(DIR)
+```
+If there are already other `add_subdirectory()` lines in the file, place
+the new one so that the subdirectories are in alphabetical order.
+- Add the line:
+```
+set(LIBRARY LIB)
+```
+where convention is that `LIB` = `DIR`.  As library names must be
+unique, this is not always possible, in which case the convention is to
+prepend the parent directory to `DIR`.
+- Add the lines
+```
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  FILE.cpp
+  )
+
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  FILE.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  <list_of_public_libraries>
+  PRIVATE
+  <list_of_private_libraries>
+  INTERFACE
+  <list_of_interface_libraries>
+  )
+```
+where each `<list_of_X_libraries>` is an alphabetized list
+of libraries of the form
+```
+  SomeLibrary
+  SomeOtherLibrary
+  YetAnotherLibrary
+```
+The libraries listed under `INTERFACE` are those included in at
+least one `.hpp` file in `LIB` but never used in any `.cpp` files
+in `LIB`.  The libraries listed under `PRIVATE` are used in
+at least one `.cpp` file in `LIB` but not in any `.hpp` file
+in `LIB`.  The libraries listed under `PUBLIC` are used in at
+least one `.hpp` file and at least one `.cpp` file in `LIB`.
+Note that a library counts as being used in a `.cpp` file if the
+corresponding `.hpp` file includes it. In other words, list a dependency
+as `PRIVATE` if it is needed only to compile the library, but not for
+including headers. List a dependency as `INTERFACE` if it is not needed
+to compile the library, but is needed for including headers. List a
+dependency as `PUBLIC` if it is needed for both.
+
+\note If your library only contains header files, you must specify `INTERFACE`
+like so in the `add_spectre_library(${LIBRARY} INTERFACE)` function. You should
+also omit the `spectre_target_sources` lines as well.
+
+## Adding Unit Tests {#adding_unit_tests}
+
+We use the [Catch](https://github.com/philsquared/Catch) testing
+framework for unit tests. All unit tests are housed in `tests/Unit`
+with subdirectories for each subdirectory of `src`. Add the `cpp` file
+to the appropriate subdirectory and also to the `CMakeLists.txt` in
+that subdirectory. Inside the source file you can create a new test by
+adding a `SPECTRE_TEST_CASE("Unit.Dir.Component",
+"[Unit][Dir][Tag]")`. The `[Tag]` is optional and you can have more
+than one, but the tags should be used quite sparingly.  The purpose of
+the tags is to be able to run all unit tests or all tests of a
+particular set of components, e.g. `ctest -L Data` to run all tests
+inside the `Data` directory. Please see \ref writing_unit_tests
+"writing unit tests", other unit tests and the [Catch
+documentation](https://github.com/philsquared/Catch) for more help on
+writing tests. Unit tests should take as short a time as possible,
+with a goal of less than two seconds.  Please also limit the number of
+distinct cases (by using `SECTION`s).
+
+You can check the unit test coverage of your code by installing all the optional
+components and then running `make unit-test-coverage` (after re-running CMake).
+This will create the
+directory `BUILD_DIR/docs/html/unit-test-coverage/` which is where the coverage
+information is located. Open the `index.html` file in your browser and make
+sure that your tests are indeed checking all lines of your code. Your pull
+requests might not be merged until your line coverage is over 90% (we are aiming
+for 100% line coverage wherever possible). Unreachable lines of code can be
+excluded from coverage analysis by adding the inline comment `LCOV_EXCL_LINE`
+or a block can be excluded using `LCOV_EXCL_START` and `LCOV_EXCL_STOP`.
+However, this should be used extremely sparingly since unreachable code paths
+should be removed from the code base altogether.
+
+## Adding Executables {#adding_executables}
+
+All general executables are found in `src/Executables`, while those
+for specific evolution (elliptic) systems are found in
+`src/Evolution/Executables` (`src/Elliptic/Executables`).  See \ref
+dev_guide_creating_executables "how to create executables".
+
+## Adding External Dependencies {#adding_external_dependencies}
+
+To add an external dependency, first add a `SetupDEPENDENCY.cmake`
+file to the `cmake` directory. You should model this after the
+existing one for `Brigand` if you're adding a header-only
+library and `yaml-cpp` if the library is not header-only. If CMake
+does not already support `find_package` for the library you're adding
+you can write your own. These should be modeled after `FindBrigand`
+for header-only libraries, and `FindYAMLCPP` for compiled
+libraries. The `SetupDEPENDENCY.cmake` file must then be included in
+the root `spectre/CMakeLists.txt`. Be sure to test both that setting
+`LIBRARY_ROOT` works correctly for your library, and also that if the
+library is required that CMake fails gracefully if the library is not
+found.
+
+# Dependencies
+
 ## Checking Dependencies
 
 Getting dependencies of libraries correct is quite difficult. SpECTRE offers the
@@ -418,8 +492,8 @@ source tree for more details on how to use them.
 ## Formaline
 
 SpECTRE's implementation of Formaline is based on, but distinct in
-implementation from, the original design by
-[Erik Schnetter and Christian Ott](https://github.com/hypercott/formaline),
+implementation from, the
+[original design](https://github.com/hypercott/formaline)
 which embeds an archive of the source tree into the executable. The original
 design creates a C/C++ file with a function that returns an array/vector of
 `char`s (a byte stream). However, this results in a very large source file (50MB
