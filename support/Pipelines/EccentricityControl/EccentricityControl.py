@@ -317,12 +317,12 @@ def coordinate_separation_eccentricity_control_digest(
 
 def coordinate_separation_eccentricity_control(
     h5_file,
-    subfile_name_aha,
-    subfile_name_ahb,
-    tmin,
-    tmax,
-    angular_velocity_from_xcts,
-    expansion_from_xcts,
+    subfile_name_aha: str = "ApparentHorizons/ControlSystemAhA_Centers.dat",
+    subfile_name_ahb: str = "ApparentHorizons/ControlSystemAhB_Centers.dat",
+    tmin: float = None,
+    tmax: float = None,
+    angular_velocity_from_xcts: float = None,
+    expansion_from_xcts: float = None,
     fig: plt.Figure = None,
 ):
     """Compute updates based on fits to the coordinate separation for manual
@@ -498,6 +498,8 @@ def coordinate_separation_eccentricity_control(
 @click.option(
     "--subfile-name-aha",
     "-A",
+    default="ApparentHorizons/ControlSystemAhA_Centers.dat",
+    show_default=True,
     help=(
         "Name of subfile containing the apparent horizon centers for object A."
     ),
@@ -505,6 +507,8 @@ def coordinate_separation_eccentricity_control(
 @click.option(
     "--subfile-name-ahb",
     "-B",
+    default="ApparentHorizons/ControlSystemAhB_Centers.dat",
+    show_default=True,
     help=(
         "Name of subfile containing the apparent horizon centers for object B."
     ),
@@ -512,17 +516,15 @@ def coordinate_separation_eccentricity_control(
 @click.option(
     "--tmin",
     type=float,
-    nargs=1,
     help=(
         "The lower time bound to start the fit. Used to remove initial junk"
-        " andtransients in the coordinate separations. Default tmin=20 (or 60)"
+        " and transients in the coordinate separations. Default tmin=20 (or 60)"
         " for tmax<200 (or >200)."
     ),
 )
 @click.option(
     "--tmax",
     type=float,
-    nargs=1,
     help=(
         "The upper time bound to start the fit. A reasonable value would"
         " include 2-3 orbits."
@@ -531,13 +533,11 @@ def coordinate_separation_eccentricity_control(
 @click.option(
     "--angular-velocity-from-xcts",
     type=float,
-    nargs=1,
     help="Value of the angular velocity used in the Xcts file.",
 )
 @click.option(
     "--expansion-from-xcts",
     type=float,
-    nargs=1,
     help="Value of the expansion velocity (adot) used in the Xcts file.",
 )
 @apply_stylesheet_command()
