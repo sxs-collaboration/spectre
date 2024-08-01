@@ -48,6 +48,7 @@ gcc-13.1.0-nvrtbp3ngdnok3fg22pzxxczitvtu7ge/bin/gfortran \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=Oscar \
+          -D OVERRIDE_ARCH=cascadelake \
           -D ENABLE_PARAVIEW=OFF \
           "$@" \
           $SPECTRE_HOME
