@@ -17,6 +17,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Helpers/Utilities/Serialization/Versioning.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -39,6 +40,10 @@ void test_1d() {
   OrientationMap<1> custom2(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   CHECK_FALSE(custom2.is_aligned());
+
+  TestHelpers::serialization::test_versioning<OrientationMap<1>>(
+      "Domain/Structure/OrientationMap1d.serializations", "version 1", custom1,
+      {}, true);
 
   // Test if OrientationMap can encode a 1D parallel/antiparallel.
   std::array<Direction<1>, 1> block1_directions{{Direction<1>::upper_xi()}};
@@ -93,6 +98,10 @@ void test_2d() {
   OrientationMap<2> custom2(std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
   CHECK_FALSE(custom2.is_aligned());
+
+  TestHelpers::serialization::test_versioning<OrientationMap<2>>(
+      "Domain/Structure/OrientationMap2d.serializations", "version 1", custom1,
+      {}, true);
 
   // Test if OrientationMap can encode a 2D rotated.
   const auto& upper_xi = Direction<2>::upper_xi();
@@ -242,6 +251,10 @@ void test_3d() {
       {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
        Direction<3>::lower_zeta()}});
   CHECK_FALSE(custom2.is_aligned());
+
+  TestHelpers::serialization::test_versioning<OrientationMap<3>>(
+      "Domain/Structure/OrientationMap3d.serializations", "version 1", custom1,
+      {}, true);
 
   // Test if OrientationMap can encode a 3D Flipped.
   const auto& upper_xi = Direction<3>::upper_xi();
