@@ -97,7 +97,7 @@ void local_adm_integrals(
     // Compute curved area element
     const auto face_sqrt_det_conformal_metric =
         Scalar<DataVector>(sqrt(get(determinant(face_conformal_metric))));
-    const auto curved_area_element =
+    const auto conformal_area_element =
         area_element(face_inv_jacobian, boundary_direction,
                      face_inv_conformal_metric, face_sqrt_det_conformal_metric);
 
@@ -124,11 +124,12 @@ void local_adm_integrals(
 
     // Take integrals
     adm_mass->get() += definite_integral(
-        get(contracted_mass_integrand) * get(curved_area_element), face_mesh);
+        get(contracted_mass_integrand) * get(conformal_area_element),
+        face_mesh);
     for (int I = 0; I < 3; I++) {
       adm_linear_momentum->get(I) +=
           definite_integral(contracted_linear_momentum_integrand.get(I) *
-                                get(curved_area_element),
+                                get(conformal_area_element),
                             face_mesh);
     }
   }
