@@ -1,0 +1,22 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Metadata for testing an exectuable
+Executable: PiMonteCarlo
+Testing:
+  Check: parse;execute
+  Priority: Low
+---
+# Options to control the executable's behavior
+DartsPerIteration: 10000   # How many darts each processor throws each iteration
+AccuracyGoal: 1.e-2        # Fractional accuracy goal for pi estimate
+
+# Options that control how elements are distributed to processors when
+# the executable is run
+ResourceInfo:
+  # Avoid placing array elements or singleton components on
+  # global processor 0?
+  AvoidGlobalProc0: false
+  # Options to control how singletons are allocated; Auto means default
+  # behavior. This option could e.g. assign a singleton to a specific processor
+  Singletons: Auto
