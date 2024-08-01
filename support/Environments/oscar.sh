@@ -12,6 +12,7 @@ spectre_setup_modules() {
 }
 
 spectre_load_modules() {
+    module purge
     module use /oscar/data/icerm/knelli/modules
     module load spectre-deps/oscar-2024-07
 }
@@ -19,6 +20,7 @@ spectre_load_modules() {
 spectre_unload_modules() {
     module use /oscar/data/icerm/knelli/modules
     module unload spectre-deps/oscar-2024-07
+    module purge
 }
 
 spectre_run_cmake() {
@@ -33,9 +35,15 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=/oscar/rt/9.2/software/0.20-generic/\
 0.20.1/opt/spack/linux-rhel9-x86_64_v3/gcc-11.3.1/\
 gcc-13.1.0-nvrtbp3ngdnok3fg22pzxxczitvtu7ge/bin/gfortran \
+          -D CCACHE_LAUNCHER_EXTRA_ENV_VARS=\
+"CCACHE_CONFIGPATH=/oscar/data/icerm/knelli/spectre_cache_read.conf;"\
+"CCACHE_BASEDIR=${SPECTRE_HOME}" \
+          -D USE_PCH=OFF \
+          -D USE_LD=gold \
           -D CHARM_ROOT=$CHARM_ROOT \
           -D BLA_VENDOR=OpenBLAS \
           -D CMAKE_BUILD_TYPE=Release \
+          -D SPECTRE_DEBUG=ON \
           -D BUILD_DOCS=OFF \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
