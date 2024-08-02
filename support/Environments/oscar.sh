@@ -14,12 +14,18 @@ spectre_setup_modules() {
 spectre_load_modules() {
     module purge
     module use /oscar/data/icerm/knelli/modules
+    module use /users/nvu8/modules
+    # Load ParaView before other Python packages, so that our Python packages
+    # are higher in priority than ParaView's bundled Python packages
+    module load paraview/5.11.2-osmesa
     module load spectre-deps/oscar-2024-07
 }
 
 spectre_unload_modules() {
     module use /oscar/data/icerm/knelli/modules
+    module use /users/nvu8/modules
     module unload spectre-deps/oscar-2024-07
+    module unload paraview/5.11.2-osmesa
     module purge
 }
 
@@ -49,7 +55,7 @@ gcc-13.1.0-nvrtbp3ngdnok3fg22pzxxczitvtu7ge/bin/gfortran \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=Oscar \
           -D OVERRIDE_ARCH=cascadelake \
-          -D ENABLE_PARAVIEW=OFF \
+          -D ENABLE_PARAVIEW=ON \
           "$@" \
           $SPECTRE_HOME
 }
