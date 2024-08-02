@@ -45,6 +45,7 @@ namespace Events {
 void local_adm_integrals(
     gsl::not_null<Scalar<double>*> adm_mass,
     gsl::not_null<tnsr::I<double, 3>*> adm_linear_momentum,
+    gsl::not_null<tnsr::I<double, 3>*> center_of_mass,
     const Scalar<DataVector>& conformal_factor,
     const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
@@ -58,7 +59,9 @@ void local_adm_integrals(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const Mesh<3>& mesh, const Element<3>& element,
-    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals);
+    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
+    const DirectionMap<3, tnsr::I<DataVector, 3>>&
+        conformal_face_normal_vectors);
 /// @}
 
 /// @{
@@ -81,7 +84,16 @@ class ObserveAdmIntegrals : public Event {
       // ADM Linear Momentum (y-component)
       Parallel::ReductionDatum<double, funcl::Plus<>>,
       // ADM Linear Momentum (z-component)
-      Parallel::ReductionDatum<double, funcl::Plus<>>>;
+      Parallel::ReductionDatum<double, funcl::Plus<>>,
+      // Center of Mass (x-component)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<0>>,
+      // Center of Mass (y-component)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<0>>,
+      // Center of Mass (z-component)
+      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
+                               std::index_sequence<0>>>;
 
  public:
   /// \cond
@@ -122,7 +134,8 @@ class ObserveAdmIntegrals : public Event {
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::Mesh<3>, domain::Tags::Element<3>,
-      domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>>;
+      domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>,
+      domain::Tags::Faces<3, domain::Tags::FaceNormalVector<3>>>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
@@ -141,26 +154,38 @@ class ObserveAdmIntegrals : public Event {
                             Frame::Inertial>& inv_jacobian,
       const Mesh<3>& mesh, const Element<3>& element,
       const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
+      const DirectionMap<3, tnsr::I<DataVector, 3>>&
+          conformal_face_normal_vectors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
       const ObservationValue& observation_value) const {
     Scalar<double> adm_mass;
     tnsr::I<double, 3> adm_linear_momentum;
+    tnsr::I<double, 3> center_of_mass;
     local_adm_integrals(
         make_not_null(&adm_mass), make_not_null(&adm_linear_momentum),
-        conformal_factor, deriv_conformal_factor, conformal_metric,
-        inv_conformal_metric, conformal_christoffel_second_kind,
-        conformal_christoffel_contracted, spatial_metric, inv_spatial_metric,
-        extrinsic_curvature, trace_extrinsic_curvature, inv_jacobian, mesh,
-        element, conformal_face_normals);
+        make_not_null(&center_of_mass), conformal_factor,
+        deriv_conformal_factor, conformal_metric, inv_conformal_metric,
+        conformal_christoffel_second_kind, conformal_christoffel_contracted,
+        spatial_metric, inv_spatial_metric, extrinsic_curvature,
+        trace_extrinsic_curvature, inv_jacobian, mesh, element,
+        conformal_face_normals, conformal_face_normal_vectors);
 
     // Save components of linear momentum as reduction data
-    ReductionData reduction_data{get(adm_mass), get<0>(adm_linear_momentum),
+    ReductionData reduction_data{get(adm_mass),
+                                 get<0>(adm_linear_momentum),
                                  get<1>(adm_linear_momentum),
-                                 get<2>(adm_linear_momentum)};
-    std::vector<std::string> legend{"AdmMass", "AdmLinearMomentum_x",
+                                 get<2>(adm_linear_momentum),
+                                 get<0>(center_of_mass),
+                                 get<1>(center_of_mass),
+                                 get<2>(center_of_mass)};
+    std::vector<std::string> legend{"AdmMass",
+                                    "AdmLinearMomentum_x",
                                     "AdmLinearMomentum_y",
-                                    "AdmLinearMomentum_z"};
+                                    "AdmLinearMomentum_z",
+                                    "CenterOfMass_x",
+                                    "CenterOfMass_y",
+                                    "CenterOfMass_z"};
 
     // Get information required for reduction
     auto& local_observer = *Parallel::local_branch(
