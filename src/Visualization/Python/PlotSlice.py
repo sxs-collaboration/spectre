@@ -85,6 +85,7 @@ def plot_slice(
     slice_extent,
     slice_normal,
     slice_up,
+    extrapolate_into_excisions=False,
     num_samples=[200, 200],
     num_threads=None,
     title=None,
@@ -200,6 +201,7 @@ def plot_slice(
                 observation_id=obs_id,
                 tensor_components=[var_name],
                 target_points=target_coords.reshape(3, np.prod(num_samples)),
+                extrapolate_into_excisions=extrapolate_into_excisions,
                 num_threads=num_threads,
             )[0]
         ).reshape(num_samples)
@@ -283,6 +285,16 @@ def plot_slice(
         "Up-direction of the slice through the volume "
         "data. Specify as comma-separated list, e.g. '0,1,0' so the y-axis "
         "is the vertical axis of the plot.  [required]"
+    ),
+)
+@click.option(
+    "--extrapolate-into-excisions",
+    is_flag=True,
+    help=(
+        "Enables extrapolation into excision regions of the domain. "
+        "This can be useful to fill the excision region with "
+        "(constraint-violating but smooth) data so it can be imported into "
+        "moving puncture codes."
     ),
 )
 @click.option(
