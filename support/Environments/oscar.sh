@@ -49,7 +49,6 @@ gcc-13.1.0-nvrtbp3ngdnok3fg22pzxxczitvtu7ge/bin/gfortran \
           -D CHARM_ROOT=$CHARM_ROOT \
           -D BLA_VENDOR=OpenBLAS \
           -D CMAKE_BUILD_TYPE=Release \
-          -D SPECTRE_DEBUG=ON \
           -D BUILD_DOCS=OFF \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
