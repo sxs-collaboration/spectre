@@ -216,7 +216,7 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         # Grid
         st.subheader("Grid")
 
-        @st.experimental_fragment
+        @st.fragment
         def render_grid():
             if st.button("Render grid"):
                 from spectre.Visualization.Render3D.Domain import render_domain
@@ -242,7 +242,7 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         # Control systems
         st.subheader("Control systems")
 
-        @st.experimental_fragment
+        @st.fragment
         def render_control_systems():
             if st.checkbox("Show control systems"):
                 st.pyplot(
@@ -265,7 +265,7 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         # Eccentricity
         st.subheader("Eccentricity")
 
-        @st.experimental_fragment
+        @st.fragment
         def render_eccentricity():
             if st.checkbox("Show eccentricity"):
                 col_tmin, col_tmax = st.columns(2)
