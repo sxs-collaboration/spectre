@@ -46,80 +46,7 @@ def points_on_line(
     return line_start[:, np.newaxis] + np.outer(normal, line_parameter)
 
 
-@click.command(name="along-line")
-@open_volfiles_command(obs_id_required=False, multiple_vars=True)
-# Line options
-# These aren't marked "required" so the user can omit them when using options
-# like '--list-vars'.
-@click.option(
-    "--line-start",
-    "-A",
-    callback=parse_point,
-    help=(
-        "Coordinates of the start of the line through the volume data. "
-        "Specify as comma-separated list, e.g. '0,0,0'.  [required]"
-    ),
-)
-@click.option(
-    "--line-end",
-    "-B",
-    callback=parse_point,
-    help=(
-        "Coordinates of the end of the line through the volume data. "
-        "Specify as comma-separated list, e.g. '1,0,0'.  [required]"
-    ),
-)
-@click.option(
-    "--extrapolate-into-excisions",
-    is_flag=True,
-    help=(
-        "Enables extrapolation into excision regions of the domain. "
-        "This can be useful to fill the excision region with "
-        "(constraint-violating but smooth) data so it can be imported into "
-        "moving puncture codes."
-    ),
-)
-@click.option(
-    "--num-samples",
-    "-N",
-    type=int,
-    default=200,
-    show_default=True,
-    help=(
-        "Number of uniformly spaced samples along the line to which volume "
-        "data is interpolated."
-    ),
-)
-@click.option(
-    "--num-threads",
-    "-j",
-    type=int,
-    show_default="all available cores",
-    help=(
-        "Number of threads to use for interpolation. Only available if compiled"
-        " with OpenMP. Parallelization is over volume data files, so this only"
-        " has an effect if multiple files are specified."
-    ),
-)
-@click.option("--x-logscale", is_flag=True, help="Set the x-axis to log scale.")
-@click.option("--y-logscale", is_flag=True, help="Set the y-axis to log scale.")
-@click.option(
-    "--y-bounds",
-    type=float,
-    nargs=2,
-    help="The lower and upper bounds of the y-axis.",
-)
-# Animation options
-@click.option("--animate", is_flag=True, help="Animate over all observations.")
-@click.option(
-    "--interval",
-    default=100,
-    type=float,
-    help="Delay between frames in milliseconds. Only used for animations.",
-)
-@apply_stylesheet_command()
-@show_or_save_plot_command()
-def plot_along_line_command(
+def plot_along_line(
     h5_files,
     subfile_name,
     obs_id,
@@ -127,14 +54,14 @@ def plot_along_line_command(
     vars,
     line_start,
     line_end,
-    extrapolate_into_excisions,
-    num_samples,
-    num_threads,
-    x_logscale,
-    y_logscale,
-    y_bounds,
-    animate,
-    interval,
+    extrapolate_into_excisions=False,
+    num_samples=200,
+    num_threads=None,
+    x_logscale=False,
+    y_logscale=False,
+    y_bounds=None,
+    animate=False,
+    interval=100,
 ):
     """Plot variables along a line through volume data
 
@@ -243,6 +170,84 @@ def plot_along_line_command(
     else:
         update_plot(obs_id, obs_time)
         return fig
+
+
+@click.command(name="along-line", help=plot_along_line.__doc__)
+@open_volfiles_command(obs_id_required=False, multiple_vars=True)
+# Line options
+# These aren't marked "required" so the user can omit them when using options
+# like '--list-vars'.
+@click.option(
+    "--line-start",
+    "-A",
+    callback=parse_point,
+    help=(
+        "Coordinates of the start of the line through the volume data. "
+        "Specify as comma-separated list, e.g. '0,0,0'.  [required]"
+    ),
+)
+@click.option(
+    "--line-end",
+    "-B",
+    callback=parse_point,
+    help=(
+        "Coordinates of the end of the line through the volume data. "
+        "Specify as comma-separated list, e.g. '1,0,0'.  [required]"
+    ),
+)
+@click.option(
+    "--extrapolate-into-excisions",
+    is_flag=True,
+    help=(
+        "Enables extrapolation into excision regions of the domain. "
+        "This can be useful to fill the excision region with "
+        "(constraint-violating but smooth) data so it can be imported into "
+        "moving puncture codes."
+    ),
+)
+@click.option(
+    "--num-samples",
+    "-N",
+    type=int,
+    default=200,
+    show_default=True,
+    help=(
+        "Number of uniformly spaced samples along the line to which volume "
+        "data is interpolated."
+    ),
+)
+@click.option(
+    "--num-threads",
+    "-j",
+    type=int,
+    show_default="all available cores",
+    help=(
+        "Number of threads to use for interpolation. Only available if compiled"
+        " with OpenMP. Parallelization is over volume data files, so this only"
+        " has an effect if multiple files are specified."
+    ),
+)
+@click.option("--x-logscale", is_flag=True, help="Set the x-axis to log scale.")
+@click.option("--y-logscale", is_flag=True, help="Set the y-axis to log scale.")
+@click.option(
+    "--y-bounds",
+    type=float,
+    nargs=2,
+    help="The lower and upper bounds of the y-axis.",
+)
+# Animation options
+@click.option("--animate", is_flag=True, help="Animate over all observations.")
+@click.option(
+    "--interval",
+    default=100,
+    type=float,
+    help="Delay between frames in milliseconds. Only used for animations.",
+)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
+def plot_along_line_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    return plot_along_line(**kwargs)
 
 
 if __name__ == "__main__":

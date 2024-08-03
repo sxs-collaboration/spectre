@@ -75,100 +75,7 @@ def points_on_slice(
     )
 
 
-@click.command(name="slice")
-@open_volfiles_command(obs_id_required=False, multiple_vars=False)
-# Slice options
-# These aren't marked "required" so the user can omit them when using options
-# like '--list-vars'.
-@click.option(
-    "--slice-origin",
-    "--slice-center",
-    "-C",
-    callback=parse_point,
-    help=(
-        "Coordinates of the center of the slice through the volume "
-        "data. Specify as comma-separated list, e.g. '0,0,0'.  [required]"
-    ),
-)
-@click.option(
-    "--slice-extent",
-    "-X",
-    type=float,
-    nargs=2,
-    help=(
-        "Extent in both directions of the slice through the volume data, e.g. "
-        "'-X 10 10' for a 10x10 slice in the coordinates of the volume data."
-        "  [required]"
-    ),
-)
-@click.option(
-    "--slice-normal",
-    "-n",
-    callback=parse_point,
-    help=(
-        "Direction of the normal of the slice through the volume "
-        "data. Specify as comma-separated list, e.g. '0,0,1' for a slice "
-        "in the xy-plane.  [required]"
-    ),
-)
-@click.option(
-    "--slice-up",
-    "-u",
-    callback=parse_point,
-    help=(
-        "Up-direction of the slice through the volume "
-        "data. Specify as comma-separated list, e.g. '0,1,0' so the y-axis "
-        "is the vertical axis of the plot.  [required]"
-    ),
-)
-@click.option(
-    "--num-samples",
-    "-N",
-    type=int,
-    nargs=2,
-    default=(200, 200),
-    show_default=True,
-    help=(
-        "Number of uniformly spaced samples along each direction of the slice "
-        "to which volume data is interpolated."
-    ),
-)
-@click.option(
-    "--num-threads",
-    "-j",
-    type=int,
-    show_default="all available cores",
-    help=(
-        "Number of threads to use for interpolation. Only available if compiled"
-        " with OpenMP. Parallelization is over volume data files, so this only"
-        " has an effect if multiple files are specified."
-    ),
-)
-@click.option(
-    "--title",
-    "-t",
-    help="Title for the plot.",
-    show_default="name of the variable",
-)
-@click.option(
-    "--y-bounds",
-    "--data-bounds",
-    "data_bounds",
-    type=float,
-    nargs=2,
-    help="Lower and upper bounds for the color scale of the plot.",
-)
-# Animation options
-@click.option("--animate", is_flag=True, help="Animate over all observations.")
-@click.option(
-    "--interval",
-    default=100,
-    type=float,
-    help="Delay between frames in milliseconds. Only used for animations.",
-)
-@apply_stylesheet_command()
-@show_or_save_plot_command()
-def plot_slice_command(
+def plot_slice(
     h5_files,
     subfile_name,
     obs_id,
@@ -178,12 +85,12 @@ def plot_slice_command(
     slice_extent,
     slice_normal,
     slice_up,
-    num_samples,
-    num_threads,
-    title,
-    data_bounds,
-    animate,
-    interval,
+    num_samples=[200, 200],
+    num_threads=None,
+    title=None,
+    data_bounds=None,
+    animate=False,
+    interval=100,
 ):
     """Plot variables on a slice through volume data
 
@@ -330,6 +237,104 @@ def plot_slice_command(
         interval=interval,
         blit=False,
     )
+
+
+@click.command(name="slice", help=plot_slice.__doc__)
+@open_volfiles_command(obs_id_required=False, multiple_vars=False)
+# Slice options
+# These aren't marked "required" so the user can omit them when using options
+# like '--list-vars'.
+@click.option(
+    "--slice-origin",
+    "--slice-center",
+    "-C",
+    callback=parse_point,
+    help=(
+        "Coordinates of the center of the slice through the volume "
+        "data. Specify as comma-separated list, e.g. '0,0,0'.  [required]"
+    ),
+)
+@click.option(
+    "--slice-extent",
+    "-X",
+    type=float,
+    nargs=2,
+    help=(
+        "Extent in both directions of the slice through the volume data, e.g. "
+        "'-X 10 10' for a 10x10 slice in the coordinates of the volume data."
+        "  [required]"
+    ),
+)
+@click.option(
+    "--slice-normal",
+    "-n",
+    callback=parse_point,
+    help=(
+        "Direction of the normal of the slice through the volume "
+        "data. Specify as comma-separated list, e.g. '0,0,1' for a slice "
+        "in the xy-plane.  [required]"
+    ),
+)
+@click.option(
+    "--slice-up",
+    "-u",
+    callback=parse_point,
+    help=(
+        "Up-direction of the slice through the volume "
+        "data. Specify as comma-separated list, e.g. '0,1,0' so the y-axis "
+        "is the vertical axis of the plot.  [required]"
+    ),
+)
+@click.option(
+    "--num-samples",
+    "-N",
+    type=int,
+    nargs=2,
+    default=(200, 200),
+    show_default=True,
+    help=(
+        "Number of uniformly spaced samples along each direction of the slice "
+        "to which volume data is interpolated."
+    ),
+)
+@click.option(
+    "--num-threads",
+    "-j",
+    type=int,
+    show_default="all available cores",
+    help=(
+        "Number of threads to use for interpolation. Only available if compiled"
+        " with OpenMP. Parallelization is over volume data files, so this only"
+        " has an effect if multiple files are specified."
+    ),
+)
+@click.option(
+    "--title",
+    "-t",
+    help="Title for the plot.",
+    show_default="name of the variable",
+)
+@click.option(
+    "--y-bounds",
+    "--data-bounds",
+    "data_bounds",
+    type=float,
+    nargs=2,
+    help="Lower and upper bounds for the color scale of the plot.",
+)
+# Animation options
+@click.option("--animate", is_flag=True, help="Animate over all observations.")
+@click.option(
+    "--interval",
+    default=100,
+    type=float,
+    help="Delay between frames in milliseconds. Only used for animations.",
+)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
+def plot_slice_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    return plot_slice(**kwargs)
 
 
 if __name__ == "__main__":
