@@ -54,6 +54,7 @@ def render_bbh(
     time_step: int = 0,
     animate: bool = False,
     camera_angle: str = "Side",
+    zoom_factor: float = 1.0,
     color_map: str = "Rainbow Uniform",
     show_grid: bool = False,
     show_time: bool = False,
@@ -186,6 +187,9 @@ def render_bbh(
         ]
         render_view.CameraViewUp = [0.0, 0.0, 1.0]
         render_view.CameraParallelScale = 519.6152422706632
+    camera = pv.GetActiveCamera()
+    pv.ResetCamera()
+    camera.Zoom(zoom_factor)
 
     # Simulation time
     if show_time:
@@ -262,6 +266,7 @@ def render_bbh(
         " inbetween Side and Top view"
     ),
 )
+@click.option("zoom_factor", "--zoom", help="Zoom factor.", default=1.0)
 @click.option(
     "--color-map",
     "-m",
