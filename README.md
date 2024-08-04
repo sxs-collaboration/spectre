@@ -5,8 +5,8 @@
 [![Standard](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.svg?token=yyJ3uBPUE2)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2024.06.18-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2024.06.18)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.12098412.svg)](https://doi.org/10.5281/zenodo.12098412)
+[![release](https://img.shields.io/badge/release-v2024.08.03-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2024.08.03)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13207712.svg)](https://doi.org/10.5281/zenodo.13207712)
 
 ## What is SpECTRE?
 
@@ -28,7 +28,7 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.12098412](https://doi.org/10.5281/zenodo.12098412)
+- DOI: [10.5281/zenodo.13207712](https://doi.org/10.5281/zenodo.13207712)
 
 You can cite this BibTeX entry in your publication:
 
@@ -42,16 +42,16 @@ H\'ebert, Fran\c{c}ois and Kim, Yoonsoo and Kumar, Prayush and Lovelace,
 Geoffrey and Macedo, Alexandra and Moxon, Jordan and O'Shea, Eamonn and
 Pfeiffer, Harald P. and Scheel, Mark A. and Teukolsky, Saul A. and Wittek,
 Nikolas A. and others",
-    title = "\texttt{SpECTRE v2024.06.18}",
-    version = "2024.06.18",
+    title = "\texttt{SpECTRE v2024.08.03}",
+    version = "2024.08.03",
     publisher = "Zenodo",
-    doi = "10.5281/zenodo.12098412",
+    doi = "10.5281/zenodo.13207712",
     url = "https://spectre-code.org",
     howpublished =
-"\href{https://doi.org/10.5281/zenodo.12098412}{10.5281/zenodo.12098412}",
+"\href{https://doi.org/10.5281/zenodo.13207712}{10.5281/zenodo.13207712}",
     license = "MIT",
     year = "2024",
-    month = "6"
+    month = "8"
 }
 ```
 <!-- BIBTEX ENTRY -->
