@@ -46,15 +46,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.InitialData.IrrotationalBns",
       used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<tnsr::I<DataVector, 3> (*)(
-          const tnsr::I<DataVector, 3>&, double, const Scalar<DataVector>&)>(
+          const tnsr::I<DataVector, 3>&, double)>(
           &spatial_rotational_killing_vector),
       "IrrotationalBns", "spatial_rotational_killing_vector", {{{0.0, 1.0}}},
       used_for_size);
-  pypp::check_with_random_values<1>(
-      static_cast<Scalar<DataVector> (*)(const tnsr::I<DataVector, 3>&, double,
-                                         const Scalar<DataVector>&)>(
-          &divergence_spatial_rotational_killing_vector),
-      "IrrotationalBns", "divergence_spatial_rotational_killing_vector",
-      {{{0.0, 1.0}}}, used_for_size);
 }
 }  // namespace hydro::initial_data::irrotational_bns

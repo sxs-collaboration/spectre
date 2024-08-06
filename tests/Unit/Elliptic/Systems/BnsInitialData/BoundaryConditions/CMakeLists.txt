@@ -15,6 +15,6 @@ target_link_libraries(
   DataStructures
   DomainStructure
   Elliptic
-  IrrotationalBnsBoundaryConditions
+  BnsInitialDataBoundaryConditions
   Utilities
   )

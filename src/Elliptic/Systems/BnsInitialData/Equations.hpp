@@ -78,6 +78,8 @@ struct Fluxes {
                  Tags::RotationalShiftStress<DataVector>>;
   using volume_tags = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
+  static constexpr bool is_trivial = false;
+  static constexpr bool is_discontinuous = false;
   static void apply(gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
                     const tnsr::II<DataVector, 3>& inverse_spatial_metric,
                     const tnsr::II<DataVector, 3>& rotational_shift_stress,

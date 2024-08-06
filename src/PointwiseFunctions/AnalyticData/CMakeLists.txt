@@ -14,6 +14,7 @@ spectre_target_headers(
   )
 
 add_subdirectory(Burgers)
+add_subdirectory(BnsInitialData)
 add_subdirectory(CurvedWaveEquation)
 add_subdirectory(ForceFree)
 add_subdirectory(GeneralRelativity)
