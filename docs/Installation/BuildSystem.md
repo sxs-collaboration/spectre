@@ -190,6 +190,8 @@ alphabetical order):
   - Minimum priority of input file tests to run. Possible values are: `low` (not
     usually run on CI), `normal` (run at least once on CI), `high` (run always
     on CI). (default is `normal`)
+- SPECTRE_KOKKOS (default: `OFF`)
+  - Enable Kokkos support. You must have Kokkos installed and detectable.
 - SPECTRE_LTO
   - Enable link-time optimization if the compiler supports it.
 - SPECTRE_LTO_CORES
@@ -527,3 +529,22 @@ To further aid in reproducibility, the `printenv` output and
 ```
 h5dump -d /src.tar.gz -b LE -o src.tar.gz /path/to/hdf5/file.h5
 ```
+
+# Using Kokkos
+
+Kokkos support is still extremely experimental, but can be enabled by passing
+`-D SPECTRE_KOKKOS=ON` to CMake. You must pass additional CMake flags that
+Kokkos will use to configure itself. For example, to enable CUDA support you
+must pass `-D Kokkos_ENABLE_CUDA=ON`. See the
+[Kokkos documentation](https://kokkos.org/kokkos-core-wiki/keywords.html) for
+details.
+
+## Nvidia Compiler
+
+If you are using CUDA to compile for Nvidia GPUs but do not have the target GPU
+on the system you are compiling on then you must also tell CMake what CUDA
+architecture to use. You can do this by passing `-D CMAKE_CUDA_ARCHITECTURES=80`
+to CMake. You must choose the architecture that will be compatible with the GPU
+you plan to use. Note that this is actually called the compute capability
+version by Nvidia and can be viewed
+[here](https://developer.nvidia.com/cuda-gpus).

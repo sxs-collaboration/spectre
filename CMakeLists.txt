@@ -150,6 +150,8 @@ include(SetupParaView)
 
 add_subdirectory(external)
 
+include(SetupKokkos)
+
 include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
 if (USE_PCH)
