@@ -35,6 +35,8 @@ data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.
 style="max-width:100%;"></a>
 
 </p>
+
+<img src="banner.png"/>
 \endhtmlonly
 
 # What is SpECTRE? {#intro_sec}
@@ -102,3 +104,10 @@ accessed by links in the menu bar at the top.
   [Namespaces](namespaces.html) section.
 - To browse all files in the repository you can visit the
   [GitHub repository](https://github.com/sxs-collaboration/spectre) directly.
+
+## Logos and visuals {#logos_and_visuals}
+
+You can find logos and other visuals (e.g. to put on slides) in various formats,
+colors, and sizes here:
+
+- [Logos and visuals](https://drive.google.com/drive/folders/1GEvVrXNqlGojr3NBf7RMFo6BzFmf9Ww7?usp=share_link)
