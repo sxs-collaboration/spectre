@@ -1003,7 +1003,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return t + tenex::NumberAsExpression(-number);
+  return t + tenex::NumberAsExpression<N>(-number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args, typename N,
@@ -1015,7 +1015,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return tenex::NumberAsExpression(number) - t;
+  return tenex::NumberAsExpression<N>(number) - t;
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args, typename N>
@@ -1037,6 +1037,6 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return tenex::NumberAsExpression(number) - t;
+  return tenex::NumberAsExpression<N>(number) - t;
 }
 /// @}

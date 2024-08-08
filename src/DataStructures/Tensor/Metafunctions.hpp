@@ -72,65 +72,67 @@ constexpr bool check_index_symmetry_v =
  * \ingroup TensorGroup
  * \brief Add a spatial index to the front of a Tensor
  *
- * \tparam Tensor the tensor type to which the new index is prepended
+ * \tparam TheTensor the tensor type to which the new index is prepended
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
 using prepend_spatial_index = ::Tensor<
-    typename Tensor::type,
+    typename TheTensor::type,
     tmpl::push_front<
-        typename Tensor::symmetry,
+        typename TheTensor::symmetry,
         tmpl::int32_t<
-            1 + tmpl::fold<typename Tensor::symmetry, tmpl::int32_t<0>,
+            1 + tmpl::fold<typename TheTensor::symmetry, tmpl::int32_t<0>,
                            tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename Tensor::index_list,
+    tmpl::push_front<typename TheTensor::index_list,
                      SpatialIndex<VolumeDim, Ul, Fr>>>;
 
 /*!
  * \ingroup TensorGroup
  * \brief Add a spacetime index to the front of a Tensor
  *
- * \tparam Tensor the tensor type to which the new index is prepended
+ * \tparam TheTensor the tensor type to which the new index is prepended
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
 using prepend_spacetime_index = ::Tensor<
-    typename Tensor::type,
+    typename TheTensor::type,
     tmpl::push_front<
-        typename Tensor::symmetry,
+        typename TheTensor::symmetry,
         tmpl::int32_t<
-            1 + tmpl::fold<typename Tensor::symmetry, tmpl::int32_t<0>,
+            1 + tmpl::fold<typename TheTensor::symmetry, tmpl::int32_t<0>,
                            tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename Tensor::index_list,
+    tmpl::push_front<typename TheTensor::index_list,
                      SpacetimeIndex<VolumeDim, Ul, Fr>>>;
 
 /// \ingroup TensorGroup
 /// \brief remove the first index of a tensor
-/// \tparam Tensor the tensor type whose first index is removed
-template <typename Tensor>
+/// \tparam TheTensor the tensor type whose first index is removed
+template <typename TheTensor>
 using remove_first_index =
-    ::Tensor<typename Tensor::type, tmpl::pop_front<typename Tensor::symmetry>,
-             tmpl::pop_front<typename Tensor::index_list>>;
+    ::Tensor<typename TheTensor::type,
+             tmpl::pop_front<typename TheTensor::symmetry>,
+             tmpl::pop_front<typename TheTensor::index_list>>;
 
 /// \ingroup TensorGroup
 /// \brief Swap the valences of all indices on a Tensor
-template <typename Tensor>
+template <typename TheTensor>
 using change_all_valences =
-    ::Tensor<typename Tensor::type, typename Tensor::symmetry,
-             tmpl::transform<typename Tensor::index_list,
+    ::Tensor<typename TheTensor::type, typename TheTensor::symmetry,
+             tmpl::transform<typename TheTensor::index_list,
                              tmpl::bind<change_index_up_lo, tmpl::_1>>>;
 
 /// \ingroup TensorGroup
 /// \brief Swap the data type of a tensor for a new type
 /// \tparam NewType the new data type
-/// \tparam Tensor the tensor from which to keep symmetry and index information
-template <typename NewType, typename Tensor>
-using swap_type =
-    ::Tensor<NewType, typename Tensor::symmetry, typename Tensor::index_list>;
+/// \tparam TheTensor the tensor from which to keep symmetry and index
+/// information
+template <typename NewType, typename TheTensor>
+using swap_type = ::Tensor<NewType, typename TheTensor::symmetry,
+                           typename TheTensor::index_list>;
 
 namespace detail {
 template <typename T, typename Frame>
@@ -140,15 +142,16 @@ using frame_is_the_same = std::is_same<typename T::Frame, Frame>;
 /// \ingroup TensorGroup
 /// \brief Return tmpl::true_type if any indices of the Tensor are in the
 /// frame Frame.
-template <typename Tensor, typename Frame>
+template <typename TheTensor, typename Frame>
 using any_index_in_frame =
-    tmpl::any<typename Tensor::index_list,
+    tmpl::any<typename TheTensor::index_list,
               tmpl::bind<detail::frame_is_the_same, tmpl::_1, Frame>>;
 
 /// \ingroup TensorGroup
 /// \brief Return true if any indices of the Tensor are in the
 /// frame Frame.
-template <typename Tensor, typename Frame>
-constexpr bool any_index_in_frame_v = any_index_in_frame<Tensor, Frame>::value;
+template <typename TheTensor, typename Frame>
+constexpr bool any_index_in_frame_v =
+    any_index_in_frame<TheTensor, Frame>::value;
 
 }  // namespace TensorMetafunctions

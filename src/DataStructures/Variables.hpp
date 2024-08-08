@@ -29,6 +29,7 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/MathWrapper.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
