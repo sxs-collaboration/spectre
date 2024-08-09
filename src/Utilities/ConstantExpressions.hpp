@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -69,7 +70,8 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
  * \note The largest representable factorial is 20!. It is up to the user to
  * ensure this is satisfied
  */
-constexpr uint64_t falling_factorial(const uint64_t x, const uint64_t n) {
+KOKKOS_FUNCTION constexpr uint64_t falling_factorial(const uint64_t x,
+                                                     const uint64_t n) {
   // clang-tidy: don't warn about STL internals, I can't fix them
   assert(n <= x);  // NOLINT
   uint64_t r = 1;
@@ -83,7 +85,7 @@ constexpr uint64_t falling_factorial(const uint64_t x, const uint64_t n) {
  * \ingroup ConstantExpressionsGroup
  * \brief Compute the factorial of \f$n!\f$
  */
-constexpr uint64_t factorial(const uint64_t n) {
+KOKKOS_FUNCTION constexpr uint64_t factorial(const uint64_t n) {
   assert(n <= 20);  // NOLINT
   return falling_factorial(n, n);
 }
@@ -165,30 +167,30 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
 /// The argument must be comparable to an int and must be negatable.
 template <typename T, Requires<tt::is_integer_v<T> or
                                std::is_floating_point_v<T>> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) {
   return x < 0 ? -x : x;
 }
 
 /// \cond
 template <>
-SPECTRE_ALWAYS_INLINE constexpr double ce_abs(const double& x) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr double ce_abs(const double& x) {
   return __builtin_fabs(x);
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE constexpr float ce_abs(const float& x) {
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr float ce_abs(const float& x) {
   return __builtin_fabsf(x);
 }
 /// \endcond
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute the absolute value of its argument
-constexpr SPECTRE_ALWAYS_INLINE double ce_fabs(const double x) {
-  return __builtin_fabs(x);
+KOKKOS_FUNCTION constexpr SPECTRE_ALWAYS_INLINE double ce_fabs(const double x) {
+  return ce_abs(x);
 }
 
-constexpr SPECTRE_ALWAYS_INLINE float ce_fabs(const float x) {
-  return __builtin_fabsf(x);
+KOKKOS_FUNCTION constexpr SPECTRE_ALWAYS_INLINE float ce_fabs(const float x) {
+  return ce_abs(x);
 }
 
 namespace ConstantExpressions_detail {
