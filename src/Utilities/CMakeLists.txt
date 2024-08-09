@@ -94,6 +94,7 @@ target_link_libraries(
   Boost::boost
   Brigand
   ErrorHandling
+  SpectreKokkos
   PRIVATE
   Printf
   )
