@@ -41,9 +41,8 @@ using tags_for_observing = tmpl::list<
     gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
     ylm::Tags::MaxRicciScalarCompute, ylm::Tags::MinRicciScalarCompute,
     gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
-    gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>
-    // Needs `ObserveTimeSeriesOnSurface` to be able to write a `std::array`
-    // gr::surfaces::Tags::DimensionlessSpinVectorCompute<Frame, Frame>
+    gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>,
+    gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame, Frame>
     >;
 
 using surface_tags_for_observing = tmpl::list<ylm::Tags::RicciScalar>;
