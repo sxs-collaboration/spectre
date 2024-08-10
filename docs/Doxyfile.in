@@ -255,6 +255,11 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-interactive-toc.js \
                          @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-paragraph-link.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/apple-touch-icon.png \
+                         @PROJECT_SOURCE_DIR@/docs/config/favicon-16x16.png \
+                         @PROJECT_SOURCE_DIR@/docs/config/favicon-32x32.png \
+                         @PROJECT_SOURCE_DIR@/docs/config/favicon.ico \
+                         @PROJECT_SOURCE_DIR@/docs/config/safari-pinned-tab.svg \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
                          @PROJECT_SOURCE_DIR@/LICENSE.txt
