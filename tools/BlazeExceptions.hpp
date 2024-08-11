@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <csignal>
+
 #ifndef SPECTRE_BLAZE_EXCEPTIONS_HPP
 #define SPECTRE_BLAZE_EXCEPTIONS_HPP
 

@@ -125,15 +125,6 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug"
-    AND NOT USE_PCH)
-  # We need to make sure csignal is included. It is included in the PCH
-  # (see tools/SpectrePch.hpp). If there's no PCH, we need to include it here.
-  target_compile_options(Blaze
-    INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
-endif()
-
 target_compile_options(Blaze
   INTERFACE
   "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include ${CMAKE_SOURCE_DIR}/tools/BlazeExceptions.hpp>")
