@@ -57,6 +57,7 @@ def plot_power_monitors(
     domain: Union[Domain[1], Domain[2], Domain[3]],
     dimension_labels: Sequence[str] = [r"$\xi$", r"$\eta$", r"$\zeta$"],
     element_patterns: Optional[Sequence[str]] = None,
+    skip_filtered_modes: int = 0,
     figsize: Optional[Tuple[float, float]] = None,
 ):
     plot_over_time = obs_id is None
@@ -113,12 +114,14 @@ def plot_power_monitors(
 
         # Compute power monitors and take L2 norm over tensor components
         all_modes = [
-            np.zeros(element.mesh.extents(d)) for d in range(element.dim)
+            np.zeros(element.mesh.extents(d) - skip_filtered_modes)
+            for d in range(element.dim)
         ]
         for component in tensor_data:
             modes = power_monitors(DataVector(component), element.mesh)
             for d, modes_dim in enumerate(modes):
-                all_modes[d] += modes_dim**2
+                num_modes = len(modes_dim) - skip_filtered_modes
+                all_modes[d] += np.array(modes_dim)[:num_modes] ** 2
         for d in range(element.dim):
             all_modes[d] = np.sqrt(all_modes[d])
 
@@ -312,6 +315,15 @@ def plot_power_monitors(
 )
 @click.option(
     "--over-time", "-T", is_flag=True, help="Plot power monitors over time."
+)
+@click.option(
+    "--skip-filtered-modes",
+    type=int,
+    default=0,
+    help=(
+        "Skip this number of highest modes. Useful if the highest modes are"
+        " filtered, zeroing them out."
+    ),
 )
 # Plotting options
 @click.option("--figsize", nargs=2, type=float, help="Figure size in inches.")
