@@ -62,17 +62,17 @@ using BlockLogicalCoords = std::optional<
 /// typical use cases.  This means that `block_logical_coordinates`
 /// does not assume that grid and distorted frames are equal in
 /// `Block`s that lack a distorted frame.
-template <size_t Dim, typename Frame>
+template <size_t Dim, typename Fr>
 auto block_logical_coordinates(
-    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
+    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Fr>& x,
     double time = std::numeric_limits<double>::signaling_NaN(),
     const domain::FunctionsOfTimeMap& functions_of_time = {})
     -> std::vector<BlockLogicalCoords<Dim>>;
 
-template <size_t Dim, typename Frame>
+template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
-    const tnsr::I<double, Dim, Frame>& input_point, const Block<Dim>& block,
+    const tnsr::I<double, Dim, Fr>& input_point, const Block<Dim>& block,
     double time = std::numeric_limits<double>::signaling_NaN(),
     const domain::FunctionsOfTimeMap& functions_of_time = {});
 /// @}
