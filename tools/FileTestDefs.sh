@@ -534,7 +534,8 @@ standard_checks+=(ls_list)
 pragma_once() {
     is_includible "$1" && \
         whitelist "$1" \
-                  'tools/SpectrePch.hpp$' && \
+                  'tools/SpectrePch.hpp$' \
+                  'tools/BlazeExceptions.hpp$' && \
         ! staged_grep -q -x '#pragma once' "$1"
 }
 pragma_once_report() {

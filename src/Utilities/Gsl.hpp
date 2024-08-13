@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Utilities/Array.hpp"
 #include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Literals.hpp"
@@ -123,6 +124,20 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
  */
 template <class T, std::size_t N, typename Size>
 SPECTRE_ALWAYS_INLINE constexpr T& at(std::array<T, N>& arr, Size index) {
+  Expects(index >= 0 and index < narrow_cast<Size>(N));
+  return arr[static_cast<std::size_t>(index)];
+}
+
+template <class T, std::size_t N, typename Size>
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr T& at(cpp20::array<T, N>& arr,
+                                                      Size index) {
+  Expects(index >= 0 and index < narrow_cast<Size>(N));
+  return arr[static_cast<std::size_t>(index)];
+}
+
+template <class T, std::size_t N, typename Size>
+KOKKOS_FUNCTION SPECTRE_ALWAYS_INLINE constexpr const T& at(
+    const cpp20::array<T, N>& arr, Size index) {
   Expects(index >= 0 and index < narrow_cast<Size>(N));
   return arr[static_cast<std::size_t>(index)];
 }

@@ -63,6 +63,11 @@ template <typename ExceptionTypeToThrow, typename F>
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
+#ifdef __CUDA_ARCH__
+#define ERROR(m)                                              \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __trap();
+#else
 #define ERROR(m)                                                             \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
@@ -76,6 +81,7 @@ template <typename ExceptionTypeToThrow, typename F>
           });                                                                \
     }                                                                        \
   } while (false)
+#endif
 
 /*!
  * \ingroup ErrorHandlingGroup
@@ -85,6 +91,11 @@ template <typename ExceptionTypeToThrow, typename F>
  * \note Any exception types used must have an associated explicit
  * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
  */
+#ifdef __CUDA_ARCH__
+#define ERROR_AS(m, EXCEPTION_TYPE)                           \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __trap();
+#else
 #define ERROR_AS(m, EXCEPTION_TYPE)                                          \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
@@ -98,12 +109,18 @@ template <typename ExceptionTypeToThrow, typename F>
           });                                                                \
     }                                                                        \
   } while (false)
+#endif
 
 /*!
  * \ingroup ErrorHandlingGroup
  * \brief Same as ERROR but does not print a backtrace. Intended to be used for
  * user errors, such as incorrect values in an input file.
  */
+#ifdef __CUDA_ARCH__
+#define ERROR_NO_TRACE(m)                                     \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __trap();
+#else
 #define ERROR_NO_TRACE(m)                                                    \
   do {                                                                       \
     if (__builtin_is_constant_evaluated()) {                                 \
@@ -115,3 +132,4 @@ template <typename ExceptionTypeToThrow, typename F>
           MakeString{} << std::setprecision(18) << std::scientific << m);    \
     }                                                                        \
   } while (false)
+#endif

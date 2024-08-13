@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Kokkos)
 add_subdirectory(Simd)
 
 set(LIBRARY Utilities)
@@ -93,6 +94,7 @@ target_link_libraries(
   Boost::boost
   Brigand
   ErrorHandling
+  SpectreKokkos
   PRIVATE
   Printf
   )
