@@ -19,9 +19,15 @@ namespace domain::FunctionsOfTime::FunctionOfTimeHelpers {
 namespace ThreadsafeList_detail {
 template <typename T>
 struct Interval {
-  double expiration;
-  T data;
-  std::unique_ptr<Interval> previous;
+  Interval() = default;
+  Interval(double in_expiration, T in_data,
+           std::unique_ptr<Interval> in_previous)
+      : expiration(in_expiration),
+        data(std::move(in_data)),
+        previous(std::move(in_previous)) {}
+  double expiration{};
+  T data{};
+  std::unique_ptr<Interval> previous{};
 
   void pup(PUP::er& p);
 };

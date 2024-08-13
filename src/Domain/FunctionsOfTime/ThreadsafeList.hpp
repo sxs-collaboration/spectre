@@ -130,7 +130,7 @@ class ThreadsafeList {
   class iterator {
    public:
     using iterator_category = std::input_iterator_tag;
-    using value_type = decltype(ThreadsafeList{}(double{}));
+    using value_type = IntervalInfo;
     using reference = value_type;
     using pointer = std::optional<value_type>;
     using difference_type = std::ptrdiff_t;
