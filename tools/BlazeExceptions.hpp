@@ -3,6 +3,12 @@
 
 #include <csignal>
 
+#ifdef __CUDA_ARCH__
+// When building for Nvidia GPUs we need to disable the use of vector
+// intrinsics.
+#define BLAZE_USE_VECTORIZATION 0
+#endif
+
 #ifndef SPECTRE_BLAZE_EXCEPTIONS_HPP
 #define SPECTRE_BLAZE_EXCEPTIONS_HPP
 
