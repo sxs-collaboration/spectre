@@ -6,6 +6,7 @@ set(LIBRARY "Test_SphericalHarmonicsIO")
 set(LIBRARY_SOURCES
   Test_FillYlmLegendAndData.cpp
   Test_ReadSurfaceYlm.cpp
+  Test_StrahlkorperCoordsToTextFile.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
