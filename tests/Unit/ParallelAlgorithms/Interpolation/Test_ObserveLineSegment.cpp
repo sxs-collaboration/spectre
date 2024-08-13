@@ -344,12 +344,11 @@ void run_test(gsl::not_null<Generator*> generator,
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               typename metavars::LineA>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
   ActionTesting::simple_action<
       target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                              typename metavars::LineB>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+                              typename metavars::LineB>>(make_not_null(&runner),
+                                                         0, temporal_id);
 
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));

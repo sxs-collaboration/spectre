@@ -78,7 +78,6 @@ void interpolate(
       InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
   Parallel::simple_action<
       Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
-      target, std::vector<typename InterpolationTargetTag::temporal_id::type>{
-                  temporal_id});
+      target, temporal_id);
 }
 }  // namespace intrp

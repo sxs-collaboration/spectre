@@ -173,20 +173,15 @@ struct InterpolationTargetReceiveVars {
         // one.
         const auto& temporal_ids = db::get<Tags::TemporalIds<TemporalId>>(box);
         if (not temporal_ids.empty()) {
-          auto& my_proxy = Parallel::get_parallel_component<
-              InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-              cache);
-          Parallel::simple_action<
-              SendPointsToInterpolator<InterpolationTargetTag>>(
-              my_proxy, temporal_ids.front());
+          // Call directly
+          Actions::SendPointsToInterpolator<InterpolationTargetTag>::
+              template apply<ParallelComponent>(box, cache, array_index,
+                                                temporal_ids.front());
         } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
                            .empty()) {
-          auto& my_proxy = Parallel::get_parallel_component<
-              InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-              cache);
-          Parallel::simple_action<
-              Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
-              my_proxy);
+          // Call directly
+          Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>::
+              template apply<ParallelComponent>(box, cache, array_index);
         }
       }
     }

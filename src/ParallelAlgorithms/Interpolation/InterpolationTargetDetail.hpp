@@ -387,18 +387,14 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
 /// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
 /// accordingly.
 ///
-/// Returns the temporal_ids that have actually been newly flagged
-/// (since some of them may have been flagged already).
-///
 /// flag_temporal_ids_as_pending is called by an Action
 /// of InterpolationTarget
 ///
 /// Currently one Action calls flag_temporal_ids_as_pending:
 /// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
-std::vector<TemporalId> flag_temporal_ids_as_pending(
-    const gsl::not_null<db::DataBox<DbTags>*> box,
-    const std::vector<TemporalId>& temporal_ids) {
+void flag_temporal_id_as_pending(const gsl::not_null<db::DataBox<DbTags>*> box,
+                                 const TemporalId& temporal_id) {
   // We allow this function to be called multiple times with the same
   // temporal_ids (e.g. from each element, or from each node of a
   // NodeGroup ParallelComponent such as Interpolator). If multiple
@@ -412,29 +408,21 @@ std::vector<TemporalId> flag_temporal_ids_as_pending(
   // temporal_ids that we have already completed interpolation on.  So
   // here we do not add any temporal_ids that are already present in
   // `ids` or `completed_ids`.
-  std::vector<TemporalId> new_temporal_ids{};
-
   db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>>,
                    tmpl::list<Tags::TemporalIds<TemporalId>,
                               Tags::CompletedTemporalIds<TemporalId>>>(
-      [&temporal_ids, &new_temporal_ids](
-          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-          const std::deque<TemporalId>& ids,
-          const std::deque<TemporalId>& completed_ids) {
-        for (auto& id : temporal_ids) {
-          if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
-                  completed_ids.end() and
-              std::find(ids.begin(), ids.end(), id) == ids.end() and
-              std::find(pending_ids->begin(), pending_ids->end(), id) ==
-                  pending_ids->end()) {
-            pending_ids->push_back(id);
-            new_temporal_ids.push_back(id);
-          }
+      [&temporal_id](const gsl::not_null<std::deque<TemporalId>*> pending_ids,
+                     const std::deque<TemporalId>& ids,
+                     const std::deque<TemporalId>& completed_ids) {
+        if (std::find(completed_ids.begin(), completed_ids.end(),
+                      temporal_id) == completed_ids.end() and
+            std::find(ids.begin(), ids.end(), temporal_id) == ids.end() and
+            std::find(pending_ids->begin(), pending_ids->end(), temporal_id) ==
+                pending_ids->end()) {
+          pending_ids->push_back(temporal_id);
         }
       },
       box);
-
-  return new_temporal_ids;
 }
 
 /// Adds the supplied interpolated variables and offsets to the

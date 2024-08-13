@@ -3,6 +3,12 @@
 
 #pragma once
 
+#include <deque>
+#include <limits>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"
@@ -23,10 +29,11 @@ struct VerifyTemporalIdsAndSendPoints;
 
 namespace detail {
 template <typename InterpolationTargetTag, typename ParallelComponent,
-          typename DbTags, typename Metavariables>
+          typename DbTags, typename Metavariables, typename ArrayIndex>
 void verify_temporal_ids_and_send_points_time_independent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    Parallel::GlobalCache<Metavariables>& cache) {
+    Parallel::GlobalCache<Metavariables>& cache,
+    const ArrayIndex& array_index) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   // Move all PendingTemporalIds to TemporalIds, provided
@@ -70,10 +77,8 @@ void verify_temporal_ids_and_send_points_time_independent(
       box);
 
   if (not new_temporal_ids.empty()) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    Parallel::simple_action<
-        Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-        my_proxy, new_temporal_ids.front());
+    Actions::SendPointsToInterpolator<InterpolationTargetTag>::template apply<
+        ParallelComponent>(*box, cache, array_index, new_temporal_ids.front());
   }
 }
 
@@ -199,10 +204,8 @@ void verify_temporal_ids_and_send_points_time_dependent(
       box);
 
   if (not new_temporal_ids.empty()) {
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    Parallel::simple_action<
-        Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-        my_proxy, new_temporal_ids.front());
+    Actions::SendPointsToInterpolator<InterpolationTargetTag>::template apply<
+        ParallelComponent>(*box, cache, array_index, new_temporal_ids.front());
   }
 }
 }  // namespace detail
@@ -267,8 +270,8 @@ struct VerifyTemporalIdsAndSendPoints {
                                      compute_target_points::frame,
                                  ::Frame::Grid>) {
       detail::verify_temporal_ids_and_send_points_time_independent<
-          InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
-                                                     cache);
+          InterpolationTargetTag, ParallelComponent>(make_not_null(&box), cache,
+                                                     array_index);
     } else {
       const auto& domain =
           get<domain::Tags::Domain<Metavariables::volume_dim>>(cache);
@@ -295,7 +298,7 @@ struct VerifyTemporalIdsAndSendPoints {
       } else {
         detail::verify_temporal_ids_and_send_points_time_independent<
             InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
-                                                       cache);
+                                                       cache, array_index);
       }
     }
   }

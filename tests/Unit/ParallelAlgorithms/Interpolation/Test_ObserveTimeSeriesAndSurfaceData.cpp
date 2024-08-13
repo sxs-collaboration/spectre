@@ -698,26 +698,23 @@ void run_test() {
   ActionTesting::simple_action<
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_c_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_d_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceD>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
   ActionTesting::simple_action<
       target_e_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceE>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
 
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));

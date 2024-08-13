@@ -52,8 +52,8 @@ struct AddTemporalIdsToInterpolationTarget {
             typename ArrayIndex, typename TemporalId>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    std::vector<TemporalId>&& temporal_ids) {
+                    const ArrayIndex& array_index,
+                    const TemporalId& temporal_id) {
     static_assert(
         InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Actions::AddTemporalIdsToInterpolationTarget can be used only with "
@@ -76,18 +76,15 @@ struct AddTemporalIdsToInterpolationTarget {
 
     const bool pending_temporal_ids_was_empty_on_entry =
         db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty();
-
-    InterpolationTarget_detail::flag_temporal_ids_as_pending<
-        InterpolationTargetTag>(make_not_null(&box), temporal_ids);
+    InterpolationTarget_detail::flag_temporal_id_as_pending<
+        InterpolationTargetTag>(make_not_null(&box), temporal_id);
 
     if (db::get<Tags::TemporalIds<TemporalId>>(box).empty() and
         pending_temporal_ids_was_empty_on_entry and
         not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
-      auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
-      Parallel::simple_action<
-          Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
-          my_proxy);
+      // Call directly
+      Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>::
+          template apply<ParallelComponent>(box, cache, array_index);
     }
   }
 };
