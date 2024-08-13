@@ -8,6 +8,8 @@
 [![release](https://img.shields.io/badge/release-v2024.08.03-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2024.08.03)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13207712.svg)](https://doi.org/10.5281/zenodo.13207712)
 
+![banner](docs/Images/banner.png)
+
 ## What is SpECTRE?
 
 SpECTRE is an open-source code for multi-scale, multi-physics problems
@@ -68,3 +70,10 @@ for more information.
 ## Viewing Documentation
 
 The documentation can be viewed at https://spectre-code.org/.
+
+## Logos and visuals
+
+You can find logos and other visuals (e.g. to put on slides) in various formats,
+colors, and sizes here:
+
+- [Logos and visuals](https://drive.google.com/drive/folders/1GEvVrXNqlGojr3NBf7RMFo6BzFmf9Ww7?usp=share_link)

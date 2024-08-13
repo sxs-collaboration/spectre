@@ -262,6 +262,7 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/safari-pinned-tab.svg \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
+                         @PROJECT_SOURCE_DIR@/docs/Images/banner.png \
                          @PROJECT_SOURCE_DIR@/LICENSE.txt
 
 GENERATE_TREEVIEW      = YES
