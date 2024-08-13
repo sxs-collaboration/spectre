@@ -19,15 +19,15 @@
 
 namespace fd::reconstruction {
 namespace detail {
-template <size_t Index, size_t DimToReplace, size_t... Is,
+template <size_t IndexToSet, size_t DimToReplace, size_t... Is,
           size_t Dim = sizeof...(Is)>
 auto generate_index_for_u_to_reconstruct_impl(
     const std::array<size_t, sizeof...(Is)>& indices,
     std::index_sequence<Is...>) -> ::Index<Dim> {
-  return ::Index<Dim>{(DimToReplace != Is ? indices[Is] : Index)...};
+  return ::Index<Dim>{(DimToReplace != Is ? indices[Is] : IndexToSet)...};
 }
 
-template <size_t Index, size_t DimToReplace, size_t NumberOfNeighborCells,
+template <size_t IndexToSet, size_t DimToReplace, size_t NumberOfNeighborCells,
           size_t... Is, size_t Dim = sizeof...(Is)>
 auto generate_upper_volume_index_for_u_to_reconstruct_impl(
     const std::array<size_t, sizeof...(Is)>& indices,
@@ -36,7 +36,7 @@ auto generate_upper_volume_index_for_u_to_reconstruct_impl(
   return ::Index<Dim>{
       (DimToReplace != Is
            ? indices[Is]
-           : (volume_extents[Is] - (NumberOfNeighborCells - Index)))...};
+           : (volume_extents[Is] - (NumberOfNeighborCells - IndexToSet)))...};
 }
 
 template <Side UpperLower, size_t DimToReplace, size_t Dim,
