@@ -13,21 +13,24 @@ from spectre.Visualization.ReadInputFile import find_event, find_phase_change
 class TestReadInputFile(unittest.TestCase):
     def setUp(self):
         self.input_files_dir = Path(unit_test_src_path(), "..", "InputFiles")
-        self.input_file = Path(self.input_files_dir, "Burgers/Step.yaml")
+        self.input_file = Path(
+            self.input_files_dir, "ExportCoordinates/Input1D.yaml"
+        )
 
     def test_find_event(self):
         with self.input_file.open() as open_input_file:
             _, input_file = yaml.safe_load_all(open_input_file)
-        self.assertEqual(
-            find_event("ChangeSlabSize", input_file)["DelayChange"], 5
-        )
+        self.assertEqual(find_event("Completion", input_file), {})
         self.assertIsNone(find_event("NonexistentEvent", input_file))
 
     def test_find_phase_change(self):
         with self.input_file.open() as open_input_file:
             _, input_file = yaml.safe_load_all(open_input_file)
         self.assertEqual(
-            find_phase_change("VisitAndReturn(LoadBalancing)", input_file), {}
+            find_phase_change(
+                "VisitAndReturn(EvaluateAmrCriteria)", input_file
+            ),
+            {},
         )
         self.assertIsNone(
             find_phase_change("NonexistentPhaseChange", input_file)
