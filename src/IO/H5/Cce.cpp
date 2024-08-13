@@ -141,6 +141,10 @@ Cce::~Cce() {
   // internals of CHECK_H5), so older compilers that we support may not have
   // fixed this bug.
   for (const auto& name_and_dataset : bondi_datasets_) {
+#ifdef __CUDACC__
+    // nvcc warns that 'name' is unused
+    [[maybe_unused]]
+#endif
     const auto& name = name_and_dataset.first;
     const auto& dataset = name_and_dataset.second;
     CHECK_H5(H5Dclose(dataset.id), "Failed to close dataset " << name);
