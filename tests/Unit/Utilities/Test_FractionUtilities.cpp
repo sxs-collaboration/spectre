@@ -120,6 +120,18 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFractionSummer",
     summer.insert(1);
     CHECK(summer.value() == first_value);
   }
+
+  // Check a case that returns a semiconvergent
+  {
+    ContinuedFractionSummer<Rational> summer;
+    summer.insert(0);
+    summer.insert(2);
+    summer.insert(std::numeric_limits<std::int32_t>::max() / 2 + 10);
+    // Remember that max() is odd, so this isn't 1/2.
+    CHECK(summer.value() ==
+          Rational(std::numeric_limits<std::int32_t>::max() / 2,
+                   std::numeric_limits<std::int32_t>::max()));
+  }
 }
 
 SPECTRE_TEST_CASE(
