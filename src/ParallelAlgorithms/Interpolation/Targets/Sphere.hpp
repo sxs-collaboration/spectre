@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Transpose.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Options/String.hpp"
@@ -20,7 +21,6 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -70,7 +70,7 @@ struct Sphere {
     static constexpr Options::String help = {"Radius of the sphere(s)"};
   };
   struct AngularOrdering {
-    using type = intrp::AngularOrdering;
+    using type = ylm::AngularOrdering;
     static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };
@@ -79,7 +79,7 @@ struct Sphere {
       "An arbitrary number of spherical surface."};
   Sphere(const size_t l_max_in, const std::array<double, 3> center_in,
          const typename Radius::type& radius_in,
-         intrp::AngularOrdering angular_ordering_in,
+         ylm::AngularOrdering angular_ordering_in,
          const Options::Context& context = {});
 
   Sphere() = default;
@@ -90,7 +90,7 @@ struct Sphere {
   size_t l_max{0};
   std::array<double, 3> center{std::numeric_limits<double>::signaling_NaN()};
   std::set<double> radii;
-  intrp::AngularOrdering angular_ordering;
+  ylm::AngularOrdering angular_ordering;
 };
 
 bool operator==(const Sphere& lhs, const Sphere& rhs);
@@ -180,7 +180,7 @@ struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 
       // If the angular ordering is Strahlkorper then we don't have to do
       // anything to the coords because they are already in the right order
-      if (sphere.angular_ordering == intrp::AngularOrdering::Cce) {
+      if (sphere.angular_ordering == ylm::AngularOrdering::Cce) {
         const auto physical_extents =
             strahlkorper.ylm_spherepack().physical_extents();
         auto transposed_coords =

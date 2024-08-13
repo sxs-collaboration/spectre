@@ -18,9 +18,9 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -57,7 +57,7 @@ struct KerrHorizonTargetTag
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_interpolation_target_kerr_horizon(
-    const intrp::AngularOrdering angular_ordering) {
+    const ylm::AngularOrdering angular_ordering) {
   // Constants used in this test.
   // We use l_max=18 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to
@@ -125,7 +125,7 @@ void test_interpolation_target_kerr_horizon(
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
     size_t s = 0;
-    if (angular_ordering == intrp::AngularOrdering::Strahlkorper) {
+    if (angular_ordering == ylm::AngularOrdering::Strahlkorper) {
       for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
         const double phi = two_pi_over_n_phi * i_phi;
         for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
@@ -166,14 +166,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
   test_interpolation_target_kerr_horizon<
-      InterpTargetTestHelpers::ValidPoints::All>(intrp::AngularOrdering::Cce);
+      InterpTargetTestHelpers::ValidPoints::All>(ylm::AngularOrdering::Cce);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::All>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::Some>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::None>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
 }

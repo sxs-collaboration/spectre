@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -65,7 +66,6 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
@@ -585,22 +585,22 @@ void run_test() {
   // Options for all InterpolationTargets.
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_A(
       10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_B(
       10, {{0.0, 0.0, 0.0}}, 2.0, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
       10, {{0.0, 0.0, 0.0}}, 1.5, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(
       10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   // Surface for testing Ylm coefficients are written correctly. Using a
   // non-zero spin because with zero spin, Y_{00} is the only term with a
   // non-zero coefficient
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_E(
       3, {{0.04, 0.05, 0.06}}, 1.1, {{1.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   const auto domain_creator = make_sphere<ValidPoints>();
   tuples::TaggedTuple<
       observers::Tags::ReductionFileName, observers::Tags::SurfaceFileName,

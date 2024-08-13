@@ -49,7 +49,7 @@ struct SphereVisitor {
 
 Sphere::Sphere(const size_t l_max_in, const std::array<double, 3> center_in,
                const typename Radius::type& radius_in,
-               const intrp::AngularOrdering angular_ordering_in,
+               const ylm::AngularOrdering angular_ordering_in,
                const Options::Context& context)
     : l_max(l_max_in),
       center(center_in),

@@ -23,9 +23,9 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -60,7 +60,7 @@ struct SphereTag : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
 template <InterpTargetTestHelpers::ValidPoints ValidPoints, typename Generator>
 void test_interpolation_target_sphere(
     const gsl::not_null<Generator*> generator, const size_t number_of_spheres,
-    const intrp::AngularOrdering angular_ordering) {
+    const ylm::AngularOrdering angular_ordering) {
   // Keep bounds a bit inside than inner and outer radius of shell below so the
   // offset-sphere is still within the domain
   std::uniform_real_distribution<double> dist{1.2, 4.5};
@@ -147,7 +147,7 @@ void test_interpolation_target_sphere(
       }();
 
       const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
-      if (angular_ordering == intrp::AngularOrdering::Strahlkorper) {
+      if (angular_ordering == ylm::AngularOrdering::Strahlkorper) {
         for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
           const double phi = two_pi_over_n_phi * i_phi;
           for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
@@ -222,12 +222,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Sphere",
   MAKE_GENERATOR(gen);
   for (size_t num_spheres : {1_st, 2_st, 3_st}) {
     test_interpolation_target_sphere<InterpTargetTestHelpers::ValidPoints::All>(
-        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Cce);
+        make_not_null(&gen), num_spheres, ylm::AngularOrdering::Cce);
     test_interpolation_target_sphere<InterpTargetTestHelpers::ValidPoints::All>(
-        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Strahlkorper);
+        make_not_null(&gen), num_spheres, ylm::AngularOrdering::Strahlkorper);
     test_interpolation_target_sphere<
         InterpTargetTestHelpers::ValidPoints::None>(
-        make_not_null(&gen), num_spheres, intrp::AngularOrdering::Strahlkorper);
+        make_not_null(&gen), num_spheres, ylm::AngularOrdering::Strahlkorper);
     // ValidPoints::Some is not tested as the radii of the
     // interpolation targets are set randomly so it is difficult to
     // arrange that only a subset of the target points are
