@@ -40,6 +40,21 @@ endif ()
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
   cmake_policy(SET CMP0144 NEW)
 endif()
+# - The `NEW` behavior of `DOWNLOAD_EXTRACT_TIMESTAMP` is recommended.
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
+# FetchContent can be used to download and build some dependencies. We can
+# consider turning this on by default later.
+option(SPECTRE_FETCH_MISSING_DEPS "Download missing dependencies" OFF)
+# - Mark FetchContent as 'SYSTEM' to suppress warnings.
+#   Supported since CMake version 3.25.
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
+  set(SPECTRE_FETCHCONTENT_BASE_ARGS SYSTEM)
+else()
+  set(SPECTRE_FETCHCONTENT_BASE_ARGS "")
+endif()
 
 # Define standard installation directories
 include(GNUInstallDirs)

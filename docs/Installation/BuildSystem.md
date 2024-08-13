@@ -184,6 +184,9 @@ alphabetical order):
     and compiler optimizations. You cannot disable the checks in Debug builds,
     so this option has no effect in Debug builds.
     (default is `OFF` in release)
+- SPECTRE_FETCH_MISSING_DEPS
+  - Download missing dependencies and build them alongside the SpECTRE source.
+    (default is `OFF`)
 - SPECTRE_Fortran_STATIC_LIBS (default: `OFF`)
   - Use static version of `libgfortran` and `libquadmath`.
 - SPECTRE_INPUT_FILE_TEST_MIN_PRIORITY

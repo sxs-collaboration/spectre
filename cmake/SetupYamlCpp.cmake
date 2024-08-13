@@ -1,26 +1,32 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(YAMLCPP REQUIRED)
+find_package(yaml-cpp)
 
-message(STATUS "yaml-cpp libs: " ${YAMLCPP_LIBRARIES})
-message(STATUS "yaml-cpp incl: " ${YAMLCPP_INCLUDE_DIRS})
-
-add_library(YamlCpp INTERFACE IMPORTED)
-# Have to use `set_property` before CMake version 3.11. See:
-# https://gitlab.kitware.com/cmake/cmake/-/merge_requests/1264
-set_property(TARGET YamlCpp
-  APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${YAMLCPP_INCLUDE_DIRS})
-set_property(TARGET YamlCpp
-  APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${YAMLCPP_LIBRARIES})
-
-add_interface_lib_headers(
-  TARGET YamlCpp
-  HEADERS
-  yaml-cpp/yaml.h
+if (NOT yaml-cpp_FOUND)
+  if (NOT SPECTRE_FETCH_MISSING_DEPS)
+    message(FATAL_ERROR "Could not find yaml-cpp. If you want to fetch "
+      "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
+  endif()
+  message(STATUS "Fetching yaml-cpp")
+  include(FetchContent)
+  FetchContent_Declare(yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG yaml-cpp-0.7.0
+    GIT_SHALLOW TRUE
+    ${SPECTRE_FETCHCONTENT_BASE_ARGS}
   )
+  FetchContent_MakeAvailable(yaml-cpp)
+endif()
+
+# New versions of yaml-cpp define the target `yaml-cpp::yaml-cpp`. Old versions
+# define the deprecated target `yaml-cpp`.
+if (NOT TARGET yaml-cpp::yaml-cpp)
+  add_library(yaml-cpp::yaml-cpp INTERFACE IMPORTED)
+  target_link_libraries(yaml-cpp::yaml-cpp INTERFACE yaml-cpp)
+endif()
 
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
-  YamlCpp
+  yaml-cpp::yaml-cpp
   )

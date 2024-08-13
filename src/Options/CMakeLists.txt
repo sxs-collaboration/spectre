@@ -37,7 +37,7 @@ target_link_libraries(
   ErrorHandling
   Printf
   Utilities
-  YamlCpp
+  yaml-cpp::yaml-cpp
   PRIVATE
   Informer
   )

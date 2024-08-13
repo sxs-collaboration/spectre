@@ -40,11 +40,11 @@ if(EXISTS "${BLAZE_INCLUDE_DIRS}/blaze/system/Version.h")
   set(BLAZE_VERSION
     "${BLAZE_MAJOR_VERSION}.${BLAZE_MINOR_VERSION}"
     )
-else()
+elseif(BLAZE_INCLUDE_DIRS)
   message(WARNING "Failed to find file "
     "'${BLAZE_INCLUDE_DIRS}/blaze/system/Version.h' "
     "while detecting the Blaze version.")
-endif(EXISTS "${BLAZE_INCLUDE_DIRS}/blaze/system/Version.h")
+endif()
 
 set(Blaze_VERSION ${BLAZE_VERSION})
 

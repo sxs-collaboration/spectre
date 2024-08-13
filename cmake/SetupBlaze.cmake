@@ -24,7 +24,25 @@ endif()
 # release, so we should specify an exact version requirement. However, Blaze
 # hasn't been consistent in naming releases (version 3.8.2 has 3.9.0 written
 # in Version.h).
-find_package(Blaze 3.8 REQUIRED)
+find_package(Blaze 3.8)
+
+if (NOT Blaze_FOUND)
+  if (NOT SPECTRE_FETCH_MISSING_DEPS)
+    message(FATAL_ERROR "Could not find Blaze. If you want to fetch "
+      "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
+  endif()
+  message(STATUS "Fetching Blaze")
+  include(FetchContent)
+  FetchContent_Declare(Blaze
+    URL https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.2.tar.gz
+    ${SPECTRE_FETCHCONTENT_BASE_ARGS}
+  )
+  # Configure Blaze CMake variables. Most configuration is done below.
+  set(BLAZE_SHARED_MEMORY_PARALLELIZATION 0 CACHE INTERNAL "Blaze SMP mode")
+  FetchContent_MakeAvailable(Blaze)
+  set(BLAZE_INCLUDE_DIR ${blaze_SOURCE_DIR})
+  set(BLAZE_VERSION "3.8.2")
+endif()
 
 message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")

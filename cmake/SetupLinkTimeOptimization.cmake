@@ -18,5 +18,5 @@ else()
   target_link_options(SpectreFlags
     INTERFACE
     -fno-lto)
-  message(STATUS "Link-time optimizations disable (no LTO)")
+  message(STATUS "Link-time optimizations disabled (no LTO)")
 endif()
