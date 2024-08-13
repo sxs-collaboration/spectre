@@ -39,14 +39,23 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       PUBLIC
       ${SPECTRE_ALLOCATOR_LIBRARY}
       SpectreAllocator
-      )
+    )
 
+    set(SPECTRE_KOKKOS_LAUNCHER "")
+    if(SPECTRE_KOKKOS)
+      # We need to make sure we don't drop the Kokkos link wrapper
+      get_target_property(
+        SPECTRE_KOKKOS_LAUNCHER
+        ${LIBRARY_NAME}
+        RULE_LAUNCH_LINK)
+    endif()
     set_target_properties(
       ${LIBRARY_NAME}
       PROPERTIES
-      RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
+      RULE_LAUNCH_LINK
+      "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh ${SPECTRE_KOKKOS_LAUNCHER}"
       LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
-      )
+    )
   endif (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
   if (NOT "${LIBRARY_NAME}" MATCHES "^SpectrePch"
       AND NOT ${LIBRARY_IS_IMPORTED}
