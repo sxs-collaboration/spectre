@@ -77,7 +77,7 @@ Domain<2> RotatedRectangles::create_domain() const {
            {lower_xy_[1], midpoint_xy_[1], upper_xy_[1]}}},
       {},
       std::vector<OrientationMap<2>>{
-          OrientationMap<2>{},
+          OrientationMap<2>::create_aligned(),
           OrientationMap<2>{
               std::array{Direction<2>::lower_xi(), Direction<2>::lower_eta()}},
           OrientationMap<2>{

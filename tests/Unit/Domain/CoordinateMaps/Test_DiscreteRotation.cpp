@@ -114,21 +114,21 @@ void test_with_orientation() {
 void test_is_identity() {
   INFO("Is identity");
   check_if_map_is_identity(
-      CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{}});
+      CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>::create_aligned()});
   CHECK(not CoordinateMaps::DiscreteRotation<1>{
       OrientationMap<1>{
           std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}}
                 .is_identity());
 
   check_if_map_is_identity(
-      CoordinateMaps::DiscreteRotation<2>{OrientationMap<2>{}});
+      CoordinateMaps::DiscreteRotation<2>{OrientationMap<2>::create_aligned()});
   CHECK(not CoordinateMaps::DiscreteRotation<2>{
       OrientationMap<2>{std::array<Direction<2>, 2>{
           {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}}
                 .is_identity());
 
   check_if_map_is_identity(
-      CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}});
+      CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>::create_aligned()});
   CHECK(not CoordinateMaps::DiscreteRotation<3>{
       OrientationMap<3>{std::array<Direction<3>, 3>{
           {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),

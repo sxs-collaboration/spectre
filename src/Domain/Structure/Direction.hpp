@@ -24,6 +24,10 @@ template <size_t VolumeDim>
 class Direction {
  public:
   static constexpr const size_t volume_dim = VolumeDim;
+  static constexpr uint8_t axis_mask = 0b0011;
+  static constexpr uint8_t side_mask = 0b1100;
+  static constexpr uint8_t all_mask = 0b1111;
+  static constexpr uint8_t number_of_bits = 4;
 
   /// The logical-coordinate names of each dimension
   enum class Axis : uint8_t;
@@ -44,10 +48,10 @@ class Direction {
   size_t dimension() const { return static_cast<uint8_t>(axis()); }
 
   /// The Axis of the Direction
-  Axis axis() const { return static_cast<Axis>(bit_field_ bitand 0b0011); }
+  Axis axis() const { return static_cast<Axis>(bit_field_ bitand axis_mask); }
 
   /// The side of the Direction
-  Side side() const { return static_cast<Side>(bit_field_ bitand 0b1100); }
+  Side side() const { return static_cast<Side>(bit_field_ bitand side_mask); }
 
   /// The sign for the normal to the Side.
   ///

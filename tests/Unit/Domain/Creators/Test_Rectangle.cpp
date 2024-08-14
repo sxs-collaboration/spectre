@@ -92,7 +92,8 @@ void test_rectangle() {
   const std::array<double, 2> lower_bound{{-1.2, 3.0}};
   const std::array<double, 2> upper_bound{{0.8, 5.0}};
   // default OrientationMap is aligned
-  const OrientationMap<2> aligned_orientation{};
+  const OrientationMap<2> aligned_orientation =
+      OrientationMap<2>::create_aligned();
 
   {
     INFO("Rectangle, non-periodic no boundary conditions");
@@ -218,8 +219,8 @@ void test_rectangle_factory() {
 
   // for periodic domains:
   const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_neighbors{
-      {{Direction<2>::lower_xi(), {0, {}}},
-       {Direction<2>::upper_xi(), {0, {}}}}};
+      {{Direction<2>::lower_xi(), {0, OrientationMap<2>::create_aligned()}},
+       {Direction<2>::upper_xi(), {0, OrientationMap<2>::create_aligned()}}}};
 
   {
     INFO("Rectangle factory time independent, no boundary condition");

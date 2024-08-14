@@ -152,7 +152,7 @@ Element<VolumeDim> create_initial_element(
             {{ElementId<VolumeDim>{element_id.block_id(),
                                    std::move(segment_ids_of_neighbor),
                                    element_id.grid_index()}}},
-            OrientationMap<VolumeDim>{}));
+            OrientationMap<VolumeDim>::create_aligned()));
   };
 
   typename Element<VolumeDim>::Neighbors_t neighbors_of_element;

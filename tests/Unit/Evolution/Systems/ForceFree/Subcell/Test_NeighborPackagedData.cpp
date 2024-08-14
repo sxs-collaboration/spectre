@@ -108,7 +108,8 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
   DirectionMap<3, Neighbors<3>> element_neighbors{};
   for (size_t i = 0; i < 2 * 3_st; ++i) {
     element_neighbors[gsl::at(Direction<3>::all_directions(), i)] =
-        Neighbors<3>{{ElementId<3>{i + 1, {}}}, {}};
+        Neighbors<3>{{ElementId<3>{i + 1, {}}},
+                     OrientationMap<3>::create_aligned()};
   }
   const Element<3> element{ElementId<3>{0, {}}, element_neighbors};
 

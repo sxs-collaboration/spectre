@@ -122,23 +122,31 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
       {std::move(criteria),
        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
 
-  const Element<1> self(self_id, {{{Direction<1>::lower_xi(), {{lo_id}, {}}},
-                                   {Direction<1>::upper_xi(), {{up_id}, {}}}}});
+  const Element<1> self(self_id,
+                        {{{Direction<1>::lower_xi(),
+                           {{lo_id}, OrientationMap<1>::create_aligned()}},
+                          {Direction<1>::upper_xi(),
+                           {{up_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id, {self, self_mesh, initial_info, initial_neighbor_info});
 
-  const Element<1> lo(lo_id, {{{Direction<1>::upper_xi(), {{self_id}, {}}}}});
+  const Element<1> lo(lo_id,
+                      {{{Direction<1>::upper_xi(),
+                         {{self_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, lo_id, {lo, lo_mesh, initial_info, initial_neighbor_info});
 
-  const Element<1> up(up_id,
-                      {{{Direction<1>::lower_xi(), {{self_id}, {}}},
-                        {Direction<1>::upper_xi(), {{up_sibling_id}, {}}}}});
+  const Element<1> up(
+      up_id, {{{Direction<1>::lower_xi(),
+                {{self_id}, OrientationMap<1>::create_aligned()}},
+               {Direction<1>::upper_xi(),
+                {{up_sibling_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, up_id, {up, up_mesh, initial_info, initial_neighbor_info});
 
-  const Element<1> up_sibling(up_sibling_id,
-                              {{{Direction<1>::lower_xi(), {{up_id}, {}}}}});
+  const Element<1> up_sibling(
+      up_sibling_id, {{{Direction<1>::lower_xi(),
+                        {{up_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, up_sibling_id,
       {up_sibling, up_sibling_mesh, initial_info, initial_neighbor_info});

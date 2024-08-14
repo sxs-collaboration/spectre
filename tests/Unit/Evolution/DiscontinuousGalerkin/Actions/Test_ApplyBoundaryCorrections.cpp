@@ -511,20 +511,25 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
   } else if constexpr (Dim == 2) {
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, OrientationMap<Dim>::create_aligned()};
   } else {
     static_assert(Dim == 3, "Only implemented tests in 1, 2, and 3d");
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, OrientationMap<Dim>::create_aligned()};
   }
   if constexpr (Dim > 1) {
     order_to_send_neighbor_data_in.push_back(

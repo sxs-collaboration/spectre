@@ -461,7 +461,7 @@ std::vector<Neighbors<Dim>> valid_neighbors(
   const Side side = direction.side();
   const SegmentId& normal_segment = element_id.segment_id(normal_dim);
   const double endpoint = normal_segment.endpoint(side);
-  const OrientationMap<Dim> aligned{};
+  const OrientationMap<Dim> aligned = OrientationMap<Dim>::create_aligned();
   const size_t block_id = element_id.block_id();
   const size_t neighbor_block_id =
       (face_type == FaceType::Block

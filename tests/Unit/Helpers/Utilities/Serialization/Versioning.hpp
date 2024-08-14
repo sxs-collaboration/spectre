@@ -18,7 +18,9 @@
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
-namespace TestHelpers::serialization {
+namespace TestHelpers {
+/// \brief Collection of classes and functions for testing serialization
+namespace serialization {
 namespace versioning_detail {
 std::vector<std::pair<std::string, std::vector<std::byte>>> read_serializations(
     const std::string& filename);
@@ -153,4 +155,5 @@ void test_versioning(
     CHECK(current_serialization == serializations_to_test.back().second);
   }
 }
-}  // namespace TestHelpers::serialization
+}  // namespace serialization
+}  // namespace TestHelpers

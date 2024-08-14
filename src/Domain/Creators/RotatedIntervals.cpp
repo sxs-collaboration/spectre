@@ -109,8 +109,9 @@ Domain<1> RotatedIntervals::create_domain() const {
       boundary_conditions_all_blocks{};
   Domain<1> domain = rectilinear_domain<1>(
       Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {},
-      {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
-                                {Direction<1>::lower_xi()}}}},
+      {OrientationMap<1>::create_aligned(),
+       OrientationMap<1>{
+           std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
       is_periodic_in_);
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();

@@ -194,21 +194,23 @@ void test(const bool use_cell_centered_flux) {
   ElementId<Dim> self_id{};
   ElementId<Dim> east_id{};
   ElementId<Dim> south_id{};  // not used in 1d
-  OrientationMap<Dim> orientation{};
+  OrientationMap<Dim> orientation = OrientationMap<Dim>::create_aligned();
   // Note: in 2d and 3d it is the neighbor in the lower eta direction that has a
   // non-trivial orientation.
 
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
   } else if constexpr (Dim == 2) {
     orientation = OrientationMap<Dim>{
         std::array{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta()}};
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
     neighbors[Direction<Dim>::lower_eta()] =
         Neighbors<Dim>{{south_id}, orientation};
   } else {
@@ -219,7 +221,8 @@ void test(const bool use_cell_centered_flux) {
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
     neighbors[Direction<Dim>::lower_eta()] =
         Neighbors<Dim>{{south_id}, orientation};
   }

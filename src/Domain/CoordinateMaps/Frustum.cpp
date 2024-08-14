@@ -43,7 +43,7 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                                                              {{-1.0, -1.0}},
                                                              {{1.0, 1.0}}}} and
                    lower_bound == -1.0 and upper_bound == 1.0 and
-                   orientation_of_frustum_ == OrientationMap<3>{} and
+                   orientation_of_frustum_.is_aligned() and
                    not with_equiangular_map and
                    zeta_distribution == Distribution::Linear),
       zeta_distribution_(zeta_distribution),

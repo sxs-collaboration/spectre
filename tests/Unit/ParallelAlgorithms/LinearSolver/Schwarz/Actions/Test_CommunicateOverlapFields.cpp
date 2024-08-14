@@ -114,16 +114,25 @@ void test_communicate_overlap_fields(const size_t num_points_per_dim,
   if constexpr (Dim > 1) {
     add_element({first_element_id,
                  {{Direction<Dim>::upper_xi(),
-                   {{second_element_id, third_element_id}, {}}}}});
-    add_element({second_element_id,
-                 {{Direction<Dim>::lower_xi(), {{first_element_id}, {}}}}});
-    add_element({third_element_id,
-                 {{Direction<Dim>::lower_xi(), {{first_element_id}, {}}}}});
+                   {{second_element_id, third_element_id},
+                    OrientationMap<Dim>::create_aligned()}}}});
+    add_element(
+        {second_element_id,
+         {{Direction<Dim>::lower_xi(),
+           {{first_element_id}, OrientationMap<Dim>::create_aligned()}}}});
+    add_element(
+        {third_element_id,
+         {{Direction<Dim>::lower_xi(),
+           {{first_element_id}, OrientationMap<Dim>::create_aligned()}}}});
   } else {
-    add_element({first_element_id,
-                 {{Direction<Dim>::upper_xi(), {{second_element_id}, {}}}}});
-    add_element({second_element_id,
-                 {{Direction<Dim>::lower_xi(), {{first_element_id}, {}}}}});
+    add_element(
+        {first_element_id,
+         {{Direction<Dim>::upper_xi(),
+           {{second_element_id}, OrientationMap<Dim>::create_aligned()}}}});
+    add_element(
+        {second_element_id,
+         {{Direction<Dim>::lower_xi(),
+           {{first_element_id}, OrientationMap<Dim>::create_aligned()}}}});
   }
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

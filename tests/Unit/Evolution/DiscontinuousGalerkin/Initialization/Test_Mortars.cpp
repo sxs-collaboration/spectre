@@ -124,7 +124,8 @@ void test_impl(
       &runner, element.id(),
       {time_step_id, next_time_step_id, element,
        domain::Initialization::create_initial_mesh(
-           initial_extents, element.id(), quadrature, {}),
+           initial_extents, element.id(), quadrature,
+           OrientationMap<Dim>::create_aligned()),
        quadrature});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
@@ -194,7 +195,8 @@ struct Test<1, LocalTimeStepping> {
     const std::vector initial_extents{make_array<1>(2_st)};
 
     DirectionMap<1, Neighbors<1>> neighbors{};
-    neighbors[Direction<1>::upper_xi()] = Neighbors<1>{{east_id}, {}};
+    neighbors[Direction<1>::upper_xi()] =
+        Neighbors<1>{{east_id}, OrientationMap<1>::create_aligned()};
     const Element<1> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
     const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
@@ -242,8 +244,10 @@ struct Test<2, LocalTimeStepping> {
     const std::vector initial_extents{std::array{3_st, 2_st}};
 
     DirectionMap<2, Neighbors<2>> neighbors{};
-    neighbors[Direction<2>::upper_xi()] = Neighbors<2>{{east_id}, {}};
-    neighbors[Direction<2>::lower_eta()] = Neighbors<2>{{south_id}, {}};
+    neighbors[Direction<2>::upper_xi()] =
+        Neighbors<2>{{east_id}, OrientationMap<2>::create_aligned()};
+    neighbors[Direction<2>::lower_eta()] =
+        Neighbors<2>{{south_id}, OrientationMap<2>::create_aligned()};
 
     const Element<2> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
@@ -306,9 +310,12 @@ struct Test<3, LocalTimeStepping> {
     const std::vector initial_extents{std::array{2_st, 3_st, 4_st}};
 
     DirectionMap<3, Neighbors<3>> neighbors{};
-    neighbors[Direction<3>::upper_xi()] = Neighbors<3>{{right_id}, {}};
-    neighbors[Direction<3>::lower_eta()] = Neighbors<3>{{front_id}, {}};
-    neighbors[Direction<3>::upper_zeta()] = Neighbors<3>{{top_id}, {}};
+    neighbors[Direction<3>::upper_xi()] =
+        Neighbors<3>{{right_id}, OrientationMap<3>::create_aligned()};
+    neighbors[Direction<3>::lower_eta()] =
+        Neighbors<3>{{front_id}, OrientationMap<3>::create_aligned()};
+    neighbors[Direction<3>::upper_zeta()] =
+        Neighbors<3>{{top_id}, OrientationMap<3>::create_aligned()};
 
     const Element<3> element{element_id, neighbors};
     const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
@@ -420,7 +427,8 @@ Element<1> make_element<1>() {
   const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
   const ElementId<1> neighbor_id{0, {{SegmentId{2, 1}}}};
   DirectionMap<1, Neighbors<1>> neighbors{};
-  neighbors[Direction<1>::upper_xi()] = Neighbors<1>{{neighbor_id}, {}};
+  neighbors[Direction<1>::upper_xi()] =
+      Neighbors<1>{{neighbor_id}, OrientationMap<1>::create_aligned()};
   return Element<1>{element_id, neighbors};
 }
 
@@ -430,8 +438,10 @@ Element<2> make_element<2>() {
   const ElementId<2> east_id(0, {{SegmentId{1, 1}, SegmentId{1, 1}}});
   const ElementId<2> south_id(0, {{SegmentId{1, 0}, SegmentId{1, 0}}});
   DirectionMap<2, Neighbors<2>> neighbors{};
-  neighbors[Direction<2>::upper_xi()] = Neighbors<2>{{east_id}, {}};
-  neighbors[Direction<2>::lower_eta()] = Neighbors<2>{{south_id}, {}};
+  neighbors[Direction<2>::upper_xi()] =
+      Neighbors<2>{{east_id}, OrientationMap<2>::create_aligned()};
+  neighbors[Direction<2>::lower_eta()] =
+      Neighbors<2>{{south_id}, OrientationMap<2>::create_aligned()};
   return Element<2>{element_id, neighbors};
 }
 
@@ -446,9 +456,12 @@ Element<3> make_element<3>() {
   const ElementId<3> top_id(
       0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 1}}});
   DirectionMap<3, Neighbors<3>> neighbors{};
-  neighbors[Direction<3>::upper_xi()] = Neighbors<3>{{right_id}, {}};
-  neighbors[Direction<3>::lower_eta()] = Neighbors<3>{{front_id}, {}};
-  neighbors[Direction<3>::upper_zeta()] = Neighbors<3>{{top_id}, {}};
+  neighbors[Direction<3>::upper_xi()] =
+      Neighbors<3>{{right_id}, OrientationMap<3>::create_aligned()};
+  neighbors[Direction<3>::lower_eta()] =
+      Neighbors<3>{{front_id}, OrientationMap<3>::create_aligned()};
+  neighbors[Direction<3>::upper_zeta()] =
+      Neighbors<3>{{top_id}, OrientationMap<3>::create_aligned()};
   return Element<3>{element_id, neighbors};
 }
 

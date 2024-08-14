@@ -190,8 +190,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   {
     Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
-                  {Direction<2>::upper_xi(), {{east_id}, {}}},
-                  {Direction<2>::upper_eta(), {{south_id}, {}}}});
+                  {Direction<2>::upper_xi(),
+                   {{east_id}, OrientationMap<2>::create_aligned()}},
+                  {Direction<2>::upper_eta(),
+                   {{south_id}, OrientationMap<2>::create_aligned()}}});
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, self_id,
         {0, mesh, element,
@@ -210,9 +212,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
         &runner, id, {0, mesh, element, std::move(map), var});
   };
 
-  emplace_neighbor(south_id, Direction<2>::lower_eta(), {},
+  emplace_neighbor(south_id, Direction<2>::lower_eta(),
+                   OrientationMap<2>::create_aligned(),
                    test_data.var.at(Direction<2>::upper_eta()));
-  emplace_neighbor(east_id, Direction<2>::lower_xi(), {},
+  emplace_neighbor(east_id, Direction<2>::lower_xi(),
+                   OrientationMap<2>::create_aligned(),
                    test_data.var.at(Direction<2>::upper_xi()));
   emplace_neighbor(west_id, Direction<2>::lower_eta(),
                    block_orientation.inverse_map(),

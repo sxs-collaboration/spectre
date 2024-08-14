@@ -46,7 +46,7 @@ void test_periodic_same_block() {
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
-  const OrientationMap<3> aligned{};
+  const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
   CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==
         aligned);
 
@@ -73,7 +73,7 @@ void test_periodic_different_blocks() {
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
-  const OrientationMap<3> aligned{};
+  const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
   CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==
         aligned);
 
@@ -103,11 +103,11 @@ std::vector<CoordinateMaps::Wedge<3>> test_wedge_map_generation(
     using Halves = Wedge3DMap::WedgeHalves;
     return make_vector(
         Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
-                   outer_sphericity, OrientationMap<3>{}, use_equiangular_map,
-                   Halves::LowerOnly},
+                   outer_sphericity, OrientationMap<3>::create_aligned(),
+                   use_equiangular_map, Halves::LowerOnly},
         Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
-                   outer_sphericity, OrientationMap<3>{}, use_equiangular_map,
-                   Halves::UpperOnly},
+                   outer_sphericity, OrientationMap<3>::create_aligned(),
+                   use_equiangular_map, Halves::UpperOnly},
         Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
                    outer_sphericity,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -160,7 +160,7 @@ std::vector<CoordinateMaps::Wedge<3>> test_wedge_map_generation(
 
   return make_vector(
       Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{}, use_equiangular_map},
+                 OrientationMap<3>::create_aligned(), use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
                  OrientationMap<3>{std::array<Direction<3>, 3>{
                      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -290,10 +290,10 @@ void test_all_frustum_directions() {
   // half of the length of the outer cube in the binary compact object domain:
   const double top = 5.2;
   const std::array<double, 3> origin_preimage{{0.2, 0.3, -0.1}};
-  const auto displacement1 =
-      discrete_rotation(OrientationMap<3>{}.inverse_map(), origin_preimage);
-  const auto displacement2 =
-      discrete_rotation(OrientationMap<3>{}.inverse_map(), origin_preimage);
+  const auto displacement1 = discrete_rotation(
+      OrientationMap<3>::create_aligned().inverse_map(), origin_preimage);
+  const auto displacement2 = discrete_rotation(
+      OrientationMap<3>::create_aligned().inverse_map(), origin_preimage);
   const auto displacement3 = discrete_rotation(
       OrientationMap<3>{
           std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
@@ -364,7 +364,7 @@ void test_all_frustum_directions() {
               {{0.0, top}}}},
             lower - displacement1[2],
             top,
-            OrientationMap<3>{},
+            OrientationMap<3>::create_aligned(),
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -377,7 +377,7 @@ void test_all_frustum_directions() {
               {{stretch * top, top}}}},
             lower - displacement2[2],
             top,
-            OrientationMap<3>{},
+            OrientationMap<3>::create_aligned(),
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -1371,7 +1371,7 @@ void test_set_cartesian_periodic_boundaries_2() {
   const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
   auto orientations_of_all_blocks =
-      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>::create_aligned()};
   orientations_of_all_blocks[0] = rotation;
   const std::vector<std::unordered_set<Direction<2>>>
       expected_external_boundaries{{{Direction<2>::upper_xi()}},
@@ -1409,7 +1409,7 @@ void test_set_cartesian_periodic_boundaries_3() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
   auto orientations_of_all_blocks =
-      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>::create_aligned()};
   orientations_of_all_blocks[1] = flipped;
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;

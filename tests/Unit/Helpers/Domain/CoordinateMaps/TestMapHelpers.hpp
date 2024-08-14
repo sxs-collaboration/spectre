@@ -859,7 +859,7 @@ class OrientationMapIterator {
   std::array<size_t, VolumeDim> dims_{};
   std::array<Direction<VolumeDim>, VolumeDim> directions_{};
   VolumeCornerIterator<VolumeDim> vci_{};
-  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>{};
+  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>::create_aligned();
 };
 
 /*!
@@ -868,7 +868,8 @@ class OrientationMapIterator {
  * Sphere domain creator.
  */
 inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
-  const OrientationMap<3> upper_zeta_rotation{};
+  const OrientationMap<3> upper_zeta_rotation =
+      OrientationMap<3>::create_aligned();
   const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
        Direction<3>::lower_zeta()}});

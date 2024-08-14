@@ -95,7 +95,8 @@ void test_cylinder_construction(
       cylinder, expect_boundary_conditions, is_periodic_in_z);
   CHECK(cylinder.grid_anchors().empty());
 
-  const OrientationMap<3> aligned_orientation{};
+  const OrientationMap<3> aligned_orientation =
+      OrientationMap<3>::create_aligned();
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
        Direction<3>::upper_zeta()}});
@@ -492,7 +493,8 @@ void test_refined_cylinder_boundaries(
              {"Layer1Shell1East", "Layer1Shell1North", "Layer1Shell1West",
               "Layer1Shell1South"}}});
 
-  const OrientationMap<3> aligned_orientation{};
+  const OrientationMap<3> aligned_orientation =
+      OrientationMap<3>::create_aligned();
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
        Direction<3>::upper_zeta()}});
@@ -869,7 +871,8 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       refined_cylinder, true, true);
 
-  const OrientationMap<3> aligned_orientation{};
+  const OrientationMap<3> aligned_orientation =
+      OrientationMap<3>::create_aligned();
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
        Direction<3>::upper_zeta()}});

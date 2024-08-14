@@ -69,9 +69,11 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
 
 void check_element_1d() {
   const Neighbors<1> neighbors_lower_xi(
-      std::unordered_set<ElementId<1>>{ElementId<1>(7)}, OrientationMap<1>{});
+      std::unordered_set<ElementId<1>>{ElementId<1>(7)},
+      OrientationMap<1>::create_aligned());
   const Neighbors<1> neighbors_upper_xi(
-      std::unordered_set<ElementId<1>>{ElementId<1>(7)}, OrientationMap<1>{});
+      std::unordered_set<ElementId<1>>{ElementId<1>(7)},
+      OrientationMap<1>::create_aligned());
   const typename Element<1>::Neighbors_t xi_neighbors{
       {Direction<1>::lower_xi(), neighbors_lower_xi},
       {Direction<1>::upper_xi(), neighbors_upper_xi}};
@@ -81,10 +83,10 @@ void check_element_1d() {
 void check_element_2d() {
   const Neighbors<2> neighbors_lower_eta(
       std::unordered_set<ElementId<2>>{ElementId<2>(7), ElementId<2>(4)},
-      OrientationMap<2>{});
+      OrientationMap<2>::create_aligned());
   const Neighbors<2> neighbors_upper_eta(
       std::unordered_set<ElementId<2>>{ElementId<2>(7), ElementId<2>(4)},
-      OrientationMap<2>{});
+      OrientationMap<2>::create_aligned());
   const typename Element<2>::Neighbors_t eta_neighbors{
       {Direction<2>::lower_eta(), neighbors_lower_eta},
       {Direction<2>::upper_eta(), neighbors_upper_eta}};
@@ -95,11 +97,11 @@ void check_element_3d() {
   const Neighbors<3> neighbors_lower_zeta(
       std::unordered_set<ElementId<3>>{ElementId<3>(7), ElementId<3>(4),
                                        ElementId<3>(9), ElementId<3>(2)},
-      OrientationMap<3>{});
+      OrientationMap<3>::create_aligned());
   const Neighbors<3> neighbors_upper_zeta(
       std::unordered_set<ElementId<3>>{ElementId<3>(7), ElementId<3>(4),
                                        ElementId<3>(9), ElementId<3>(2)},
-      OrientationMap<3>{});
+      OrientationMap<3>::create_aligned());
   const typename Element<3>::Neighbors_t zeta_neighbors{
       {Direction<3>::lower_zeta(), neighbors_lower_zeta},
       {Direction<3>::upper_zeta(), neighbors_upper_zeta}};

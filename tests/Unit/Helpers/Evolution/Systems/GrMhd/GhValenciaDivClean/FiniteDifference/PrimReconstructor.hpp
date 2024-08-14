@@ -150,8 +150,8 @@ inline Element<3> set_element(const bool skip_last = false) {
     if (skip_last and i == 5) {
       break;
     }
-    neighbors[gsl::at(Direction<3>::all_directions(), i)] =
-        Neighbors<3>{{ElementId<3>{i + 1, {}}}, {}};
+    neighbors[gsl::at(Direction<3>::all_directions(), i)] = Neighbors<3>{
+        {ElementId<3>{i + 1, {}}}, OrientationMap<3>::create_aligned()};
   }
   return Element<3>{ElementId<3>{0, {}}, neighbors};
 }
@@ -212,7 +212,8 @@ void test_prim_reconstructor_impl(
 
   auto neighbors_for_data = element.neighbors();
   neighbors_for_data[gsl::at(Direction<3>::all_directions(), 5)] =
-      Neighbors<3>{{ElementId<3>::external_boundary_id()}, {}};
+      Neighbors<3>{{ElementId<3>::external_boundary_id()},
+                   OrientationMap<3>::create_aligned()};
   const DirectionalIdMap<3, GhostData> ghost_data = compute_ghost_data(
       subcell_mesh, logical_coords, neighbors_for_data,
       reconstructor.ghost_zone_size(), compute_prim_solution);

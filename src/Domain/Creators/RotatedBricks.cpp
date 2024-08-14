@@ -81,7 +81,7 @@ Domain<3> RotatedBricks::create_domain() const {
            {lower_xyz_[2], midpoint_xyz_[2], upper_xyz_[2]}}},
       {},
       std::vector<OrientationMap<3>>{
-          OrientationMap<3>{},
+          OrientationMap<3>::create_aligned(),
           OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
                Direction<3>::lower_xi()}}},

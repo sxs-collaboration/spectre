@@ -171,6 +171,7 @@ TestHelpers::amr::valid_info_t<Dim> valid_parent_neighbor_info(
 
 template <size_t Dim>
 void test(const gsl::not_null<std::mt19937*> generator) {
+  CAPTURE(Dim);
   for (const auto& parent_id :
        random_sample(3, element_ids_to_test<Dim>(), generator)) {
     CAPTURE(parent_id);
@@ -191,6 +192,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                                         parent_neighbor_info, child_id);
             for (const auto& direction : std::vector{
                      Direction<Dim>::lower_xi(), Direction<Dim>::upper_xi()}) {
+              CAPTURE(direction);
               TestHelpers::domain::check_neighbors(new_neighbors.at(direction),
                                                    child_id, direction);
             }

@@ -432,7 +432,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       2. * horizon_kerrschild_radius,
       1.,
       1.,
-      {},
+      OrientationMap<3>::create_aligned(),
       false};
   const domain::CoordinateMaps::KerrHorizonConforming horizon_map{
       mass, dimensionless_spin};

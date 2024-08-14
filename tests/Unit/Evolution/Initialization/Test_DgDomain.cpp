@@ -662,11 +662,11 @@ void test_split() {
                                 std::move(grid_to_inertial_map),
                                 std::move(parent)};
 
-  Element<1> child_1{
-      child_1_id,
-      DirectionMap<1, Neighbors<1>>{std::pair{
-          Direction<1>::upper_xi(),
-          Neighbors<1>{std::unordered_set{child_2_id}, OrientationMap<1>{}}}}};
+  Element<1> child_1{child_1_id,
+                     DirectionMap<1, Neighbors<1>>{std::pair{
+                         Direction<1>::upper_xi(),
+                         Neighbors<1>{std::unordered_set{child_2_id},
+                                      OrientationMap<1>::create_aligned()}}}};
   auto child_1_box = db::create<
       db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
@@ -685,11 +685,11 @@ void test_split() {
                                                             Frame::Inertial>>(
           child_1_box));
 
-  Element<1> child_2{
-      child_2_id,
-      DirectionMap<1, Neighbors<1>>{std::pair{
-          Direction<1>::lower_xi(),
-          Neighbors<1>{std::unordered_set{child_1_id}, OrientationMap<1>{}}}}};
+  Element<1> child_2{child_2_id,
+                     DirectionMap<1, Neighbors<1>>{std::pair{
+                         Direction<1>::lower_xi(),
+                         Neighbors<1>{std::unordered_set{child_1_id},
+                                      OrientationMap<1>::create_aligned()}}}};
   auto child_2_box = db::create<
       db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
@@ -717,16 +717,16 @@ void test_join() {
   const ElementId<1> child_1_id{0, std::array{SegmentId{1, 0}}};
   const ElementId<1> child_2_id{0, std::array{SegmentId{1, 1}}};
 
-  Element<1> child_1{
-      child_1_id,
-      DirectionMap<1, Neighbors<1>>{std::pair{
-          Direction<1>::upper_xi(),
-          Neighbors<1>{std::unordered_set{child_2_id}, OrientationMap<1>{}}}}};
-  Element<1> child_2{
-      child_2_id,
-      DirectionMap<1, Neighbors<1>>{std::pair{
-          Direction<1>::lower_xi(),
-          Neighbors<1>{std::unordered_set{child_1_id}, OrientationMap<1>{}}}}};
+  Element<1> child_1{child_1_id,
+                     DirectionMap<1, Neighbors<1>>{std::pair{
+                         Direction<1>::upper_xi(),
+                         Neighbors<1>{std::unordered_set{child_2_id},
+                                      OrientationMap<1>::create_aligned()}}}};
+  Element<1> child_2{child_2_id,
+                     DirectionMap<1, Neighbors<1>>{std::pair{
+                         Direction<1>::lower_xi(),
+                         Neighbors<1>{std::unordered_set{child_1_id},
+                                      OrientationMap<1>::create_aligned()}}}};
   const Domain<1>& domain = get<::domain::Tags::Domain<1>>(global_cache);
   const auto& my_block = domain.blocks()[child_1_id.block_id()];
   ElementMap<1, Frame::Grid> element_map_1{

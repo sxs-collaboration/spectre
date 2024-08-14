@@ -28,8 +28,8 @@ namespace {
 void test_product_two_maps_fail() {
   INFO("Product two maps fail");
   const CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
-  const CoordinateMaps::Wedge<2> wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
-                                       true);
+  const CoordinateMaps::Wedge<2> wedge(
+      0.2, 4.0, 0.0, 1.0, OrientationMap<2>::create_aligned(), true);
   {
     const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Wedge<2>>
