@@ -116,6 +116,11 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
 
 namespace {
 struct LegacyStoredInfo {
+  LegacyStoredInfo() = default;
+  LegacyStoredInfo(double in_time,
+                   std::array<DataVector, 1> in_stored_quantities)
+      : time(in_time), stored_quantities(in_stored_quantities) {}
+
   double time{std::numeric_limits<double>::signaling_NaN()};
   std::array<DataVector, 1> stored_quantities;
 

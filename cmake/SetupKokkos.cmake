@@ -27,7 +27,9 @@ if(SPECTRE_KOKKOS)
 
   find_package(Kokkos REQUIRED)
 
-  if (TARGET Kokkos::kokkos AND Kokkos_ENABLE_CUDA)
+  if (TARGET Kokkos::kokkos
+      AND Kokkos_ENABLE_CUDA
+      AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set_property(TARGET Kokkos::kokkos
       APPEND PROPERTY
       INTERFACE_COMPILE_OPTIONS

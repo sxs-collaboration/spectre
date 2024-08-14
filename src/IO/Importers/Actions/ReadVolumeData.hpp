@@ -21,6 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Importers/Tags.hpp"
