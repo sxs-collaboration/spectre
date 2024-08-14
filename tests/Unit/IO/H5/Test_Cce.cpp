@@ -169,9 +169,9 @@ void test_errors() {
           (void)cce_file2;
         }
       }(),
-      Catch::Matchers::ContainsSubstring("l_max from cce file") and
+      Catch::Matchers::ContainsSubstring("l_max (4) from cce file") and
           Catch::Matchers::ContainsSubstring(
-              "does not match l_max in constructor"));
+              "does not match l_max (5) in constructor"));
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
