@@ -65,6 +65,10 @@ class SpecInitialData : public evolution::initial_data::InitialData,
                  gr::Tags::Lapse<DataType>, gr::Tags::Shift<DataType, 3>>,
       hydro::grmhd_tags<DataType>>;
 
+  static std::string name() {
+    return "SpecInitialData" + std::to_string(ThermodynamicDim) + "dEos";
+  }
+
   struct DataDirectory {
     using type = std::string;
     static constexpr Options::String help = {

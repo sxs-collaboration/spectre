@@ -415,7 +415,7 @@ ControlSystems:
     ControlError:
 
 InitialData:
-  # SpecInitialData:
+  # SpecInitialData3dEos:
   #   DataDirectory: "/path/to/EvID"
   #   EquationOfState: *eos
   #   DensityCutoff: *AtmosphereDensityCutoff
