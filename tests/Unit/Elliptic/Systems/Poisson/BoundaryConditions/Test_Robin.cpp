@@ -56,8 +56,7 @@ void apply_neumann_boundary_condition(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Robin",
-                  "[Unit][Elliptic]") {
+SPECTRE_TEST_CASE("Unit.Poisson.BoundaryConditions.Robin", "[Unit][Elliptic]") {
   // Test factory-creation
   const auto created = TestHelpers::test_factory_creation<
       elliptic::BoundaryConditions::BoundaryCondition<1>, Robin<1>>(
