@@ -1007,7 +1007,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           cmake \
             -D CMAKE_C_COMPILER=clang \
             -D CMAKE_CXX_COMPILER=clang++ \
-            -D CMAKE_Fortran_COMPILER=gfortran-11 \
+            -D CMAKE_Fortran_COMPILER=gfortran-14 \
             -D CMAKE_CXX_FLAGS="-Werror" \
             -D OVERRIDE_ARCH=x86-64 \
             -D BUILD_SHARED_LIBS=ON \
