@@ -190,10 +190,16 @@ size_t MultiLinearSpanInterpolation<
 
   ASSERT((target_points > x_[which_dimension][lower_index_bound]) or
              allow_extrapolation_below_data_[which_dimension],
-         "Interpolation exceeds lower table bounds");
+         "Interpolation exceeds lower table bounds. \nwhich_dimension: "
+             << which_dimension
+             << "\nnumber of points: " << number_of_points_[which_dimension]
+             << "\ntarget point: " << target_points);
   ASSERT((target_points < x_[which_dimension][upper_index_bound]) or
              allow_extrapolation_abov_data_[which_dimension],
-         "Interpolation exceeds upper table bounds");
+         "Interpolation exceeds upper table bounds. \nwhich_dimension: "
+             << which_dimension
+             << "\nnumber of points: " << number_of_points_[which_dimension]
+             << "\ntarget point: " << target_points);
 
   while (upper_index_bound > 1 + lower_index_bound) {
     size_t current_index =
@@ -224,7 +230,11 @@ size_t MultiLinearSpanInterpolation<
   // two points in the table
   ASSERT(allow_extrapolation_below_data_[which_dimension] or
              UNLIKELY(relative_coordinate >= 0.),
-         "Interpolation exceeds lower table bounds.");
+         "Interpolation exceeds lower table bounds.\nwhich_dimension: "
+             << which_dimension << "\ncurrent_index: " << current_index
+             << "\nnumber of points: " << number_of_points_[which_dimension]
+             << "\ntarget point: " << target_points
+             << "\nrelative coordinate: " << relative_coordinate);
 
   // We are exceeding the table bounds:
   // Use linear extrapolation based of the highest
@@ -232,7 +242,11 @@ size_t MultiLinearSpanInterpolation<
 
   ASSERT(allow_extrapolation_abov_data_[which_dimension] or
              UNLIKELY(current_index + 1 < number_of_points_[which_dimension]),
-         "Interpolation exceeds upper table bounds.");
+         "Interpolation exceeds upper table bounds.\nwhich_dimension: "
+             << which_dimension << "\ncurrent_index: " << current_index
+             << "\nnumber of points: " << number_of_points_[which_dimension]
+             << "\ntarget point: " << target_points
+             << "\nrelative coordinate: " << relative_coordinate);
 
   // Enforce index ranges
   current_index = std::min(number_of_points_[which_dimension] - 2,
