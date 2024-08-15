@@ -241,6 +241,20 @@ class Shape {
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
+  /*!
+   * \brief An optimized call that computes the target coordinates, frame
+   * velocity and jacobian at once to avoid duplicate calculations.
+   *
+   * \details The first argument `source_and_target_coords` should contain
+   * the source coordinates and will be overwritten in place with the target
+   * coordinates.
+   */
+  void coords_frame_velocity_jacobian(
+      gsl::not_null<std::array<DataVector, 3>*> source_and_target_coords,
+      gsl::not_null<std::array<DataVector, 3>*> frame_vel,
+      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::NoFrame>*> jac, double time,
+      const FunctionsOfTimeMap& functions_of_time) const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
   static bool is_identity() { return false; }

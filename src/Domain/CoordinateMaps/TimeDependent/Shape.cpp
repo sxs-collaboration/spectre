@@ -14,6 +14,7 @@
 #include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -337,6 +338,90 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
                   centered_coords, distorted_radii, one_over_radius,
                   transition_func_over_radius);
   return result;
+}
+
+void Shape::coords_frame_velocity_jacobian(
+    gsl::not_null<std::array<DataVector, 3>*> source_and_target_coords,
+    gsl::not_null<std::array<DataVector, 3>*> frame_vel,
+    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::NoFrame>*> jac, double time,
+    const FunctionsOfTimeMap& functions_of_time) const {
+  const size_t size = get<0>(*source_and_target_coords).size();
+  ASSERT(size > 0,
+         "The source coords have size 0 but the argument requires you to pass "
+         "in the coordinates.");
+  for (size_t i = 0; i < 3; ++i) {
+    gsl::at(*frame_vel, i).destructive_resize(size);
+    for (size_t j = 0; j < 3; ++j) {
+      jac->get(i, j).destructive_resize(size);
+    }
+  }
+  Variables<
+      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                 ::Tags::TempScalar<2>, ::Tags::TempI<0, 3, Frame::Inertial>>>
+      temps(size);
+
+  std::array<DataVector, 3> centered_coords{};
+  for (size_t i = 0; i < 3; ++i) {
+    gsl::at(centered_coords, i)
+        .set_data_ref(&get<::Tags::TempI<0, 3, Frame::Inertial>>(temps).get(i));
+  }
+  center_coordinates(make_not_null(&centered_coords),
+                     *source_and_target_coords);
+
+  std::array<DataVector, 2> theta_phis{};
+  theta_phis[0].set_data_ref(&get<0, 0>(*jac));
+  theta_phis[1].set_data_ref(&get<0, 1>(*jac));
+  cartesian_to_spherical(make_not_null(&theta_phis), centered_coords);
+  const auto interpolation_info =
+      extended_ylm_.set_up_interpolation_info(theta_phis);
+
+  const auto [coefs, coef_derivs] =
+      functions_of_time.at(shape_f_of_t_name_)->func_and_deriv(time);
+  DataVector extended_coefs_derivs(extended_ylm_.spectral_size(), 0.);
+  DataVector extended_coefs(extended_ylm_.spectral_size(), 0.);
+
+  // Copy over the coefficients. The additional coefficients of order `l_max_
+  // +1` are zero and will only have an effect in the interpolation of the
+  // cartesian gradient.
+  ylm::SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
+  ylm::SpherepackIterator iter(l_max_, m_max_);
+  for (size_t l = 0; l <= l_max_; ++l) {
+    const int m_max = static_cast<int>(std::min(l, m_max_));
+    for (int m = -m_max; m <= m_max; ++m) {
+      iter.set(l, m);
+      extended_iter.set(l, m);
+      extended_coefs[extended_iter()] = coefs[iter()];
+      extended_coefs_derivs[extended_iter()] = coef_derivs[iter()];
+    }
+  }
+  check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
+  check_size(make_not_null(&extended_coefs_derivs), functions_of_time, time,
+             true);
+  auto& distorted_radii = get(get<::Tags::TempScalar<0>>(temps));
+  // evaluate the spherical harmonic expansion at the angles of
+  // `source_coords`
+  extended_ylm_.interpolate_from_coefs(make_not_null(&distorted_radii),
+                                       extended_coefs, interpolation_info);
+
+  auto& one_over_radius = get(get<::Tags::TempScalar<1>>(temps));
+  one_over_radius = check_and_compute_one_over_radius(centered_coords);
+  auto& transition_func_over_radius = get(get<::Tags::TempScalar<2>>(temps));
+  transition_func_over_radius =
+      transition_func_->operator()(centered_coords) * one_over_radius;
+  *source_and_target_coords =
+      center_ +
+      centered_coords * (1. - distorted_radii * transition_func_over_radius);
+
+  auto& radii_velocities = get<0, 1>(*jac);
+  extended_ylm_.interpolate_from_coefs(make_not_null(&radii_velocities),
+                                       extended_coefs_derivs,
+                                       interpolation_info);
+  *frame_vel =
+      -centered_coords * radii_velocities * transition_func_over_radius;
+
+  jacobian_helper<DataVector>(jac, interpolation_info, extended_coefs,
+                              centered_coords, distorted_radii, one_over_radius,
+                              transition_func_over_radius);
 }
 
 template <typename T>
