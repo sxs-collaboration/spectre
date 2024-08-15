@@ -32,9 +32,12 @@ function(add_spectre_executable TARGET_NAME)
   if(SPECTRE_KOKKOS)
     # We need to make sure we don't drop the Kokkos link wrapper
     get_target_property(
-      SPECTRE_KOKKOS_LAUNCHER
+      _RULE_LAUNCH_LINK
       ${TARGET_NAME}
       RULE_LAUNCH_LINK)
+    if (_RULE_LAUNCH_LINK)
+      set(SPECTRE_KOKKOS_LAUNCHER ${_RULE_LAUNCH_LINK})
+    endif()
   endif()
   set_target_properties(
     ${TARGET_NAME}

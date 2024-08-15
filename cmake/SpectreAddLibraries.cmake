@@ -45,9 +45,12 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
     if(SPECTRE_KOKKOS)
       # We need to make sure we don't drop the Kokkos link wrapper
       get_target_property(
-        SPECTRE_KOKKOS_LAUNCHER
+        _RULE_LAUNCH_LINK
         ${LIBRARY_NAME}
         RULE_LAUNCH_LINK)
+      if (_RULE_LAUNCH_LINK)
+        set(SPECTRE_KOKKOS_LAUNCHER ${_RULE_LAUNCH_LINK})
+      endif()
     endif()
     set_target_properties(
       ${LIBRARY_NAME}
