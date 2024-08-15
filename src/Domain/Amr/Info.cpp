@@ -11,9 +11,19 @@
 #include "Domain/Amr/Info.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace amr {
+template <size_t VolumeDim>
+Info<VolumeDim>::Info()
+    : flags(make_array<VolumeDim>(Flag::Undefined)), new_mesh{} {}
+
+template <size_t VolumeDim>
+Info<VolumeDim>::Info(std::array<Flag, VolumeDim> flags_in,
+                      Mesh<VolumeDim> new_mesh_in)
+    : flags(std::move(flags_in)), new_mesh(std::move(new_mesh_in)) {}
+
 template <size_t VolumeDim>
 void Info<VolumeDim>::pup(PUP::er& p) {
   p | flags;
