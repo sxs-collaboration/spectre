@@ -258,6 +258,7 @@ class Shape {
   size_t l_max_ = 2;
   size_t m_max_ = 2;
   ylm::Spherepack ylm_{2, 2};
+  ylm::Spherepack extended_ylm_{3, 3};
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 

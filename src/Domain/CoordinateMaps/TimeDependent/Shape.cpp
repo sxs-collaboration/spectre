@@ -46,6 +46,7 @@ Shape::Shape(
       l_max_(l_max),
       m_max_(m_max),
       ylm_(l_max, m_max),
+      extended_ylm_(l_max + 1, m_max + 1),
       transition_func_(std::move(transition_func)) {
   f_of_t_names_.insert(shape_f_of_t_name_);
   if (size_f_of_t_name_.has_value()) {
@@ -66,6 +67,7 @@ Shape& Shape::operator=(const Shape& rhs) {
     l_max_ = rhs.l_max_;
     m_max_ = rhs.m_max_;
     ylm_ = rhs.ylm_;
+    extended_ylm_ = rhs.extended_ylm_;
     transition_func_ = rhs.transition_func_->get_clone();
   }
   return *this;
@@ -165,14 +167,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   // `m_max_` which causes an aliasing error. We need an additional order to
   // represent it. This is in theory not needed for the distorted_radii
   // calculation but saves calculating the `interpolation_info` twice.
-  const ylm::Spherepack extended_ylm(l_max_ + 1, m_max_ + 1);
   const auto interpolation_info =
-      extended_ylm.set_up_interpolation_info(theta_phis);
+      extended_ylm_.set_up_interpolation_info(theta_phis);
 
   const DataVector coefs =
       functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
   check_coefficients(coefs);
-  DataVector extended_coefs(extended_ylm.spectral_size(), 0.);
+  DataVector extended_coefs(extended_ylm_.spectral_size(), 0.);
 
   // Copy over the coefficients. The additional coefficients of order `l_max_
   // +1` are zero and will only have an effect in the interpolation of the
@@ -192,23 +193,23 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
 
   // Re-use allocation
   auto& distorted_radii = get<0>(theta_phis);
-  extended_ylm.interpolate_from_coefs(make_not_null(&distorted_radii),
-                                      extended_coefs, interpolation_info);
+  extended_ylm_.interpolate_from_coefs(make_not_null(&distorted_radii),
+                                       extended_coefs, interpolation_info);
   // Calculates the Pfaffian derivative at the internal collocation points of
   // YlmSpherePack. We can't interpolate these directly as they are not smooth
   // across the poles, so we convert them to the Cartesian gradients first,
   // which are smooth.
   const auto angular_gradient =
-      extended_ylm.gradient_from_coefs(extended_coefs);
+      extended_ylm_.gradient_from_coefs(extended_coefs);
 
   tnsr::i<DataVector, 3, Frame::Inertial> cartesian_gradient(
-      extended_ylm.physical_size());
+      extended_ylm_.physical_size());
 
   // Re-use allocations
   std::array<DataVector, 2> collocation_theta_phis{};
   collocation_theta_phis[0].set_data_ref(&get<2>(cartesian_gradient));
   collocation_theta_phis[1].set_data_ref(&get<1>(cartesian_gradient));
-  collocation_theta_phis = extended_ylm.theta_phi_points();
+  collocation_theta_phis = extended_ylm_.theta_phi_points();
 
   const auto& col_thetas = collocation_theta_phis[0];
   const auto& col_phis = collocation_theta_phis[1];
@@ -237,15 +238,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
 
   // interpolate the cartesian gradient to the thetas and phis of the
   // `source_coords`
-  extended_ylm.interpolate(make_not_null(&target_gradient_x),
-                           get<0>(cartesian_gradient).data(),
-                           interpolation_info);
-  extended_ylm.interpolate(make_not_null(&target_gradient_y),
-                           get<1>(cartesian_gradient).data(),
-                           interpolation_info);
-  extended_ylm.interpolate(make_not_null(&target_gradient_z),
-                           get<2>(cartesian_gradient).data(),
-                           interpolation_info);
+  extended_ylm_.interpolate(make_not_null(&target_gradient_x),
+                            get<0>(cartesian_gradient).data(),
+                            interpolation_info);
+  extended_ylm_.interpolate(make_not_null(&target_gradient_y),
+                            get<1>(cartesian_gradient).data(),
+                            interpolation_info);
+  extended_ylm_.interpolate(make_not_null(&target_gradient_z),
+                            get<2>(cartesian_gradient).data(),
+                            interpolation_info);
 
   // No auto here to avoid DVExpressions
   using ReturnType = tt::remove_cvref_wrap_t<T>;
@@ -427,6 +428,7 @@ void Shape::pup(PUP::er& p) {
   // No need to pup these because they are uniquely determined by other members
   if (p.isUnpacking()) {
     ylm_ = ylm::Spherepack(l_max_, m_max_);
+    extended_ylm_ = ylm::Spherepack(l_max_ + 1, m_max_ + 1);
     f_of_t_names_.clear();
     f_of_t_names_.insert(shape_f_of_t_name_);
     if (size_f_of_t_name_.has_value()) {
