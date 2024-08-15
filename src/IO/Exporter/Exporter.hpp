@@ -15,6 +15,8 @@
 #include <variant>
 #include <vector>
 
+/// Functions that are intended to be used by external programs, e.g. to
+/// interpolate data in volume files to target points.
 namespace spectre::Exporter {
 
 /// Identifies an observation by its ID in the volume data file.
