@@ -141,13 +141,14 @@ void test_single_coordinate_map() {
 
     const auto coords_jacs_velocity =
         map_base->coords_frame_velocity_jacobians(local_source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == map(local_source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          map.inv_jacobian(local_source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          map.jacobian(local_source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, dim, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          map(local_source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          map.inv_jacobian(local_source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          map.jacobian(local_source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, dim, Frame::Grid>{0.0}));
   };
 
   for (const auto& coord : coords1d) {
@@ -349,11 +350,14 @@ void test_coordinate_map_with_affine_map() {
 
     const auto coords_jacs_velocity =
         map.coords_frame_velocity_jacobians(source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == map(source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) == map.inv_jacobian(source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) == map.jacobian(source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 1, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          map(source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          map.inv_jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          map.jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 1, Frame::Grid>{0.0}));
   }
 
   // Test 2D
@@ -396,13 +400,14 @@ void test_coordinate_map_with_affine_map() {
 
     const auto coords_jacs_velocity =
         prod_map2d.coords_frame_velocity_jacobians(source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == prod_map2d(source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          prod_map2d.inv_jacobian(source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          prod_map2d.jacobian(source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 2, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          prod_map2d(source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          prod_map2d.inv_jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          prod_map2d.jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 2, Frame::Grid>{0.0}));
   }
 
   // Test 3D
@@ -462,13 +467,14 @@ void test_coordinate_map_with_affine_map() {
 
     const auto coords_jacs_velocity =
         prod_map3d.coords_frame_velocity_jacobians(source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == prod_map3d(source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          prod_map3d.inv_jacobian(source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          prod_map3d.jacobian(source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 3, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          prod_map3d(source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          prod_map3d.inv_jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          prod_map3d.jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 3, Frame::Grid>{0.0}));
   }
 }
 
@@ -516,13 +522,14 @@ void test_coordinate_map_with_rotation_map() {
 
     const auto coords_jacs_velocity =
         double_rotated2d.coords_frame_velocity_jacobians(source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated2d(source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          double_rotated2d.inv_jacobian(source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          double_rotated2d.jacobian(source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 2, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          double_rotated2d(source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          double_rotated2d.inv_jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          double_rotated2d.jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 2, Frame::Grid>{0.0}));
   }
 
   // Test 3D
@@ -564,13 +571,14 @@ void test_coordinate_map_with_rotation_map() {
 
     const auto coords_jacs_velocity =
         double_rotated3d.coords_frame_velocity_jacobians(source_points);
-    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated3d(source_points));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          double_rotated3d.inv_jacobian(source_points));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          double_rotated3d.jacobian(source_points));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 3, Frame::Grid>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          double_rotated3d(source_points));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          double_rotated3d.inv_jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          double_rotated3d.jacobian(source_points));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 3, Frame::Grid>{0.0}));
   }
 
   // Check inequivalence operator
@@ -614,14 +622,15 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     const auto coords_jacs_velocity =
         double_rotated2d.coords_frame_velocity_jacobians(coords2d);
-    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated2d(coords2d));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          double_rotated2d.inv_jacobian(coords2d));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          double_rotated2d.jacobian(coords2d));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<DataVector, 2, Frame::Grid>{
-              DataVector{coords2d.get(0).size(), 0.0}});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          double_rotated2d(coords2d));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          double_rotated2d.inv_jacobian(coords2d));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          double_rotated2d.jacobian(coords2d));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<DataVector, 2, Frame::Grid>{
+                              DataVector{coords2d.get(0).size(), 0.0}}));
   }
 
   // Test 3D
@@ -671,14 +680,15 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     const auto coords_jacs_velocity =
         double_rotated3d.coords_frame_velocity_jacobians(coords3d);
-    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated3d(coords3d));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          double_rotated3d.inv_jacobian(coords3d));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          double_rotated3d.jacobian(coords3d));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<DataVector, 3, Frame::Grid>{
-              DataVector{coords3d.get(0).size(), 0.0}});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          double_rotated3d(coords3d));
+    CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                          double_rotated3d.inv_jacobian(coords3d));
+    CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                          double_rotated3d.jacobian(coords3d));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<DataVector, 3, Frame::Grid>{
+                              DataVector{coords3d.get(0).size(), 0.0}}));
   }
 }
 
@@ -718,13 +728,14 @@ void test_coordinate_map_with_rotation_wedge() {
 
   const auto coords_jacs_velocity =
       composed_map.coords_frame_velocity_jacobians(test_point_vector);
-  CHECK(std::get<0>(coords_jacs_velocity) == composed_map(test_point_vector));
-  CHECK(std::get<1>(coords_jacs_velocity) ==
-        composed_map.inv_jacobian(test_point_vector));
-  CHECK(std::get<2>(coords_jacs_velocity) ==
-        composed_map.jacobian(test_point_vector));
-  CHECK(std::get<3>(coords_jacs_velocity) ==
-        tnsr::I<double, 2, Frame::Grid>{0.0});
+  CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                        composed_map(test_point_vector));
+  CHECK_ITERABLE_APPROX(std::get<1>(coords_jacs_velocity),
+                        composed_map.inv_jacobian(test_point_vector));
+  CHECK_ITERABLE_APPROX(std::get<2>(coords_jacs_velocity),
+                        composed_map.jacobian(test_point_vector));
+  CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                        (tnsr::I<double, 2, Frame::Grid>{0.0}));
 }
 
 void test_make_vector_coordinate_map_base() {
@@ -1074,14 +1085,16 @@ void test_coordinate_maps_are_identity() {
     const auto coords_jacs_velocity =
         wedge_composed_with_giant_identity.coords_frame_velocity_jacobians(
             source_point);
-    CHECK(std::get<0>(coords_jacs_velocity) ==
-          wedge_composed_with_giant_identity(source_point));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          wedge_composed_with_giant_identity.inv_jacobian(source_point));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          wedge_composed_with_giant_identity.jacobian(source_point));
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 3, Frame::Inertial>{0.0});
+    CHECK_ITERABLE_APPROX(std::get<0>(coords_jacs_velocity),
+                          wedge_composed_with_giant_identity(source_point));
+    CHECK_ITERABLE_APPROX(
+        std::get<1>(coords_jacs_velocity),
+        wedge_composed_with_giant_identity.inv_jacobian(source_point));
+    CHECK_ITERABLE_APPROX(
+        std::get<2>(coords_jacs_velocity),
+        wedge_composed_with_giant_identity.jacobian(source_point));
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 3, Frame::Inertial>{0.0}));
   }
 }
 
@@ -1227,30 +1240,32 @@ void test_time_dependent_map() {
     const auto velocity =
         functions_of_time.at("Translation")->func_and_deriv(final_time)[1];
     // The 1.5 factor comes from the Jacobian
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<double, 1, Frame::Inertial>{1.5 *
-                                              velocity[velocity.size() - 1]});
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<double, 1, Frame::Inertial>{
+                              1.5 * velocity[velocity.size() - 1]}));
   }
   {
     const auto coords_jacs_velocity =
         serialized_map.coords_frame_velocity_jacobians(
             tnsr_datavector_logical, final_time, functions_of_time);
-    CHECK(
-        std::get<0>(coords_jacs_velocity) ==
+    CHECK_ITERABLE_APPROX(
+        std::get<0>(coords_jacs_velocity),
         serialized_map(tnsr_datavector_logical, final_time, functions_of_time));
-    CHECK(std::get<1>(coords_jacs_velocity) ==
-          serialized_map.inv_jacobian(tnsr_datavector_logical, final_time,
-                                      functions_of_time));
-    CHECK(std::get<2>(coords_jacs_velocity) ==
-          serialized_map.jacobian(tnsr_datavector_logical, final_time,
-                                  functions_of_time));
+    CHECK_ITERABLE_APPROX(
+        std::get<1>(coords_jacs_velocity),
+        serialized_map.inv_jacobian(tnsr_datavector_logical, final_time,
+                                    functions_of_time));
+    CHECK_ITERABLE_APPROX(
+        std::get<2>(coords_jacs_velocity),
+        serialized_map.jacobian(tnsr_datavector_logical, final_time,
+                                functions_of_time));
     const auto velocity =
         functions_of_time.at("Translation")->func_and_deriv(final_time)[1];
     // The 1.5 factor comes from the Jacobian
-    CHECK(std::get<3>(coords_jacs_velocity) ==
-          tnsr::I<DataVector, 1, Frame::Inertial>{
-              DataVector{tnsr_datavector_logical.get(0).size(),
-                         1.5 * velocity[velocity.size() - 1]}});
+    CHECK_ITERABLE_APPROX(std::get<3>(coords_jacs_velocity),
+                          (tnsr::I<DataVector, 1, Frame::Inertial>{DataVector{
+                              tnsr_datavector_logical.get(0).size(),
+                              1.5 * velocity[velocity.size() - 1]}}));
   }
 }
 
