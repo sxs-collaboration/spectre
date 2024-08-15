@@ -46,6 +46,9 @@ struct TciOptions {
   static constexpr Options::String help = {
       "Options for the troubled-cell indicator"};
 
+  TciOptions();
+  explicit TciOptions(std::optional<double> tilde_q_cutoff_in);
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/);
 
