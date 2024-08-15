@@ -64,6 +64,7 @@ struct Metavariables {
 };
 
 void test_data(const std::array<double, 2>& x_coords,
+               const std::array<double, 2>& center_of_mass_offset,
                const double angular_velocity, const double expansion,
                const std::array<double, 3> linear_velocity,
                const std::optional<std::array<double, 2>>& falloff_widths,
@@ -86,6 +87,8 @@ void test_data(const std::array<double, 2>& x_coords,
   {
     INFO("Properties");
     CHECK(binary.x_coords() == x_coords);
+    CHECK(binary.y_offset() == center_of_mass_offset[0]);
+    CHECK(binary.z_offset() == center_of_mass_offset[1]);
     CHECK(binary.angular_velocity() == angular_velocity);
     CHECK(binary.expansion() == expansion);
     CHECK(binary.linear_velocity() == linear_velocity);
@@ -123,10 +126,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
                   "[PointwiseFunctions][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
-  test_data({{-5., 6.}}, 0.02, 0.01, {{0.1, 0.2, 0.3}}, {{7., 8.}},
-            {{1.1, 0.43}}, "bbh_isotropic",
+  test_data({{-5., 6.}}, {{0.1, 0.2}}, 0.02, 0.01, {{0.1, 0.2, 0.3}},
+            {{7., 8.}}, {{1.1, 0.43}}, "bbh_isotropic",
             "Binary:\n"
             "  XCoords: [-5., 6.]\n"
+            "  CenterOfMassOffset: [0.1, 0.2]\n"
             "  ObjectLeft:\n"
             "    Schwarzschild:\n"
             "      Mass: 1.1\n"

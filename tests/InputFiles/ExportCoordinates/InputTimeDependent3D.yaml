@@ -47,6 +47,7 @@ DomainCreator:
       XCoord: -7.683
       ExciseInterior: true
       UseLogarithmicMap: true
+    CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.0
       RadialDistribution: Linear

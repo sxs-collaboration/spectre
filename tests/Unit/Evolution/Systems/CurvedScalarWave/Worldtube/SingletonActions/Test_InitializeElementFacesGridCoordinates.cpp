@@ -122,6 +122,7 @@ SPECTRE_TEST_CASE(
             std::make_optional(
                 domain::creators::BinaryCompactObject::Excision{nullptr}),
             false},
+        std::array<double, 2>{{0.1, 0.2}},
         30.,
         50.,
         initial_refinement,

@@ -43,15 +43,15 @@ void test_center_tags() {
   const std::unique_ptr<DomainCreator<3>> domain_creator =
       std::make_unique<domain::creators::BinaryCompactObject>(
           Object{0.2, 5.0, 8.0, true, true}, Object{0.6, 4.0, -5.5, true, true},
-          100.0, 500.0, 1_st, 5_st);
+          std::array<double, 2>{{0.1, 0.2}}, 100.0, 500.0, 1_st, 5_st);
 
   const auto grid_center_A =
       Tags::ObjectCenter<ObjectLabel::A>::create_from_options(domain_creator);
   const auto grid_center_B =
       Tags::ObjectCenter<ObjectLabel::B>::create_from_options(domain_creator);
 
-  CHECK(grid_center_A == tnsr::I<double, 3, Frame::Grid>{{8.0, 0.0, 0.0}});
-  CHECK(grid_center_B == tnsr::I<double, 3, Frame::Grid>{{-5.5, 0.0, 0.0}});
+  CHECK(grid_center_A == tnsr::I<double, 3, Frame::Grid>{{8.0, 0.1, 0.2}});
+  CHECK(grid_center_B == tnsr::I<double, 3, Frame::Grid>{{-5.5, 0.1, 0.2}});
 
   const std::unique_ptr<DomainCreator<3>> creator_no_excision =
       std::make_unique<domain::creators::Brick>(

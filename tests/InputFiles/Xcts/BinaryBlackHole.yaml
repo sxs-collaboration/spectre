@@ -79,6 +79,7 @@ ResourceInfo:
 Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]
+    CenterOfMassOffset: [&y_offset 0., &z_offset 0.]
     ObjectLeft: &kerr_left
       KerrSchild:
         Mass: 0.4229
@@ -109,7 +110,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_right, 0., 0.]
+            Center: [*x_right, *y_offset, *z_offset]
             Rotation: [0., 0., 0.]
             Lapse: *kerr_right
             NegativeExpansion: *kerr_right
@@ -121,11 +122,12 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_left, 0., 0.]
+            Center: [*x_left, *y_offset, *z_offset]
             Rotation: [0., 0., 0.]
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
+    CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 60.
       RadialDistribution: Projective

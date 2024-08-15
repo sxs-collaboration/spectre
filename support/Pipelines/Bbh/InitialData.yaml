@@ -28,6 +28,9 @@ Parallelization:
 Background: &background
   Binary:
     XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]
+    CenterOfMassOffset:
+      - &y_offset 0.
+      - &z_offset 0.
     ObjectLeft: &kerr_left
       KerrSchild:
         Mass: &mass_left {{ MassLeft }}
@@ -64,7 +67,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_right, 0., 0.]
+            Center: [*x_right, *y_offset, *z_offset]
             Rotation:
               - {{ HorizonRotationRight_x }}
               - {{ HorizonRotationRight_y }}
@@ -79,7 +82,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_left, 0., 0.]
+            Center: [*x_left, *y_offset, *z_offset]
             Rotation:
               - {{ HorizonRotationLeft_x }}
               - {{ HorizonRotationLeft_y }}
@@ -87,6 +90,7 @@ DomainCreator:
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
+    CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 60.
       RadialDistribution: Projective

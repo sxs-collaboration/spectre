@@ -151,6 +151,8 @@ def inspiral_parameters(
         "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"],
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
+        "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
+        "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
         # Initial functions of time
         "InitialAngularVelocity": id_binary["AngularVelocity"],
         "RadialExpansionVelocity": float(id_binary["Expansion"]),
