@@ -14,6 +14,17 @@ Next:
     control: {{ control }}
     control_refinement_level: {{ L }}
     control_polynomial_order: {{ P }}
+    control_params:
+      mass_A: {{ MassRight }}
+      mass_B: {{ MassLeft }}
+      spin_A:
+        - {{ DimensionlessSpinRight_x }}
+        - {{ DimensionlessSpinRight_y }}
+        - {{ DimensionlessSpinRight_z }}
+      spin_B:
+        - {{ DimensionlessSpinLeft_x }}
+        - {{ DimensionlessSpinLeft_y }}
+        - {{ DimensionlessSpinLeft_z }}
     evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
@@ -29,8 +40,8 @@ Background: &background
   Binary:
     XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]
     CenterOfMassOffset:
-      - &y_offset 0.
-      - &z_offset 0.
+      - &y_offset {{ CenterOfMassOffset_y }}
+      - &z_offset {{ CenterOfMassOffset_z }}
     ObjectLeft: &kerr_left
       KerrSchild:
         Mass: &mass_left {{ MassLeft }}
@@ -51,7 +62,10 @@ Background: &background
         Velocity: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
-    LinearVelocity: [0., 0., 0.]
+    LinearVelocity:
+      - {{ LinearVelocity_x }}
+      - {{ LinearVelocity_y }}
+      - {{ LinearVelocity_z }}
     FalloffWidths:
       - {{ FalloffWidthLeft }}
       - {{ FalloffWidthRight }}
