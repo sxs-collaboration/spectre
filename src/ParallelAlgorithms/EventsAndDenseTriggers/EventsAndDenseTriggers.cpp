@@ -5,14 +5,39 @@
 
 #include <algorithm>
 #include <pup.h>
+#include <pup_stl.h>
 #include <utility>
 
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+
+EventsAndDenseTriggers::TriggerRecord::TriggerRecord() = default;
+
+EventsAndDenseTriggers::TriggerRecord::TriggerRecord(
+    double next_check_in, std::optional<bool> is_triggered_in,
+    size_t num_events_ready_in, std::unique_ptr<DenseTrigger> trigger_in,
+    std::vector<std::unique_ptr<Event>> events_in)
+    : next_check(next_check_in),
+      is_triggered(is_triggered_in),
+      num_events_ready(num_events_ready_in),
+      trigger(std::move(trigger_in)),
+      events(std::move(events_in)) {}
 
 void EventsAndDenseTriggers::TriggerRecord::pup(PUP::er& p) {
   p | next_check;
   p | is_triggered;
   p | num_events_ready;
+  p | trigger;
+  p | events;
+}
+
+EventsAndDenseTriggers::TriggerAndEvents::TriggerAndEvents() = default;
+
+EventsAndDenseTriggers::TriggerAndEvents::TriggerAndEvents(
+    std::unique_ptr<::DenseTrigger> trigger_in,
+    std::vector<std::unique_ptr<::Event>> events_in)
+    : trigger(std::move(trigger_in)), events(std::move(events_in)) {}
+
+void EventsAndDenseTriggers::TriggerAndEvents::pup(PUP::er& p) {
   p | trigger;
   p | events;
 }
