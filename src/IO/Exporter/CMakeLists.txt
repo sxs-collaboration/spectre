@@ -55,6 +55,9 @@ add_subdirectory(Python)
 # - The `TARGET_OBJECTS` generator expression links in the objects from the
 #   Exporter library, because otherwise they wouldn't be used and therefore
 #   wouldn't be linked in.
+#   Note that `TARGET_OBJECTS` also includes precompiled headers. LLVM's lld
+#   is smart enough to ignore them, but GNU's ld isn't, so we have to filter
+#   them out (see https://gitlab.kitware.com/cmake/cmake/-/issues/22832).
 # - The `EXPORTER_LINKED_LIBS` are needed to resolve the symbols for the
 #   `TARGET_OBJECTS`, just like in the Exporter library (of which this library
 #   is basically an extended copy).
@@ -67,7 +70,7 @@ get_target_property(EXPORTER_LINKED_LIBS ${LIBRARY} LINK_LIBRARIES)
 target_link_libraries(
   ${BUNDLED_EXPORTER_LIB}
   PRIVATE
-  $<TARGET_OBJECTS:${LIBRARY}>
+  $<FILTER:$<TARGET_OBJECTS:${LIBRARY}>,EXCLUDE,.*\\.gch>
   ${EXPORTER_LINKED_LIBS}
   Informer
   CharmModuleInit
