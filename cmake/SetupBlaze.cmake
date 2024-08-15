@@ -143,9 +143,10 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
-target_compile_options(Blaze
+target_precompile_headers(Blaze
   INTERFACE
-  "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include ${CMAKE_SOURCE_DIR}/tools/BlazeExceptions.hpp>")
+  ${CMAKE_SOURCE_DIR}/tools/BlazeExceptions.hpp
+  )
 
 add_interface_lib_headers(
   TARGET Blaze
