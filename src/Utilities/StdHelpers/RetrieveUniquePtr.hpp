@@ -17,5 +17,15 @@ template <typename T>
 const T& retrieve(const T& t) {
   return t;
 }
+
+template <typename T, typename Deleter>
+T& retrieve(std::unique_ptr<T, Deleter>& t) {
+  return *t;
+}
+
+template <typename T>
+T& retrieve(T& t) {
+  return t;
+}
 /// @}
 }  // namespace StdHelpers
