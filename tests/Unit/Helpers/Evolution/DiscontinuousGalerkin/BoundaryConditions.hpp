@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -162,6 +163,29 @@ void apply_boundary_condition_impl(
     const Variables<AllTagsOnFaceList>& fields_on_interior_face,
     tmpl::list<TagsFromFace...> /*meta*/, const VolumeArgs&... volume_args) {
   boundary_condition_helper(get<TagsFromFace>(fields_on_interior_face)...,
+                            volume_args...);
+}
+
+template <typename BoundaryConditionHelper, typename AllTagsOnExteriorFaceList,
+          typename BoundaryCondition, typename AllTagsOnFaceList,
+          typename... BoundaryCorrectionPackagedDataInputTags,
+          typename... TagsFromFace, typename... VolumeArgs, size_t Dim>
+void apply_boundary_condition_dg_ghost_impl(
+    BoundaryConditionHelper& boundary_condition_helper,
+    const gsl::not_null<Variables<AllTagsOnExteriorFaceList>*>
+        fields_on_exterior_face,
+    const BoundaryCondition& boundary_condition,
+    const Variables<AllTagsOnFaceList>& fields_on_interior_face,
+    const std::optional<tnsr::I<DataVector, Dim>>& face_mesh_velocity,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& interior_normal_covector,
+    tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
+    tmpl::list<TagsFromFace...> /*meta*/, const VolumeArgs&... volume_args) {
+  const std::optional<std::string> error_message = boundary_condition.dg_ghost(
+      get<BoundaryCorrectionPackagedDataInputTags>(fields_on_exterior_face)...,
+      face_mesh_velocity, interior_normal_covector,
+      get<TagsFromFace>(fields_on_interior_face)..., volume_args...);
+  boundary_condition_helper(error_message,
+                            get<TagsFromFace>(fields_on_interior_face)...,
                             volume_args...);
 }
 
@@ -413,29 +437,13 @@ void test_boundary_condition_with_python_impl(
             ::evolution::dg::Tags::NormalCovector<FaceDim + 1>>>>;
     Variables<tags_on_exterior_face> exterior_face_fields{
         number_of_points_on_face};
-    auto apply_bc = [&boundary_condition, &box_of_volume_data, epsilon,
-                     &exterior_face_fields, &face_mesh_velocity,
-                     &interior_normal_covector,
-                     &python_boundary_condition_functions, &python_module](
-                        const auto&... interior_face_and_volume_args) {
+    auto apply_bc = [&box_of_volume_data, epsilon, &exterior_face_fields,
+                     &face_mesh_velocity, &interior_normal_covector,
+                     &python_boundary_condition_functions,
+                     &python_module]<typename... Ts>(
+                        const std::optional<std::string>& error_msg,
+                        const Ts&... interior_face_and_volume_args) {
       (void)box_of_volume_data;
-      std::optional<std::string> error_msg{};
-      if constexpr (has_inv_spatial_metric) {
-        error_msg = boundary_condition.dg_ghost(
-            make_not_null(&get<BoundaryCorrectionPackagedDataInputTags>(
-                exterior_face_fields))...,
-            make_not_null(&get<typename System::inverse_spatial_metric_tag>(
-                exterior_face_fields)),
-            face_mesh_velocity, interior_normal_covector,
-            interior_face_and_volume_args...);
-      } else {
-        error_msg = boundary_condition.dg_ghost(
-            make_not_null(&get<BoundaryCorrectionPackagedDataInputTags>(
-                exterior_face_fields))...,
-            face_mesh_velocity, interior_normal_covector,
-            interior_face_and_volume_args...);
-      }
-
       const std::string& python_error_msg_function =
           get_python_error_message_function<BoundaryCorrection>(
               python_boundary_condition_functions);
@@ -489,8 +497,12 @@ void test_boundary_condition_with_python_impl(
     // Since any of the variables in `exterior_face_fields` could be mutated
     // from their projected state, we don't pass in the interior tags explicitly
     // since that will likely give a false sense of "no aliasing"
-    apply_boundary_condition_impl(
-        apply_bc, interior_face_fields, bcondition_interior_tags{},
+    apply_boundary_condition_dg_ghost_impl(
+        apply_bc, make_not_null(&exterior_face_fields), boundary_condition,
+        interior_face_fields, face_mesh_velocity, interior_normal_covector,
+        tmpl::append<tmpl::list<BoundaryCorrectionPackagedDataInputTags...>,
+                     inverse_spatial_metric_list>{},
+        bcondition_interior_tags{},
         db::get<BoundaryConditionVolumeTags>(box_of_volume_data)...);
   }
 }
