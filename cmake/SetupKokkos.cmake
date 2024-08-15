@@ -25,7 +25,23 @@ if(SPECTRE_KOKKOS)
       "Enable lambda expressions in CUDA")
   endif()
 
-  find_package(Kokkos REQUIRED)
+  find_package(Kokkos)
+
+  if (NOT Kokkos_FOUND)
+    if (NOT SPECTRE_FETCH_MISSING_DEPS)
+      message(FATAL_ERROR "Could not find Kokkos. If you want to fetch "
+        "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
+    endif()
+    message(STATUS "Fetching Kokkos")
+    include(FetchContent)
+    FetchContent_Declare(Kokkos
+      GIT_REPOSITORY https://github.com/kokkos/kokkos.git
+      GIT_TAG 4.4.00
+      GIT_SHALLOW TRUE
+      ${SPECTRE_FETCHCONTENT_BASE_ARGS}
+    )
+    FetchContent_MakeAvailable(Kokkos)
+  endif()
 
   if (TARGET Kokkos::kokkos
       AND Kokkos_ENABLE_CUDA
