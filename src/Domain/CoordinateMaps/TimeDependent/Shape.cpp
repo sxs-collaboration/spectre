@@ -33,6 +33,136 @@ std::array<T, 2> cartesian_to_spherical(const std::array<T, 3>& cartesian) {
   const auto& [x, y, z] = cartesian;
   return {atan2(hypot(x, y), z), atan2(y, x)};
 }
+template <typename T>
+void cartesian_to_spherical(gsl::not_null<std::array<T, 2>*> result,
+                            const std::array<T, 3>& cartesian) {
+  const auto& [x, y, z] = cartesian;
+  gsl::at(*result, 0) = atan2(hypot(x, y), z);
+  gsl::at(*result, 1) = atan2(y, x);
+}
+
+template <typename T>
+void Shape::jacobian_helper(
+    gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
+    const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
+    const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
+    const T& distorted_radii, const T& one_over_radius,
+    const T& transition_func_over_radius) const {
+  const auto angular_gradient =
+      extended_ylm_.gradient_from_coefs(extended_coefs);
+
+  tnsr::i<DataVector, 3, Frame::Inertial> cartesian_gradient(
+      extended_ylm_.physical_size());
+
+  std::array<DataVector, 2> collocation_theta_phis{};
+  collocation_theta_phis[0].set_data_ref(&get<2>(cartesian_gradient));
+  collocation_theta_phis[1].set_data_ref(&get<1>(cartesian_gradient));
+  collocation_theta_phis = extended_ylm_.theta_phi_points();
+
+  const auto& col_thetas = collocation_theta_phis[0];
+  const auto& col_phis = collocation_theta_phis[1];
+
+  // The Cartesian derivative is the Pfaffian derivative multiplied by the
+  // inverse Jacobian matrix. Some optimizations here may be possible by
+  // introducing temporaries for some of the sin/cos which are computed twice,
+  // if the compiler CSE doesn't take care of it.
+  get<0>(cartesian_gradient) =
+      (cos(col_thetas) * cos(col_phis) * get<0>(angular_gradient) -
+       sin(col_phis) * get<1>(angular_gradient));
+
+  get<1>(cartesian_gradient) =
+      (cos(col_thetas) * sin(col_phis) * get<0>(angular_gradient) +
+       cos(col_phis) * get<1>(angular_gradient));
+
+  get<2>(cartesian_gradient) = -sin(col_thetas) * get<0>(angular_gradient);
+
+  // re-use allocation
+  auto& target_gradient_x = get<2, 0>(*result);
+  auto& target_gradient_y = get<2, 1>(*result);
+  auto& target_gradient_z = get<2, 2>(*result);
+
+  // interpolate the cartesian gradient to the thetas and phis of the
+  // `source_coords`
+  extended_ylm_.interpolate(make_not_null(&target_gradient_x),
+                            get<0>(cartesian_gradient).data(),
+                            interpolation_info);
+  extended_ylm_.interpolate(make_not_null(&target_gradient_y),
+                            get<1>(cartesian_gradient).data(),
+                            interpolation_info);
+  extended_ylm_.interpolate(make_not_null(&target_gradient_z),
+                            get<2>(cartesian_gradient).data(),
+                            interpolation_info);
+
+  auto transition_func_over_square_radius =
+      transition_func_over_radius * one_over_radius;
+  auto transition_func_over_cube_radius =
+      transition_func_over_square_radius * one_over_radius;
+  auto transition_func_gradient_over_radius =
+      transition_func_->gradient(centered_coords) * one_over_radius;
+
+  auto& target_gradient_x_times_spatial_part = target_gradient_x;
+  auto& target_gradient_y_times_spatial_part = target_gradient_y;
+  auto& target_gradient_z_times_spatial_part = target_gradient_z;
+  target_gradient_x_times_spatial_part *= transition_func_over_square_radius;
+  target_gradient_y_times_spatial_part *= transition_func_over_square_radius;
+  target_gradient_z_times_spatial_part *= transition_func_over_square_radius;
+
+  const auto& [x_transition_gradient_over_radius,
+               y_transition_gradient_over_radius,
+               z_transition_gradient_over_radius] =
+      transition_func_gradient_over_radius;
+  const auto& [x_centered, y_centered, z_centered] = centered_coords;
+
+  get<0, 0>(*result) =
+      -x_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
+  get<0, 1>(*result) =
+      -x_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
+  get<0, 2>(*result) =
+      -x_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
+  get<1, 0>(*result) =
+      -y_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
+  get<1, 1>(*result) =
+      -y_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
+  get<1, 2>(*result) =
+      -y_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
+  get<2, 0>(*result) =
+      -z_centered * ((x_transition_gradient_over_radius -
+                      x_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_x_times_spatial_part);
+  get<2, 1>(*result) =
+      -z_centered * ((y_transition_gradient_over_radius -
+                      y_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_y_times_spatial_part);
+  get<2, 2>(*result) =
+      -z_centered * ((z_transition_gradient_over_radius -
+                      z_centered * transition_func_over_cube_radius) *
+                         distorted_radii +
+                     target_gradient_z_times_spatial_part);
+
+  get<0, 0>(*result) += 1. - distorted_radii * transition_func_over_radius;
+  get<1, 1>(*result) += 1. - distorted_radii * transition_func_over_radius;
+  get<2, 2>(*result) += 1. - distorted_radii * transition_func_over_radius;
+}
 
 Shape::Shape(
     const std::array<double, 3>& center, const size_t l_max, const size_t m_max,
@@ -188,143 +318,24 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
       extended_coefs[extended_iter()] = coefs[iter()];
     }
   }
-
   check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
 
   // Re-use allocation
   auto& distorted_radii = get<0>(theta_phis);
   extended_ylm_.interpolate_from_coefs(make_not_null(&distorted_radii),
                                        extended_coefs, interpolation_info);
-  // Calculates the Pfaffian derivative at the internal collocation points of
-  // YlmSpherePack. We can't interpolate these directly as they are not smooth
-  // across the poles, so we convert them to the Cartesian gradients first,
-  // which are smooth.
-  const auto angular_gradient =
-      extended_ylm_.gradient_from_coefs(extended_coefs);
 
-  tnsr::i<DataVector, 3, Frame::Inertial> cartesian_gradient(
-      extended_ylm_.physical_size());
-
-  // Re-use allocations
-  std::array<DataVector, 2> collocation_theta_phis{};
-  collocation_theta_phis[0].set_data_ref(&get<2>(cartesian_gradient));
-  collocation_theta_phis[1].set_data_ref(&get<1>(cartesian_gradient));
-  collocation_theta_phis = extended_ylm_.theta_phi_points();
-
-  const auto& col_thetas = collocation_theta_phis[0];
-  const auto& col_phis = collocation_theta_phis[1];
-
-  // The Cartesian derivative is the Pfaffian derivative multiplied by the
-  // inverse Jacobian matrix. Some optimizations here may be possible by
-  // introducing temporaries for some of the sin/cos which are computed twice,
-  // if the compiler CSE doesn't take care of it.
-  get<0>(cartesian_gradient) =
-      (cos(col_thetas) * cos(col_phis) * get<0>(angular_gradient) -
-       sin(col_phis) * get<1>(angular_gradient));
-
-  get<1>(cartesian_gradient) =
-      (cos(col_thetas) * sin(col_phis) * get<0>(angular_gradient) +
-       cos(col_phis) * get<1>(angular_gradient));
-
-  get<2>(cartesian_gradient) = -sin(col_thetas) * get<0>(angular_gradient);
-
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> result(
-      get_size(centered_coords[0]));
-
-  // re-use allocation
-  auto& target_gradient_x = get<2, 0>(result);
-  auto& target_gradient_y = get<2, 1>(result);
-  auto& target_gradient_z = get<2, 2>(result);
-
-  // interpolate the cartesian gradient to the thetas and phis of the
-  // `source_coords`
-  extended_ylm_.interpolate(make_not_null(&target_gradient_x),
-                            get<0>(cartesian_gradient).data(),
-                            interpolation_info);
-  extended_ylm_.interpolate(make_not_null(&target_gradient_y),
-                            get<1>(cartesian_gradient).data(),
-                            interpolation_info);
-  extended_ylm_.interpolate(make_not_null(&target_gradient_z),
-                            get<2>(cartesian_gradient).data(),
-                            interpolation_info);
-
-  // No auto here to avoid DVExpressions
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType one_over_radius =
       check_and_compute_one_over_radius(centered_coords);
   const ReturnType transition_func_over_radius =
       transition_func_->operator()(centered_coords) * one_over_radius;
-  const ReturnType transition_func_over_square_radius =
-      transition_func_over_radius * one_over_radius;
-  const ReturnType transition_func_over_cube_radius =
-      transition_func_over_square_radius * one_over_radius;
-  const std::array<ReturnType, 3> transition_func_gradient_over_radius =
-      transition_func_->gradient(centered_coords) * one_over_radius;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> result(
+      get_size(centered_coords[0]));
 
-  // re-use allocation
-  auto& target_gradient_x_times_spatial_part = target_gradient_x;
-  auto& target_gradient_y_times_spatial_part = target_gradient_y;
-  auto& target_gradient_z_times_spatial_part = target_gradient_z;
-  target_gradient_x_times_spatial_part *= transition_func_over_square_radius;
-  target_gradient_y_times_spatial_part *= transition_func_over_square_radius;
-  target_gradient_z_times_spatial_part *= transition_func_over_square_radius;
-
-  const auto& [x_transition_gradient_over_radius,
-               y_transition_gradient_over_radius,
-               z_transition_gradient_over_radius] =
-      transition_func_gradient_over_radius;
-  const auto& [x_centered, y_centered, z_centered] = centered_coords;
-
-  get<0, 0>(result) =
-      -x_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_x_times_spatial_part);
-  get<0, 1>(result) =
-      -x_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_y_times_spatial_part);
-  get<0, 2>(result) =
-      -x_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_z_times_spatial_part);
-  get<1, 0>(result) =
-      -y_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_x_times_spatial_part);
-  get<1, 1>(result) =
-      -y_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_y_times_spatial_part);
-  get<1, 2>(result) =
-      -y_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_z_times_spatial_part);
-  get<2, 0>(result) =
-      -z_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_x_times_spatial_part);
-  get<2, 1>(result) =
-      -z_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_y_times_spatial_part);
-  get<2, 2>(result) =
-      -z_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
-                     target_gradient_z_times_spatial_part);
-
-  get<0, 0>(result) += 1. - distorted_radii * transition_func_over_radius;
-  get<1, 1>(result) += 1. - distorted_radii * transition_func_over_radius;
-  get<2, 2>(result) += 1. - distorted_radii * transition_func_over_radius;
-
+  jacobian_helper(make_not_null(&result), interpolation_info, extended_coefs,
+                  centered_coords, distorted_radii, one_over_radius,
+                  transition_func_over_radius);
   return result;
 }
 

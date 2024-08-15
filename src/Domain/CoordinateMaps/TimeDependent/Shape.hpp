@@ -269,6 +269,23 @@ class Shape {
             coords[2] - center_[2]};
   }
 
+  template <typename T>
+  void center_coordinates(
+      gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*> result,
+      const std::array<T, 3>& coords) const {
+    for (size_t i = 0; i < 3; ++i) {
+      gsl::at(*result, i) = gsl::at(coords, i) - gsl::at(center_, i);
+    }
+  }
+
+  template <typename T>
+  void jacobian_helper(
+      gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
+      const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
+      const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
+      const T& distorted_radii, const T& one_over_radius,
+      const T& transition_func_over_radius) const;
+
   void check_size(const gsl::not_null<DataVector*>& coefs,
                   const FunctionsOfTimeMap& functions_of_time, double time,
                   bool use_deriv) const;
