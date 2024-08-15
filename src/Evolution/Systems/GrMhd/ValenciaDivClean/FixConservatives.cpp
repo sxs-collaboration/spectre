@@ -327,6 +327,15 @@ bool FixConservatives::operator()(
       }
     }
 
+    else {
+      auto zeroes = static_cast<SimdType>(0);
+      if (const auto tilde_tau_mask = tau_tilde < zeroes;
+          simd::any(tilde_tau_mask)) {
+        needed_fixing = true;
+        tau_tilde = simd::select(tilde_tau_mask, zeroes, tau_tilde);
+      }
+    }
+
     // Decrease momentum density if necessary
     auto s_tilde_squared = load(get(tilde_s_squared));
     // Equation B.24 of Foucart
