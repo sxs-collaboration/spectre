@@ -77,21 +77,21 @@ void check_exact_polytrope() {
   CHECK(*eos.promote_to_3d_eos() ==
         EquationsOfState::Equilibrium3D<EquationsOfState::HybridEos<
             EquationsOfState::PolytropicFluid<IsRelativistic>>>(eos));
-  const Scalar<double> eps{5.0};
+  const Scalar<double> eps{18.0};
   const auto p = eos.pressure_from_density_and_energy(rho, eps);
-  CHECK(get(p) == 34.0);
+  CHECK(get(p) == 60.0);
   const auto h = IsRelativistic
                      ? hydro::relativistic_specific_enthalpy(rho, eps, p)
                      : Scalar<double>{get(eps) + get(p) / get(rho)};
-  CHECK(get(h) == (IsRelativistic ? 14.5 : 13.5));
-  CHECK(get(eos.pressure_from_density_and_enthalpy(rho, h)) == 34.0);
+  CHECK(get(h) == (IsRelativistic ? 34.0 : 33.0));
+  CHECK(get(eos.pressure_from_density_and_enthalpy(rho, h)) == 60.0);
   CHECK(get(eos.specific_internal_energy_from_density_and_pressure(rho, p)) ==
-        5.0);
+        get(eps));
   const auto chi = eos.chi_from_density_and_energy(rho, eps);
-  CHECK(get(chi) == 14.5);
+  CHECK(get(chi) == 21.0);
   const auto p_kappa_over_rho_sq =
       eos.kappa_times_p_over_rho_squared_from_density_and_energy(rho, eps);
-  CHECK(get(p_kappa_over_rho_sq) == 4.25);
+  CHECK(get(p_kappa_over_rho_sq) == 7.5);
   CHECK(not eos.is_barotropic());
 }
 
