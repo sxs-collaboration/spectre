@@ -25,6 +25,7 @@ set(LIBS_TO_LINK
   ParallelLinearSolver
   ParallelMultigrid
   ParallelSchwarz
+  PhaseControl
   Poisson
   PoissonBoundaryConditions
   PoissonSolutions

@@ -40,6 +40,7 @@ target_link_libraries(
   ParallelMultigrid
   ParallelNonlinearSolver
   ParallelSchwarz
+  PhaseControl
   Punctures
   PuncturesAmrCriteria
   PuncturesAnalyticData
