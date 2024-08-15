@@ -49,6 +49,12 @@ struct Puncture {
   using options = tmpl::list<Position, Mass, Momentum, Spin>;
   static constexpr Options::String help{"A puncture representing a black hole"};
 
+  Puncture();
+  Puncture(std::array<double, 3> position_in, double mass_in,
+           std::array<double, 3> dimensionless_momentum_in,
+           std::array<double, 3> dimensionless_spin_in);
+  void pup(PUP::er& p);
+
   std::array<double, 3> position{
       {std::numeric_limits<double>::signaling_NaN()}};
   double mass = std::numeric_limits<double>::signaling_NaN();
@@ -56,13 +62,6 @@ struct Puncture {
       {std::numeric_limits<double>::signaling_NaN()}};
   std::array<double, 3> dimensionless_spin{
       {std::numeric_limits<double>::signaling_NaN()}};
-
-  void pup(PUP::er& p) {
-    p | position;
-    p | mass;
-    p | dimensionless_momentum;
-    p | dimensionless_spin;
-  }
 };
 
 bool operator==(const Puncture& lhs, const Puncture& rhs);
