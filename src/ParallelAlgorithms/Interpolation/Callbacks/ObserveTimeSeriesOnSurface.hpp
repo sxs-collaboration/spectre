@@ -40,9 +40,35 @@ namespace callbacks {
 
 namespace detail {
 
+template<typename T>
+struct is_array_of_double : std::false_type {};
+
+template<std::size_t N>
+struct is_array_of_double<std::array<double, N>> : std::true_type {};
+
 template <typename... Ts>
 auto make_legend(tmpl::list<Ts...> /* meta */) {
-  return std::vector<std::string>{"Time", db::tag_name<Ts>()...};
+    std::vector<std::string> legend = {"Time"};
+
+    auto append_tags = [&legend](auto tag) {
+        using TagType = decltype(tag);
+        using ReturnType = typename TagType::type;
+
+        if constexpr (is_array_of_double<ReturnType>::value) {
+            constexpr std::array<const char*, 3> suffix = {"_x", "_y", "_z"};
+            for (size_t i = 0; i < std::tuple_size<ReturnType>::value; ++i) {
+                legend.push_back(db::tag_name<TagType>() + gsl::at(suffix, i));
+            }
+        }
+        else {
+            legend.push_back(db::tag_name<TagType>());
+        }
+
+    };
+
+    (append_tags(Ts{}), ...);
+
+    return legend;
 }
 
 template <typename DbTags, typename... Ts>
