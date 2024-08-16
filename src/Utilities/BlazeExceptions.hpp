@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include <csignal>
 
 #ifdef __CUDA_ARCH__
@@ -8,9 +10,6 @@
 // intrinsics.
 #define BLAZE_USE_VECTORIZATION 0
 #endif
-
-#ifndef SPECTRE_BLAZE_EXCEPTIONS_HPP
-#define SPECTRE_BLAZE_EXCEPTIONS_HPP
 
 #ifdef SPECTRE_DEBUG
 #define BLAZE_THROW(EXCEPTION)           \
@@ -24,4 +23,3 @@
 #else  // SPECTRE_DEBUG
 #define BLAZE_THROW(EXCEPTION)
 #endif  // SPECTRE_DEBUG
-#endif  // BLAZE_EXCEPTIONSSPECTRE_BLAZE_EXCEPTIONS_HPP

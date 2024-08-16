@@ -30,6 +30,7 @@ spectre_target_headers(
   Array.hpp
   Base64.hpp
   Blas.hpp
+  BlazeExceptions.hpp
   CachedFunction.hpp
   CallWithDynamicType.hpp
   CartesianProduct.hpp
