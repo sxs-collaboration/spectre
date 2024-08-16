@@ -3,7 +3,6 @@
 
 Executable: EvolveBurgers
 Testing:
-  CommandLineArgs: +balancer RandCentLB +p2
   Timeout: 5
   Check: parse;execute
   Priority: High
@@ -30,13 +29,6 @@ Evolution:
       Order: 3
 
 PhaseChangeAndTriggers:
-  - Trigger:
-      Slabs:
-        EvenlySpaced:
-          Interval: 10
-          Offset: 0
-    PhaseChanges:
-      - VisitAndReturn(LoadBalancing)
 
 DomainCreator:
   Interval:
